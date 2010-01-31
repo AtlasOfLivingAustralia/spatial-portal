@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+
+    <bean id="config" class="au.org.emii.portal.config.Config" />
+
+    <!-- Xml Web Service processor - Jersey implementation -->
+    <bean id="xmlWebService" class="au.org.emii.portal.webservice.XmlWebServiceJerseyImpl" lazy-init="true">
+        <property name="xmlMimeType" value="#{config.values['xml_mime_type']}" />
+    </bean>
+
+    <bean id="webServiceEndpoint" abstract="true" depends-on="portalSession">
+        <property name="defaultUserManagementServiceId" value="DEFAULT" />
+        <property name="userManagementServices">
+                <util:map>
+                    <entry key="DEFAULT" value-ref="defaultSearchCatalogue"  />
+                </util:map>
+        </property>
+    </bean>
+
+    <!-- User Info Service - for looking up user details (name, address, etc) -->
+    <bean id="userInfoService" class="au.org.emii.portal.user.UserInfoServiceGetImpl" lazy-init="true"  parent="webServiceEndpoint">
+        <property name="administratorProfile" value="${mest_portal_administrator_profile}"  />
+        <property name="xmlWebService" ref="xmlWebService" />
+        <property name="webServiceSession" ref="mestWebServiceSession" />
+    </bean>
+
+    <!-- Login Service - for logging a user into the portal -->
+    <bean id="loginService" class="au.org.emii.portal.authentication.LoginServiceImpl" depends-on="userInfoService" lazy-init="true"  parent="webServiceEndpoint">
+        <property name="userInfoService" ref="userInfoService" />
+        <property name="xmlWebService" ref="xmlWebService" />
+    </bean>
+
+    <!-- Registration Service - for registering users with the mest -->
+    <bean id="registrationService" class="au.org.emii.portal.registration.RegistrationServiceImpl" lazy-init="true"  parent="webServiceEndpoint">
+        <property name="xmlWebService" ref="xmlWebService" />
+        <property name="profile" value="#{config.values['mest_self_registration_profile']}"  />
+        <property name="duplicateUserErrorMessage" value="#{config.values['mest_duplicate_user_error_flag']}" />
+
+    </bean>
+
+    <!-- Logout service -->
+    <bean id="logoutService" class="au.org.emii.portal.authentication.LogoutServiceImpl" lazy-init="true" />
+
+    <!-- the current instance of the master portal session - not the same as the one in a users session! -->
+    <bean id="masterPortalSession" class="au.org.emii.portal.web.PortalSessionAccessor" scope="prototype" factory-method="getMasterPortalSession" lazy-init="true"/>
+
+    <!--
+    the current default search catalogue (mest) instance in the master portal session - could be different in
+    users session but changing catalogues is not implemented yet
+    -->
+    <bean id="defaultSearchCatalogue" scope="prototype" factory-bean="masterPortalSession" factory-method="getSelectedSearchCatalogue" lazy-init="true"/>
+
+    <!-- persistent http session support for xml web services -->
+    <bean id="mestWebServiceSession" class="au.org.emii.portal.webservice.MestWebServiceSessionImpl" lazy-init="true">
+        <property name="username" value="#{defaultSearchCatalogue.getUsername()}" />
+        <property name="password" value="#{defaultSearchCatalogue.getPassword()}" />
+        <property name="loginService" ref="loginService" />
+
+    </bean>
+
+
+    
+</beans>
