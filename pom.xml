@@ -7,9 +7,9 @@
     <version>1.1.5</version>
 
 
-    <name>IMOS Ocean Portal </name>
-    <description>The IMOS Ocean Portal aims to provide a data discovery, visualisation and delivery system for IMOS data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
-    <url>http://imos.aodn.org.au</url>
+    <name>ALA Geospatial Portal</name>
+    <description>The ALA Geospatial Portal aims to provide a data discovery, visualisation and delivery system for ALA.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
+    <url>http://data.ala.org.au</url>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -280,8 +280,8 @@
         <url>http://emii1.its.utas.edu.au/viewvc/</url>
     </scm>
     <organization>
-        <name>eMII</name>
-        <url>http://www.emii.org.au</url>
+        <name>ALA</name>
+        <url>http://www.ala.org.au</url>
     </organization>
 
     <build>
