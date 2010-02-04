@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response surname="deletemea" name="firstname" email="gjsw@utas.edu.au">
+  <result>errorEmailAddressAlreadyRegistered</result>
+</response>

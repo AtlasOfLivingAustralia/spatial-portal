@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="au.org.emii.portal">
+  <class name="AnimationSelection">
+     <id name="id" type="long">
+      <column name="id"/>
+      <generator class="assigned"/>
+    </id>
+    
+    <property name="startDate" type="date">
+      <column name="startDate"/>
+    </property>
+    <property name="endDate" type="date">
+      <column name="endDate"/>
+    </property>
+    <property name="z" type="double">
+      <column name="z"/>
+    </property>
+    <property name="adjustedStartDate" type="string">
+      <column name="adjustedStartDate"/>
+    </property>
+    <property name="adjustedEndDate" type="string">
+      <column name="adjustedEndDate"/>
+    </property>
+   <property name="selectedTimeStringKey" type="string">
+      <column name="selectedTimeStringKey"/>
+    </property>
+    <map name="timeStrings" table="timestrings" cascade="all">
+    	<key column="id"></key>
+    	<index column="title" type="string"></index>
+    	<element column="timeString" type="string"></element>
+    </map>
+  </class>
+</hibernate-mapping>
+  
+  
+ 

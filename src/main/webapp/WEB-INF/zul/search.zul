@@ -1,0 +1,46 @@
+<?page id="searchPage" title="map" contentType="text/html;charset=UTF-8"?>
+<?init class="org.zkoss.zkplus.databind.AnnotateDataBinderInit" arg0="./searcher"?>
+
+
+<window height="620px" id="searcher" width="700px" closable="true"
+	maximizable="true" border="normal" title="Mest Search"
+	sizable="true" apply="au.org.emii.portal.composer.MESTSearchComposer" use="au.org.emii.portal.composer.MESTSearchComposer">
+
+    <div id="listBox" sclass="mestsearchContainer"  >
+        <listbox id="box" height="515px" sclass="mestsearch" vflex="true" fixedLayout="true">
+          
+        </listbox>
+        <div id="pagingDivcontainer" sclass="searchFooterContainer highlighted" >
+		
+            <div id="pagingDiv" align="left" sclass="pagingDiv" >
+                <button id="btnFirst" label="First" tooltiptext="First page of records" zclass="z-button pagingbutton" />
+                <button id="btnPrevious" label="Previous" tooltiptext="Previous page of records" zclass="z-button pagingbutton"/>
+                <separator orient="vertical" width="6px" />
+                <label value="Page" sclass="h3" />
+                <intbox id="pageNo" width="30px"/>
+                <label value="/" sclass="h3" />
+                <label value="" id="numberOfPages" sclass="h3" />
+                <separator orient="vertical" width="6px" />
+                <button id="btnNext" label="Next" tooltiptext="Next page of records" zclass="z-button pagingbutton"/>
+                <button id="btnLast" label="Last" tooltiptext="Last page of records" zclass="z-button pagingbutton"/>
+            </div>
+            
+            <div align="right" sclass="savesearchdiv" width="300px" >
+                <zk if="PortalSession.isLoggedIn()" >
+                    <label  value="Save Search as:" sclass="h3 " />
+                <textbox id="createSavedSearch" sclass="inputspace" constraint="no empty"/>
+                <button sclass="" label="GO"
+                        tooltiptext="Store this search"
+                        forward="onClick=onActivateSaveSearch()">
+                </button>
+                </zk>
+                <zk unless="PortalSession.isLoggedIn()" >
+                    <label  value="Login to save this search" sclass="h4 spacedDown" />
+                </zk>
+
+            </div>
+
+        </div>
+        
+    </div>
+</window>
