@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class dynamic-insert="false" dynamic-update="false" mutable="true" name="au.org.emii.portal.BoundingBox" optimistic-lock="version" polymorphism="implicit" select-before-update="false">
+    <id name="id" type="long">
+      <column name="id"/>
+      <generator class="assigned"/>
+    </id>
+    <one-to-one class="au.org.emii.portal.userdata.UserMap" constrained="true" name="userMap"/>
+    <property name="minLatitude" type="java.lang.Float">
+      <column name="minLatitude"/>
+    </property>
+    <property name="maxLatitude" type="java.lang.Float">
+      <column name="maxLatitude"/>
+    </property>
+    <property name="minLongitude" type="java.lang.Float">
+      <column name="minLongitude"/>
+    </property>
+    <property name="maxLongitude" type="java.lang.Float">
+      <column name="maxLongitude"/>
+    </property>
+  </class>
+</hibernate-mapping>
