@@ -1,0 +1,26 @@
+<zk>
+	<window id="animationWindow" title="Animation" closable="true" 
+			border="normal" width="300" height="200"
+			use="au.org.emii.portal.composer.AnimationFramesComposer"
+			apply="au.org.emii.portal.composer.AnimationFramesComposer"
+			position="center,center" mode="overlapped">
+		<label>
+		Please select the number of frames required.  Selecting less frames will
+		result in better performance.
+		</label>
+		<separator/>
+		<label style="color:red;" visible="false" id="errorMessage">
+		You must select a frame rate to continue
+		</label>
+		<separator/>
+		<radiogroup id="selectedFrameRate">
+			<zk forEach="${arg.timeString}">
+				<radio label="${each.key}" value="${each.key}"/>
+				<separator/>
+			</zk>
+		</radiogroup>
+		<button label="Ok" id="submit" />
+		<button label="Cancel" id="close" />
+	</window>
+
+</zk>
