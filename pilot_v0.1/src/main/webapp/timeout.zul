@@ -1,0 +1,8 @@
+<?page title="Session timed out" contentType="text/html;charset=UTF-8"?>
+<zk>
+<window title="Session timed out" border="normal">
+Sorry, your session has timed out.
+<separator/>
+<button label="Reload IMOS Portal" href="./" />
+</window>
+</zk>

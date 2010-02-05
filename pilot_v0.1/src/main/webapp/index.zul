@@ -1,0 +1,555 @@
+<?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
+<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/leftMenuLinks.zul"?>
+<?component name="featureInfo" macro-uri="/WEB-INF/zul/featureInfo.zul"?>
+<?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
+<?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"?>
+
+<?page id="MapZul" title="ALA Spatial Portal" cacheable="false" 
+	language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
+<?link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<html>
+		<![CDATA[ <link rel="stylesheet" href="css/zkcomponents.css"
+		type="text/css" media="screen" /> <link rel="stylesheet"
+		href="css/zkprint.css" type="text/css" media="print" /> ]]>
+		
+    </html>
+
+	<!-- style src="css/zkprint.css" media="print" /-->
+	<script src="/scripts/jquery-1.2.6.min.js" type="text/javascript"></script>
+	<script src="/scripts/jqDnR.js" type="text/javascript"></script>
+
+	<script type="text/javascript">
+		var mapLayers = null; var map = null; var OpenLayers = null; var
+		baseLayers = null; var currentBaseLayer = null; var
+		safeToLoadMapId = null; var registerLayer = null; var tmpvars;
+
+
+		var wms100 =
+		${session.attributes.portalSession.layerUtilities.wms100}; var
+		wms110 =
+		${session.attributes.portalSession.layerUtilities.wms110}; var
+		wms111 =
+		${session.attributes.portalSession.layerUtilities.wms111}; var
+		wms130 =
+		${session.attributes.portalSession.layerUtilities.wms130}; var
+		ncwms =
+		${session.attributes.portalSession.layerUtilities.ncwms}; var
+		thredds =
+		${session.attributes.portalSession.layerUtilities.thredds}; var
+		georss =
+		${session.attributes.portalSession.layerUtilities.georss}; var
+		kml = ${session.attributes.portalSession.layerUtilities.kml};
+		var unsupported
+		=${session.attributes.portalSession.layerUtilities.unsupported};
+
+	</script>
+
+
+	<window id="mapPortalPage" width="100%" height="100%"
+		use="au.org.emii.portal.MapComposer"
+		apply="au.org.emii.portal.MapComposer" style="overflow:hidden;">
+		<!--
+			Nasty hack to stop you getting SEVERE errors in the console. The
+			iframe in the holder gets moved into ErrorMessageWithDetail.zul when
+			raw text is required to be displayed and then gets moved back here
+			when the window is closed. Yuk
+		-->
+		<div id="rawMessageHackHolder" visible="false">
+			<iframe id="rawMessageIframeHack" width="100%"
+				height="250px" />
+		</div>
+
+
+		<!--  flag indicating whether safe to load map (OL library loaded) -->
+		<textbox visible="false" id="safeToLoadMap" value="false" />
+		<script type="text/javascript">
+			var safeToLoadMapId = '${safeToLoadMap.uuid}';
+
+			function updateSafeToLoadMap(status) {
+			document.getElementById(safeToLoadMapId).value = status;
+			zkTxbox.updateChange($e(safeToLoadMapId), false); }
+		</script>
+		<doublebox id="southReal" visible="false" />
+		<doublebox id="northReal" visible="false" />
+		<doublebox id="westReal" visible="false" />
+		<doublebox id="eastReal" visible="false" />
+		<script type="text/JavaScript">
+			function roundNumber(num, dec) { var result =
+			Math.round(num*Math.pow(10,dec))/Math.pow(10,dec); return
+			result; }
+
+			function setExtent() {
+
+			var extent = window.frames.mapFrame.map.getExtent(); extent
+			= extent.toArray()
+
+
+			var northReal = $e('${northReal.uuid}'); var eastReal =
+			$e('${eastReal.uuid}'); var southReal =
+			$e('${southReal.uuid}'); var westReal =
+			$e('${westReal.uuid}');
+
+			northReal.value = roundNumber(extent[3],3); eastReal.value =
+			roundNumber(extent[2],3); southReal.value =
+			roundNumber(extent[1],3); westReal.value =
+			roundNumber(extent[0],3)
+
+			if (getGeographicExtentControls != undefined) {
+			getGeographicExtentControls(); }
+
+			return extent; }
+		</script>
+
+
+		<!-- external content (Links) popup -->
+		<window id="externalContentWindow" visible="false" width="80%"
+			height="80%" border="normal" sizable="true"
+			use="au.org.emii.portal.ExternalContentComposer"
+			apply="au.org.emii.portal.ExternalContentComposer">
+			<caption id="caption">
+				<toolbarbutton id="breakout" label="Open in new Window" />
+				<toolbarbutton id="hide" label="Close" />
+			</caption>
+			<iframe id="externalContentIframe" width="100%"
+				height="100%" />
+		</window>
+
+		<borderlayout width="100%">
+			<north id="header">
+
+				<div>
+					<!--<image src="img/ncris.gif" style="float:left;" />-->
+
+					<!--  static menu links -->
+					<div sclass="toplinks">
+						<zk
+							forEach="${session.attributes.portalSession.staticMenuLinks}">
+
+							<!--  external links -->
+							<toolbarbutton if="${each.external}"
+								label="${each.name}" tooltiptext="${each.description}"
+								zclass="leftmenu_ahref" href="${each.uri}" />
+
+							<!--  internal links -->
+							<toolbarbutton if="${! each.external}"
+								label="${each.name}" tooltiptext="${each.description}"
+								zclass="leftmenu_ahref" forward="onClick=onActivateLink()">
+								<custom-attributes link="${each}" />
+							</toolbarbutton>
+
+						</zk>
+
+						<div sclass="searchdiv spaced"
+							visible="false">
+							This form should be hidden
+							<textbox id="ext_url" />
+							<separator />
+							<textbox id="ext_sld" />
+							<separator />
+							<textbox id="ext_label" />
+							<separator />
+							<textbox id="ext_layer" />
+							<separator />
+							<textbox id="ext_type" />
+							<separator />
+							<textbox id="ext_submit" />
+							<separator />
+						</div>
+						<script type="text/javascript">
+
+							// for external KML etc layers function
+							setExtLayer(url,label,type) {
+							document.getElementById('${ext_url.uuid}').value
+							= url;
+							document.getElementById('${ext_label.uuid}').value
+							= label;
+							document.getElementById('${ext_type.uuid}').value
+							= type;
+							document.getElementById('${ext_submit.uuid}').value
+							= true; updateExtLayers();
+
+							return false; } // for external WMS layers
+							function
+							setExtWmsLayer(url,sld,label,type,layer) {
+							document.getElementById('${ext_url.uuid}').value
+							= url;
+							document.getElementById('${ext_sld.uuid}').value
+							= sld;
+							document.getElementById('${ext_label.uuid}').value
+							= label;
+							document.getElementById('${ext_layer.uuid}').value
+							= layer;
+							document.getElementById('${ext_type.uuid}').value
+							= type;
+							document.getElementById('${ext_submit.uuid}').value
+							= true; updateExtLayers();
+
+							return false; } function updateExtLayers() {
+							try {
+							zkTxbox.updateChange($e('${ext_url.uuid}'),
+							false);
+							zkTxbox.updateChange($e('${ext_sld.uuid}'),
+							false);
+							zkTxbox.updateChange($e('${ext_label.uuid}'),
+							false);
+							zkTxbox.updateChange($e('${ext_layer.uuid}'),
+							false);
+							zkTxbox.updateChange($e('${ext_type.uuid}'),
+							false);
+							zkTxbox.updateChange($e('${ext_submit.uuid}'),
+							false); } catch (err) { } }
+						</script>
+					</div>
+				</div>
+			</north>
+			<west style="overflow:auto;" title=" "
+				size="${session.attributes.portalSession.config.values.menu_default_width}"
+				flex="true" sclass="h1" id="menus" collapsible="true"
+				splittable="true" minsize="250">
+				<div id="westChild">
+					<div id="westMinimised" visible="false"
+						class="westMinimised"
+						width="${session.attributes.portalSession.config.values.menu_minimised_width}">
+						<div zclass="closebox" zindex="500" left="2px"
+							top="2px">
+							<toolbarbutton id="showLeftMenu" label=""
+								image="img/buttonopen.png" hoverImage="img/buttonopen-over.png" />
+						</div>
+					</div>
+
+					<div id="westContent" class="westContent"
+						visible="true">
+						<div sclass="leftmenutabs">
+							<!--  hide the left menu (west element) -->
+							<div zclass="closebox" zindex="500"
+								width="22px" top="5px">
+								<toolbarbutton id="hideLeftMenu"
+									label="" image="img/buttonclose.png"
+									hoverImage="img/buttonclose-over.png" />
+							</div>
+
+							 <tabbox zclass="menuswitch" zindex="600"
+								style="border:0px!important;">
+								<tabs>
+									<!--  layers -->
+									<tab id="layerNavigationTab"
+										label="Layers" style="background-color: #EBEBEB;" />
+
+									<!--  search  -->
+									<tab id="searchNavigationTab"
+										label="Search" />
+
+									<!--  links -->
+									<tab id="linkNavigationTab"
+										label="Links" />
+								</tabs>
+							</tabbox>
+							
+						</div>
+						<div id="layerNavigationTabContent"
+							visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}">
+							<tabbox id="layermenu1" mold="accordion"
+								sclass="">
+								<tabs>
+									<tab label="Active Layers" />
+								</tabs>
+								<tabpanels>
+									<tabpanel zclass="tabpanel_cnt"
+										id="activelayers">
+
+										<!--  baselayer selection -->
+										<div sclass="searchdiv">
+											<label value="Base Layer"
+												sclass="h3" />
+											<listbox id="baseLayerList"
+												mold="select" />
+										</div>
+
+										<!-- active layers -->
+										<div id="activeLayersHolder">
+											<listbox
+												id="activeLayersList" />
+										</div>
+
+										<div id="layerControls"
+											visible="false">
+											<!-- opacity -->
+											<div id="opacityControls"
+												sclass="searchdiv" width="90%">
+												<div
+													style="float:left;padding-top:4px" width="60px">
+													<label
+														value="Opacity: " sclass="h3" />
+												</div>
+												<div style="float:left;"
+													width="60%">
+													<slider
+														id="opacitySlider" width="95%" />
+												</div>
+												<div align="right"
+													style="padding-top:4px">
+													<label
+														id="opacityLabel" />
+												</div>
+
+												<separator />
+
+												<div id="styleControls"
+													style="margin-top:10px">
+													<label
+														value="Style:" sclass="h3 inputlabel" />
+													<combobox
+														id="styleList"
+														itemRenderer="au.org.emii.portal.StyleRenderer"
+														readonly="true" />
+												</div>
+											</div>
+
+											<!--  animation  -->
+											<animationControlsComposer
+												id="animationControlsComposer" />
+										</div>
+
+										<!--  reset buttons -->
+										<div align="right"
+											style="margin-right:5px;" sclass="resetdiv">
+											<toolbarbutton
+												id="removeAllLayers" label="Remove All" sclass="h3" />
+											<toolbarbutton
+												id="reloadPortal" label="Reset Map" sclass="h3" />
+										</div>
+									</tabpanel>
+								</tabpanels>
+							</tabbox>
+							<radiogroup>
+								<tabbox id="accordionMenu"
+									tooltip="yes">
+									<tabs>
+									
+										
+											
+										<!--  facilities -->
+										<tab id="facilitiesTab"
+											label="Biological" />
+
+										<!--  regions -->
+										<tab id="regionsTab"
+											label="Environmental" />
+											
+										<!--  realtime -->
+										<tab id="realtimeTab"
+											label="Contextual" />
+
+										<!--  user defined -->
+										<tab id="userTab"
+											label="User Defined" />
+									</tabs>
+									<tabpanels>
+									
+										
+
+										<!--  facilities -->
+										<tabpanel zclass="tabpanel_cnt"
+											id="facilitiesTabPanel">
+											<tabbox id="tbBiology" width="100%" mold="accordion">
+												<tabs>
+													<tab label="Search Biology Layers"/>
+													<tab label="Browse Biology Layers"/>
+												</tabs>
+												<tabpanels>
+												<tabpanel>
+												<label>Search by</label>
+												<radiogroup id="rdgNameSearchType" >
+													<hbox>
+														<radio id="rdoCommonSearch" label="Common Name" selected="true"/>
+														<radio id="rdoScientificSearch" label="Scientific Name" />
+													</hbox>
+												</radiogroup>
+												<textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>
+												<button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()" />
+												<html>
+													<![CDATA[ <br> ]]>
+												</html>
+												<html>
+													<![CDATA[ <br> ]]>
+												</html>
+												</tabpanel>
+												<tabpanel>
+											
+											
+											</tabpanel>
+											</tabpanels>
+											</tabbox>
+										</tabpanel>
+
+										<!--  Regions -->
+										<tabpanel zclass="tabpanel_cnt"
+											id="regionsTabPanel">
+											<tabbox id="tbEnvironment" width="100%" mold="accordion">
+												<tabs>
+													<tab label="Search Environment Layers"/>
+													<tab label="Browse Environment Layers"/>
+												</tabs>
+												<tabpanels>
+												<tabpanel>
+												<textbox id="txtSearchEnvironment" />
+												<button id="btnSearchEnvironment" label="Search" forward="onClick=onSearchEnvironment()" />
+												<html>
+													<![CDATA[ <br> ]]>
+												</html>
+												<html>
+													<![CDATA[ <br> ]]>
+												</html>
+												</tabpanel>
+												<tabpanel>
+											
+											<div
+												id="facilityControls">
+												<zk
+													forEach="${session.attributes.portalSession.facilities}">
+													<div>
+														<radio
+															id="radio_${each.id}" label="${each.name}"
+															tooltiptext="${each.description}" sclass="tabheader"
+															forward="onCheck=onSelectFacility()">
+
+															<custom-attributes
+																systemId="${each.id}" />
+														</radio>
+														<tree
+															id="tree_${each.id}" />
+													</div>
+												</zk>
+											</div>
+											</tabpanel>
+											</tabpanels>
+											</tabbox>
+											
+										</tabpanel>
+										
+										<!--  realtime -->
+										<tabpanel zclass="tabpanel_cnt"
+											id="realtimeTabPanel">
+
+											<div id="realtimeControls">
+												<tabbox id="tbContext" width="100%" mold="accordion">
+												<tabs>
+													<tab label="Search Context Layers"/>
+													<tab label="Browse Context Layers"/>
+												</tabs>
+												<tabpanels>
+													<tabpanel>
+												<textbox id="txtSearchContext" />
+												<button id="btnSearchContext" label="Search" forward="onClick=onSearchContext()" />
+												<html>
+													<![CDATA[ <br> ]]>
+												</html>
+												<html>
+													<![CDATA[ <br> ]]>
+												</html>
+												
+												</tabpanel>
+												<tabpanel>
+												<zk
+													forEach="${session.attributes.portalSession.realtime}">
+													<div>
+														<radio
+															id="radio_${each.id}" label="${each.name}"
+															tooltiptext="${each.description}" sclass="tabheader"
+															forward="onCheck=onSelectRealtime()">
+															<custom-attributes
+																systemId="${each.id}" />
+														</radio>
+														<tree
+															id="tree_${each.id}" />
+													</div>
+												</zk>
+												</tabpanel>
+												</tabpanels>
+												</tabbox>
+											</div>
+										</tabpanel>
+
+										
+										<tabpanel zclass="tabpanel_cnt"
+											id="userTabPanel">
+											<tree id="tree_user">
+												<treecols>
+													<treecol
+														width="90%" />
+													<treecol
+														width="10%" />
+												</treecols>
+											</tree>
+										</tabpanel>
+									</tabpanels>
+								</tabbox>
+							</radiogroup>
+						</div>
+
+						<div id="searchNavigationTabContent"
+							visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
+							<leftMenuSearch id="leftMenuSearch" />
+						</div>
+						<div id="linkNavigationTabContent"
+							visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
+							<leftMenuLinks id="leftMenuLinks" />
+						</div>
+
+					</div>
+				</div>
+			</west>
+
+
+			<center id="center">
+				<div id="mapcontainer" width="100%" height="100%">
+					<div style="float:left" width="100%"
+						height="100%">
+						<iframe id="mapIframe" width="100%"
+							height="100%" name="mapFrame" />
+					</div>
+					<script type="text/javascript">
+						window.frames["mapFrame"].location.href = "";
+						window.frames["mapFrame"].location.href =
+						"./map.html";
+					</script>
+					<div id="layerSwitcherContainer"
+						sclass="layerSwitcherContainer_min" visible="true">
+						<image id="layerSwitcherShow"
+							src="/img/layer-switcher-maximize.png" visible="true"
+							style="float:right;margin-bottom:10px;" />
+						<image id="layerSwitcherHide"
+							src="/img/layer-switcher-minimize.png" visible="false"
+							style="float:right;margin-bottom:10px;" />
+					</div>
+				</div>
+
+			</center>
+
+
+			<south id="south">
+				<footer id="footer" />
+			</south>
+		</borderlayout>
+
+		<script type="text/javascript">
+			var onIframeMapFullyLoaded = function() {
+			${session.attributes.portalSession.onIframeMapFullyLoaded}
+			};
+
+			jQuery('.hidden_image :hidden').show();
+		</script>
+
+
+	</window>
+
+
+</zk>
+
+

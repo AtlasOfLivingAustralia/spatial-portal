@@ -1,0 +1,22 @@
+<?page id="searchPage" title="map" contentType="text/html;charset=UTF-8"?>
+<?init class="org.zkoss.zkplus.databind.AnnotateDataBinderInit" arg0="./searcher"?>
+
+
+<window height="600px" id="searcher" width="700px" closable="true"
+	maximizable="true" border="normal" title="Mest Search"
+	sizable="true" apply="au.org.emii.portal.MESTSearchComposer" use="au.org.emii.portal.MESTSearchComposer">
+
+    <div id="listBox"  >
+        <listbox id="box" height="490px" sclass="mestsearch" vflex="true" fixedLayout="true">
+          
+        </listbox>
+        <div id="pagingDiv" sclass="searchdiv" >
+		
+            <label value="Page" sclass="h3" />
+            <intbox id="pageNo" width="30px"/>
+            <label value="of " sclass="h3" />
+            <label value="" id="numberOfPages" sclass="h3" />
+
+        </div>
+    </div>
+</window>

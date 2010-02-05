@@ -1,0 +1,72 @@
+<?page title="Links" contentType="text/html;charset=UTF-8"?>
+<zk>
+<div sclass="spaced ">
+		<separator height="15px"/>
+	<label value="ALA Information"  sclass="h2"/>
+	<separator height="10px"/>
+	<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
+	
+			<!--  external links -->
+			<span sclass="list">
+			<toolbarbutton 
+				if="${each.external}"
+				label="${each.name}" 
+				tooltiptext="${each.description}" 
+				zclass="external"
+				forward="onClick=onActivateLink()"
+				orient="vertical" >	
+				<custom-attributes link="${each}" />					
+			</toolbarbutton>
+			
+			</span>	
+			<!--  internal links -->
+			<toolbarbutton 
+				if="${! each.external}"
+				label="${each.name}" 
+				tooltiptext="${each.description}" 
+				zclass="list"
+				forward="onClick=onActivateLink()">	
+				<custom-attributes link="${each}" />							
+			</toolbarbutton> 
+			
+		
+		
+	</zk>
+	
+
+	<separator height="15px" />  	
+	<label value="Related Links"  sclass="h2 spaced"/>
+	<separator height="10px"/>
+	<span sclass="list">
+	<html><![CDATA[  			
+	               
+	<span sclass="list">	               
+	<a href="http://www.arcs.org.au" class="external" title="Australian Research Collaboration Service">Australian Research Collaboration Service (ARCS)</a> 
+	</span>
+	
+	
+
+	<span sclass="list">	               
+	<a href="http://www.pfc.org.au" class="external" title="Platforms for Collaboration">Platforms for Collaboration</a> 
+	</span>
+	
+	<span sclass="list">	               
+	<a href="http://www.ands.org.au" class="external" title="Australian National Data Service">Australian National Data Service (ANDS)</a> 
+	</span>
+	
+	<span sclass="list">	               
+	<a href="http://www.ncris.innovation.gov.au" class="external" title="National Collaborative Research Infrastructure Strategy">National Collaborative Research Infrastructure Strategy (NCRIS)</a> 
+	</span>
+	
+	
+	
+	
+	
+
+	             
+	]]></html>
+	</span>
+	<separator height="15px" />  	
+</div>
+
+</zk>
