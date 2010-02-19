@@ -1,0 +1,15 @@
+body *, html *{
+	color: #000 ;
+}
+a:link  {
+	text-decoration: none;
+}
+.toplinks, .z-west, .z-east-splt, .z-west-splt  {display: none; width:0px; margin: 0px; float: none;}
+
+.z-center { margin: 0; float: none;}
+
+.z-north, .z-south { width:80%;}
+
+#ft * {
+font-size: 10px;
+}
