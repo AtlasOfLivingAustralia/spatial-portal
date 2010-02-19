@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	Created by ZK Studio
+-->
+
+<zk>
+        <listener>
+                <description>Session init (setup objects in session)</description>
+                <listener-class>au.org.emii.portal.web.SessionInitImpl</listener-class>
+        </listener>
+        
+        
+        <session-config>
+        	<!--  session timeout in seconds -->
+			<session-timeout>7200</session-timeout>
+ 			<timer-keep-alive>true</timer-keep-alive>
+		</session-config>
+        
+		
+		<!--  catch uncaught exceptions when AJAXING on a page -->
+		<error-page>
+		    <exception-type>java.lang.Throwable</exception-type>
+     		<location>/WEB-INF/zul/ZkError.zul</location>
+ 		</error-page>
+ 		
+ 		<!--  if a user tries to carry on working when their session has timed out
+ 		ask them what to do...
+ 		 -->
+ 		<device-config>
+    		<device-type>ajax</device-type>    
+    		<timeout-uri>/timeout.zul</timeout-uri>    
+		</device-config>
+
+        <!--
+        required to prevent getting 'not unique in idspace' errors when
+        using spring web flow - not required otherwise
+        -->
+        <!--
+        <system-config>
+            <disable-event-thread/>
+        </system-config>
+        -->
+</zk>
