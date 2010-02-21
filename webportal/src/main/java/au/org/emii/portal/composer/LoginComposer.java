@@ -6,8 +6,8 @@ package au.org.emii.portal.composer;
 
 import au.org.emii.portal.Validate;
 import au.org.emii.portal.authentication.ForgottenPasswordService;
-import au.org.emii.portal.authentication.LoginService;import au.org.emii.portal.config.IsoCountries;
-;
+import au.org.emii.portal.authentication.LoginService;
+import au.org.emii.portal.config.IsoCountries;
 import au.org.emii.portal.databinding.CountryListModel;
 import au.org.emii.portal.registration.RegistrationService;
 import au.org.emii.portal.user.PortalUser;
