@@ -102,7 +102,7 @@
         -->
 
         <!-- is proxy server required? -->
-        <tns:proxyRequired>true</tns:proxyRequired>
+        <tns:proxyRequired>false</tns:proxyRequired>
 
         <!-- proxy server host or IP address - do not prefix with http://..! -->
         <tns:proxyHost>proxy.utas.edu.au</tns:proxyHost>
@@ -111,10 +111,10 @@
         <tns:proxyPort>8080</tns:proxyPort>
 
         <!-- proxy server username -->
-        <tns:proxyUsername>bjward</tns:proxyUsername>
+        <tns:proxyUsername>bkward</tns:proxyUsername>
 
         <!-- proxy server password -->
-        <tns:proxyPassword>LEgEndrE</tns:proxyPassword>
+        <tns:proxyPassword>LILLEE</tns:proxyPassword>
 
         <!--
         proxy will NOT be contacted for hosts listed here.  Content of this
@@ -863,7 +863,7 @@
         <!-- MEST - search -->
         <tns:mapping>
             <tns:uriId>mest-uri-0</tns:uriId>
-            <tns:uriEndPointIdRef>imos-mest-dev-0</tns:uriEndPointIdRef>
+            <tns:uriEndPointIdRef>ala-mest-dev-0</tns:uriEndPointIdRef>
         </tns:mapping>
 
         <!-- 
@@ -942,6 +942,15 @@
                 <tns:disabled>false</tns:disabled>
                 <tns:description>IMOS Mest running on obsidian</tns:description>
                 <tns:uri><![CDATA[http://emiidev.emii.org.au]]></tns:uri>
+            </tns:uriEndPoint>
+            
+            <!-- MEST - ALA development -->
+            <tns:uriEndPoint>
+                <tns:id>ala-mest-dev-0</tns:id>
+                <tns:name>ALA MEST - Dev</tns:name>
+                <tns:disabled>false</tns:disabled>
+                <tns:description>ALA Mest running on EC2</tns:description>
+                <tns:uri><![CDATA[http://ec2-174-129-53-185.compute-1.amazonaws.com]]></tns:uri>
             </tns:uriEndPoint>
         </tns:uriEndPoints>
     </tns:uriResolver>
