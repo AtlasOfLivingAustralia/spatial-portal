@@ -7,7 +7,7 @@
        <property name="routes">
           <map>
             <entry>
-              <key><value>/result.{format}</value></key>
+              <key><value>/gazetteer-search/result.{format}</value></key>
               <value>gazetteer</value>
             </entry>
          </map>

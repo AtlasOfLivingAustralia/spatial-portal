@@ -1,15 +1,21 @@
 package org.ala.rest;
 
+import java.util.ArrayList;
+
 
 public class GazetteerSearch {
 
-   String message;
+   ArrayList<SearchResultItem> results;
 
    public GazetteerSearch( String message ) {
-       this.message = message;
+       results = new ArrayList<SearchResultItem>();
+       for(int i=0;i<10;i++)
+       {
+	   results.add(new SearchResultItem(message,i));
+       }
    }
 
-   public String getMessage() {
-      return message;
-   }
+ //  public String getName() {
+ //     return name;
+ //  }
 }
