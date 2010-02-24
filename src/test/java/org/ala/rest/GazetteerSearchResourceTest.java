@@ -10,36 +10,36 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 
      public void testGetAsXML() throws Exception {
      //make the request, parsing the result as a dom
-    /* Document dom = getAsDOM( "/rest/gazetteer-search/result?q=blah" );
+    Document dom = getAsDOM( "/rest/gazetteer-search/result.xml?q=cheese" );
 
      //print out the result
      print(dom);
 
      //make assertions
-     Node message = getFirstElementByTagName( dom, "message");
+     Node message = getFirstElementByTagName( dom, "name");
     assertNotNull(message);
-     assertEquals( "cheese", message.getFirstChild().getNodeValue() );
-     */
-	 assertTrue(1==1);
+     assertEquals( "Some cheese place", message.getFirstChild().getNodeValue() );
+
    }
 
     public void testGetAsJSON() throws Exception {
      //make the request, parsing the result into a json object
-   /*  JSON json = getAsJSON( "/rest/gazetteer-search/result?q=blah");
-     System.out.println("here");
+     JSON json = getAsJSON( "/rest/gazetteer-search/result.json?q=blah");
+   
      //print out the result
      print(json);
 
      //make assertions
     assertTrue( json instanceof JSONObject );
-     JSONObject response = ((JSONObject) json).getJSONObject( "org.ala.rest.GazetteerSearch" );
-     assertEquals( "blah", response.get( "message" ) );*/
-	assertTrue(1==1);
+     JSONObject search = ((JSONObject) json).getJSONObject( "org.ala.rest.GazetteerSearch" );
+     String name = ((JSONObject)search.getJSONObject("results").getJSONArray("org.ala.rest.SearchResultItem").get(0)).get("name").toString();
+     System.out.println(name);
+     assertEquals( "Some blah place", name );
+   
    } 
     
-    public void testGetAsText() throws Exception {
-	
-	   //assertEquals( "q=blah", getAsString("/rest/gazetteer-search/result.txt?q=blah"));
+   /* public void testGetAsText() throws Exception {
+	//assertEquals( "q=blah", getAsString("/rest/gazetteer-search/result.txt?q=blah"));
 	assertTrue(1==1);
-	}
+    }*/
 }

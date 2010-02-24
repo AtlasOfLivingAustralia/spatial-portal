@@ -14,8 +14,4 @@ public class GazetteerSearch {
 	   results.add(new SearchResultItem(message,i));
        }
    }
-
- //  public String getName() {
- //     return name;
- //  }
 }
