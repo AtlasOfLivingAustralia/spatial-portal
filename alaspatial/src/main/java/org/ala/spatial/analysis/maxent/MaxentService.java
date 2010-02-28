@@ -5,5 +5,5 @@ package org.ala.spatial.analysis.maxent;
  * @author ajayr
  */
 public interface MaxentService {
-    public void tabulate();
+    public int process();
 }

@@ -161,7 +161,7 @@
             <artifactId>hibernate-c3p0</artifactId>
             <version>3.3.2.GA</version>
         </dependency>
-        
+
         <!--
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -221,7 +221,7 @@
             <version>3.1</version>
         </dependency>
         -->
-        
+
 
         <!-- Jackson JSON Mapper -->
         <dependency>
