@@ -17,5 +17,6 @@
         <h1>Hello ALA World!</h1>
         <p><a href="species">Species</a></p>
         <p><a href="maxent">Maxent</a></p>
+        <p><a href="tabulation.zul">Sampling</a></p>
     </body>
 </html>

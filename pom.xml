@@ -36,7 +36,7 @@
         </dependency>
 
         <!-- zk -->
-        <!--
+        
         <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zk</artifactId>
@@ -77,7 +77,7 @@
             <artifactId>zul</artifactId>
             <version>3.6.3</version>
         </dependency>
-        -->
+        
 
         <!-- JSTL -->
         <dependency>
@@ -189,13 +189,13 @@
         </dependency>
 
         <!-- postgresql -->
-        <!--
+        
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>8.4-701.jdbc4</version>
         </dependency>
-        -->
+        
 
         <!--  Joda Time -->
         <!--

@@ -27,6 +27,18 @@
 		<to>/output/maxent/$1</to>
 	</rule>
 	<rule>
+		<from>/tabulation.zul</from>
+		<to>/tabulation.zul</to>
+	</rule>
+	<rule>
+		<from>/zkau/**</from>
+		<to>/zkau/$1</to>
+	</rule>
+	<rule>
+		<from>/zkau</from>
+		<to>/zkau</to>
+	</rule>
+	<rule>
 		<from>/**</from>
 		<to>/app/$1</to>
 	</rule>

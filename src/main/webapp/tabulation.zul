@@ -1,0 +1,192 @@
+<?page title="Tabulation" contentType="text/html;charset=UTF-8"?>
+<zk>
+<window title="Tabulation" border="normal">
+<zscript>
+	import org.ala.spatial.util.*;
+	import org.ala.spatial.analysis.tabulation.TabulationServiceImpl;
+		
+	import org.zkoss.zul.Listitem;	
+	
+	TabulationServiceImpl tt = new TabulationServiceImpl();
+	
+	List contextual_layers = tt.getContextualLayers();
+	List environmental_layers = tt.getEnvironmentalLayers();
+	
+	System.out.println("~" + contextual_layers);
+		
+		String[] data = new String[contextual_layers.size()];
+		
+		for(int i=0;i &lt; data.length;i++){
+			data[i] = contextual_layers.get(i).display_name;
+		}
+						
+		ListModel contextual = new SimpleListModel(data);
+		
+		String[] dataenv = new String[environmental_layers.size()];
+		
+		for(int i=0;i &lt; dataenv.length;i++){
+			dataenv[i] = environmental_layers.get(i).display_name;
+		}
+						
+		ListModel environmental = new SimpleListModel(dataenv);		
+		
+		String getSpeciesFilename(){
+			return species.getValue() + ".csv";
+		}	
+		String txt_content_type = "text/plain";
+		
+		 void doAction() {
+			 	String[] str = new String[ctx.getSelectedCount() +
+		 		env.getSelectedCount()];        
+            
+            int pos = 0;
+            for (Listitem li : ctx.getSelectedItems())
+            {
+                ctx.renderItem(li);
+             
+                str[pos] = li.getLabel();
+                pos++;              
+            }
+            for (Listitem li : env.getSelectedItems())
+            {
+                env.renderItem(li);
+             
+                str[pos] = li.getLabel();
+                pos++;              
+            }
+            
+            tt.tabulate(species.getValue(),str);
+        }
+		
+	</zscript>
+	<hbox></hbox>
+	<hbox><label value="choose a species"></label> <combobox id="species" autodrop="true" />
+	</hbox>
+	<hbox></hbox>
+	<zscript>
+	String[] _dict = { 
+	"lanka",
+"BUTCHERI",
+"trochilus",
+"asparagus",
+"sp mov 2384",
+"medon",
+"cf pharao",
+"n61",
+"group",
+"lecumens",
+"type 36",
+"clinatus",
+"cebuanus",
+"DECURRENS",
+"adiorygma",
+"chromosoma",
+"MULTISCUTATA",
+"ferox (jun. syn. update)",
+"arawana",
+"hyweli",
+"sp mov 831",
+"bingarra",
+"kotius",
+"cylindrcollis",
+"alaniphlias",
+"MERTONI ?",
+"rosema",
+"LINGA",
+"PAPILLARIS",
+"cryptostomata",
+"HEMISTICTA",
+"laeth",
+"hydromuris",
+"appelloefii",
+"longipterum",
+"nanina",
+"traceyi",
+"agrostisa",
+"punui",
+"hedigeri",
+"multiplicata",
+"theryi",
+"muscosus",
+"atricolle",
+"gemellus",
+"navigatum",
+"crocineus",
+"larsoni",
+"prospiciens",
+"chalet'",
+"ephippifer",
+"simplicicollis",
+"flavolateralis",
+"postocularis",
+"interna",
+"dolichoderus",
+"maxillare",
+"nasua",
+"sp 18",
+"salvator",
+"aignanus",
+"microsomus",
+"haroldi",
+"paucirugosa",
+"hamigera",
+"vestitus (j.s.u.)",
+"turricata",
+"platytatus",
+"fulvescens",
+"capricornis",
+"scalpta",
+"amphiclitus",
+"vagina",
+"carinatifrons",
+"claudiensis",
+"hydroporoides",
+"sulcatum",
+"lajoyi",
+"amoebaea",
+"pulicarius",
+"burti",
+"scalare",
+"subquadrata",
+"mov 1375",
+"vestigiatus",
+"nudicosta",
+"brisbanense",
+"morum",
+"dunkeri",
+"bimaculatus",
+"vertebratum",
+"whitei",
+"fenestratum",
+"gilchristi",
+"tibialis",
+"frenchi",
+"praelongus",
+"geoffroyi"	
+	};
+	 ListModel dictModel= new SimpleListModel(_dict);
+	 species.setModel(dictModel);
+	 </zscript>
+	<hbox>
+	<vbox>
+				<listbox id="ctx" width="300px" rows="10" model="&#36;{contextual}" multiple="true" checkmark="true">
+					<listhead>
+						<listheader label="Append Contextual Information" sort="auto"/>
+					</listhead>
+				</listbox>
+				</vbox><vbox>
+				<listbox id="env" width="300px" rows="10" model="&#36;{environmental}" multiple="true" checkmark="true">
+					<listhead>
+						<listheader label="Append Environmental Information" sort="auto"/>
+					</listhead>
+				</listbox>
+				</vbox>
+				</hbox>
+				
+	
+	
+	<button label="download sampling data" onClick="doAction();org.zkoss.zhtml.Filedownload.save(new String(tt.getResults()),txt_content_type,getSpeciesFilename());" left=""></button>
+	<label id="results"></label>
+	
+</window>
+</zk>
