@@ -2,6 +2,7 @@
 
  <beans>
     <bean id="gazetteer" class="org.ala.rest.GazetteerSearchResource"/>
+    
 
     <bean id="gazetteerMapping" class="org.geoserver.rest.RESTMapping">
        <property name="routes">
