@@ -22,10 +22,10 @@ public class Grid {
   public double[] values;
   public double xmin, xmax, ymin, ymax;
   public double xres, yres;
-  String datatype;
+  public String datatype;
   
   // properties
-  double minval, maxval;
+  public double minval, maxval;
   byte nbytes;
   
   String filename;
@@ -373,5 +373,124 @@ public class Grid {
       }
     
   }
+  
+  public double[] getGrid(){
+	  int length = nrows*ncols;
+	  
+	  double [] ret = new double[length];
+	  
+	  //System.out.println("expecting " + points.length + " env values with datatype " + datatype);
+	  
+	  
+	  int size,i,j,pos;
+	  byte [] b = new byte[32];
+	  RandomAccessFile afile;
+
+	  try { //read of random access file can throw an exception
+		  afile = new RandomAccessFile(filename + ".gri", "r");
+		  
+		  if (datatype == "BYTE") {
+			  size = 1;
+			  for (i = 0; i < length; i++) {
+				  ret[i] = afile.readByte();
+			  }
+		  } else if (datatype == "SHORT") {
+			  size = 2;
+			  for (i = 0; i < length; i++) {
+				 
+					  if (byteorderLSB) {                    
+						  for (j = 0; j < size; j++) {
+							  b[j] = afile.readByte();
+						  }
+						  ret[i] = lsb2short(b);
+					  } else {
+						  ret[i] = afile.readShort();
+					  }        		
+				  
+			  }
+		  } else if (datatype == "INT") {
+			  size = 4;
+			  for (i = 0; i < length; i++) {
+				  
+					  if (byteorderLSB) {
+						  for (j = 0; j < size; j++) {
+							  b[j] = afile.readByte();
+						  }
+						  ret[i] = lsb2int(b);
+					  } else {
+						  ret[i] = afile.readInt();
+					  }
+				
+			  } 
+		  } else if (datatype == "LONG") {
+			  size = 8;
+			  for (i = 0; i < length; i++) {
+				
+					  if (byteorderLSB) {              
+						  for (j = 0; j < size; j++) {
+							  b[j] = afile.readByte();
+						  }
+						  ret[i] = lsb2long(b);
+					  } else {
+						  ret[i] = afile.readLong();
+					  }
+
+				 
+			  }
+		  }  else if (datatype == "FLOAT") {
+			  size = 4;
+			  for ( i = 0; i < length; i++) {
+				
+					  if (byteorderLSB) {
+
+						  for ( j = 0; j < size; j++) {
+							  b[j] = afile.readByte();
+						  }
+						  ret[i] = lsb2float(b);
+
+					  } else {
+						  ret[i] = afile.readFloat();
+					  }
+
+				 
+			  }
+		  }      else if (datatype == "DOUBLE") {
+			  size = 8;
+			  for (i = 0; i < length; i++) {
+				  
+					  if (byteorderLSB) {
+
+						  for (j = 0; j < size; j++) {
+							  b[j] = afile.readByte();
+						  }
+						  ret[i] = lsb2double(b);
+					  } else {
+						  ret[i] = afile.readFloat();
+					  }
+
+				
+			  }
+		  } else {
+			  // / should not happen; catch anyway...
+			  for (i = 0; i < length; i++) {
+				  ret[i] = Double.NaN;
+			  }
+		  }
+		  //replace not a number
+		  for (i = 0; i < length; i++) {
+			  if((float)ret[i] <= (float)nodatavalue){
+				  //System.out.println("replacing missing value: " + ret[i]);
+				  ret[i] = Double.NaN;
+			  }
+		  }
+		  
+		  afile.close();
+	  } catch (Exception e) {
+		  //log error - probably a file error
+		  //System.out.println("GRID: " + e.toString());
+	  }
+	  return ret;
+  }
+  
 
 }

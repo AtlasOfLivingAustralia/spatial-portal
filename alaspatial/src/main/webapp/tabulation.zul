@@ -1,6 +1,9 @@
 <?page title="Tabulation" contentType="text/html;charset=UTF-8"?>
 <zk>
 <window title="Tabulation" border="normal">
+<hbox></hbox>
+	<hbox><label value="choose a species"></label> <combobox id="species" autodrop="true" />
+	</hbox>
 <zscript>
 	import org.ala.spatial.util.*;
 	import org.ala.spatial.analysis.tabulation.TabulationServiceImpl;
@@ -59,9 +62,7 @@
         }
 		
 	</zscript>
-	<hbox></hbox>
-	<hbox><label value="choose a species"></label> <combobox id="species" autodrop="true" />
-	</hbox>
+	
 	<hbox></hbox>
 	<zscript>
 	String[] _dict = { 
