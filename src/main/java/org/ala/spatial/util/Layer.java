@@ -20,6 +20,26 @@ public class Layer extends java.lang.Object {
 	 */
 	public String display_name;
 	
+	public String getName() {
+		return name;
+	}
+
+	public String getDisplay_name() {
+		return display_name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public Field[] getFields() {
+		return fields;
+	}
+
 	/**
 	 * detailed description for UI
 	 */

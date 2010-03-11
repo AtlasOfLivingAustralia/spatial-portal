@@ -18,5 +18,7 @@
         <p><a href="species">Species</a></p>
         <p><a href="maxent">Maxent</a></p>
         <p><a href="tabulation.zul">Sampling</a></p>
+        <p><a href="filtering_cl.html">Filtering (A)</a></p>
+        <p><a href="filtering_svr.zul">Filtering (B)</a></p>
     </body>
 </html>

@@ -27,8 +27,24 @@
 		<to>/output/maxent/$1</to>
 	</rule>
 	<rule>
+		<from>/filtering_svr.zul</from>
+		<to>/filtering_svr.zul</to>
+	</rule>
+	<rule>
+		<from>/filtering_cl.html</from>
+		<to>/filtering_cl.html</to>
+	</rule>
+	<rule>
 		<from>/tabulation.zul</from>
 		<to>/tabulation.zul</to>
+	</rule>
+	<rule>
+		<from>/images/**</from>
+		<to>/images/$1</to>
+	</rule>
+	<rule>
+		<from>/slider/**</from>
+		<to>/slider/$1</to>
 	</rule>
 	<rule>
 		<from>/zkau/**</from>
