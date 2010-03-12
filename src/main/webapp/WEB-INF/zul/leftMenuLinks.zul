@@ -1,0 +1,82 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Links" contentType="text/html;charset=UTF-8" id="leftMenuLinksPage"?>
+<zk>
+    <label value="Links"  sclass="h2 title"/>
+<div sclass="spaced" style="padding:10px" >
+		
+	
+        <separator height="20" />
+        <label value="IMOS"  sclass="h3"/>
+	
+	<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
+	
+			<!--  external links -->
+			<span sclass="list">
+			<toolbarbutton 
+				if="${each.external}"
+				label="${each.name}" 
+				tooltiptext="${each.description}" 
+				zclass="external"
+				href="${each.uri}"
+				orient="vertical" />					
+			</span>	
+			<!--  internal links -->
+			<toolbarbutton 
+				if="${! each.external}"
+				label="${each.name}" 
+				tooltiptext="${each.description}" 
+				zclass="list"
+				forward="onClick=${mapPortalPage}.onActivateLink">
+				<custom-attributes link="${each}" />							
+			</toolbarbutton> 
+			
+		
+		
+	</zk>
+	
+	
+	
+	<span sclass="list">
+	<html><![CDATA[ 
+	               
+	<span sclass="list">	   			            
+ 		<a href="http://imosmest.aodn.org.au" class="external wrap">IMOS MEST</a>
+ 	</span>
+
+     <h3>IMOS Data Tools</h3>
+
+    <p><A class="external" href="http://code.google.com/p/imos-toolbox" name="Matlab Toolbox">Matlab Toolbox</A> - data processing and Visualisation<BR>
+    <small>(No Matlab licence required)</small>
+    </p>
+
+    <p><A class="external" href="https://df.arcs.org.au/ARCS/projects/IMOS/public/ANFOG/Glider_visualisation_tool" name="Glider data visualisation">Glider Data Visualisation Tool</A>
+    <small>(Windows installation)</small>
+    </p>
+ 	
+    
+	]]></html>
+	</span>
+
+        <separator height="20" />
+		
+	<label value="Related"  sclass="h3"/>
+	
+	<span sclass="list">
+	<html><![CDATA[  			
+	               
+    <div style="width:inherit;" >
+	<a href="http://www.arcs.org.au" class="external wrap" title="Australian Research Collaboration Service">Australian Research Collaboration Service (ARCS)</a><BR>
+	<a href="http://www.aodc.gov.au" class="external wrap" title="Australian Ocean Data Centre Joint Facility">Australian Ocean Data Centre Joint Facility (AODCJF)</a> <BR>
+	<a href="http://www.pfc.org.au" class="external wrap" title="Platforms for Collaboration">Platforms for Collaboration</a><BR>
+	<a href="http://www.ands.org.au" class="external wrap" title="Australian National Data Service">Australian National Data Service (ANDS)</a> <BR>
+	<a href="http://ncris.innovation.gov.au" class="external wrap" title="National Collaborative Research Infrastructure Strategy">National Collaborative Research Infrastructure Strategy (NCRIS)</a> <BR>
+	<a href="ftp://ftp.bom.gov.au/anon/home/ntc/james/currents/SEcurrent.loop.shtml" class="external wrap" title="National Tidal Centre - tidal current predictions ">National Tidal Centre - tidal current predictions </a>
+	
+    </div>
+   
+	]]></html>
+	</span>
+	<separator height="15px" />  	
+</div>
+
+</zk>

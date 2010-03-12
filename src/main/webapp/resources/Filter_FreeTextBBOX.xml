@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<csw:GetRecords service="CSW" version="2.0.2" maxRecords="10000"
+	outputFormat="application/xml" outputSchema="csw:Record" resultType="results"
+	xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc"
+	xmlns:gml="http://www.opengis.net/gml">
+	<csw:Query typeNames="csw:Record">
+		<csw:ElementSetName>full</csw:ElementSetName>
+		<csw:Constraint version="1.1.0">
+			<Filter xmlns="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+				<And>
+					<PropertyIsLike wildCard="%" singleChar="_" escape="\">
+						<PropertyName>any</PropertyName>
+						<Literal>salinity</Literal>
+					</PropertyIsLike>
+					<BBOX>
+						<PropertyName>ows:BoundingBox</PropertyName>
+						
+						<gml:Envelope srsName="urn:ogc:def:crs:EPSG:6.3:4326">
+							<gml:lowerCorner>-180 -90</gml:lowerCorner>
+							<gml:upperCorner>360 180</gml:upperCorner>
+						</gml:Envelope>
+						
+					</BBOX>
+
+				</And>
+			</Filter>
+		</csw:Constraint>
+	</csw:Query>
+</csw:GetRecords>
+
+
+
