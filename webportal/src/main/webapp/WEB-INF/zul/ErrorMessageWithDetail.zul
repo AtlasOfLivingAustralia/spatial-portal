@@ -1,0 +1,17 @@
+<?page title="new page title" contentType="text/html;charset=UTF-8"?>
+<zk>
+<window 
+	title="${arg.messageTitle}" border="normal" closable="true"
+	position="center,center"
+	use="au.org.emii.portal.composer.ErrorMessageWithDetailComposer"
+	apply="au.org.emii.portal.composer.ErrorMessageWithDetailComposer">
+	
+	<!-- brief error message -->
+	<div>${arg.message}</div>
+	<button id="showDetailsButton" label="Show Detail" />
+	<button id="hideDetailsButton" label="Hide Detail" />
+	
+	<!--  detailed error message -->
+	<div id="moreInfoDiv" visible="false">${arg.messageDetail}</div>
+</window>
+</zk>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="au.org.emii.portal.menu">
+  <class lazy="false" name="MapLayerMetadata">
+    <id name="id" type="long">
+      <column name="id"/>
+      <generator class="sequence">
+        <param name="sequence">userdata_id_seq</param>
+      </generator>
+    </id>
+    <property name="units" type="string">
+      <column name="units"/>
+    </property>
+    <property name="nearestTimeIso" type="string">
+      <column name="nearestTimeIso"/>
+    </property>
+    <property name="copyright" type="string">
+      <column name="copyright"/>
+    </property>
+    <property name="defaultPalette" type="string">
+      <column name="defaultPallete"/>
+    </property>
+    <property name="moreInfo" type="string">
+      <column name="moreInfo"/>
+    </property>
+    <property name="zAxisUnits" type="string">
+      <column name="zAxisUnits"/>
+    </property>
+    <property name="logScaling" type="boolean">
+      <column name="logScaling"/>
+    </property>
+    <property name="zAxisPositive" type="boolean">
+      <column name="zAxisPositive"/>
+    </property>
+    <property name="timeSteps" type="integer">
+      <column name="timeSteps"/>
+    </property>
+    <property name="maplayerid" type="long">
+      <column name="maplayerid"/>
+    </property>
+    <bag name="bbox" table="bboxMapLayerMetadata">
+      <key column="bbox_id"/>
+      <element column="bbox" type="double"/>
+    </bag>
+    <bag name="scaleRange" table="scaleRange">
+      <key column="scaleRange_id"/>
+      <element column="scalerange" type="double"/>
+    </bag>
+    <bag name="zAxisValues" table="zAxisValues">
+      <key column="zAxisValue_id"/>
+      <element column="zAxisValue" type="integer"/>
+    </bag>
+    <bag name="supportedStyles" table="supportedStyles">
+      <key column="supportedStyles_id"/>
+      <element column="supportedStyle" type="string"/>
+    </bag>
+    <bag name="datesWithData" table="datesWithData">
+      <key column="datesWithData_id"/>
+      <element column="dateWithData" type="string"/>
+    </bag>
+    <bag name="palettes" table="palettes">
+      <key column="palette_id"/>
+      <element column="palette" type="string"/>
+    </bag>
+  </class>
+</hibernate-mapping>
