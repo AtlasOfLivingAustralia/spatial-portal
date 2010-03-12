@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-this is a sample of a successful registration for information purposes
-only.  The MockGeoNetworkXmlSelfRegisterService creates its own response
-using string concatenation so that unit testing can be carried out correctly
--->
-<response surname="deletemea" name="firstname" email="gjsw@utas.edu.au" username="gjsw@utas.edu.au"/>
