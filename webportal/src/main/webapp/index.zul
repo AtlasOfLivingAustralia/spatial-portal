@@ -122,10 +122,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         </window>
 
         <borderlayout width="100%">
-            <north id="header" height="100">
+            <north id="header" height="45">
 
                 <div>
-                    <image src="img/ncris.gif" style="float:left;" />
+                    <!--<image src="img/ala.png" style="float:left;" />-->
 
                     <!--  top right menu links -->
                     <div sclass="toplinks">
@@ -352,10 +352,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </tree>
 
                             <radiogroup>
-                                <tabbox id="accordionMenu"  tooltip="yes">
+                                <tabbox id="accordionMenu"  tooltip="yes" >
                                     <tabs>
                                         <!--  facilities -->
-                                        <tab id="facilitiesTab" label="Facilities" if="${! settings.disableFacility}"/>
+                                        <tab id="facilitiesTab" label="Facilities" if="${! settings.disableFacility}" />
 
                                         <!--  regions -->
                                         <tab id="regionsTab" label="Region-zoom" if="${! settings.disableRegion}"/>

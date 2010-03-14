@@ -7,7 +7,7 @@
     <version>2.0.0</version>
 
 
-    <name>IMOS Ocean Portal </name>
+    <name>ALA Spatial Portal </name>
     <description>The IMOS Ocean Portal aims to provide a data discovery, visualisation and delivery system for IMOS data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://imos.aodn.org.au</url>
     <dependencies>
