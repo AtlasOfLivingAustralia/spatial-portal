@@ -1,0 +1,15 @@
+ <window id="win" title="Gazetteer Search Demo" apply="MyComposer">
+ 
+	<hbox>
+	<vbox>
+		Enter place name here:
+	<textbox id="searchText"/>
+	<button label="Search" forward="onSearch" />
+	<label id="resultLabel"/> 
+	</vbox>
+	<zscript>
+	</zscript>
+</hbox> 
+</window>
+
+
