@@ -50,12 +50,13 @@ public class MyComposer extends GenericComposer {
 	}	*/
  
 	public void onSearch(Event evt) {
- 		HttpHost targetHost = new HttpHost("localhost", 8080, "http"); 
+		//TODO: remove hardcoded host, credentials
+ 		HttpHost targetHost = new HttpHost("localhost", 80, "http"); 
 
  		DefaultHttpClient httpclient = new DefaultHttpClient();;
 		httpclient.getCredentialsProvider().setCredentials(
        		new AuthScope(targetHost.getHostName(), targetHost.getPort()), 
-       		new UsernamePasswordCredentials("admin", "geoserver"));
+       		new UsernamePasswordCredentials("admin", "at1as0f0z"));
 
 		// Create AuthCache instance
 		AuthCache authCache = new BasicAuthCache();
@@ -68,7 +69,7 @@ public class MyComposer extends GenericComposer {
 		localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);    		
 		
 		HttpGet httpget = new HttpGet(
-			     "http://localhost:8080/geoserver/rest/gazetteer-search/result.json?q=" + searchText.getValue());
+			     "/geoserver/rest/gazetteer-search/result.json?q=" + searchText.getValue());
 		/*ResponseHandler<byte[]> handler = new ResponseHandler<byte[]>() {
 	    	    public byte[] handleResponse(
 	            HttpResponse response) throws ClientProtocolException, IOException {
