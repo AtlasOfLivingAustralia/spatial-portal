@@ -1,11 +1,23 @@
+/**
+ *
+ * ALASpatial to do various front-end bits
+ * This might eventually be replaced by the zk code
+ *
+ */
 var ALASpatial = {
     jQuery: $,
 
+    /**
+     * init method 
+     */
     init: function() {
         this.setupNamesSearch();
         this.setupProcessFormWizard(); 
     },
 
+    /**
+     * setupNamesSearch method to setup the AutoComplete
+     */
     setupNamesSearch: function() {
         var flexboxOptions = {
             paging: {
@@ -25,38 +37,27 @@ var ALASpatial = {
             }
         };
 
-        //$('#splist').flexbox('/BioMaps2/GetNames?st=tsj&t=t', flexboxOptions);
         $('#splist').flexbox('species/names', flexboxOptions);
 
 
         $('#getrecs').click(function () {
-            /*
-            $.getJSON("species/records", {
-                query: $('#spdata').val()
-            }, function(records) {
-                console.log(records);
-            });
-            */
             var theQuery = $('#spdata').val();
-            //console.log("sending: " + theQuery);
 
             var theQueryList = theQuery.split("#");
             var theName = theQueryList[0];
             var theLevel = theQueryList[1];
 
-            //console.log(theName + " - " + theLevel);
-
-            //$("#records").load("species/records?a=test&query=" + theQuery + "&b=test");
-            //$("#records").load("species/records?a=test&name=" + theName + "&level=" + theLevel + "&b=test");
             $.get("species/records", {
                 query: $('#spdata').val()
             }, function(records) {
-                //console.log(records);
                 $('#records').html(records);
             });
         });
     },
 
+    /**
+     * setupProcessFormWizard method to setup the wizard 
+     */
     setupProcessFormWizard : function () {
         $("#theProcessForm").formwizard({
             //form wizard settings
@@ -70,14 +71,14 @@ var ALASpatial = {
         {
             // form plugin settings
             success: function (data) {
-                //alert("data successfully added");
-                //console.log(data);
                 var meResult = "Successfully generate Maxent results.";
-                meResult += "<a href='output/maxent/species.html'>View output</a>";
                 meResult += "<br />";
-                meResult += "<a href='output/maxent/species.asc'>Download generated grid</a>";
+                meResult += "<a href='" + data.map + "'>View map</a>";
+                meResult += "<br />";
+                meResult += "<a href='" + data.info + "'>View generated Maxent information</a>";
+                meResult += "<br />";
+                meResult += "<a href='" + data.file + "'>Download generated grid</a>";
                 $('#resultUrl').html(meResult);
-                //alert(meResult);
             },
             beforeSubmit: function(data){
                 //alert("about to send the following data: \n\n" + $.param(data));
@@ -93,6 +94,9 @@ var ALASpatial = {
 
 };
 
+/**
+ * Start it all off on the page load 
+ */
 $(document).ready(function() {
     ALASpatial.init();
 });

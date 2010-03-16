@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.dao.SpeciesDAO;
-import org.ala.spatial.domain.Species;
+import org.ala.spatial.model.Species;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -19,6 +19,6 @@
 	<import resource="mvc-config.xml" />
 
         <!-- Configures hibernate -->
-	<import resource="hibernate-config.xml" />
+	<import resource="data-config.xml" />
 
 </beans>

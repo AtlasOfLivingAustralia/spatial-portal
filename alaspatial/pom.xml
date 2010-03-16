@@ -34,9 +34,14 @@
             <artifactId>spring-webmvc</artifactId>
             <version>${org.springframework.version}</version>
         </dependency>
-
-        <!-- zk -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${org.springframework.version}</version>
+        </dependency>
         
+        <!-- zk -->
+
         <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zk</artifactId>
@@ -52,7 +57,7 @@
             <artifactId>zhtml</artifactId>
             <version>3.6.3</version>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zkplus</artifactId>
             <version>3.6.3</version>
@@ -89,7 +94,7 @@
             <version>1.2.1</version>
         </dependency>
 
-        
+
 
         <!-- JSTL -->
         <dependency>
@@ -163,12 +168,12 @@
             <artifactId>hibernate-entitymanager</artifactId>
             <version>3.4.0.GA</version>
         </dependency>
-       <!--
+        <!--
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-annotations</artifactId>
             <version>3.4.0.GA</version>
-        </dependency> 
+        </dependency>
         -->
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -203,13 +208,14 @@
         </dependency>
 
         <!-- postgresql -->
-        
+
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>8.4-701.jdbc4</version>
         </dependency>
-        
+
+
 
         <!--  Joda Time -->
         <!--
@@ -228,13 +234,11 @@
         -->
 
         <!-- HTTP Client -->
-        <!--
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
         </dependency>
-        -->
 
 
         <!-- Jackson JSON Mapper -->
@@ -250,6 +254,15 @@
             <artifactId>urlrewritefilter</artifactId>
             <version>3.1.0</version>
         </dependency>
+
+        <!-- db connection pooling -->
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.2.2</version>
+            <!-- <scope>test</scope> -->
+        </dependency>
+
 
         <!-- Servlet -->
         <dependency>

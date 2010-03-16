@@ -2,8 +2,8 @@ package org.ala.spatial.dao;
 
 import java.util.List;
 import java.util.Map;
-import org.ala.spatial.domain.Species;
-import org.ala.spatial.domain.TaxonNames;
+import org.ala.spatial.model.Species;
+import org.ala.spatial.model.TaxonNames;
 
 /**
  *

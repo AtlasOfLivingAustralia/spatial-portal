@@ -25,6 +25,11 @@ public class SpatialAnalysisImpl implements SpatialAnalysis {
     }
 
     @Override
+    public void sendToMap(String url, String extra, String username, String password) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public void callBie(List params) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

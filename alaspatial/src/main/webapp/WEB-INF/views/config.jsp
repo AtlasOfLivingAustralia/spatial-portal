@@ -3,15 +3,31 @@
  * Dynamic properties file for ALA Spatial Portal
  */
 
- /*
+ /**
+ *
  * Modelling options
+ *
  */
 
  String worldClimPresentVars = "/Users/ajay/projects/data/modelling/WorldClimCurrent/"; // E:\\projects\\data\\env\\au\\bioclim\\
- String maxentCmdPath = "/Users/ajay/projects/modelling/maxent/"; // E:\\projects\\modelling\\avid\\
+ String maxentCmdPath = "java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar "; // E:\\projects\\modelling\\avid\\
 
  session.setAttribute("worldClimPresentVars",worldClimPresentVars);
  session.setAttribute("maxentCmdPath",maxentCmdPath);
+
+ /**
+ *
+ * GeoServer settings
+ *
+ */
+
+ String geoserver_url = "http://localhost:8080/geoserver"; // make sure there isn't a ending forward slash
+ String geoserver_username = "admin";
+ String geoserver_password = "geoserver";
+
+ session.setAttribute("geoserver_url",geoserver_url);
+ session.setAttribute("geoserver_username",geoserver_username);
+ session.setAttribute("geoserver_password",geoserver_password);
 
 
 /*
