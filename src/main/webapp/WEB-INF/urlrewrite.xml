@@ -27,6 +27,10 @@
 		<to>/output/maxent/$1</to>
 	</rule>
 	<rule>
+		<from>/maxent2</from>
+		<to>/maxent2.zul</to>
+	</rule>
+	<rule>
 		<from>/filtering_svr.zul</from>
 		<to>/filtering_svr.zul</to>
 	</rule>

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpSession;
-import org.ala.spatial.domain.Species;
+import org.ala.spatial.model.Species;
 
 /**
  * Gets the submitted parameters and runs a maxent model
@@ -35,6 +35,15 @@ public class MaxentServiceImpl implements MaxentService {
     public void setMaxentSettings(MaxentSettings cmdMaxent) {
         this.cmdMaxent = cmdMaxent;
     }
+
+    /** 
+     * The setupSpecies method allows saving of biodiversity data into a temp
+     * directory and returns the file path
+     * 
+     * @param speciesList A list of biodiversity values
+     * @param session The session variable
+     * @return filename The filepath where the biodiversity data is saved to
+     */
 
     public String setupSpecies(List speciesList, HttpSession session) {
         try {
@@ -58,6 +67,13 @@ public class MaxentServiceImpl implements MaxentService {
 
     }
 
+    /**
+     * The generateSessionDirectory allows creating a session directory
+     * 
+     * @param thePath
+     * @return
+     */
+
     private File generateSessionDirectory(String thePath) {
         File fDir = null;
 
@@ -71,14 +87,22 @@ public class MaxentServiceImpl implements MaxentService {
         return fDir;
     }
 
-    /*
-     * sets up the parameters and runs a process
+    /**
+     * The process method sets up the parameters and runs the maxent process
+     *
+     * @return success int value if the process was successful
      */
     @Override
     public int process() {
         return runCommand(cmdMaxent.toString());
     }
 
+    /**
+     * The runCommand method does the fork'ing
+     * 
+     * @param command The command to be run
+     * @return success int value if the process was successful
+     */
     private int runCommand(String command) {
         Runtime runtime = Runtime.getRuntime();
 

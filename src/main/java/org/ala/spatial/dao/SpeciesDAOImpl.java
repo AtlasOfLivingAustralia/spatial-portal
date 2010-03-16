@@ -4,13 +4,17 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.ala.spatial.domain.Species;
-import org.ala.spatial.domain.TaxonNames;
+import org.ala.spatial.model.Species;
+import org.ala.spatial.model.TaxonNames;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.stereotype.Service;
 
 /**
  * Implementation class for any of the species search.
@@ -21,7 +25,8 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
  * @version 1.0
  * 
  */
-public class SpeciesDAOImpl implements SpeciesDAO {
+@Service(value="personDAO")
+public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
 
     /*
     private SessionFactory sessionFactory;
@@ -30,11 +35,21 @@ public class SpeciesDAOImpl implements SpeciesDAO {
     this.sessionFactory = sessionFactory;
     }
      */
+    /**
     private HibernateTemplate hibernateTemplate;
 
     public void setSessionFactory(SessionFactory sessionFactory) {
         //System.out.println("Setting session factory!!");
         this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+    }
+     **/
+
+    private HibernateTemplate hibernateTemplate;
+
+    @Autowired
+    public SpeciesDAOImpl(@Qualifier("sessionFactory") SessionFactory sessionFactory) {
+        this.setSessionFactory(sessionFactory);
+        this.hibernateTemplate = new HibernateTemplate(sessionFactory); 
     }
 
     /*
@@ -93,6 +108,8 @@ public class SpeciesDAOImpl implements SpeciesDAO {
         throw convertHibernateAccessException(ex);
         }
          */
+
+
         
         final String theName = name.toLowerCase();
         final String theLevel = level.toLowerCase();

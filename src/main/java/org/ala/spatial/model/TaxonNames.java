@@ -1,4 +1,4 @@
-package org.ala.spatial.domain;
+package org.ala.spatial.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,17 +17,27 @@ import javax.persistence.Table;
 @Table(name = "TAXONNAMES")
 public class TaxonNames {
 
+    @Id
+    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="taxonnames_mnlid_seq")
+    @SequenceGenerator(name = "taxonnames_mnlid_seq", sequenceName = "taxonnames_mnlid_seq")
+    @Column(name = "mnlid", insertable = false, updatable = false)
     private long id;
+
+    @Column(name="tname")
     private String tname;
+
+    @Column(name="tlevel")
     private String tlevel;
 
     public TaxonNames() {
     }
 
-    @Id
-    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="taxonnames_mnlid_seq")
-    @SequenceGenerator(name = "taxonnames_mnlid_seq", sequenceName = "taxonnames_mnlid_seq")
-    @Column(name = "mnlid", insertable = false, updatable = false)
+    public TaxonNames(long id, String tname, String tlevel) {
+        this.id = id;
+        this.tname = tname;
+        this.tlevel = tlevel;
+    }
+
     public long getId() {
         return id;
     }
@@ -36,7 +46,6 @@ public class TaxonNames {
         this.id = id;
     }
 
-    @Column(name="tlevel")
     public String getTlevel() {
         return tlevel;
     }
@@ -45,7 +54,6 @@ public class TaxonNames {
         this.tlevel = tlevel;
     }
 
-    @Column(name="tname")
     public String getTname() {
         return tname;
     }
@@ -54,6 +62,10 @@ public class TaxonNames {
         this.tname = tname;
     }
 
+    @Override
+    public String toString() {
+        return this.tname + " - " + this.tlevel;
+    }
 
 
 }

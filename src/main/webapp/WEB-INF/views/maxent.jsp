@@ -29,8 +29,9 @@
             <div id="addprocessform" class="form1" style="border: 1px solid #eee;">
                 <form id="theProcessForm" method="post" action="maxent/process">
                     <div id="firstProcessStep" class="step">
-                        <h1>Step 1 - Select your biodiversity data</h1>
-                        <p>Select your biodiversity data from OZCAM</p>
+                        <h1>Step 1 - Biodiversity data</h1>
+                        <p>Select your biodiversity data from OZCAM to analyse.</p>
+                        <p>Start by adding a first few characters and select your preferred name from the options available.</p>
 
                         <div id="splist"></div>
                         <input type="hidden" name="spdata" class="required ac_sp_data" />
@@ -40,8 +41,12 @@
 
                     </div>
                     <div id="secondProcessStep" class="step">
-                        <h1>Step 2 - Select your environmental data</h1>
-                        <p>Select your WorldCLIM environmental data </p>
+                        <h1>Step 2 - Environmental variables</h1>
+                        <p>Select your WorldCLIM environmental variables.</p>
+                        <p>
+                            Selecting appropriate variables gives you the best case analysis output.
+                            Please view the Help page to get more information about the variables.
+                        </p>
 
                         <label for="txtDSourceData">Environmental values: </label>
                         <!-- <ul id="evarsList2" class="evarsList checklist"></ul> -->
@@ -52,7 +57,10 @@
                     </div>
                     <div id="lastProcessStep" class="step"> <!-- thirdProcessStep -->
                         <h1>Step 3 - Method parameters</h1>
-
+                        <p>
+                            Select the optional parameters for Maxent.
+                            More information about the parameters is available under Help.
+                        </p>
 
                         <label for="">
                             <input type="checkbox" name="chkJackknife" id="chkJackknife" />
@@ -100,6 +108,7 @@
             </div>
                         
             <div id="resultUrl" style="border: 1px solid #eee;"></div>
+            <div id="map"></div>
         </div>
     </body>
 </html>
