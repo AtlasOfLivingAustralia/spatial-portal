@@ -36,15 +36,7 @@ public class GazetteerSearch {
  
 	try
 	{       
-    
-//	URL url = getClass().getResource("/test-index");//new File("test-index");
-//	System.out.println(url);
-//		File file = new File(url.toString().replace("file:",""));
-//		File file = new File("/home/gus/SRC/lucene-test/test-index");
-//	    GeoServerResourceLoader loader = GeoServerApplication.get().getResourceLoader();
-	
-//	    File file = loader.find( "test-index" );
-		//String fileName = this.getServletConfig().getContextParameter("indexLocation");
+   		//Get the geoserver data directory from the geoserver instance 
 		File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory() + "/test-index");
 	    IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
 
@@ -52,7 +44,7 @@ public class GazetteerSearch {
 
                     QueryParser qp  = new QueryParser(Version.LUCENE_CURRENT, "name", new KeywordAnalyzer());
 
-                    Query nameQuery = qp.parse("\""+searchString+"\"");
+                    Query nameQuery = qp.parse(searchString.toLowerCase()+"*");
 
 
 
@@ -69,17 +61,8 @@ public class GazetteerSearch {
 
                             List<Fieldable> fields = doc.getFields();
                             
-                           // results.add(new SearchResultItem("Australia",1));
                             results.add(new SearchResultItem(fields.get(1).stringValue(),fields.get(0).stringValue()));
-                            
-                            /*for(Fieldable field: fields){
 
-                                    System.out.println(field.name()+": "+field.stringValue());
-
-                            }
-
-                            System.out.println("---------------------------------------------");
-				*/
                     }
 
          }

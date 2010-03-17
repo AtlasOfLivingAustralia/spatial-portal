@@ -2,10 +2,10 @@ package org.ala.rest;
 
 public class SearchResultItem {
     String name;
-    String fid;
+    String serial;
     
-    SearchResultItem(String name, String fid) {
+    SearchResultItem(String name, String serial) {
 	this.name = name;
-	this.fid = fid;
+	this.serial = serial;
     }
 }
