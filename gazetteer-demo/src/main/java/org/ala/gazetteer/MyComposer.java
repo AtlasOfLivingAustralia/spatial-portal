@@ -51,7 +51,7 @@ public class MyComposer extends GenericComposer {
  
 	public void onSearch(Event evt) {
 		//TODO: remove hardcoded host, credentials
- 		HttpHost targetHost = new HttpHost("localhost", 80, "http"); 
+ 		HttpHost targetHost = new HttpHost("localhost", 8080, "http"); 
 
  		DefaultHttpClient httpclient = new DefaultHttpClient();;
 		httpclient.getCredentialsProvider().setCredentials(
@@ -67,9 +67,9 @@ public class MyComposer extends GenericComposer {
 		// Add AuthCache to the execution context
 		BasicHttpContext localcontext = new BasicHttpContext();
 		localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);    		
-		
+		String searchString = searchText.getValue().trim().replaceAll("\\s+","+");	
 		HttpGet httpget = new HttpGet(
-			     "/geoserver/rest/gazetteer-search/result.json?q=" + searchText.getValue());
+			     "/geoserver/rest/gazetteer-search/result.json?q=" + searchString);
 		/*ResponseHandler<byte[]> handler = new ResponseHandler<byte[]>() {
 	    	    public byte[] handleResponse(
 	            HttpResponse response) throws ClientProtocolException, IOException {
