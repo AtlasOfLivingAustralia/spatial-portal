@@ -9,7 +9,6 @@ public class GazetteerSearchResource extends ReflectiveResource {
        //hmmm the getAttributes stuff doesn't seem to work as documented 
        String stringValue = getRequest().getAttributes().get("q").toString().split("=")[1]; 
        //System.out.println(stringValue);
-       
-       return new GazetteerSearch(stringValue);
-   }
+	return new GazetteerSearch(stringValue.replace("+","* AND ") + "*");
+	}
 }
