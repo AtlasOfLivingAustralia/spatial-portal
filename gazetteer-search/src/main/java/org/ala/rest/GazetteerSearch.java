@@ -42,9 +42,9 @@ public class GazetteerSearch {
 
 
 
-                    QueryParser qp  = new QueryParser(Version.LUCENE_CURRENT, "name", new KeywordAnalyzer());
+                    QueryParser qp  = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
 
-                    Query nameQuery = qp.parse(searchString.toLowerCase()+"*");
+                    Query nameQuery = qp.parse(searchString.toLowerCase());
 
 
 
@@ -71,7 +71,7 @@ public class GazetteerSearch {
 		throw(e);	//	
 	}	     
 	
-}
+	}
 
-   }
+  }
 
