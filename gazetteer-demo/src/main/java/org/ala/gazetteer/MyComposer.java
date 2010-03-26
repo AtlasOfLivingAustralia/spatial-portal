@@ -51,10 +51,10 @@ public class MyComposer extends GenericComposer {
  
 	public void onSearch(Event evt) {
 		//TODO: remove hardcoded host, credentials
- 		HttpHost targetHost = new HttpHost("localhost", 8080, "http"); 
+ 		HttpHost targetHost = new HttpHost("localhost", 80, "http"); 
 
- 		DefaultHttpClient httpclient = new DefaultHttpClient();;
-		httpclient.getCredentialsProvider().setCredentials(
+ 		DefaultHttpClient httpclient = new DefaultHttpClient();
+		/*httpclient.getCredentialsProvider().setCredentials(
        		new AuthScope(targetHost.getHostName(), targetHost.getPort()), 
        		new UsernamePasswordCredentials("admin", "at1as0f0z"));
 
@@ -62,25 +62,15 @@ public class MyComposer extends GenericComposer {
 		AuthCache authCache = new BasicAuthCache();
 		// Generate BASIC scheme object and add it to the local auth cache
 		BasicScheme basicAuth = new BasicScheme();
-		authCache.put(targetHost, basicAuth);
+		authCache.put(targetHost, basicAuth);*/
 
 		// Add AuthCache to the execution context
 		BasicHttpContext localcontext = new BasicHttpContext();
-		localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);    		
+		//localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);    		
 		String searchString = searchText.getValue().trim().replaceAll("\\s+","+");	
 		HttpGet httpget = new HttpGet(
 			     "/geoserver/rest/gazetteer-search/result.json?q=" + searchString);
-		/*ResponseHandler<byte[]> handler = new ResponseHandler<byte[]>() {
-	    	    public byte[] handleResponse(
-	            HttpResponse response) throws ClientProtocolException, IOException {
-	            HttpEntity entity = response.getEntity();
-	            if (entity != null) {
-            		return EntityUtils.toByteArray(entity);
-		        } else {
-            	return null;
-        		}
-    		}
-		};*/
+	
 
 		try
 		{
@@ -98,37 +88,7 @@ public class MyComposer extends GenericComposer {
 		catch(Exception e)
 		{}
 			
-	/*	String[] _dict = { 
-		"abacus", "accuracy", "acuity", "adage", "afar", "after", "apple",
-		"bible", "bird", "bingle", "blog",
-		"cabane", "cape", "cease", "cedar",
-		"dacron", "defacto", "definable", "deluxe",
-		"each", "eager", "effect", "efficacy",
-		"far", "far from",
-		"girl", "gigantean", "giant",
-		"home", "honest", "huge",
-		"information", "inner",
-		"jump", "jungle", "jungle fever",
-		"kaka", "kale", "kame",
-		"lamella", "lane", "lemma",
-		"master", "maxima", "music",
-		"nerve", "new", "number",
-		"omega", "opera",
-		"pea", "peace", "peaceful",
-		"rock", "RIA",
-		"sound", "spread", "student", "super",
-		"tea", "teacher",
-		"unit", "universe",
-		"vector", "victory",
-		"wake", "wee", "weak", "web2.0",
-		"xeme",
-		"yea", "yellow",
-		"zebra", "zk",
-		
-	};
-	 
-	ListModel dictModel= new SimpleListModel(_dict);
-	combo.setModel(dictModel);*/
+
 
  	}
 
