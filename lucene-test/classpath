@@ -1,0 +1,1 @@
+CLASSPATH=/home/gus/lucene-3.0.1/lucene-core-3.0.1.jar:/opt/apache-tomcat-6.0.16/webapps/geoserver/WEB-INF/lib/commons-lang-2.1.jar:/opt/apache-tomcat-6.0.16/webapps/HelloWorld/WEB-INF/lib/commons-io.jar:/home/gus/SRC/lucene-test

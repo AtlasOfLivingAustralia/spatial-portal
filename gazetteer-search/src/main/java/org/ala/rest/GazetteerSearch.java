@@ -27,17 +27,21 @@ import org.apache.lucene.document.Fieldable;
 //import org.geoserver.platform.GeoServerResourceLoader;
 import org.vfny.geoserver.global.GeoserverDataDirectory;
 
+import org.apache.lucene.index.CorruptIndexException;
+import java.io.IOException;
+import org.apache.lucene.queryParser.ParseException;
+
 public class GazetteerSearch {
 
    ArrayList<SearchResultItem> results;
 
-   public GazetteerSearch( String searchString ) throws Exception{
+   public GazetteerSearch( String searchString ) {
        results = new ArrayList<SearchResultItem>();
  
 	try
 	{       
    		//Get the geoserver data directory from the geoserver instance 
-		File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory() + "/test-index");
+		File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(),"test-index");
 	    IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
 
 
@@ -66,12 +70,17 @@ public class GazetteerSearch {
                     }
 
          }
-	catch(Exception e)
+	catch(IOException e1)
 	{
-		throw(e);	//	
+		//FIXME
+		//Log error - return http code?
+		System.out.println(e1.getMessage());	
 	}	     
-	
+	catch(ParseException e3)
+	{
+		//FIXME
 	}
 
   }
+}
 
