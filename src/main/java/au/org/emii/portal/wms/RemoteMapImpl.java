@@ -296,7 +296,8 @@ public class RemoteMapImpl implements RemoteMap {
          * when adding a new layer so we just assume/generate
          * values for the id and description
          */
-        mapLayer.setId(uri);
+
+        mapLayer.setId(uri + label.replaceAll("\\s+", ""));
         mapLayer.setDescription(label);
         mapLayer.setDisplayable(true);
 

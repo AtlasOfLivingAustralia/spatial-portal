@@ -9,8 +9,8 @@
       </generator>
     </id>
     <many-to-one class="au.org.emii.portal.userdata.UserPortal" column="userid" name="userid"/>
-    <many-to-one class="au.org.emii.portal.value.BoundingBox" column="bBoxId" name="bBox" cascade="all"/>
-    <many-to-one class="au.org.emii.portal.menu.MapLayer" column="currentBaseLayerId" name="currentBaseLayer" cascade="all"/>
+    <many-to-one cascade="all" class="au.org.emii.portal.value.BoundingBox" column="bBoxId" name="bBox"/>
+    <many-to-one cascade="all" class="au.org.emii.portal.menu.MapLayer" column="currentBaseLayerId" name="currentBaseLayer"/>
     <property name="maximised" type="boolean">
       <column name="maximised"/>
     </property>

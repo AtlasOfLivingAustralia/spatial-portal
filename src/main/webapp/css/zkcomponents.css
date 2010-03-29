@@ -4,7 +4,7 @@
  Map background: 3c668d
  orange: e89c14
 previous font colour: 3B6E8F
-current font colour:  0b5888 
+current font colour:  0b5888
 
 
 
@@ -30,6 +30,10 @@ div.z-listbox {
 
 .z-vbox {
     width: 100%;
+}
+
+.z-west-splt {
+    background: #EBEBEB;
 }
 
 .hr {
@@ -63,7 +67,7 @@ h6 { color:teal; font-size: 9px;  margin: 0px 2px; display:inline;	}
 .title {
     /*background-color: #727DAD;*/
     /*background:transparent url(../img/h2background.png?) no-repeat scroll -200px 5px;*/
-    
+
     border-bottom: 3px solid teal;
     margin-left:6px;
     margin-right:6px;
@@ -216,7 +220,7 @@ background: url(../img/required.png) no-repeat 0% 50%;
     float: left;
     display: block;
     width: 460px;
-    font-size: 12px; 
+    font-size: 12px;
     font-weight: bold;
 }
 
@@ -362,27 +366,20 @@ background: url(../img/required.png) no-repeat 0% 50%;
 }
 
 .z-tabs-scroll .z-tabs-cnt {
-/*background: url(../img/base-shadow.png) repeat-x bottom left ;
-background-color: #4dbbee;
-border: none !important;*/
-padding-top: 9px;
-
+background:#EBEBEB url(../img/base-shadow.png) repeat-x scroll left bottom;
+border:0 none !important;
+padding-top:5px;
 }
 
 
-.z-tabs-scroll {
-    border:0px solid #7EAAC6;
-    /*background: none;*/
-}
-.loginBoxCnt  {
+
+.loginBoxCnt{
     background: none;
 }
 .loginBoxCnt .z-tabpanel {
     border: none;
     padding: 20px;
 }
-
-
 
 
 .z-tabs-space {
@@ -398,14 +395,11 @@ padding-top: 9px;
 }
 .z-tab-accordion-header div{
 	background-image: none;
-       
 }
 
 .z-tab-accordion{
 	background: url(../img/base-shadow.png) repeat-x bottom left ;
-	background-color: teal;
 	}
-
 .z-tab-accordion-header:hover {
 	background-color: #e89c14;
 	border-bottom: 0px solid #ddd ;
@@ -416,11 +410,7 @@ padding-top: 9px;
 	border-left: 0px;
 	border-right: 0px;
 	border-bottom: 0px solid #ddd ;
-        background-color: teal;
-        
 }
-
-
 
 
 .tabheader{
