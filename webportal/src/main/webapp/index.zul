@@ -71,8 +71,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             var safeToLoadMapId = '${safeToLoadMap.uuid}';
 
             function updateSafeToLoadMap(status) {
-                document.getElementById(safeToLoadMapId).value = status;
-                zkTxbox.updateChange($e(safeToLoadMapId), false);
+            document.getElementById(safeToLoadMapId).value = status;
+            zkTxbox.updateChange($e(safeToLoadMapId), false);
             }
         </script>
         <doublebox id="southReal" visible="false" />
@@ -81,30 +81,30 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <doublebox id="eastReal" visible="false" />
         <script type="text/JavaScript">
             function roundNumber(num, dec) {
-                var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
-                return result;
+            var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+            return result;
             }
 
             function setExtent() {
-                var extent = window.frames.mapFrame.map.getExtent();
-                extent = extent.toArray()
+            var extent = window.frames.mapFrame.map.getExtent();
+            extent = extent.toArray()
 
 
-                var northReal = $e('${northReal.uuid}');
-                var eastReal = $e('${eastReal.uuid}');
-                var southReal = $e('${southReal.uuid}');
-                var westReal = $e('${westReal.uuid}');
+            var northReal = $e('${northReal.uuid}');
+            var eastReal = $e('${eastReal.uuid}');
+            var southReal = $e('${southReal.uuid}');
+            var westReal = $e('${westReal.uuid}');
 
-                northReal.value = roundNumber(extent[3],3);
-                eastReal.value = roundNumber(extent[2],3);
-                southReal.value = roundNumber(extent[1],3);
-                westReal.value = roundNumber(extent[0],3)
+            northReal.value = roundNumber(extent[3],3);
+            eastReal.value = roundNumber(extent[2],3);
+            southReal.value = roundNumber(extent[1],3);
+            westReal.value = roundNumber(extent[0],3)
 
-                if (getGeographicExtentControls != undefined) {
-                    getGeographicExtentControls();
-                }
+            if (getGeographicExtentControls != undefined) {
+            getGeographicExtentControls();
+            }
 
-                return extent;
+            return extent;
             }
         </script>
 
@@ -125,19 +125,17 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             <north id="header" height="45">
 
                 <div>
-                    <!--<image src="img/ala.png" style="float:left;" />-->
-
                     <!--  top right menu links -->
                     <div sclass="toplinks">
-                            <zk if="${! settings.disablePortalUsers}">
-                                <toolbarbutton label="Logout"
-                                               zclass="leftmenu_ahref"
-                                               id="logoutButton" visible="${session.attributes.portalSession.portalUser.loggedIn}" />
-                                <toolbarbutton label="Login"
-                                               tooltiptext="Login and view your stored searches and maps" zclass="leftmenu_ahref"
-                                               id="loginButton"  visible="${! session.attributes.portalSession.portalUser.loggedIn}" />
-                                
-                            </zk>
+                        <zk if="${! settings.disablePortalUsers}">
+                            <toolbarbutton label="Logout"
+                                           zclass="leftmenu_ahref"
+                                           id="logoutButton" visible="${session.attributes.portalSession.portalUser.loggedIn}" />
+                            <toolbarbutton label="Login"
+                                           tooltiptext="Login and view your stored searches and maps" zclass="leftmenu_ahref"
+                                           id="loginButton"  visible="${! session.attributes.portalSession.portalUser.loggedIn}" />
+
+                        </zk>
 
                         <zk forEach="${session.attributes.portalSession.staticMenuLinks}" if="${! settings.disableTopLinks}">
 
@@ -252,7 +250,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                     <!--  search  -->
                                     <tab id="searchNavigationTab" label="Search" if="${! settings.disableSearch}"/>
-                                    
+
                                     <!--  links -->
                                     <tab id="linkNavigationTab" label="Links" if="${! settings.disableLinks}" />
                                 </tabs>
@@ -314,8 +312,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                             <!--  reset / save map buttons -->
                             <div align="right" style="margin-right:5px;" sclass="resetdiv" >
-                                    <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
-                                    <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />                                
+                                <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
+                                <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
                                 <button id="removeAllLayers" label="Clear Layers" sclass="h3" />
                                 <button id="reloadPortal" label="Reset Map" sclass="h3" />
                             </div>
@@ -326,13 +324,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <label sclass="h4" value="Map Name:" />
                                     <textbox id="createSavedMap" sclass="inputspace" constraint="no empty" maxlength="28"  width="150px" />
                                     <button id="mapSave" label="Save"  />
-                                    
+
                                 </div>
                                 <label id="createSavedMapError" sclass="h3 error"  visible="false" value="Please give your map a name" />
                                 <label id="createSavedMapAdvice" sclass="h4 "  visible="false" value="You have no Saved Maps yet!" />
 
-                                
-                                 <!--Dialog to load maps-->
+
+                                <!--Dialog to load maps-->
                                 <div  id="loadMapcont" visible="true" >
                                     <listbox id="savedMaps" sclass="inputspace" mold="select" width="200px"></listbox>
                                     <button label="Load" id="loadSavedMapButton" />
@@ -355,38 +353,75 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <tabbox id="accordionMenu"  tooltip="yes" >
                                     <tabs>
                                         <!--  facilities -->
-                                        <tab id="facilitiesTab" label="Facilities" if="${! settings.disableFacility}" />
+                                        <tab id="facilitiesTab" label="Biological" if="${! settings.disableFacility}" />
 
                                         <!--  regions -->
-                                        <tab id="regionsTab" label="Region-zoom" if="${! settings.disableRegion}"/>
+                                        <tab id="regionsTab" label="Environmental" if="${! settings.disableRegion}"/>
 
                                         <!--  realtime -->
-                                        <tab id="realtimeTab" label="Realtime" if="${! settings.disableRealtime}"/>
+                                        <tab id="realtimeTab" label="Contextual" if="${! settings.disableRealtime}"/>
 
                                         <!--  user defined -->
-                                        <tab id="userTab" label="User Defined" if="${! settings.disableUserDefined}"/>
+                                        <tab id="userTab" label="Analysis" if="${! settings.disableUserDefined}"/>
                                     </tabs>
                                     <tabpanels>
 
                                         <!--  facilities -->
                                         <tabpanel zclass="tabpanel_cnt" id="facilitiesTabPanel">
-                                            <div id="facilityControls">
-                                                <zk forEach="${session.attributes.portalSession.facilities}">
-                                                    <div>
-                                                        <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                               tooltiptext="${each.value.description}" sclass="tabheader"
-                                                               forward="onCheck=onSelectFacility()">
+                                            <tabbox id="tbBiology" width="100%" mold="accordion">
+                                                <tabs>
+                                                    <tab label="Search Biology Layers"/>
+                                                    <tab label="Browse Biology Layers"/>
+                                                </tabs>
+                                                <tabpanels>
+                                                    <tabpanel>
+                                                        <label>Search by</label>
+                                                        <radiogroup id="rdgNameSearchType" >
+                                                            <hbox>
+                                                                <radio id="rdoCommonSearch" label="Common Name" selected="true"/>
+                                                                <radio id="rdoScientificSearch" label="Scientific Name" />
+                                                            </hbox>
+                                                        </radiogroup>
+                                                        <textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>
+                                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()" />
+                                                        <html>
+                                                            <![CDATA[ <br> ]]>
+                                                        </html>
+                                                        <html>
+                                                            <![CDATA[ <br> ]]>
+                                                        </html>
+                                                    </tabpanel>
+                                                    <tabpanel>
+                                                        <div id="facilityControls">
+                                                            <zk forEach="${session.attributes.portalSession.facilities}">
+                                                                <div>
+                                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                                                           tooltiptext="${each.value.description}" sclass="tabheader"
+                                                                           forward="onCheck=onSelectFacility()">
 
-                                                            <custom-attributes systemId="${each.value.id}" />
-                                                        </radio>
-                                                        <tree id="tree_${each.value.id}" />
-                                                    </div>
-                                                </zk>
-                                            </div>
+                                                                        <custom-attributes systemId="${each.value.id}" />
+                                                                    </radio>
+                                                                    <tree id="tree_${each.value.id}" />
+                                                                </div>
+                                                            </zk>
+                                                        </div>
+
+
+                                                    </tabpanel>
+                                                </tabpanels>
+                                            </tabbox>
+
+
+
+
+
+
                                         </tabpanel>
 
                                         <!--  Regions -->
                                         <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel">
+
+                                           
                                             <div id="regionControls">
                                                 <zk forEach="${session.attributes.portalSession.regions}">
                                                     <div>
@@ -400,10 +435,43 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     </div>
                                                 </zk>
                                             </div>
+                                           
                                         </tabpanel>
 
                                         <!--  realtime -->
                                         <tabpanel zclass="tabpanel_cnt" id="realtimeTabPanel">
+                                            
+                                            <tabbox id="context" width="100%" mold="accordion">
+                                                <tabs>
+                                                    <tab label="Search"/>
+                                                    <tab label="Browse Environmental Layers"/>
+                                                </tabs>
+                                                <tabpanels>
+                                                <tabpanel>
+                                                    <div>
+                                                        <vbox width="100%">
+                                                            <label value="Enter Place Name" />
+                                                        <hbox>
+                                                            <textbox id="placeName" width="100px"/>
+                                                            <button id="gazSearch" label="Search" />
+                                                            <label id="resultGaz" />
+                                                        </hbox>
+                                                        <listbox id="gazetteerResults" fixedLayout="true" visible="false">
+                                                            <listhead>
+                                                            <listheader label="Name"/>
+                                                            <listheader label="View" />
+                                                            </listhead>
+                                                        </listbox>
+
+                                                        </vbox>
+                                                    </div>
+
+
+                                                </tabpanel>
+                                                <tabpanel>
+
+
+
 
                                             <div id="realtimeControls">
                                                 <zk forEach="${session.attributes.portalSession.realtimes}">
@@ -417,6 +485,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     </div>
                                                 </zk>
                                             </div>
+                                             </tabpanel>
+                                            </tabpanels>
+                                            </tabbox>
                                         </tabpanel>
                                         <!--  user defined layers-->
                                         <tabpanel zclass="tabpanel_cnt" id="userTabPanel" >

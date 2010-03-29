@@ -43,6 +43,13 @@ public interface HttpConnection {
      */
     URLConnection configureURLConnection(String uri, int connectTimeout, int readtimeout) throws IOException;
 
+
+
+
+
+    URLConnection configureURLConnectionWithAuthentication(String uri, String userName, String passWord) throws IOException;
+
+
     /**
      * Readback the raw data from a uri and return it
      * @param uri

@@ -31,22 +31,37 @@ import au.org.emii.portal.userdata.DaoRegistry;
 import au.org.emii.portal.userdata.UserDataDao;
 import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.PortalSessionUtilities;
-import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
+import com.sun.tools.hat.internal.model.JavaObject;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
+import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.PropertyFilter;
+import org.ala.rest.GazetteerSearch;
+import org.ala.rest.SearchResultItem;
+import org.ala.spatial.gazetteer.GazetteerSearchController;
+import org.ala.spatial.gazetteer.GazetteerSearchResult;
+import org.ala.spatial.gazetteer.GazetteerSearchResultSummary;
+import org.ala.spatial.search.TaxaScientificSearchResult;
+import org.ala.spatial.search.TaxaScientificSearchSummary;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
+import org.zkoss.zk.ui.Path;
+import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.util.Clients;
@@ -56,12 +71,12 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Caption;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Div;
-import org.zkoss.zul.Doublebox;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
+import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
@@ -152,7 +167,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Label createSavedMapError;
     private Toolbarbutton loginButton;
     private Toolbarbutton logoutButton;
-
     /**
      * Logout service spring bean - autowired
      */
@@ -173,6 +187,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private PortalSessionUtilities portalSessionUtilities = null;
     private Settings settings = null;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
+    //additional controls for the ALA Species Search stuff
+    private Textbox txtSearchSpecies;
+    private Radio rdoCommonSearch;
+    private Radio rdoScientificSearch;
+    private Button gazSearch;
+    private Textbox placeName;
+    private Label resultGaz;
+    private Listbox gazetteerResults;
+    private GazetteerSearchController gazetteerSearchWindow;
+    
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -251,6 +275,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         addExtLayersButton.setVisible(false);
 
     }
+
+    public void onClick$gazSearch() {
+        String pName = placeName.getValue();
+        //searchGazetteer(pName);
+
+         Session session = (Session) Sessions.getCurrent();
+         session.setAttribute("searchGazetteerTerm", pName);
+
+
+         if (gazetteerSearchWindow == null) {
+                    gazetteerSearchWindow= (GazetteerSearchController) Executions.createComponents(
+                            "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
+                } else {
+                    gazetteerSearchWindow.detach();
+                    gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
+                            "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
+                }
+
+                gazetteerSearchWindow.setId(java.util.UUID.randomUUID().toString());
+                gazetteerSearchWindow.setMaximizable(true);
+                gazetteerSearchWindow.setPosition("center");
+                gazetteerSearchWindow.doOverlapped();
+
+    }
+
+    
 
     public void closeAddLayerDiv() {
         addLayer.setVisible(false);
@@ -980,6 +1030,70 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
+     * Overridden to allow for the adding of a OGC Filter
+     * Add a WMS layer identified by the given parameters to the menu system
+     * and activate it
+     * @param label Name of map layer
+     * @param uri URI for the WMS service
+     * @param layers layers to ask the WMS for
+     * @param imageFormat MIME type of the image we will get back
+     * @param opacity 0 for invisible, 1 for solid
+     */
+    public boolean addWMSLayer(String label, String uri, float opacity, String filter) {
+        boolean addedOk = false;
+        if (safeToPerformMapAction()) {
+            //if (getPortalSession().getUserDefinedById(uri) == null) {
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+                MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                if (mapLayer == null) {
+                    // fail
+                    errorMessageBrokenWMSLayer(imageTester);
+                    logger.info("adding WMS layer failed ");
+                } else {
+                    // ok
+                    addUserDefinedLayerToMenu(mapLayer, true);
+                    addedOk = true;
+                }
+            } else {
+                // fail
+                showMessage(languagePack.getLang("wms_layer_already_exists"));
+                logger.info(
+                        "refusing to add a new layer with URI " + uri
+                        + " because it already exists in the menu");
+            }
+        }
+        return addedOk;
+    }
+
+    public boolean addWMSGazetteerLayer(String label, String uri, float opacity, String filter) {
+        boolean addedOk = false;
+        if (safeToPerformMapAction()) {
+            //if (getPortalSession().getUserDefinedById(uri) == null) {
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+                MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                mapLayer.setCql(filter);
+                mapLayer.setQueryable(true);
+                if (mapLayer == null) {
+                    // fail
+                    errorMessageBrokenWMSLayer(imageTester);
+                    logger.info("adding WMS layer failed ");
+                } else {
+                    // ok
+                    addUserDefinedLayerToMenu(mapLayer, true);
+                    addedOk = true;
+                }
+            } else {
+                // fail
+                showMessage(languagePack.getLang("wms_layer_already_exists"));
+                logger.info(
+                        "refusing to add a new layer with URI " + uri
+                        + " because it already exists in the menu");
+            }
+        }
+        return addedOk;
+    }
+
+    /**
      * Select a tab and activate it - same as if a user clicked
      * it in the gui.  There is no corresponding deactivate
      * method as you can acheive the same effect by selecting
@@ -1649,7 +1763,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             // put user back
             newPortalSession.setPortalUser(portalSession.getPortalUser());
-           
+
 
             // replace session
             setPortalSession(newPortalSession);
@@ -1789,6 +1903,49 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
+    public void onSearchSpecies(ForwardEvent event) {
+
+        //get the params from the controls
+
+        String sSearchTerm = txtSearchSpecies.getText();
+        String sSearchType = null;
+
+        Session session = (Session) Sessions.getCurrent();
+
+        if (rdoCommonSearch.isChecked()) {
+            sSearchType = "common";
+        } else {
+            sSearchType = "scientific";
+        }
+
+        session.setAttribute("searchTerm", sSearchTerm);
+        session.setAttribute("searchType", sSearchType);
+
+        Window win = new Window();
+        win.detach();
+
+
+
+        win = (Window) Path.getComponent("/searchResults");
+
+        if (win == null) {
+            win = (Window) Executions.createComponents(
+                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
+        } else {
+            win.detach();
+            win = (Window) Executions.createComponents(
+                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
+        }
+
+
+        win.setTitle("Search Results for " + sSearchTerm);
+        win.setMaximizable(true);
+        win.setClosable(true);
+        win.setSizable(true);
+        win.setPosition("center");
+        win.doOverlapped();
+    }
+
     private void toggleLayerSwitcher(boolean show) {
         layerSwitcherHide.setVisible(show);
         layerSwitcherShow.setVisible(!show);
@@ -1857,18 +2014,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     private Iframe getExternalContentIframe() {
         return (Iframe) externalContentWindow.getFellow("externalContentIframe");
-
-
-
-
     }
 
     public DesktopState getDesktopState() {
         return desktopState;
-
-
-
-
     }
 
     public void setDesktopState(DesktopState desktopState) {
@@ -1988,5 +2137,4 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void setSettings(Settings settings) {
         this.settings = settings;
     }
-
 }
