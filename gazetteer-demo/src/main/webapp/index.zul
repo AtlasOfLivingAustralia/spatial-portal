@@ -5,7 +5,10 @@
 		Enter place name here:
 	<textbox id="searchText"/>
 	<button label="Search" forward="onSearch" />
-	<label id="resultLabel"/> 
+	<label id="resultLabel"/>
+	<combobox use="AutoComplete" autodrop="true">
+		
+	</combobox>
 	</vbox>
 	<zscript>
 	</zscript>

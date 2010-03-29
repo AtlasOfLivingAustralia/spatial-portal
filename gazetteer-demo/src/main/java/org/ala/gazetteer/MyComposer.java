@@ -37,32 +37,12 @@ public class MyComposer extends GenericComposer {
 		resultLabel = (Label) win.getFellow("resultLabel");
 	}
 
-/*	public void suggest(InputEvent evt) {
-		 combo.getItems().clear();
-	         if (evt.getValue().startsWith("A")) {
-	             combo.appendItem("Ace");
-	             combo.appendItem("Ajax");
-	             combo.appendItem("Apple");
-	         } else if (evt.getValue().startsWith("B")) {
-	             combo.appendItem("Best");
-	             combo.appendItem("Blog");
-	         }
-	}	*/
  
 	public void onSearch(Event evt) {
 		//TODO: remove hardcoded host, credentials
- 		HttpHost targetHost = new HttpHost("localhost", 80, "http"); 
+ 		HttpHost targetHost = new HttpHost("localhost", 8080, "http"); 
 
  		DefaultHttpClient httpclient = new DefaultHttpClient();
-		/*httpclient.getCredentialsProvider().setCredentials(
-       		new AuthScope(targetHost.getHostName(), targetHost.getPort()), 
-       		new UsernamePasswordCredentials("admin", "at1as0f0z"));
-
-		// Create AuthCache instance
-		AuthCache authCache = new BasicAuthCache();
-		// Generate BASIC scheme object and add it to the local auth cache
-		BasicScheme basicAuth = new BasicScheme();
-		authCache.put(targetHost, basicAuth);*/
 
 		// Add AuthCache to the execution context
 		BasicHttpContext localcontext = new BasicHttpContext();
