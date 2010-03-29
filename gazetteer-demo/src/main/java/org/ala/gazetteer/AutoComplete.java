@@ -69,11 +69,24 @@ public class AutoComplete extends Combobox {
 		 		  JSONObject responseJson = JSONObject.fromObject(responseText);		  
 		  JSONObject search = responseJson.getJSONObject( "org.ala.rest.GazetteerSearch" );
 		  JSONArray results = search.getJSONObject("results").getJSONArray("org.ala.rest.SearchResultItem");
-		  _dict = new String[results.size()];
+		  //_dict = new String[results.size()];
+		  Iterator it = getItems().iterator();
 
 		  for (int i = 0; i<results.size();i++){ 
-			_dict[i] = (String)results.getJSONObject(i).get("name");
+			 String itemString = (String)results.getJSONObject(i).get("name");
+			 if (it != null && it.hasNext()) {
+           		 ((Comboitem)it.next()).setLabel(itemString);
+          			} else {
+           		 it = null;
+           		 new Comboitem(itemString).setParent(this);
+          		}
+
 			}
+		    while (it != null && it.hasNext()) {
+         	 	it.next();
+         		 it.remove();
+			}
+
 		}
 		catch(Exception e)
 		{
@@ -82,7 +95,7 @@ public class AutoComplete extends Combobox {
 
 	//        
 
-	int j = Arrays.binarySearch(_dict, val);
+	/*int j = Arrays.binarySearch(_dict, val);
         if (j < 0) j = -j-1;
  
         Iterator it = getItems().iterator();
@@ -98,8 +111,8 @@ public class AutoComplete extends Combobox {
         while (it != null && it.hasNext()) {
           it.next();
           it.remove();
-        }
+        }*/
       }
  
-      private static String[] _dict = { ""};
+    //  private static String[] _dict = { ""};
     }
