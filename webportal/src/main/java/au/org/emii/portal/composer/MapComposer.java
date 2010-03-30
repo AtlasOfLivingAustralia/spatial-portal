@@ -32,7 +32,6 @@ import au.org.emii.portal.userdata.UserDataDao;
 import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.SessionInitImpl;
-import com.sun.tools.hat.internal.model.JavaObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -50,6 +49,7 @@ import net.sf.json.JsonConfig;
 import net.sf.json.util.PropertyFilter;
 import org.ala.rest.GazetteerSearch;
 import org.ala.rest.SearchResultItem;
+import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.gazetteer.GazetteerSearchResult;
 import org.ala.spatial.gazetteer.GazetteerSearchResultSummary;
@@ -196,7 +196,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Label resultGaz;
     private Listbox gazetteerResults;
     private GazetteerSearchController gazetteerSearchWindow;
-    
+    private AutoComplete gazetteerAuto;
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -277,8 +277,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$gazSearch() {
-        String pName = placeName.getValue();
-        //searchGazetteer(pName);
+        String pName = gazetteerAuto.getValue();
+        //String pName = placeName.getValue();
+	//searchGazetteer(pName);
 
          Session session = (Session) Sessions.getCurrent();
          session.setAttribute("searchGazetteerTerm", pName);
