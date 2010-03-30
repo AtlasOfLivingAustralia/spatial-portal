@@ -236,6 +236,11 @@
             <artifactId>webportal_configuration_xmlbeans</artifactId>
             <version>3.0.8</version>
         </dependency>
+	<dependency>
+	   <groupId>org.apache.xmlbeans</groupId>
+	   <artifactId>xmlbeans</artifactId>
+	   <version>2.4.0</version>
+	</dependency>
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
