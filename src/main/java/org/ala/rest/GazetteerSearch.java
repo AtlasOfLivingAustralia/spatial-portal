@@ -65,7 +65,7 @@ public class GazetteerSearch {
 
                             List<Fieldable> fields = doc.getFields();
                             
-                            results.add(new SearchResultItem(fields.get(1).stringValue(),fields.get(0).stringValue()));
+                            results.add(new SearchResultItem(fields.get(1).stringValue(),fields.get(0).stringValue(),fields.get(3).stringValue(),fields.get(4).stringValue()));
 
                     }
 
