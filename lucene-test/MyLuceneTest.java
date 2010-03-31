@@ -32,7 +32,7 @@ public class MyLuceneTest {
 	try {
 	    Connection conn = DriverManager.getConnection(url);
 	    Statement st = conn.createStatement();
-	    ResultSet rs = st.executeQuery("SELECT serial,name,source FROM public.\"GeoRegionFeatures\" ");
+	    ResultSet rs = st.executeQuery("SELECT serial,name,source,feature_code,state_id FROM \"GeoRegionFeatures\"");
 	    
 	    File file = new File("test-index");
 	    if(file.exists()){
@@ -58,7 +58,19 @@ public class MyLuceneTest {
 		    doc.add(new Field("name", rs.getString(2).toLowerCase(), Store.YES, Index.ANALYZED));
 		else
 		    doc.add(new Field("name", "unknown", Store.YES, Index.ANALYZED));
+		
 		doc.add(new Field("source", rs.getString(3).toLowerCase(), Store.YES, Index.ANALYZED));
+
+		if(rs.getString(4) != null)
+		    doc.add(new Field("type", rs.getString(4).toLowerCase(), Store.YES, Index.ANALYZED));
+		else
+		    doc.add(new Field("type", "unknown", Store.YES, Index.ANALYZED));
+
+		if(rs.getString(5) != null)
+		    doc.add(new Field("state", rs.getString(5).toLowerCase(), Store.YES, Index.ANALYZED));
+		else
+		    doc.add(new Field("state", "unknown", Store.YES, Index.ANALYZED));
+
 
 		iw.addDocument(doc);
 		System.out.println("working");
@@ -100,10 +112,12 @@ public class MyLuceneTest {
 
 	 
 
+
 	search("\"ben\" OR \"lomond\"");
-	search("australia*");
+	search("australia");
 	search("lomond");
 	search("ben");
+	search("aus*");
 	}
 	catch (Exception e)
 	{
