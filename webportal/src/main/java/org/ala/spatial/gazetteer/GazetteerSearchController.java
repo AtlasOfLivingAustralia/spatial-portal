@@ -134,13 +134,19 @@ public class GazetteerSearchController extends UtilityComposer {
             lc.appendChild(tbFull);
             li.appendChild(lc);
 
-            /*
+        
             lc = new Listcell();
             Label lb = new Label();
-            lb.setValue("TODO");
+            lb.setValue(sri.getFeatureType());
             lc.appendChild(lb);
-            li.appendChild(lc);*/
+            li.appendChild(lc);
 
+	    //Add State
+	    lc = new Listcell();
+	    lb = new Label();
+	    lb.setValue(sri.getState());
+	    lc.appendChild(lb);
+            li.appendChild(lc);
 
 
             //Add to  map button
