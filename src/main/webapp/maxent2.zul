@@ -1,19 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
 <?init class="org.ala.spatial.web.Maxent2Controller"?>
+-->
+
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    
-    <window title="Maxent" width="500"  height="400">
-        <combobox use="org.ala.spatial.web.SpeciesAutoComplete">
-            <comboitem label=""/>
-        </combobox>
 
-        <separator bar="true" />
-        <label id="test" value="Hello zk World!!" />
-        <separator bar="true" />
-        <textbox value="${msets}"/>
+    <window title="Maxent" width="800px" apply="org.ala.spatial.web.Maxent21Controller" style="padding: 10px">
+
+        <style>
+            .z-loading {
+                top: 50% !important;
+                left: 45% !important;
+                align: center;
+                vertical-align: middle;
+            }
+        </style>
+
+        <!-- <label value="Step 1: Select your species " /> -->
+        <groupbox mold="3d" width="400px" style="padding: 10px">
+            <caption label="Step 1: Select your species" />
+            <vbox>
+
+                <combobox id="sac" use="org.ala.spatial.web.SpeciesAutoComplete" autodrop="true" >
+                    <comboitem label=""/>
+                </combobox>
+                <button id="getspinfo" label="Get info" visible="false" />
+                <label value="Note: Please make sure the first character is an upper-case" />
+            </vbox>
+        </groupbox>
+
+
+
+        <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
+        <groupbox mold="3d" width="400px" style="padding: 10px">
+            <caption label="Step 2: Select your environmental layers" />
+            <vbox>
+                <hbox>
+                    <textbox id="tbenvfilter" />
+                    <button id="btenvfilterclear" label="Clear filter" />
+                </hbox>
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" >
+                    <listhead>
+                        <listheader label="Select all layers" />
+                    </listhead>
+
+                </listbox>
+            </vbox>
+        </groupbox>
+
+
+
+        <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
+
+        <groupbox mold="3d" width="400px" style="padding: 10px">
+            <caption label="Step 3: Select your optional parameters" />
+            <vbox>
+                <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" />
+                <checkbox id="chkRCurves" label="Create response curves" />
+                <hbox>
+                    <label value="Random test percentage (0 - 100):" />
+                    <textbox id="txtTestPercentage" value="0" />
+                </hbox>
+            </vbox>
+        </groupbox>
+
+
+
+        <textbox id="trun" value="${msets}" visible="false" />
 
         <separator bar="true"/>
+
+        <progressmeter id="progress" value="42" visible="false" />
+
+        <button id="startmaxent" label="Start Maxent">
+            <!--
+            <attribute name="onClick">{
+                final Window win = (Window) Executions.createComponents(
+                "/maxentwizard.zul", null, null);
+                win.setMinwidth(450);
+                //win.setWidth(450);
+                win.setMinheight(400);
+                win.setClosable(true);
+                win.setSizable(true);
+                win.doModal();
+            }</attribute>
+            -->
+        </button>
+
+        <separator />
+
+        <label id="test" value="Status: Waiting to start..." />
+
+        <tabbox id="outputtab" visible="false" height="700px">
+            <tabs>
+                <tab id="mapframetab" label="Map" closable="false" />
+                <tab id="infotab" label="Info" closable="false" />
+            </tabs>
+            <tabpanels>
+                <tabpanel height="700px">
+                    <iframe id="mapframe" src="" width="750px" height="600px" visible="true" />
+                </tabpanel>
+                <tabpanel height="700px">
+                    <iframe id="infoframe" src="" width="750px" height="600px" visible="true" />
+                </tabpanel>
+            </tabpanels>
+        </tabbox>
+
+
+
 
     </window>
 

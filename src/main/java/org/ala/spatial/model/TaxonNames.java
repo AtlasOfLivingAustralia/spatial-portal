@@ -14,12 +14,12 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name = "TAXONNAMES")
+@Table(name = "TAXONNAMESV1")
 public class TaxonNames {
 
     @Id
-    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="taxonnames_mnlid_seq")
-    @SequenceGenerator(name = "taxonnames_mnlid_seq", sequenceName = "taxonnames_mnlid_seq")
+    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="taxonnamesv1_mnlid_seq")
+    @SequenceGenerator(name = "taxonnamesv1_mnlid_seq", sequenceName = "taxonnamesv1_mnlid_seq")
     @Column(name = "mnlid", insertable = false, updatable = false)
     private long id;
 

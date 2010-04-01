@@ -1,0 +1,158 @@
+<zk>
+
+<script type="text/javascript" src="scripts/filter.js"/>
+
+<hbox>
+<vbox>
+<panel id="help" title="Click for Species List Tool Help"
+width="600px" border="normal"  open="false"
+onClick="if(help.isOpen())help.open=false; else help.open=true;">
+<panelchildren><html><![CDATA[
+This tool filters all species known to the ALA by environmental and contextual data: Only those species that occur within the user-defined environmental envelope will be retained by the filter. Filters are added, one layer at a time. The list of species remaining at any step can be exported. A layer can be removed by clicking on the remove button. This will update the filtering.
+<br><br><b>Process</b>
+<br><br>&nbsp;&nbsp;&nbsp;1.  Select an environmental layer to be used as a filter. This layer will be added to the table. Clicking on the layer will link to metadata describing this layer.
+<br><br>&nbsp;&nbsp;&nbsp;2.  If the layer is of continuous values (e.g. temperature), select lower and upper values for the selected layer. If the layer added is categorical (e.g. land-use types or states/territories), select the categories to be applied as a filter. These bounds or categories will be added to the table.
+<br><br>&nbsp;&nbsp;&nbsp;3.  The map will update to show what geographic areas conform to this filter.
+<br><br>&nbsp;&nbsp;&nbsp;4.  The number of species in the environmental envelope will be displayed. Clicking on this number will display the list of species that are within this envelope.
+<br><br>&nbsp;&nbsp;&nbsp;5.  The list of species can be exported (CSV format) by clicking on the export button.
+]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
+</panel>
+<separator/>
+<window id="win" apply="org.ala.spatial.analysis.tabulation.SpeciesListZK2" 
+title="Species List Tool" width="600px" border="normal">
+<separator/>
+<hbox>
+Select layers for filtering
+</hbox>
+<separator/>
+<hbox>
+<combobox id="cb" autodrop="true" width="400px" >
+	<comboitem>
+	</comboitem>
+</combobox>
+
+</hbox>
+<separator/>	
+<separator/>
+<hbox>
+Species List filters.
+</hbox>
+<hbox>
+<listbox id="lb" multiple="false" checkmark="false" width="580px" rows="12" >	
+<listhead>
+<listheader width="65px" label=""></listheader>
+<listheader label="layer"></listheader>
+<listheader label="filter range"></listheader>
+<listheader width="110px" label="species count"></listheader>
+</listhead>
+</listbox>
+
+</hbox>
+<popup id="popup_continous" width="400px">
+<vbox>
+<label value="full range"/><label id="popup_range"/>
+
+<hbox>
+<slider id="popup_slider_min" slidingtext="" action="onmousemove: onSliding()">
+
+</slider>
+<textbox id="popup_minimum" width="80px"></textbox>
+</hbox>
+
+<hbox>
+<slider id="popup_slider_max" slidingtext=""  action="onmousemove: onSliding()">
+
+</slider>
+<textbox id="popup_maximum" width="80px"></textbox>
+<textbox id="popup_idx" width="1px"></textbox>
+</hbox>
+
+<button label="apply" id="apply_continous"/>
+
+</vbox>
+	</popup>
+<popup id="popup_catagorical" width="300px" >
+<vbox>
+<listbox id="popup_listbox" multiple="true" 
+checkmark="true" rows="12" >
+	
+</listbox>
+<button label="apply" id="apply_catagorical" />
+<separator/>			
+</vbox>
+</popup>
+
+<popup id="popup_results" width="330px">
+<vbox>
+<button label="download whole list" id="download" />
+<listbox id="popup_listbox_results" width="280px" rows="15" >
+	
+</listbox>
+(only 200 matches displayed)
+<separator/>	
+		
+		</vbox>
+		<button label="close" onClick="popup_results.close()" />
+</popup>
+		
+<script type="text/javascript">//Running at the browser
+
+function onSliding(){
+     var el = document.getElementById("${popup_slider_min.uuid}");
+     el = $e("${popup_slider_min.uuid}"); //$e() is an utility of ZK Client Engine
+     minstring = document.getElementById(el.id + "!btn").style.left;
+     minvalue = minstring.substring(0,minstring.length-2) / 200.0;
+
+     var el2 = document.getElementById("${popup_slider_max.uuid}");
+     el2 = $e("${popup_slider_max.uuid}"); //$e() is an utility of ZK Client Engine
+     maxstring = document.getElementById(el2.id + "!btn").style.left;
+     maxvalue = maxstring.substring(0,maxstring.length-2) / 200.0;
+
+     var el3 = document.getElementById("${popup_idx.uuid}");
+     el3 = $e("${popup_idx.uuid}"); //$e() is an utility of ZK Client Engine
+
+     window.setTimeout(applyFilter(el3.value,minvalue,maxvalue),2);
+//applyFilter(el3.value,minvalue,maxvalue)
+     
+}
+</script>
+	
+</window>
+</vbox>
+<html>
+<![CDATA[
+<canvas id='canvas' width="750px" height="625px" style="border: solid 1px"  >
+</canvas>
+<div style="visibility:hidden; position:absolute; ">
+<canvas id='canvas' width="750px" height="625px" >
+</canvas>
+</div><div style="visibility:hidden; position:absolute; ">
+<canvas id='canvas' width="750px" height="625px" >
+</canvas></div><div style="visibility:hidden; position:absolute; ">
+<canvas id='canvas' width="750px" height="625px" >
+</canvas></div><div style="visibility:hidden; position:absolute; ">
+<canvas id='canvas' width="750px" height="625px" >
+</canvas></div><div style="visibility:hidden; position:absolute; ">
+<canvas id='canvas' width="750px" height="625px" >
+</canvas>
+</div>
+<div id="inputs_div"></div>
+
+<div style="display:none">
+  <img id="i0" src="" onload='load_layer(0,"images/bluemarble.jpg",-10000,40000);' />
+  <img id="i1" src="" onload='load_layer(1,"images/b1-4t.png",-10000,40000);' />
+  <img id="i2" src="" onload='load_layer(2,"images/b5-8t.png",-10000,40000);' />
+  <img id="i3" src="" onload='load_layer(3,"images/b9-12t.png",-10000,40000);' />
+  <img id="i4" src="" onload='load_layer(4,"images/b13-16t.png",-10000,40000);' />
+  <img id="i5" src="" onload='load_layer(5,"images/b17-20t.png",-10000,40000);' />
+</div>
+
+<script type="text/javascript"> 	
+	init();
+</script>
+
+
+]]></html>
+
+</hbox>
+</zk>

@@ -1,7 +1,11 @@
 package org.ala.spatial.web;
 
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Iterator;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
@@ -34,53 +38,68 @@ public class SpeciesAutoComplete extends Combobox {
         }
     }
 
+
+
+    private void refreshJSON(String val) {
+        String snUrl = "";
+        String cnUrl = "";
+    }
+
     /** Refresh comboitem based on the specified value.
      */
     private void refresh(String val) {
-        int j = Arrays.binarySearch(_dict, val);
-        if (j < 0) {
-            j = -j - 1;
-        }
 
-        Iterator it = getItems().iterator();
-        for (int cnt = 10; --cnt >= 0 && j < _dict.length && _dict[j].startsWith(val); ++j) {
-            if (it != null && it.hasNext()) {
-                ((Comboitem) it.next()).setLabel(_dict[j]);
+        String snUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/view/ajaxTaxonName?query=";
+        String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=";
+
+        try {
+
+            String nsurl = snUrl + URLEncoder.encode(val, "UTF-8");
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(nsurl);
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println("Response status code: " + result);
+            System.out.println("Response: \n" + slist);
+
+            String[] aslist = slist.split("\n");
+            System.out.println("Got " + aslist.length + " records.");
+
+            Iterator it = getItems().iterator();
+            if (aslist.length > 0) {
+
+                for (int i = 0; i < aslist.length; i++) {
+                    if (it != null && it.hasNext()) {
+                        ((Comboitem) it.next()).setLabel(aslist[i]);
+                    } else {
+                        it = null;
+                        new Comboitem(aslist[i]).setParent(this);
+                    }
+                }
             } else {
-                it = null;
-                new Comboitem(_dict[j]).setParent(this);
+                if (it != null && it.hasNext()) {
+                    ((Comboitem) it.next()).setLabel("No species found.");
+                } else {
+                        it = null;
+                        new Comboitem("No species found.").setParent(this);
+                    }
+                
             }
-        }
 
-        while (it != null && it.hasNext()) {
-            it.next();
-            it.remove();
+            while (it != null && it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refreshRemote");
+            e.printStackTrace(System.out);
+
+            new Comboitem("No species found. error.").setParent(this);
         }
     }
-    private static String[] _dict = { //alphabetic order
-        "abacus", "accuracy", "acuity", "adage", "afar", "after", "apple",
-        "bible", "bird", "bingle", "blog",
-        "cabane", "cape", "cease", "cedar",
-        "dacron", "definable", "defacto", "deluxe",
-        "each", "eager", "effect", "efficacy",
-        "far", "far from",
-        "girl", "gigantean", "giant",
-        "home", "honest", "huge",
-        "information", "inner",
-        "jump", "jungle", "jungle fever",
-        "kaka", "kale", "kame",
-        "lamella", "lane", "lemma",
-        "master", "maxima", "music",
-        "nerve", "new", "number",
-        "omega", "opera",
-        "pea", "peace", "peaceful",
-        "rock",
-        "sound", "spread", "student", "super",
-        "tea", "teacher",
-        "unit", "universe",
-        "vector", "victory",
-        "wake", "wee", "weak",
-        "xeme",
-        "yea", "yellow",
-        "zebra", "zk"};
+    
 }

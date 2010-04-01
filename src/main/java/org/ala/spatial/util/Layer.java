@@ -73,4 +73,13 @@ public class Layer extends java.lang.Object {
 		type = _type;
 		fields = _fields;
 	}
+
+    @Override
+    public boolean equals(Object obj) {
+        Layer that = (Layer) obj;
+
+        return (this.display_name.equals(that.display_name));
+    }
+
+
 }

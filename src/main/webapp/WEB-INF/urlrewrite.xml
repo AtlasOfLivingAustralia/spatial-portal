@@ -27,12 +27,32 @@
 		<to>/output/maxent/$1</to>
 	</rule>
 	<rule>
+		<from>/analysis</from>
+		<to>/index.zul</to>
+	</rule>
+	<rule>
+		<from>/maxent2.zul</from>
+		<to>/maxent2.zul</to>
+	</rule>
+	<rule>
 		<from>/maxent2</from>
 		<to>/maxent2.zul</to>
 	</rule>
 	<rule>
-		<from>/filtering_svr.zul</from>
-		<to>/filtering_svr.zul</to>
+		<from>/maxentw</from>
+		<to>/maxentwizard.zul</to>
+	</rule>
+	<rule>
+		<from>/maxentwizard.zul</from>
+		<to>/maxentwizard.zul</to>
+	</rule>
+	<rule>
+		<from>/speciesList.zul</from>
+		<to>/speciesList.zul</to>
+	</rule>
+	<rule>
+		<from>/sampling.zul</from>
+		<to>/sampling.zul</to>
 	</rule>
 	<rule>
 		<from>/filtering_cl.html</from>

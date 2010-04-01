@@ -184,7 +184,7 @@
 				</vbox>
 				</hbox>
 				
-	
+		
 	
 	<button label="download sampling data" onClick="doAction();org.zkoss.zhtml.Filedownload.save(new String(tt.getResults()),txt_content_type,getSpeciesFilename());" left=""></button>
 	<label id="results"></label>
