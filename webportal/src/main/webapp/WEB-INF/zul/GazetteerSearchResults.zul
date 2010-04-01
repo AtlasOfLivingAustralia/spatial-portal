@@ -13,9 +13,9 @@ closable="true"
 
 <listbox id="gazetteerResults"  fixedLayout="true">
 	<listhead>
-		<listheader label="Feature Name" sort="auto" />
-		<listheader label="Feature Type" sort="auto" />
-		<listheader label="State" sort="auto" />
+		<listheader label="Feature Name" />
+		<listheader label="Feature Type" />
+		<listheader label="State" />
 		<listheader label="Add to map"  />
 	</listhead>	
 </listbox>
