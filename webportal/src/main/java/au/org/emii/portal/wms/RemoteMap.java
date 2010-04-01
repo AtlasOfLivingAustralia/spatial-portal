@@ -47,6 +47,8 @@ public interface RemoteMap {
      */
     MapLayer createAndTestWMSLayer(String label, String uri, float opacity);
 
+    MapLayer createAndTestWMSLayer(String label, String uri, float opacity, boolean queryable);
+
     /**
      * Discovery of nested services
      * @param discovery

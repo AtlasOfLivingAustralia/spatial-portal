@@ -476,8 +476,10 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			String filter = null;
 			String entity = null;
 			
-			uri = "http://maps.ala.org.au/wms?LAYERS=ala%3AtabDensityLayer&srs=EPSG:4326&VERSION=1.0.0&TRANSPARENT=true&FORMAT=image%2Fpng";
 			
+
+                        uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
+
 			//get the entity value from the button id
 			entity = event.getTarget().getId();
 			//get the scientific name from the hidden label
@@ -488,10 +490,14 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			MapComposer mc = getThisMapComposer();
 
 			//contruct the filter
-			filter = "<Filter><PropertyIsEqualTo><PropertyName>url</PropertyName><Literal><![CDATA["+mapWMS+entity+"&type=1&unit=1]]></Literal></PropertyIsEqualTo></Filter>";
-			
-			mc.addWMSLayer(label, uri, 1, filter);
+			//filter = "<Filter><PropertyIsEqualTo><PropertyName>url</PropertyName><Literal><![CDATA["+mapWMS+entity+"&type=1&unit=1]]></Literal></PropertyIsEqualTo></Filter>";
+			//lets try it in cql
+                        filter = "species eq '" + label + "'";
 
+                        logger.debug(filter);
+			//mc.addWMSLayer(label, uri, 1, filter);
+                        mc.addWMSGazetteerLayer(label, uri, 1, filter);
+                        
 
 		}
 	}

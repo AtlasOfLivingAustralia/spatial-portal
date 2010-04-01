@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?component name="addLayer" macro-uri="/WEB-INF/zul/AddLayer.zul"?>
 <?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
-<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/leftMenuLinks.zul"?>
+<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/Analysis.zul"?>
 <?component name="featureInfo" macro-uri="/WEB-INF/zul/featureInfo.zul"?>
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
 <?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"?>
@@ -252,7 +252,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <tab id="searchNavigationTab" label="Search" if="${! settings.disableSearch}"/>
 
                                     <!--  links -->
-                                    <tab id="linkNavigationTab" label="Links" if="${! settings.disableLinks}" />
+                                    <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
                                 </tabs>
                             </tabbox>
                         </div>
@@ -356,13 +356,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <tab id="facilitiesTab" label="Biological" if="${! settings.disableFacility}" />
 
                                         <!--  regions -->
-                                        <tab id="regionsTab" label="Environmental" if="${! settings.disableRegion}"/>
+                                        <tab id="regionsTab" label="Environmental" if="${! settings.disableRegion}" visible="false"/>
 
                                         <!--  realtime -->
-                                        <tab id="realtimeTab" label="Contextual" if="${! settings.disableRealtime}"/>
+                                        <tab id="realtimeTab" label="Environmental" if="${! settings.disableRealtime}"/>
 
                                         <!--  user defined -->
-                                        <tab id="userTab" label="Analysis" if="${! settings.disableUserDefined}"/>
+                                        <tab id="userTab" label="User Defined" if="${! settings.disableUserDefined}"/>
                                     </tabs>
                                     <tabpanels>
 
@@ -419,10 +419,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         </tabpanel>
 
                                         <!--  Regions -->
-                                        <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel">
+                                        <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel" visible="false">
 
                                            
-                                            <div id="regionControls">
+                                            <div id="regionControls" >
                                                 <zk forEach="${session.attributes.portalSession.regions}">
                                                     <div>
                                                         <radio id="radio_${each.value.id}" label="${each.value.name}"
@@ -452,7 +452,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                         <vbox width="100%">
                                                             <label value="Enter Place Name" />
                                                         <hbox>
-                                                           <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true"></combobox>
+                                                           <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
                                                             <button id="gazSearch" label="Search" />
                                                             <label id="resultGaz" />
                                                         </hbox>

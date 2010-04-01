@@ -65,7 +65,6 @@ public class GazetteerSearchController extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
         sSearchTerm = (String) sess.getAttribute("searchGazetteerTerm");
-        //sFeatureType = (String) sess.getAttribute("searchType");
         searchGazetteer(getURI());
         renderGazetteerResults();
     }
@@ -135,12 +134,12 @@ public class GazetteerSearchController extends UtilityComposer {
             lc.appendChild(tbFull);
             li.appendChild(lc);
 
-            // Add  name
+            /*
             lc = new Listcell();
             Label lb = new Label();
             lb.setValue("TODO");
             lc.appendChild(lb);
-            li.appendChild(lc);
+            li.appendChild(lc);*/
 
 
 
