@@ -669,12 +669,12 @@
     <!--tilecache - local-->
     <tns:mapping>
       <tns:uriId>base-maps-local-0</tns:uriId>
-      <tns:uriEndPointIdRef>tilecache-local-dev-0</tns:uriEndPointIdRef>
+      <tns:uriEndPointIdRef>tilecache-imos2</tns:uriEndPointIdRef>
     </tns:mapping>
     <!--tilecache - remote-->
     <tns:mapping>
       <tns:uriId>base-maps-remote-0</tns:uriId>
-      <tns:uriEndPointIdRef>tilecache-remote-dev-0</tns:uriEndPointIdRef>
+      <tns:uriEndPointIdRef>tilecache-imos2-remote</tns:uriEndPointIdRef>
     </tns:mapping>
     <!--MEST - search-->
     <tns:mapping>
@@ -755,6 +755,27 @@
         <tns:description>Tilecache running on obsidian, no squid - remote layers. through proxy</tns:description>
         <tns:uri>http://obsidian.bluenet.utas.edu.au:800/cgi-bin/tilecache_proxied.cgi?</tns:uri>
       </tns:uriEndPoint>
+
+           <!--tilecache - local - imos2-->
+      <tns:uriEndPoint>
+        <tns:id>tilecache-imos2</tns:id>
+        <tns:name>tilecache on imos2</tns:name>
+        <tns:disabled>false</tns:disabled>
+        <tns:description>Tilecache running on production - local layers</tns:description>
+        <tns:uri>http://imos2.ersa.edu.au/cgi-bin/tilecache.cgi?</tns:uri>
+      </tns:uriEndPoint>
+      <!--tilecache - remote - imos2-->
+      <tns:uriEndPoint>
+        <tns:id>tilecache-imos2-remote</tns:id>
+        <tns:name>tilecache on imos2</tns:name>
+        <tns:disabled>false</tns:disabled>
+        <tns:description>Tilecache running on production - remote layers, through proxy</tns:description>
+        <tns:uri>http://imos2.ersa.edu.au/cgi-bin/tilecache_proxied.cgi?</tns:uri>
+      </tns:uriEndPoint>
+
+
+
+
       <!--MEST - production-->
       <tns:uriEndPoint>
         <tns:id>imos-mest-0</tns:id>
