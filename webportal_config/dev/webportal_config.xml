@@ -1809,7 +1809,7 @@
         <tns:name>Blue Basic</tns:name>
         <tns:disabled>false</tns:disabled>
         <tns:description>IMOS Default basemap</tns:description>
-        <tns:uriIdRef>base-maps-local-0</tns:uriIdRef>
+        <tns:uriIdRef>base-maps-remote-0</tns:uriIdRef>
         <tns:type>WMS-LAYER-1.1.0</tns:type>
         <tns:cache>false</tns:cache>
         <tns:layers>default_basemap_simple</tns:layers>
@@ -1821,7 +1821,7 @@
         <tns:name>World Bathymetry</tns:name>
         <tns:disabled>false</tns:disabled>
         <tns:description>World Bathymetry (with GA HiRes Bathy in the Australian region)</tns:description>
-        <tns:uriIdRef>base-maps-local-0</tns:uriIdRef>
+        <tns:uriIdRef>base-maps-remote-0</tns:uriIdRef>
         <tns:type>WMS-LAYER-1.1.0</tns:type>
         <tns:cache>false</tns:cache>
         <tns:layers>HiRes_aus-group</tns:layers>
