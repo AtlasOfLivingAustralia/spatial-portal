@@ -81,10 +81,35 @@ public class Zipper {
      * @param args command line or method inputs 
      */
     public static void main(String[] args) {
+        /*
         String infile = "/Users/ajay/projects/ala/code/alageospatialportal/alaspatial/target/ala-spatial-1.0-SNAPSHOT/output/maxent/F3F24BCAEE7732FBD6D93E21A4B65E81/species.asc";
         String outfile = "";
 
         outfile = zipFile(infile);
         System.out.println("outfile: " + outfile);
+         * 
+         */
+
+        /*
+        Grid g = new Grid("/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/world_10_bio01");
+        System.out.println("rows: " + g.nrows);
+        System.out.println("cols: " + g.ncols);
+        System.out.println("v: " + g.minval);
+        System.out.println("v: " + g.maxval);
+
+        double[] dv = g.getGrid();
+
+        System.out.println("values:\n" + dv.length);
+        for (int i=0; i<dv.length; i++) {
+            System.out.println(dv[i]); 
+        }
+         *
+         *
+         */
+
+
+        System.out.println("Static methods available. "); 
+
+
     }
 }

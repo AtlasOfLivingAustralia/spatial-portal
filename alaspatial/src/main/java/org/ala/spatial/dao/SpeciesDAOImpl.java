@@ -63,11 +63,11 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
         Vector tmpSpecies = new Vector();
 
         Species s = new Species();
-        s.setScientificname("Test name 1");
+        s.setSpecies("Test name 1");
         tmpSpecies.add(s);
 
         Species s2 = new Species();
-        s2.setScientificname("Test name 2");
+        s2.setSpecies("Test name 2");
         tmpSpecies.add(s2);
 
         return tmpSpecies;
@@ -82,8 +82,11 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
     @Override
     public List<Species> getRecordsByNameLevel(String name, String level) { //  throws DataAccessException
         //return this.sessionFactory.getCurrentSession().createQuery("from Species where scientificname = ? ").setParameter(0, name).list();
-        if (level.equalsIgnoreCase("g")) {
+        level = level.trim().toLowerCase();
+        if (level.equalsIgnoreCase("g") || level.equalsIgnoreCase("genus")) {
             level = "genus";
+        } else if (level.equalsIgnoreCase("sp") || level.equalsIgnoreCase("species")) {
+            level = "species";
         } else if (level.equalsIgnoreCase("sn")) {
             level = "scientificname";
         } else if (level.equalsIgnoreCase("f")) {
@@ -111,14 +114,14 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
 
 
         
-        final String theName = name.toLowerCase();
+        final String theName = name; //.toLowerCase();
         final String theLevel = level.toLowerCase();
 
         return (List) this.hibernateTemplate.execute(new HibernateCallback() {
 
             @Override
             public List<Species> doInHibernate(Session session) {
-                Query query = session.createQuery("from Species where lower("+theLevel+") = :name "); // (:level)
+                Query query = session.createQuery("from Species where "+theLevel+" = :name AND (longitude <> '' or longitude <> '') "); // (:level)
                 //query.setParameter(0, theLevel);
                 //query.setParameter(1, theName);
                 //query.setString("level", theLevel);
@@ -149,12 +152,12 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
 
         TaxonNames s = new TaxonNames();
         s.setTname("Test name 1");
-        s.setTlevel("scientificname");
+        s.setTlevel("species");
         tmpSpecies.add(s);
 
         TaxonNames s2 = new TaxonNames();
         s2.setTname("Test name 2");
-        s2.setTlevel("scientificname");
+        s2.setTlevel("species");
         tmpSpecies.add(s2);
 
         TaxonNames s3 = new TaxonNames();

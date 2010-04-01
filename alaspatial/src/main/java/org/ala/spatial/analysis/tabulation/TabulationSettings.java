@@ -94,6 +94,23 @@ public class TabulationSettings {
 	static boolean loaded = false;
 	
 	/**
+	 * occurances csv file full path
+	 *
+	 */
+	static String occurances_csv;
+	
+	/**
+	 * occurances csv fields, in hierarchy order ending
+	 * with fields for species, longitude and latitude
+	 */
+	static String [] occurances_csv_fields;
+	
+	/**
+	 * directory for indexes
+	 */
+	static String index_path;
+	
+	/**
 	 * loads settings form name of the appropriate xml resource file
 	 * 
 	 * @param filename name xml resource file to load
@@ -228,7 +245,16 @@ public class TabulationSettings {
 			
 		}
 		environmental_data_files = (Layer[]) layerlist.toArray(new Layer[layerlist.size()]);
-		System.out.println(environmental_data_files);
+		
+		//additions for indexing
+		occurances_csv = xr.getValue("occurances_csv");
+		System.out.println(occurances_csv);
+		occurances_csv_fields = xr.getValue("occurances_csv_fields").split(",");
+		for(String ocf : occurances_csv_fields){
+			System.out.println(ocf);
+		}
+		index_path = xr.getValue("index_path");
+		System.out.println(index_path);
 	}
 	
 	

@@ -16,13 +16,13 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name = "OZCAMDATA")
+@Table(name = "OCCURRENCESV1")
 public class Species {
 
     @Id
-    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="ozcamdata_odid_seq")
-    @SequenceGenerator(name = "ozcamdata_odid_seq", sequenceName = "ozcamdata_odid_seq")
-    @Column(name = "odid", insertable = false, updatable = false)
+    @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="occurrences_ocid_seq")
+    @SequenceGenerator(name = "occurrences_ocid_seq", sequenceName = "occurrences_ocid_seq")
+    @Column(name = "ocid", insertable = false, updatable = false)
     private long id;
 
     @Column(name="genus")
@@ -31,8 +31,8 @@ public class Species {
     @Column(name="species")
     private String species;
 
-    @Column(name="scientificname")
-    private String scientificname;
+    //@Column(name="scientificname")
+    //private String scientificname;
 
     @Column(name="longitude")
     private String longitude;
@@ -51,7 +51,7 @@ public class Species {
         this.id = id;
         this.genus = genus;
         this.species = species;
-        this.scientificname = scientificname;
+        //this.scientificname = scientificname;
         this.longitude = longitude;
         this.latitude = latitude;
     }
@@ -88,6 +88,7 @@ public class Species {
         this.longitude = longitude;
     }
 
+    /*
     public String getScientificname() {
         return scientificname;
     }
@@ -95,6 +96,7 @@ public class Species {
     public void setScientificname(String scientificname) {
         this.scientificname = scientificname;
     }
+    */
 
     public String getSpecies() {
         return species;

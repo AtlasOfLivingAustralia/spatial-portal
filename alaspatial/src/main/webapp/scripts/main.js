@@ -73,11 +73,11 @@ var ALASpatial = {
             success: function (data) {
                 var meResult = "Successfully generate Maxent results.";
                 meResult += "<br />";
-                meResult += "<a href='" + data.map + "'>View map</a>";
+                meResult += "<a target='_blank' href='" + data.map + "'>View map</a>";
                 meResult += "<br />";
-                meResult += "<a href='" + data.info + "'>View generated Maxent information</a>";
+                meResult += "<a target='_blank' href='" + data.info + "'>View generated Maxent information</a>";
                 meResult += "<br />";
-                meResult += "<a href='" + data.file + "'>Download generated grid</a>";
+                meResult += "<a target='_blank' href='" + data.file + "'>Download generated grid</a>";
                 $('#resultUrl').html(meResult);
             },
             beforeSubmit: function(data){
