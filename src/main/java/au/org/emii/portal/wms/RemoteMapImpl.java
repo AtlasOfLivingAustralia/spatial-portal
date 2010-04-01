@@ -313,6 +313,45 @@ public class RemoteMapImpl implements RemoteMap {
     }
 
 
+     @Override
+    public MapLayer createAndTestWMSLayer(String label, String uri, float opacity, boolean queryable) {
+        /* it is not necessary to construct and parse a service instance for adding
+         * a WMS layer since we already know its a WMS layer, so all we have to do
+         * is populate a MapLayer instance and ask for it to be activated as a
+         * user defined item
+         */
+        MapLayer testedMapLayer = null;
+        MapLayer mapLayer = new MapLayer();
+        mapLayer.setName(label);
+
+        mapLayer.setUri(uri);
+        mapLayer.setLayer(layerUtilities.getLayers(uri));
+        mapLayer.setOpacity(opacity);
+        mapLayer.setImageFormat(layerUtilities.getImageFormat(uri));
+
+        /* we don't want our user to have to type loads
+         * when adding a new layer so we just assume/generate
+         * values for the id and description
+         */
+
+        mapLayer.setId(uri + label.replaceAll("\\s+", ""));
+        mapLayer.setDescription(label);
+        mapLayer.setDisplayable(true);
+        mapLayer.setQueryable(queryable);
+
+        // wms version
+        String version = layerUtilities.getVersionValue(uri);
+        mapLayer.setType(layerUtilities.internalVersion(version));
+
+        // Request a 1px test image from the layer
+        if (imageTester.testLayer(mapLayer)) {
+            testedMapLayer = mapLayer;
+        }
+        return testedMapLayer;
+    }
+
+
+
     public LanguagePack getLanguagePack() {
         return languagePack;
     }

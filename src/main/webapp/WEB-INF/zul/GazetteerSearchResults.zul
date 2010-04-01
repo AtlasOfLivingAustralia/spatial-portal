@@ -14,21 +14,9 @@ closable="true"
 <listbox id="gazetteerResults"  fixedLayout="true">
 	<listhead>
 		<listheader label="Feature Name" sort="auto" />
-		<listheader label="Feature Type" sort="auto" />
 		<listheader label="Add to map"  />
 	</listhead>	
 </listbox>
-
-
-
-
-<div id="pagingDiv" sclass="searchdiv" >
-		
-            <label value="Page" sclass="h3" />
-            <intbox id="pageNo" width="30px"/>
-            <label value="of " sclass="h3" />
-            <label value="" id="numberOfPages" sclass="h3" />
- </div>
 
 
 </window>

@@ -1,0 +1,18 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
+<zk>
+    <label value="Analysis Tools"  sclass="h2 title"/>
+
+    <tabbox zclass="menuswitch" zindex="600" style="border:0px!important;">
+                                <tabs>
+                                    <!--  layers -->
+                                    <tab id="filteringTab" label="Filtering"  />
+
+                                    <!--  search  -->
+                                    <tab id="samplingTab" label="Sampling" />
+
+                                    <!--  links -->
+                                    <tab id="maxentTab" label="Maxent"  />
+                                </tabs>
+                            </tabbox>
+</zk>

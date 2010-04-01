@@ -33,29 +33,13 @@ import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.SessionInitImpl;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
-import net.sf.json.util.PropertyFilter;
-import org.ala.rest.GazetteerSearch;
-import org.ala.rest.SearchResultItem;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
-import org.ala.spatial.gazetteer.GazetteerSearchResult;
-import org.ala.spatial.gazetteer.GazetteerSearchResultSummary;
-import org.ala.spatial.search.TaxaScientificSearchResult;
-import org.ala.spatial.search.TaxaScientificSearchSummary;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -76,7 +60,6 @@ import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
@@ -474,6 +457,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
              * We always add to the top of the list so that newly actived
              * map layers display above existing ones
              */
+
+            logger.debug("IS IT QUERYABLE  " + mapLayer.getCql() + " " + mapLayer.isQueryable());
             ((ListModelList) activeLayersList.getModel()).add(0, mapLayer);
 
             // update the map
@@ -799,6 +784,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 // we must tell any future tree menus that the map layer is already
                 // displayed as we didn't use changeSelection()
                 mapLayer.setListedInActiveLayers(true);
+                //mapLayer.setQueryable(_visible);
             }
 
             logger.debug("leaving addUserDefinedLayerToMenu");
@@ -1071,9 +1057,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (safeToPerformMapAction()) {
             //if (getPortalSession().getUserDefinedById(uri) == null) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-                MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity, true);
                 mapLayer.setCql(filter);
-                mapLayer.setQueryable(true);
+                //mapLayer.setQueryable(true);
                 if (mapLayer == null) {
                     // fail
                     errorMessageBrokenWMSLayer(imageTester);
@@ -1081,6 +1067,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else {
                     // ok
                     addUserDefinedLayerToMenu(mapLayer, true);
+
                     addedOk = true;
                 }
             } else {

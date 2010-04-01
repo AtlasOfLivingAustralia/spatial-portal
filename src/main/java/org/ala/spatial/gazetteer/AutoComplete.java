@@ -45,10 +45,8 @@ public class AutoComplete extends Combobox {
       private void refresh(String val) {
 	//update the dictionary
 		//TODO: remove hardcoded host, credentials
- 		HttpHost targetHost = new HttpHost("localhost", 8080, "http"); 
-
+ 		HttpHost targetHost = new HttpHost("ec2-184-73-34-104.compute-1.amazonaws.com", 80, "http");
  		DefaultHttpClient httpclient = new DefaultHttpClient();
-
 		// Add AuthCache to the execution context
 		BasicHttpContext localcontext = new BasicHttpContext();
 		//localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);    		

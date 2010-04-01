@@ -157,7 +157,7 @@
 
 			For 'advanced' search facilities please use the
 			<separator />
-			<toolbarbutton target="_blank" label="IMOS Mest database."
+			<toolbarbutton target="_blank" label="ALA Mest database."
 				href="http://imosmest.aodn.org.au/geonetwork/srv/en/main.home?tab=advanced"
 				sclass="external" />
 		</div>
