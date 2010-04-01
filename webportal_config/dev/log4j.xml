@@ -3,7 +3,7 @@
 <!--
 This is a template from which the log4j.xml file will be built.
 
-The variables: geoff-laptop and WEB PORTAL will be replaced
+The variables: 192.168.1.2 and ALA Spatial PORTAL will be replaced
 at runtime by the hostname and portal_name key from portal.properties
 respectivly.  The log4j.xml file will then be written and log4j will
 reload.  This is the most effective way I could find of changing the
@@ -17,7 +17,7 @@ the portal name value
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
         <param name="Target" value="System.out"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{ISO8601} %5p [%t] (%F:%L) geoff-laptop WEB PORTAL - %m%n"/>
+            <param name="ConversionPattern" value="%d{ISO8601} %5p [%t] (%F:%L) 192.168.1.2 ALA Spatial PORTAL - %m%n"/>
         </layout>
     </appender>
 
@@ -29,7 +29,7 @@ the portal name value
         <param name="Subject" value="[WEBPORTAL] Application message" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern"
-                   value="[%d{ISO8601}] geoff-laptop WEB PORTAL %n%n%-5p%n%n%c%n%n%m%n%n" />
+                   value="[%d{ISO8601}] 192.168.1.2 ALA Spatial PORTAL %n%n%-5p%n%n%c%n%n%m%n%n" />
         </layout>
         <filter class="org.apache.log4j.varia.LevelRangeFilter">
             <param name="LevelMin" value="WARN"/>

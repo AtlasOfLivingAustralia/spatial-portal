@@ -12,7 +12,7 @@
     </tns:defaultBoundingBox>
     <!--disable looking up depth/altitude for points clicked on map - if enabled, requires
         access to a massive database...-->
-    <tns:disableDepthServlet>false</tns:disableDepthServlet>
+    <tns:disableDepthServlet>true</tns:disableDepthServlet>
     <!--'Well known' values    Values that the system expects to be able to find on load-->
     <!--Mime type to be treated as XML - normaly application/xml-->
     <tns:xmlMimeType>application/xml</tns:xmlMimeType>
@@ -51,7 +51,7 @@
     <!--Proxy server
         ~~~~~~~~~~~~-->
     <!--is proxy server required?-->
-    <tns:proxyRequired>true</tns:proxyRequired>
+    <tns:proxyRequired>false</tns:proxyRequired>
     <!--proxy server host or IP address - do not prefix with http://..!-->
     <tns:proxyHost>proxy.utas.edu.au</tns:proxyHost>
     <!--proxy server port number-->
@@ -88,7 +88,8 @@
             imos.aodn.org.au|
             imos0.ersa.edu.au|
             imos1.ersa.edu.au|
-            imos2.ersa.edu.au|</tns:proxyAllowedHosts>
+            imos2.ersa.edu.au|
+            ec2-184-73-34-104.compute-1.amazonaws.com</tns:proxyAllowedHosts>
     <!--Cache Reflector
         ~~~~~~~~~~~~~~~
 
@@ -166,7 +167,7 @@
       <animation_height>512</animation_height>
       <!--maximum length (chars) of a layer name for display purposes.  Names
             exceeding this limit will be truncated-->
-      <layer_name_max_length>37</layer_name_max_length>
+      <layer_name_max_length>80</layer_name_max_length>
       <!--Default width for left portal menu-->
       <menu_default_width>380px</menu_default_width>
       <!--Width of the menu when minimised-->
@@ -601,46 +602,50 @@
     <!--Realtime data providers
         ~~~~~~~~~~~~~~~~~~~~~~~-->
     <tns:realtimes>
-      <tns:disabled>true</tns:disabled>
-      <!--ANMN-->
-      <tns:realtime>
+      <tns:disabled>false</tns:disabled>
+
+       <tns:realtime>
         <tns:id>rtd-0</tns:id>
-        <tns:name>ANMN Moorings</tns:name>
+        <tns:name>Geoscience Australia</tns:name>
         <tns:disabled>false</tns:disabled>
-        <tns:description>ANMN Moorings</tns:description>
+        <tns:description>GA Supplied data</tns:description>
         <tns:menu>
           <tns:id>root-rtd</tns:id>
           <tns:name>root-rtd</tns:name>
           <tns:disabled>false</tns:disabled>
-          <tns:description>Realtime Data</tns:description>
+          <tns:description>GA Data</tns:description>
           <tns:children>
-            <tns:disoveryOrServiceIdRef>anmn-nrs-realtime</tns:disoveryOrServiceIdRef>
+            <tns:disoveryOrServiceIdRef>ala-layer-0</tns:disoveryOrServiceIdRef>
+             <tns:disoveryOrServiceIdRef>ala-layer-1</tns:disoveryOrServiceIdRef>
           </tns:children>
         </tns:menu>
       </tns:realtime>
-      <!--FAIMMS-->
-      <tns:realtime>
-        <tns:id>rtd-2</tns:id>
-        <tns:name>FAIMMS</tns:name>
+     <tns:realtime>
+        <tns:id>rtd-1</tns:id>
+        <tns:name>Regions</tns:name>
         <tns:disabled>false</tns:disabled>
-        <tns:description>ANMN Moorings</tns:description>
+        <tns:description>Region Data</tns:description>
         <tns:menu>
-          <tns:id>root-rtd-0</tns:id>
-          <tns:name>root-rtd</tns:name>
+          <tns:id>root-rtd1</tns:id>
+          <tns:name>root-rtd1</tns:name>
           <tns:disabled>false</tns:disabled>
-          <tns:description>Realtime Data</tns:description>
+          <tns:description>Regions</tns:description>
           <tns:children>
-            <tns:disoveryOrServiceIdRef>faimms-0</tns:disoveryOrServiceIdRef>
+            <tns:disoveryOrServiceIdRef>ala-layer-2</tns:disoveryOrServiceIdRef>
+             <tns:disoveryOrServiceIdRef>ala-layer-3</tns:disoveryOrServiceIdRef>
+             <tns:disoveryOrServiceIdRef>ala-layer-4</tns:disoveryOrServiceIdRef>
+             <tns:disoveryOrServiceIdRef>ala-layer-5</tns:disoveryOrServiceIdRef>
           </tns:children>
         </tns:menu>
       </tns:realtime>
+
     </tns:realtimes>
     <!--Top right links menu
         ~~~~~~~~~~~~~~~~~
         portal static links menu (top right) - displayed in order of inclusion-->
     <tns:topRightLinks>
       <tns:disabled>false</tns:disabled>
-      <tns:staticLinkIdRef>emiihome-0</tns:staticLinkIdRef>
+      <tns:staticLinkIdRef>alahome-0</tns:staticLinkIdRef>
       <tns:staticLinkIdRef>IMOS-home-0</tns:staticLinkIdRef>
       <tns:staticLinkIdRef>help-0</tns:staticLinkIdRef>
     </tns:topRightLinks>
@@ -655,13 +660,11 @@
     <!--geoserver-->
     <tns:mapping>
       <tns:uriId>web-maps-0</tns:uriId>
-      <tns:uriEndPointIdRef>emii-dev</tns:uriEndPointIdRef>
-      <!--tns:uriEndPointIdRef>emii</tns:uriEndPointIdRef-->
+      <tns:uriEndPointIdRef>imos2</tns:uriEndPointIdRef>
     </tns:mapping>
     <tns:mapping>
       <tns:uriId>web-maps-argo-oxygen</tns:uriId>
-      <tns:uriEndPointIdRef>emii-argo-oxygen</tns:uriEndPointIdRef>
-      <!--tns:uriEndPointIdRef>emii-argo-oxygen</tns:uriEndPointIdRef-->
+      <tns:uriEndPointIdRef>imos2-argo-oxygen</tns:uriEndPointIdRef>
     </tns:mapping>
     <!--tilecache - local-->
     <tns:mapping>
@@ -697,6 +700,13 @@
         <tns:disabled>false</tns:disabled>
         <tns:description>Geoserver on emii3 squid, pointing to bluenet (special case argo_oxygen)</tns:description>
         <tns:uri>http://emii3.its.utas.edu.au/geoserver/wms?styles=argo_oxygen</tns:uri>
+      </tns:uriEndPoint>
+      <tns:uriEndPoint>
+          <tns:id>ala-maps</tns:id>
+        <tns:name>ala maps geoserver instance</tns:name>
+        <tns:disabled>false</tns:disabled>
+        <tns:description>Geoserver on maps at ala</tns:description>
+        <tns:uri>http://maps.ala.org.au/wms</tns:uri>
       </tns:uriEndPoint>
       <!--obsidian-->
       <tns:uriEndPoint>
@@ -791,12 +801,12 @@
 
         Layers to active when the portal is loaded-->
     <tns:activeByDefault>
-      <tns:layer>
+      <!--<tns:layer>
         <tns:idRef>argo-2</tns:idRef>
       </tns:layer>
       <tns:layer>
         <tns:idRef>anmn-nrs</tns:idRef>
-      </tns:layer>
+      </tns:layer>-->
     </tns:activeByDefault>
     <tns:blacklist>
       <!--example of how to blacklist a layer.
@@ -830,7 +840,7 @@
         <tns:name>Remote Sensing Layers  (Demo)</tns:name>
         <tns:disabled>false</tns:disabled>
         <tns:description>ncWMS Server Demonstration layers</tns:description>
-        <tns:uri>http://emii3.its.utas.edu.au/ncWMS/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities&amp;VERSION=1.3.0</tns:uri>
+        <tns:uri>http://imos2.ersa.edu.au/ncWMS/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities&amp;VERSION=1.3.0</tns:uri>
         <tns:type>NCWMS</tns:type>
         <tns:cache>false</tns:cache>
         <tns:opacity>0.5</tns:opacity>
@@ -854,6 +864,95 @@
                 <tns:imageFormat>image/jpeg</tns:imageFormat>
                 <tns:queryable>false</tns:queryable>
             </tns:service>-->
+            
+            
+       <!-- ALA Maps-->
+
+       <tns:service>
+                <tns:id>ala-layer-0</tns:id>
+                <tns:name>GA River Basins</tns:name>
+                <tns:disabled>false</tns:disabled>
+                <tns:description>Geoscience Australia River Basins</tns:description>
+                <tns:uri>http://maps.ala.org.au/wms?</tns:uri>
+                <tns:type>WMS-LAYER-1.1.1</tns:type>
+                <tns:cache>false</tns:cache>
+                <tns:opacity>1.0</tns:opacity>
+                <tns:layers>geoscience:riverbasins</tns:layers>
+                <tns:imageFormat>image/png</tns:imageFormat>
+                <tns:queryable>true</tns:queryable>
+      </tns:service>
+
+
+       <tns:service>
+                <tns:id>ala-layer-1</tns:id>
+                <tns:name>GA Roads</tns:name>
+                <tns:disabled>false</tns:disabled>
+                <tns:description>Geoscience Australia Roads</tns:description>
+                <tns:uri>http://maps.ala.org.au/wms?</tns:uri>
+                <tns:type>WMS-LAYER-1.1.1</tns:type>
+                <tns:cache>false</tns:cache>
+                <tns:opacity>1.0</tns:opacity>
+                <tns:layers>geoscience:roads</tns:layers>
+                <tns:imageFormat>image/png</tns:imageFormat>
+                <tns:queryable>true</tns:queryable>
+      </tns:service>
+
+      <tns:service>
+                <tns:id>ala-layer-2</tns:id>
+                <tns:name>IMCRA Regions</tns:name>
+                <tns:disabled>false</tns:disabled>
+                <tns:description>IMCRA</tns:description>
+                <tns:uri>http://maps.ala.org.au/wms?</tns:uri>
+                <tns:type>WMS-LAYER-1.1.1</tns:type>
+                <tns:cache>false</tns:cache>
+                <tns:opacity>1.0</tns:opacity>
+                <tns:layers>ala:imcra</tns:layers>
+                <tns:imageFormat>image/png</tns:imageFormat>
+                <tns:queryable>true</tns:queryable>
+      </tns:service>
+
+      <tns:service>
+                <tns:id>ala-layer-3</tns:id>
+                <tns:name>IBRA Regions</tns:name>
+                <tns:disabled>false</tns:disabled>
+                <tns:description>IBRA</tns:description>
+                <tns:uri>http://maps.ala.org.au/wms?</tns:uri>
+                <tns:type>WMS-LAYER-1.1.1</tns:type>
+                <tns:cache>false</tns:cache>
+                <tns:opacity>1.0</tns:opacity>
+                <tns:layers>ala:ibra</tns:layers>
+                <tns:imageFormat>image/png</tns:imageFormat>
+                <tns:queryable>true</tns:queryable>
+      </tns:service>
+
+      <tns:service>
+                <tns:id>ala-layer-4</tns:id>
+                <tns:name>LGA Boundaries</tns:name>
+                <tns:disabled>false</tns:disabled>
+                <tns:description>LGA</tns:description>
+                <tns:uri>http://maps.ala.org.au/wms?</tns:uri>
+                <tns:type>WMS-LAYER-1.1.1</tns:type>
+                <tns:cache>false</tns:cache>
+                <tns:opacity>1.0</tns:opacity>
+                <tns:layers>ala:gadm</tns:layers>
+                <tns:imageFormat>image/png</tns:imageFormat>
+                <tns:queryable>true</tns:queryable>
+      </tns:service>
+
+      <tns:service>
+                <tns:id>ala-layer-5</tns:id>
+                <tns:name>World Database Protected Areas</tns:name>
+                <tns:disabled>false</tns:disabled>
+                <tns:description>WDPA</tns:description>
+                <tns:uri>http://maps.ala.org.au/wms?</tns:uri>
+                <tns:type>WMS-LAYER-1.1.1</tns:type>
+                <tns:cache>false</tns:cache>
+                <tns:opacity>1.0</tns:opacity>
+                <tns:layers>wdpa:protected_areas</tns:layers>
+                <tns:imageFormat>image/png</tns:imageFormat>
+                <tns:queryable>true</tns:queryable>
+      </tns:service>
+
       <!--ARGO-->
       <tns:service>
         <tns:id>argo-2</tns:id>
@@ -901,7 +1000,7 @@
         <tns:name>ACORN Ocean Current Map (SA Gulf)</tns:name>
         <tns:disabled>false</tns:disabled>
         <tns:description>ACORN Ocean Current Map - South Australian Gulf</tns:description>
-        <tns:uri>http://obsidian.bluenet.utas.edu.au:800/geoserver/wms</tns:uri>
+        <tns:uriIdRef>web-maps-0</tns:uriIdRef>
         <tns:type>WMS-LAYER-1.1.1</tns:type>
         <tns:cache>false</tns:cache>
         <tns:cql>site_code like 'SAG'</tns:cql>
@@ -915,12 +1014,12 @@
         <tns:name>ACORN Ocean Current Map (GBR)</tns:name>
         <tns:disabled>false</tns:disabled>
         <tns:description>ACORN Ocean Current Map - Great Barrier Reef</tns:description>
-        <tns:uri>http://obsidian.bluenet.utas.edu.au:800/geoserver/wms</tns:uri>
+        <tns:uriIdRef>web-maps-0</tns:uriIdRef>
         <tns:type>WMS-LAYER-1.1.1</tns:type>
         <tns:cache>false</tns:cache>
         <tns:cql>site_code like 'GBR'</tns:cql>
         <tns:opacity>1.0</tns:opacity>
-        <tns:layers>acorn_realtime</tns:layers>
+        <tns:layers>acorn_gbr</tns:layers>
         <tns:imageFormat>image/png</tns:imageFormat>
         <tns:queryable>true</tns:queryable>
       </tns:service>
@@ -1057,7 +1156,7 @@
         <tns:name>SOOP SST (ALL)</tns:name>
         <tns:disabled>false</tns:disabled>
         <tns:description>(SOOP) Sea Surface Temperature all tracks</tns:description>
-        <tns:uri>http://obsidian.bluenet.utas.edu.au:800/geoserver/wms</tns:uri>
+        <tns:uriIdRef>web-maps-0</tns:uriIdRef>
         <tns:type>WMS-LAYER-1.1.1</tns:type>
         <tns:cache>false</tns:cache>
         <tns:opacity>1.0</tns:opacity>
@@ -1703,7 +1802,7 @@
     <!--Baselayers
         ~~~~~~~~~~-->
     <tns:baseLayers>
-      <tns:defaultBaseLayerIdRef>Bathy-HiRes-0</tns:defaultBaseLayerIdRef>
+      <tns:defaultBaseLayerIdRef>bluemarble-0</tns:defaultBaseLayerIdRef>
       <!--Simple basemap group from geoserver-->
       <tns:baseLayer>
         <tns:id>basemap-0</tns:id>
@@ -1775,7 +1874,7 @@
       <tns:staticLink>
         <tns:id>IMOS-home-0</tns:id>
         <tns:name>IMOS Home</tns:name>
-        <tns:disabled>false</tns:disabled>
+        <tns:disabled>true</tns:disabled>
         <tns:description>Integrated Marine Observing System</tns:description>
         <tns:uri>http://www.imos.org.au</tns:uri>
         <tns:external>true</tns:external>
@@ -1783,9 +1882,17 @@
       <tns:staticLink>
         <tns:id>emiihome-0</tns:id>
         <tns:name>eMII Home</tns:name>
-        <tns:disabled>false</tns:disabled>
+        <tns:disabled>true</tns:disabled>
         <tns:description>e-Marine Information Infrastructure</tns:description>
         <tns:uri>http://www.emii.org.au</tns:uri>
+        <tns:external>true</tns:external>
+      </tns:staticLink>
+      <tns:staticLink>
+        <tns:id>alahome-0</tns:id>
+        <tns:name>ALA Home</tns:name>
+        <tns:disabled>false</tns:disabled>
+        <tns:description>Atlas of Living Australia</tns:description>
+        <tns:uri>http://www.ala.org.au</tns:uri>
         <tns:external>true</tns:external>
       </tns:staticLink>
     </tns:staticLinks>
@@ -1793,7 +1900,7 @@
   <!--User account
     ============-->
   <tns:userAccount>
-    <tns:portalUsersDisabled>false</tns:portalUsersDisabled>
+    <tns:portalUsersDisabled>true</tns:portalUsersDisabled>
     <tns:adminConsoleDisabled>false</tns:adminConsoleDisabled>
     <tns:portalUserAccountManagerIdRef>mest-account-manager-0</tns:portalUserAccountManagerIdRef>
     <tns:adminConsoleAccountManagerIdRef>portal-admin-account-manager-0</tns:adminConsoleAccountManagerIdRef>
