@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
+import org.ala.spatial.search.AutoCompleteSpecies;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -95,6 +96,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Window externalContentWindow;
     private Iframe rawMessageIframeHack;
     private Div rawMessageHackHolder;
+    private Tabbox mainTab;
     private Tabbox accordionMenu;
     private Tab layerNavigationTab;
     private Tab searchNavigationTab;
@@ -171,7 +173,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Settings settings = null;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
     //additional controls for the ALA Species Search stuff
-    private Textbox txtSearchSpecies;
+
     private Radio rdoCommonSearch;
     private Radio rdoScientificSearch;
     private Button gazSearch;
@@ -180,6 +182,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Listbox gazetteerResults;
     private GazetteerSearchController gazetteerSearchWindow;
     private AutoComplete gazetteerAuto;
+    private AutoCompleteSpecies searchSpeciesAuto;
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -232,6 +235,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onChange$safeToLoadMap() {
         mapLoaded(safeToLoadMap.getValue());
+    }
+
+    public void onSelect$mainTab(){
+       if( mainTab.getSelectedTab().getId().equalsIgnoreCase("linkNavigationTab")) {
+           menus.setWidth("800px");
+       }
     }
 
     /**
@@ -1891,11 +1900,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
+    public void onCheck$rdoCommonSearch(){
+        searchSpeciesAuto.setSearchType("common");
+        searchSpeciesAuto.setValue("");
+
+    }
+
+    public void onCheck$rdoScientificSearch(){
+        searchSpeciesAuto.setSearchType("scientific");
+        searchSpeciesAuto.setValue("");
+    }
+
     public void onSearchSpecies(ForwardEvent event) {
 
         //get the params from the controls
 
-        String sSearchTerm = txtSearchSpecies.getText();
+        String sSearchTerm = searchSpeciesAuto.getValue();
         String sSearchType = null;
 
         Session session = (Session) Sessions.getCurrent();
