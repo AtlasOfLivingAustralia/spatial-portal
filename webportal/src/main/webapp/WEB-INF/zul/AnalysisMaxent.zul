@@ -1,0 +1,109 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
+<zk>
+    <window title="Maxent" width="800px" use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" style="padding: 10px">
+
+        <style>
+            .z-loading {
+                top: 50% !important;
+                left: 45% !important;
+                align: center;
+                vertical-align: middle;
+            }
+        </style>
+
+        <!-- <label value="Step 1: Select your species " /> -->
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 1: Select your species" />
+            <vbox>
+
+                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                    <comboitem label=""/>
+                </combobox>
+                <button id="getspinfo" label="Get info" visible="false" />
+                <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
+            </vbox>
+        </groupbox>
+
+
+
+        <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 2: Select your environmental layers" />
+            <vbox>
+                <hbox>
+                    <textbox id="tbenvfilter" visible="false" />
+                    <button id="btenvfilterclear" label="Clear filter" visible="false" />
+                </hbox>
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="450px" >
+                    <listhead>
+                        <listheader label="Select all layers" />
+                    </listhead>
+
+                </listbox>
+            </vbox>
+        </groupbox>
+
+
+
+        <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
+
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 3: Select your optional parameters" />
+            <vbox>
+                <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" />
+                <checkbox id="chkRCurves" label="Create response curves" />
+                <hbox>
+                    <label value="Random test percentage (0 - 100):" />
+                    <textbox id="txtTestPercentage" value="0" />
+                </hbox>
+            </vbox>
+        </groupbox>
+
+
+
+        <textbox id="trun" value="${msets}" visible="false" />
+
+        <separator bar="true"/>
+
+        <progressmeter id="progress" value="42" visible="false" />
+
+        <button id="startmaxent" label="Start Maxent">
+            <!--
+            <attribute name="onClick">{
+                final Window win = (Window) Executions.createComponents(
+                "/maxentwizard.zul", null, null);
+                win.setMinwidth(450);
+                //win.setWidth(450);
+                win.setMinheight(400);
+                win.setClosable(true);
+                win.setSizable(true);
+                win.doModal();
+            }</attribute>
+            -->
+        </button>
+
+        <separator />
+
+        <label id="test" value="Status: Waiting to start..." />
+
+        <tabbox id="outputtab" visible="false" height="700px">
+            <tabs>
+                <tab id="mapframetab" label="Map" closable="false" />
+                <tab id="infotab" label="Info" closable="false" />
+            </tabs>
+            <tabpanels>
+                <tabpanel height="700px">
+                    <iframe id="mapframe" src="" width="750px" height="600px" visible="true" />
+                </tabpanel>
+                <tabpanel height="700px">
+                    <iframe id="infoframe" src="" width="750px" height="600px" visible="true" />
+                </tabpanel>
+            </tabpanels>
+        </tabbox>
+
+
+
+
+    </window>
+</zk>
