@@ -52,7 +52,9 @@ public class MaxentWCController extends UtilityComposer {
     private Iframe mapframe;
     private Iframe infoframe;
     private Window maxentWindow;
+    
     private String geoServer = "http://ec2-184-73-34-104.compute-1.amazonaws.com";  // http://localhost:8080;
+    private String satServer = "http://ec2-184-73-34-104.compute-1.amazonaws.com";
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
@@ -86,7 +88,7 @@ public class MaxentWCController extends UtilityComposer {
     private void setupEnvListbox() {
         try {
 
-            String envurl = "http://localhost:8080/alaspatial/ws/spatial/settings/envlist/string";
+            String envurl = satServer + "/alaspatial/ws/spatial/settings/envlist/string";
 
             //Messagebox.show("Loading env data from: " + envurl);
 
@@ -212,7 +214,7 @@ public class MaxentWCController extends UtilityComposer {
 
 
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append("http://localhost:8080/alaspatial/ws/maxent/process?");
+                sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/process?");
                 sbProcessUrl.append("taxonid=" + URLEncoder.encode(sac.getValue(), "UTF-8"));
                 sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
                 if (chkJackknife.isChecked()) {
