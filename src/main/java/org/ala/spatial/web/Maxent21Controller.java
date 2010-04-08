@@ -111,6 +111,7 @@ public class Maxent21Controller extends GenericForwardComposer {
         lbenvlayers.setItemRenderer(new ListitemRenderer() {
 
             public void render(Listitem li, Object data) {
+                li.setWidth(null);
                 new Listcell(((Layer) data).display_name).setParent(li);
             }
         });
