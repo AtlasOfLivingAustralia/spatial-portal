@@ -1,15 +1,13 @@
 package org.ala.spatial.web;
 
-import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
+import org.ala.spatial.analysis.tabulation.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
-import org.ala.spatial.model.Species;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,13 +49,15 @@ public class SpeciesController {
         String[] spdata = query.split("#");
         ModelMap modelMap = new ModelMap();
         modelMap.addAttribute("message", "Generating species list");
-        modelMap.addAttribute("spList", speciesDao.getRecordsByNameLevel(spdata[0],spdata[1]));
+        modelMap.addAttribute("spList", speciesDao.getRecordsByNameLevel(spdata[0], spdata[1]));
         return new ModelAndView("species/records", modelMap);
 
     }
 
     @RequestMapping(value = "/names", method = RequestMethod.GET)
-    public @ResponseBody Map getNames2(@RequestParam String q, @RequestParam int s, @RequestParam int p) {
+    public 
+    @ResponseBody
+    Map getNames2(@RequestParam String q, @RequestParam int s, @RequestParam int p) {
         System.out.println("Looking up names for: " + q);
 
         /*
@@ -71,6 +71,26 @@ public class SpeciesController {
          */
 
         return speciesDao.findByName(q, s, p);
+
+    }
+
+    @RequestMapping(value = "/taxon/{name}", method = RequestMethod.GET)
+    public @ResponseBody String getTaxonNames(@PathVariable("name") String name) {
+        System.out.println("Looking up names for: " + name);
+
+        SamplingService ss = new SamplingService();
+        String[] aslist = ss.filterSpecies(name, 40);
+        if (aslist == null) {
+            aslist = new String[1];
+            aslist[0] = "";
+        }
+
+        String slist = "";
+        for (String s : aslist) {
+            slist += s + "\n";
+        }
+
+        return slist;
 
     }
 }
