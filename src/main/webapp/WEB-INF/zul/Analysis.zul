@@ -1,4 +1,5 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?component name="maxentForm" macro-uri="/WEB-INF/zul/AnalysisMaxent.zul"?>
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
 <zk>
     <label value="Analysis Tools"  sclass="h2 title"/>
@@ -16,14 +17,16 @@
         </tabs>
         <tabpanels>
             <tabpanel>
-                <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com:8080/alaspatial2/speciesList.zul" width="100%" height="800px" />
+                <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial2/speciesList.zul" width="100%" height="800px" />
             </tabpanel>
             <tabpanel>
-                <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com:8080/alaspatial2/sampling.zul" width="100%" height="800px" />
+                <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial2/sampling.zul" width="100%" height="800px" />
             </tabpanel>
             <tabpanel>
-                 <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/maxent2.zul" width="100%" height="800px" /> 
-                <!--<iframe src="http://localhost:8080/alaspatial/maxent2.zul" width="100%" height="800px" />-->
+                <!-- <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/maxent2.zul" width="100%" height="800px" /> -->
+                <!-- <iframe src="http://localhost:8080/alaspatial/maxent2.zul" width="100%" height="800px" /> -->
+                <maxentForm id="mf" />
+
             </tabpanel>
         </tabpanels>
     </tabbox>
