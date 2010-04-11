@@ -1,14 +1,14 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
 <zk>
-    <window title="Maxent" width="800px" use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" style="padding: 10px">
+    <window use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" style="padding: 10px">
 
         <style>
             .z-loading {
-                top: 50% !important;
-                left: 45% !important;
-                align: center;
-                vertical-align: middle;
+            top: 50% !important;
+            left: 45% !important;
+            align: center;
+            vertical-align: middle;
             }
         </style>
 
@@ -20,7 +20,7 @@
                 <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                     <comboitem label=""/>
                 </combobox>
-                <button id="getspinfo" label="Get info" visible="false" />
+                <button id="btnMapSpecies" label="Add to Map" visible="true" />
                 <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
             </vbox>
         </groupbox>
@@ -85,7 +85,11 @@
 
         <separator />
 
-        <label id="test" value="Status: Waiting to start..." />
+        <vbox>
+            <label id="status" value="Status: Waiting to start..." />
+            <button id="btnInfo" label="Show maxent information" visible="false" />
+            <label id="infourl" value="" visible="false" />
+        </vbox>
 
         <tabbox id="outputtab" visible="false" height="700px">
             <tabs>

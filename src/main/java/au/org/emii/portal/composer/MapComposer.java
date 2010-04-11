@@ -173,7 +173,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Settings settings = null;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
     //additional controls for the ALA Species Search stuff
-
     private Radio rdoCommonSearch;
     private Radio rdoScientificSearch;
     private Button gazSearch;
@@ -237,10 +236,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         mapLoaded(safeToLoadMap.getValue());
     }
 
-    public void onSelect$mainTab(){
-       if( mainTab.getSelectedTab().getId().equalsIgnoreCase("linkNavigationTab")) {
-           menus.setWidth("800px");
-       }
+    public void onSelect$mainTab() {
+        Session session = (Session) Sessions.getCurrent();
+        if (mainTab.getSelectedTab().getId().equalsIgnoreCase("linkNavigationTab")) {
+            session.setAttribute("default_menus_width", menus.getWidth());
+            menus.setWidth("800px");
+        } else {
+            menus.setWidth((String) session.getAttribute("default_menus_width"));
+        }
     }
 
     /**
@@ -271,29 +274,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$gazSearch() {
         String pName = gazetteerAuto.getValue();
         //String pName = placeName.getValue();
-	//searchGazetteer(pName);
+        //searchGazetteer(pName);
 
-         Session session = (Session) Sessions.getCurrent();
-         session.setAttribute("searchGazetteerTerm", pName);
+        Session session = (Session) Sessions.getCurrent();
+        session.setAttribute("searchGazetteerTerm", pName);
 
 
-         if (gazetteerSearchWindow == null) {
-                    gazetteerSearchWindow= (GazetteerSearchController) Executions.createComponents(
-                            "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
-                } else {
-                    gazetteerSearchWindow.detach();
-                    gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
-                            "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
-                }
+        if (gazetteerSearchWindow == null) {
+            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
+                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
+        } else {
+            gazetteerSearchWindow.detach();
+            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
+                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
+        }
 
-                gazetteerSearchWindow.setId(java.util.UUID.randomUUID().toString());
-                gazetteerSearchWindow.setMaximizable(true);
-                gazetteerSearchWindow.setPosition("center");
-                gazetteerSearchWindow.doOverlapped();
+        gazetteerSearchWindow.setId(java.util.UUID.randomUUID().toString());
+        gazetteerSearchWindow.setMaximizable(true);
+        gazetteerSearchWindow.setPosition("center");
+        gazetteerSearchWindow.doOverlapped();
 
     }
-
-    
 
     public void closeAddLayerDiv() {
         addLayer.setVisible(false);
@@ -1857,6 +1858,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
+    public void setWestWidth(String width) {
+        menus.setWidth(width);
+    }
+
     /**
      * Maximise map display area - currently just hides the left menu
      * @param maximise
@@ -1900,13 +1905,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
-    public void onCheck$rdoCommonSearch(){
+    public void onCheck$rdoCommonSearch() {
         searchSpeciesAuto.setSearchType("common");
         searchSpeciesAuto.setValue("");
 
     }
 
-    public void onCheck$rdoScientificSearch(){
+    public void onCheck$rdoScientificSearch() {
         searchSpeciesAuto.setSearchType("scientific");
         searchSpeciesAuto.setValue("");
     }
