@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -12,6 +13,7 @@ import java.util.Vector;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
+import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zkmax.zul.Filedownload;
 import org.zkoss.zul.Button;
@@ -41,8 +43,8 @@ public class SamplingWCController extends UtilityComposer {
     private Button btnDownload;
     private List layers;
     private Map layerdata;
-    private String geoServer = "http://localhost:8080";  // http://ec2-184-73-34-104.compute-1.amazonaws.com
-    private String satServer = "http://localhost:8080";
+    private String geoServer = "http://ec2-184-73-34-104.compute-1.amazonaws.com";  // http://localhost:8080
+    private String satServer = geoServer;
 
     @Override
     public void afterCompose() {
@@ -160,6 +162,20 @@ public class SamplingWCController extends UtilityComposer {
         }
 
         return aslist;
+    }
+
+    public void onClick$btnMapSpecies(Event event) {
+        try {
+            //status.setValue("clicked new value selected: " + sac.getText() + " - " + sac.getValue());
+            //System.out.println("Looking up taxon names for " + sac.getValue());
+            //Messagebox.show("Hello world!, i got clicked");
+
+            loadSpeciesOnMap();
+
+        } catch (Exception ex) {
+            System.out.println("Got an error clicking button!!");
+            ex.printStackTrace(System.out);
+        }
     }
 
     public void onClick$btnPreview(Event event) {
@@ -368,6 +384,8 @@ public class SamplingWCController extends UtilityComposer {
                  */
 
                 //Filedownload.save(satServer + "/alaspatial" + slist, null);
+                //Messagebox.show("Downloading sample file...", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
+                System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist); 
                 Filedownload.save(new URL(satServer + "/alaspatial" + slist), "application/zip");
 
             }
@@ -377,6 +395,50 @@ public class SamplingWCController extends UtilityComposer {
             System.out.println("Exception calling sampling.download:");
             e.printStackTrace(System.out);
         }
+
+    }
+
+    /**
+     * Gets the main pages controller so we can add a
+     * layer to the map
+     * @return MapComposer = map controller class
+     */
+    private MapComposer getThisMapComposer() {
+
+        MapComposer mapComposer = null;
+        //Page page = maxentWindow.getPage();
+        Page page = getPage();
+        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
+
+        return mapComposer;
+    }
+
+    private void loadSpeciesOnMap() {
+        String taxon = sac.getValue();
+        String uri = null;
+        String filter = null;
+
+        // capitalise the taxon name
+        System.out.print("Changing taxon name from '" + taxon);
+        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        System.out.println("' to '" + taxon + "' ");
+
+
+        //uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
+        uri = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
+
+        //get the current MapComposer instance
+        MapComposer mc = getThisMapComposer();
+
+        //contruct the filter
+        //filter = "<Filter><PropertyIsEqualTo><PropertyName>url</PropertyName><Literal><![CDATA["+mapWMS+entity+"&type=1&unit=1]]></Literal></PropertyIsEqualTo></Filter>";
+        //lets try it in cql
+        filter = "species eq '" + taxon + "'";
+
+        logger.debug(filter);
+        //mc.addWMSLayer(label, uri, 1, filter);
+        mc.addWMSGazetteerLayer(taxon, uri, 1, filter);
+
 
     }
 }
