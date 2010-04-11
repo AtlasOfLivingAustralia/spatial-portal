@@ -21,14 +21,14 @@ This tool samples environmental and contextual data layers at locations defined 
 
 <separator/>
 <hbox>
-Enter a species name 
+Enter a species name
 </hbox>
 <hbox>
 <bandbox id="bb" onChanging="bb.close();win.filterSpecies(event.value)" width="400px">
 		<bandpopup>
 			<listbox id="bblb" width="440px" rows="25"
 					onSelect="bb.value=self.selectedItem.label; bb.close();" vflex="true">
-			</listbox>			
+			</listbox>
 		</bandpopup>
 </bandbox>
 </hbox>
@@ -44,23 +44,46 @@ Select the environmental and contextual layers you want sampled at the geographi
 </hbox>
 <vbox width="100%">
 <listbox id="lb" multiple="true" checkmark="true" width="100%" rows="12" >
-	
 	<listitem forEach="${win.layers}" value="${each}">
-   		<listcell label="${each.display_name}" onClick="win.showLayerExtents(self)" />   		
+   		<listcell label="${each.display_name}" onClick="win.showLayerExtents(self)" />
    </listitem>
 </listbox>
 </vbox>
 <separator/>
 <separator/>
 <hbox>
-Click button to download samples
+Click button to preview sampling output
 </hbox>
 <hbox>
-<button label="download" onClick="win.download()" /> 
+<button label="preview sampling" onClick="win.openResults()" />
 </hbox>
+<popup id="results" width="640px" >
+<separator />
+<label value="Results Preview"/>
+<separator />
+<separator />
+<grid id="results_gridbox" width="100%" height="300px">
+<rows id="results_rows" />
+</grid>
+
+<hbox>
+
+<hbox>
+<separator/>
+<separator/>
+<button label="download" onClick="win.download()" />
+</hbox>
+<separator/>
+<separator/>
+<div align="right"><button label="close" onClick="results.close()" /> </div>
+</hbox>
+</popup>
 <popup id="p" width="200px">
 		<html id="h"></html>
 		<button label="download meta data" onClick="win.downloadMetaData()" />
+	</popup>
+	<popup id="v" >
+		<label id="v_label" value="tool tip" ></label>
 	</popup>
 </window>
 

@@ -22,13 +22,13 @@ public class SpatialSettingsWSController {
 
     private List<Layer> _layers;
 
-    @RequestMapping(value = "/envlist", method = RequestMethod.GET)
+    @RequestMapping(value = "/layers/environmental", method = RequestMethod.GET)
     public @ResponseBody Layer[] envListAsLayers(HttpServletRequest req) {
 
         ssets = new SpatialSettings();
 
         _layers = new ArrayList();
-        Layer[] _layerlist = ssets.getEnvData();
+        Layer[] _layerlist = ssets.getEnvironmentalLayers();
 
         for (int i = 0; i < _layerlist.length; i++) {
             _layers.add(_layerlist[i]);
@@ -39,15 +39,36 @@ public class SpatialSettingsWSController {
         return _layerlist;
     }
 
-    @RequestMapping(value = "/envlist/string", method = RequestMethod.GET)
-    public @ResponseBody String envListAsString(HttpServletRequest req) {
+    @RequestMapping(value = "/layers/environmental/string", method = RequestMethod.GET)
+    public @ResponseBody String environmentalLayersAsString(HttpServletRequest req) {
 
         ssets = new SpatialSettings();
 
         StringBuffer sbEnvList = new StringBuffer();
 
         _layers = new ArrayList();
-        Layer[] _layerlist = ssets.getEnvData();
+        Layer[] _layerlist = ssets.getEnvironmentalLayers();
+
+        for (int i = 0; i < _layerlist.length; i++) {
+            _layers.add(_layerlist[i]);
+            //System.out.println("Layer: " + _layerlist[i].name + " - " + _layerlist[i].display_name);
+
+            sbEnvList.append(_layerlist[i].display_name + "\n");
+
+        }
+
+        return sbEnvList.toString();
+    }
+
+    @RequestMapping(value = "/layers/contextual/string", method = RequestMethod.GET)
+    public @ResponseBody String contextualLayersAsString(HttpServletRequest req) {
+
+        ssets = new SpatialSettings();
+
+        StringBuffer sbEnvList = new StringBuffer();
+
+        _layers = new ArrayList();
+        Layer[] _layerlist = ssets.getContextualLayers();
 
         for (int i = 0; i < _layerlist.length; i++) {
             _layers.add(_layerlist[i]);

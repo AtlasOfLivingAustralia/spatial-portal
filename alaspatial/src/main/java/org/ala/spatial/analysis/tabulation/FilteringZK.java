@@ -78,7 +78,7 @@ public class FilteringZK extends Window {
 				image_bytes[i] = 0xff44ff44; // green
 			}
 		}
-		
+
 		image.setRGB(0, 0, image.getWidth(), image.getHeight(),
 				image_bytes, 0, image.getWidth());
 
@@ -405,7 +405,7 @@ public class FilteringZK extends Window {
 	public void setLayers(List layers) {
 		_layers = layers;
 	}
-	
+
 	public String getLayerRange(String layername){
 		// get idx of layer
 		int layer_idx = 0;
@@ -418,7 +418,7 @@ public class FilteringZK extends Window {
 		}
 		double min_value = ((Double) layer_minimums.get(layer_idx)).doubleValue();
 		double max_value = ((Double) layer_maximums.get(layer_idx)).doubleValue();
-		
+
 		return String.format("%.2f to %.2f", min_value, max_value);
 	}
 
