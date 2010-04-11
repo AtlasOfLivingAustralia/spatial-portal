@@ -27,6 +27,10 @@
 		<to>/output/maxent/$1</to>
 	</rule>
 	<rule>
+		<from>/output/sampling/**</from>
+		<to>/output/sampling/$1</to>
+	</rule>
+	<rule>
 		<from>/analysis</from>
 		<to>/index.zul</to>
 	</rule>

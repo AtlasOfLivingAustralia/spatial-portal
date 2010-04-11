@@ -1,11 +1,16 @@
 package org.ala.spatial.web.services;
 
+import au.com.bytecode.opencsv.CSVReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +22,6 @@ import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,13 +55,38 @@ public class MaxentWSController {
             ssets = new SpatialSettings();
 
             // dump the species data to a file
+            System.out.println("dumping species data");
             SamplingService ss = new SamplingService();
+
+            /*
+             * // Adam has changed the code to return a file rather than an array
             String[] csvdata = ss.sampleSpecies(taxon, null).split("\n");
             StringBuffer sbSpecies = new StringBuffer();
             for (int i = 0; i < csvdata.length; i++) {
-                String[] recdata = csvdata[i].split(",");
-                sbSpecies.append("species, " + recdata[recdata.length - 2] + ", " + recdata[recdata.length - 1]);
+            String[] recdata = csvdata[i].split(",");
+            sbSpecies.append("species, " + recdata[recdata.length - 2] + ", " + recdata[recdata.length - 1]);
             }
+             *
+             */
+
+            String speciesfile = ss.sampleSpecies(taxon, null);
+            CSVReader reader = new CSVReader(new FileReader(speciesfile));
+            
+            StringBuffer sbSpecies = new StringBuffer();
+            String[] nextLine;
+
+            // get the header
+            nextLine = reader.readNext();
+            sbSpecies.append("species, longitude, latitude");
+            sbSpecies.append(System.getProperty("line.separator"));
+
+            while ((nextLine = reader.readNext()) != null) {
+                // nextLine[] is an array of values from the line
+                System.out.println(nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1] + "etc...");
+                sbSpecies.append("species, " + nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1]);
+                sbSpecies.append(System.getProperty("line.separator"));
+            }
+
 
 
 
@@ -134,7 +162,7 @@ public class MaxentWSController {
                 g.writeObject(htProcess);
                 g.close();
 
-                 System.out.println("sw: \n" + sw.toString());
+                System.out.println("sw: \n" + sw.toString());
                  *
                  */
 
@@ -158,6 +186,45 @@ public class MaxentWSController {
 
         return "";
 
+    }
+
+    // Copies src file to dst file.
+    // If the dst file does not exist, it is created
+    private void copy(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        OutputStream out = new FileOutputStream(dst);
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) >= 0) {
+            out.write(buf, 0, len);
+        }
+        out.flush();
+        in.close();
+        out.close();
+    }
+
+    // Copies src file to dst file.
+    // If the dst file does not exist, it is created
+    private String copy(String speciesfile, String outputpath) throws IOException {
+        File fDir = new File(outputpath);
+        fDir.mkdir();
+
+        File spFile = File.createTempFile("points_", ".csv", fDir);
+
+        InputStream in = new FileInputStream(speciesfile);
+        OutputStream out = new FileOutputStream(spFile);
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) >= 0) {
+            out.write(buf, 0, len);
+        }
+        out.flush();
+        in.close();
+        out.close();
+
+        return spFile.getAbsolutePath();
     }
 
     private String setupSpecies(String speciesList, String outputpath) {
@@ -188,11 +255,11 @@ public class MaxentWSController {
 
         for (int j = 0; j < nameslist.length; j++) {
 
-            Layer[] _layerlist = ssets.getEnvData();
+            Layer[] _layerlist = ssets.getEnvironmentalLayers();
 
             for (int i = 0; i < _layerlist.length; i++) {
                 if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
-                    pathlist[i] = _layerlist[i].name;
+                    pathlist[j] = _layerlist[i].name;
                     continue;
                 }
             }

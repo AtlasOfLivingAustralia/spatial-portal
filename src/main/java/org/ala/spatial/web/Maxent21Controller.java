@@ -88,7 +88,7 @@ public class Maxent21Controller extends GenericForwardComposer {
         _layers = new ArrayList();
 
         ssets = new SpatialSettings();
-        Layer[] _layerlist = ssets.getEnvData();
+        Layer[] _layerlist = ssets.getEnvironmentalLayers();
 
         for (int i = 0; i < _layerlist.length; i++) {
             _layers.add(_layerlist[i]);

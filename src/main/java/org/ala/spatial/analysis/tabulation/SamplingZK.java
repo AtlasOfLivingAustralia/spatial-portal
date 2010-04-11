@@ -1,5 +1,7 @@
 package org.ala.spatial.analysis.tabulation;
 
+import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
 
 import java.util.*;
@@ -11,6 +13,7 @@ import org.ala.spatial.util.*;
 import org.ala.spatial.util.Grid;
 
 import java.awt.image.*;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,14 +23,16 @@ public class SamplingZK extends Window {
 	//List selected_layers = new ArrayList();
 	List _layers = new ArrayList();
 	//List _combobox = new ArrayList();
-	
+
 	/**
 	 * for functions in popup box
 	 */
 	Layer popup_layer;
-	
+
 	String species_filter;
-	
+
+	//public Listhead results_listbox_head;
+
 	public SamplingZK() {
 		int i;
 		TabulationSettings.load();
@@ -38,34 +43,34 @@ public class SamplingZK extends Window {
 		}
 		for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
 			_layers.add(TabulationSettings.geo_tables[i]);
-		}	
+		}
 
-		System.out.println("done layer setup");		
+		System.out.println("done layer setup");
 	}
-	
+
 	public void filterSpecies(String filter){
 		Bandbox bb = (Bandbox) getFellow("bb");
 		Listbox bblb = (Listbox) getFellow("bblb");
-		
+
 		System.out.println("combobox value=" + filter);
-		
+
 		if(filter.length() >= 1){
 			SamplingService ss = new SamplingService();
-			
+
 			String [] list = ss.filterSpecies(filter,40);
 			if(list == null){
 				list = new String[1];
 				list[0] = "";
 			}
 			System.out.print("#" + list.length);
-			
+
 			bblb.setModel(new SimpleListModel(list));
 			if(list.length < 20){
 				bblb.setRows(list.length);
 			}else{
 				bblb.setRows(20);
 			}
-			
+
 			bb.open();
 		}else{
 			String [] list = new String[1];
@@ -73,7 +78,7 @@ public class SamplingZK extends Window {
 			bblb.setModel(new SimpleListModel(list));
 		}
 	}
-	
+
 	public void download() {
 		Bandbox bb = null;
 		Listbox lb = null;
@@ -83,35 +88,35 @@ public class SamplingZK extends Window {
 		} catch (Exception e) {
 			System.out.println("download():" + e.toString());
 		}
-		
+
 			System.out.println("sampling");
-			
-			SamplingService ss = new SamplingService();			
-			
+
+			SamplingService ss = new SamplingService();
+
 			String species_long = bb.getValue().toLowerCase();
-			
+
 			if(species_long == null || species_long.length() < 5){
 				return; //TODO make nice
 			}
-			
+
 			String species = species_long;
 			String type;
 			if(species_long.contains("/")){
 				species = species_long.split("/")[0].trim();
 				type = species_long.split("/")[1].trim();
-				
+
 				/* join for query */
 				species = species + " / " + type;
 			}
-			
+
 			String [] layers = null;
-			
+
 			System.out.println("species=" + species);
-			
+
 			Set selected =  lb.getSelectedItems();
-			
+
 			int i;
-			
+
 			if(selected.size() > 0){
 				layers = new String[selected.size()];
 
@@ -123,14 +128,14 @@ public class SamplingZK extends Window {
 					layers[i++] = l.name;
 				}
 			}
-			
-			String csv = ss.sampleSpecies(species, layers);
-			
+
+			String csv_filename = ss.sampleSpecies(species, layers);
+
 			//org.zkoss.zhtml.Filedownload.save(csv,"text/plain",species + ".csv");
-			
+
 			//save to a file
 			try{
-				
+
 				/* create zip stream */
 				System.out.println("10: ");
 				File temporary_file0 = java.io.File.createTempFile("sample",".zip");
@@ -138,16 +143,24 @@ public class SamplingZK extends Window {
 				FileOutputStream dest = new FileOutputStream(temporary_file0);
 				ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
 				System.out.println("a: " + temporary_file0.getPath());
-				
+
 				/* species sample.csv */
 				ZipEntry entry = new ZipEntry(species.replace("/ ","") + "_sample.csv");
 				out.putNextEntry(entry);
-				out.write(csv.getBytes());
+
+				BufferedInputStream bif = new BufferedInputStream(new FileInputStream(csv_filename));
+				byte [] batch = new byte[10000];
+				int read;
+
+				while((read = bif.read(batch)) > 0){
+					out.write(batch,0,read);
+				}
+				//out.write(csv.getBytes());
 				System.out.println("b: ");
 				/* add each catagorical layer */
 				if(layers != null){
 					for(String s : layers){
-						csv = SpeciesListIndex.getLayerExtents(s);
+						String csv = SpeciesListIndex.getLayerExtents(s);
 						if(csv != null && csv.length() > 0 &&
 								csv.contains("<br>")){
 							entry = new ZipEntry(
@@ -158,17 +171,17 @@ public class SamplingZK extends Window {
 						}
 					}
 				}
-				
+
 				out.close();
-				
+
 				/* read in for 'download' */
 				byte [] data = new byte[(int)temporary_file0.length()];
 				FileInputStream fis = new FileInputStream(temporary_file0);
 				fis.read(data);
 				fis.close();
-				
+
 				org.zkoss.zhtml.Filedownload.save(data,"application/zip",species + "_sample.zip");
-				
+
 			}catch (Exception e){
 				System.out.println(e.toString());
 			}
@@ -181,14 +194,16 @@ public class SamplingZK extends Window {
 		if(filter == null){
 			filter = "";
 		}
-		try {			
+		try {
+			filter = filter.toLowerCase();
+
 			Listbox lb = (Listbox) getFellow("lb");
-			Textbox tb = (Textbox) getFellow("tb");		
-			
+			Textbox tb = (Textbox) getFellow("tb");
+
 			/* iterate through lb Listitem and set visible */
 			for(Listitem li : (List<Listitem>)lb.getItems()){
 				Layer l = (Layer)li.getValue();
-				if(l.display_name.contains(filter)){
+				if(l.display_name.toLowerCase().contains(filter)){
 					if(!li.isVisible()){
 						li.setVisible(true);
 					}
@@ -209,34 +224,184 @@ public class SamplingZK extends Window {
 
 	public void setLayers(List layers) {
 		_layers = layers;
-	}	
-	
-	
-	
+	}
+
+
+
 	public void showLayerExtents(Object o){
 		//Listbox lb = (Listbox) getFellow("lb");
 		Listcell lc = (Listcell)o;//lb.getSelectedItem();
 		Listitem li = (Listitem) lc.getParent();
 		Layer l = (Layer) li.getValue();
 		popup_layer = l;
-		
-		Html h = (Html) getFellow("h");		
+
+		Html h = (Html) getFellow("h");
 		String csv = SpeciesListIndex.getLayerExtents(l.name);
 		h.setContent(csv);
-		
+
 		Popup p = (Popup) getFellow("p");
-		//li.setPopup(p);	
+		//li.setPopup(p);
 		p.open(lc);
-		
+
 		//org.zkoss.zhtml.Filedownload.save(csv,"text/plain",l.display_name + "_extents" + ".csv");
 	}
-	
+
 	public void downloadMetaData(){
 		String metadata= SamplingService.getLayerMetaData(popup_layer.name);
-		
+
 		org.zkoss.zhtml.Filedownload.save(
 				metadata,
 				"text/plain",
 				popup_layer.display_name + "_metadata" + ".txt");
+	}
+
+	public void openResults(){
+		System.out.println("openResults");
+
+		Popup results = (Popup)getFellow("results");
+
+
+
+		Bandbox bb = null;
+		Listbox lb = null;
+		try {
+			lb = (Listbox) getFellow("lb");
+			bb = (Bandbox) getFellow("bb");
+		} catch (Exception e) {
+			System.out.println("openResults():" + e.toString());
+		}
+
+		SamplingService ss = new SamplingService();
+
+		String species_long = bb.getValue().toLowerCase();
+
+		if(species_long == null || species_long.length() < 5){
+			return; //TODO make nice
+		}
+
+		String species = species_long;
+		String type;
+		if(species_long.contains("/")){
+			species = species_long.split("/")[0].trim();
+			type = species_long.split("/")[1].trim();
+
+			/* join for query */
+			species = species + " / " + type;
+		}
+
+		String [] layers = null;
+
+		System.out.println("species=" + species);
+
+		Set selected =  lb.getSelectedItems();
+
+		int i;
+
+		if(selected.size() > 0){
+			layers = new String[selected.size()];
+
+			i = 0;
+			for(Object o : selected){
+				Listitem li = (Listitem) o;
+				Layer l = ((Layer)li.getValue());
+				System.out.println("layer(" + i + ") " + l.name);
+				layers[i++] = l.name;
+			}
+		}
+
+		String [][] csv_filename = ss.sampleSpecies(species, layers, 20);
+//		System.out.println("got a " + csv_filename.length + " x " + csv_filename[0].length);
+		int j;
+		if(csv_filename != null){
+
+			//Listbox rlb = (Listbox)results.getFellow("results_listbox");
+
+
+			try{
+				Rows rows = (Rows) results.getFellow("results_rows");
+
+				//remove existing rows
+				List l = rows.getChildren();
+				System.out.println(l);
+				if(l != null){
+					for(j=l.size()-1;j>=0;j--){
+						Row r = (Row)l.get(j);
+						System.out.println("detaching: " + ((Label)r.getChildren().get(0)).getValue());
+						r.detach();
+					}
+				}
+
+
+				/* setup contextual number to name lookups */
+				SPLFilter [] splfilters = new SPLFilter[csv_filename[0].length];
+				for(i=0;i<csv_filename[0].length;i++){
+					if(csv_filename[0][i] != null){
+						String display_name = csv_filename[0][i].trim();
+						for(int k=0;k<_layers.size();k++){
+							Layer layer = (Layer)_layers.get(k);
+							if(layer.display_name.equals(display_name)){
+								splfilters[i] = SpeciesListIndex.getLayerFilter(layer);
+								System.out.println("made splfilter: " + layer);
+							}
+						}
+					}
+				}
+
+				/* add rows */
+				for(j=0;j<csv_filename.length;j++){
+					Row r = new Row();
+					r.setParent(rows);
+					for(i=0;i<csv_filename[j].length;i++){
+						Label label = new Label(csv_filename[j][i]);
+						label.setParent(r);
+
+						if(j == 0){
+							System.out.println("adding header: " + csv_filename[j][i]);
+						}
+
+						//add event listener for contextual columns
+						if(j==0){ //add for header row
+							 label.addEventListener("onClick",new EventListener(){
+						                	public void onEvent(Event event) throws Exception {
+						                		String display_name = ((Label)event.getTarget()).getValue().trim();
+						                		for(int k=0;k<_layers.size();k++){
+													Layer layer = (Layer)_layers.get(k);
+													if(layer.display_name.equals(display_name)){
+														popup_layer = layer;
+
+								                		Html h = (Html) getFellow("h");
+								                		String csv = SpeciesListIndex.getLayerExtents(layer.name);
+								                		h.setContent(csv);
+
+								                		Popup p = (Popup) getFellow("p");
+								                		//li.setPopup(p);
+								                		p.open(event.getTarget());
+													}
+						                		}
+						                	}
+				                });
+						}else{
+							/* is catagorical layer */
+							if(i < splfilters.length && splfilters[i] != null && splfilters[i].catagory_names != null){
+								try {
+									int idx = Integer.parseInt(csv_filename[j][i]);
+									label.setTooltiptext(splfilters[i].catagory_names[idx]);
+								}catch (Exception e){
+									System.out.println(e.toString());
+								}
+							}
+						}
+					}
+				}
+
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+
+
+		}
+
+
+		results.open(30,30);//.open();//(false);
 	}
 }
