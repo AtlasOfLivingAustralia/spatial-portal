@@ -1,26 +1,38 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?component name="maxentForm" macro-uri="/WEB-INF/zul/AnalysisMaxent.zul"?>
+<?component name="samplingForm" macro-uri="/WEB-INF/zul/AnalysisSampling.zul"?>
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
 <zk>
+    <window use="org.ala.spatial.analysis.web.AnalysisController" apply="org.ala.spatial.analysis.web.AnalysisController" >
+    <style>
+        .z-loading {
+        top: 50% !important;
+        left: 45% !important;
+        align: center;
+        vertical-align: middle;
+        }
+    </style>
+
     <label value="Analysis Tools"  sclass="h2 title"/>
 
     <tabbox zindex="600" style="border:0px!important;"> <!-- zclass="menuswitch"  -->
         <tabs>
-            <!--  layers -->
-            <tab id="filteringTab" label="Filtering"  />
-
             <!--  search  -->
             <tab id="samplingTab" label="Sampling" />
+
+            <!--  layers -->
+            <tab id="filteringTab" label="Filtering"  />
 
             <!--  links -->
             <tab id="maxentTab" label="Maxent"  />
         </tabs>
         <tabpanels>
             <tabpanel>
-                <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial2/speciesList.zul" width="100%" height="800px" />
+                <!-- <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial2/sampling.zul" width="100%" height="800px" /> -->
+                <samplingForm id="sf" />
             </tabpanel>
             <tabpanel>
-                <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial2/sampling.zul" width="100%" height="800px" />
+                <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial2/speciesList.zul" width="100%" height="800px" />
             </tabpanel>
             <tabpanel>
                 <!-- <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/maxent2.zul" width="100%" height="800px" /> -->
@@ -30,4 +42,5 @@
             </tabpanel>
         </tabpanels>
     </tabbox>
+    </window>
 </zk>

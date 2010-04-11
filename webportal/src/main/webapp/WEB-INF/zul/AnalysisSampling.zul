@@ -1,0 +1,98 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
+<zk>
+    <panel id="help" title="Click for Sampling Tool Help" width="600px" border="normal"  open="false"
+           onClick="if(help.isOpen())help.open=false; else help.open=true;">
+        <panelchildren><html><![CDATA[
+This tool samples environmental and contextual data layers at locations defined by species observations. Think of this tool as driving a sample tool through a user-selected set of layers at the locations of all user-selected species and reading off the values at that point." The output is a CSV-formatted file of the locations and environmental/contextual values."
+<br><br>
+
+<b>Process</b>
+
+<br><br>&nbsp;&nbsp;&nbsp;1.  Select a species of interest. This will immediately identify the geographic locations where this species has been observed or sampled.
+
+<br><br>&nbsp;&nbsp;&nbsp;2.  Select the environmental and contextual layers you want sampled at the geographic locations. Environmental data will return a numeric value, for example a value of mean annual temperature at each of the locations defined by the species. Sampling contextual layers will return a category/class, for example, a land-use category. Clicking on the layer name will link to metadata describing that layer.
+
+<br><br>&nbsp;&nbsp;&nbsp;3.  When all layers have been selected, click run and when the sampling is completed, a window will display the samples.
+
+<br><br>&nbsp;&nbsp;&nbsp;4.  Click download to download the CSV-format file to your system.
+        ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
+    </panel>
+    <window use="org.ala.spatial.analysis.web.SamplingWCController" apply="org.ala.spatial.analysis.web.SamplingWCController" style="padding: 10px">
+
+        <!-- <label value="Step 1: Select your species " /> -->
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 1: Select your species" />
+            <vbox>
+
+                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                    <comboitem label=""/>
+                </combobox>
+                <button id="btnMapSpecies" label="Add to Map" visible="true" />
+                <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
+            </vbox>
+        </groupbox>
+
+
+
+        <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 2: Select your environmental and contextual layers you want sampled at the geographic locations" />
+            <vbox>
+                <hbox>
+                    <textbox id="tbenvfilter" visible="false" />
+                    <button id="btenvfilterclear" label="Clear filter" visible="false" />
+                </hbox>
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="450px" >
+                    <listhead>
+                        <listheader label="Select all layers" />
+                    </listhead>
+
+                </listbox>
+            </vbox>
+        </groupbox>
+
+
+
+        <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
+        <!--
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Step 3: Preview sampling output" />
+            <vbox>
+                <button label="Preview sampling" id="btnPreview" />
+            </vbox>
+        </groupbox>
+        -->
+        <button label="Preview sampling" id="btnPreview" />
+
+        <popup id="results" width="640px" >
+            <separator />
+            <label value="Results Preview"/>
+            <separator />
+            <separator />
+            <grid id="results_gridbox" width="100%" height="300px">
+                <rows id="results_rows" />
+            </grid>
+
+            <hbox>
+
+                <hbox>
+                    <separator/>
+                    <separator/>
+                    <button id="btnDownload" label="Download" />
+                </hbox>
+                <separator/>
+                <separator/>
+                <div align="right"><button label="Close" onClick="results.close()" /> </div>
+            </hbox>
+        </popup>
+        <popup id="p" width="200px">
+            <html id="h"></html>
+            <button label="download meta data" onClick="win.downloadMetaData()" />
+        </popup>
+        <popup id="v" >
+            <label id="v_label" value="tool tip" ></label>
+        </popup>
+
+    </window>
+</zk>
