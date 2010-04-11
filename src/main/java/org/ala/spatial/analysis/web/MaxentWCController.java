@@ -58,8 +58,8 @@ public class MaxentWCController extends UtilityComposer {
     private Iframe infoframe;
     private Window maxentWindow;
     private Window maxentInfoWindow;
-    private String geoServer = "http://localhost:8080";  // http://ec2-184-73-34-104.compute-1.amazonaws.com
-    private String satServer = "http://localhost:8080";
+    private String geoServer = "http://ec2-184-73-34-104.compute-1.amazonaws.com";  // http://localhost:8080
+    private String satServer = geoServer;
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
