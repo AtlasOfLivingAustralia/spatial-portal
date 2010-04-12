@@ -40,7 +40,7 @@ public class SpeciesAutoComplete extends Combobox {
      */
     private void refresh(String val) {
 
-        String snUrl = "http://localhost:8080/alaspatial/species/taxon/";
+        String snUrl = "http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/species/taxon/";
 
         try {
 
