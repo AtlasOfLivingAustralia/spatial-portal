@@ -248,11 +248,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <!--  layers -->
                                     <tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />
 
+                                    <!--  links -->
+                                    <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
+
                                     <!--  search  -->
                                     <tab id="searchNavigationTab" label="Search" if="${! settings.disableSearch}"/>
 
-                                    <!--  links -->
-                                    <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
                                 </tabs>
                             </tabbox>
                         </div>
@@ -510,13 +511,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </radiogroup>
                         </div>
 
-                        <div id="searchNavigationTabContent"
-                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
-                            <leftMenuSearch id="leftMenuSearch" />
-                        </div>
+                        
                         <div id="linkNavigationTabContent"
                              visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
                             <leftMenuLinks id="leftMenuLinks" />
+                        </div>
+
+                        <div id="searchNavigationTabContent"
+                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
+                            <leftMenuSearch id="leftMenuSearch" />
                         </div>
 
                     </div>
