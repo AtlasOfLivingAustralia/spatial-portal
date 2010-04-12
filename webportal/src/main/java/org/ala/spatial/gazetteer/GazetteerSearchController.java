@@ -252,7 +252,7 @@ public class GazetteerSearchController extends UtilityComposer {
 
             //TODO get this from the config
 
-            String server = gazServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:GeoRegionFeatures&styles=&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
+            String server = gazServer + "/geoserver/wms?service=WMS&version=1.1.1&request=GetMap&layers=ALA:GeoRegionFeatures&styles=&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
 
             //get the entity value from the button id
             entity = event.getTarget().getId();
