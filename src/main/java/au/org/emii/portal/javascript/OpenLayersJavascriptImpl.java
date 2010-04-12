@@ -488,6 +488,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 // ncwms/thredds - decorate with units parameter
                 script += decorateWithMetadata(associativeArray, layer);
 
+
                 return wrapWithSafeToProceed(script);
         }
 

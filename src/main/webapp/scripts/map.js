@@ -372,7 +372,7 @@ function getpointInfo(e) {
         getDepth(e);
     }
         
-
+   
 
     for (key in wmsLayers) {
 
@@ -380,10 +380,12 @@ function getpointInfo(e) {
 
             var layer = map.getLayer(map.layers[key].id);
 
-
+            
 
             if ((! layer.isBaseLayer) && layer.queryable) {
                 var url = false;
+                
+
                 if (layer.animatedNcwmsLayer) {
 
                     if (layer.tile.bounds.containsLonLat(lonlat)) {
@@ -425,6 +427,24 @@ function getpointInfo(e) {
                         HEIGHT: layer.map.size.h
                     });
                 }
+
+                else if (layer.params.VERSION == "1.1.0") {
+                    url = layer.getFullRequestString({
+                        REQUEST: "GetFeatureInfo",
+                        EXCEPTIONS: "application/vnd.ogc.se_xml",
+                        BBOX: layer.getExtent().toBBOX(),
+                        X: e.xy.x,
+                        Y: e.xy.y,
+                        INFO_FORMAT: 'text/html',
+                        QUERY_LAYERS: layer.params.LAYERS,
+                        FEATURE_COUNT: 50,
+                        BUFFER: layer.getFeatureInfoBuffer,
+                        SRS: 'EPSG:4326',
+                        WIDTH: layer.map.size.w,
+                        HEIGHT: layer.map.size.h
+                    });
+                }
+
                 else if (layer.params.VERSION == "1.3.0") {
                     url = layer.getFullRequestString({
 
@@ -443,8 +463,13 @@ function getpointInfo(e) {
                     });
                 }
 
+                url = url.replace("GetMap", "GetFeatureInfo");
+                url = url.replace("format=image/png", "");
+
 
                 if (url) {
+
+                    
 
                     // append unique ids to each query
                     var uuid = map.layers[key].id + "_" + timestamp;

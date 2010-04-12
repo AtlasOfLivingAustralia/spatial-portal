@@ -478,7 +478,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			
 			
 
-                        uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
+                        uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS&version=1.1.1&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
 
 			//get the entity value from the button id
 			entity = event.getTarget().getId();
