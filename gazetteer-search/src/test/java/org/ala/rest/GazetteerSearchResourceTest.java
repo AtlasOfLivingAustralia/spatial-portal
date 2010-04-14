@@ -31,7 +31,7 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 
     public void testGetAsJSON() throws Exception {
      //Copy the lucene index into the mock data directory (assumes test-index is in target)
-   /*  FileUtils.copyDirectoryToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"test-index"), GeoserverDataDirectory.getGeoserverDataDirectory());
+     FileUtils.copyDirectoryToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"test-index"), GeoserverDataDirectory.getGeoserverDataDirectory());
    
      //make the request, parsing the result into a json object
      JSON json = getAsJSON( "/rest/gazetteer-search/result.json?q=Australia");
@@ -43,10 +43,15 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
      assertTrue( json instanceof JSONObject );
      JSONObject search = ((JSONObject) json).getJSONObject( "org.ala.rest.GazetteerSearch" );
      String result = (String)((JSONObject)(search.getJSONObject("results").getJSONArray("org.ala.rest.SearchResultItem").get(0))).get("name");
-     assertEquals( "australia", result ); */
-	 assertTrue(1==1);
+     assertEquals( "australia", result ); 
 
    
-   } 
+   }
+
+   public void testFeatureServiceJSON() throws Exception {
+      //FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"catalog.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
+      JSON json = getAsJSON("/rest/Ponds/australia.json");
+      print(json);
+   }
     
 }

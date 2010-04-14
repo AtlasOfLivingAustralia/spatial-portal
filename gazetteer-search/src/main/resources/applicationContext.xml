@@ -15,5 +15,17 @@
       </property>
     </bean>
 
+    <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
+
+    <bean id="featureServiceMapping" class="org.geoserver.rest.RESTMapping">
+       <property name="routes">
+          <map>
+            <entry>
+              <key><value>/{layer}/{type}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+         </map>
+      </property>
+    </bean>
 </beans>
 
