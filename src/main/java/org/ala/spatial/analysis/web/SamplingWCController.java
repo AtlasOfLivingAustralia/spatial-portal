@@ -18,6 +18,7 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zkmax.zul.Filedownload;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
+import org.zkoss.zul.Html;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
@@ -39,10 +40,13 @@ public class SamplingWCController extends UtilityComposer {
     private Button btnMapSpecies;
     private Button btnPreview;
     private Popup results;
+    private Popup p;
+    private Html h;
     private Rows results_rows;
     private Button btnDownload;
     private List layers;
     private Map layerdata;
+    private String selectedLayer;
     private String geoServer = "http://ec2-184-73-34-104.compute-1.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
 
@@ -64,6 +68,35 @@ public class SamplingWCController extends UtilityComposer {
             setupEnvironmentalLayers(),
             setupContextualLayers()
         };
+
+        lbenvlayers.setItemRenderer(new ListitemRenderer() {
+
+            public void render(Listitem li, Object data) {
+                try {
+
+
+                    String layername = (String) data;
+                    li.setWidth(null);
+                    Listcell lc = new Listcell(layername);
+                    lc.setParent(li);
+                    
+                    selectedLayer = layername.replaceAll(" ", "_");
+
+                    HttpClient client = new HttpClient();
+                    GetMethod get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + selectedLayer + "/extents"); // testurl
+                    get.addRequestHeader("Accept", "text/plain");
+
+                    int result = client.executeMethod(get);
+                    String slist = get.getResponseBodyAsString();
+
+                    h.setContent(slist);
+                    lc.setPopup(p);
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                }
+
+            }
+        });
         lbenvlayers.setModel(new SimpleGroupsModel(datas, new String[]{"Environmental", "Contextual"}));
     }
 
@@ -93,13 +126,6 @@ public class SamplingWCController extends UtilityComposer {
 
             if (aslist.length > 0) {
 
-                lbenvlayers.setItemRenderer(new ListitemRenderer() {
-
-                    public void render(Listitem li, Object data) {
-                        li.setWidth(null);
-                        new Listcell((String) data).setParent(li);
-                    }
-                });
 
                 //lbenvlayers.setModel(new SimpleListModel(aslist));
                 layers.addAll(Arrays.asList(aslist));
@@ -142,13 +168,6 @@ public class SamplingWCController extends UtilityComposer {
 
             if (aslist.length > 0) {
 
-                lbenvlayers.setItemRenderer(new ListitemRenderer() {
-
-                    public void render(Listitem li, Object data) {
-                        li.setWidth(null);
-                        new Listcell((String) data).setParent(li);
-                    }
-                });
 
                 //lbenvlayers.setModel(new SimpleListModel(aslist));
                 layers.addAll(Arrays.asList(aslist));
@@ -175,6 +194,23 @@ public class SamplingWCController extends UtilityComposer {
         } catch (Exception ex) {
             System.out.println("Got an error clicking button!!");
             ex.printStackTrace(System.out);
+        }
+    }
+
+    public void onClick$btnDownloadMetadata(Event event) {
+        try {
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + selectedLayer + "/extents"); // testurl
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+
+            Filedownload.save(slist,"text/plain",selectedLayer + "_metadata.txt");
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
         }
     }
 
@@ -289,18 +325,18 @@ public class SamplingWCController extends UtilityComposer {
                     //add event listener for contextual columns
                     if (j == 0) { //add for header row
                     label.addEventListener("onClick", new EventListener() {
-
+                    
                     public void onEvent(Event event) throws Exception {
                     String display_name = ((Label) event.getTarget()).getValue().trim();
                     for (int k = 0; k < _layers.size(); k++) {
                     Layer layer = (Layer) _layers.get(k);
                     if (layer.display_name.equals(display_name)) {
                     popup_layer = layer;
-
+                    
                     Html h = (Html) getFellow("h");
                     String csv = SpeciesListIndex.getLayerExtents(layer.name);
                     h.setContent(csv);
-
+                    
                     Popup p = (Popup) getFellow("p");
                     //li.setPopup(p);
                     p.open(event.getTarget());
@@ -385,7 +421,7 @@ public class SamplingWCController extends UtilityComposer {
 
                 //Filedownload.save(satServer + "/alaspatial" + slist, null);
                 //Messagebox.show("Downloading sample file...", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
-                System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist); 
+                System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist);
                 Filedownload.save(new URL(satServer + "/alaspatial" + slist), "application/zip");
 
             }
