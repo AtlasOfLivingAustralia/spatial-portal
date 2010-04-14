@@ -87,8 +87,13 @@ This tool samples environmental and contextual data layers at locations defined 
             </hbox>
         </popup>
         <popup id="p" width="200px">
-            <html id="h"></html>
-            <button label="download meta data" onClick="win.downloadMetaData()" />
+            <vbox>
+                <html id="h"></html>
+                <hbox>
+                    <button label="download meta data" id="btnDownloadMetadata" />
+                    <button label="close" onClick="p.close()" />
+                </hbox>
+            </vbox>
         </popup>
         <popup id="v" >
             <label id="v_label" value="tool tip" ></label>
