@@ -18,7 +18,7 @@ This tool filters all species known to the ALA by environmental and contextual d
 ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
 </panel>
 <separator/>
-<window id="win" apply="org.ala.spatial.analysis.tabulation.SpeciesListZK2" 
+<window id="win" apply="org.ala.spatial.analysis.tabulation.SpeciesListZK2"
 title="Species List Tool" width="600px" border="normal">
 <separator/>
 <hbox>
@@ -32,13 +32,13 @@ Select layers for filtering
 </combobox>
 
 </hbox>
-<separator/>	
+<separator/>
 <separator/>
 <hbox>
 Species List filters.
 </hbox>
 <hbox>
-<listbox id="lb" multiple="false" checkmark="false" width="580px" rows="12" >	
+<listbox id="lb" multiple="false" checkmark="false" width="580px" rows="12" >
 <listhead>
 <listheader width="65px" label=""></listheader>
 <listheader label="layer"></listheader>
@@ -48,19 +48,19 @@ Species List filters.
 </listbox>
 
 </hbox>
-<popup id="popup_continous" width="400px">
+<popup id="popup_continous" width="400px"  action="onmousemove: onSliding()" >
 <vbox>
 <label value="full range"/><label id="popup_range"/>
 
 <hbox>
-<slider id="popup_slider_min" slidingtext="" action="onmousemove: onSliding()">
+<slider id="popup_slider_min" slidingtext="">
 
 </slider>
 <textbox id="popup_minimum" width="80px"></textbox>
 </hbox>
 
 <hbox>
-<slider id="popup_slider_max" slidingtext=""  action="onmousemove: onSliding()">
+<slider id="popup_slider_max" slidingtext="">
 
 </slider>
 <textbox id="popup_maximum" width="80px"></textbox>
@@ -70,31 +70,37 @@ Species List filters.
 <button label="apply" id="apply_continous"/>
 
 </vbox>
-	</popup>
+</popup>
 <popup id="popup_catagorical" width="300px" >
 <vbox>
-<listbox id="popup_listbox" multiple="true" 
+<listbox id="popup_listbox" multiple="true"
 checkmark="true" rows="12" >
-	
+
 </listbox>
 <button label="apply" id="apply_catagorical" />
-<separator/>			
+<separator/>
 </vbox>
 </popup>
 
 <popup id="popup_results" width="330px">
 <vbox>
-<button label="download whole list" id="download" />
-<listbox id="popup_listbox_results" width="280px" rows="15" >
-	
+<textbox id="popup_results_seek" width="200px"></textbox>
+<listbox id="popup_listbox_results" width="290px" rows="15" >
+
 </listbox>
-(only 200 matches displayed)
-<separator/>	
-		
-		</vbox>
-		<button label="close" onClick="popup_results.close()" />
+<label id="results_label" />
+<hbox>
+<button id="results_prev" label="previous"/>
+<button id="results_next" label="next"/>
+</hbox>
+<separator/>
+<separator/>
+
+
+<button label="download" id="download" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
+</vbox>
 </popup>
-		
+
 <script type="text/javascript">//Running at the browser
 
 function onSliding(){
@@ -111,43 +117,54 @@ function onSliding(){
      var el3 = document.getElementById("${popup_idx.uuid}");
      el3 = $e("${popup_idx.uuid}"); //$e() is an utility of ZK Client Engine
 
-     window.setTimeout(applyFilter(el3.value,minvalue,maxvalue),2);
-//applyFilter(el3.value,minvalue,maxvalue)
-     
+//     window.setTimeout(applyFilter(el3.value,minvalue,maxvalue),2);
+applyFilter(el3.value,minvalue,maxvalue);
+
 }
 </script>
-	
+
 </window>
 </vbox>
 <html>
 <![CDATA[
-<canvas id='canvas' width="750px" height="625px" style="border: solid 1px"  >
+<canvas id='canvas' width="512px" height="512px" style="border: solid 1px"  >
 </canvas>
-<div style="visibility:hidden; position:absolute; ">
-<canvas id='canvas' width="750px" height="625px" >
-</canvas>
-</div><div style="visibility:hidden; position:absolute; ">
-<canvas id='canvas' width="750px" height="625px" >
-</canvas></div><div style="visibility:hidden; position:absolute; ">
-<canvas id='canvas' width="750px" height="625px" >
-</canvas></div><div style="visibility:hidden; position:absolute; ">
-<canvas id='canvas' width="750px" height="625px" >
-</canvas></div><div style="visibility:hidden; position:absolute; ">
-<canvas id='canvas' width="750px" height="625px" >
-</canvas>
-</div>
-<div id="inputs_div"></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; "><canvas id='canvas' width="512px" height="386px" ></canvas></div>
+<div style="display:none; position:absolute; visible:false" id="inputs_div">cannot see this</div>
 
-<div style="display:none">
-  <img id="i0" src="" onload='load_layer(0,"images/bluemarble.jpg",-10000,40000);' />
-  <img id="i1" src="" onload='load_layer(1,"images/b1-4t.png",-10000,40000);' />
-  <img id="i2" src="" onload='load_layer(2,"images/b5-8t.png",-10000,40000);' />
-  <img id="i3" src="" onload='load_layer(3,"images/b9-12t.png",-10000,40000);' />
-  <img id="i4" src="" onload='load_layer(4,"images/b13-16t.png",-10000,40000);' />
-  <img id="i5" src="" onload='load_layer(5,"images/b17-20t.png",-10000,40000);' />
-</div>
+<div id="txt"> </div>
 
-<script type="text/javascript"> 	
+<div id="log"> </div>
+
+
+
+<script type="text/javascript">
 	init();
 </script>
 

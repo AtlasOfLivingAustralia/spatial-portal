@@ -255,14 +255,18 @@ public class MaxentWSController {
 
         for (int j = 0; j < nameslist.length; j++) {
 
-            Layer[] _layerlist = ssets.getEnvironmentalLayers();
+            //Layer[] _layerlist = ssets.getEnvironmentalLayers();
 
+            pathlist[j] = SamplingService.layerDisplayNameToName(nameslist[j]);
+            /*
             for (int i = 0; i < _layerlist.length; i++) {
                 if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
                     pathlist[j] = _layerlist[i].name;
                     continue;
                 }
             }
+            *
+            */
         }
 
         return pathlist;

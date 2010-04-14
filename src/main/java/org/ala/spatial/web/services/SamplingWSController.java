@@ -184,9 +184,11 @@ public class SamplingWSController {
 
         for (int j = 0; j < nameslist.length; j++) {
 
-            Layer[] _layerlist1 = ssets.getEnvironmentalLayers();
-            Layer[] _layerlist2 = ssets.getContextualLayers();
+            //Layer[] _layerlist1 = ssets.getEnvironmentalLayers();
+            //Layer[] _layerlist2 = ssets.getContextualLayers();
 
+            pathlist[j] = SamplingService.layerDisplayNameToName(nameslist[j]); 
+            /*
             for (int i = 0; i < _layerlist1.length; i++) {
                 if (_layerlist1[i].display_name.equalsIgnoreCase(nameslist[j])) {
                     pathlist[j] = _layerlist1[i].name;
@@ -200,6 +202,8 @@ public class SamplingWSController {
                     continue;
                 }
             }
+            *
+            */
         }
 
         return pathlist;

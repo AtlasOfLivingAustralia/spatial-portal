@@ -3,9 +3,12 @@ package org.ala.spatial.web.services;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import org.ala.spatial.analysis.tabulation.SamplingService;
+import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SpatialSettings;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -79,6 +82,30 @@ public class SpatialSettingsWSController {
         }
 
         return sbEnvList.toString();
+    }
+
+    @RequestMapping(value = "/layer/{layer}/extents", method = RequestMethod.GET)
+    public @ResponseBody String getLayerExtents(@PathVariable  String layer) {
+
+        String layer_filename = SamplingService.layerDisplayNameToName(layer.replaceAll("_", " "));
+
+        String extents = SpeciesListIndex.getLayerExtents(layer_filename);
+
+        if (extents == null) extents = "Layer extents not available.";
+
+        return extents;
+    }
+
+    @RequestMapping(value = "/layer/{layer}/metadata", method = RequestMethod.GET)
+    public @ResponseBody String getLayerMetadata(@PathVariable  String layer) {
+
+        String layer_filename = SamplingService.layerDisplayNameToName(layer.replaceAll("_", " "));
+
+        String metadata= SamplingService.getLayerMetaData(layer_filename);
+
+        if (metadata == null) metadata = "Layer metadata not available.";
+
+        return metadata;
     }
 
 }
