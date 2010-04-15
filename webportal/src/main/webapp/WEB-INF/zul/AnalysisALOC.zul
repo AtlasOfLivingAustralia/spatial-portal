@@ -1,0 +1,50 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
+<zk>
+    <window use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" style="padding: 10px">
+
+        <style>
+            .z-loading {
+            top: 50% !important;
+            left: 45% !important;
+            align: center;
+            vertical-align: middle;
+            }
+        </style>
+
+        <!--  -->
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Environmental layers" />
+            <vbox>
+                <label value="Select environmental layers for inclusion" />
+                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="400px" />
+
+                <separator spacing="20px" />
+
+                <label id="lblNoLayersSelected" value="No environmental layers selected" visible="true" />
+                <listbox id="lbSelLayers" multiple="true" checkmark="true" width="420px" visible="false" >
+                    <listhead>
+                        <listheader label="Selected environmental layers for classification"></listheader>
+                    </listhead>
+                    <listfoot>
+                        <listfooter>
+                            <button id="btnDeleteSelected" label="Remove selected" visible="true" />
+                        </listfooter>
+                    </listfoot>
+                </listbox>
+            </vbox>
+            
+        </groupbox>
+
+        <groupbox mold="3d" width="500px" style="padding: 10px">
+            <caption label="Grouping" />
+            <vbox>
+                <label value="Enter number of groups to generate" />
+                <textbox id="groupCount" value="20"/>
+            </vbox>
+        </groupbox>
+
+        <button id="btnGenerate" label="Generate classification" />
+
+    </window>
+</zk>
