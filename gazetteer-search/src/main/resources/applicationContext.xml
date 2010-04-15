@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
  <beans>
-    <bean id="gazetteer" class="org.ala.rest.GazetteerSearchResource"/>
+    <!-- <bean id="gazetteer" class="org.ala.rest.GazetteerSearchResource"/>
     
 
     <bean id="gazetteerMapping" class="org.geoserver.rest.RESTMapping">
@@ -13,7 +13,7 @@
             </entry>
          </map>
       </property>
-    </bean>
+    </bean> !-->
 
     <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
 
