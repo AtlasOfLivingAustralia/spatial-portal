@@ -90,12 +90,13 @@ public class Zipper {
          * 
          */
 
-        /*
+        
         Grid g = new Grid("/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/world_10_bio01");
         System.out.println("rows: " + g.nrows);
         System.out.println("cols: " + g.ncols);
         System.out.println("v: " + g.minval);
         System.out.println("v: " + g.maxval);
+        System.out.println("size: " + g.xres + " x " + g.yres); 
 
         double[] dv = g.getGrid();
 
@@ -103,9 +104,6 @@ public class Zipper {
         for (int i=0; i<dv.length; i++) {
             System.out.println(dv[i]); 
         }
-         *
-         *
-         */
 
 
         System.out.println("Static methods available. "); 

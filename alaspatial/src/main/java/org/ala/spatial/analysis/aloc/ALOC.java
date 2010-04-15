@@ -20,12 +20,16 @@ public class ALOC{
 		float [][] data = null;
 		j = 0;
 		int width=252,height=210;
+                String layerPath = TabulationSettings.environmental_data_path;
+                if (layerPath == null) layerPath = ""; 
 		for(Layer l : layers){
+                    System.out.println("Loading layer " + l.display_name + " -> " + l.name + " => " + TabulationSettings.environmental_data_path);
 			Grid grid = new Grid(
-					TabulationSettings.environmental_data_path + 
+					layerPath +
 					l.name);
 			width=grid.ncols;
 			height=grid.nrows;
+                        System.out.println("WidthxHeight: " + width + "x" + height); 
 			double [] d = grid.getGrid();
 			if(data == null){
 				data = new float[d.length][layers.length];				
