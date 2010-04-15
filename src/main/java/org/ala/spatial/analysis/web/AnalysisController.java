@@ -49,6 +49,11 @@ public class AnalysisController extends UtilityComposer {
         mc.setWestWidth(MENU_HALF_WIDTH);
     }
 
+    public void onSelect$alocTab() {
+        MapComposer mc = getThisMapComposer();
+        mc.setWestWidth(MENU_HALF_WIDTH);
+    }
+
      /**
      * Gets the main pages controller so we can add a
      * layer to the map

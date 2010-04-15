@@ -1,0 +1,121 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.ala.spatial.analysis.web;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zk.ui.WrongValueException;
+import org.zkoss.zk.ui.event.InputEvent;
+import org.zkoss.zul.Combobox;
+import org.zkoss.zul.Comboitem;
+
+/**
+ *
+ * @author ajay
+ */
+public class EnvLayersCombobox extends Combobox {
+
+    private String[] envLayers;
+    private String satServer = "http://localhost:8080";  // http://ec2-184-73-34-104.compute-1.amazonaws.com
+
+    public EnvLayersCombobox(String value) throws WrongValueException {
+        super(value);
+        envLayers = setupEnvironmentalLayers();
+    }
+
+    public EnvLayersCombobox() {
+        //refresh("");
+        envLayers = setupEnvironmentalLayers();
+    }
+
+    @Override
+    public void setValue(String value) throws WrongValueException {
+        super.setValue(value);
+        //refresh(value);
+    }
+
+    public void onChanging(InputEvent event) {
+        if (!event.isChangingBySelectBack()) {
+            //refresh(event.getValue());
+        }
+    }
+
+    /**
+     * Iterate thru' the layer list setup in the @doAfterCompose method
+     * and setup the listbox
+     */
+    private String[] setupEnvironmentalLayers() {
+        String[] aslist = null;
+        try {
+
+            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(envurl);
+            get.addRequestHeader("Content-type", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println("For ALOC");
+            System.out.println(slist);
+
+            aslist = slist.split("\n");
+
+            System.out.println("Loading " + aslist.length + " env.layers for ALOC... ");
+
+            Iterator it = getItems().iterator();
+            for (int i = 0; i < aslist.length; i++) {
+                if (aslist[i] == null) {
+                    System.out.println("env.layer at " + i + " is null.");
+                } else {
+                System.out.println(">> " + aslist[i]);
+                if (it != null && it.hasNext()) {
+                    ((Comboitem) it.next()).setLabel(aslist[i] + " (Terrestrial)");
+                } else {
+                    it = null;
+                    new Comboitem(aslist[i] + " (Terrestrial)").setParent(this);
+                }
+                }
+            }
+
+            while (it != null && it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+
+        } catch (Exception e) {
+            System.out.println("error setting up env list");
+            e.printStackTrace(System.out);
+        }
+
+        return aslist;
+    }
+
+    private void refresh(String val) {
+        int j = Arrays.binarySearch(envLayers, val);
+        if (j < 0) {
+            j = -j - 1;
+        }
+
+        Iterator it = getItems().iterator();
+        for (int cnt = 10; --cnt >= 0 && j < envLayers.length && envLayers[j].startsWith(val); ++j) {
+            if (it != null && it.hasNext()) {
+                ((Comboitem) it.next()).setLabel(envLayers[j]);
+            } else {
+                it = null;
+                new Comboitem(envLayers[j]).setParent(this);
+            }
+        }
+
+        while (it != null && it.hasNext()) {
+            it.next();
+            it.remove();
+        }
+
+    }
+}
