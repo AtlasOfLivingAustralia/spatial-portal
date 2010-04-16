@@ -341,7 +341,11 @@ public class MaxentWCController extends UtilityComposer {
         //contruct the filter
         //filter = "<Filter><PropertyIsEqualTo><PropertyName>url</PropertyName><Literal><![CDATA["+mapWMS+entity+"&type=1&unit=1]]></Literal></PropertyIsEqualTo></Filter>";
         //lets try it in cql
-        filter = "species eq '" + taxon + "'";
+        //filter = "species eq '" + taxon + "'";
+        String desc = sac.getSelectedItem().getDescription(); 
+        String tlevel = desc.split("-")[0].trim();
+        filter =  tlevel + " eq '" + taxon + "'";
+        System.out.println("Setting filter: " + filter );
 
         logger.debug(filter);
         //mc.addWMSLayer(label, uri, 1, filter);
