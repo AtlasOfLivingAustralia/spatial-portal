@@ -3,6 +3,7 @@ package org.ala.rest;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,7 +42,7 @@ public class GazetteerFeature {
 
 
     String name;
-//    List properties;
+    Map properties;
 
     public GazetteerFeature(String layerName, String featureName) throws IOException, Exception {
 
@@ -68,17 +69,25 @@ public class GazetteerFeature {
 //                System.out.println("*****" + features.size());
 //                Feature[] featuresArray = (Feature[])features.toArray();
 //                Feature feature = featuresArray[0];
-                if (features.hasNext()){
-                     Feature feature = (Feature) features.next();
-                    this.name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
-    //                Collection<Property> properties = feature.g;
-    //                for(Property property : properties) {
-    //                    this.properties.add(property); // = feature.getProperties().toArray()[];
-    //               }
+                try
+                {
+                    if (features.hasNext()){
+                         Feature feature = (Feature) features.next();
+                        this.name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
+                        //this.properties = feature.getProperties().toArray(this.properties);
+                        Collection<Property> featureProperties = feature.getProperties();
+                        this.properties = new HashMap();//ArrayList(featureProperties.size());
+                        for(Property property : featureProperties) {
+                            if ((property.getName() != null)&&(property.getValue() != null))
+                                this.properties.put(property.getName().toString(),property.getValue().toString()); // = feature.getProperties().toArray()[];
+                       }
+                    }
+                    else
+                        throw new Exception("Could not find feature");
+                    }
+                finally {
+                    features.close();
                 }
-                else
-                    throw new Exception("Could not find feature");
-                    
                
             }
         }

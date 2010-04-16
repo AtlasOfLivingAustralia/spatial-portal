@@ -44,29 +44,18 @@ public class GazetteerSearch {
 		File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(),"test-index");
 	    IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
 
-
-
                     QueryParser qp  = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
 
                     Query nameQuery = qp.parse(searchString.toLowerCase());
 
-
-
-
                     TopDocs topDocs = is.search(nameQuery, 20);
 
-
-
                     for(ScoreDoc scoreDoc: topDocs.scoreDocs){
-
                             Document doc = is.doc(scoreDoc.doc);
-
-
-
                             List<Fieldable> fields = doc.getFields();
                             
-                            results.add(new SearchResultItem(fields.get(1).stringValue(),fields.get(0).stringValue(),fields.get(3).stringValue(),fields.get(4).stringValue()));
-
+                            //results.add(new SearchResultItem(fields.get(1).stringValue(),fields.get(0).stringValue(),fields.get(3).stringValue(),fields.get(4).stringValue()));
+                            results.add(new SearchResultItem(fields));
                     }
 
          }
