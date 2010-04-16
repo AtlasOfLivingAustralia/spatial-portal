@@ -37,7 +37,7 @@ This tool samples environmental and contextual data layers at locations defined 
 
         <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
         <groupbox mold="3d" width="500px" style="padding: 10px">
-            <caption label="Step 2: Select your environmental and contextual layers you want sampled at the geographic locations" />
+            <caption label="Step 2: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
