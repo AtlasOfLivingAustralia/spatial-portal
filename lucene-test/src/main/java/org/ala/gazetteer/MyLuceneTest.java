@@ -56,20 +56,20 @@ public class MyLuceneTest {
 
 		if(rs.getString(2) != null)
 		    doc.add(new Field("name", rs.getString(2).toLowerCase(), Store.YES, Index.ANALYZED));
-		else
-		    doc.add(new Field("name", "unknown", Store.YES, Index.ANALYZED));
+		//else
+		//    doc.add(new Field("name", "unknown", Store.YES, Index.ANALYZED));
 		
 		doc.add(new Field("source", rs.getString(3).toLowerCase(), Store.YES, Index.ANALYZED));
 
 		if(rs.getString(4) != null)
 		    doc.add(new Field("type", rs.getString(4).toLowerCase(), Store.YES, Index.ANALYZED));
-		else
-		    doc.add(new Field("type", "unknown", Store.YES, Index.ANALYZED));
+		//else
+		//    doc.add(new Field("type", "unknown", Store.YES, Index.ANALYZED));
 
-		if(rs.getString(5) != null)
-		    doc.add(new Field("state", rs.getString(5).toLowerCase(), Store.YES, Index.ANALYZED));
-		else
-		    doc.add(new Field("state", "unknown", Store.YES, Index.ANALYZED));
+		if((rs.getString(5) != null)&&(!(rs.getString(5).toLowerCase().contentEquals("n/a"))))
+		    doc.add(new Field("state", toState(rs.getString(5).toLowerCase()), Store.YES, Index.ANALYZED));
+		//else
+		//    doc.add(new Field("state", "unknown", Store.YES, Index.ANALYZED));
 
 
 		iw.addDocument(doc);
@@ -126,7 +126,27 @@ public class MyLuceneTest {
 
 	
     }
-
+	private static String toState(String stateCode) {
+		//TODO: this is a bit of a hack, but it will be dealt with either in the gazetter config or the db in future
+		if (stateCode.contentEquals("vic"))
+			return "Victoria";
+		else if (stateCode.contentEquals("nsw"))
+			return "New South Wales";
+		else if (stateCode.contentEquals("qld"))
+			return "Queensland";
+		else if (stateCode.contentEquals("nt"))
+			return "Northern Territory";
+		else if (stateCode.contentEquals("wa"))
+			return "Western Australia";
+		else if (stateCode.contentEquals("sa"))
+			return "South Australia";
+		else if (stateCode.contentEquals("tas"))
+			return "Tasmania";
+		else if (stateCode.contentEquals("act"))
+			return "Australian Capital Territory";
+		else
+			return stateCode;			
+	}
 	public static void search(String input) throws Exception
 	{
 	    File file = new File("test-index");
