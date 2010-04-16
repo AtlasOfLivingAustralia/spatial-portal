@@ -55,6 +55,10 @@
 		<to>/speciesList.zul</to>
 	</rule>
 	<rule>
+		<from>/speciesList2.zul</from>
+		<to>/speciesList2.zul</to>
+	</rule>
+	<rule>
 		<from>/sampling.zul</from>
 		<to>/sampling.zul</to>
 	</rule>
