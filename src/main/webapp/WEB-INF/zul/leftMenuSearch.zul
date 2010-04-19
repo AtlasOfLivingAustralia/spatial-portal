@@ -18,7 +18,7 @@
 			<label value="Add keywords:" sclass="h4" />
 			<combobox id="txtsearch" autodrop="true" width="240px"
 				name="txtsearch" tooltip="true"
-				tooltiptext="Free text search from the IMOS Mest Database"
+				tooltiptext="Free text search from the metadata atabase"
 				forward="onOK=onTextsearch"
                 constraint="no empty" />
             <label id="txtsearchError" sclass="error" visible="false" value="You must enter a search term" />
@@ -136,7 +136,7 @@
 				value="Save your search via the search results!" sclass="h5 spacedUp"
 				 visible="${!settings.disablePortalUsers and session.attributes.portalSession.loggedIn}" />
                 <button label="Search" id="btnSearch"
-				tooltiptext="Search of the IMOS Mest Database" />
+				tooltiptext="Search of the metadata database" />
 		</div>
 
 		

@@ -268,7 +268,6 @@ function buildMapReal() {
         clickEventHandler.activate();
     });
 
-
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
         Event.stop(e);

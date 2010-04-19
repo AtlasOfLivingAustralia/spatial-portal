@@ -41,6 +41,7 @@ import java.util.Map;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.search.AutoCompleteSpecies;
+import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -181,7 +182,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Listbox gazetteerResults;
     private GazetteerSearchController gazetteerSearchWindow;
     private AutoComplete gazetteerAuto;
-    private AutoCompleteSpecies searchSpeciesAuto;
+    private SpeciesAutoComplete searchSpeciesAuto;
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -1906,14 +1907,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onCheck$rdoCommonSearch() {
-        searchSpeciesAuto.setSearchType("common");
-        searchSpeciesAuto.setValue("");
+        searchSpeciesAuto.setSearchCommon(true);
+        searchSpeciesAuto.getItems().clear();
 
     }
 
     public void onCheck$rdoScientificSearch() {
-        searchSpeciesAuto.setSearchType("scientific");
-        searchSpeciesAuto.setValue("");
+       searchSpeciesAuto.setSearchCommon(false);
+       searchSpeciesAuto.getItems().clear();
     }
 
     public void onSearchSpecies(ForwardEvent event) {

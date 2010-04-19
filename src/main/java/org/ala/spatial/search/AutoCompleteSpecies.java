@@ -72,73 +72,73 @@ public class AutoCompleteSpecies extends Combobox {
         //first check the length
 
         if (val.length() > 2) {
-        //update the dictionary
-        //TODO: remove hardcoded host, credentials
-        HttpHost targetHost = new HttpHost(URL, 80, "http");
+            //update the dictionary
+            //TODO: remove hardcoded host, credentials
+            HttpHost targetHost = new HttpHost(URL, 80, "http");
 
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        // Add AuthCache to the execution context
-        BasicHttpContext localcontext = new BasicHttpContext();
-        //localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
-        String searchString = forURL(val);
-
-        if (searchType.equals(Common)) {
-            searchString = commonSearch + searchString + "/json";
-        } else {
-            searchString = scientificSearch + searchString + "/json";
-        }
-
-
-        HttpGet httpget = new HttpGet(searchString);
-
-
-        try {
-            HttpResponse response = httpclient.execute(targetHost, httpget, localcontext);
-            HttpEntity entity = response.getEntity();
-            String responseText = "";
-            if (entity != null) {
-                responseText = new String(EntityUtils.toByteArray(entity));
-            } else {
-                responseText = "Fail";
-            }
-
-
-            JSONArray results = new JSONArray();
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+            // Add AuthCache to the execution context
+            BasicHttpContext localcontext = new BasicHttpContext();
+            //localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
+            String searchString = forURL(val);
 
             if (searchType.equals(Common)) {
-                results = searchCommon(responseText);
+                searchString = commonSearch + searchString + "/json";
             } else {
-                results = searchScientific(responseText);
+                searchString = scientificSearch + searchString + "/json";
             }
 
 
-            //_dict = new String[results.size()];
-            Iterator it = getItems().iterator();
+            HttpGet httpget = new HttpGet(searchString);
 
-            for (int i = 0; i < results.size(); i++) {
-                String itemString;
+
+            try {
+                HttpResponse response = httpclient.execute(targetHost, httpget, localcontext);
+                HttpEntity entity = response.getEntity();
+                String responseText = "";
+                if (entity != null) {
+                    responseText = new String(EntityUtils.toByteArray(entity));
+                } else {
+                    responseText = "Fail";
+                }
+
+
+                JSONArray results = new JSONArray();
+
                 if (searchType.equals(Common)) {
-                    itemString = (String) results.getJSONObject(i).get("commonName");
+                    results = searchCommon(responseText);
                 } else {
-                    itemString = (String) results.getJSONObject(i).get("scientificName");
+                    results = searchScientific(responseText);
                 }
 
-                
-                if (it != null && it.hasNext()) {
-                    ((Comboitem) it.next()).setLabel(itemString);
-                } else {
-                    it = null;
-                    new Comboitem(itemString).setParent(this);
+
+                //_dict = new String[results.size()];
+                Iterator it = getItems().iterator();
+
+                for (int i = 0; i < results.size(); i++) {
+                    String itemString;
+                    if (searchType.equals(Common)) {
+                        itemString = (String) results.getJSONObject(i).get("commonName");
+                    } else {
+                        itemString = (String) results.getJSONObject(i).get("scientificName");
+                    }
+
+
+                    if (it != null && it.hasNext()) {
+                        ((Comboitem) it.next()).setLabel(itemString);
+                    } else {
+                        it = null;
+                        new Comboitem(itemString).setParent(this);
+                    }
+
+                }
+                while (it != null && it.hasNext()) {
+                    it.next();
+                    it.remove();
                 }
 
+            } catch (Exception e) {
             }
-            while (it != null && it.hasNext()) {
-                it.next();
-                it.remove();
-            }
-
-        } catch (Exception e) {
-        }
 
         }
     }
