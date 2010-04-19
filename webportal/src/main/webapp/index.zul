@@ -379,8 +379,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                         <label>Search by</label>
                                                         <radiogroup id="rdgNameSearchType" >
                                                             <hbox>
-                                                                <radio id="rdoCommonSearch" label="Common Name" selected="true"/>
-                                                                <radio id="rdoScientificSearch" label="Scientific Name" />
+                                                                <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
+                                                                <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
                                                             </hbox>
                                                         </radiogroup>
                                                         <!--<textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>

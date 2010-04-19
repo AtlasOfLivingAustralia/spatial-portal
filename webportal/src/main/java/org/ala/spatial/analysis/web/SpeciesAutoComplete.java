@@ -33,8 +33,7 @@ public class SpeciesAutoComplete extends Combobox {
     //TODO get these from the config file
     private static final String cnUrl = "data.ala.org.au";
     private static final String commonSearch = "/search/commonNames/";
-    private static final String scientificSearch = "/search/scientificNames/";
-    private boolean bSearchCommon = true;
+    private boolean bSearchCommon = false;
 
     public boolean isSearchCommon() {
         return bSearchCommon;
@@ -66,23 +65,10 @@ public class SpeciesAutoComplete extends Combobox {
         }
     }
 
-     private void refreshBIE(String val) {
-
-    String snUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/view/ajaxTaxonName?query=";
-    String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=";
-
+    private void refreshBIE(String val) {
+        String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=";
         try {
-
-            String nsurl;
-
-            if (isSearchCommon()) {
-                nsurl = cnUrl + URLEncoder.encode(val, "UTF-8");
-            } else {
-               nsurl = snUrl + URLEncoder.encode(val, "UTF-8");
-            }
-
-
-
+            String nsurl = cnUrl + URLEncoder.encode(val, "UTF-8");
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(nsurl);
 
@@ -128,131 +114,103 @@ public class SpeciesAutoComplete extends Combobox {
             }
 
         } catch (Exception e) {
-            System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refreshRemote");
+            System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refreshBIE");
             e.printStackTrace(System.out);
 
             new Comboitem("No species found. error.").setParent(this);
         }
+    }
 
-     }
     /** Refresh comboitem based on the specified value.
      */
     private void refresh(String val) {
 
         //TODO get this from the config file
         String snUrl = "http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/species/taxon/";
+        //String snUrl = "http://localhost:8080/alaspatial/species/taxon/";
 
 
         try {
 
-            String TipMessage;
-
-
             if (isSearchCommon()) {
-                TipMessage = "Please start by typing in a species name...";
-            } else {
-                TipMessage = "Please start by typing in a common name...";
+                if (val.trim().equalsIgnoreCase("")) {
+                    if (val.length() == 0) {
+                        setDroppable("false");
+                    } else {
+                        setDroppable("true");
+                    }
+                } else {
+                    refreshBIE(val);
+                }
+                return;
             }
+
+            /*
+            if (val.length() == 0) {
+            setDroppable("false");
+            } else {
+            setDroppable("true");
+            }
+             *
+             */
 
             Iterator it = getItems().iterator();
             if (val.length() == 0) {
                 Comboitem myci = null;
                 if (it != null && it.hasNext()) {
                     myci = ((Comboitem) it.next());
-                    myci.setLabel(TipMessage);
+                    myci.setLabel("Please start by typing in a species name...");
                 } else {
                     it = null;
-                    myci = new Comboitem(TipMessage);
+                    myci = new Comboitem("Please start by typing in a species name...");
                     myci.setParent(this);
                 }
                 myci.setDescription("");
                 myci.setDisabled(true);
             } else {
+                String nsurl = snUrl + URLEncoder.encode(val, "UTF-8");
 
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(nsurl);
+                get.addRequestHeader("Content-type", "text/plain");
 
-                if (isSearchCommon()) {
+                int result = client.executeMethod(get);
+                String slist = get.getResponseBodyAsString();
 
+                System.out.println("Response status code: " + result);
+                System.out.println("Response: \n" + slist);
 
-                    HttpHost targetHost = new HttpHost(cnUrl, 80, "http");
+                String[] aslist = slist.split("\n");
+                System.out.println("Got " + aslist.length + " records.");
 
-                    DefaultHttpClient httpclient = new DefaultHttpClient();
-                    // Add AuthCache to the execution context
-                    BasicHttpContext localcontext = new BasicHttpContext();
-                    //localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
-                    String searchString = forURL(val);
+                if (aslist.length > 0) {
 
-                    searchString = commonSearch + searchString + "*/json";
-                    HttpGet httpget = new HttpGet(searchString);
+                    for (int i = 0; i < aslist.length; i++) {
+                        String[] spVal = aslist[i].split("/");
 
-
-                    try {
-                        HttpResponse response = httpclient.execute(targetHost, httpget, localcontext);
-                        HttpEntity entity = response.getEntity();
-                        String responseText = "";
-                        if (entity != null) {
-                            responseText = new String(EntityUtils.toByteArray(entity));
+                        Comboitem myci = null;
+                        if (it != null && it.hasNext()) {
+                            myci = ((Comboitem) it.next());
+                            myci.setLabel(spVal[0].trim());
                         } else {
-                            responseText = "Fail";
+                            it = null;
+                            myci = new Comboitem(spVal[0].trim());
+                            myci.setParent(this);
                         }
-
-
-                        JSONArray results = new JSONArray();
-                        results = searchCommon(responseText);
-
-                        //_dict = new String[results.size()];
-                        Iterator its = getItems().iterator();
-
-                        for (int i = 0; i < results.size(); i++) {
-                            String itemString;
-                            itemString = (String) results.getJSONObject(i).get("commonName");
-                            if (its != null && its.hasNext()) {
-                                ((Comboitem) its.next()).setLabel(itemString);
-                            } else {
-                                its = null;
-                                new Comboitem(itemString).setParent(this);
-                            }
-
-                        }
-                        while (its != null && its.hasNext()) {
-                            its.next();
-                            its.remove();
-                        }
-
-                    } catch (Exception e) {
-                    }
-
-
-                } else {
-                    String nsurl = snUrl + URLEncoder.encode(val + "*", "UTF-8");
-
-                    HttpClient client = new HttpClient();
-                    GetMethod get = new GetMethod(nsurl);
-                    get.addRequestHeader("Content-type", "text/plain");
-
-                    int result = client.executeMethod(get);
-                    String slist = get.getResponseBodyAsString();
-                    String[] aslist = slist.split("\n");
-
-                    if (aslist.length > 0) {
-
-                        for (int i = 0; i < aslist.length; i++) {
-                            String[] spVal = aslist[i].split("/");
-
-                            Comboitem myci = null;
-                            if (it != null && it.hasNext()) {
-                                myci = ((Comboitem) it.next());
-                                myci.setLabel(spVal[0].trim());
-                                myci.setTooltip("Species name");
-                            } else {
-                                it = null;
-                                myci = new Comboitem(spVal[0].trim());
-                                myci.setParent(this);
-                            }
-                            myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim());
-                            myci.setDisabled(false);
-                        }
+                        myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim());
+                        myci.setDisabled(false);
                     }
                 }
+                /*else {
+                if (it != null && it.hasNext()) {
+                ((Comboitem) it.next()).setLabel("No species found.");
+                } else {
+                it = null;
+                new Comboitem("No species found.").setParent(this);
+                }
+
+                }*/
+
             }
             while (it != null && it.hasNext()) {
                 it.next();
@@ -268,48 +226,4 @@ public class SpeciesAutoComplete extends Combobox {
 
     }
 
-    public JSONArray searchCommon(String json) {
-        JSONArray joResult = new JSONArray();
-        TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
-        JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
-        jsonConfig.setJavaPropertyFilter(new PropertyFilter() {
-
-            @Override
-            public boolean apply(Object source, String name, Object value) {
-                if ("result".equals(name)) {
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        JSONObject jo = JSONObject.fromObject(json);
-
-        tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
-
-        if (tss.getRecordsReturned() > 1) {
-
-            joResult = jo.getJSONArray("result");
-
-        }
-
-        return joResult;
-
-    }
-
-    /**
-     * string checking code, for spaces and special characters
-     * @param aURLFragment
-     * @return String
-     */
-    public static String forURL(String aURLFragment) {
-        String result = null;
-        try {
-            result = URLEncoder.encode(aURLFragment, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException("UTF-8 not supported", ex);
-        }
-        return result;
-    }
 }
