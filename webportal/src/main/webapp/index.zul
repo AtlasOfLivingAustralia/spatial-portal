@@ -383,9 +383,16 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                                 <radio id="rdoScientificSearch" label="Scientific Name" />
                                                             </hbox>
                                                         </radiogroup>
-                                                        <!--<textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>-->
+                                                        <!--<textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>
                                                         <combobox id="searchSpeciesAuto" use="org.ala.spatial.search.AutoCompleteSpecies" autodrop="true" width="240px"></combobox>
-                                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()" />
+                                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()" />-->
+
+                                                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                                                            <comboitem label=""/>
+                                                        </combobox>
+
+                                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()"/>
+
                                                         <html>
                                                             <![CDATA[ <br> ]]>
                                                         </html>
