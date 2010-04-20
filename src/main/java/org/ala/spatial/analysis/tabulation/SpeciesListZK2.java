@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.tabulation;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -75,6 +76,8 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	public Label results_label;
 	int results_pos;
 
+	FilteringImage filteringImage;
+
 	@Override
 	public void doAfterCompose(Component comp) throws Exception {
 		// TODO Auto-generated method stub
@@ -107,6 +110,8 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			_layer_filters_original.add(layer_filter);
 		}
 
+		File file = java.io.File.createTempFile("spl",".png");
+		filteringImage = new FilteringImage(file.getPath());
 
 		onChanging$cb(null);
 
@@ -309,6 +314,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			System.out.println("range:" + range + " mincursor:" + mincursor + " maxcursor:" + maxcursor);
 
 			Clients.evalJavaScript("applyFilter(" + idx + "," + (mincursor/100.0) + "," + (maxcursor/100.0) + ");"); 	//should take out missing value
+			filteringImage.applyFilter(idx,mincursor/100.0,maxcursor/100.0);
 
 			popup_slider_min.setCurpos(mincursor);
 			popup_slider_max.setCurpos(maxcursor);
@@ -330,6 +336,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			popup_idx.setValue(String.valueOf(idx));
 
 			String javascript = "applyFilterCtx(" + idx + ",-1,false);"; 	//should take out missing value
+			filteringImage.applyFilterCtx(idx,-1,false);
 
 			/* set check boxes */
 			for(int i : lf.catagories){
@@ -346,6 +353,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 				if(j == lf.catagories.length){
 					//hide
 					javascript += "applyFilterCtx(" + idx + "," + i + ",false);"; 	//should take out missing value
+					filteringImage.applyFilterCtx(idx,i,false);
 				}
 			}
 			lc.focus();
@@ -383,9 +391,11 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 						if(((SPLFilter)_layer_filters_original.get(i)).layer.display_name.equals(label)){
 							if(((SPLFilter)_layer_filters_original.get(i)).layer.type.equals("environmental")){
 								Clients.evalJavaScript("applyFilter(" + i + ",-999,100000);");
+								filteringImage.applyFilter(i,-999,100000);
 							}else{
 								String javascript = "applyFilterCtx(" + i + ",-2,true);";
 								Clients.evalJavaScript(javascript);
+								filteringImage.applyFilterCtx(i,-2,true);
 							}
 							System.out.println("done client applyFilter call for idx=" + i);
 							break;
@@ -461,6 +471,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		if(idx_n < 19){
 			System.out.println("clientFilter(" + idx + "," + mincurpos + "," + maxcurpos + ")");
 			Clients.evalJavaScript("applyFilter(" + idx + "," + mincurpos + "," + maxcurpos + ");");
+			filteringImage.applyFilter(Integer.valueOf(idx),mincurpos,maxcurpos);
 			System.out.println("done client applyFilter call for idx=" + i);
 		}else{
 			System.out.println("selected catagories (clientFilter()): " + popup_filter.catagories.length);
@@ -477,7 +488,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 					if(k == lf.catagories[j]){
 						System.out.println("show: layer=" + idx_n + " value=" + k);
 						javascript += "applyFilterCtx(" + idx_n + "," + k + ",true);"; 	//should take out missing value
-
+						filteringImage.applyFilterCtx(idx_n,k,true);
 						break;
 					}
 				}
@@ -485,6 +496,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 					//unhide
 					System.out.println("hide: layer=" + idx_n + " value=" + k);
 					javascript += "applyFilterCtx(" + idx_n + "," + k + ",false);"; 	//should take out missing value
+					filteringImage.applyFilterCtx(idx_n,k,false);
 				}
 			}
 			Clients.evalJavaScript(javascript);

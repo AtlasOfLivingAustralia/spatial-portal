@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.tabulation;
 
+import java.io.Serializable;
 import org.ala.spatial.util.*;
 
 /**
@@ -15,7 +16,7 @@ import org.ala.spatial.util.*;
  * @see Layer
  * @see Field
  */
-public class TabulationSettings {
+public class TabulationSettings { //  implements Serializable
 	/**
 	 * postgis enabled database
 	 */
@@ -109,6 +110,7 @@ public class TabulationSettings {
 	 * directory for indexes
 	 */
 	public static String index_path;
+    private static final long serialVersionUID = -2806584316583831954L;
 
 	/**
 	 * loads settings form name of the appropriate xml resource file

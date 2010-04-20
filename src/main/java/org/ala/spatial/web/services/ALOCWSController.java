@@ -4,7 +4,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.aloc.ALOC;
 import org.ala.spatial.util.Grid;
@@ -132,6 +136,13 @@ public class ALOCWSController {
     }
 
     private Layer[] getEnvFilesAsLayers(String envNames) {
+        try {
+            System.out.println("envNames.pre: " + envNames);
+            envNames = URLDecoder.decode(envNames, "UTF-8");
+            System.out.println("envNames.post: " + envNames);
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace(System.out);
+        }
         String[] nameslist = envNames.split(":");
         Layer[] sellayers = new Layer[nameslist.length];
 
@@ -144,6 +155,7 @@ public class ALOCWSController {
                 if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
                     sellayers[j] = _layerlist[i];
                     //sellayers[j].name = _layerPath + sellayers[j].name;
+                    //System.out.println("Adding layer for ALOC: " + sellayers[j].name);
                     continue;
                 }
             }
