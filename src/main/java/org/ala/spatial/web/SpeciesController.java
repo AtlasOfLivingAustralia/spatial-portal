@@ -1,5 +1,6 @@
 package org.ala.spatial.web;
 
+import java.net.URLDecoder;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.tabulation.SamplingService;
@@ -55,7 +56,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/names", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     Map getNames2(@RequestParam String q, @RequestParam int s, @RequestParam int p) {
         System.out.println("Looking up names for: " + q);
@@ -75,19 +76,28 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/taxon/{name}", method = RequestMethod.GET)
-    public @ResponseBody String getTaxonNames(@PathVariable("name") String name) {
-        System.out.println("Looking up names for: " + name);
-
-        SamplingService ss = new SamplingService();
-        String[] aslist = ss.filterSpecies(name, 40);
-        if (aslist == null) {
-            aslist = new String[1];
-            aslist[0] = "";
-        }
-
+    public
+    @ResponseBody
+    String getTaxonNames(@PathVariable("name") String name) {
         String slist = "";
-        for (String s : aslist) {
-            slist += s + "\n";
+        try {
+
+            System.out.println("Looking up names for: " + name);
+
+            name = URLDecoder.decode(name, "UTF-8");
+
+            SamplingService ss = new SamplingService();
+            String[] aslist = ss.filterSpecies(name, 40);
+            if (aslist == null) {
+                aslist = new String[1];
+                aslist[0] = "";
+            }
+
+            for (String s : aslist) {
+                slist += s + "\n";
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
         }
 
         return slist;
