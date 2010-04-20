@@ -403,7 +403,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <tabpanel>
                                                         <div id="facilityControls">
                                                             <zk forEach="${session.attributes.portalSession.facilities}">
-                                                                <div>
+                                                                <div visible="false">
                                                                     <radio id="radio_${each.value.id}" label="${each.value.name}"
                                                                            tooltiptext="${each.value.description}" sclass="tabheader"
                                                                            forward="onCheck=onSelectFacility()">
@@ -413,6 +413,14 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                                     <tree id="tree_${each.value.id}" />
                                                                 </div>
                                                             </zk>
+                                                            <html><![CDATA[
+
+                                                                    <div style="width:inherit;" >
+                                                                        <a href="http://data.ala.org.au/species/" target="_blank" class="external wrap" title="ALA Species Data">ALA Species Data</a><BR>
+                                                                    </div>
+
+                                                                        ]]>
+                                                           </html>
                                                         </div>
 
 
