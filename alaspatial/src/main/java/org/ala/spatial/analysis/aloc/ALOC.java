@@ -106,7 +106,7 @@ public class ALOC {
 
             /* map back as colours, grey scale for now */
             BufferedImage image = new BufferedImage(width, height,
-                    BufferedImage.TYPE_INT_RGB);
+                    BufferedImage.TYPE_INT_ARGB);
             int[] image_bytes;
 
             image_bytes = image.getRGB(0, 0, image.getWidth(), image.getHeight(),
@@ -114,13 +114,11 @@ public class ALOC {
 
             /* TODO: set missing value other than black */
 
-            /* try transparency */
-            /*
+            /* try transparency */            
             for (i = 0; i < image_bytes.length; i++) {
                 image_bytes[i] = 0x00000000;
             }
-             * 
-             */
+             
             int group;
             int[] colour = new int[3];
             for (i = 0; i < groups.length; i++) {

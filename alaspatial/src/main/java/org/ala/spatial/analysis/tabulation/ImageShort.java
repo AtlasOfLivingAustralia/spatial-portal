@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class ImageShort implements Serializable {
 
-    private static final long serialVersionUID = 8689255844671800194L;
+    private static final long serialVersionUID = 1L;//8689255844671800194L;
 
     /**
      * default
