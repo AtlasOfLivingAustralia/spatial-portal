@@ -131,6 +131,48 @@ public class SpatialSettingsWSController {
 
     }
 
+    @RequestMapping(value = "/layer/{layer}/filter", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getLayerFilterString(@PathVariable String layer) {
+        try {
+
+            layer = URLDecoder.decode(layer, "UTF-8");
+
+            Layer l = null;
+
+            ssets = new SpatialSettings();
+
+            Layer[] _layerlist = ssets.getEnvironmentalLayers();
+
+            for (int i = 0; i < _layerlist.length; i++) {
+                if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                    l = _layerlist[i];
+                }
+            }
+
+            if (l == null) {
+                _layerlist = ssets.getContextualLayers();
+
+                for (int i = 0; i < _layerlist.length; i++) {
+                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                        l = _layerlist[i];
+                    }
+                }
+            }
+            SPLFilter sf = SpeciesListIndex.getLayerFilter(l);
+            if (sf != null) {
+                return sf.getFilterString();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+
+    }
+
     @RequestMapping(value = "/layer/{layer}/splfilter", method = RequestMethod.GET)
     public
     @ResponseBody
