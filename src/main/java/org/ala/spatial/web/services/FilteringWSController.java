@@ -84,7 +84,7 @@ public class FilteringWSController {
         return "";
     }
 
-    @RequestMapping(value = "/apply/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}", method = RequestMethod.GET)
     public
     @ResponseBody
     String apply2(@PathVariable String pid,
@@ -102,10 +102,10 @@ public class FilteringWSController {
             val2s = URLDecoder.decode(val2s, "UTF-8");
 
             // grab and split the layers
-            String[] aLayers = layers.split(";");
-            String[] aTypes = types.split(";");
-            String[] aVal1s = val1s.split(";");
-            String[] aVal2s = val2s.split(";");
+            String[] aLayers = layers.split(":");
+            String[] aTypes = types.split(":");
+            String[] aVal1s = val1s.split(":");
+            String[] aVal2s = val2s.split(":");
 
 
             // Now lets apply the filters, one at a time
@@ -121,10 +121,33 @@ public class FilteringWSController {
 
                 System.out.println("Applying filter for " + cLayer + " with " + cVal1 + " - " + cVal2); 
 
-                if (cType.equalsIgnoreCase("environmental")) {
-                    filteringImage.applyFilter(cLayer, Double.parseDouble(cVal1), Double.parseDouble(cVal2));
+                if (filteringImage == null) {
+                    System.out.println("Opps filteringimage is null");
                 } else {
-                    filteringImage.applyFilterCtx(cLayer, Integer.parseInt(cVal1), Boolean.parseBoolean(cVal2));
+                    System.out.println("got filteringimage");
+                }
+
+                if (cType.equalsIgnoreCase("environmental")) {
+                	filteringImage.applyFilter(cLayer, 0, 1);	//init
+                    filteringImage.applyFilter(cLayer, Double.parseDouble(cVal1), Double.parseDouble(cVal2));
+                } else {                	                	
+                	filteringImage.applyFilterCtx(cLayer,-1,false);	//init
+                	
+                	int j;
+                	
+                    if(cVal1.length() > 0){
+    	                String [] values_show = cVal1.split(",");
+    	                for(j=0;j<values_show.length;j++){
+    	                	filteringImage.applyFilterCtx(cLayer, Integer.parseInt(values_show[j]), true);
+    	                }
+                    }
+                   // if(cVal2.length() > 0){
+    	           //     String [] values_hide = cVal2.split(",");
+    	           //     for(j=0;j<values_hide.length;j++){
+    	           //     	filteringImage.applyFilterCtx(cLayer, Integer.parseInt(values_hide[j]), false);
+    	           //     }
+                   // }
+                	
                 }
             }
 

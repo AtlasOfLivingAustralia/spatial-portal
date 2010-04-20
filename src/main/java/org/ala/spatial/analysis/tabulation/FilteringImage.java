@@ -216,8 +216,6 @@ public class FilteringImage implements Serializable {
                 count1++;
             }
         } else {
-
-
             // working;
             if (new_min < old_min) {// show more
                 for (i = 0; i < active_layer_grid.length; i++) {
@@ -246,7 +244,8 @@ public class FilteringImage implements Serializable {
                         count2++;
                     }
                 }
-            } else if (new_max < old_max) {// show less
+            } 
+            if (new_max < old_max) {// show less
                 for (i = 0; i < active_layer_grid.length; i++) {
                     if (active_layer_grid[i] > new_max
                             && active_layer_grid[i] <= old_max) {
