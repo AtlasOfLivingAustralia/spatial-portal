@@ -61,7 +61,7 @@ public class SpeciesAutoComplete extends Combobox {
      */
     public void onChanging(InputEvent evt) {
         if (!evt.isChangingBySelectBack()) {
-            refreshBIE(evt.getValue());
+            refresh(evt.getValue());
         }
     }
 
@@ -132,6 +132,8 @@ public class SpeciesAutoComplete extends Combobox {
 
         try {
 
+            System.out.println("Looking for common name: " + isSearchCommon());
+
             if (isSearchCommon()) {
                 if (val.trim().equalsIgnoreCase("")) {
                     if (val.length() == 0) {
@@ -153,6 +155,9 @@ public class SpeciesAutoComplete extends Combobox {
             }
              *
              */
+
+
+            System.out.println("Looking up scientific name for '" + val + "' at " + snUrl ); 
 
             Iterator it = getItems().iterator();
             if (val.length() == 0) {
