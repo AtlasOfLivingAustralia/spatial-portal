@@ -1,6 +1,7 @@
 package org.ala.rest;
 
-import org.geoserver.rest.ReflectiveResource;
+import java.util.Map;
+import org.geoserver.rest.MapResource;
 
 
 
@@ -8,17 +9,24 @@ import org.geoserver.rest.ReflectiveResource;
  *
  * @author angus
  */
-public class FeatureServiceResource extends ReflectiveResource {
+public class FeatureServiceResource extends MapResource {//ReflectiveResource {
 
    
+//    @Override
+//    protected Object handleObjectGet() throws Exception {
+//       String layer = getRequest().getAttributes().get("layer").toString();
+//       String key = getRequest().getAttributes().get("type").toString();
+//
+//       return new GazetteerFeature(layer,key);
+//
+//    }
+
     @Override
-    protected Object handleObjectGet() throws Exception {
+    public Map getMap() throws Exception {
        String layer = getRequest().getAttributes().get("layer").toString();
        String key = getRequest().getAttributes().get("type").toString();
 
-
-
-       return new GazetteerFeature(layer,key);
+       return new GazetteerFeature(layer,key).getMap();
 
     }
 }
