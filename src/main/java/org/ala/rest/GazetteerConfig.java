@@ -1,58 +1,80 @@
 package org.ala.rest;
 
 import java.io.File;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import org.vfny.geoserver.global.GeoserverDataDirectory;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 public class GazetteerConfig {
-
-    public GazetteerConfig(File file) {
+    Document configDoc;
+    public GazetteerConfig() {
         //open the gazetteer.xml
-            //FIXME: read xml file
-        //read in the  values
+        try
+        {
+            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+            domFactory.setNamespaceAware(true); // never forget this!
+            DocumentBuilder builder = domFactory.newDocumentBuilder();
+            configDoc = builder.parse(new File(GeoserverDataDirectory.getGeoserverDataDirectory(),"gazetteer.xml"));
+
+            
+        }
+        catch(Exception e)
+        {
+            //FIXME: gazetteer is probably not going to work
+        }
+
+    
+       
     }
 
     public String getIdAttributeName(String layerName) {
         //returns the gazetteer identifier for the layer
-        //FIXME: read from xml
-        if (layerName.contentEquals("GeoRegionFeatures"))
-               return "id";
-        if (layerName.contentEquals("NamedPlaces"))
-               return "NAME";
-        if (layerName.contentEquals("aus0"))
-               return "name_0";
-        if (layerName.contentEquals("aus1"))
-               return "name_1";
-        if (layerName.contentEquals("aus2"))
-               return "name_2";
-        if (layerName.contentEquals("imcra4_pb"))
-               return "pb_name";
-        if (layerName.contentEquals("ibra_reg_shape"))
-               return "reg_name";
-        if (layerName.contentEquals("all_gaz_2008"))
-               return "record_id";
-        else
-            return "fixme";
+        //using xpath to query
+        String idAttribute = "none";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr
+             = xpath.compile("//layer[name='" + layerName + "']/idAttribute/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            idAttribute = nodes.item(0).getNodeValue();
+
+        }
+        catch(Exception e)
+        {
+            //FIXME
+        }
+        return idAttribute;
     }
 
 
     public String getNameAttributeName(String layerName) {
-        //returns the gazetteer identifier for the layer
-        if (layerName.contentEquals("GeoRegionFeatures"))
-               return "name";
-        if (layerName.contentEquals("NamedPlaces"))
-               return "NAME";
-         if (layerName.contentEquals("aus0"))
-               return "name_0";
-        if (layerName.contentEquals("aus1"))
-               return "name_1";
-        if (layerName.contentEquals("aus2"))
-               return "name_2";
-        if (layerName.contentEquals("imcra4_pb"))
-               return "pb_name";
-        if (layerName.contentEquals("ibra_reg_shape"))
-               return "reg_name";
-        if (layerName.contentEquals("all_gaz_2008"))
-               return "name";
-        else
-            return "fixme";
+        //returns the gazetteer display name for the layer
+        //using xpath to query
+        String idAttribute = "none";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr
+             = xpath.compile("//layer[name='" + layerName + "']/nameAttribute/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            idAttribute = nodes.item(0).getNodeValue();
+
+        }
+        catch(Exception e)
+        {
+            //FIXME
+        }
+        return idAttribute;
     }
 }

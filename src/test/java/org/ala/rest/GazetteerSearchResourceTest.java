@@ -49,8 +49,14 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
    }
 
    public void testFeatureServiceJSON() throws Exception {
-      //FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"catalog.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
+      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
       JSON json = getAsJSON("/rest/NamedPlaces/Ashton.json");
+      print(json);
+   }
+
+    public void testFeatureServiceWhiteSpaceInName() throws Exception {
+      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
+      JSON json = getAsJSON("/rest/NamedPlaces/Goose_Island.json");
       print(json);
    }
     
