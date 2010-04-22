@@ -1,38 +1,36 @@
 package org.ala.rest;
 
+import com.vividsolutions.jts.geom.Geometry;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
 
 import java.util.Map;
+
 import javax.servlet.ServletContext;
 
+import net.sf.json.JSONObject;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerInfo;
-import org.geoserver.data.CatalogReader;
 import org.geotools.data.FeatureSource;
-import org.geotools.data.Query;
-import org.geotools.data.postgis.PostgisNGDataStoreFactory;
-import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.Feature;
 
 import org.geoserver.config.GeoServer;
 
-import org.geoserver.config.impl.GeoServerImpl;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.filter.text.cql2.CQL;
 import org.opengis.feature.Property;
 import org.vfny.geoserver.global.GeoserverDataDirectory;
 
 import org.vfny.geoserver.util.DataStoreUtils;
+import org.geoserver.wfs.response.GeoJSONBuilder;
 
 /**
  *
@@ -41,8 +39,9 @@ import org.vfny.geoserver.util.DataStoreUtils;
 public class GazetteerFeature {
 
 
-    String name;
+    String id;
     Map properties;
+    String geometry;
 
     public GazetteerFeature(String layerName, String featureName) throws IOException, Exception {
 
@@ -66,21 +65,29 @@ public class GazetteerFeature {
                 FeatureSource layer = dataStore.getFeatureSource(layerName);
 
                 FeatureIterator features = layer.getFeatures(CQL.toFilter(gc.getIdAttributeName(layerName) + "= '" + featureName + "'")).features();
-//                System.out.println("*****" + features.size());
-//                Feature[] featuresArray = (Feature[])features.toArray();
-//                Feature feature = featuresArray[0];
+
                 try
                 {
-                    if (features.hasNext()){
-                         Feature feature = (Feature) features.next();
-                        this.name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
-                        //this.properties = feature.getProperties().toArray(this.properties);
+                    if (features.hasNext()) {
+                        Feature feature = (Feature) features.next();
+                        this.id = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
+
+                        //Construct a geoJSON reperesntation of the geometry uing GeoJSONBuilder
+                        StringWriter w = new StringWriter();
+                        GeoJSONBuilder geoJson = new GeoJSONBuilder(w);
+                        geoJson.writeGeom((Geometry)feature.getDefaultGeometryProperty().getValue());
+                        this.geometry = w.toString();
+
+                        //Add all the feature properties to the geojson properties object
                         Collection<Property> featureProperties = feature.getProperties();
-                        this.properties = new HashMap();//ArrayList(featureProperties.size());
+                        String geomName = feature.getDefaultGeometryProperty().getName().toString();
+                        this.properties = new HashMap();
                         for(Property property : featureProperties) {
-                            if ((property.getName() != null)&&(property.getValue() != null))
-                                this.properties.put(property.getName().toString(),property.getValue().toString()); // = feature.getProperties().toArray()[];
-                       }
+                            if ((property.getName() != null)&&(property.getValue() != null)&&(!(property.getName().toString().contentEquals(geomName)))) {
+                                this.properties.put(property.getName().toString(),property.getValue().toString());
+                               
+                            }
+                        }
                     }
                     else
                         throw new Exception("Could not find feature");
@@ -94,5 +101,14 @@ public class GazetteerFeature {
         finally {
              dataStore.dispose();
         }
+    }
+
+    public Map getMap() {
+        Map map = new HashMap();
+        map.put("type","Feature");
+        map.put("id",this.id);
+        map.put("properties",this.properties);
+        map.put("geometry",this.geometry);
+        return map;
     }
 }
