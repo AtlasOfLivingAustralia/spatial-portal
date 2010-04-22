@@ -32,6 +32,7 @@ import org.vfny.geoserver.global.GeoserverDataDirectory;
 import org.vfny.geoserver.util.DataStoreUtils;
 import org.geoserver.wfs.response.GeoJSONBuilder;
 
+
 /**
  *
  *@author angus
@@ -46,7 +47,7 @@ public class GazetteerFeature {
     public GazetteerFeature(String layerName, String featureName) throws IOException, Exception {
 
         //Get the gazetteer config - //TODO: should make this a spring singleton
-        GazetteerConfig gc = new GazetteerConfig(new File(GeoserverDataDirectory.getGeoserverDataDirectory(),"gazetteer.xml"));
+        GazetteerConfig gc = new GazetteerConfig();
 
         GeoServer gs = GeoServerExtensions.bean( GeoServer.class );
         ServletContext sc = GeoServerExtensions.bean( ServletContext.class );
@@ -64,7 +65,7 @@ public class GazetteerFeature {
             else {
                 FeatureSource layer = dataStore.getFeatureSource(layerName);
 
-                FeatureIterator features = layer.getFeatures(CQL.toFilter(gc.getIdAttributeName(layerName) + "= '" + featureName + "'")).features();
+                FeatureIterator features = layer.getFeatures(CQL.toFilter(gc.getIdAttributeName(layerName) + "= '" + featureName.replace('_',' ') + "'")).features();
 
                 try
                 {
@@ -85,7 +86,6 @@ public class GazetteerFeature {
                         for(Property property : featureProperties) {
                             if ((property.getName() != null)&&(property.getValue() != null)&&(!(property.getName().toString().contentEquals(geomName)))) {
                                 this.properties.put(property.getName().toString(),property.getValue().toString());
-                               
                             }
                         }
                     }
