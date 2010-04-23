@@ -8,6 +8,7 @@ public class SearchResultItem {
     String serial;
     String description;
     String state;
+    String type;
 
     SearchResultItem(String name, String serial,String description,String state) {
 	this.name = name;
@@ -27,6 +28,8 @@ public class SearchResultItem {
                 this.description = field.stringValue();
             if (field.name().contentEquals("state"))
                 this.state = field.stringValue();
+            if (field.name().contentEquals("type"))
+                this.type = field.stringValue();
         }
 
     }

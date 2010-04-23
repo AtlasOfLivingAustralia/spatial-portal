@@ -2,8 +2,7 @@
 
  <beans>
     <bean id="gazetteer" class="org.ala.rest.GazetteerSearchResource"/>
-    
-
+   
     <bean id="gazetteerMapping" class="org.geoserver.rest.RESTMapping">
        <property name="routes">
           <map>
@@ -15,19 +14,32 @@
       </property>
     </bean> 
 
-    <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
+   <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
 
     <bean id="featureServiceMapping" class="org.geoserver.rest.RESTMapping">
        <property name="routes">
           <map>
             <entry>
-              <key><value>/{layer}/{type}.{format}</value></key>
+              <key><value>/gazetteer/{layer}/{type}.{format}</value></key>
               <value>featureService</value>
             </entry>
          </map>
       </property>
-    </bean>
+    </bean> 
 
     <bean id="gazetteerIndex" class="org.ala.rest.GazetteerIndex"/>
+
+     <bean id="search" class="org.ala.rest.SearchResource"/>
+
+    <bean id="searchMapping" class="org.geoserver.rest.RESTMapping">
+       <property name="routes">
+          <map>
+            <entry>
+              <key><value>/gazetteer/result.{format}</value></key>
+              <value>search</value>
+            </entry>
+         </map>
+      </property>
+    </bean>
 </beans>
 

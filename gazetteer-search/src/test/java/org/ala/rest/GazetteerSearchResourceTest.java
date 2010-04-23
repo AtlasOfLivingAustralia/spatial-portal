@@ -78,15 +78,29 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
      //assertTrue(1==1);
    }
 
+   public void testSearchResourceAsJSON() throws Exception {
+           //make the request, parsing the result into a json object
+     JSON json = getAsJSON( "/rest/gazetteer/result.json?q=ashton");
+
+     //print out the result
+     print(json);
+
+     //make assertions
+     assertTrue( json instanceof JSONObject );
+     JSONObject search = ((JSONObject) json).getJSONObject( "org.ala.rest.Search" );
+     String result = (String)((JSONObject)(search.getJSONObject("results").getJSONArray("org.ala.rest.SearchResultItem").get(0))).get("name");
+     assertTrue(result.contains("ashton") );
+   }
+   
    public void testFeatureServiceJSON() throws Exception {
 //      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
-      JSON json = getAsJSON("/rest/NamedPlaces/Ashton.json");
+      JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton.json");
       print(json);
    }
 
     public void testFeatureServiceWhiteSpaceInName() throws Exception {
 //      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
-      JSON json = getAsJSON("/rest/NamedPlaces/Goose_Island.json");
+      JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Goose_Island.json");
       print(json);
    }
 
