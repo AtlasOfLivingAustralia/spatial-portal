@@ -27,5 +27,7 @@
          </map>
       </property>
     </bean>
+
+    <bean id="gazetteerIndex" class="org.ala.rest.GazetteerIndex"/>
 </beans>
 
