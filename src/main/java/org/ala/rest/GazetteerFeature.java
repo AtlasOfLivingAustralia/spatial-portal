@@ -27,7 +27,7 @@ import org.geoserver.config.GeoServer;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.filter.text.cql2.CQL;
 import org.opengis.feature.Property;
-import org.vfny.geoserver.global.GeoserverDataDirectory;
+
 
 import org.vfny.geoserver.util.DataStoreUtils;
 import org.geoserver.wfs.response.GeoJSONBuilder;

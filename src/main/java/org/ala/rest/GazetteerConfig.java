@@ -1,6 +1,8 @@
 package org.ala.rest;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -27,10 +29,35 @@ public class GazetteerConfig {
         catch(Exception e)
         {
             //FIXME: gazetteer is probably not going to work
+            System.out.println("Failed to initialize Gazetteer");
+            e.printStackTrace();
         }
 
     
        
+    }
+
+    public List<String> getLayerNames()
+    {
+        List<String> layerNames = new ArrayList();
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//layer/name/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+           
+            for(int i=0;i<nodes.getLength();i++) {
+                layerNames.add(nodes.item(i).getNodeValue());
+            }
+        }
+        catch(Exception e)
+        {
+            //FIXME
+            
+        }
+        return layerNames;
     }
 
     public String getIdAttributeName(String layerName) {
