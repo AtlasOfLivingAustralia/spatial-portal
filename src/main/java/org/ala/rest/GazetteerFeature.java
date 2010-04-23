@@ -103,7 +103,7 @@ public class GazetteerFeature {
         }
     }
 
-    public Map getMap() {
+    public Map getJSONMap() {
         Map map = new HashMap();
         map.put("type","Feature");
         map.put("id",this.id);

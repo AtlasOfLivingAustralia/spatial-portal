@@ -26,7 +26,7 @@ public class FeatureServiceResource extends MapResource {//ReflectiveResource {
        String layer = getRequest().getAttributes().get("layer").toString();
        String key = getRequest().getAttributes().get("type").toString();
 
-       return new GazetteerFeature(layer,key).getMap();
+       return new GazetteerFeature(layer,key).getJSONMap();
 
     }
 }

@@ -77,7 +77,7 @@ public class GazetteerIndex implements InitializingBean {
                         Document doc = new Document();
                         //Add name and type to the index for searching
                         doc.add(new Field("id", feature.getProperty(gc.getIdAttributeName(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
-                        doc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
+                        doc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
                         doc.add(new Field("type", layerName, Store.YES, Index.ANALYZED));
                         
                         //Add all the other feature properties to the index as well but not for searching
@@ -90,25 +90,17 @@ public class GazetteerIndex implements InitializingBean {
                         iw.addDocument(doc);
                         System.out.println(doc.toString());
                     }
-
-
-
                 }
-
             }
             iw.close();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             //FIXME
             e.printStackTrace();
         }
         finally {
             features.close();
             dataStore.dispose();
-
         }
-
-       
     }
 }
