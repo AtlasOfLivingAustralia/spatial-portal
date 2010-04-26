@@ -339,6 +339,8 @@ public class RemoteMapImpl implements RemoteMap {
         mapLayer.setDisplayable(true);
         mapLayer.setQueryable(queryable);
 
+
+
         // wms version
         String version = layerUtilities.getVersionValue(uri);
         mapLayer.setType(layerUtilities.internalVersion(version));

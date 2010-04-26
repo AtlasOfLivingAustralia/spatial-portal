@@ -6,6 +6,7 @@ package org.ala.spatial.gazetteer;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.net.HttpConnection;
 
 import java.io.IOException;
@@ -38,6 +39,8 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Window;
+import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
+
 
 /**
  *
@@ -51,6 +54,8 @@ public class GazetteerSearchController extends UtilityComposer {
     private Listbox gazetteerResults;
     private HttpConnection httpConnection = null;
     private Window gazetteerSearchResults;
+    private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
+
 
     public HttpConnection getHttpConnection() {
         return httpConnection;
@@ -249,10 +254,7 @@ public class GazetteerSearchController extends UtilityComposer {
             String uri = null;
             String filter = null;
             String entity = null;
-
-            //TODO get this from the config
-
-            String server = gazServer + "/geoserver/wms?service=WMS&version=1.1.1&request=GetMap&layers=ALA:GeoRegionFeatures&styles=&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
+            MapLayer mapLayer = null;
 
             //get the entity value from the button id
             entity = event.getTarget().getId();
@@ -266,9 +268,14 @@ public class GazetteerSearchController extends UtilityComposer {
             //contruct the filter
             filter = "serial eq " + entity;
 
-            mc.addWMSGazetteerLayer(label, server, (float) 0.5, filter);
+             //TODO these paramaters need to read from the config
+            String layerName = "ALA:GeoRegionFeatures";
+            String sld = "PointAndPoly";
+            uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS";
+            String format = "image/png";
 
-
+            mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Gazetteer features " + label,label, "1.1.1", uri, layerName, format, sld, filter);
+            mc.addUserDefinedLayerToMenu(mapLayer, true);
         }
     }
 }
