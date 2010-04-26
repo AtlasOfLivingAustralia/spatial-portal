@@ -1063,14 +1063,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return addedOk;
     }
 
-    public boolean addWMSGazetteerLayer(String label, String uri, float opacity, String filter) {
+
+
+    /**
+     * Overridden to allow for the adding servers from known Servers ie can be queried
+     * Add a WMS layer identified by the given parameters to the menu system
+     * and activate it
+     * @param label Name of map layer
+     * @param uri URI for the WMS service
+     * @param layers layers to ask the WMS for
+     * @param imageFormat MIME type of the image we will get back
+     * @param opacity 0 for invisible, 1 for solid
+     */
+
+    public boolean addKnownWMSLayer(String label, String uri, float opacity, String filter) {
         boolean addedOk = false;
         if (safeToPerformMapAction()) {
-            //if (getPortalSession().getUserDefinedById(uri) == null) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
                 MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity, true);
                 mapLayer.setCql(filter);
-                //mapLayer.setQueryable(true);
                 if (mapLayer == null) {
                     // fail
                     errorMessageBrokenWMSLayer(imageTester);
@@ -1078,7 +1089,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else {
                     // ok
                     addUserDefinedLayerToMenu(mapLayer, true);
-
                     addedOk = true;
                 }
             } else {

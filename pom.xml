@@ -8,8 +8,8 @@
 
 
     <name>ALA Spatial Portal </name>
-    <description>The IMOS Ocean Portal aims to provide a data discovery, visualisation and delivery system for IMOS data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
-    <url>http://imos.aodn.org.au</url>
+    <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
+    <url>http://www.ala.org.au</url>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -303,47 +303,67 @@
         </dependency>
     </dependencies>
     <issueManagement>
-        <system>JIRA</system>
-        <url>http://emii1.its.utas.edu.au:8080/secure/Dashboard.jspa</url>
+        <system>Google Code</system>
+        <url>http://code.google.com/p/alageospatialportal/issues/list</url>
     </issueManagement>
     <developers>
         <developer>
-            <id>GW</id>
-            <name>Geoff Williams</name>
-            <email>Geoff.Williams@utas.edu.au</email>
-            <organization>eMII</organization>
-            <organizationUrl>http://emii.org.au</organizationUrl>
+            <id>LB</id>
+            <name>Lee Belbin</name>
+            <email>lee@blatantfabrications.com</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <roles>
+                <role>Team Leader</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>AR</id>
+            <name>Ajay Ranipeta</name>
+            <email>ajay.ranipeta@gmail.com</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
             <roles>
                 <role>Software Engineer</role>
             </roles>
         </developer>
         <developer>
-            <id>PB</id>
-            <name>Philip Bohm</name>
-            <email>Philip.Bohm@utas.edu.au</email>
-            <organization>eMII</organization>
-            <organizationUrl>http://emii.org.au</organizationUrl>
+            <id>AC</id>
+            <name>Adam Collins</name>
+            <email>adam_collins@tpg.com.au</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
             <roles>
-                <role>System Developer</role>
+                <role>Software Engineer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>AM</id>
+            <name>Angus Macaulay</name>
+            <email>angus.i.macaulay@gmail.com</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <roles>
+                <role>Software Engineer</role>
             </roles>
         </developer>
         <developer>
             <id>BW</id>
             <name>Brendon Ward</name>
-            <email>Brendon.Ward@utas.edu.au</email>
-            <organization>eMII</organization>
-            <organizationUrl>http://emii.org.au</organizationUrl>
+            <email>brendon.ward@sixlighthouses.com</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
             <roles>
-                <role>Software Architect</role>
+                <role>Software Engineer</role>
             </roles>
         </developer>
     </developers>
     <scm>
-        <url>http://emii1.its.utas.edu.au/viewvc/</url>
+        <url>http://code.google.com/p/alageospatialportal/source/checkout</url>
     </scm>
     <organization>
-        <name>eMII</name>
-        <url>http://www.emii.org.au</url>
+        <name>ALA</name>
+        <url>http://www.ala.org.au</url>
     </organization>
 
     <build>

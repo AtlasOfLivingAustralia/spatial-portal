@@ -349,7 +349,7 @@ public class MaxentWCController extends UtilityComposer {
 
         logger.debug(filter);
         //mc.addWMSLayer(label, uri, 1, filter);
-        mc.addWMSGazetteerLayer(taxon, uri, 1, filter);
+        mc.addKnownWMSLayer(taxon, uri, 1, filter);
 
 
     }

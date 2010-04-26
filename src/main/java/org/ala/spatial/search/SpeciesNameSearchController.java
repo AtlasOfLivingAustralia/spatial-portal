@@ -33,6 +33,9 @@ import net.sf.json.util.PropertyFilter;
 import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.wms.WMSStyle;
+import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 
 /**
  * @author brendon
@@ -66,6 +69,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 	private int TotalRecords;
 	private String sSearchTerm;
 	private String sSearchType;
+        private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
 
 	private URLConnection connection = null;
         private HttpConnection httpConnection = null;
@@ -475,10 +479,13 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			String uri = null;
 			String filter = null;
 			String entity = null;
-			
-			
+                        MapLayer mapLayer = null;
 
-                        uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS&version=1.1.1&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
+                        //TODO these paramaters need to read from the config
+                        String layerName = "ALA:occurrencesv1";
+                        String sld = "species_point";
+                        uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS";
+                        String format = "image/png";
 
 			//get the entity value from the button id
 			entity = event.getTarget().getId();
@@ -489,16 +496,12 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			//get the current MapComposer instance
 			MapComposer mc = getThisMapComposer();
 
-			//contruct the filter
-			//filter = "<Filter><PropertyIsEqualTo><PropertyName>url</PropertyName><Literal><![CDATA["+mapWMS+entity+"&type=1&unit=1]]></Literal></PropertyIsEqualTo></Filter>";
-			//lets try it in cql
+			//contruct the filter in cql
                         filter = "species eq '" + label + "'";
 
-                        logger.debug(filter);
-			//mc.addWMSLayer(label, uri, 1, filter);
-                        mc.addWMSGazetteerLayer(label, uri, 1, filter);
-                        
+                        mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Species occurrence for " + label,label, "1.1.1", uri, layerName, format, sld, filter);
 
+                        mc.addUserDefinedLayerToMenu(mapLayer, true);         
 		}
 	}
 
