@@ -21,6 +21,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerInfo;
+import org.geoserver.catalog.ResourceInfo;
+import org.geoserver.catalog.StoreInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.data.DataStore;
@@ -36,71 +38,85 @@ public class GazetteerIndex implements InitializingBean {
 
     public void afterPropertiesSet() {
         //Get geoserver catalog from Geoserver config
-        GeoServer gs = GeoServerExtensions.bean( GeoServer.class );
+        GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
         Catalog catalog = gs.getCatalog();
 
-        ServletContext sc = GeoServerExtensions.bean( ServletContext.class );
+        ServletContext sc = GeoServerExtensions.bean(ServletContext.class);
 
 
         GazetteerConfig gc = new GazetteerConfig();
 
-         
+
         gc.getLayerNames();
         DataStore dataStore = null;
         FeatureIterator features = null;
         try {
 
             //Initialize lucene index
-            File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(),"gazetteer-index");
-	    if(file.exists()){
-		FileUtils.forceDelete(file);
-	    }
-	    FileUtils.forceMkdir(file);
-	    
-	    StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-	    IndexWriter iw = new IndexWriter(FSDirectory.open(file), analyzer /*Version.LUCENE_CURRENT)*/, true, IndexWriter.MaxFieldLength.UNLIMITED);
+            File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
+            if (file.exists()) {
+                return;//FileUtils.forceDelete(file);
+            } else {
+                FileUtils.forceMkdir(file);
 
-           
-            for(String layerName : gc.getLayerNames()) {
-                LayerInfo layerInfo = catalog.getLayerByName(layerName);
-                Map params = layerInfo.getResource().getStore().getConnectionParameters();
+                StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+                IndexWriter iw = new IndexWriter(FSDirectory.open(file), analyzer /*Version.LUCENE_CURRENT)*/, true, IndexWriter.MaxFieldLength.UNLIMITED);
 
-                dataStore = DataStoreUtils.acquireDataStore(params,sc);//DataStoreFinder.getDataStore(params);
 
-                if (dataStore == null)
+                for (String layerName : gc.getLayerNames()) {
+                    LayerInfo layerInfo = catalog.getLayerByName(layerName);
+
+                    ResourceInfo layerResource = layerInfo.getResource();
+                    StoreInfo layerStore = layerResource.getStore();
+                    Map params = layerStore.getConnectionParameters();//layerInfo.getResource().getStore().getConnectionParameters();
+
+                    dataStore = DataStoreUtils.acquireDataStore(params, sc);//DataStoreFinder.getDataStore(params);
+
+                    if (dataStore == null) {
                         throw new Exception("Could not find datastore for this layer");
-                else {
-                    FeatureSource layer = dataStore.getFeatureSource(layerName);
-                    features = layer.getFeatures().features();
-                    while (features.hasNext()) {
-                        Feature feature = features.next();
-                        Document doc = new Document();
-                        //Add name and type to the index for searching
-                        doc.add(new Field("id", feature.getProperty(gc.getIdAttributeName(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
-                        doc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
-                        doc.add(new Field("type", layerName, Store.YES, Index.ANALYZED));
-                        
-                        //Add all the other feature properties to the index as well but not for searching
-                        String geomName = feature.getDefaultGeometryProperty().getName().toString();
-                        for(Property property : feature.getProperties()) {
-                            if ((property.getName() != null)&&(property.getValue() != null)&&(!(property.getName().toString().contentEquals(geomName)))) {
-                                doc.add(new Field(property.getName().toString(),property.getValue().toString(),Store.YES,Index.NO));
+                    } else {
+                        FeatureSource layer = dataStore.getFeatureSource(layerName);
+                        features = layer.getFeatures().features();
+                        while (features.hasNext()) {
+                            Feature feature = features.next();
+                            Document doc = new Document();
+                            //Add name and type to the index for searching
+                            if (feature.getProperty(gc.getIdAttributeName(layerName)).getValue() != null) {
+                                doc.add(new Field("id", feature.getProperty(gc.getIdAttributeName(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
                             }
+                            if (feature.getProperty(gc.getNameAttributeName(layerName)).getValue() != null) {
+                                doc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
+                            }
+
+                            doc.add(new Field("type", layerName, Store.YES, Index.ANALYZED));
+
+                            //Add all the other feature properties to the index as well but not for searching
+                            String geomName = feature.getDefaultGeometryProperty().getName().toString();
+                            for (Property property : feature.getProperties()) {
+                                if ((property.getName() != null) && (property.getValue() != null) && (!(property.getName().toString().contentEquals(geomName)))) {
+                                    doc.add(new Field(property.getName().toString(), property.getValue().toString(), Store.YES, Index.NO));
+                                }
+                            }
+                            iw.addDocument(doc);
+                            System.out.print(".");
                         }
-                        iw.addDocument(doc);
-                        System.out.println(doc.toString());
+                        features.close();
                     }
+                    dataStore.dispose();
                 }
+                iw.close();
             }
-            iw.close();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             //FIXME
             e.printStackTrace();
-        }
-        finally {
-            features.close();
-            dataStore.dispose();
+        } finally {
+            if (features != null) {
+                features.close();
+            }
+            if (dataStore != null) {
+                dataStore.dispose();
+            }
+
         }
     }
 }
