@@ -61,7 +61,7 @@ public class GazetteerSearchController extends UtilityComposer {
         return httpConnection;
     }
     //TODO get this from the config
-    private String gazServer = "http://ec2-184-73-34-104.compute-1.amazonaws.com";
+    private String gazServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
     private String gazSearchURL = "/geoserver/rest/gazetteer-search/result.json?q=";
     private JSONArray arr = null;
     private GazetteerSearch gsr = new GazetteerSearch();
@@ -271,7 +271,7 @@ public class GazetteerSearchController extends UtilityComposer {
              //TODO these paramaters need to read from the config
             String layerName = "ALA:GeoRegionFeatures";
             String sld = "PointAndPoly";
-            uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS";
+            uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
             String format = "image/png";
 
             mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Gazetteer features " + label,label, "1.1.1", uri, layerName, format, sld, filter);

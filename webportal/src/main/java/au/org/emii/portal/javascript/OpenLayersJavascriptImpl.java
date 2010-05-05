@@ -445,6 +445,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         params = "CQL_FILTER: '" + layer.getCqlJS() + "' ";
                         params += ", ";
                 }
+                if (!Validate.empty(layer.getEnvParams())) {
+                    params += "env: '" + layer.getEnvParams() + "', ";
+                }
 
                 //extend to add ogc filter
 
