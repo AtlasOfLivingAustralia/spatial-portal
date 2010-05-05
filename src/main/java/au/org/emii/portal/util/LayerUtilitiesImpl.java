@@ -513,6 +513,16 @@ public class LayerUtilitiesImpl implements LayerUtilities {
                 imageFormat);
     }
 
+    @Override
+    public String getLegendGraphicUri(String uri, String layer, String imageFormat, String envParams) {
+
+        //get the template and add the envParams into it
+
+        return getLegendGraphicUri(
+                uri + queryConjunction(uri) + "LAYER=" + layer,
+                imageFormat);
+    }
+
     /**
      * Construct a metadata uri.  For use with ncwms/thredds
      * @param uri

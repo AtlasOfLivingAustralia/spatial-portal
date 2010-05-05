@@ -136,6 +136,8 @@ public interface LayerUtilities {
 
     public String getLegendGraphicUri(String uri, String layer, String imageFormat);
 
+    public String getLegendGraphicUri(String uri, String layer, String imageFormat, String envParams);
+
     public int getMaxNameLength();
 
     /**

@@ -36,6 +36,8 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.wms.WMSStyle;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
+import java.awt.Color;
+import java.util.Random;
 
 /**
  * @author brendon
@@ -484,7 +486,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
                         //TODO these paramaters need to read from the config
                         String layerName = "ALA:occurrencesv1";
                         String sld = "species_point";
-                        uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS";
+                        uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
                         String format = "image/png";
 
 			//get the entity value from the button id
@@ -498,9 +500,16 @@ public class SpeciesNameSearchController extends UtilityComposer {
 
 			//contruct the filter in cql
                         filter = "species eq '" + label + "'";
-
                         mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Species occurrence for " + label,label, "1.1.1", uri, layerName, format, sld, filter);
-
+                        
+                        //create a random colour
+                        
+                        Random rand = new java.util.Random();
+                        int r = rand.nextInt(99);
+                        int g = rand.nextInt(99);
+                        int b = rand.nextInt(99);
+                        String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
+                        mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
                         mc.addUserDefinedLayerToMenu(mapLayer, true);         
 		}
 	}

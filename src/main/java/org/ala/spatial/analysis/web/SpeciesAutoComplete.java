@@ -126,7 +126,7 @@ public class SpeciesAutoComplete extends Combobox {
     private void refresh(String val) {
 
         //TODO get this from the config file
-        String snUrl = "http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/species/taxon/";
+        String snUrl = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial/species/taxon/";
         //String snUrl = "http://localhost:8080/alaspatial/species/taxon/";
 
 

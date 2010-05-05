@@ -156,6 +156,23 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     private long maplayermetadataid;
     private boolean userDefinedLayer = false;
 
+
+
+    /** env params allow the user to dynamically style the
+     * Layer
+     */
+
+    private String envParams = null;
+
+     public String getEnvParams() {
+        return envParams;
+    }
+
+    public void setEnvParams(String envParams) {
+        this.envParams = envParams;
+    }
+
+
     public boolean isUserDefinedLayer() {
         return userDefinedLayer;
     }
