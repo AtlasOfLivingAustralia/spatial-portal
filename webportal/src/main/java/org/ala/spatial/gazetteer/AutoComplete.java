@@ -2,25 +2,19 @@ package org.ala.spatial.gazetteer;
 
 import org.zkoss.zul.Combobox;
 import org.zkoss.zk.ui.event.InputEvent;
-import java.util.Arrays;
 import java.util.Iterator;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 import org.zkoss.zul.Comboitem;
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
 import org.apache.http.impl.client.*;
-import org.apache.http.impl.auth.*;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.*;
-import org.apache.http.client.methods.*;
-import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpEntity;
 import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.util.EntityUtils;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 public class AutoComplete extends Combobox {
 
@@ -46,36 +40,40 @@ public class AutoComplete extends Combobox {
     /** Refresh comboitem based on the specified value.
      */
     private void refresh(String val) {
-        //update the dictionary
-        //TODO: remove hardcoded host, credentials
-        HttpHost targetHost = new HttpHost("ec2-184-73-34-104.compute-1.amazonaws.com", 80, "http");
+        //TODO: remove hardcoded host,
+        HttpHost targetHost = new HttpHost("ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com", 80, "http");
         DefaultHttpClient httpclient = new DefaultHttpClient();
-        // Add AuthCache to the execution context
         BasicHttpContext localcontext = new BasicHttpContext();
-        //localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
         String searchString = val.trim().replaceAll("\\s+", "+");
-        HttpGet httpget = new HttpGet(
-                "/geoserver/rest/gazetteer-search/result.json?q=" + searchString);
+
+        
+
+        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+        domFactory.setNamespaceAware(true); 
 
 
         try {
-            HttpResponse response = httpclient.execute(targetHost, httpget, localcontext);
-            HttpEntity entity = response.getEntity();
-            String responseText = "";
-            if (entity != null) {
-                responseText = new String(EntityUtils.toByteArray(entity));
-            } else {
-                responseText = "Fail";
-            }
-            //resultLabel.setValue(responseText);
-            JSONObject responseJson = JSONObject.fromObject(responseText);
-            JSONObject search = responseJson.getJSONObject("org.ala.rest.GazetteerSearch");
-            JSONArray results = search.getJSONObject("results").getJSONArray("org.ala.rest.SearchResultItem");
-            //_dict = new String[results.size()];
-            Iterator it = getItems().iterator();
+            
+            //Read in the xml response
+            DocumentBuilder builder = domFactory.newDocumentBuilder();
+            String uri = targetHost.toString() + "/geoserver/rest/gazetteer/result.xml?q=" + searchString;
+           //Messagebox.show(uri);
+            Document resultDoc = builder.parse(uri);
 
-            for (int i = 0; i < results.size(); i++) {
-                String itemString = (String) results.getJSONObject(i).get("name");
+            //Get a list of names from the xml
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//search/results/result/name/text()");
+
+            Object result = expr.evaluate(resultDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+          
+            Iterator it = getItems().iterator();
+            
+            
+            for(int i=0;i<nodes.getLength();i++) {
+                //Messagebox.show(nodes.item(i).getNodeValue());
+                String itemString = (String) nodes.item(i).getNodeValue();
                 if (it != null && it.hasNext()) {
                     ((Comboitem) it.next()).setLabel(itemString);
                 } else {
@@ -84,33 +82,17 @@ public class AutoComplete extends Combobox {
                 }
 
             }
+
             while (it != null && it.hasNext()) {
                 it.next();
                 it.remove();
             }
 
         } catch (Exception e) {
+
         }
 
-        //
-
-        /*int j = Arrays.binarySearch(_dict, val);
-        if (j < 0) j = -j-1;
-
-        Iterator it = getItems().iterator();
-        for (int cnt = 10; --cnt >= 0 && j < _dict.length && _dict[j].startsWith(val); ++j) {
-        if (it != null && it.hasNext()) {
-        ((Comboitem)it.next()).setLabel(_dict[j]);
-        } else {
-        it = null;
-        new Comboitem(_dict[j]).setParent(this);
-        }
-        }
-
-        while (it != null && it.hasNext()) {
-        it.next();
-        it.remove();
-        }*/
+        
     }
-    //  private static String[] _dict = { ""};
+
 }

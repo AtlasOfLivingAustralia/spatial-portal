@@ -2,6 +2,7 @@
 <?component name="maxentForm" macro-uri="/WEB-INF/zul/AnalysisMaxent.zul"?>
 <?component name="samplingForm" macro-uri="/WEB-INF/zul/AnalysisSampling.zul"?>
 <?component name="alocForm" macro-uri="/WEB-INF/zul/AnalysisALOC.zul"?>
+<?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
 <zk>
     <window use="org.ala.spatial.analysis.web.AnalysisController" apply="org.ala.spatial.analysis.web.AnalysisController" >
@@ -29,6 +30,9 @@
 
             <!--  aloc -->
             <tab id="alocTab" label="ALOC"  />
+
+	    <!-- selection tools -->
+	    <tab id="selectionTab" label="Selection" />
         </tabs>
         <tabpanels>
             <tabpanel>
@@ -47,6 +51,9 @@
             <tabpanel>
                 <alocForm id="af" />
             </tabpanel>
+	    <tabpanel>
+		<selectionForm id="selectionForm"/>
+	    </tabpanel>
         </tabpanels>
     </tabbox>
     </window>

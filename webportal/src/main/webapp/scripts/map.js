@@ -242,8 +242,7 @@ function buildMapReal() {
     drawingLayerControl = new OpenLayers.Control.DrawFeature(drawinglayer, OpenLayers.Handler.Path, {title:'Draw a transect line'});
     toolPanel.addControls( [ drawingLayerControl ] );
     // This will be replaced by ZK call
-    //addLineDrawingLayer("ocean_east_aus_temp/temp","http://emii3.its.utas.edu.au/ncWMS/wms");
-
+    //addLine DrawingLayer("ocean_east_aus_temp/temp","http://emii3.its.utas.edu.au/ncWMS/wms");
 
     // create a new event handler for single click query
     clickEventHandler = new OpenLayers.Handler.Click({
@@ -275,6 +274,50 @@ function buildMapReal() {
 
 }
 
+function addPolygonDrawingTool() {
+    ////adding polygon control and layer
+	
+ //   alert("***adding polygon Control***");
+    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAdded});     map.addControl(polyControl);
+    polyControl.activate();	
+    //////
+}
+
+function polygonAdded(feature) {
+	//alert("vertics: " + feature.geometry);
+	// zkau.send({uuid: comp.id, cmd: "onNotifyServer", data: feature.geometry},10); 
+
+}
+
+function addJsonFeatureToMap(feature) {
+	//alert(feature);
+	var geojson_format = new OpenLayers.Format.GeoJSON();
+        var vector_layer = new OpenLayers.Layer.Vector("Gazetteer Features"); 
+        map.addLayer(vector_layer);
+	features = geojson_format.read(feature);
+        var bounds;
+
+         if(features) {
+                if(features.constructor != Array) {
+                    features = [features];
+                }
+                for(var i=0; i<features.length; ++i) {
+                    if (!bounds) {
+                        bounds = features[i].geometry.getBounds();
+                    } else {
+                        bounds.extend(features[i].geometry.getBounds());
+                    }
+
+                }
+                vector_layer.addFeatures(features);
+                map.zoomToExtent(bounds);
+            } else {
+                alert("failed");
+            }
+
+
+}
 
 // Create a layer on which users can draw transects for single w (i.e. lines on the map)
 // handles query
