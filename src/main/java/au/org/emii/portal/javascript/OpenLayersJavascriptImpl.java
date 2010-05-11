@@ -71,6 +71,17 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
         }
 
+    @Override
+    public void addPolygonDrawingTool() {
+        String script = "window.mapFrame.addPolygonDrawingTool()";
+        execute(script);
+    }
+
+    @Override
+    public void addGeoJsonLayer(String url) {
+        String script = "window.mapFrame.addJsonFeatureToMap('" + url + "')";
+        execute(script);
+    }
 
     @Override
         public String defineAnimatedLayer(MapLayer mapLayer) {

@@ -183,4 +183,15 @@ public interface OpenLayersJavascript {
 
     public void zoomToBoundingBoxNow(BoundingBox boundingBox);
 
+    /**
+     * Adds the openlayers polygon drawing tool to the map
+     */
+    public void addPolygonDrawingTool();
+
+    /**
+     * Adds a geojson layer
+     * @param url the url of the json feature
+     */
+    public void addGeoJsonLayer(String url);
+
 }
