@@ -1,0 +1,9 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Selection" contentType="text/html;charset=UTF-8" id="AnalysisSelectionPage"?>
+<zk>
+	 
+<window use="org.ala.spatial.analysis.web.SelectionController" apply="org.ala.spatial.analysis.web.SelectionController" style="padding: 10px">
+
+	<button label="Polygon Selection" id="btnPolygonSelection"/>
+	</window>
+</zk>

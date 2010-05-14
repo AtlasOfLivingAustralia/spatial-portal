@@ -10,6 +10,7 @@ import org.zkoss.zk.au.ComponentCommand;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Window;
 
@@ -28,8 +29,13 @@ public class SelectionController extends UtilityComposer {
         MapComposer mc = getThisMapComposer();
        
         mc.getOpenLayersJavascript().addPolygonDrawingTool();
+
     }
 
+//    public void onClick$btnJSTest(Event event) {
+//        Clients.evalJavaScript("test()");
+//
+//    }
      /**
      * Gets the main pages controller so we can add a
      * drawing tool to the map
