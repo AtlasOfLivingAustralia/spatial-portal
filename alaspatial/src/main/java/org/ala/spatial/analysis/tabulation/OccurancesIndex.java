@@ -1,6 +1,9 @@
 package org.ala.spatial.analysis.tabulation;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
 import java.util.*;
 import org.ala.spatial.util.*;
 
@@ -45,6 +48,8 @@ public class OccurancesIndex implements AnalysisIndexService {
 
     static final String SORTED_FILENAME = "OCC_SORTED.csv";
     static final String POINTS_FILENAME = "OCC_POINTS.dat";
+    static final String POINTS_FILENAME_GEO = "OCC_POINTS_GEO.dat";
+    static final String POINTS_FILENAME_GEO_IDX = "OCC_POINTS_GEO_IDX.dat";
     static final String SPECIES_IDX_FILENAME = "OCC_IDX_SPECIES.dat";
     static final String OTHER_IDX_PREFIX = "OCC_IDX_";
     static final String OTHER_IDX_POSTFIX = ".dat";
@@ -86,6 +91,7 @@ public class OccurancesIndex implements AnalysisIndexService {
         /* these two must be done as a pair */
         loadOccurances();
         exportSortedPoints();
+        exportSortedGEOPoints();
 
         /* this can be done in isolation */
         exportFieldIndexes();
@@ -219,20 +225,20 @@ public class OccurancesIndex implements AnalysisIndexService {
             double longitude;
             double latitude;
             Set<Map.Entry<String, StringBuffer>> entryset = column_keys.entrySet();
-            System.out.println("keys size: " + entryset.size());
+        
             Iterator<Map.Entry<String, StringBuffer>> iset = entryset.iterator();
 
             FileWriter sorted = new FileWriter(
                     TabulationSettings.index_path + SORTED_FILENAME);
 
-            RandomAccessFile points = new RandomAccessFile(
-                    TabulationSettings.index_path + POINTS_FILENAME,
-                    "rw");
+            
 
             Map.Entry<String, StringBuffer> me;
 
             String s;
-
+            
+            ArrayList<Double> al = new ArrayList<Double>();
+            
             while (iset.hasNext()) {
                 me = iset.next();
                 value = me.getValue().toString();
@@ -251,19 +257,33 @@ public class OccurancesIndex implements AnalysisIndexService {
                     latitude = 0;
                     try {
                         String[] longlat = line[i].split(",");
+                        
                         longitude = Double.parseDouble(longlat[0]);
                         latitude = Double.parseDouble(longlat[1]);
-
+                        
+                        al.add(longitude);
+                        al.add(latitude);
+                        
                     } catch (Exception e) {
                     }
 
-                    points.writeDouble(longitude);
-                    points.writeDouble(latitude);
+                    //points.writeDouble(longitude);
+                    //points.writeDouble(latitude);
                 }
             }
             sorted.flush();
             sorted.close();
 
+            /* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME,
+                    "rw");
+            byte [] b = new byte[al.size()*8];
+            ByteBuffer bb = ByteBuffer.wrap(b);            
+            for(Double d : al){
+            	bb.putDouble(d.doubleValue());
+            }
+            points.write(b);            
             points.close();
             (new SpatialLogger()).log("exportSortedPoints done");
         } catch (Exception e) {
@@ -386,7 +406,7 @@ public class OccurancesIndex implements AnalysisIndexService {
      * @param line header of occurances.csv as String []
      */
     void getColumnPositions(String[] line) {
-        System.out.println("in getColumnPositions()");
+        //System.out.println("in getColumnPositions()");
 
         String[] columns = TabulationSettings.occurances_csv_fields;
         column_positions = new int[columns.length];
@@ -400,7 +420,7 @@ public class OccurancesIndex implements AnalysisIndexService {
                 }
             }
         }
-        System.out.println("out getColumnPositions()");
+        //System.out.println("out getColumnPositions()");
     }
 
     /**
@@ -413,7 +433,7 @@ public class OccurancesIndex implements AnalysisIndexService {
         String[] columns = TabulationSettings.occurances_csv_fields;
 
         TreeMap<String, IndexedRecord>[] fw_maps = new TreeMap[columns.length - 2];
-        System.out.println("exportFieldIndexes start");
+//        System.out.println("exportFieldIndexes start");
         try {
             BufferedReader br = new BufferedReader(
                     new FileReader(
@@ -445,7 +465,7 @@ public class OccurancesIndex implements AnalysisIndexService {
 //			int lastfilepos = 0;
             //		int lastrecordpos = 0;
             //boolean updated = false;
-            System.out.println("exportFieldIndexes about to read lines");
+            System.out.println("exportFieldIndexes");
             while ((s = br.readLine()) != null) {
                 sa = s.split(",");
 
@@ -607,7 +627,7 @@ public class OccurancesIndex implements AnalysisIndexService {
         IndexedRecord lookfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) -1);
         IndexedRecord lookforupper = new IndexedRecord(filter.substring(0, filter.length() - 1), 0, 0, 0, 0, (byte) -1);
         char nextc = (char) (((int) filter.charAt(filter.length() - 1)) + 1);
-        System.out.println("c=" + filter.charAt(filter.length() - 1) + " nextc=" + nextc);
+//        System.out.println("c=" + filter.charAt(filter.length() - 1) + " nextc=" + nextc);
         lookforupper.name += nextc;
 
         String[] matches_array = null;
@@ -640,7 +660,7 @@ public class OccurancesIndex implements AnalysisIndexService {
                 upperpos *= -1;
                 upperpos--;
             }
-            System.out.println("got indx pos: " + pos + " upper:" + upperpos);
+    //        System.out.println("got indx pos: " + pos + " upper:" + upperpos);
 
             /* may need both forward and backwards on this pos */
             int end = limit + pos;
@@ -649,7 +669,7 @@ public class OccurancesIndex implements AnalysisIndexService {
             }
 
             matches_array = new String[end - pos];
-            System.out.println("end=" + end + " pos=" + pos + " size=" + matches_array.length);
+//            System.out.println("end=" + end + " pos=" + pos + " size=" + matches_array.length);
 
             StringBuffer strbuffer2 = new StringBuffer();
             int i;
@@ -685,7 +705,7 @@ public class OccurancesIndex implements AnalysisIndexService {
             type = filter.split("/")[1].trim();
             filter = filter.split("/")[0].trim();
         }
-        System.out.println(type + ":" + filter);
+ //       System.out.println(type + ":" + filter);
 
         loadIndexes();
 
@@ -695,12 +715,12 @@ public class OccurancesIndex implements AnalysisIndexService {
             ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>();
             int i = 0;
             for (IndexedRecord[] ir : all_indexes) {
-                System.out.println(type + ":"
-                        + TabulationSettings.occurances_csv_fields[i]);
+      //          System.out.println(type + ":"
+      //                  + TabulationSettings.occurances_csv_fields[i]);
 
                 if (type == null
                         || type.equals(TabulationSettings.occurances_csv_fields[i])) {
-                    System.out.println("looking for match under: " + type);
+        //            System.out.println("looking for match under: " + type);
 
                     for (IndexedRecord r : ir) {
                         /*
@@ -712,7 +732,7 @@ public class OccurancesIndex implements AnalysisIndexService {
                             matches.add(r);
                         }
                     }
-                    System.out.println("occurances found: " + matches.size());
+                    System.out.println("occurances found for [" + filter + "]: " + matches.size());
                 }
                 i++;
             }
@@ -748,14 +768,14 @@ public class OccurancesIndex implements AnalysisIndexService {
                                 + SPECIES_IDX_FILENAME;
                     }
 
-                    System.out.println("opening index file: " + filename);
+                    //System.out.println("opening index file: " + filename);
 
                     FileInputStream fis = new FileInputStream(filename);
                     BufferedInputStream bis = new BufferedInputStream(fis);
                     ObjectInputStream ois = new ObjectInputStream(bis);
                     all_indexes.add((IndexedRecord[]) ois.readObject());
 
-                    System.out.println("records loaded: " + all_indexes.get(all_indexes.size() - 1).length);
+             //       System.out.println("records loaded: " + all_indexes.get(all_indexes.size() - 1).length);
                     ois.close();
 
                     if (all_indexes.get(all_indexes.size() - 1) != null) {
@@ -801,9 +821,41 @@ public class OccurancesIndex implements AnalysisIndexService {
     static public String getIndexType(int type) {
         return TabulationSettings.occurances_csv_fields[type];
     }
-
+    
+    public static String[] getSortedRecords(int [] records) {
+    	//check for sorted
+    	int i;
+    	for(i=1;i<records.length;i++){
+    		if(records[i-1] > records[i]){
+    			java.util.Arrays.sort(records);
+    			break;
+    		}
+    	}
+    	
+    	String [] lines = new String[records.length];
+    	
+        try {
+        	LineNumberReader br = new LineNumberReader(
+                    new FileReader(TabulationSettings.index_path
+                            + SORTED_FILENAME));
+        	
+        	for(i=0;i<records.length;i++){
+        		br.setLineNumber(records[i]);
+        		lines[i] = br.readLine();
+        	}
+        	br.close();
+        	
+        	return lines;
+        } catch (Exception e) {
+            (new SpatialLogger()).log("getSortedRecords", e.toString());
+        }
+        /*
+         * TODO: make safe
+         */
+        return null;
+    }
+    
     public static String[] getSortedRecords(int file_start, int file_end) {
-
         try {
             byte[] data = new byte[file_end - file_start];
             FileInputStream fis = new FileInputStream(
@@ -824,7 +876,6 @@ public class OccurancesIndex implements AnalysisIndexService {
     }
 
     public static String getSortedRecordsString(int file_start, int file_end) {
-
         try {
             byte[] data = new byte[file_end - file_start];
             FileInputStream fis = new FileInputStream(
@@ -841,4 +892,186 @@ public class OccurancesIndex implements AnalysisIndexService {
 
         return null;
     }
+    
+    public static double [] getPoints(int recordstart, int recordend){
+    	System.out.println("getPoints(" + recordstart + "," + recordend + ")");
+    	double [] d = new double[(recordend-recordstart+1)*2];
+    	try{    		
+    		/* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME,
+                    "r");
+            int number_of_points = (recordend-recordstart+1)*2;
+            byte [] b = new byte[(number_of_points)*8];
+            points.seek(recordstart*2*8);
+            points.read(b);
+            ByteBuffer bb = ByteBuffer.wrap(b);      
+            int i;
+            for(i = 0;i<number_of_points;i++){
+				d[i] = bb.getDouble();	
+			}        
+            points.close();
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+		
+    	return d;
+    }
+    
+    public static double [][] getPointsPairs(){    	
+    	double [][] d = null;
+    	try{    		
+    		/* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME,
+                    "r");
+            int number_of_points = ((int)points.length())/8;
+            int number_of_records = number_of_points/2;
+
+            byte [] b = new byte[number_of_points*8];
+            
+            points.read(b);
+            
+            ByteBuffer bb = ByteBuffer.wrap(b);      
+            int i;
+            d = new double[number_of_records][2];
+            for(i = 0;i<number_of_records;i++){
+				d[i][0] = bb.getDouble();
+				d[i][1] = bb.getDouble();
+			}        
+            points.close();
+            
+            System.out.println("read points: " + number_of_records);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+			
+    	return d;
+    }   
+    
+    void exportSortedGEOPoints(){
+    	double [][] points = getPointsPairs();
+    	Point [] pa = new Point[points.length];
+    	int i;
+    	for(i=0;i<points.length;i++){
+    		pa[i] = new Point(points[i][0],points[i][1],i);
+    	}
+    	
+    	java.util.Arrays.sort(pa,
+                new Comparator<Point>() {
+                    public int compare(Point r1, Point r2) {
+                    	double result = r1.latitude - r2.latitude;
+                    	if(result == 0){
+                    		result = r1.longitude - r2.longitude;
+                    	}                    	
+                        return (int)result;
+                    }
+                });
+    	
+    	//export points in this new order
+    	try{
+	        RandomAccessFile raf = new RandomAccessFile(
+	                TabulationSettings.index_path + POINTS_FILENAME_GEO,
+	                "rw");
+	        byte [] b = new byte[pa.length*8*2];
+	        ByteBuffer bb = ByteBuffer.wrap(b);            
+	        for(Point p : pa){
+	        	bb.putDouble(p.longitude);
+	        	bb.putDouble(p.latitude);
+	        }
+	        raf.write(b);            
+	        raf.close();
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    	
+    	//export lookup for idx/record reference
+    	try{
+	        RandomAccessFile raf = new RandomAccessFile(
+	                TabulationSettings.index_path + POINTS_FILENAME_GEO_IDX,
+	                "rw");
+	        byte [] b = new byte[pa.length*4];
+	        ByteBuffer bb = ByteBuffer.wrap(b);            
+	        for(Point p : pa){
+	        	bb.putInt(p.idx);
+	        }
+	        raf.write(b);            
+	        raf.close();
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}   	
+    }
+    
+    public static double [][] getPointsPairsGEO(){    	
+    	double [][] d = null;
+    	try{    		
+    		/* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME_GEO,
+                    "r");
+            int number_of_points = ((int)points.length())/8;
+            int number_of_records = number_of_points/2;
+
+            byte [] b = new byte[number_of_points*8];
+            
+            points.read(b);
+            
+            ByteBuffer bb = ByteBuffer.wrap(b); 
+            
+            int i;
+            d = new double[number_of_records][2];
+            for(i = 0;i<number_of_records;i++){
+				d[i][0] = bb.getDouble();
+				d[i][1] = bb.getDouble();
+			}        
+            points.close();
+            
+            System.out.println("read points geo: " + number_of_records);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+			
+    	return d;
+    } 
+    
+    public static int [] getPointsPairsGEOidx(){    	
+    	int [] d = null;
+    	try{    		
+    		/* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME_GEO_IDX,
+                    "r");
+            int number_of_points = ((int)points.length())/4;
+            int number_of_records = number_of_points;
+
+            byte [] b = new byte[number_of_points*4];
+            
+            points.read(b);
+            
+            ByteBuffer bb = ByteBuffer.wrap(b);      
+            int i;
+            d = new int[number_of_records];
+            for(i = 0;i<number_of_records;i++){
+				d[i] = bb.getInt();
+			}        
+            points.close();
+            
+            System.out.println("read geo idx: " + number_of_records);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+			
+    	return d;
+    } 
+}
+
+class Point extends Object {
+	public double longitude;
+	public double latitude;
+	public int idx;
+	public Point(double longitude_, double latitude_, int idx_){
+		longitude = longitude_;
+		latitude = latitude_;
+		idx = idx_;
+	}
 }

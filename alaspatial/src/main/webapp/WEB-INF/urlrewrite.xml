@@ -27,6 +27,14 @@
 		<to>/output/maxent/$1</to>
 	</rule>
 	<rule>
+		<from>/output/aloc/**</from>
+		<to>/output/aloc/$1</to>
+	</rule>
+	<rule>
+		<from>/output/filtering/**</from>
+		<to>/output/filtering/$1</to>
+	</rule>
+	<rule>
 		<from>/output/sampling/**</from>
 		<to>/output/sampling/$1</to>
 	</rule>

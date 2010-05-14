@@ -1,4 +1,11 @@
 <zk>
+
+<style src="scripts/theme/default/style.css" />
+<script type="text/javascript" src="scripts/OpenLayers.js"/>
+<script type="text/javascript" src="scripts/Map.js"/>
+
+<hbox>
+<vbox>
 <panel id="help" title="Click for Sampling Tool Help" width="600px" border="normal"  open="false"
 onClick="if(help.isOpen())help.open=false; else help.open=true;">
 <panelchildren><html><![CDATA[
@@ -31,7 +38,13 @@ Enter a species name
 			</listbox>
 		</bandpopup>
 </bandbox>
+<button label="add to map" onClick="win.showPoints();" />
 </hbox>
+<div xmlns:h="http://www.zkoss.org/2005/zk/native"
+	onUser='lb_points_count.value = "occurances found in user defined region: " + org.zkoss.lang.Objects.toString(event.data)'>
+	<h:b/>
+	<label id="lb_points_count" />
+</div>
 <separator/>
 <separator/>
 <hbox>
@@ -85,6 +98,31 @@ Click button to preview sampling output
 	<popup id="v" >
 		<label id="v_label" value="tool tip" ></label>
 	</popup>
+	
+	<div xmlns:h="http://www.zkoss.org/2005/zk/native"
+	onUser='lb_points.value = org.zkoss.lang.Objects.toString(event.data)'>
+	<h:a/>
+	<label id="lb_points" visible="false" />
+	</div>
 </window>
+</vbox>
+<vbox>
+<panel title="Map"
+width="500px" height ="600px" border="normal"  open="true">
+<panelchildren>
 
+<html><![CDATA[   
+    <input type="button" value="draw polygon on map" onclick="createPolygon();">
+    <input type="button" value="clear" onclick="clearPolygon();">
+        
+    <div id="map"  style="width:500px; height:550px"  class="smallmap"></div>
+<script>
+mapinit();
+</script>
+]]></html>
+
+</panelchildren>
+</panel>
+</vbox>
+</hbox>
 </zk>

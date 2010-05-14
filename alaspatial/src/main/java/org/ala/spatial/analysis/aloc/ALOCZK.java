@@ -2,16 +2,21 @@ package org.ala.spatial.analysis.aloc;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-
+import java.net.URLEncoder;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zk.ui.util.Clients;
 import org.ala.spatial.analysis.tabulation.SPLFilter;
 import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
 import org.ala.spatial.analysis.tabulation.TabulationSettings;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.SimpleRegion;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -36,6 +41,10 @@ import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 
 public class ALOCZK extends GenericForwardComposer {
+	
+	private String geoServer = "http://localhost:8080"; //"http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  
+    private String satServer = geoServer;  
+    
 	List _layer_filters = new ArrayList();
 	List _layer_filters_original = new ArrayList();
 	List _layer_filters_selected = new ArrayList();
@@ -46,6 +55,7 @@ public class ALOCZK extends GenericForwardComposer {
 	SPLFilter popup_filter;
 	Listcell popup_cell;
 	Listitem popup_item;
+	Label lb_points;
 	
 	String temp_filename;
 	
@@ -84,6 +94,8 @@ public class ALOCZK extends GenericForwardComposer {
 	int results_pos;
 	
 	public Button run_button;
+	
+	String results_path;
 		
 	@Override
 	public void doAfterCompose(Component comp) throws Exception {
@@ -92,13 +104,14 @@ public class ALOCZK extends GenericForwardComposer {
 		
 		int i;
 		TabulationSettings.load();
+		geoServer = TabulationSettings.alaspatial_path;
+		satServer = TabulationSettings.alaspatial_path;
 
 		SPLFilter layer_filter;
 		
 		/* list of all layers */
 		for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
-			layer_filter = 
-				SpeciesListIndex.getLayerFilter(
+			layer_filter =	SpeciesListIndex.getLayerFilter(
 						TabulationSettings.environmental_data_files[i]);
 			_layer_filters.add(layer_filter);
 			layer_filter = 
@@ -179,8 +192,7 @@ public class ALOCZK extends GenericForwardComposer {
                 	}
                 });
                 
-                new Listcell(f.layer.display_name + " (Terrestrial)").setParent(li);
-                           
+                new Listcell(f.layer.display_name + " (Terrestrial)").setParent(li);                           
             }
 		});	
 		
@@ -233,8 +245,10 @@ public class ALOCZK extends GenericForwardComposer {
 
 
 	public void onClick$download(){
-		org.zkoss.zhtml.Filedownload.save(temp_filename,"text/plain","ALOC.png");
+		//org.zkoss.zhtml.Filedownload.save(temp_filename,"text/plain","ALOC.png");
+		//java.net.URL url = new java.net.URL(results_path);
 		
+		//org.zkoss.zhtml.Filedownload.save(url,"image/png");		
 	}	
 
 	public void onClick$run_button(){
@@ -252,21 +266,103 @@ public class ALOCZK extends GenericForwardComposer {
 				layers[i] = filters[i].layer;
 			}
 					
-			ALOC.run(temporary_file0.getPath(),layers,Integer.parseInt(number_of_groups.getValue()));
+			SimpleRegion sr = null;
+			if(lb_points.getValue().length() > 0){
+				sr = getSimpleRegion(lb_points.getValue());
+			}
+			
+			//ALOC.run(temporary_file0.getPath(),layers,Integer.parseInt(number_of_groups.getValue()));
+			/*ALOC.run(temporary_file0.getPath(),layers,Integer.parseInt(number_of_groups.getValue()),sr);
 			
 			temp_filename = temporary_file0.getPath();
 			
 			org.zkoss.image.Image image = new org.zkoss.image.AImage(temporary_file0.getPath());
 			
 			results_image.setContent(image);
-			popup_results.open(cb);
+			popup_results.open(cb);*/
+			
+			btnGenerate(layers,number_of_groups.getValue(),lb_points.getValue());
+			if(download != null){	
+				download.setVisible(true);
+			}
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
+	
+	public void btnGenerate(Layer [] layers,String number_of_groups, String points) {
+        try {
+            StringBuffer sbenvsel = new StringBuffer();
+            for(int i=0;i<layers.length;i++){
+               sbenvsel.append(layers[i].display_name);
+                if (i<layers.length-1) {
+                    sbenvsel.append(":");
+                }                
+            } 
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "ws/aloc/processgeo?");
+            sbProcessUrl.append("gc=" + URLEncoder.encode(number_of_groups, "UTF-8"));
+            sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if(points.length() > 0){
+            	sbProcessUrl.append("&points=" + URLEncoder.encode(points, "UTF-8"));
+            }else{
+            	sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            }
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println("Got response from ALOCWSController: \n" + slist);
+            
+/* TODO: make service response include longlat bounds and image resolution */
+			String img = satServer + "output/aloc/" + slist + "/aloc.png";
+            String client_request = "getALOCimage('" + img + "',112,-9,154,-44,252,210);";
+            System.out.println("evaljavascript: " + client_request);                      
+            Clients.evalJavaScript(client_request);
+            
+            results_path = img;
+            
+
+        } catch (Exception ex) {
+            System.out.println("Opps!: ");
+            ex.printStackTrace(System.out);
+        }
+
+    }
+	
+	SimpleRegion getSimpleRegion(String pointsString){
+    	SimpleRegion simpleregion = new SimpleRegion();
+    	String [] pairs = pointsString.split(",");
+    	
+    	double [][] points = new double[pairs.length][2];
+    	for(int i=0;i<pairs.length;i++){    		
+    		String [] longlat = pairs[i].split(":");
+    		if(longlat.length == 2){
+    			try{
+	    			points[i][0] = Double.parseDouble(longlat[0]);
+	    			points[i][1] = Double.parseDouble(longlat[1]);
+    			}catch (Exception e){
+    				e.printStackTrace();
+    			}
+	    		System.out.print("(" + points[i][0] + "," + points[i][1] + ")");
+    		}else{
+    			System.out.print("err:" + pairs[i]);
+    		}
+    		
+    	}
+    	
+    	simpleregion.setPolygon(points);
+    	
+    	return simpleregion;
+    }
 	
 }
 

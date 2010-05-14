@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 
  * @author Adam Collins
  */
-public class Layer implements Serializable {
+public class Layer extends Object implements Serializable {
 
     private static final long serialVersionUID = -5934705833069133162L;
     /**

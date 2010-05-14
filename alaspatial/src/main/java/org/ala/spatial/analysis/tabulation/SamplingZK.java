@@ -10,7 +10,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.ala.spatial.analysis.*;
 import org.ala.spatial.util.*;
-import org.ala.spatial.util.Grid;
 
 import java.awt.image.*;
 import java.io.BufferedInputStream;
@@ -18,8 +17,17 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.URLEncoder;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zk.ui.util.Clients;
 
 public class SamplingZK extends Window {
+	
+	private String geoServer = "http://localhost:8080"; //"http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  
+    private String satServer = geoServer;  
+    
+    
 	//List selected_layers = new ArrayList();
 	List _layers = new ArrayList();
 	//List _combobox = new ArrayList();
@@ -36,6 +44,8 @@ public class SamplingZK extends Window {
 	public SamplingZK() {
 		int i;
 		TabulationSettings.load();
+		geoServer = TabulationSettings.alaspatial_path;
+		satServer = TabulationSettings.alaspatial_path;
 
 		/* list of all layers */
 		for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
@@ -128,8 +138,15 @@ public class SamplingZK extends Window {
 					layers[i++] = l.name;
 				}
 			}
+			
+			Label lb_points = (Label) getFellow("lb_points");
+    		String points = lb_points.getValue();
+    		if(points.length() == 0){
+    			points = "none";
+    		}
+    		SimpleRegion sr = SimpleRegion.parseSimpleRegion(points);
 
-			String csv_filename = ss.sampleSpecies(species, layers);
+			String csv_filename = ss.sampleSpecies(species, layers, sr);
 
 			//org.zkoss.zhtml.Filedownload.save(csv,"text/plain",species + ".csv");
 
@@ -308,8 +325,15 @@ public class SamplingZK extends Window {
 				layers[i++] = l.name;
 			}
 		}
+		
+		Label lb_points = (Label) getFellow("lb_points");
+		String points = lb_points.getValue();
+		if(points.length() == 0){
+			points = "none";
+		}
+		SimpleRegion sr = SimpleRegion.parseSimpleRegion(points);
 
-		String [][] csv_filename = ss.sampleSpecies(species, layers, 20);
+		String [][] csv_filename = ss.sampleSpecies(species, layers, sr, 20);
 //		System.out.println("got a " + csv_filename.length + " x " + csv_filename[0].length);
 		int j;
 		if(csv_filename != null){
@@ -404,4 +428,46 @@ public class SamplingZK extends Window {
 
 		results.open(30,30);//.open();//(false);
 	}
+	
+	public void showPoints() {
+        try {
+        	Bandbox bb = (Bandbox) getFellow("bb");
+    		Label lb_points = (Label) getFellow("lb_points");
+
+    		String species = bb.getValue().toLowerCase();
+    		String points = lb_points.getValue();
+    		if(points.length() == 0){
+    			points = "none";
+    		}
+    		
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "ws/sampling/process/points?");
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(species, "UTF-8"));
+            sbProcessUrl.append("&points=" + URLEncoder.encode(points, "UTF-8"));
+            
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println("Got response from SamplingWSController: \n" + slist);
+            
+/* TODO: make service response include longlat bounds and image resolution */
+			
+            String client_request = "drawCircles('" + slist + "');";
+            System.out.println("evaljavascript: " + client_request);                      
+            Clients.evalJavaScript(client_request);
+                        
+
+        } catch (Exception ex) {
+            System.out.println("Opps!: ");
+            ex.printStackTrace(System.out);
+        }
+
+    }
+
 }

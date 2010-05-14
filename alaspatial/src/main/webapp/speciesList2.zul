@@ -187,7 +187,7 @@ latitude 2<input id="latitude2" value=-51 /><br>
 
 <div id="txt"> </div>
 
-<div id="log"> </div>
+<div id="log"> </div>	
 
 <script type="text/javascript"> 	
 	init();

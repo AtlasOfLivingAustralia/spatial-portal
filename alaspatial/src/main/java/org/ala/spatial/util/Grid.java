@@ -171,6 +171,8 @@ public class Grid { //  implements Serializable
 	  int size,i,j,pos;
 	  byte [] b = new byte[32];
 	  RandomAccessFile afile;
+	  
+	  System.out.println(filename + ", " + datatype + ":" + points.length);
 
 	  try { //read of random access file can throw an exception
 		  afile = new RandomAccessFile(filename + ".gri", "r");
@@ -243,26 +245,24 @@ public class Grid { //  implements Serializable
 			  }
 		  }  else if (datatype == "FLOAT") {
 			  size = 4;
+			  System.out.println("FLOAT: " + length);
 			  for ( i = 0; i < length; i++) {
 				  pos = getcellnumber(points[i][0],points[i][1]);
 				  if(pos >= 0){
-
 					  afile.seek(pos * size);
 					  if (byteorderLSB) {
-
 						  for ( j = 0; j < size; j++) {
 							  b[j] = afile.readByte();
 						  }
 						  ret[i] = lsb2float(b);
-
 					  } else {
 						  ret[i] = afile.readFloat();
 					  }
-
 				  } else{
 					  //System.out.println("missing env: lng=" + points[i][0] + " lat=" + points[i][0] + " pos=" + pos);
 					  ret[i] = Double.NaN;
 				  }
+				  
 			  }
 		  }      else if (datatype == "DOUBLE") {
 			  size = 8;
