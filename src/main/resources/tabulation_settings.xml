@@ -70,7 +70,7 @@
 
     <geo_tables>
         <geo_table>
-            <geo_table_name>aus1_split</geo_table_name>
+            <geo_table_name>aus1</geo_table_name>
             <geo_table_display_name>Australian States and Territories</geo_table_display_name>
             <geo_table_description>Terrestrial borders for States and Territories</geo_table_description>
             <geo_table_type>contextual</geo_table_type>
@@ -81,8 +81,8 @@
                 </geo_field>
             </geo_fields_to_return>
         </geo_table>
-        <!-- too slow, remove	<geo_table>
-                <geo_table_name>aus2_split</geo_table_name>
+        <geo_table>
+                <geo_table_name>aus2</geo_table_name>
                         <geo_table_display_name>Australian Towns and Cities</geo_table_display_name>
                         <geo_table_description>Australian Towns and Cities</geo_table_description>
                         <geo_table_type>contextual</geo_table_type>
@@ -92,7 +92,7 @@
                                         <geo_field_display_name>Town/City</geo_field_display_name>
                                 </geo_field>
                         </geo_fields_to_return>
-                </geo_table> -->
+                </geo_table>
     </geo_tables>
 
     <!--
@@ -111,7 +111,8 @@
         -->
     <environmental_data>
         <!-- absolute path for all .gri/.grd files -->
-        <environmental_data_path>/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/</environmental_data_path>
+        <!-- <environmental_data_path>/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/</environmental_data_path> -->
+		<environmental_data_path>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/</environmental_data_path>
 
         <environmental_data_files>
             <environmental_data_file>
@@ -223,12 +224,14 @@
                 as minimum columns
 
                 field list is comma separated, hierarchy fields
-        -->
+        
     <occurances_csv>/Users/ajay/projects/ala/data/archive-ala/occurrences.csv</occurances_csv>
     <occurances_csv_fields>kingdom,phylum,class,order,family,genus,species,longitude,latitude</occurances_csv_fields>
-    <index_path>/Users/ajay/projects/ala/data/archive-ala/occurences/index/</index_path>
-
-
+    <index_path>/Users/ajay/projects/ala/data/archive-ala/occurences/index/</index_path>-->
+    <occurances_csv>/mnt/ala/data/occurances/occurances3.csv</occurances_csv>
+	<occurances_csv_fields>kingdom,phylum,class,order,family,genus,species,longitude,latitude</occurances_csv_fields>
+	<index_path>/mnt/ala/data/index/tabulation/</index_path>	
+    
     <maxent>
         <cmdpath>java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar </cmdpath>
     </maxent>
@@ -241,6 +244,10 @@
     <geoserver_url>http://localhost:8080/geoserver</geoserver_url>
     <geoserver_username>admin</geoserver_username>
     <geoserver_password>geoserver</geoserver_password>
+    
+    <!--  <alaspatial_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial2/</alaspatial_url> 
+    -->
+    <alaspatial_url>http://localhost:8080/alaspatial/</alaspatial_url>
     
 </tabulation>
 

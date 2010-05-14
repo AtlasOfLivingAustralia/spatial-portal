@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.aloc.ALOC;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
@@ -53,7 +54,7 @@ public class ALOCWSController {
 
             String groupCount = req.getParameter("gc");
             Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
-
+           
             ALOC.run(outputfile, envList, Integer.parseInt(groupCount));
 
             generateWorldFiles(outputpath);
@@ -79,6 +80,35 @@ public class ALOCWSController {
 
             // if it doesn't die by now, then all is good
             // set the pid and sent the response back to the client 
+            pid = "" + currTime;
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return pid;
+    }
+    
+    @RequestMapping(value = "/processgeo", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String processgeo(HttpServletRequest req) {
+        String pid = "";
+        try {
+            long currTime = System.currentTimeMillis();
+
+            String currentPath = req.getSession(true).getServletContext().getRealPath("/");
+            String outputpath = currentPath + "output/aloc/" + currTime + "/";
+            String outputfile = outputpath + "aloc.png";
+            File fDir = new File(outputpath);
+            fDir.mkdir();
+
+            ssets = new SpatialSettings();
+
+            String groupCount = req.getParameter("gc");
+            Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
+            SimpleRegion simpleregion = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
+           
+            ALOC.run(outputfile, envList, Integer.parseInt(groupCount),simpleregion);
+
             pid = "" + currTime;
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -155,7 +185,7 @@ public class ALOCWSController {
                 if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
                     sellayers[j] = _layerlist[i];
                     //sellayers[j].name = _layerPath + sellayers[j].name;
-                    //System.out.println("Adding layer for ALOC: " + sellayers[j].name);
+                    System.out.println("Adding layer for ALOC: " + sellayers[j].name);
                     continue;
                 }
             }
@@ -170,4 +200,6 @@ public class ALOCWSController {
 
         return sellayers;
     }
+    
+   
 }

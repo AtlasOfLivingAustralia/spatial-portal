@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.tabulation.SamplingService;
 import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.Zipper;
 import org.springframework.stereotype.Controller;
@@ -45,9 +46,11 @@ public class SamplingWSController {
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
+            
+            SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
 
             SamplingService ss = new SamplingService();
-            String datafile = ss.sampleSpecies(species, layers);
+            String datafile = ss.sampleSpecies(species, layers, region);
 
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);
@@ -113,9 +116,11 @@ public class SamplingWSController {
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
+            
+            SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
 
             SamplingService ss = new SamplingService();
-            String[][] results = ss.sampleSpecies(species, layers, 20);
+            String[][] results = ss.sampleSpecies(species, layers, region, 20);
 
             List rList = new Vector();
             StringBuilder sbResults = new StringBuilder();
@@ -211,4 +216,43 @@ public class SamplingWSController {
 
     private void writeAsJSON() {
     }
+    
+    @RequestMapping(value = "/process/points", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String processpoints(HttpServletRequest req) {
+
+        try {
+            ssets = new SpatialSettings();
+
+            String species = req.getParameter("taxonid");
+            
+            System.out.println("species: " + species);
+
+            SamplingService ss = new SamplingService();
+            
+            SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
+            
+            double [] points = ss.sampleSpeciesPoints(species,region);
+            StringBuffer sb = new StringBuffer();
+            for(int i=0;i<points.length;i+=2){
+            	sb.append(points[i]);
+            	sb.append(":");
+            	sb.append(points[i+1]);
+            	if(i < points.length-1){
+            		sb.append(",");
+            	}
+            }
+
+            return sb.toString();
+
+        } catch (Exception e) {
+            System.out.println("Error processing Sampling request:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+
+    }
+
 }

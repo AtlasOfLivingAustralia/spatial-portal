@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.tabulation;
 
 import java.io.File;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,12 +31,21 @@ import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zk.ui.util.Clients;
 
 public class SpeciesListZK2 extends GenericForwardComposer {
 	List _layer_filters = new ArrayList();
 	List _layer_filters_original = new ArrayList();
 	List _layer_filters_selected = new ArrayList();
 
+	String service_pid;
+	
+	private String geoServer = "http://localhost:8080"; //"http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  
+    private String satServer = geoServer;  
+    
+	
 	/**
 	 * for functions in popup box
 	 */
@@ -76,7 +86,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	public Label results_label;
 	int results_pos;
 
-	FilteringImage filteringImage;
+	//FilteringImage filteringImage;
 
 	@Override
 	public void doAfterCompose(Component comp) throws Exception {
@@ -84,7 +94,9 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		super.doAfterCompose(comp);
 
 		int i;
-		TabulationSettings.load();
+		TabulationSettings.load();		
+		geoServer = TabulationSettings.alaspatial_path;
+		satServer = TabulationSettings.alaspatial_path;
 
 		SPLFilter layer_filter;
 
@@ -111,11 +123,21 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		}
 
 		File file = java.io.File.createTempFile("spl",".png");
-		filteringImage = new FilteringImage(file.getPath());
+		//filteringImage = new FilteringImage(file.getPath());
 
 		onChanging$cb(null);
+		
+		/*service init bit*/
+		StringBuffer sbProcessUrl = new StringBuffer();
+        sbProcessUrl.append(satServer + "ws/filtering/init");
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+        get.addRequestHeader("Accept", "text/plain");
+        int result = client.executeMethod(get);
+        String slist = get.getResponseBodyAsString();
+        service_pid = slist;
 
-		System.out.println("done layer setup");
+		System.out.println("done layer setup: " + slist);
 	}
 
 	public void onChanging$cb(Event event){
@@ -130,7 +152,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 					it = null;
 					new Comboitem(((SPLFilter)_layer_filters_original.get(i)).layer.display_name + " (Terrestrial)").setParent(cb);
 				}
-				System.out.println("*x*" + ((SPLFilter)_layer_filters_original.get(i)).layer.display_name);
+				//System.out.println("*x*" + ((SPLFilter)_layer_filters_original.get(i)).layer.display_name);
 				i++;
 			}
 			while(it != null && it.hasNext()){
@@ -144,11 +166,11 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		String new_value = "";
 
 		Set set = event.getSelectedItems();
-		System.out.println(set.size());
+		//System.out.println(set.size());
 		if(set.size() > 0){
 			Object [] os = set.toArray();
 
-			System.out.println(os[0]);
+			//System.out.println(os[0]);
 
 			new_value = ((Comboitem)os[0]).getLabel();
 		}
@@ -156,17 +178,17 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			return;
 		}
 		new_value = (new_value.equals("")) ? "" : new_value.substring(0,new_value.indexOf("(")).trim();
-		System.out.println("new value: " + new_value);
+		//System.out.println("new value: " + new_value);
 
 
 		for(Object o : _layer_filters_selected){
 			SPLFilter f = (SPLFilter) o;
 			if(f.layer.display_name.equals(new_value)){
-				System.out.println("already added");
+				//System.out.println("already added");
 				return; //already added
 			}
 		}
-		System.out.println("not already added");
+		//System.out.println("not already added");
 		for(Object o : _layer_filters){
 			SPLFilter f = (SPLFilter) o;
 			System.out.println(f.layer.display_name);
@@ -214,7 +236,9 @@ public class SpeciesListZK2 extends GenericForwardComposer {
                 				 && !((Listitem)event.getTarget().getParent()).isDisabled()){
                 			SPLFilter [] layer_filters = getSelectedFilters();
                 			if(layer_filters != null){
-                				results = SpeciesListIndex.listArraySpeciesGeo(layer_filters);
+                				/*results = SpeciesListIndex.listArraySpeciesGeo(layer_filters);*/
+                				results = serviceSpeciesList().split("\r\n");
+                				
                 				java.util.Arrays.sort(results);
 
                 				seekToResultsPosition(0);
@@ -231,7 +255,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		lb.setModel(new SimpleListModel(_layer_filters_selected));
 		Listitem li = lb.getItemAtIndex(lb.getItemCount()-1);
 		Listcell lc = (Listcell) li.getLastChild();
-		System.out.println(lc);
+		//System.out.println(lc);
 		lc = (Listcell) lc.getPreviousSibling();
 
 		listFix();
@@ -254,9 +278,9 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			//get end cell
 
 			int i = lb.getItemCount();
-			System.out.println("items: " + i);
+		//	System.out.println("items: " + i);
 			Listitem li = (Listitem) lb.getItemAtIndex(i-1);
-			System.out.println(li.getLabel());
+		//	System.out.println(li.getLabel());
 			List list = li.getChildren();
 
 			for(Object o2 : list){
@@ -264,8 +288,8 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 				System.out.println("**"+o2 + ">" + m.getLabel());
 			}
 			o = list.get(list.size()-1);
-			System.out.println(li);
-			System.out.println(o);
+		//	System.out.println(li);
+		//	System.out.println(o);
 		}
 
 		Listcell lc = (Listcell)o;
@@ -276,13 +300,13 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		popup_cell = lc;
 		popup_item = li;
 
-		System.out.println("lf=" + lf);
+/*		System.out.println("lf=" + lf);
 		System.out.println(lf.getClass().toString());
 		System.out.println("lflayer=" + lf.layer);
 		System.out.println("lflayer name=" + lf.layer.name);
 		System.out.println("lflayer display name=" + lf.layer.display_name);
 		System.out.println("lflayer type =" + lf.layer.type);
-
+*/
 		if(popup_filter.layer.type == "environmental"){
 
 			String csv = SpeciesListIndex.getLayerExtents(lf.layer.name);
@@ -311,16 +335,16 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			int mincursor = (int) ((popup_filter.minimum_value - popup_filter.minimum_initial)
 					/ (range) * 100);
 
-			System.out.println("range:" + range + " mincursor:" + mincursor + " maxcursor:" + maxcursor);
+	//		System.out.println("range:" + range + " mincursor:" + mincursor + " maxcursor:" + maxcursor);
 
-			Clients.evalJavaScript("applyFilter(" + idx + "," + (mincursor/100.0) + "," + (maxcursor/100.0) + ");"); 	//should take out missing value
-			filteringImage.applyFilter(idx,mincursor/100.0,maxcursor/100.0);
+			//Clients.evalJavaScript("applyFilter(" + idx + "," + (mincursor/100.0) + "," + (maxcursor/100.0) + ");"); 	//should take out missing value
+			//filteringImage.applyFilter(idx,mincursor/100.0,maxcursor/100.0);
 
 			popup_slider_min.setCurpos(mincursor);
 			popup_slider_max.setCurpos(maxcursor);
 
 			lc.focus();
-			System.out.println("attaching: " + lc + lc.getValue());
+//			System.out.println("attaching: " + lc + lc.getValue());
 			popup_continous.open(30,30);//.open(li);
 		}else{ //catagorical values
 
@@ -335,8 +359,8 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			}
 			popup_idx.setValue(String.valueOf(idx));
 
-			String javascript = "applyFilterCtx(" + idx + ",-1,false);"; 	//should take out missing value
-			filteringImage.applyFilterCtx(idx,-1,false);
+			String javascript = "applyFilterCtx(" + idx + ",-2,false);"; 	//should take out missing value
+			//filteringImage.applyFilterCtx(idx,-2,false);
 
 			/* set check boxes */
 			for(int i : lf.catagories){
@@ -347,23 +371,175 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 				int j = 0;
 				for(j=0;j<lf.catagories.length;j++){
 					if(i == lf.catagories[j]){
+						javascript += "applyFilterCtx(" + idx + "," + i + ",true);"; 	//should take out missing value
+						//filteringImage.applyFilterCtx(idx,i,true);
 						break;
 					}
 				}
 				if(j == lf.catagories.length){
 					//hide
-					javascript += "applyFilterCtx(" + idx + "," + i + ",false);"; 	//should take out missing value
-					filteringImage.applyFilterCtx(idx,i,false);
+				//	javascript += "applyFilterCtx(" + idx + "," + i + ",false);"; 	//should take out missing value
+				//	filteringImage.applyFilterCtx(idx,i,false);
 				}
 			}
 			lc.focus();
-			System.out.println("attaching: " + lc + lc.getValue());
+	//		System.out.println("attaching: " + lc + lc.getValue());
 			popup_catagorical.open(30,30);//.open(li);
-			Clients.evalJavaScript(javascript);
+			//Clients.evalJavaScript(javascript);
+			
+			
+		}
+	}
+	
+	public void serviceRemoveTopFilter(){
+		System.out.println("serviceRemoveTopFilter()");
+		try{
+			///apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}
+			StringBuffer sbProcessUrl = new StringBuffer();
+	        sbProcessUrl.append(satServer + "ws/filtering/apply3");
+	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
+	        sbProcessUrl.append("/layers/" + URLEncoder.encode("none", "UTF-8"));
+	        sbProcessUrl.append("/types/" + URLEncoder.encode("none", "UTF-8"));
+	        sbProcessUrl.append("/val1s/" + URLEncoder.encode("none", "UTF-8"));
+	        sbProcessUrl.append("/val2s/" + URLEncoder.encode("none", "UTF-8"));        
+	        
+	
+	        HttpClient client = new HttpClient();
+	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+	
+	        get.addRequestHeader("Accept", "text/plain");
+	
+	        int result = client.executeMethod(get);
+	        String slist = get.getResponseBodyAsString();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		String client_request = "removeImageLayer('filterlayer_" + getSelectedFilters().length + "');";		
+        System.out.println("evaljavascript: " + client_request);                      
+        Clients.evalJavaScript(client_request);
+	}
+	
+	public void serviceUpdateTopFilter(String layername, double min, double max){
+		System.out.println("serviceUpdateTopFilter(): " + min + "," + max);
+		try{
+			///apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}
+			StringBuffer sbProcessUrl = new StringBuffer();
+	        sbProcessUrl.append(satServer + "ws/filtering/apply3");
+	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
+	        sbProcessUrl.append("/layers/" + URLEncoder.encode(layername, "UTF-8"));
+	        sbProcessUrl.append("/types/" + URLEncoder.encode("environmental", "UTF-8"));
+	        sbProcessUrl.append("/val1s/" + URLEncoder.encode(String.valueOf(min), "UTF-8"));
+	        sbProcessUrl.append("/val2s/" + URLEncoder.encode(String.valueOf(max), "UTF-8"));        
+	        
+	        HttpClient client = new HttpClient();
+	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+	
+	        get.addRequestHeader("Accept", "text/plain");
+	
+	        int result = client.executeMethod(get);
+	        String slist = get.getResponseBodyAsString();
+	        
+	        String req1 = "removeImageLayer('filterlayer_" + getSelectedFilters().length + "');";			
+			String img = satServer + "output/filtering/" + service_pid + "/" + slist;			
+	        String client_request = "addImageLayer('" + img 
+	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-44,252,210);";// + req1;
+	       
+	        System.out.println("evaljavascript: " + client_request);                      
+	        Clients.evalJavaScript(client_request);	
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public int serviceSpeciesCount(){
+		try{
+			StringBuffer sbProcessUrl = new StringBuffer();
+	        sbProcessUrl.append(satServer + "ws/filtering/apply");
+	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
+	        sbProcessUrl.append("/species/count");        
+	        
+	        HttpClient client = new HttpClient();
+	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+	
+	        get.addRequestHeader("Accept", "text/plain");
+	
+	        int result = client.executeMethod(get);
+	        String slist = get.getResponseBodyAsString();
+	        return Integer.parseInt(slist);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	public String serviceSpeciesList(){
+		try{
+			StringBuffer sbProcessUrl = new StringBuffer();
+	        sbProcessUrl.append(satServer + "ws/filtering/apply");
+	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
+	        sbProcessUrl.append("/species/list");        
+	        
+	        HttpClient client = new HttpClient();
+	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+	
+	        get.addRequestHeader("Accept", "text/plain");
+	
+	        int result = client.executeMethod(get);
+	        String slist = get.getResponseBodyAsString();
+	        return slist;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return "";
+	}
+	
+	public void serviceUpdateTopFilter(String layername, int [] catagories_to_show){
+		System.out.println("serviceUpdateTopFilter");
+		try{
+			///apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}
+			StringBuffer show = new StringBuffer();
+			int i;
+			for(i=0;i<catagories_to_show.length;i++){
+				show.append(catagories_to_show[i]);
+				if(i < catagories_to_show.length-1){
+					show.append(",");
+				}
+			}
+			
+			StringBuffer sbProcessUrl = new StringBuffer();
+	        sbProcessUrl.append(satServer + "ws/filtering/apply3");
+	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
+	        sbProcessUrl.append("/layers/" + URLEncoder.encode(layername, "UTF-8"));
+	        sbProcessUrl.append("/types/" + URLEncoder.encode("ctx", "UTF-8"));
+	        sbProcessUrl.append("/val1s/" + URLEncoder.encode(show.toString(), "UTF-8"));
+	        sbProcessUrl.append("/val2s/" + URLEncoder.encode("none", "UTF-8"));        
+	        
+	        HttpClient client = new HttpClient();
+	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+	
+	        get.addRequestHeader("Accept", "text/plain");
+	
+	        int result = client.executeMethod(get);
+	        String slist = get.getResponseBodyAsString();
+	        
+	        String req1 = "removeImageLayer('filterlayer_" + getSelectedFilters().length + "');";			
+			String img = satServer + "output/filtering/" + service_pid + "/" + slist;			
+	        String client_request = "addImageLayer('" + img 
+	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-51,252,210);";// + req1;
+	        System.out.println("evaljavascript: " + client_request);                      
+	        Clients.evalJavaScript(client_request);	
+	        
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 	}
 
+
 	public void deleteSelectedFilters(Object o){
+		System.out.println("deleteSelectedFilters()");
+		serviceRemoveTopFilter();
+		
 		Listbox lb = null;
 		Listitem li;
 		String label;
@@ -390,14 +566,14 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 					for(i=0;i<_layer_filters_original.size();i++){
 						if(((SPLFilter)_layer_filters_original.get(i)).layer.display_name.equals(label)){
 							if(((SPLFilter)_layer_filters_original.get(i)).layer.type.equals("environmental")){
-								Clients.evalJavaScript("applyFilter(" + i + ",-999,100000);");
-								filteringImage.applyFilter(i,-999,100000);
+								//Clients.evalJavaScript("applyFilter(" + i + ",-999,100000);");
+								//filteringImage.applyFilter(i,-999,100000);
 							}else{
 								String javascript = "applyFilterCtx(" + i + ",-2,true);";
-								Clients.evalJavaScript(javascript);
-								filteringImage.applyFilterCtx(i,-2,true);
+								//Clients.evalJavaScript(javascript);
+								//filteringImage.applyFilterCtx(i,-2,true);
 							}
-							System.out.println("done client applyFilter call for idx=" + i);
+							//System.out.println("done client applyFilter call for idx=" + i);
 							break;
 						}
 					}
@@ -460,46 +636,63 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		double mincurpos = ((popup_filter.minimum_value - popup_filter.minimum_initial)
 				/ (range));
 
-		System.out.println(popup_filter.maximum_initial + ", " + popup_filter.minimum_initial
-				+ ", " + popup_filter.maximum_value + "," + popup_filter.minimum_value);
+		//System.out.println(popup_filter.maximum_initial + ", " + popup_filter.minimum_initial
+			//	+ ", " + popup_filter.maximum_value + "," + popup_filter.minimum_value);
 		String idx = popup_idx.getValue();
 
-		System.out.println("applying filter from idx:" + idx);
+		//System.out.println("applying filter from idx:" + idx);
 
 		int i = 0;
 		int idx_n = Integer.parseInt(idx);
 		if(idx_n < 19){
-			System.out.println("clientFilter(" + idx + "," + mincurpos + "," + maxcurpos + ")");
-			Clients.evalJavaScript("applyFilter(" + idx + "," + mincurpos + "," + maxcurpos + ");");
-			filteringImage.applyFilter(Integer.valueOf(idx),mincurpos,maxcurpos);
-			System.out.println("done client applyFilter call for idx=" + i);
+		//	System.out.println("clientFilter(" + idx + "," + mincurpos + "," + maxcurpos + ")");
+			//Clients.evalJavaScript("applyFilter(" + idx + "," + mincurpos + "," + maxcurpos + ");");
+			//filteringImage.applyFilter(Integer.valueOf(idx),mincurpos,maxcurpos);
+			serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.minimum_value, popup_filter.maximum_value);
+		//	System.out.println("done client applyFilter call for idx=" + i);
 		}else{
-			System.out.println("selected catagories (clientFilter()): " + popup_filter.catagories.length);
+		//	System.out.println("selected catagories (clientFilter()): " + popup_filter.catagories.length);
 
+//			SPLFilter lf = popup_filter; //(SPLFilter)_layer_filters_original.get(idx_n);
+//
+//			//System.out.println("selected catagories (obj): " + lf.catagories.length);
+//
+//			String javascript = "";
+//			javascript += "applyFilterCtx(" + idx_n + ",-2,false);"; 	//should take out missing value
+//			//filteringImage.applyFilterCtx(idx_n,-2,false);
+//			for(int k=0;k<lf.catagory_names.length;k++){
+//				int j = 0;
+//				for(j=0;j<lf.catagories.length;j++){
+//					if(k == lf.catagories[j]){
+//						System.out.println("show: layer=" + idx_n + " value=" + k);
+//						javascript += "applyFilterCtx(" + idx_n + "," + k + ",true);"; 	//should take out missing value
+//				//		filteringImage.applyFilterCtx(idx_n,k,true);
+//						break;
+//					}
+//				}
+//				if(j == lf.catagories.length){
+//					//unhide
+//					//System.out.println("hide: layer=" + idx_n + " value=" + k);
+//					//javascript += "applyFilterCtx(" + idx_n + "," + k + ",false);"; 	//should take out missing value
+//					//filteringImage.applyFilterCtx(idx_n,k,false);
+//				}
+//			}
+			
+			
+	//		Clients.evalJavaScript(javascript);
+			
+			Set selected = popup_listbox.getSelectedItems();
+			int [] items_selected = new int[selected.size()];
+			int pos = 0;
 
-			SPLFilter lf = popup_filter; //(SPLFilter)_layer_filters_original.get(idx_n);
-
-			//System.out.println("selected catagories (obj): " + lf.catagories.length);
-
-			String javascript = "";
-			for(int k=0;k<lf.catagory_names.length;k++){
-				int j = 0;
-				for(j=0;j<lf.catagories.length;j++){
-					if(k == lf.catagories[j]){
-						System.out.println("show: layer=" + idx_n + " value=" + k);
-						javascript += "applyFilterCtx(" + idx_n + "," + k + ",true);"; 	//should take out missing value
-						filteringImage.applyFilterCtx(idx_n,k,true);
-						break;
-					}
-				}
-				if(j == lf.catagories.length){
-					//unhide
-					System.out.println("hide: layer=" + idx_n + " value=" + k);
-					javascript += "applyFilterCtx(" + idx_n + "," + k + ",false);"; 	//should take out missing value
-					filteringImage.applyFilterCtx(idx_n,k,false);
-				}
+			for(Object o : selected){
+				Listitem li = (Listitem) o;
+				items_selected[pos++] = li.getIndex();
 			}
-			Clients.evalJavaScript(javascript);
+
+			popup_filter.catagories = items_selected;
+			
+			serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.catagories);
 		}
 	}
 
@@ -520,7 +713,8 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 				try{
 					popup_filter.minimum_value = Double.parseDouble(popup_minimum.getValue());
 					popup_filter.maximum_value = Double.parseDouble(popup_maximum.getValue());
-					System.out.println(popup_filter.minimum_value + "," + popup_filter.maximum_value);
+			//		System.out.println(popup_filter.minimum_value + "," + popup_filter.maximum_value);
+					serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.minimum_value, popup_filter.maximum_value);
 				}catch(Exception e){
 					System.out.println("value conversion error");
 				}
@@ -535,7 +729,10 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 				}
 
 				popup_filter.catagories = items_selected;
-				System.out.println("selected catagories: " + popup_filter.catagories.length);
+				
+				serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.catagories);
+				
+			//	System.out.println("selected catagories: " + popup_filter.catagories.length);
 			}
 
 			popup_catagorical.close();
@@ -549,7 +746,8 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			SPLFilter [] layer_filters = getSelectedFilters();
 			int c = 0;
 			if(layer_filters != null){
-				c = SpeciesListIndex.listSpeciesCountGeo(layer_filters);
+				//c = SpeciesListIndex.listSpeciesCountGeo(layer_filters);
+				c = serviceSpeciesCount();
 
 				popup_filter.count = c;
 			}
@@ -565,6 +763,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	}
 
 	public int countSpeciesGeo(Integer return_count) {
+		/*
 		SPLFilter [] layer_filters = getSelectedFilters();
 		if(layer_filters != null){
 			int count = SpeciesListIndex.listSpeciesCountGeo(layer_filters);
@@ -580,7 +779,12 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 				System.out.println(e.toString());
 			}
 		}
-		return 0;
+		return 0;*/
+		int count = serviceSpeciesCount();
+		if(return_count != null){
+			return_count = count;
+		}
+		return count;
 	}
 
 	public SPLFilter [] getSelectedFilters(){

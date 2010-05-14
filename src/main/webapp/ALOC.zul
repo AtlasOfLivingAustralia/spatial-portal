@@ -1,6 +1,7 @@
 <zk>
-
-<script type="text/javascript" src="filter.js"/>
+<style src="scripts/theme/default/style.css" />
+<script type="text/javascript" src="scripts/OpenLayers.js"/>
+<script type="text/javascript" src="scripts/Map.js"/>
 
 <hbox>
 <vbox>
@@ -60,15 +61,44 @@ Environmental layers for use in classification.
 <vbox>
 <label value="click button to run classification" />
 <button id="run_button" label="run ALOC">
-</button></vbox>
+</button>
+<separator />
+<separator />
+<button label="download" id="download" visible="false"/>
+
+</vbox>
 
 <popup id="popup_results" width="640px" height="480px">
 <vbox><image id="results_image" src="" width="504px" height="420px"/>
-<button label="download" id="download" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
+<div align="right">	<button label="close" onClick="popup_results.close()" /></div>
 </vbox>
 </popup>
-		
+	
+<div xmlns:h="http://www.zkoss.org/2005/zk/native"
+	onUser='lb_points.value = org.zkoss.lang.Objects.toString(event.data)'>
+	<h:a/>
+	<label id="lb_points" visible="false" />
+</div>
+	
 </window>
+</vbox>
+<vbox>
+<panel title="Map"
+width="500px" height ="600px" border="normal"  open="true">
+<panelchildren>
+
+<html><![CDATA[   
+    <input type="button" value="draw polygon on map" onclick="createPolygon();">
+    <input type="button" value="clear" onclick="clearPolygon();">
+    
+    <div id="map"  style="width:500px; height:550px"  class="smallmap"></div>
+<script>
+mapinit();
+</script>
+]]></html>
+
+</panelchildren>
+</panel>
 </vbox>
 </hbox>
 </zk>

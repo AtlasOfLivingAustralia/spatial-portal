@@ -11,17 +11,22 @@
                 <tab label="Filtering" />
                 <tab label="Sampling" />
                 <tab label="Maxent" />
+                <tab label="ALOC" />
             </tabs>
             <tabpanels>
                 <tabpanel>
-                    <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com:8080/alaspatial2/speciesList.zul" width="100%" height="800px" />
+                    <!--  <iframe src="http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial2/speciesList.zul" width="100%" height="800px" /> -->
+                    <include src="speciesList.zul" />
                 </tabpanel>
                 <tabpanel>
-                    <!-- <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com:8080/alaspatial2/sampling.zul" width="100%" height="800px" /> -->
+                    <!-- <iframe src="http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial2/sampling.zul" width="100%" height="800px" /> -->
                     <include src="sampling.zul" />
                 </tabpanel>
                 <tabpanel>
                     <include src="maxent2.zul" />
+                </tabpanel>
+                <tabpanel>
+                    <include src="ALOC.zul" />
                 </tabpanel>
             </tabpanels>
         </tabbox>

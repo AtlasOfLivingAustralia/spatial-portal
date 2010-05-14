@@ -17,6 +17,9 @@ public class FilteringImage implements Serializable {
 
     final int WIDTH = 252;
     final int HEIGHT = 210;
+    
+    int hidden_colour;
+    
     // List _resorts = new ArrayList();
     List _layers = new ArrayList();
     List layer_minimums = new ArrayList();
@@ -37,11 +40,64 @@ public class FilteringImage implements Serializable {
 
     public FilteringImage() {
     }
-
     
 
     public FilteringImage(String filename_) {
         filename = filename_;
+
+        int i;
+        TabulationSettings.load();
+
+        for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
+            _layers.add(TabulationSettings.environmental_data_files[i]);
+            // get min/max
+            Grid grid = new Grid(TabulationSettings.environmental_data_path
+                    + TabulationSettings.environmental_data_files[i].name);
+
+            //System.out.println(TabulationSettings.environmental_data_files[i].name
+            //        + " (" + grid.minval + " to " + grid.maxval + ")");
+
+            layer_base_minimums.add(new Double(grid.minval));
+            layer_base_maximums.add(new Double(grid.maxval));
+            layer_minimums.add(new Double(grid.minval));
+            layer_maximums.add(new Double(grid.maxval));
+        }
+
+        for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
+            _layers.add(TabulationSettings.geo_tables[i]);
+        }
+
+        base_filter = new int[HEIGHT * WIDTH];
+
+        // get the load image bytes
+        image_bytes = image.getRGB(0, 0, image.getWidth(), image.getHeight(),
+                null, 0, image.getWidth());
+
+        //use missing value (transparent, 0x00000000)
+        for (i = 0; i < image_bytes.length; i++) {
+            image_bytes[i] = 0xFF00FF00;
+        }
+
+        image.setRGB(0, 0, image.getWidth(), image.getHeight(),
+                image_bytes, 0, image.getWidth());
+
+        //writeImage();
+
+        //test colour change on half
+        for (i = 0; i < image_bytes.length / 2; i++) {
+            image_bytes[i] = 0xFF0000FF;
+        }
+
+        image.setRGB(0, 0, image.getWidth(), image.getHeight(),
+                image_bytes, 0, image.getWidth());
+
+        //writeImage();
+    }
+    
+    public FilteringImage(String filename_, int hidden_colour_) {
+    	System.out.println("        FilteringImage:" + filename_ + " 0x" + Integer.toHexString(hidden_colour_));
+        filename = filename_;
+        hidden_colour = hidden_colour_;
 
         int i;
         TabulationSettings.load();
@@ -73,13 +129,13 @@ public class FilteringImage implements Serializable {
 
         //use missing value (transparent, 0x00000000)
         for (i = 0; i < image_bytes.length; i++) {
-            image_bytes[i] = 0xFF00FF00;
+            image_bytes[i] = hidden_colour; //0xFF00FF00;
         }
 
         image.setRGB(0, 0, image.getWidth(), image.getHeight(),
                 image_bytes, 0, image.getWidth());
 
-        writeImage();
+        //writeImage();
 
         //test colour change on half
         for (i = 0; i < image_bytes.length / 2; i++) {
@@ -89,15 +145,15 @@ public class FilteringImage implements Serializable {
         image.setRGB(0, 0, image.getWidth(), image.getHeight(),
                 image_bytes, 0, image.getWidth());
 
-        writeImage();
+        //writeImage();
     }
 
-    private void writeImage() {
 
+    public void writeImage() {
         try {
             ImageIO.write(image, "png",
                     new File(filename));
-            System.out.println("writing image");
+            System.out.println("writing image:" + filename);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -107,7 +163,7 @@ public class FilteringImage implements Serializable {
     private void loadGrid(String layername) {
         if (active_layer_name != null && !active_layer_name.equals(layername)) {
             // load a grid
-            System.out.println("loading a grid: " + layername);
+            //System.out.println("loading a grid: " + layername);
 
             Grid grid = new Grid(TabulationSettings.environmental_data_path
                     + layername);
@@ -138,13 +194,13 @@ public class FilteringImage implements Serializable {
 
     /* new min/max is 0 to 1, or negative for */
     public void applyFilter(int layer_idx, double new_min_, double new_max_) {
-        System.out.println("applyFilter(" + layer_idx + "," + new_min_ + "," + new_max_);
+        System.out.println("applyFilter(" + layer_idx + "," + new_min_ + "," + new_max_ + "): ");
         /* convert layer name to TabulationSettings.Layers
          *
          * name */
         Layer layer = (Layer) _layers.get(layer_idx);
 
-        System.out.println("Applying layer to filter: " + layer.display_name); 
+       // System.out.println("Applying layer to filter: " + layer.display_name); 
         loadGrid(layer.name);
 
         //rescale new_min/new_max to layer extents (or below & over if required)
@@ -156,7 +212,7 @@ public class FilteringImage implements Serializable {
         double old_min = ((Double) layer_minimums.get(layer_idx)).doubleValue();
         double old_max = ((Double) layer_maximums.get(layer_idx)).doubleValue();
 
-        System.out.println(">" + new_min + "," + new_max + " old=" + old_min + "," + old_max);
+        //System.out.println(">" + new_min + "," + new_max + " old=" + old_min + "," + old_max);
 
         if (Double.isNaN(new_max)) {
             new_max = old_max;
@@ -165,8 +221,8 @@ public class FilteringImage implements Serializable {
             new_min = old_min;
         }
 
-        System.out.println("setLayerBounds: " + layer.name + " " + new_min
-                + " " + new_max + " from " + old_min + " " + old_max);
+        //System.out.println("setLayerBounds: " + layer.name + " " + new_min
+        //        + " " + new_max + " from " + old_min + " " + old_max);
 
         // 4 cases:
         // 1. new_min lower
@@ -182,14 +238,14 @@ public class FilteringImage implements Serializable {
 
         //handle 0/1 case
         if (new_min_ <= 0 && new_min_ >= -0.01 && new_max_ == 1) {
-            System.out.println("0-1 case");
+         //   System.out.println("0-1 case");
             for (i = 0; i < active_layer_grid.length; i++) {
                 if (Double.isNaN(active_layer_grid[i])) {	//missing value, hide
                     // reverse bit array
                     base_filter[i] |= 0x00000001 << layer_idx;
 
                     // hide image pixel
-                    image_bytes[i] = 0xFFFFFFFF; //white
+                    image_bytes[i] = hidden_colour; //white
 
                     count2++;
                 } else { 									//show
@@ -203,7 +259,7 @@ public class FilteringImage implements Serializable {
                 }
             }
         } else if (new_min_ < -0.01) {	//handle -?/? case
-            System.out.println("- case");
+            //System.out.println("- case");
             //show all
             for (i = 0; i < active_layer_grid.length; i++) {
                 //show
@@ -240,7 +296,7 @@ public class FilteringImage implements Serializable {
                         base_filter[i] |= 0x00000001 << layer_idx;
 
                         // hide image pixel
-                        image_bytes[i] = 0xFFFFFFFF; //white
+                        image_bytes[i] = hidden_colour; //white
                         count2++;
                     }
                 }
@@ -253,7 +309,7 @@ public class FilteringImage implements Serializable {
                         base_filter[i] |= 0x00000001 << layer_idx;
 
                         // hide image pixel
-                        image_bytes[i] = 0xFFFFFFFF; //white
+                        image_bytes[i] = hidden_colour; //white
                         count2++;
                     }
                 }
@@ -277,8 +333,7 @@ public class FilteringImage implements Serializable {
             }
         }
 
-        System.out.println("#hide count=" + count2);
-        System.out.println("#show count=" + count1);
+        System.out.println("#hide count=" + count2 + " #show count=" + count1);
 
         // write back new min/max
         layer_minimums.set(layer_idx, new Double(new_min));
@@ -288,22 +343,26 @@ public class FilteringImage implements Serializable {
         image.setRGB(0, 0, image.getWidth(), image.getHeight(), image_bytes, 0,
                 image.getWidth());
 
-        writeImage();
+        //writeImage();
     }
 
     public SPLFilter applyFilterCtx(String layername, int value, boolean show) {
         Layer layer = null;
         Iterator it = _layers.iterator();
         int layer_idx = 0;
+        System.out.print("applyFilterCtx(" + layername + "...): ");
         while(it.hasNext()) {
             Layer tl = (Layer) it.next();
             if (tl.display_name.equalsIgnoreCase(layername)) {
                 layer = tl;
+                System.out.println("found at: " + layer_idx);
+                applyFilterCtx(layer_idx, value, show);
                 break;
             }
             layer_idx++;
         }
-        applyFilterCtx(layer_idx, value, show);
+        System.out.print("done applyFilterCtx();");
+        
         return SpeciesListIndex.getLayerFilter(layer);
     }
 
@@ -330,7 +389,22 @@ public class FilteringImage implements Serializable {
         //get layer data: TODO replace the get grid bit
         ImageShort[] is = SpeciesListIndex.getImageData(layer, 112, 154, -9, -44, 252, 210);
 
-        System.out.println("layerdatlen=" + is.length);
+        //test extents
+        int maxx = 0, maxy = 0 ,minx = 0, miny = 0, x, y;
+        for (i = 0; i < is.length - 16; i++) {
+        	x = is[i].x;
+        	y = is[i].y;
+        	if(i==0 || maxx < x) maxx = x;
+        	if(i==0 || minx > x) minx = x;
+        	if(i==0 || maxy < y) maxy = y;
+        	if(i==0 || miny > y) miny = y;
+            
+        }
+        //System.out.println("*?* " + is.length + ">" + minx + " " + maxx + ", " + miny + " " + maxy);
+
+
+        
+        //System.out.println("layerdatlen=" + is.length);
 
         if (value < 0) {
             idx_start = 0;
@@ -339,9 +413,9 @@ public class FilteringImage implements Serializable {
             //value adjust
             value += is[0].value;
             value++;
-
+            
             for (idx_start = 0; idx_start < is.length && value != is[idx_start].value; idx_start++) {
-                //seeking, make binary search
+                //seeking, make binary search            	
             }
             idx_end = idx_start;
             for (; idx_end < is.length && value == is[idx_end].value; idx_end++) {
@@ -357,6 +431,8 @@ public class FilteringImage implements Serializable {
         if (show) {// show more
             for (p = idx_start; p < idx_end; p++) {
                 i = WIDTH * (HEIGHT - is[p].y - 1) + is[p].x;
+                
+               
 
                 base_filter[i] &= ~(0x00000001 << layer_idx);
 
@@ -365,6 +441,7 @@ public class FilteringImage implements Serializable {
                     image_bytes[i] = 0x00000000; //transparent
                     count1++;
                 }
+               
             }
         } else {//hide more
             for (p = idx_start; p < idx_end; p++) {
@@ -374,18 +451,19 @@ public class FilteringImage implements Serializable {
                 base_filter[i] |= 0x00000001 << layer_idx;
 
                 // hide image pixel
-                image_bytes[i] = 0xFFFFFFFF; //white
+                image_bytes[i] = hidden_colour; //white
                 count2++;
+
             }
         }
 
-        System.out.println("#hide count=" + count2);
-        System.out.println("#show count=" + count1);
+        //System.out.println("#hide count=" + count2);
+        //System.out.println("#show count=" + count1);
 
         // write back image bytes
         image.setRGB(0, 0, image.getWidth(), image.getHeight(), image_bytes, 0,
                 image.getWidth());
 
-        writeImage();
+        //writeImage();
     }
 }

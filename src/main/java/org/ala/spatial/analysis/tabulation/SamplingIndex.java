@@ -1,10 +1,8 @@
-
-
-
 package org.ala.spatial.analysis.tabulation;
 
 import java.util.*;
 import java.io.*;
+import java.nio.ByteBuffer;
 
 import org.ala.spatial.util.*;
 
@@ -35,7 +33,7 @@ public class SamplingIndex implements AnalysisIndexService {
 	/**
 	 * postGIS database connection
 	 */
-	Connection connection;
+	//Connection connection;
 
 	/**
 	 * destination of loaded occurances
@@ -62,10 +60,10 @@ public class SamplingIndex implements AnalysisIndexService {
 		 * for postgis geo tables of catagorical layers,
 		 * shape files instead of grids
 		 */
-		connectDatabase();
-		indexCatagories();
+		//connectDatabase();
+		//indexCatagories();
 		intersectCatagories();
-		disconnectDatabase();
+		//disconnectDatabase();
 	}
 
 	/**
@@ -91,52 +89,64 @@ public class SamplingIndex implements AnalysisIndexService {
 	 * joins sorted points to GridFiles
 	 */
 	void intersectGrid(){
-		double [][] points = null;
+		double [][] points = OccurancesIndex.getPointsPairsGEO();
+		int [] points_idx = OccurancesIndex.getPointsPairsGEOidx();
+	
 		int i;
-		System.out.println("about to read points");
-		try{
-			RandomAccessFile raf = new RandomAccessFile(
-					TabulationSettings.index_path
-					+ OccurancesIndex.POINTS_FILENAME,"r");				//using RAF for readDouble()
-
-			String s;
-			points = new double[((int)raf.length())/4/2][2];		//divide by 4bytes first
-			i = 0;
-			while(raf.getFilePointer() < raf.length()) {
-				points[i][0] = raf.readDouble();					//longitude
-				points[i][1] = raf.readDouble();					//latitude
-				i++;
-			}
-			raf.close();
-System.out.println("read points for grid intersect");
-		}catch(Exception e){
-			(new SpatialLogger()).log("intersectGrid, loading",e.toString());
-		}
-
+		
 		/* for each grid file intersect and export in points order */
 		Layer layer;
 		if(points != null){
+			System.out.println("number of grid files: " + TabulationSettings.environmental_data_files.length);
 			for(i=0;i<TabulationSettings.environmental_data_files.length;i++){
 				layer = TabulationSettings.environmental_data_files[i];
 				try{
-					System.out.println("intersecting with gridfile: " + layer.name);
+					(new SpatialLogger()).log("intersecting with gridfile:",layer.name);
+				
 					Grid grid = new Grid(
 							TabulationSettings.environmental_data_path
 							+ layer.name);
 
 					double [] values = grid.getValues(points);
+					int c1 = 0;
+					int c2 = 0;
+					int c3 = 0;
+					int c4 = 0;
+					for(int k=0;k<values.length;k++){
+						if(points[k][0] < 112 || points[k][0] > 154 ||
+								points[k][1] > -9 || points[k][1] < -44){
+							c1++;
+							if(Double.isNaN(values[k])){
+								c3++;
+							}
+						}else{
+							c2++;
+							if(Double.isNaN(values[k])){
+								c4++;
+							}
+						}
+					}
+					System.out.println("c's out:" + c1 + " - " + c3 + " in:" + c2 + " - " + c4);
 
 					/* export values - RAF for writeDouble() */
 					RandomAccessFile raf = new RandomAccessFile(
 							TabulationSettings.index_path
 							+ "SAM_D_" + layer.name + ".dat","rw");
 
-					for(int j=0;j<values.length;j++){
-						raf.writeFloat((float)values[j]);
+					float [] values_sorted = new float[values.length];
+					for(int k=0;k<values.length;k++){
+						values_sorted[points_idx[k]] = (float)values[k];
+					}
+									
+					for(int j=0;j<values_sorted.length;j++){
+			//			raf.writeFloat((float)values[points_idx[j]]);
+						raf.writeFloat((float)values_sorted[j]);
 					}
 					raf.close();
+					System.out.println("written:" + values_sorted.length);
 				}catch(Exception e){
 					(new SpatialLogger()).log("intersectGrid writing",e.toString());
+					e.printStackTrace();
 				}
 			}
 		}
@@ -150,45 +160,45 @@ System.out.println("read points for grid intersect");
 	 * list of catagory strings
 	 *
 	 */
-	void indexCatagories(){
-		String tablename;
-		String fieldname;
-
-		/*
-		 * TODO: fix assumption that only catagorical fields are specified
-		 * in the tables
-		 */
-		for(Layer l : TabulationSettings.geo_tables){
-
-			try {
-				tablename = l.name;
-
-				/*
-				 * TODO: operate on more than one field and remove assumption
-				 * that there is one
-				 */
-				fieldname = l.fields[0].name;
-
-				String query = "select " + fieldname + " from " + tablename + " group by " + fieldname;
-
-				Statement s = connection.createStatement();
-
-				ResultSet r = s.executeQuery(query);
-
-				FileWriter fw = new FileWriter(
-						TabulationSettings.index_path
-						+ CATAGORY_LIST_PREFIX + tablename + "_" + fieldname
-						+ CATAGORY_LIST_POSTFIX);
-
-				while(r.next()){
-					fw.append(r.getString(1) + "\n");
-				}
-				fw.close();
-			}catch(Exception e){
-				(new SpatialLogger()).log("indexCatagories",e.toString());
-			}
-		}
-	}
+//	void indexCatagories(){
+//		String tablename;
+//		String fieldname;
+//
+//		/*
+//		 * TODO: fix assumption that only catagorical fields are specified
+//		 * in the tables
+//		 */
+//		for(Layer l : TabulationSettings.geo_tables){
+//
+//			try {
+//				tablename = l.name;
+//
+//				/*
+//				 * TODO: operate on more than one field and remove assumption
+//				 * that there is one
+//				 */
+//				fieldname = l.fields[0].name;
+//
+//				String query = "select " + fieldname + " from " + tablename + " group by " + fieldname;
+//
+//				Statement s = connection.createStatement();
+//
+//				ResultSet r = s.executeQuery(query);
+//
+//				FileWriter fw = new FileWriter(
+//						TabulationSettings.index_path
+//						+ CATAGORY_LIST_PREFIX + tablename + "_" + fieldname
+//						+ CATAGORY_LIST_POSTFIX);
+//
+//				while(r.next()){
+//					fw.append(r.getString(1) + "\n");
+//				}
+//				fw.close();
+//			}catch(Exception e){
+//				(new SpatialLogger()).log("indexCatagories",e.toString());
+//			}
+//		}
+//	}
 
 	/**
 	 * join number for each catagory name with all points
@@ -201,26 +211,9 @@ System.out.println("read points for grid intersect");
 
 		(new SpatialLogger()).log("intersectCatagories, loading points");
 		/* load points in correct order */
-		double [][] points = null;
+		double [][] points = OccurancesIndex.getPointsPairs();
 		int i = 0;
-		try{
-			RandomAccessFile raf = new RandomAccessFile(
-					TabulationSettings.index_path
-					+ OccurancesIndex.POINTS_FILENAME,"r");				//using RAF for readDouble()
-
-			String s;
-			points = new double[((int)raf.length())/4/2][2];		//divide by 4bytes first
-			i = 0;
-			while(raf.getFilePointer() < raf.length()) {
-				points[i][0] = raf.readDouble();					//longitude
-				points[i][1] = raf.readDouble();					//latitude
-				i++;
-			}
-			raf.close();
-
-		}catch(Exception e){
-			(new SpatialLogger()).log("intersectCatagories, loading",e.toString());
-		}
+		
 		(new SpatialLogger()).log("intersectCatagories, points> " + points.length);
 
 		/*
@@ -237,29 +230,37 @@ System.out.println("read points for grid intersect");
 			i = 0;
 			try {
 				tablename = l.name;
-
-				/*
+				
+				SimpleShapeFile ssf = new SimpleShapeFile(
+							TabulationSettings.environmental_data_path
+							+ l.name);
+				
+				/* export catagories				
 				 * TODO: operate on more than one field and remove assumption
 				 * that there is one
 				 */
 				fieldname = l.fields[0].name;
-
-				/* load catagory text to index number */
-				BufferedReader br = new BufferedReader(new FileReader(
-						TabulationSettings.index_path
-						+ CATAGORY_LIST_PREFIX + tablename + "_" + fieldname
-						+ CATAGORY_LIST_POSTFIX));
-
-				HashMap<String,Integer> index = new HashMap<String,Integer>();
-				String str;
-				i = 0;
-				while((str = br.readLine()) != null) {
-					index.put(str,new Integer(i));
-					i = i + 1;
+				String filename_catagories = TabulationSettings.index_path
+						+ CATAGORY_LIST_PREFIX + l.name + "_" + fieldname
+						+ CATAGORY_LIST_POSTFIX;
+				
+				FileWriter fw = new FileWriter(filename_catagories);
+				int column_idx = ssf.getColumnIdx(fieldname);
+				
+				System.out.println("field [" + fieldname + "] in column " + column_idx);
+				
+				/* TODO: error if column not found */
+				if(column_idx < 0){
+					column_idx = 0;
 				}
-				br.close();
-
-				(new SpatialLogger()).log("intersectCatagories, about to do queries");
+				
+				String [] catagories = ssf.getColumnLookup(column_idx);
+				for(i=0;i<catagories.length;i++){
+					fw.append(catagories[i]);
+					fw.append("\n");
+				}
+				fw.close();
+				
 				/* export file */
 				RandomAccessFile raf = new RandomAccessFile(
 						TabulationSettings.index_path
@@ -272,31 +273,11 @@ System.out.println("read points for grid intersect");
 
 				//repeat for each point
 				(new SpatialLogger()).log("intersectCatagories, begin queries");
-				for(i=0;i<points.length;i++){
-					longitude = String.valueOf(points[i][0]);
-					latitude = String.valueOf(points[i][1]);
-
-					if(longitude.equals("NaN") || latitude.equals("NaN")){
-						raf.writeShort((short)(-1));
-					}else{
-						query = "select " + fieldname + " from " + tablename
-							+ " where ST_WITHIN(ST_MAKEPOINT("
-							+ longitude + "," + latitude + "),the_geom)";
-
-						s = connection.createStatement();
-
-						r = s.executeQuery(query);
-
-						/**
-						 * TODO: handle duplicate intersects (also border cases)
-						 */
-						if(r.next()){
-							value = index.get(r.getString(1)).intValue();
-							raf.writeShort((short)value);
-						}else{
-							raf.writeShort((short)(-1));
-						}
-					}
+				
+				int [] values = ssf.intersect(points, catagories, column_idx);
+				
+				for(i=0;i<values.length;i++){
+					raf.writeShort((short)values[i]);
 				}
 				raf.close();
 			}catch(Exception e){
@@ -308,42 +289,42 @@ System.out.println("read points for grid intersect");
 	}
 
 
-	/**
-	 * postgres db connection load
-	 * @return
-	 */
-	private boolean connectDatabase(){
-		try {
-			System.out.println(
-					TabulationSettings.db_connection_string + " > " +
-					TabulationSettings.db_username+ " > " +
-					TabulationSettings.db_password);
-
-
-			Class.forName("org.postgresql.Driver");
-
-			connection = DriverManager.getConnection(
-					TabulationSettings.db_connection_string,
-					TabulationSettings.db_username,
-					TabulationSettings.db_password);
-
-		} catch (Exception e) {
-			(new SpatialLogger()).log("connectDatabase",e.toString());
-			return false;
-		}
-		return connection != null;
-	}
-
-	/**
-	 * postgres db connection disconnect
-	 */
-	private void disconnectDatabase(){
-		try {
-			connection.close();
-		} catch (Exception e) {
-			(new SpatialLogger()).log("disconnectDatabase",e.toString());
-		}
-	}
+//	/**
+//	 * postgres db connection load
+//	 * @return
+//	 */
+//	private boolean connectDatabase(){
+//		try {
+//			System.out.println(
+//					TabulationSettings.db_connection_string + " > " +
+//					TabulationSettings.db_username+ " > " +
+//					TabulationSettings.db_password);
+//
+//
+//			Class.forName("org.postgresql.Driver");
+//
+//			connection = DriverManager.getConnection(
+//					TabulationSettings.db_connection_string,
+//					TabulationSettings.db_username,
+//					TabulationSettings.db_password);
+//
+//		} catch (Exception e) {
+//			(new SpatialLogger()).log("connectDatabase",e.toString());
+//			return false;
+//		}
+//		return connection != null;
+//	}
+//
+//	/**
+//	 * postgres db connection disconnect
+//	 */
+//	private void disconnectDatabase(){
+//		try {
+//			connection.close();
+//		} catch (Exception e) {
+//			(new SpatialLogger()).log("disconnectDatabase",e.toString());
+//		}
+//	}
 
 	/**
 	 * TODO: read properly - needs a change to the write functions as well
@@ -388,6 +369,104 @@ System.out.println("read points for grid intersect");
 				short v;
 				for(i=record_start;i<=record_end;i++){
 					v = raf.readShort();
+					if(v >= 0){
+						output.add(String.valueOf(v));
+					}else{
+						output.add("");
+					}
+				}
+				raf.close();
+			}
+
+			if(output.size() > 0){
+				String str [] = new String [output.size ()];
+				output.toArray (str);
+				return str;
+			}
+		}catch(Exception e){
+			(new SpatialLogger()).log("getRecords",e.toString());
+		}
+		/*
+		 * TODO: make safe
+		 */
+		return null;
+	}
+	
+	public int [] getRecordsByRegion(SimpleRegion region){
+		int [] records = null;
+		int i;
+		System.out.println("about to read points");
+		try{
+			double [][] points = OccurancesIndex.getPointsPairs();
+			
+			String s;
+			records = new int[points.length];		//divide by 4bytes first
+			i = 0;
+			int p = 0;
+			int j;
+			for(j=0;j<points.length;j++){				
+				if(region.isWithin(points[j][0], points[j][1])){
+					records[i] = p;
+					i++;
+				}
+				p++;
+			}			
+			
+			System.out.println("got " + i + " samples in the region");
+			
+			System.out.println("read points for grid intersect");
+			
+			return java.util.Arrays.copyOfRange(records,0,i);			
+
+		}catch(Exception e){
+			(new SpatialLogger()).log("getrecordsbyregion, loading points",e.toString());
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * TODO: read properly - needs a change to the write functions as well
+	 *
+	 * @param layer
+	 * @param record_start
+	 * @param record_end
+	 * @return
+	 */
+	public static String[] getRecords(String layer_name, int [] records){
+		/*
+		 * gridded data is 4byte float
+		 * catagorical data is 4byte int
+		 */
+		try{
+			//byte [] data = new byte[(record_end-record_start+1)*4];
+			int i;
+			String filenameD = TabulationSettings.index_path
+				+ "SAM_D_" + layer_name + ".dat";
+			String filenameI = TabulationSettings.index_path
+				+ CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
+
+			ArrayList<String> output = new ArrayList<String>(records.length);
+
+			if((new File(filenameD)).exists()){
+				RandomAccessFile raf = new RandomAccessFile(filenameD,"r");
+				for(int k=0;k<records.length;k++){
+					raf.seek(records[k]*4);
+					float f;
+					
+					f = raf.readFloat();
+					if(Float.isNaN(f)){
+						output.add("");
+					}else{
+						output.add(String.valueOf(f));
+					}					
+					raf.close();
+				}
+			}else if((new File(filenameI)).exists()){
+				RandomAccessFile raf = new RandomAccessFile(filenameI,"r");
+				for(int k=0;k<records.length;k++){
+					raf.seek(records[k]);
+					short v = raf.readShort();
 					if(v >= 0){
 						output.add(String.valueOf(v));
 					}else{

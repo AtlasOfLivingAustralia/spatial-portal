@@ -1,8 +1,13 @@
 package org.ala.spatial.analysis.tabulation;
 
+import java.io.Serializable;
+
 import org.ala.spatial.util.*;
 
-public class SPLFilter {
+public class SPLFilter extends Object implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	public SPLFilter(){}
 	
 	public SPLFilter(Layer _layer, 

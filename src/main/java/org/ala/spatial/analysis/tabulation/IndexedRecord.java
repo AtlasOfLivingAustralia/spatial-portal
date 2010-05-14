@@ -19,5 +19,5 @@ public class IndexedRecord implements Serializable{
 	public int file_end;
 	public int record_start;
 	public int record_end;
-	public byte type;
+	public byte type;	
 }

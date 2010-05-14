@@ -155,7 +155,7 @@ public class Indexing{
 						+ f.minimum_value + ","
 						+ f.maximum_value);
 			}
-			String output = SpeciesListIndex.listSpecies(filters);
+			String output = SpeciesListIndex.listSpeciesGeo(filters);
 			System.out.println(">" + output);				
 						
 		}else if(args.length > 1 && args[0].equals("layer_extents")){

@@ -81,8 +81,9 @@
         <script type="text/javascript">
             //var methodList = new Array("mfilter", "msample", "mmaxent");
 
-            var mfilterUrl = "http://ec2-184-73-34-104.compute-1.amazonaws.com:8080/alaspatial2/speciesList.zul";
-            var msampleUrl = "http://ec2-184-73-34-104.compute-1.amazonaws.com:8080/alaspatial2/sampling.zul";
+            var mfilterUrl = "speciesList";
+            var msampleUrl = "sampling";
+            var malocUrl = "ALOC";
             var mmaxentUrl = "maxent2";
 
             function menuClick(method) {
@@ -90,6 +91,7 @@
 
                 if (method == 'mfilter') murl = mfilterUrl;
                 else if (method == 'msample') murl = msampleUrl;
+                else if (method == 'maloc') murl = malocURL
                 else if (method == 'mmaxent') murl = mmaxentUrl;
                 else alert("Please select a method from the list");
 
@@ -109,6 +111,7 @@
                 <li><a id="mfilter" href="#" onclick="menuClick(this.id);return false;">Filtering</a></li>
                 <li><a id="msample" href="#" onclick="menuClick(this.id);return false;">Sampling</a></li>
                 <li><a id="mmaxent" href="#" onclick="menuClick(this.id);return false;">Maxent</a></li>
+                <li><a id="maloc" href="#" onclick="menuClick(this.id);return false;">ALOC</a></li>
             </ul>
         </div>
 

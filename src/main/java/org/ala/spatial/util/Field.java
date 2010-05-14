@@ -7,7 +7,7 @@ import java.io.Serializable;
  * 
  * @author Adam Collins
  */
-public class Field { //  implements Serializable
+public class Field extends Object implements Serializable {
 
     private static final long serialVersionUID = 6830737456209385909L;
     /**

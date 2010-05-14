@@ -112,6 +112,11 @@ public class TabulationSettings { //  implements Serializable
 	public static String index_path;
     private static final long serialVersionUID = -2806584316583831954L;
 
+    /**
+     * alaspatial url for services call
+     */
+    public static String alaspatial_path;
+    
 	/**
 	 * loads settings form name of the appropriate xml resource file
 	 *
@@ -257,6 +262,8 @@ public class TabulationSettings { //  implements Serializable
 		}
 		index_path = xr.getValue("index_path");
 		System.out.println(index_path);
+		
+		alaspatial_path = xr.getValue("alaspatial_url");
 	}
 
 
