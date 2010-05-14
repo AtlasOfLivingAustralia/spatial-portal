@@ -275,20 +275,39 @@ function buildMapReal() {
 }
 
 function addPolygonDrawingTool() {
-    ////adding polygon control and layer
-	
- //   alert("***adding polygon Control***");
+    ////adding polygon control and layer	
     var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAdded});     map.addControl(polyControl);
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAdded});     
+    map.addControl(polyControl);
     polyControl.activate();	
     //////
 }
 
+// This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
-	//alert("vertics: " + feature.geometry);
-	// zkau.send({uuid: comp.id, cmd: "onNotifyServer", data: feature.geometry},10); 
+	parent.setPolygonGeometry(feature.geometry);
+     }
 
-}
+
+
+/*function test(sssval) {
+       var tbxsss = $e("${sss.uuid}");
+       tbxsss.value = sssval;
+ 
+       if (document.createEvent) {
+         var evt = document.createEvent('HTMLEvents');
+         evt.initEvent( 'blur', false, false);
+         tbxsss.dispatchEvent(evt);
+   
+         var evt2 = document.createEvent('HTMLEvents');
+         evt2.initEvent( 'change', false, false);
+         tbxsss.dispatchEvent(evt2);
+       } else if (document.createEventObject) {
+         tbxsss.fireEvent('onblur');
+         tbxsss.fireEvent('onchange');
+       }
+     }*/
+
 
 function addJsonFeatureToMap(feature) {
 	//alert(feature);

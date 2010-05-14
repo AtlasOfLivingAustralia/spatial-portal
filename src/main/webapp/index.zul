@@ -79,6 +79,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <doublebox id="northReal" visible="false" />
         <doublebox id="westReal" visible="false" />
         <doublebox id="eastReal" visible="false" />
+
+	<!-- textboxes to hold polygon geometry 
+	the value is set by setPolygonGeometry, which notifies the server by generating an onChange
+		 -->
+	<textbox id="polyGeom" onChange="alert(self.getValue());" visible="false"/>
+
         <script type="text/JavaScript">
             function roundNumber(num, dec) {
             var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
@@ -106,6 +112,26 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             return extent;
             }
+
+	    function setPolygonGeometry(geometry) {
+		var tbxPolyGeom = $e('${polyGeom.uuid}');
+		tbxPolyGeom.value = geometry;
+
+		if (document.createEvent) {
+         	   var evt = document.createEvent('HTMLEvents');
+         	   evt.initEvent( 'blur', false, false);
+         	   tbxPolyGeom.dispatchEvent(evt);
+   
+         	   var evt2 = document.createEvent('HTMLEvents');
+         	   evt2.initEvent( 'change', false, false);
+ 	           tbxPolyGeom.dispatchEvent(evt2);
+       		} 
+		else if (document.createEventObject) {
+         	   tbxPolyGeom.fireEvent('onblur');
+ 	           tbxPolyGeom.fireEvent('onchange');
+       		}
+	    }
+	    
         </script>
 
 
