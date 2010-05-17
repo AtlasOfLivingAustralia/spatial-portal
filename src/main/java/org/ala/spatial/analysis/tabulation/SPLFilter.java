@@ -8,7 +8,42 @@ public class SPLFilter extends Object implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
+	public int count = 0;
+	
+	public Layer layer;
+	public String layername = "";
+	
+	public int [] catagories = null;		//use to maintain Set validity
+	public String [] catagory_names = null;
+	
+	public double minimum_value = 0;
+	
+	public double maximum_value = 0;
+	
+	public double minimum_initial = 0;
+	public double maximum_initial = 0;	
+	
 	public SPLFilter(){}
+	
+	public SPLFilter(SPLFilter copy){		
+		count = copy.count;
+		layer = copy.layer;
+		layername = copy.layername;
+		if(catagories == null){
+			catagories = null;
+		}else{
+			catagories = copy.catagories.clone();
+		}
+		if(catagory_names == null){
+			catagory_names = null;
+		}else{
+			catagory_names = copy.catagory_names.clone();
+		}
+		minimum_value = copy.minimum_value;
+		maximum_value = copy.maximum_value;
+		minimum_initial = copy.minimum_initial;
+		maximum_initial = copy.maximum_initial;
+	}
 	
 	public SPLFilter(Layer _layer, 
 			int[] _catagories, String [] _catagory_names,
@@ -26,15 +61,7 @@ public class SPLFilter extends Object implements Serializable {
 		maximum_initial = _maximum;	
 	}
 	
-	public int count = 0;
 	
-	public Layer layer;
-	public String layername = "";
-	
-	public int [] catagories = null;		//use to maintain Set validity
-	public String [] catagory_names = null;
-	
-	public double minimum_value = 0;
 	public Layer getLayer() {
 		return layer;
 	}
@@ -67,10 +94,7 @@ public class SPLFilter extends Object implements Serializable {
 		return maximum_initial;
 	}
 
-	public double maximum_value = 0;
-	
-	public double minimum_initial = 0;
-	public double maximum_initial = 0;	
+
 	
 	/* only works if created with constructor and 'catagories' Set validity is maintained */
 	public boolean isChanged(){

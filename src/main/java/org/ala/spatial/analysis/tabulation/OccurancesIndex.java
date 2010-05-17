@@ -50,6 +50,9 @@ public class OccurancesIndex implements AnalysisIndexService {
     static final String POINTS_FILENAME = "OCC_POINTS.dat";
     static final String POINTS_FILENAME_GEO = "OCC_POINTS_GEO.dat";
     static final String POINTS_FILENAME_GEO_IDX = "OCC_POINTS_GEO_IDX.dat";
+    static final String POINTS_FILENAME_05GRID = "OCC_POINTS_05GRID.dat";
+    static final String POINTS_FILENAME_05GRID_IDX = "OCC_POINTS_05GRID_IDX.dat";    
+    static final String POINTS_FILENAME_05GRID_KEY = "OCC_POINTS_05GRID_KEY.dat";
     static final String SPECIES_IDX_FILENAME = "OCC_IDX_SPECIES.dat";
     static final String OTHER_IDX_PREFIX = "OCC_IDX_";
     static final String OTHER_IDX_POSTFIX = ".dat";
@@ -59,6 +62,8 @@ public class OccurancesIndex implements AnalysisIndexService {
      */
     static ArrayList<IndexedRecord[]> all_indexes = new ArrayList<IndexedRecord[]>();
     static IndexedRecord[] single_index = null;
+    
+    static double[][] all_points = null;
     /**
      * object to perform sorting on occurances_csv
      */
@@ -92,9 +97,27 @@ public class OccurancesIndex implements AnalysisIndexService {
         loadOccurances();
         exportSortedPoints();
         exportSortedGEOPoints();
+        exportSortedGridPoints();
 
         /* this can be done in isolation */
         exportFieldIndexes();
+    	
+    	/*getPointsPairsGridKey();
+    	getPointsPairsGrid();
+    	getPointsPairsGrididx();
+    	getPointsPairs();
+    	double [] points = getPoints(0,100);
+    	
+    	for(int i=0;i<10;i++){
+    		System.out.println("(" + i + ") " + grid_points[grid_points_idx_rev[i]][0] 
++ "," + grid_points[grid_points_idx_rev[i]][1] 
++ " : " + grid_points_idx_rev[i] 
++ " > " + grid_points[grid_points_idx[i]][0] + "," + grid_points[grid_points_idx[i]][1] + " : " + grid_points_idx[i]
++ " > " + all_points[i][0] + "," + all_points[i][1] + " : " + i);
+    		System.out.println("\t" + points[i*2] + "," + points[i*2+1]);
+    		System.out.println("\t" + grid_points[i][0] + "," + grid_points[i][1]);
+    		
+    	}*/
     }
 
     /**
@@ -918,7 +941,10 @@ public class OccurancesIndex implements AnalysisIndexService {
     	return d;
     }
     
-    public static double [][] getPointsPairs(){    	
+    public static double [][] getPointsPairs(){   
+    	if(all_points != null){
+    		return all_points;
+    	}
     	double [][] d = null;
     	try{    		
     		/* points */ 
@@ -945,6 +971,8 @@ public class OccurancesIndex implements AnalysisIndexService {
     	}catch(Exception e){
     		e.printStackTrace();
     	}
+    	
+    	all_points = d;
 			
     	return d;
     }   
@@ -1062,7 +1090,297 @@ public class OccurancesIndex implements AnalysisIndexService {
     	}
 			
     	return d;
+    }
+    
+    static int [] grid_points_idx = null;
+    static int [] grid_points_idx_rev = null;
+    static double [][] grid_points = null;
+    static int [][] grid_key = null;
+    
+    void exportSortedGridPoints(){
+    	double [][] points = getPointsPairs();
+    	Point [] pa = new Point[points.length];
+    	int i;
+    	for(i=0;i<points.length;i++){
+    		pa[i] = new Point(points[i][0],points[i][1],i);
+    	}
+    	
+    	java.util.Arrays.sort(pa,
+                new Comparator<Point>() {
+                    public int compare(Point r1, Point r2) {
+                    	double result = Math.floor(2*r1.latitude) - Math.floor(2*r2.latitude);
+                    	if(result == 0){
+                    		result = r1.longitude - r2.longitude;
+                    	}                    	
+                        return (int)result;
+                    }
+                });
+    	
+    	//export points in this new order
+    	try{
+	        RandomAccessFile raf = new RandomAccessFile(
+	                TabulationSettings.index_path + POINTS_FILENAME_05GRID,
+	                "rw");
+	        byte [] b = new byte[pa.length*8*2];
+	        ByteBuffer bb = ByteBuffer.wrap(b);            
+	        for(Point p : pa){
+	        	bb.putDouble(p.longitude);
+	        	bb.putDouble(p.latitude);
+	        }
+	        raf.write(b);            
+	        raf.close();
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    	
+    	//export lookup for idx/record reference
+    	try{
+	        RandomAccessFile raf = new RandomAccessFile(
+	                TabulationSettings.index_path + POINTS_FILENAME_05GRID_IDX,
+	                "rw");
+	        byte [] b = new byte[pa.length*4];
+	        ByteBuffer bb = ByteBuffer.wrap(b);  
+	        
+	        /* reverse */
+	        int [] idx_reverse = new int[pa.length];
+	        for(i=0;i<pa.length;i++){
+	        	idx_reverse[pa[i].idx] = i;
+	        }	        
+	        for(i=0;i<idx_reverse.length;i++){
+	        	bb.putInt(idx_reverse[i]);
+	        }	       
+	        raf.write(b);  
+	        
+	        /* forward */
+	        b = new byte[pa.length*4];
+	        bb = ByteBuffer.wrap(b); 	        
+	        for(i=0;i<pa.length;i++){
+	        	bb.putInt(pa[i].idx);
+	        }
+	        raf.write(b);  
+	        
+	        raf.close();
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}   	
+    	
+    	//export lookup for idx/record reference
+    	try{
+	        RandomAccessFile raf = new RandomAccessFile(
+	                TabulationSettings.index_path + POINTS_FILENAME_05GRID_KEY,
+	                "rw");
+	        byte [] b = new byte[(360*2*360*2)*4];
+	        ByteBuffer bb = ByteBuffer.wrap(b); 
+
+	        /* fill grid cells positions/key */
+	        int p = 0;
+	        int lastp = 0;
+	        int [][] list = new int[720][720];
+	        int j;
+	        for(i=0;i<720;i++){
+	        	for(j=0;j<720;j++){
+	        		list[i][j] = -1;
+	        	}
+	        }
+	        for(i=0;i<pa.length;i++){
+	        	int x = (int)Math.floor(((360+pa[p].longitude)*2)%360);
+	        	int y = (int)Math.floor(((pa[p].latitude+180+360)*2)%360);
+	        	if(list[y][x] == -1 
+	        			|| list[y][x] > i){
+	        		list[y][x] = i;
+	        	}
+	        }
+	        /* populate blanks, test */	   
+	        int last_cell = pa.length;
+	        for(i=720-1;i>=0;i--){
+	        	for(j=720-1;j>=0;j--){
+	        		if(list[i][j] == -1){
+	        			list[i][j] = last_cell;
+	        		}else if(last_cell < list[i][j]){
+	        			System.out.println("error found:" + i + "," + j);
+	        		}
+	        		last_cell = list[i][j];
+	        	}
+	        }
+	        
+	        /* write */
+	        for(i=0;i<720;i++){
+	        	for(j=0;j<720;j++){
+	        		bb.putInt(list[i][j]);
+	        	}
+	        }
+	       
+	        raf.write(b);            
+	        raf.close();
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}   	
+    }
+    
+    public static double [][] getPointsPairsGrid(){   
+    	if(grid_points != null){
+    		return grid_points;
+    	}
+    	double [][] d = null;
+    	try{    		
+    		/* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME_05GRID,
+                    "r");
+            int number_of_points = ((int)points.length())/8;
+            int number_of_records = number_of_points/2;
+
+            byte [] b = new byte[number_of_points*8];
+            
+            points.read(b);
+            
+            ByteBuffer bb = ByteBuffer.wrap(b); 
+            
+            int i;
+            d = new double[number_of_records][2];
+            for(i = 0;i<number_of_records;i++){
+				d[i][0] = bb.getDouble();
+				d[i][1] = bb.getDouble();
+			}        
+            points.close();
+            
+            System.out.println("read points geo: " + number_of_records);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+			
+    	grid_points = d;
+    	return d;
     } 
+    
+    public static int [] getPointsPairsGrididxRev(){
+    	getPointsPairsGrididx();
+    	return grid_points_idx_rev;
+    }
+    public static int [] getPointsPairsGrididx(){    
+    	if(grid_points_idx != null){
+    		return grid_points_idx;
+    	}
+    	int [] d1 = null;
+    	int [] d2 = null;
+    	try{    		
+    		/* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME_05GRID_IDX,
+                    "r");
+            int number_of_points = ((int)points.length())/4;
+            int number_of_records = number_of_points;
+
+            byte [] b = new byte[number_of_points*4];            
+            points.read(b);            
+            ByteBuffer bb = ByteBuffer.wrap(b);      
+            int i;
+            d1 = new int[number_of_records];
+            for(i = 0;i<number_of_records;i++){
+				d1[i] = bb.getInt();
+			}    
+            
+            points.read(b);            
+            bb = ByteBuffer.wrap(b);      
+            d2 = new int[number_of_records];
+            for(i = 0;i<number_of_records;i++){
+				d2[i] = bb.getInt();
+			}    
+            points.close();
+            
+            System.out.println("read geo idx: " + number_of_records);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+			
+    	grid_points_idx_rev = d1;
+    	grid_points_idx = d2;
+    	return d2;
+    } 
+    
+    public static int [][] getPointsPairsGridKey(){    
+    	if(grid_key != null){
+    		return grid_key;
+    	}
+    	int [][] d = null;
+    	try{    		
+    		/* points */ 
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME_05GRID_KEY,
+                    "r");
+            int number_of_points = ((int)points.length())/4;
+            int number_of_records = number_of_points;
+
+            byte [] b = new byte[number_of_points*4];
+            
+            points.read(b);
+            
+            ByteBuffer bb = ByteBuffer.wrap(b);      
+            int i;
+            d = new int[720][720];
+            int j;
+            for(i=0;i<720;i++){
+            	for(j=0;j<720;j++){
+            		d[i][j] = bb.getInt();
+            	}
+			}        
+            points.close();
+            
+            System.out.println("read geo key: " + number_of_records);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+			
+    	grid_key = d;
+    	return d;
+    } 
+    
+    static public boolean inRegion(int record, SimpleRegion r){
+    	/* init */
+    	getPointsPairsGrid();
+    	getPointsPairsGrididx();
+    	
+    	int i = grid_points_idx_rev[record];
+      	
+    	return r.isWithin(grid_points[i][0], grid_points[i][1]);
+    }
+    
+    static public int[] getRecordsInside(SimpleRegion r){
+    	/* init */
+    	getPointsPairsGridKey();
+    	getPointsPairsGrid();
+    	getPointsPairsGrididx();
+    	
+    	int [][] cells = r.getOverlapGridCells(0, -180, 360, 180, 720, 720, null);
+    	int i,j;
+    	Vector<Integer> records = new Vector<Integer>();
+    	for(i=0;i<cells.length;i++){
+    		int start = grid_key[cells[i][1]][cells[i][0]];
+    		int end = start;
+    		if(cells[i][0] < 720-1){
+    			end = grid_key[cells[i][1]][cells[i][0]+1];
+    		}else if(cells[i][1] < 720-1){
+    			end = grid_key[cells[i][1]+1][0];
+    		}else{
+    			end = grid_points.length;    			
+    		}
+    		for(j=start;j<end;j++){
+    			if(r.isWithin(grid_points[j][0],grid_points[j][1])){
+    				records.add(new Integer(grid_points_idx[j]));
+    			}
+    		}
+    	}
+    	if(records.size() > 0){
+    		int [] data = new int[records.size()];
+    		Iterator<Integer> li = records.listIterator();
+    		i = 0;
+    		while(li.hasNext()){
+    			data[i++] = li.next();
+    		}
+    		return data;
+    	}
+    	return null;
+    }
 }
 
 class Point extends Object {

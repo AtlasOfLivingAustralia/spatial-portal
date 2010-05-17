@@ -19,8 +19,11 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.tabulation.FilteringImage;
+import org.ala.spatial.analysis.tabulation.FilteringImage2;
 import org.ala.spatial.analysis.tabulation.SPLFilter;
+import org.ala.spatial.analysis.tabulation.SamplingService;
 import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
+import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
@@ -41,7 +44,10 @@ public class FilteringWSController {
     private SpatialSettings ssets;
     private Map<String, Object> userMap;
     private FilteringImage filteringImage;
+    private FilteringImage2 filteringImage2;
     private List _layer_filters_selected;
+    
+    int [] colours = {0xFFFF99FF,0XFF99FFFF,0XFF9999FF,0XFF4444FF,0XFF44FFFF,0XFFFF44FF};
 
     @RequestMapping(value = "/init", method = RequestMethod.GET)
     public
@@ -60,10 +66,10 @@ public class FilteringWSController {
             workingDir.mkdirs();
 
             File file = File.createTempFile("spl", ".png", workingDir);
-            filteringImage = new FilteringImage(file.getPath());
-            filteringImage.writeImage();
+         //   filteringImage = new FilteringImage(file.getPath());
+         //   filteringImage.writeImage();
 
-            System.out.println("Created initial image at: " + file.getPath());
+         //  System.out.println("Created initial image at: " + file.getPath());
 
             _layer_filters_selected = new ArrayList();
 
@@ -85,7 +91,7 @@ public class FilteringWSController {
         return "";
     }
 
-    @RequestMapping(value = "/apply4/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply4/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}/depth/{depth}", method = RequestMethod.GET)
     public
     @ResponseBody
     String apply4(@PathVariable String pid,
@@ -93,6 +99,7 @@ public class FilteringWSController {
             @PathVariable String types,
             @PathVariable String val1s,
             @PathVariable String val2s,
+            @PathVariable String depth,
             HttpServletRequest req) {
         try {
             // Undecode them first
@@ -100,6 +107,13 @@ public class FilteringWSController {
             types = URLDecoder.decode(types, "UTF-8");
             val1s = URLDecoder.decode(val1s, "UTF-8");
             val2s = URLDecoder.decode(val2s, "UTF-8");
+            depth = URLDecoder.decode(depth, "UTF-8");
+            int layer_depth = 0;
+            try{
+            	layer_depth = Integer.parseInt(depth);
+            }catch(Exception e){
+            	e.printStackTrace();
+            }
 
             // grab and split the layers
             String[] aLayers = layers.split(":");
@@ -108,17 +122,15 @@ public class FilteringWSController {
             String[] aVal2s = val2s.split(":");
 
             // Now lets apply the filters, one at a time
-            // grab the existing imgpath to re-init the filteringimage obj
-            // filteringImage = new FilteringImage((String) userMap.get("imgpath"));
-
+          
             // apply the filters by iterating thru' the layers from client, make spl, should be one layer
             for (int i = 0; i < aLayers.length; i++) {
-                String cLayer = aLayers[i];
+                String cLayer = SamplingService.layerDisplayNameToName(aLayers[i]);
                 String cType = aTypes[i];
                 String cVal1 = aVal1s[i];
                 String cVal2 = aVal2s[i];
                 
-                System.out.println("Applying filter for " + cLayer + " with " + cVal1 + " - " + cVal2); 
+                System.out.println("Applying4 filter for " + cLayer + " with " + cVal1 + " - " + cVal2); 
                 
                 //get/make splfilter
                 SPLFilter splfilter = SpeciesListIndex.getLayerFilter(cLayer);
@@ -135,59 +147,49 @@ public class FilteringWSController {
 	    	                	splfilter.catagories[j] = Integer.parseInt(values_show[j]);
 	    	                }
 	                    }   
-	                }
-                }
-                
-                int layer_number = SpeciesListIndex.getLayerCount(pid);                
-                
-                //do image for this ONE layer
-                int colour = (int)((new java.util.Random(layer_number)).nextInt(255*255*255));
-                colour |= 0x88000000;	//some transparency
-                
-                filteringImage = new FilteringImage((String) userMap.get("imgpath"));
-                
-                System.out.println("colour: " + Integer.toHexString(colour) + " seed: " + layer_number);
-                
-                if(!cType.equalsIgnoreCase("none")){
-                	HttpSession session = req.getSession(true);
+	                }	                
+                }   
+                SpeciesListIndex.applyFilter(pid, splfilter);
+                 
+               if(!cType.equalsIgnoreCase("none")){            	   
+            	   
+                	HttpSession session = req.getSession(true);               	
                 	
 	                File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + pid + "/"));
 	                	
 	                File file = File.createTempFile("spl", ".png", workingDir);
-	                filteringImage = new FilteringImage(file.getPath(), colour);
+
+	                filteringImage2 = new FilteringImage2(file.getPath(), colours[layer_depth%colours.length]);
 	                
 	                if (cType.equalsIgnoreCase("environmental")) {	                	
-	                	filteringImage.applyFilter(cLayer, 0, 1);	//init
-	                    filteringImage.applyFilter(cLayer//, splfilter.getMinimum_value(), splfilter.getMaximum_value());
-	                    		,(splfilter.getMinimum_value() - splfilter.getMinimum_initial()) 
-	                    			/ (splfilter.getMaximum_initial() -splfilter.getMinimum_initial())
-	                    		,(splfilter.getMaximum_value() - splfilter.getMinimum_initial()) 
-	                    			/ (splfilter.getMaximum_initial() -splfilter.getMinimum_initial())	);
+	                	filteringImage2.applyFilter(cLayer, splfilter.getMinimum_value(), splfilter.getMaximum_value());
 	                } else {                	                	
-	                	filteringImage.applyFilterCtx(cLayer,-1,false);	//init                	
+	                	                	
 	                	int j;                	
 	                    if(cVal1.length() > 0){
 	    	                String [] values_show = cVal1.split(",");
+	    	                int [] show_list = new int[values_show.length];
 	    	                for(j=0;j<values_show.length;j++){
-	    	                	filteringImage.applyFilterCtx(cLayer, Integer.parseInt(values_show[j]), true);
+	    	                	show_list[j] = Integer.parseInt(values_show[j]);
 	    	                }
+	    	                filteringImage2.applyFilter(cLayer,show_list);	
 	                    }                	
 	                }
 	                
-	                filteringImage.writeImage();
+	                filteringImage2.writeImage();
 	                
 	                return file.getName();
                 }
             }
 
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            e.printStackTrace();
         }
 
         return "";
     }
     
-    @RequestMapping(value = "/apply3/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply3/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}/depth/{depth}", method = RequestMethod.GET)
     public
     @ResponseBody
     String apply3(@PathVariable String pid,
@@ -195,99 +197,93 @@ public class FilteringWSController {
             @PathVariable String types,
             @PathVariable String val1s,
             @PathVariable String val2s,
+            @PathVariable String depth,
             HttpServletRequest req) {
-        try {
+    	 try {
+             // Undecode them first
+             layers = URLDecoder.decode(layers, "UTF-8");
+             types = URLDecoder.decode(types, "UTF-8");
+             val1s = URLDecoder.decode(val1s, "UTF-8");
+             val2s = URLDecoder.decode(val2s, "UTF-8");
+             depth = URLDecoder.decode(depth, "UTF-8");
+             int layer_depth = 0;
+             try{
+             	layer_depth = Integer.parseInt(depth);
+             }catch(Exception e){
+             	e.printStackTrace();
+             }
 
-            // Undecode them first
-            layers = URLDecoder.decode(layers, "UTF-8");
-            types = URLDecoder.decode(types, "UTF-8");
-            val1s = URLDecoder.decode(val1s, "UTF-8");
-            val2s = URLDecoder.decode(val2s, "UTF-8");
+             // grab and split the layers
+             String[] aLayers = layers.split(":");
+             String[] aTypes = types.split(":");
+             String[] aVal1s = val1s.split(":");
+             String[] aVal2s = val2s.split(":");
 
-            // grab and split the layers
-            String[] aLayers = layers.split(":");
-            String[] aTypes = types.split(":");
-            String[] aVal1s = val1s.split(":");
-            String[] aVal2s = val2s.split(":");
+             // Now lets apply the filters, one at a time
+           
+             // apply the filters by iterating thru' the layers from client, make spl, should be one layer
+             for (int i = 0; i < aLayers.length; i++) {
+                 String cLayer = SamplingService.layerDisplayNameToName(aLayers[i]);
+                 String cType = aTypes[i];
+                 String cVal1 = aVal1s[i];
+                 String cVal2 = aVal2s[i];
+                 
+                 System.out.println("Applying3 filter for " + cLayer + " with " + cVal1 + " - " + cVal2); 
+                 
+                 //get/make splfilter
+                 SPLFilter splfilter = SpeciesListIndex.getLayerFilter(cLayer);
+                 if(splfilter != null){
+ 	                if(splfilter.layer.type.equalsIgnoreCase("environmental")){
+ 	                	splfilter.minimum_value = Double.parseDouble(cVal1);
+ 	                	splfilter.maximum_value = Double.parseDouble(cVal2);
+ 	                }else{
+ 	                	int j;
+ 	                    if(cVal1.length() > 0){
+ 	    	                String [] values_show = cVal1.split(",");
+ 	    	                splfilter.catagories = new int[values_show.length];
+ 	    	                for(j=0;j<values_show.length;j++){
+ 	    	                	splfilter.catagories[j] = Integer.parseInt(values_show[j]);
+ 	    	                }
+ 	                    }   
+ 	                }
+                 }                
+                  
+                if(!cType.equalsIgnoreCase("none")){            	   
+             	   
+                 	HttpSession session = req.getSession(true);               	
+                 	
+ 	                File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + pid + "/"));
+ 	                	
+ 	                File file = File.createTempFile("spl", ".png", workingDir);
 
-            // Now lets apply the filters, one at a time
-            // grab the existing imgpath to re-init the filteringimage obj
-            // filteringImage = new FilteringImage((String) userMap.get("imgpath"));
+ 	                filteringImage2 = new FilteringImage2(file.getPath(), colours[layer_depth%colours.length]);
+ 	                
+ 	                if (cType.equalsIgnoreCase("environmental")) {	                	
+ 	                	filteringImage2.applyFilter(cLayer, splfilter.getMinimum_value(), splfilter.getMaximum_value());
+ 	                } else {                	                	
+ 	                	                	
+ 	                	int j;                	
+ 	                    if(cVal1.length() > 0){
+ 	    	                String [] values_show = cVal1.split(",");
+ 	    	                int [] show_list = new int[values_show.length];
+ 	    	                for(j=0;j<values_show.length;j++){
+ 	    	                	show_list[j] = Integer.parseInt(values_show[j]);
+ 	    	                }
+ 	    	                filteringImage2.applyFilter(cLayer,show_list);	
+ 	                    }                	
+ 	                }
+ 	                
+ 	                filteringImage2.writeImage();
+ 	                
+ 	                return file.getName();
+                 }
+             }
 
-            // apply the filters by iterating thru' the layers from client, make spl, should be one layer
-            for (int i = 0; i < aLayers.length; i++) {
-                String cLayer = aLayers[i];
-                String cType = aTypes[i];
-                String cVal1 = aVal1s[i];
-                String cVal2 = aVal2s[i];
-                
-                System.out.println("Applying filter for " + cLayer + " with " + cVal1 + " - " + cVal2); 
-                
-                //get/make splfilter
-                SPLFilter splfilter = SpeciesListIndex.getLayerFilter(cLayer);
-                if(splfilter != null){
-	                if(splfilter.layer.type.equalsIgnoreCase("environmental")){
-	                	splfilter.minimum_value = Double.parseDouble(cVal1);
-	                	splfilter.maximum_value = Double.parseDouble(cVal2);
-	                }else{
-	                	int j;
-	                    if(cVal1.length() > 0){
-	    	                String [] values_show = cVal1.split(",");
-	    	                splfilter.catagories = new int[values_show.length];
-	    	                for(j=0;j<values_show.length;j++){
-	    	                	splfilter.catagories[j] = Integer.parseInt(values_show[j]);
-	    	                }
-	                    }   
-	                }
-                }
-                
-                int layer_number = SpeciesListIndex.applyFilter(pid, splfilter);               
-                
-                //do image for this ONE layer
-                int colour = (int)((new java.util.Random(layer_number)).nextInt(255*255*255));
-                colour |= 0xFF000000;
-                
-                filteringImage = new FilteringImage((String) userMap.get("imgpath"));
-                
-                System.out.println("colour: " + Integer.toHexString(colour) + " seed: " + layer_number);
-                
-                if(!cType.equalsIgnoreCase("none")){
-                	HttpSession session = req.getSession(true);
-                	
-	                File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + pid + "/"));
-	                	
-	                File file = File.createTempFile("spl", ".png", workingDir);
-	                filteringImage = new FilteringImage(file.getPath(), colour);
-	                
-	                if (cType.equalsIgnoreCase("environmental")) {	                	
-	                	filteringImage.applyFilter(cLayer, 0, 1);	//init
-	                    filteringImage.applyFilter(cLayer//, splfilter.getMinimum_value(), splfilter.getMaximum_value());
-	                    		,(splfilter.getMinimum_value() - splfilter.getMinimum_initial()) 
-	                    			/ (splfilter.getMaximum_initial() -splfilter.getMinimum_initial())
-	                    		,(splfilter.getMaximum_value() - splfilter.getMinimum_initial()) 
-	                    			/ (splfilter.getMaximum_initial() -splfilter.getMinimum_initial())	);
-	                } else {                	                	
-	                	filteringImage.applyFilterCtx(cLayer,-1,false);	//init                	
-	                	int j;                	
-	                    if(cVal1.length() > 0){
-	    	                String [] values_show = cVal1.split(",");
-	    	                for(j=0;j<values_show.length;j++){
-	    	                	filteringImage.applyFilterCtx(cLayer, Integer.parseInt(values_show[j]), true);
-	    	                }
-	                    }                	
-	                }
-	                
-	                filteringImage.writeImage();
-	                
-	                return file.getName();
-                }
-            }
+         } catch (Exception e) {
+             e.printStackTrace(System.out);
+         }
 
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
-        return "";
+         return "";
     }
     
     @RequestMapping(value = "/apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}", method = RequestMethod.GET)
@@ -423,30 +419,36 @@ public class FilteringWSController {
         return "";
     }
 
-    @RequestMapping(value = "/apply/pid/{pid}/species/count", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply/pid/{pid}/species/count/shape/{shape}", method = RequestMethod.GET)
     public
     @ResponseBody
-    String getSpeciesCount(@PathVariable String pid, HttpServletRequest req) {
+    String getSpeciesCount(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
         try {
+        	System.out.println("[[[]]] getcount: " + pid + " " + shape);
             String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");
             readUserBytes(sessionfile);
             
-            return String.valueOf(SpeciesListIndex.getSpeciesCount(pid));
+            SimpleRegion region = SimpleRegion.parseSimpleRegion(shape);
+            
+            return String.valueOf(SpeciesListIndex.getSpeciesCount(pid, region));
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
         return "";
     }
     
-    @RequestMapping(value = "/apply/pid/{pid}/species/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply/pid/{pid}/species/list/shape/{shape}", method = RequestMethod.GET)
     public
     @ResponseBody
-    String getSpeciesList(@PathVariable String pid, HttpServletRequest req) {
+    String getSpeciesList(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
         try {
+        	System.out.println("[[[]]] getlist: " + pid + " " + shape);
             String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");
             readUserBytes(sessionfile);
             
-            return SpeciesListIndex.getSpeciesList(pid);
+            SimpleRegion region = SimpleRegion.parseSimpleRegion(shape);
+            
+            return SpeciesListIndex.getSpeciesList(pid,region);
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.TreeSet;
+import java.util.Vector;
 import java.io.RandomAccessFile;
 import java.util.Calendar;
 import java.io.FileWriter;
@@ -120,6 +121,51 @@ public class SimpleShapeFile extends Object implements Serializable{
 			System.out.println("obj:" + v + " " + s + " none:" + countnone + " some:" + countsome);
 		}		
 		return mask;		
+	}
+	
+	public Tile [] getTileList(int column,double longitude1, double latitude1
+			, double longitude2, double latitude2, int width, int height){
+		int i,j,k,v;
+		
+		String [] lookup = getColumnLookup(column);		
+		
+		String s;
+		Vector<Tile> tiles = new Vector<Tile>();
+		byte [][] map;
+		int m;
+		
+		byte [][] mask = new byte[height][width];
+		
+		for(m=0;m<lookup.length;m++){			
+			for(i=0;i<regions.size();i++){	
+				if(dbf.getValue(i,column).equals(lookup[m])){
+					map = new byte[height][width];
+					regions.get(i).getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, map);
+					
+					/* merge on first in basis for partial or complete cells */					
+					for(j=0;j<map.length;j++){
+						for(k=0;k<map[j].length;k++){
+							if(map[j][k] > 0 ){ // should be only == 1 || map[j][k] == 2){						
+								mask[j][k] = 1;
+							}
+						}
+					}					
+				}
+			}	
+			
+			/* add to tiles */
+			for(i=0;i<height;i++){
+				for(j=0;j<width;j++){
+					if(mask[i][j] > 0){
+						mask[i][j] = 0;
+						tiles.add(new Tile((float)m,(height-1-i)*width + j));
+					}					
+				}
+			}
+		}
+		Tile [] tilesa = new Tile[tiles.size()];
+		tiles.toArray(tilesa);
+		return tilesa;		
 	}
 }
 
