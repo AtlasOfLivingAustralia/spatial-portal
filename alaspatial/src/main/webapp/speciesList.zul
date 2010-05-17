@@ -105,6 +105,11 @@ checkmark="true" rows="12" >
 </vbox>
 </popup>
 		
+<div xmlns:h="http://www.zkoss.org/2005/zk/native"
+	onUser='lb_points.value = org.zkoss.lang.Objects.toString(event.data)'>
+	<h:a/>
+	<label id="lb_points" visible="false" />
+</div>
 </window>
 </vbox>
 <panel title="Map"

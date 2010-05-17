@@ -133,6 +133,7 @@
 			        new OpenLayers.Size(width, height),
 			        options
 			    );	
+			imglayer.setOpacity(0.5);
 			map.addLayer(imglayer);
 	
 			// shuffle above editable layer

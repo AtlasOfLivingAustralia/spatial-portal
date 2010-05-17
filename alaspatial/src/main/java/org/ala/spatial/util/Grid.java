@@ -54,7 +54,7 @@ public class Grid { //  implements Serializable
 		  return -1;
 	  
 	  int col = (int)((x - xmin) / xres);
-	  int row = (int)((y - ymin) / yres);
+	  int row = this.nrows - 1 - (int)((y - ymin) / yres);
 	  
 	  //limit each to 0 and ncols-1/nrows-1
 	  if(col < 0) col = 0;

@@ -61,7 +61,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 	public Combobox cb;
 	public Listbox lb;
-
+	public Label lb_points;
 	public Popup popup_continous;
 	public Slider popup_slider_min;
 	public Slider popup_slider_max;
@@ -228,6 +228,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
         		});
 
                 Listcell count = new Listcell(String.valueOf(f.count));
+                count.setStyle("text-decoration: underline;");
                 count.setParent(li);
                 count.addEventListener("onClick",new EventListener(){
                 	public void onEvent(Event event) throws Exception {
@@ -389,6 +390,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			
 			
 		}
+		this.clientFilter();
 	}
 	
 	public void serviceRemoveTopFilter(){
@@ -396,12 +398,13 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		try{
 			///apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}
 			StringBuffer sbProcessUrl = new StringBuffer();
-	        sbProcessUrl.append(satServer + "ws/filtering/apply3");
+	        sbProcessUrl.append(satServer + "ws/filtering/apply4");
 	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
 	        sbProcessUrl.append("/layers/" + URLEncoder.encode("none", "UTF-8"));
 	        sbProcessUrl.append("/types/" + URLEncoder.encode("none", "UTF-8"));
 	        sbProcessUrl.append("/val1s/" + URLEncoder.encode("none", "UTF-8"));
 	        sbProcessUrl.append("/val2s/" + URLEncoder.encode("none", "UTF-8"));        
+	        sbProcessUrl.append("/depth/" + URLEncoder.encode("" + (_layer_filters_selected.size()) , "UTF-8"));
 	        
 	
 	        HttpClient client = new HttpClient();
@@ -420,17 +423,22 @@ public class SpeciesListZK2 extends GenericForwardComposer {
         Clients.evalJavaScript(client_request);
 	}
 	
-	public void serviceUpdateTopFilter(String layername, double min, double max){
+	public void serviceUpdateTopFilter(String layername, double min, double max,boolean commit_changes){
 		System.out.println("serviceUpdateTopFilter(): " + min + "," + max);
 		try{
 			///apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}
 			StringBuffer sbProcessUrl = new StringBuffer();
-	        sbProcessUrl.append(satServer + "ws/filtering/apply3");
+			if(commit_changes){
+				sbProcessUrl.append(satServer + "ws/filtering/apply4");
+			}else{
+				sbProcessUrl.append(satServer + "ws/filtering/apply3");
+			}
 	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
 	        sbProcessUrl.append("/layers/" + URLEncoder.encode(layername, "UTF-8"));
 	        sbProcessUrl.append("/types/" + URLEncoder.encode("environmental", "UTF-8"));
 	        sbProcessUrl.append("/val1s/" + URLEncoder.encode(String.valueOf(min), "UTF-8"));
-	        sbProcessUrl.append("/val2s/" + URLEncoder.encode(String.valueOf(max), "UTF-8"));        
+	        sbProcessUrl.append("/val2s/" + URLEncoder.encode(String.valueOf(max), "UTF-8"));   
+	        sbProcessUrl.append("/depth/" + URLEncoder.encode("" + (_layer_filters_selected.size()) , "UTF-8"));
 	        
 	        HttpClient client = new HttpClient();
 	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
@@ -457,7 +465,12 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			StringBuffer sbProcessUrl = new StringBuffer();
 	        sbProcessUrl.append(satServer + "ws/filtering/apply");
 	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
-	        sbProcessUrl.append("/species/count");        
+	        sbProcessUrl.append("/species/count"); 
+	        String point = lb_points.getValue();
+	        if(point.length() == 0){
+	        	point = "none";
+	        }
+	        sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
 	        
 	        HttpClient client = new HttpClient();
 	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
@@ -478,7 +491,12 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			StringBuffer sbProcessUrl = new StringBuffer();
 	        sbProcessUrl.append(satServer + "ws/filtering/apply");
 	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
-	        sbProcessUrl.append("/species/list");        
+	        sbProcessUrl.append("/species/list");   
+	        String point = lb_points.getValue();
+	        if(point.length() == 0){
+	        	point = "none";
+	        }
+	        sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
 	        
 	        HttpClient client = new HttpClient();
 	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
@@ -494,7 +512,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		return "";
 	}
 	
-	public void serviceUpdateTopFilter(String layername, int [] catagories_to_show){
+	public void serviceUpdateTopFilter(String layername, int [] catagories_to_show, boolean commit_changes){
 		System.out.println("serviceUpdateTopFilter");
 		try{
 			///apply2/pid/{pid}/layers/{layers}/types/{types}/val1s/{val1s}/val2s/{val2s}
@@ -508,12 +526,17 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			}
 			
 			StringBuffer sbProcessUrl = new StringBuffer();
-	        sbProcessUrl.append(satServer + "ws/filtering/apply3");
+			if(commit_changes){
+				sbProcessUrl.append(satServer + "ws/filtering/apply4");
+			}else{
+				sbProcessUrl.append(satServer + "ws/filtering/apply3");
+			}
 	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
 	        sbProcessUrl.append("/layers/" + URLEncoder.encode(layername, "UTF-8"));
 	        sbProcessUrl.append("/types/" + URLEncoder.encode("ctx", "UTF-8"));
 	        sbProcessUrl.append("/val1s/" + URLEncoder.encode(show.toString(), "UTF-8"));
-	        sbProcessUrl.append("/val2s/" + URLEncoder.encode("none", "UTF-8"));        
+	        sbProcessUrl.append("/val2s/" + URLEncoder.encode("none", "UTF-8"));  
+	        sbProcessUrl.append("/depth/" + URLEncoder.encode("" + (_layer_filters_selected.size()) , "UTF-8"));
 	        
 	        HttpClient client = new HttpClient();
 	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
@@ -526,7 +549,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	        String req1 = "removeImageLayer('filterlayer_" + getSelectedFilters().length + "');";			
 			String img = satServer + "output/filtering/" + service_pid + "/" + slist;			
 	        String client_request = "addImageLayer('" + img 
-	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-51,252,210);";// + req1;
+	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-44,252,210);";// + req1;
 	        System.out.println("evaljavascript: " + client_request);                      
 	        Clients.evalJavaScript(client_request);	
 	        
@@ -648,7 +671,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		//	System.out.println("clientFilter(" + idx + "," + mincurpos + "," + maxcurpos + ")");
 			//Clients.evalJavaScript("applyFilter(" + idx + "," + mincurpos + "," + maxcurpos + ");");
 			//filteringImage.applyFilter(Integer.valueOf(idx),mincurpos,maxcurpos);
-			serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.minimum_value, popup_filter.maximum_value);
+			serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.minimum_value, popup_filter.maximum_value,false);
 		//	System.out.println("done client applyFilter call for idx=" + i);
 		}else{
 		//	System.out.println("selected catagories (clientFilter()): " + popup_filter.catagories.length);
@@ -692,7 +715,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 			popup_filter.catagories = items_selected;
 			
-			serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.catagories);
+			serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.catagories,false);
 		}
 	}
 
@@ -714,7 +737,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 					popup_filter.minimum_value = Double.parseDouble(popup_minimum.getValue());
 					popup_filter.maximum_value = Double.parseDouble(popup_maximum.getValue());
 			//		System.out.println(popup_filter.minimum_value + "," + popup_filter.maximum_value);
-					serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.minimum_value, popup_filter.maximum_value);
+					serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.minimum_value, popup_filter.maximum_value, true);
 				}catch(Exception e){
 					System.out.println("value conversion error");
 				}
@@ -730,7 +753,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 				popup_filter.catagories = items_selected;
 				
-				serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.catagories);
+				serviceUpdateTopFilter(popup_filter.layer.display_name, popup_filter.catagories, true);
 				
 			//	System.out.println("selected catagories: " + popup_filter.catagories.length);
 			}
@@ -842,19 +865,18 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	public void onChanging$popup_results_seek(InputEvent event){
 		//seek results list
 		String search_for = event.getValue();
-		if(search_for.length() > 1){
-			search_for = search_for.substring(0,1).toUpperCase() + search_for.substring(1,search_for.length()).toLowerCase();
-		}else if(search_for.length() > 0){
-			search_for = search_for.substring(0,1).toUpperCase();
+		//if(search_for.length() > 1){
+		//	search_for = search_for.substring(0,1).toUpperCase() + search_for.substring(1,search_for.length()).toLowerCase();
+		/*}else*/ if(search_for.length() > 0){
+			search_for = search_for.toLowerCase();
 		}
 
 		int pos = java.util.Arrays.binarySearch(results,search_for);
-		System.out.println("seek to: " + pos);
+		System.out.println("seek to: " + pos + " " + search_for);
 		if(pos < 0){
-			pos *= -1;
+			pos = (pos *-1) -1;
 		}
 		seekToResultsPosition(pos);
-
 	}
 
 	void seekToResultsPosition(int newpos){

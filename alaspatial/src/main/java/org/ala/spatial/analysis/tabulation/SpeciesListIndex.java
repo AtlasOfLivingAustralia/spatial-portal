@@ -43,6 +43,12 @@ public class SpeciesListIndex extends Object implements AnalysisIndexService, Se
      */
     static SPLSpeciesRecord[] species_rank = null;
     static SPLSpeciesRecord[] species_rank_order = null;
+    
+    /**
+     * mapping for SPLFilters copies
+     */
+    static Map<String, SPLFilter> map_splfilters = new HashMap<String, SPLFilter>(600);
+    
     /**
      * destination of loaded occurances
      */
@@ -236,7 +242,6 @@ System.out.println("speciesranklen: " + species_rank.length);
 
                     java.util.Collections.sort(records,
                             new Comparator<SPLGridRecord>() {
-
                                 public int compare(SPLGridRecord r1, SPLGridRecord r2) {
                                     if (r2.value == r1.value) {
                                         return 0;
@@ -349,30 +354,7 @@ System.out.println("speciesranklen: " + species_rank.length);
                     System.out.println("after read");
                     java.util.Collections.sort(records,
                             new Comparator<SPLGridRecord>() {
-
                                 public int compare(SPLGridRecord r1, SPLGridRecord r2) {
-//                                    if (r2.value == r1.value) {
-//                                        /* key generation & sorting here */
-//                                        long key1 = r1.species_number
-//                                                + ((((long) ((short) (r1.longitude * 100)))) << 32)
-//                                                + ((((long) ((short) (r1.latitude * 100)))) << 48);
-//
-//                                        long key2 = r1.species_number
-//                                                + ((((long) ((short) (r1.longitude * 100)))) << 32)
-//                                                + ((((long) ((short) (r1.latitude * 100)))) << 48);
-//
-//                                        long result = key2 - key1;
-//                                        if (result < 0L) {
-//                                            return -1;
-//                                        } else if (result > 0L) {
-//                                            return 1;
-//                                        } else {
-//                                            return 0;
-//                                        }
-//                                    } else if (r1.value < r2.value) {
-//                                        return -1;
-//                                    }
-//                                    return 1;
                                 	if (r2.value == r1.value) {
                                 		return r1.record_number - r2.record_number;
                                 	 } else if (r1.value < r2.value) {
@@ -389,11 +371,12 @@ System.out.println("speciesranklen: " + species_rank.length);
                    
                     int idxpos = 0;
                     int startpos = 0;
+                    last_value = records.get(0).value;
                     for (SPLGridRecord r : records) {
                         /*
                          * TODO: make nicer export
                          */
-                        idxpos++;
+                        
                         if (last_value != r.value) {
                             String filename =
                                     TabulationSettings.index_path
@@ -409,11 +392,7 @@ System.out.println("speciesranklen: " + species_rank.length);
                                 ArrayList<RecordKey> set = new ArrayList<RecordKey>();
 
                                 for (p = startpos; p < idxpos; p++) {
-                                 /*   long key = records.get(p).species_number
-                                            + ((((long) ((short) (records.get(p).longitude * 100)))) << 32)
-                                            + ((((long) ((short) (records.get(p).latitude * 100)))) << 48);
-*/
-                                    set.add(new RecordKey(records.get(p).species_number,p));
+                                     set.add(new RecordKey(records.get(p).species_number,records.get(p).record_number));
                                 }
 
                                 java.util.Collections.sort(set,
@@ -429,6 +408,9 @@ System.out.println("speciesranklen: " + species_rank.length);
                             last_value = r.value;
                             startpos = idxpos;
                         }
+                        idxpos++;
+                        
+                        
                     }
 
                     if (idxpos != 0) {
@@ -664,14 +646,14 @@ System.out.println("speciesranklen: " + species_rank.length);
                
                 ArrayList<RecordKey> newset;
                 newset = (ArrayList<RecordKey>) oos.readObject();
-                System.out.println("got ctx " + filter.layername + " " + value + " " + newset.size());
+              //  System.out.println("got ctx " + filter.layername + " " + value + " " + newset.size());
                 oos.close();
 
                 if (set.size() > 0) {  
-                	System.out.println("adding to set:" + newset.size());    	
+             //   	System.out.println("adding to set:" + newset.size());    	
                     set.addAll(newset);
                 } else {
-                	System.out.println("new set:" + newset.size());
+              //  	System.out.println("new set:" + newset.size());
                     set = newset;
                 }
             } catch (Exception e) {
@@ -696,7 +678,6 @@ System.out.println("speciesranklen: " + species_rank.length);
     String session_id;
     public void popFilter(){
     	if(splfilters != null && splfilters.size() > 0){
-    		System.out.println("pop pre: " + splfilters.size());
     		splfilters.remove(splfilters.size()-1);
     		System.out.println("pop post: " + splfilters.size());
     	}
@@ -759,16 +740,15 @@ System.out.println("speciesranklen: " + species_rank.length);
             } else {
                 newrecordkey = getCatagorySampleSet(new_filter);
             }    	
-    		if(newrecordkey != null){
-    			System.out.println("updateFilter(): " + newrecordkey.size() + " " + new_filter.layer.name);
-    		}else{
-    			System.out.println("updateFilter(): " + 0 + " " + new_filter.layer.name);
-    		}
+    	//	if(newrecordkey != null){
+    	//		System.out.println("updateFilter(): " + newrecordkey.size() + " " + new_filter.layer.name);
+    	//	}else{
+    	//		System.out.println("updateFilter(): " + 0 + " " + new_filter.layer.name);
+    	//	}
     		
     		//reduce size of newrecordkey
     		int i,j;
-    		if(toprecordkey != null){
-    			
+    		if(toprecordkey != null){    			
     			ArrayList<RecordKey> output = new ArrayList<RecordKey>(toprecordkey.size());
     			
 	    		for(i=0,j=0;i<toprecordkey.size() && j<newrecordkey.size();){
@@ -796,12 +776,11 @@ System.out.println("speciesranklen: " + species_rank.length);
 	    		
 	    		newrecordkey = output;
     		}
-    		if(newrecordkey != null){
-    			System.out.println("$$$ found: " + newrecordkey.size());
-    		}
+    	//	if(newrecordkey != null){
+    	//		System.out.println("$$$ found: " + newrecordkey.size());
+    	//	}
     		saveTopRecordKey(newrecordkey);
-    	}else{
-    		System.out.println("*************** POPPING ******************");
+    	}else{    		
     		//TODO: nicer handling
     		popFilter();
     		updateFilter(new_filter);
@@ -817,6 +796,7 @@ System.out.println("speciesranklen: " + species_rank.length);
      * 			same layer filter to change filter
      */
     static public int applyFilter(String session_id_, SPLFilter new_filter){
+    	System.out.println("applyFilter(" + session_id_ + "," + new_filter + ")");
     	SpeciesListIndex spi = SpeciesListIndex.getSession(session_id_);
     	
     	if(new_filter == null){
@@ -894,6 +874,82 @@ System.out.println("speciesranklen: " + species_rank.length);
     	return sb.toString();
     }
     
+    static public int getSpeciesCount(String session_id_, SimpleRegion region){
+    	loadRank();
+    	
+    	SpeciesListIndex spi = SpeciesListIndex.getSession(session_id_);
+    	
+    	ArrayList<RecordKey> rk = spi.getTopRecordKey();
+    	if(rk == null){
+    		return 0;
+    	}
+    	    	
+    	BitSet species = new BitSet(species_rank.length + 1);
+    	
+    	int i;
+    	
+    	if(region == null){
+	    	for(i=0;i<rk.size();i++){    		
+	    		species.set(rk.get(i).species);
+	    	}
+    	}else{
+    		for(i=0;i<rk.size();i++){   
+    			if(OccurancesIndex.inRegion(rk.get(i).key,region)){
+    				species.set(rk.get(i).species);
+    			}
+	    	}    		
+    	}    	
+    	
+    	int count = 0;
+    	for(i=0;i<species.length();i++){
+    		if(species.get(i)){
+    			count++;
+    		}
+    	}
+    	
+    	return count;
+    }
+    
+    static public String getSpeciesList(String session_id_, SimpleRegion region){
+    	loadRank();
+    	
+    	SpeciesListIndex spi = SpeciesListIndex.getSession(session_id_);
+    	
+    	ArrayList<RecordKey> rk = spi.getTopRecordKey();
+    	
+    	BitSet species = new BitSet(species_rank.length + 1);
+    	
+    	int i;
+    	if(region == null){
+	    	for(i=0;i<rk.size();i++){    		
+	    		species.set(rk.get(i).species);
+	    	}
+    	}else{
+    		for(i=0;i<rk.size();i++){   
+    			if(OccurancesIndex.inRegion(rk.get(i).key,region)){
+    				species.set(rk.get(i).species);
+    			}
+	    	}    		
+    	}   
+    	
+    	int count = 0;
+    	for(i=0;i<species.length();i++){
+    		if(species.get(i)){
+    			count++;
+    		}
+    	}
+    	StringBuffer sb = new StringBuffer();
+        for (i = 0; i < species.size(); i++) {
+            if (species.get(i)) {
+                sb.append(species_rank_order[i - 1].name); 	//species_number is 1..n
+
+                sb.append("\r\n");
+            }
+        }
+    	
+    	return sb.toString();
+    }
+    
     static public SpeciesListIndex getSession(String session_id_){
     	//load existing
     	TabulationSettings.load();
@@ -929,6 +985,7 @@ System.out.println("speciesranklen: " + species_rank.length);
     public void save(){
     	//save this session
     	try{
+    		System.out.println("save session: " + session_id);
 	    	FileOutputStream fos = new FileOutputStream(
 	                TabulationSettings.index_path
 	                + session_id + "_spl");
@@ -1128,7 +1185,15 @@ System.out.println("speciesranklen: " + species_rank.length);
     }
 
     public static SPLFilter getLayerFilter(String layer) {
-    	return getLayerFilter(SamplingService.getLayer(layer));
+    	SPLFilter splfilter = map_splfilters.get(layer);
+    	if(splfilter == null){
+    		splfilter = getLayerFilter(SamplingService.getLayer(layer));
+    		map_splfilters.put(layer,splfilter); 
+    	} 
+    	if(splfilter == null){
+    		return null;
+    	}
+    	return new SPLFilter(splfilter);
     }
     
     public static SPLFilter getLayerFilter(Layer layer) {
@@ -1201,7 +1266,6 @@ System.out.println("speciesranklen: " + species_rank.length);
                         e.toString());
             }
         }
-
 
         return null;
     }
@@ -1410,7 +1474,7 @@ System.out.println("speciesranklen: " + species_rank.length);
         /* ?? default long lat & dist */
         double longitude_start = 112;
         double longitude_end = 154;
-        double latitude_start = -51;//-44;
+        double latitude_start = -44;//-44;
         double latitude_end = -9;
         int height = 210; //210 42/210
         int width = 252; //252
@@ -1428,7 +1492,7 @@ System.out.println("speciesranklen: " + species_rank.length);
         }
         
         for (Layer l : all_layers) {
-            makeScaledShortImageFromGrid(l, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+            makeScaledShortImageFromGrid2(l, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
         }
     }
 
@@ -1579,6 +1643,100 @@ System.out.println("speciesranklen: " + species_rank.length);
             System.out.println("image gen err: " + l.name + " " + e.toString());
         }
         //return; //done testing here
+    }
+    
+    /**
+     * image output format, probably as:
+     *
+     * 1. shorts stream in (width*2 x height)
+     * 2. index starting at (width*2xheigth) for (additional rows = 256*256/width)
+     * 3. capped with one row width extents (TODO)
+     *
+     *
+     * @param l
+     * @param longitude_start
+     * @param longitude_end
+     * @param latitude_start
+     * @param latitude_end
+     * @param width
+     * @param height
+     */
+    public void makeScaledShortImageFromGrid2(Layer l, double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end, int width, int height) {
+    	
+    	/* data */
+        Tile [] data;
+
+        if (l.type.equals("environmental")) {
+            data = getTileFromGrid(l.name, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+        } else {
+        	data = getTileFromShape(l, longitude_start, longitude_end, latitude_start, latitude_end, width, height);        	 
+        }
+        
+        int mini = 999999;
+    	int maxi = 0;
+    	for(int i=0;i<data.length;i++){
+    		if(mini > data[i].pos_){
+    			mini = data[i].pos_;
+    		}
+    		if(maxi < data[i].pos_){
+    			maxi = data[i].pos_;
+    		}
+    	}
+    	System.out.println("* " + mini + ", " + maxi);
+        
+        java.util.Arrays.sort(data,
+        		new Comparator<Tile>(){
+        			public int compare(Tile i1, Tile i2){
+        				if(i1.value_ < i2.value_){
+        					return -1;
+        				}else if(i1.value_ > i2.value_){
+        					return 1;
+        				}
+        				return 0;
+        			}
+        		});
+        
+        /* index, only used for non-enviornmental layers */
+        boolean has_index = true;           
+        if (l.type.equals("environmental")) {
+            has_index = false;
+        } 
+        int [] index = null;
+        if(has_index){
+        	int i,j;
+        	int max = (int)data[data.length-1].value_;
+        	
+        	index = new int[max+2];	  
+        	int last_idx = 1;
+        	for(i=1;i<data.length;i++){
+        		if(data[i].value_ != data[i-1].value_){        	
+        			for(j=last_idx;j<=data[i].value_;j++){
+        				index[j] = i;
+        			}
+        			last_idx = (int)data[i].value_+1;
+        		}
+        	}
+        	index[max+1] = data.length;
+        }
+        
+        /* write */
+        try {            
+            FileOutputStream fos = new FileOutputStream(
+                    TabulationSettings.index_path
+                    + "SPL_IMG_T_" + l.name + ".dat");
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);            
+            oos.writeObject(data);
+            oos.writeObject(new Boolean(has_index));
+            if(has_index){
+            	oos.writeObject(index);
+            }
+            oos.close();
+
+        } catch (Exception e) {
+            System.out.println("image gen err: " + l.name + " " + e.toString());
+        }
     }
 
     /* really really temporary, needs lots of fixing */
@@ -1750,8 +1908,63 @@ System.out.println("speciesranklen: " + species_rank.length);
             return data;
         }
 
+        return null;	
+    }
+    
+    public Tile [] getTileFromGrid(String layer_name,
+            double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end,
+            int longitude_steps, int latitude_steps) {
+        
+        Grid grid = new Grid(
+                TabulationSettings.environmental_data_path
+                + layer_name);
+
+        /* make points to interrogate */
+        double[][] points = new double[longitude_steps * latitude_steps][2];
+        
+       for (int j = 0; j < latitude_steps; j++) {
+          	for (int i = 0; i < longitude_steps; i++) {
+                points[j * longitude_steps + i][0] = longitude_start
+                        + i / (double) (longitude_steps-1) * (longitude_end - longitude_start);
+                points[j * longitude_steps + i][1] = latitude_start
+                        + j / (double) (latitude_steps-1) * (latitude_end - latitude_start);
+            }
+        }
+
+        /* get layer data */
+        double[] values = grid.getValues(points);
+
+        if (values != null && values.length > 0) {
+        	int i;
+
+        	/* copy values back to byte data */
+        	int countvalues = 0;
+        	for(i=0;i<values.length;i++){
+        		if(!Double.isNaN(values[i])){
+        			countvalues++;
+        		}
+        	}
+        	
+        	Tile[] data = new Tile[countvalues];
+        	
+        	int p = 0;
+        	for (i = 0; i < values.length; i++) {
+        		if(!Double.isNaN(values[i])){
+        			data[p++] = new Tile((float)values[i],i);
+        		}
+            }
+        	
+        	
+        	
+        	
+            /* return data */
+            return data;
+        }
+
         return null;
     }
+    
 //
 //    public byte[] getScaledBytesFromDB(Layer l,
 //            double longitude_start, double longitude_end,
@@ -2004,6 +2217,22 @@ System.out.println("speciesranklen: " + species_rank.length);
         /* return data */
         return data;
     }
+    
+    public Tile [] getTileFromShape(Layer l,
+            double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end,
+            int longitude_steps, int latitude_steps) {
+
+        SimpleShapeFile ssf = new SimpleShapeFile(
+				TabulationSettings.environmental_data_path
+				+ l.name);
+        
+        int column_idx = ssf.getColumnIdx(l.fields[0].name);
+        
+        Tile [] data = ssf.getTileList(column_idx,longitude_start,latitude_start,longitude_end,latitude_end,longitude_steps,latitude_steps);
+		
+        return data;
+     }
 
 //    public ImageByte[] getImageData(Layer layer) {
 //        try {
