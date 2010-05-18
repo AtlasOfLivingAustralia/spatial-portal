@@ -11,14 +11,14 @@
 	
 	<popup id="popup_results" width="330px">
 <vbox>
-<textbox id="popup_results_seek" width="200px"></textbox>
+<!--<textbox id="popup_results_seek" width="200px"></textbox> -->
 <listbox id="popup_listbox_results" width="290px" rows="15" >
 	
 </listbox>
 <label id="results_label" />
 <hbox>
-<button id="results_prev" label="previous"/>
-<button id="results_next" label="next"/>
+<!--<button id="results_prev" label="previous"/>
+<button id="results_next" label="next"/> -->
 </hbox>
 <separator/>
 <separator/>			
