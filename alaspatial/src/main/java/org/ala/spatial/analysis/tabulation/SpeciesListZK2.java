@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.tabulation;
 
 import java.io.File;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,9 +32,11 @@ import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
+import org.zkoss.zul.*;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.util.Clients;
+
 
 public class SpeciesListZK2 extends GenericForwardComposer {
 	List _layer_filters = new ArrayList();
@@ -78,6 +81,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	public Button apply_catagorical;
 
 	public Button download;
+	public Button downloadsamples;
 	public Listbox popup_listbox_results;
 	public Popup popup_results;
 
@@ -512,6 +516,32 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		return "";
 	}
 	
+	public String serviceSamplesList(){
+		try{
+			StringBuffer sbProcessUrl = new StringBuffer();
+	        sbProcessUrl.append(satServer + "ws/filtering/apply");
+	        sbProcessUrl.append("/pid/" + URLEncoder.encode(service_pid, "UTF-8"));
+	        sbProcessUrl.append("/samples/list");   
+	        String point = lb_points.getValue();
+	        if(point.length() == 0){
+	        	point = "none";
+	        }
+	        sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
+	        
+	        HttpClient client = new HttpClient();
+	        GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+	
+	        get.addRequestHeader("Accept", "text/plain");
+	
+	        int result = client.executeMethod(get);
+	        String slist = get.getResponseBodyAsString();
+	        return slist;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return "";
+	}
+	
 	public void serviceUpdateTopFilter(String layername, int [] catagories_to_show, boolean commit_changes){
 		System.out.println("serviceUpdateTopFilter");
 		try{
@@ -829,6 +859,21 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 		}
 	}
+	
+	public void onClick$downloadsamples(){
+		SPLFilter [] layer_filters = getSelectedFilters();
+		if(layer_filters != null){
+			try{
+				System.out.println("attempt to download: " + satServer  + this.serviceSamplesList());
+				Filedownload.save(new URL(satServer + this.serviceSamplesList()), "application/zip");
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}else{
+
+		}
+	}
+	
 	public void listFix(){
 		int i;
 		List list = lb.getItems();

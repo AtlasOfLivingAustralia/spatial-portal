@@ -25,6 +25,7 @@ import org.ala.spatial.analysis.tabulation.SamplingService;
 import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
+import org.ala.spatial.util.Zipper;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
 import org.springframework.stereotype.Controller;
@@ -449,6 +450,39 @@ public class FilteringWSController {
             SimpleRegion region = SimpleRegion.parseSimpleRegion(shape);
             
             return SpeciesListIndex.getSpeciesList(pid,region);
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return "";
+    }
+    
+    @RequestMapping(value = "/apply/pid/{pid}/samples/list/shape/{shape}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getSamplesList(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
+        try {
+        	System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
+            String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");
+            readUserBytes(sessionfile);
+            
+            SimpleRegion region = SimpleRegion.parseSimpleRegion(shape);
+            
+            String filepath = SpeciesListIndex.getSamplesList(pid,region);
+            
+            /* zipping */
+            String [] files = new String[1];
+            files[0] = filepath;
+            
+            String currentPath = req.getSession().getServletContext().getRealPath("/");
+            long currTime = System.currentTimeMillis();
+            String outputpath = currentPath + "/output/filtering/";
+            File fDir = new File(outputpath);
+            fDir.mkdir();
+            String outfile = fDir.getAbsolutePath() + "/filter_samples_" + currTime + ".zip";
+            Zipper.zipFiles(files, outfile);
+
+            return "output/filtering/filter_samples_" + currTime + ".zip";
+            
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

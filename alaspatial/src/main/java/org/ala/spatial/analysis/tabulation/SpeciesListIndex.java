@@ -950,6 +950,67 @@ System.out.println("speciesranklen: " + species_rank.length);
     	return sb.toString();
     }
     
+    static public String getSamplesList(String session_id_, SimpleRegion region){
+    	loadRank();
+    	
+    	SpeciesListIndex spi = SpeciesListIndex.getSession(session_id_);
+    	
+    	ArrayList<RecordKey> rk = spi.getTopRecordKey();
+    	
+    	BitSet species = new BitSet(species_rank.length + 1);
+    	
+    	if(rk.size() == 0){
+    		return "";	//no records to return;
+    	}
+    	
+    	int [] records = new int[rk.size()];
+    	int p = 0;
+    	
+    	int i;
+    	if(region == null){
+	    	for(i=0;i<rk.size();i++){    		
+	    		species.set(rk.get(i).species);
+	    		records[p++] = rk.get(i).key;
+	    	}
+    	}else{
+    		for(i=0;i<rk.size();i++){   
+    			if(OccurancesIndex.inRegion(rk.get(i).key,region)){
+    				species.set(rk.get(i).species);
+    				records[p++] = rk.get(i).key;
+    			}
+	    	}    	
+    		if(p > 0){
+    			int [] records_tmp = java.util.Arrays.copyOf(records,p);
+    			records = records_tmp;
+    		}else{
+    			return "";	//no records to return
+    		}
+    	}   
+    	
+    	String [] samples = OccurancesIndex.getSortedRecords(records);
+    	
+    	try{
+			File temporary_file = java.io.File.createTempFile("filter_sample",".csv");
+			FileWriter fw = new FileWriter(temporary_file);
+
+			for(i=0;i<samples.length;i++){
+				fw.append(samples[i]);
+				fw.append("\r\n");
+			}
+			
+			fw.close();
+			System.out.println("created filter samples file: " +temporary_file.getPath());
+			
+			return temporary_file.getPath();	//return location of temp file
+			
+		}catch (Exception e){
+			System.out.println("dumping records to a file error: " + e.toString());
+			e.printStackTrace();
+		}   	
+    	
+    	return ""; //failed
+    }
+    
     static public SpeciesListIndex getSession(String session_id_){
     	//load existing
     	TabulationSettings.load();
@@ -1927,8 +1988,8 @@ System.out.println("speciesranklen: " + species_rank.length);
           	for (int i = 0; i < longitude_steps; i++) {
                 points[j * longitude_steps + i][0] = longitude_start
                         + i / (double) (longitude_steps-1) * (longitude_end - longitude_start);
-                points[j * longitude_steps + i][1] = latitude_start
-                        + j / (double) (latitude_steps-1) * (latitude_end - latitude_start);
+                points[j * longitude_steps + i][1] = latitude_end 
+                        - j / (double) (latitude_steps-1) * (latitude_end - latitude_start);
             }
         }
 
@@ -1953,10 +2014,7 @@ System.out.println("speciesranklen: " + species_rank.length);
         		if(!Double.isNaN(values[i])){
         			data[p++] = new Tile((float)values[i],i);
         		}
-            }
-        	
-        	
-        	
+            }        	
         	
             /* return data */
             return data;

@@ -846,7 +846,7 @@ public class OccurancesIndex implements AnalysisIndexService {
     }
     
     public static String[] getSortedRecords(int [] records) {
-    	//check for sorted
+    	//make sorted
     	int i;
     	for(i=1;i<records.length;i++){
     		if(records[i-1] > records[i]){
@@ -863,7 +863,11 @@ public class OccurancesIndex implements AnalysisIndexService {
                             + SORTED_FILENAME));
         	
         	for(i=0;i<records.length;i++){
-        		br.setLineNumber(records[i]);
+        		int loopcounter = records[i] - br.getLineNumber();
+        		while(loopcounter>0){
+        			br.readLine();
+        			loopcounter--;
+        		}
         		lines[i] = br.readLine();
         	}
         	br.close();
