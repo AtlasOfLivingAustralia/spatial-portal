@@ -26,15 +26,18 @@ import au.org.emii.portal.service.LogoutService;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.lang.LanguagePack;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.session.PortalUser;
 import au.org.emii.portal.userdata.DaoRegistry;
 import au.org.emii.portal.userdata.UserDataDao;
 import au.org.emii.portal.userdata.UserDataDaoImpl;
+import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.SessionInitImpl;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -469,7 +472,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
              * map layers display above existing ones
              */
 
-            logger.debug("IS IT QUERYABLE  " + mapLayer.getCql() + " " + mapLayer.isQueryable());
             ((ListModelList) activeLayersList.getModel()).add(0, mapLayer);
 
             // update the map
@@ -757,8 +759,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     public void addUserDefinedLayerToMenu(MapLayer mapLayer, boolean activate) {
         if (safeToPerformMapAction()) {
-            logger.debug("inside addUserDefinedLayerToMenu");
-
             PortalSession portalSession = getPortalSession();
             MenuItem menuItem = portalSessionUtilities.addUserDefinedMapLayer(portalSession, mapLayer);
 
@@ -1063,8 +1063,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return addedOk;
     }
 
-
-
     /**
      * Overridden to allow for the adding servers from known Servers ie can be queried
      * Add a WMS layer identified by the given parameters to the menu system
@@ -1075,7 +1073,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param imageFormat MIME type of the image we will get back
      * @param opacity 0 for invisible, 1 for solid
      */
-
     public boolean addKnownWMSLayer(String label, String uri, float opacity, String filter) {
         boolean addedOk = false;
         if (safeToPerformMapAction()) {
@@ -1644,6 +1641,51 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
+    public void addGeoJSON(String labelValue, String uriValue) {
+        if (safeToPerformMapAction()) {
+            this.addGeoJSONLayer(labelValue, uriValue);
+        }
+
+    }
+
+    public boolean addGeoJSONLayer(String label, String uri) {
+        boolean addedOk = false;
+
+        if (safeToPerformMapAction()) {
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+                MapLayer mapLayer = remoteMap.createGeoJSONLayer(label, uri);
+                if (mapLayer == null) {
+                    // fail
+                    logger.info("adding GEOJSON layer failed ");
+                } else {
+                    mapLayer.setDisplayable(true);
+                    mapLayer.setOpacity((float) 0.75);
+                    // updating the tree (because its not displayed)
+                    activateLayer(mapLayer, true, true);
+
+                    // we must tell any future tree menus that the map layer is already
+                    // displayed as we didn't use changeSelection()
+                    mapLayer.setListedInActiveLayers(true);
+                    mapLayer.setQueryable(true);
+
+                    //addUserDefinedLayerToMenu(mapLayer, true);
+                    addedOk = true;
+                }
+            } else {
+                // fail
+                showMessage("GeoJSON layer already exists");
+                logger.info(
+                        "refusing to add a new layer with URI " + uri
+                        + " because it already exists in the menu");
+            }
+        }
+
+
+
+
+        return addedOk;
+    }
+
     /**
      * Destroy session and reload page
      */
@@ -1923,10 +1965,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onCheck$rdoScientificSearch() {
-       searchSpeciesAuto.setSearchCommon(false);
-       searchSpeciesAuto.getItems().clear();
+        searchSpeciesAuto.setSearchCommon(false);
+        searchSpeciesAuto.getItems().clear();
     }
 
+
+    
     public void onSearchSpecies(ForwardEvent event) {
 
         //get the params from the controls

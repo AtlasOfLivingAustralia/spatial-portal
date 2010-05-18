@@ -67,9 +67,13 @@ public interface OpenLayersJavascript {
 
     public String defineAnimatedLayer(MapLayer mapLayer);
 
+    public String defineImageMapLayer(MapLayer mapLayer);
+
     public String defineGeoRSSMapLayer(MapLayer layer);
 
     public String defineKMLMapLayer(MapLayer layer);
+
+    public String defineGeoJSONMapLayer(MapLayer layer);
 
     /**
      * create an instance of OpenLayers.Layer.WMS.
