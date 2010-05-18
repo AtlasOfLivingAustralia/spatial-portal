@@ -102,7 +102,7 @@ public class SelectionController extends UtilityComposer {
      */
     public void onChange$selectionGeom(Event event) {
         try {
-            wfsQueryPolygon(selectionGeom.getValue());
+            wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
 
@@ -128,9 +128,9 @@ public class SelectionController extends UtilityComposer {
         String coordinateString = selectionGeom.replace("POLYGON","").replace(")","").replace("(","");
         String request = baseQueryXML+filterPart.replace("COORDINATES",coordinateString);
         try {
-            Messagebox.show(request);
+            //Messagebox.show(request);
             String response = POSTRequest(request);
-            Messagebox.show(response);
+           // Messagebox.show(response);
          
         } catch (Exception e) { //FIXME
         }
