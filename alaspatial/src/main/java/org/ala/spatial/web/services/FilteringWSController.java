@@ -50,6 +50,8 @@ public class FilteringWSController {
     
     int [] colours = {0xFFFF99FF,0XFF99FFFF,0XFF9999FF,0XFF4444FF,0XFF44FFFF,0XFFFF44FF};
 
+    private String outputpath = "/output/filtering/";
+
     @RequestMapping(value = "/init", method = RequestMethod.GET)
     public
     @ResponseBody
@@ -63,10 +65,11 @@ public class FilteringWSController {
 
             userMap = new Hashtable();
 
-            File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + currTime + "/"));
+            File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + "/"));
             workingDir.mkdirs();
 
-            File file = File.createTempFile("spl", ".png", workingDir);
+            //File file = File.createTempFile("spl", ".png", workingDir);
+            File file = new File(workingDir + "/filtering.png"); 
          //   filteringImage = new FilteringImage(file.getPath());
          //   filteringImage.writeImage();
 
@@ -312,7 +315,8 @@ public class FilteringWSController {
 
             // Now lets apply the filters, one at a time
             // grab the existing imgpath to re-init the filteringimage obj
-            filteringImage = new FilteringImage((String) userMap.get("imgpath"));
+            // filteringImage = new FilteringImage((String) userMap.get("imgpath"));
+            filteringImage = new FilteringImage(req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/filtering.png"));
 
             // apply the filters by iterating thru' the layers from client
             for (int i = 0; i < aLayers.length; i++) {
@@ -348,6 +352,10 @@ public class FilteringWSController {
                 }
             }
 
+            userMap.put("layers",layers);
+            userMap.put("types", types); 
+            userMap.put("val1s", val1s);
+            userMap.put("val2s", val2s);
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -381,7 +389,7 @@ public class FilteringWSController {
             System.out.println("Read usermap... ");
             System.out.println("working with pid: " + userMap.get("pid"));
             //filteringImage = (FilteringImage) userMap.get("filteringImage");
-            filteringImage = new FilteringImage((String) userMap.get("imgpath"));
+            filteringImage = new FilteringImage(req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/filtering.png"));
 
             if (filteringImage == null) {
                 System.out.println("Opps filteringimage is null");

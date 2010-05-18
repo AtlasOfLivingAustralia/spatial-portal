@@ -111,8 +111,8 @@
         -->
     <environmental_data>
         <!-- absolute path for all .gri/.grd files -->
-        <!-- <environmental_data_path>/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/</environmental_data_path> -->
-		<environmental_data_path>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/</environmental_data_path>
+	<!-- <environmental_data_path>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/</environmental_data_path> -->
+        <environmental_data_path>/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/</environmental_data_path> 
 
         <environmental_data_files>
             <environmental_data_file>
@@ -153,7 +153,7 @@
             </environmental_data_file>
             <environmental_data_file>
                 <environmental_data_file_name>world_10_bio08</environmental_data_file_name>
-                <environmental_data_file_display_name>AMean Temperature of Wettest Quarter</environmental_data_file_display_name>
+                <environmental_data_file_display_name>Mean Temperature of Wettest Quarter</environmental_data_file_display_name>
                 <environmental_data_file_description>Current</environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
@@ -225,12 +225,13 @@
 
                 field list is comma separated, hierarchy fields
         
+    <occurances_csv>/mnt/ala/data/occurances/occurances3.csv</occurances_csv>
+    <occurances_csv_fields>kingdom,phylum,class,order,family,genus,species,longitude,latitude</occurances_csv_fields>
+    <index_path>/mnt/ala/data/index/tabulation/</index_path>
+    -->
     <occurances_csv>/Users/ajay/projects/ala/data/archive-ala/occurrences.csv</occurances_csv>
     <occurances_csv_fields>kingdom,phylum,class,order,family,genus,species,longitude,latitude</occurances_csv_fields>
-    <index_path>/Users/ajay/projects/ala/data/archive-ala/occurences/index/</index_path>-->
-    <occurances_csv>/mnt/ala/data/occurances/occurances3.csv</occurances_csv>
-	<occurances_csv_fields>kingdom,phylum,class,order,family,genus,species,longitude,latitude</occurances_csv_fields>
-	<index_path>/mnt/ala/data/index/tabulation/</index_path>	
+    <index_path>/Users/ajay/projects/ala/data/archive-ala/occurences/index/</index_path>
     
     <maxent>
         <cmdpath>java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar </cmdpath>

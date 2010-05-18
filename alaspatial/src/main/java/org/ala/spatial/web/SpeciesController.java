@@ -75,6 +75,13 @@ public class SpeciesController {
 
     }
 
+    @RequestMapping(value = "/taxon", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getTaxonNamesEmpty() {
+        return "";
+    }
+
     @RequestMapping(value = "/taxon/{name}", method = RequestMethod.GET)
     public
     @ResponseBody
