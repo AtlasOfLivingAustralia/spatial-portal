@@ -17,7 +17,7 @@ public class AnalysisController extends UtilityComposer {
 
     private static final String MENU_DEFAULT_WIDTH = "380px";
     private static final String MENU_MIN_WIDTH = "22px"; // 380px
-    private static final String MENU_HALF_WIDTH = "50%";
+    private static final String MENU_HALF_WIDTH = "30%";
     private static final String MENU_MAX_WIDTH = "100%";
 
     private Session sess = (Session) Sessions.getCurrent();

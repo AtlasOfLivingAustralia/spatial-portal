@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
 <zk>
-    <panel id="help" title="Click for Sampling Tool Help" width="600px" border="normal"  open="false"
+    <panel id="help" title="Click for Sampling Tool Help" width="99%" border="normal"  open="false"
            onClick="if(help.isOpen())help.open=false; else help.open=true;">
         <panelchildren><html><![CDATA[
 This tool samples environmental and contextual data layers at locations defined by species observations. Think of this tool as driving a sample tool through a user-selected set of layers at the locations of all user-selected species and reading off the values at that point." The output is a CSV-formatted file of the locations and environmental/contextual values."
@@ -20,11 +20,25 @@ This tool samples environmental and contextual data layers at locations defined 
     </panel>
     <window use="org.ala.spatial.analysis.web.SamplingWCController" apply="org.ala.spatial.analysis.web.SamplingWCController" style="padding: 10px">
 
+        <style>
+            .z-list-group-inner div input {
+            display: none;
+            }
+
+        </style>
+
+
         <!-- <label value="Step 1: Select your species " /> -->
-        <groupbox mold="3d" width="500px" style="padding: 10px">
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 1: Select your species" />
             <vbox>
-
+                <label>Search by</label>
+                <radiogroup id="rdgNameSearchType" >
+                    <hbox>
+                        <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
+                        <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
+                    </hbox>
+                </radiogroup>
                 <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                     <comboitem label=""/>
                 </combobox>
@@ -36,14 +50,14 @@ This tool samples environmental and contextual data layers at locations defined 
 
 
         <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
-        <groupbox mold="3d" width="500px" style="padding: 10px">
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 2: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" />
                 </hbox>
-                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="450px" >
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="100%" >
                     <listhead>
                         <listheader label="Select all layers" />
                     </listhead>
@@ -63,7 +77,7 @@ This tool samples environmental and contextual data layers at locations defined 
             </vbox>
         </groupbox>
         -->
-        <button label="Preview sampling" id="btnPreview" />
+        <button label="Preview sampling" id="btnPreview" sclass="goButton" />
 
         <popup id="results" width="640px" >
             <separator />

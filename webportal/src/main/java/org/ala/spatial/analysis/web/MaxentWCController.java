@@ -2,18 +2,27 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import java.net.URLEncoder;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.PropertyFilter;
+import org.ala.spatial.search.TaxaCommonSearchResult;
+import org.ala.spatial.search.TaxaCommonSearchSummary;
 import org.ala.spatial.util.Layer;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Iframe;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
@@ -21,12 +30,12 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
-import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
+import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
@@ -38,7 +47,13 @@ import org.zkoss.zul.Window;
  */
 public class MaxentWCController extends UtilityComposer {
 
-    private Combobox sac;
+    private static final long serialVersionUID = 165701023268014945L;
+    private static final String GEOSERVER_URL = "geoserver_url";
+    private static final String GEOSERVER_USERNAME = "geoserver_username";
+    private static final String GEOSERVER_PASSWORD = "geoserver_password";
+    private static final String SAT_URL = "sat_url";
+    private Radio rdoCommonSearch;
+    private SpeciesAutoComplete sac;
     private Button btnMapSpecies;
     private Label status;
     private Label infourl;
@@ -58,6 +73,7 @@ public class MaxentWCController extends UtilityComposer {
     private Iframe infoframe;
     private Window maxentWindow;
     private Window maxentInfoWindow;
+    private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
 
@@ -129,8 +145,21 @@ public class MaxentWCController extends UtilityComposer {
         }
     }
 
+    public void onCheck$rdoCommonSearch() {
+        sac.setSearchCommon(true);
+        sac.getItems().clear();
+    }
+
+    public void onCheck$rdoScientificSearch() {
+        sac.setSearchCommon(false);
+        sac.getItems().clear();
+    }
+
     public void onChange$sac(Event event) {
         status.setValue("Selected species: " + sac.getValue());
+        if (rdoCommonSearch.isChecked()) {
+            status.setValue("Selected species: " + getScientificName() + " (" + sac.getValue() + ")");
+        }
     }
 
     public void onClick$btnMapSpecies(Event event) {
@@ -191,6 +220,12 @@ public class MaxentWCController extends UtilityComposer {
 
     public void onClick$startmaxent(Event event) {
         try {
+            String taxon = sac.getValue();
+            // check if its a common name, if so, grab the scientific name
+            if (rdoCommonSearch.isChecked()) {
+                taxon = getScientificName();
+            }
+            
             String msg = "";
             String[] envsel = null;
             StringBuffer sbenvsel = new StringBuffer();
@@ -216,7 +251,7 @@ public class MaxentWCController extends UtilityComposer {
 
             //process(envsel);
 
-            System.out.println("Selected species: " + sac.getValue());
+            System.out.println("Selected species: " + taxon);
             System.out.println("Selected env vars");
             System.out.println(sbenvsel.toString());
             System.out.println("Selected options: ");
@@ -227,7 +262,7 @@ public class MaxentWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/process?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(sac.getValue(), "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
@@ -258,7 +293,7 @@ public class MaxentWCController extends UtilityComposer {
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
 
-            mc.addWMSLayer("Maxent model for " + sac.getValue(), mapurl, (float) 0.5);
+            mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5);
 
             this.status.setValue("Status: " + status[1]);
             if (status[1].equalsIgnoreCase("success")) {
@@ -268,7 +303,7 @@ public class MaxentWCController extends UtilityComposer {
                 }
             }
 
-            infourl.setValue(info[1]); 
+            infourl.setValue(info[1]);
             btnInfo.setVisible(true);
 
             //Messagebox.show(msg, "Maxent", Messagebox.OK, Messagebox.INFORMATION);
@@ -322,6 +357,7 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     private void loadSpeciesOnMap() {
+        /*
         String taxon = sac.getValue();
         String uri = null;
         String filter = null;
@@ -350,7 +386,99 @@ public class MaxentWCController extends UtilityComposer {
         logger.debug(filter);
         //mc.addWMSLayer(label, uri, 1, filter);
         mc.addKnownWMSLayer(taxon, uri, 1, filter);
+         *
+         */
+
+        String taxon = sac.getValue();
+        // check if its a common name, if so, grab the scientific name
+        if (rdoCommonSearch.isChecked()) {
+            taxon = getScientificName();
+        }
+        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        String uri = null;
+        String filter = null;
+        String entity = null;
+        MapLayer mapLayer = null;
+
+        //TODO these paramaters need to read from the config
+        String layerName = "ALA:occurrencesv1";
+        String sld = "species_point";
+        uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
+        String format = "image/png";
+
+        //get the current MapComposer instance
+        MapComposer mc = getThisMapComposer();
+
+        //contruct the filter in cql
+        filter = "species eq '" + taxon + "'";
+        mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Species occurrence for " + taxon, taxon, "1.1.1", uri, layerName, format, sld, filter);
+
+        //create a random colour
+
+        Random rand = new java.util.Random();
+        int r = rand.nextInt(99);
+        int g = rand.nextInt(99);
+        int b = rand.nextInt(99);
+        String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
+        mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
+        mc.addUserDefinedLayerToMenu(mapLayer, true);
 
 
+
+    }
+
+    private String getScientificName() {
+        String taxon = "";
+        try {
+
+            String nuri = "http://data.ala.org.au/search/commonNames/" + URLEncoder.encode(sac.getValue(), "UTF-8") + "/json";
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(nuri);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String snlist = get.getResponseBodyAsString();
+
+            TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
+            jsonConfig.setJavaPropertyFilter(new PropertyFilter() {
+
+                @Override
+                public boolean apply(Object source, String name, Object value) {
+                    if ("result".equals(name)) {
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            JSONObject jo = JSONObject.fromObject(snlist);
+
+            tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
+
+            if (tss.getRecordsReturned() > 1) {
+
+                JSONArray joResult = jo.getJSONArray("result");
+
+                JsonConfig jsonConfigResult = new JsonConfig();
+                jsonConfigResult.setRootClass(TaxaCommonSearchResult.class);
+
+                for (int i = 0; i < joResult.size(); i++) {
+                    TaxaCommonSearchResult tr = (TaxaCommonSearchResult) JSONSerializer.toJava(joResult.getJSONObject(i), jsonConfigResult);
+                    tss.addResult(tr);
+                }
+            }
+
+            //taxon = tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")";
+            taxon = tss.getResultList().get(0).getScientificName();
+            //status.setValue("Got: " + tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")");
+
+        } catch (Exception e) {
+            System.out.println("Oopps, error getting scientific name from common name");
+            e.printStackTrace(System.out);
+        }
+
+        return taxon;
     }
 }

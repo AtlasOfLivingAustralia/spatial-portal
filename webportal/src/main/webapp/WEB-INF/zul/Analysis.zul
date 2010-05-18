@@ -1,6 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?component name="maxentForm" macro-uri="/WEB-INF/zul/AnalysisMaxent.zul"?>
 <?component name="samplingForm" macro-uri="/WEB-INF/zul/AnalysisSampling.zul"?>
+<?component name="filteringForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
 <?component name="alocForm" macro-uri="/WEB-INF/zul/AnalysisALOC.zul"?>
 <?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
@@ -26,10 +27,10 @@
             <tab id="filteringTab" label="Filtering"  />
 
             <!--  maxent -->
-            <tab id="maxentTab" label="Maxent"  />
+            <tab id="maxentTab" label="Prediction"  />
 
             <!--  aloc -->
-            <tab id="alocTab" label="ALOC"  />
+            <tab id="alocTab" label="Classification"  />
 
 	    <!-- selection tools -->
 	    <tab id="selectionTab" label="Selection" />
@@ -41,6 +42,7 @@
             </tabpanel>
             <tabpanel>
                 <iframe src="http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial2/speciesList.zul" width="100%" height="800px" />
+                <!-- <filteringForm id="ff" /> -->
             </tabpanel>
             <tabpanel>
                 <!-- <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/maxent2.zul" width="100%" height="800px" /> -->

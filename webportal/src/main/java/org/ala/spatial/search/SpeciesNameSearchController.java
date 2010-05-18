@@ -57,7 +57,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 	private static final String scientificSearch = "http://data.ala.org.au/search/scientificNames/";
 	private String mapWMS = "http://data.ala.org.au/mapping/simple/?id=";
 
-	
+
 	private Session sess = (Session) Sessions.getCurrent();
 	private Label lblRecordCount;
 	private Listbox lbResultCommon;
@@ -90,7 +90,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
     public void setHttpConnection(HttpConnection httpConnection) {
         this.httpConnection = httpConnection;
     }
-	
+
 	private String getURI(){
 		String uri;
 		if (sSearchType.equals(Common)) {
@@ -101,13 +101,13 @@ public class SpeciesNameSearchController extends UtilityComposer {
 
 		// add the search term to the uri and append the required json to it
 		uri = uri + forURL(sSearchTerm) + "/json";
-		
+
 		return uri;
 	}
-	
+
 
 	public void runSearch(String sSearchTerm, String sSearchType, String uri) {
-	
+
 		String json = null;
 		json = setupConnection(uri);
 
@@ -238,7 +238,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			for (TaxaScientificSearchResult tr : tss.getResultList()) {
 				Listitem li = new Listitem();
 				Listcell lc = new Listcell();
-				
+
 				//extract the entityId from the url
 				String sId = tr.getScientificNameUrl().substring(9);
 
@@ -279,7 +279,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 				lb.setValue(tr.getKingdom());
 				lc.appendChild(lb);
 				li.appendChild(lc);
-				
+
 				//Add to  map button
 				lc = new Listcell();
 				Button btn = new Button();
@@ -303,16 +303,16 @@ public class SpeciesNameSearchController extends UtilityComposer {
 		}
 
 	}
-	
+
 	public void setPagingBox(){
 		int iPages = 1;
-		
+
 		if (TotalRecords == 10) {
 			iPages = 1;
 		} else {
 			iPages = (TotalRecords / 10) + 1;
 		}
-		
+
 		if (iPages == 1) {
 			pagingDiv.setVisible(false);
 		} else {
@@ -328,7 +328,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 		lbResultCommon.getItems().clear();
 		TotalRecords = tss.getTotalRecords();
 		lblRecordCount.setValue(String.valueOf(TotalRecords) + " results for " + sSearchTerm);
-		
+
 		setPagingBox();
 
 		if (TotalRecords > 1) {
@@ -336,13 +336,13 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			for (TaxaCommonSearchResult tr : tss.getResultList()) {
 				Listitem li = new Listitem();
 				Listcell lc = new Listcell();
-				
+
 				//extract the entityId from the url
 				String sId = tr.getCommonNameUrl().substring(9);
 				int id = sId.indexOf("/");
 				sId = sId.substring(0, id);
 				logger.debug(sId);
-				
+
 
 				// Add hyperlink to ala commonName info page
 				Toolbarbutton tbFull = new Toolbarbutton();
@@ -381,9 +381,9 @@ public class SpeciesNameSearchController extends UtilityComposer {
 				lb.setValue(tr.getKingdom());
 				lc.appendChild(lb);
 				li.appendChild(lc);
-				
+
 				try {
-				
+
 				//Add to  map button
 				lc = new Listcell();
 				Button btn = new Button();
@@ -397,7 +397,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 				lc.appendChild(btn);
 				lc.appendChild(ln);
 				li.appendChild(lc);
-				
+
 
 				// add the row to the listbox
 				lbResultCommon.appendChild(li);
@@ -428,39 +428,39 @@ public class SpeciesNameSearchController extends UtilityComposer {
 		}
 		iPageNo = i;
 		int start = (i * 10) - 9;
-		
+
 		//get the corresponding set of 10
 		sURL = getURI() + sURL + String.valueOf(start);
 		runSearch(sSearchTerm, sSearchType, sURL);
 	}
-	
+
 	public void AddToMap() {
-		
+
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Gets the main pages controller so we can add a
 	 * layer to the map
 	 * @return MapComposer = map controller class
 	 */
 	private MapComposer getThisMapComposer() {
-		
+
 		MapComposer mapComposer = null;
 		Page page = searchResults.getPage();
 		mapComposer = (MapComposer) page.getFellow("mapPortalPage");
 
 		return mapComposer;
 	}
-	
-	
+
+
 	/**
 	 * string checking code, for spaces and special characters
 	 * @param aURLFragment
 	 * @return String
 	 */
-	
+
 	public static String forURL(String aURLFragment){
 	     String result = null;
 	     try {
@@ -471,9 +471,9 @@ public class SpeciesNameSearchController extends UtilityComposer {
 	     }
 	     return result;
 	   }
-	
-	
-	
+
+
+
 	public final class  myOnClickEventListener implements EventListener {
 		@Override
 		public void onEvent(Event event) throws Exception {
@@ -494,7 +494,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
 			//get the scientific name from the hidden label
 			Label ln = (Label) event.getTarget().getFellow("ln" + entity);
 			label = ln.getValue();
-			
+
 			//get the current MapComposer instance
 			MapComposer mc = getThisMapComposer();
 
@@ -510,7 +510,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
                         int b = rand.nextInt(99);
                         String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
                         mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
-                        mc.addUserDefinedLayerToMenu(mapLayer, true);         
+                        mc.addUserDefinedLayerToMenu(mapLayer, true);
 		}
 	}
 

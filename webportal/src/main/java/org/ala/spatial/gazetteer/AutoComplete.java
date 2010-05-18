@@ -41,7 +41,8 @@ public class AutoComplete extends Combobox {
      */
     private void refresh(String val) {
         //TODO: remove hardcoded host,
-        HttpHost targetHost = new HttpHost("ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com", 80, "http");
+        //HttpHost targetHost = new HttpHost("ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com", 80, "http");
+        HttpHost targetHost = new HttpHost("localhost", 8080, "http");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         BasicHttpContext localcontext = new BasicHttpContext();
         String searchString = val.trim().replaceAll("\\s+", "+");
