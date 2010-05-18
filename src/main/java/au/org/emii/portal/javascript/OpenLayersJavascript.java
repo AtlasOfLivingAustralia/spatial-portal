@@ -188,6 +188,11 @@ public interface OpenLayersJavascript {
      */
     public void addPolygonDrawingTool();
 
+        /**
+     * Adds the openlayers box drawing tool to the map
+     */
+    public void addBoxDrawingTool();
+
     /**
      * Adds a geojson layer
      * @param url the url of the json feature

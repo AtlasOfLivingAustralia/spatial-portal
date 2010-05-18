@@ -5,5 +5,51 @@
 <window use="org.ala.spatial.analysis.web.SelectionController" apply="org.ala.spatial.analysis.web.SelectionController" style="padding: 10px">
 
 	<button label="Polygon Selection" id="btnPolygonSelection"/>
+	
+	<button label="Box Selection" id="btnBoxSelection"/>
+
+	
+	<popup id="popup_results" width="330px">
+<vbox>
+<textbox id="popup_results_seek" width="200px"></textbox>
+<listbox id="popup_listbox_results" width="290px" rows="15" >
+	
+</listbox>
+<label id="results_label" />
+<hbox>
+<button id="results_prev" label="previous"/>
+<button id="results_next" label="next"/>
+</hbox>
+<separator/>
+<separator/>			
+		
+		
+<button label="download" id="download" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
+</vbox>
+</popup>
+		<textbox id="selectionGeom" visible="false"/>
+
+		<script type="text/javascript">
+			 function setSelectionGeometry(geometry) {
+		var tbxSelectionGeom = $e('${selectionGeom.uuid}');
+		tbxSelectionGeom.value = geometry;
+
+		if (document.createEvent) {
+         	   var evt = document.createEvent('HTMLEvents');
+         	   evt.initEvent( 'blur', false, false);
+         	   tbxSelectionGeom.dispatchEvent(evt);
+   
+         	   var evt2 = document.createEvent('HTMLEvents');
+         	   evt2.initEvent( 'change', false, false);
+ 	           tbxSelectionGeom.dispatchEvent(evt2);
+       		} 
+		else if (document.createEventObject) {
+         	   tbxSelectionGeom.fireEvent('onblur');
+ 	           tbxSelectionGeom.fireEvent('onchange');
+       		}
+	    }
+
+		</script>
 	</window>
+	
 </zk>

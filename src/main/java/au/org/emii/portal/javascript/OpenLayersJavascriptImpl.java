@@ -78,6 +78,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
+    public void addBoxDrawingTool() {
+        String script = "window.mapFrame.addBoxDrawingTool()";
+        execute(script);
+    }
+
+    @Override
     public void addGeoJsonLayer(String url) {
         String script = "window.mapFrame.addJsonFeatureToMap('" + url + "')";
         execute(script);
