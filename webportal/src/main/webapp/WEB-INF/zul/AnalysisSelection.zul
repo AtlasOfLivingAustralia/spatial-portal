@@ -4,11 +4,14 @@
 	 
 <window use="org.ala.spatial.analysis.web.SelectionController" apply="org.ala.spatial.analysis.web.SelectionController" style="padding: 10px">
 
-	<button label="Polygon Selection" id="btnPolygonSelection"/>
-	
-	<button label="Box Selection" id="btnBoxSelection"/>
+   <groupbox mold="3d" style="width: 95%; padding: 5px">
+            <caption label="Select Region of Interest" />
 
+	<button label="Polygon Selection" tooltip="Click map to add points, double-click to complete" id="btnPolygonSelection"/>
 	
+	<button label="Box Selection" tooltip="Click and drag map to create box, release to complete" id="btnBoxSelection"/>
+
+	</groupbox>
 	<popup id="popup_results" width="330px">
 <vbox>
 <!--<textbox id="popup_results_seek" width="200px"></textbox> -->
