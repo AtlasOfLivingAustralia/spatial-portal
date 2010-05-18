@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import au.org.emii.portal.userdata.UserMap;
+import org.apache.log4j.Logger;
 
 /**
  * Representation of a map layer - used for both rendering map layers
@@ -41,6 +42,14 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * indicate that the default rendering style
      * should be used
      */
+
+    /**
+     * Log4j instance
+     */
+    protected Logger logger = Logger.getLogger(this.getClass());
+
+
+
     public final static int STYLE_DEFAULT = 0;
     /**
      * Delimiter used when generating map layer ids
@@ -116,9 +125,20 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setDefaultStyleLegendUriSet(boolean defaultStyleLegendUriSet) {
 		this.defaultStyleLegendUriSet = defaultStyleLegendUriSet;
 	}
-    
+
     public boolean DefaultStyleLegendUriSet() {
     	return this.defaultStyleLegendUriSet;
+    }
+
+
+    protected String geoJSON = null;
+
+    public String getGeoJSON() {
+        return geoJSON;
+    }
+
+    public void setGeoJSON(String geoJSON) {
+        this.geoJSON = geoJSON;
     }
 
 	/**
@@ -158,6 +178,51 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
 
 
+    private boolean dynamicStyle = false;
+
+    //parameters for the dynamic styled layers
+
+    private String envColour;
+    private String envName;
+    private String envSize;
+
+    public String getEnvColour() {
+        return envColour;
+    }
+
+    public void setEnvColour(String envColour) {
+        this.envColour = envColour;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public String getEnvSize() {
+        return envSize;
+    }
+
+    public void setEnvSize(String envSize) {
+        this.envSize = envSize;
+    }
+
+
+    public boolean isDynamicStyle() {
+        return dynamicStyle;
+    }
+
+    public void setDynamicStyle(boolean dynamicStyle) {
+        this.dynamicStyle = dynamicStyle;
+    }
+
+
+
+
+
     /** env params allow the user to dynamically style the
      * Layer
      */
@@ -180,7 +245,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setUserDefinedLayer(boolean userDefinedLayer) {
         this.userDefinedLayer = userDefinedLayer;
     }
-    
+
     public long getMaplayermetadataid() {
         return maplayermetadataid;
     }
@@ -188,7 +253,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setMaplayermetadataid(long maplayermetadataid) {
         this.maplayermetadataid = maplayermetadataid;
     }
-    
+
 
     public long getParentmaplayerid() {
         return parentmaplayerid;
@@ -221,9 +286,9 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
         styles.add(style);
     }
-    
-    
-    
+
+
+
      /**
      * Return the id of the maplayer
      * @return
@@ -293,6 +358,19 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public String getCurrentLegendUri() {
         String uri;
 
+        //check if its a dynamically generated style
+        //if so go and go build the uri
+
+        if (isDynamicStyle()) {
+
+            uri = styles.get(selectedStyleIndex).getLegendUri();
+
+
+
+
+        } else {
+
+
         if (hasStyle()) {
             // show the selected style or default style if one wasn't set
             uri = styles.get(selectedStyleIndex).getLegendUri();
@@ -302,6 +380,10 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
              */
             uri = null;
         }
+        }
+
+        logger.debug("8888888888888888888888888888888888888888888888");
+        logger.debug(uri);
         return uri;
     }
 
@@ -748,8 +830,8 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 	public void setChildren(List<MapLayer> children) {
 		this.children = children;
 	}
-	
-	
+
+
 	public void setStyles(List<WMSStyle> styles) {
 		this.styles = styles;
 	}

@@ -66,6 +66,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         versions.add(THREDDS, "THREDDS");
         versions.add(GEORSS, "GEORSS");
         versions.add(KML, "KML");
+        versions.add(GEOJSON, "GEOJSON");
     }
 
     /**
@@ -717,6 +718,11 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     @Override
     public int getKml() {
         return KML;
+    }
+
+    @Override
+    public int getGeojson() {
+        return GEOJSON;
     }
 
     @Override

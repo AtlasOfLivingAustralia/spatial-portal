@@ -173,6 +173,7 @@
         <property name="imageTester" ref="imageTester" />
         <property name="genericServiceAndBaseLayerSupport" ref="genericServiceAndBaseLayerSupport" />
         <property name="discoveryProcessorFactory" ref="discoveryProcessorFactory" />
+        <property name="httpConnection" ref="httpConnection" />
     </bean>
 
     <bean id="openLayersJavascript" class="au.org.emii.portal.javascript.OpenLayersJavascriptImpl">

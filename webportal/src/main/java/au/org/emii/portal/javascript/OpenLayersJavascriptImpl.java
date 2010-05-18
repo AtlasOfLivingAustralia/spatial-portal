@@ -135,6 +135,40 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
         }
 
+        @Override
+        public String defineImageMapLayer(MapLayer mapLayer) {
+                List<Double> bbox = mapLayer.getMapLayerMetadata().getBbox();
+
+                String script =
+                        "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image("
+                        + "		'" + mapLayer.getNameJS() + "', "
+                        + "		'" + mapLayer.getUriJS() + "', "
+                        + " 		new OpenLayers.Bounds("
+                        + bbox.get(0) + ","
+                        + bbox.get(1) + ","
+                        + bbox.get(2) + ","
+                        + bbox.get(3)
+                        + "		), "
+                        + " 		new OpenLayers.Size(" +
+                                        settingsSupplementary.getValue("animation_width") + "," +
+                                        settingsSupplementary.getValue("animation_height") + "), "
+                        + "		{"
+                        + "			format: 'image/png', "
+                        + "			opacity:" + mapLayer.getOpacity() + ", "
+                        + "			isBaseLayer : false, "
+                        + "			maxResolution: map.baseLayer.maxResolution, "
+                        + "           minResolution: map.baseLayer.minResolution, "
+                        + "			resolutions: map.baseLayer.resolutions "
+                        + "		} "
+                        + "	); "
+                        + // register for loading images...
+                        "registerLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']);";
+
+
+                return wrapWithSafeToProceed(script);
+
+        }
+
         /**
          * Animate the layer - display a big ass animated
          * GIF
@@ -320,6 +354,17 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                                 script.append(defineKMLMapLayer(mapLayer));
                                 okToAddLayer = true;
                                 break;
+                        case LayerUtilitiesImpl.GEOJSON:
+                                //script.append("window.mapFrame.addJsonFeatureToMap('" + mapLayer.getGeoJSON() + "', '" + mapLayer.getName() + "')");
+                                script.append(defineGeoJSONMapLayer(mapLayer));
+                                okToAddLayer = true;
+                                break;
+
+                        case LayerUtilitiesImpl.IMAGELAYER:
+                                script.append(defineImageMapLayer(mapLayer));
+                                okToAddLayer = true;
+
+                                break;
                         default:
                                 okToAddLayer = false;
                                 logger.error(
@@ -390,6 +435,32 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + // register for loading images...
                         "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 
+                return wrapWithSafeToProceed(script);
+        }
+
+     @Override
+        public String defineGeoJSONMapLayer(MapLayer layer) {
+                /* can't have a GeoJSON baselayer so we don't need to decide where to store
+                 * the layer definition
+
+
+                 var geojson_format = new OpenLayers.Format.GeoJSON();
+                 var vector_layer = new OpenLayers.Layer.Vector(name);
+                 map.addLayer(vector_layer);
+                 features = geojson_format.read(feature);
+
+                 */
+
+
+                String script =
+                        ""
+                       
+                        + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "');"
+
+                        + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
+                        + // register for loading images...
+                        "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+               
                 return wrapWithSafeToProceed(script);
         }
 

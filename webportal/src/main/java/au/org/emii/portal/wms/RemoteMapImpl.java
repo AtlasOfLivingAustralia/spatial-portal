@@ -9,6 +9,13 @@ import au.org.emii.portal.config.xmlbeans.Discovery;
 import au.org.emii.portal.config.xmlbeans.Service;
 import au.org.emii.portal.factory.DiscoveryProcessorFactory;
 import au.org.emii.portal.lang.LanguagePack;
+import au.org.emii.portal.net.HttpConnection;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.util.Random;
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 
 public class RemoteMapImpl implements RemoteMap {
@@ -48,6 +55,16 @@ public class RemoteMapImpl implements RemoteMap {
     };
 
     private DiscoveryProcessorFactory discoveryProcessorFactory = null;
+    private HttpConnection httpConnection = null;
+
+    public HttpConnection getHttpConnection() {
+        return httpConnection;
+    }
+
+    @Autowired
+    public void setHttpConnection(HttpConnection httpConnection) {
+        this.httpConnection = httpConnection;
+    }
 
 
     @Override
@@ -262,6 +279,48 @@ public class RemoteMapImpl implements RemoteMap {
         return lastWMSVersionAttempted;
     }
 
+
+
+    public MapLayer createGeoJSONLayer(String label, String uri) {
+        MapLayer geoJSON = new MapLayer();
+
+        geoJSON.setName(label);
+        geoJSON.setUri(uri);
+        geoJSON.setId(uri);
+        geoJSON.setLayer(label);
+
+        //get a random colour
+        Random rand = new java.util.Random();
+        int r = rand.nextInt(99);
+        int g = rand.nextInt(99);
+        int b = rand.nextInt(99);
+        String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
+
+        geoJSON.setEnvColour(hexColour);
+
+        geoJSON.setType(layerUtilities.GEOJSON);
+        geoJSON.setGeoJSON(getJson(uri));
+        return geoJSON;
+    }
+
+     public String getJson(String url) {
+            InputStream in = null;
+            String json = null;
+            URLConnection connection = null;
+
+            try {
+
+                connection = httpConnection.configureURLConnection(url);
+                in = connection.getInputStream();
+                json = IOUtils.toString(in);
+                return json;
+            } catch (IOException iox) {
+                logger.debug(iox.toString());
+            }
+            return "fail";
+
+        }
+
     /**
      * Create a MapLayer instance and test that an image can be read from
      * the URI.
@@ -409,3 +468,4 @@ public class RemoteMapImpl implements RemoteMap {
 
 
 }
+
