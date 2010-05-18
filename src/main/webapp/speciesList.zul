@@ -101,7 +101,8 @@ checkmark="true" rows="12" >
 <separator/>			
 		
 		
-<button label="download" id="download" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
+<button label="download species list" id="download" />
+<button label="download samples" id="downloadsamples" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
 </vbox>
 </popup>
 		
