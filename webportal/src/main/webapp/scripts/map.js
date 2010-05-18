@@ -283,30 +283,29 @@ function addPolygonDrawingTool() {
     //////
 }
 
+function addBoxDrawingTool() {
+    var boxLayer = new OpenLayers.Layer.Vector("Box Layer");
+    boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{'featureAdded':regionAdded});     
+    map.addControl(boxControl);
+    boxControl.activate();	
+}
+
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
 	parent.setPolygonGeometry(feature.geometry);
+	polyControl.deactivate();
      }
 
+// This function passes the region geometry up to javascript in index.zul which can then send it to the server.
+function regionAdded(feature) {
+	//converting bounds from pixel value to lonlat - annoying!
+	var geoBounds = new OpenLayers.Bounds();
+	geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
+	geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
+	parent.setRegionGeometry(geoBounds.toGeometry());
+	boxControl.deactivate();
+     }
 
-
-/*function test(sssval) {
-       var tbxsss = $e("${sss.uuid}");
-       tbxsss.value = sssval;
- 
-       if (document.createEvent) {
-         var evt = document.createEvent('HTMLEvents');
-         evt.initEvent( 'blur', false, false);
-         tbxsss.dispatchEvent(evt);
-   
-         var evt2 = document.createEvent('HTMLEvents');
-         evt2.initEvent( 'change', false, false);
-         tbxsss.dispatchEvent(evt2);
-       } else if (document.createEventObject) {
-         tbxsss.fireEvent('onblur');
-         tbxsss.fireEvent('onchange');
-       }
-     }*/
 
 
 function addJsonFeatureToMap(feature) {

@@ -83,7 +83,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 	<!-- textboxes to hold polygon geometry 
 	the value is set by setPolygonGeometry, which notifies the server by generating an onChange
 		 -->
-	<textbox id="polyGeom" onChange="alert(self.getValue());" visible="false"/>
+	<textbox id="polyGeom" visible="false"/>
 
         <script type="text/JavaScript">
             function roundNumber(num, dec) {
@@ -130,6 +130,17 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
          	   tbxPolyGeom.fireEvent('onblur');
  	           tbxPolyGeom.fireEvent('onchange');
        		}
+		
+		 if (setSelectionGeometry != undefined) {
+		    setSelectionGeometry(geometry);
+		}
+	    }
+
+	    function setRegionGeometry(geometry) {
+		 if (setSelectionGeometry != undefined) {
+		    setSelectionGeometry(geometry);
+		}
+
 	    }
 	    
         </script>
