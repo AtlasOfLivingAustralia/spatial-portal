@@ -326,9 +326,9 @@ public class SamplingService {
 					}else{
 						len = recordend - recordstart + 1;
 					}
-					if(len > max_rows){
-						len = max_rows;
-					}
+					//if(len > max_rows){
+					//	len = max_rows;
+					//}
 					System.out.println("len of speciesinfo=" + columns.get(0).length + ", len of records=" + len);
 
 					/* output structure */
@@ -369,8 +369,7 @@ public class SamplingService {
 							}
 							rowoffset++;
 						}
-					}
-					
+					}					
 
 					/* adjust for next loop */
 					recordstart = recordend+1; 		//this was inclusive

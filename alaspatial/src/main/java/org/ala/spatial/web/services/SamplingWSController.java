@@ -46,6 +46,7 @@ public class SamplingWSController {
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
+            System.out.println("points: " + req.getParameter("points"));
             
             SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
 
@@ -116,6 +117,8 @@ public class SamplingWSController {
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
+            System.out.println("layers:" + layers);
+            System.out.println("points: " + req.getParameter("points"));
             
             SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
 
@@ -182,6 +185,9 @@ public class SamplingWSController {
     }
 
     private String[] getLayerFiles(String envNames) {
+    	if(envNames.equals("none")){
+    		return null;
+    	}
         String[] nameslist = envNames.split(":");
         String[] pathlist = new String[nameslist.length];
 
