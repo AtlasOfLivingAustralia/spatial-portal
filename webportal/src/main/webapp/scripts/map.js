@@ -38,6 +38,8 @@ var baseLayers = new Object();
 var currentBaseLayer = null;
 
 
+
+
 var layersLoading = 0;
 var layername; // current layer name
 
@@ -307,35 +309,41 @@ function regionAdded(feature) {
      }
 
 
+function addJsonFeatureToMap(feature, name, hexColour) {
+    var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
+        {fillColor: hexColour, fillOpacity: 0.75, strokeColor: hexColour},
+        OpenLayers.Feature.Vector.style["default"]));
+    var geojson_format = new OpenLayers.Format.GeoJSON();
+    var vector_layer = new OpenLayers.Layer.Vector(name, {styleMap: styleMap});
+    //map.addLayer(vector_layer);
+    features = geojson_format.read(feature);
+    vector_layer.addFeatures(features);
+    return vector_layer;
+}
 
-function addJsonFeatureToMap(feature) {
-	//alert(feature);
-	var geojson_format = new OpenLayers.Format.GeoJSON();
-        var vector_layer = new OpenLayers.Layer.Vector("Gazetteer Features"); 
-        map.addLayer(vector_layer);
-	features = geojson_format.read(feature);
-        var bounds;
+function zoomBoundsGeoJSON(feature) {
+    var bounds;
+    var geojson_format = new OpenLayers.Format.GeoJSON();
+    features = geojson_format.read(feature);
 
-         if(features) {
-                if(features.constructor != Array) {
-                    features = [features];
-                }
-                for(var i=0; i<features.length; ++i) {
-                    if (!bounds) {
-                        bounds = features[i].geometry.getBounds();
-                    } else {
-                        bounds.extend(features[i].geometry.getBounds());
-                    }
-
-                }
-                vector_layer.addFeatures(features);
-                map.zoomToExtent(bounds);
+    if(features) {
+        if(features.constructor != Array) {
+            features = [features];
+        }
+        for(var i=0; i<features.length; ++i) {
+            if (!bounds) {
+                bounds = features[i].geometry.getBounds();
             } else {
-                alert("failed");
+                bounds.extend(features[i].geometry.getBounds());
             }
 
+        }
 
-}
+        map.zoomToExtent(bounds);
+    } else {
+        //alert("failed");
+    }
+  }
 
 // Create a layer on which users can draw transects for single w (i.e. lines on the map)
 // handles query

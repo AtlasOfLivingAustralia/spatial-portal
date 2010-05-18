@@ -331,6 +331,59 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <label value="Style:" sclass="h3 inputlabel" />
                                         <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
                                     </div>
+                                    
+                                     <separator />
+
+                                    <div id="symbolControl" visible="true" sclass="highlighted" >
+                                    <label value="Change symbol" />
+
+                                    <combobox id="cboSymbols">
+                                        <comboitem label="Circle" />
+                                        <comboitem label="Square" />
+                                        <comboitem label="Triangle" />
+                                    </combobox>
+
+                                    <hbox width="100%">
+                                    <div style="float:left;padding-top:4px" width="60px">
+                                        <label value="Red: " sclass="h3" />
+                                    </div>
+
+                                    <div style="float:left;" width="60%">
+                                        <slider id="redSlider" width="95%" />
+                                    </div>
+
+                                    <div align="right" style="padding-top:4px">
+                                        <label id="redLabel" />
+                                    </div>
+                                    </hbox>
+                                    <hbox>
+                                    <div style="float:left;padding-top:4px" width="60px">
+                                        <label value="Green: " sclass="h3" />
+                                    </div>
+
+                                    <div style="float:left;" width="60%">
+                                        <slider id="greenSlider" width="95%" />
+                                    </div>
+
+                                    <div align="right" style="padding-top:4px">
+                                        <label id="greenLabel" />
+                                    </div>
+                                    </hbox>
+                                    <hbox>
+                                    <div style="float:left;padding-top:4px" width="60px">
+                                        <label value="Blue: " sclass="h3" />
+                                    </div>
+
+                                    <div style="float:left;" width="60%">
+                                        <slider id="blueSlider" width="95%" />
+                                    </div>
+
+                                    <div align="right" style="padding-top:4px">
+                                        <label id="blueLabel" />
+                                    </div>
+                                    </hbox>
+                                </div>
+
 
                                 </div>
 
@@ -340,6 +393,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <image id="turnonTransectDrawing" src="img/draw.png" style="width:16px" />
                                 </div>
 
+                                
 
                                 <!--  animation  -->
                                 <animationControlsComposer id="animationControlsComposer" />
@@ -429,7 +483,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                         </combobox>
 
                                                         <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()"/>
-
+                                                        
                                                         <html>
                                                             <![CDATA[ <br> ]]>
                                                         </html>
