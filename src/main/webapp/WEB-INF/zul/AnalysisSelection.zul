@@ -28,6 +28,7 @@
 </vbox>
 </popup>
 		<textbox id="selectionGeom" visible="false"/>
+		<textbox id="boxGeom" visible="false"/>
 
 		<script type="text/javascript">
 			 function setSelectionGeometry(geometry) {
@@ -48,6 +49,25 @@
  	           tbxSelectionGeom.fireEvent('onchange');
        		}
 	    }
+		function setBoxGeometry(geometry) {
+		var tbxBoxGeom = $e('${boxGeom.uuid}');
+		tbxBoxGeom.value = geometry;
+
+		if (document.createEvent) {
+         	   var evt = document.createEvent('HTMLEvents');
+         	   evt.initEvent( 'blur', false, false);
+         	   tbxBoxGeom.dispatchEvent(evt);
+   
+         	   var evt2 = document.createEvent('HTMLEvents');
+         	   evt2.initEvent( 'change', false, false);
+ 	           tbxBoxGeom.dispatchEvent(evt2);
+       		} 
+		else if (document.createEventObject) {
+         	   tbxBoxGeom.fireEvent('onblur');
+ 	           tbxBoxGeom.fireEvent('onchange');
+       		}
+	    }
+
 
 		</script>
 	</window>

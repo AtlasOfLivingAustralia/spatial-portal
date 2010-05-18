@@ -137,8 +137,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 	    }
 
 	    function setRegionGeometry(geometry) {
-		 if (setSelectionGeometry != undefined) {
-		    setSelectionGeometry(geometry);
+		 if (setBoxGeometry != undefined) {
+		    setBoxGeometry(geometry);
 		}
 
 	    }

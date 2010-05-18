@@ -58,6 +58,7 @@ import org.zkoss.zul.Textbox;
 public class SelectionController extends UtilityComposer {
 
     private Textbox selectionGeom;
+    private Textbox boxGeom;
     public Button download;
     public Listbox popup_listbox_results;
     public Popup popup_results;
@@ -101,15 +102,45 @@ public class SelectionController extends UtilityComposer {
      */
     public void onChange$selectionGeom(Event event) {
         try {
-            //Messagebox.show(selectionGeom.getValue());
-            wfsQuerySelection(selectionGeom.getValue());
-            
+            wfsQueryPolygon(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
 
     }
 
-    public void wfsQuerySelection(String selectionGeom) {
+    public void onChange$boxGeom(Event event) {
+        try {
+           
+            wfsQueryBBox(boxGeom.getValue());
+
+        } catch (Exception e) {//FIXME
+        }
+
+    }
+
+    /**
+     * Constructs a wfs 'species within bounding box query' for the given geometry
+     * @param selectionGeom geometry of the box
+     */
+    public void wfsQueryPolygon(String selectionGeom) {
+        String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName>";
+        String filterPart =   "<ogc:Filter><Intersects><PropertyName>the_geom</PropertyName><gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:coordinates cs=\" \" decimal=\".\" ts=\",\">COORDINATES</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></Intersects></ogc:Filter></wfs:Query></wfs:GetFeature>";
+        String coordinateString = selectionGeom.replace("POLYGON","").replace(")","").replace("(","");
+        String request = baseQueryXML+filterPart.replace("COORDINATES",coordinateString);
+        try {
+            Messagebox.show(request);
+            String response = POSTRequest(request);
+            Messagebox.show(response);
+         
+        } catch (Exception e) { //FIXME
+        }
+    }
+
+    /**
+     * Constructs a wfs 'species within bounding box query' for the given geometry
+     * @param selectionGeom geometry of the box
+     */
+    public void wfsQueryBBox(String selectionGeom) {
         String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
         String upperCorner = selectionGeom.replace("POLYGON(","").replace(")","").split(",")[3].toString();
         String lowerCorner = selectionGeom.replace("POLYGON(","").replace("(","").split(",")[1].toString(); 
