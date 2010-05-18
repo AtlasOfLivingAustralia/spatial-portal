@@ -27,6 +27,7 @@ public class ALOC {
         int width = 252, height = 210;
         String layerPath = TabulationSettings.environmental_data_path;
         if (layerPath == null) layerPath = "";
+        System.out.println("layerPath: " + layerPath); 
         for (Layer l : layers) {
             System.out.println("Loading layer " + l.display_name + " -> " + l.name + " => " + TabulationSettings.environmental_data_path);
             Grid grid = new Grid(

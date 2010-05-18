@@ -1,6 +1,7 @@
 package org.ala.spatial.web.services;
 
 import au.com.bytecode.opencsv.CSVReader;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,6 +10,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -71,7 +73,7 @@ public class MaxentWSController {
 
             String speciesfile = ss.sampleSpecies(taxon, null);
             CSVReader reader = new CSVReader(new FileReader(speciesfile));
-            
+
             StringBuffer sbSpecies = new StringBuffer();
             String[] nextLine;
 
@@ -88,6 +90,9 @@ public class MaxentWSController {
             }
 
 
+            String envlist = req.getParameter("envlist");
+            String[] envnameslist = envlist.split(":");
+            String[] envpathlist = getEnvFiles(envlist);
 
 
             MaxentSettings msets = new MaxentSettings();
@@ -95,7 +100,7 @@ public class MaxentWSController {
             msets.setMaxentPath(ssets.getMaxentCmd());
             //msets.setEnvList(Arrays.asList(envsel));
             //msets.setEnvList(Arrays.asList(req.getParameterValues("envsel")));
-            msets.setEnvList(Arrays.asList(getEnvFiles(req.getParameter("envlist"))));
+            msets.setEnvList(Arrays.asList(envpathlist));
             msets.setRandomTestPercentage(Integer.parseInt(req.getParameter("txtTestPercentage")));
             msets.setEnvPath(ssets.getEnvDataPath());
             msets.setEnvVarToggler("world");
@@ -122,6 +127,11 @@ public class MaxentWSController {
                 // TODO: Should probably move this part an external "parent"
                 // function so can be used by other functions
                 //
+
+                // rename the env filenames to their display names
+                for (int ei = 0; ei < envnameslist.length; ei++) {
+                    readReplace(currentPath + "output/maxent/" + currTime + "/species.html", envpathlist[ei], envnameslist[ei]);
+                }                
 
                 Hashtable htGeoserver = ssets.getGeoserverSettings();
 
@@ -260,15 +270,35 @@ public class MaxentWSController {
             pathlist[j] = SamplingService.layerDisplayNameToName(nameslist[j]);
             /*
             for (int i = 0; i < _layerlist.length; i++) {
-                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
-                    pathlist[j] = _layerlist[i].name;
-                    continue;
-                }
+            if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
+            pathlist[j] = _layerlist[i].name;
+            continue;
             }
-            *
-            */
+            }
+             *
+             */
         }
 
         return pathlist;
+    }
+
+    public void readReplace(String fname, String oldPattern, String replPattern) {
+        String line;
+        StringBuffer sb = new StringBuffer();
+        try {
+            FileInputStream fis = new FileInputStream(fname);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+            while ((line = reader.readLine()) != null) {
+                line = line.replaceAll(oldPattern, replPattern);
+                sb.append(line + "\n");
+            }
+            reader.close();
+            BufferedWriter out = new BufferedWriter(new FileWriter(fname));
+            out.write(sb.toString());
+            out.close();
+        } catch (Throwable e) {
+            System.err.println("*** exception ***");
+            e.printStackTrace(System.out);
+        }
     }
 }
