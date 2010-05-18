@@ -1,6 +1,97 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
+    <panel id="help" title="Click for Classification Tool Help" width="99%" border="normal"  open="false"
+           onClick="if(help.isOpen())help.open=false; else help.open=true;">
+        <panelchildren>
+            <html><![CDATA[
+            <p>
+                ALOC (short for allocation) is an efficient classification method
+                for large volumes of data. Think of it as combining multiple layers
+                of environmental data (e.g., mean annual temperature, slope, precipitation)
+                into one new layer.  You select the environmental layers, the number
+                of groups and ALOC produces a map of the resulting groups.
+            </p>
+            <p>
+                The Process
+            </p>
+            <ol>
+                <li>
+                    Select the environmental layers to be used for the classification.
+                    The layers must contain continuous values such as temperature,
+                    precipitation or slope. Any number of layers can be selected
+                    to be classified.
+                </li>
+                <li>
+                    Select the number of groups that you want produced.
+                </li>
+                <li>
+                    Press the 'Generate Classification' button.
+                </li>
+                <li>
+                    A map will be produced with the requested number of groups.
+                    The colours of the groups are not arbitrary: the differences
+                    between group colours is intended to represent differences
+                    between the groups.
+                </li>
+            </ol>
+            <p>
+                The Method
+            </p>
+            <p>
+                ALOC uses the following steps to produce a classification
+            </p>
+            <ol>
+                <li>
+                    Build a set of seed groups that are greater than a threshold
+                    distance apart (using Gower Metric)
+                </li>
+                <li>
+                    Allocate all points on the map to the seed groups
+                </li>
+                <li>
+                    Calculate the group centroids
+                </li>
+                <li>
+                    Iterate by removing each point from its allocated group,
+                    calculate the association (Gower Metric) to all groups and
+                    then allocate it to the closest group.
+                </li>
+                <li>
+                    Repeat 4 until no points change groups
+                </li>
+                <li>
+                    The colours are produced by a Principal Component Analysis
+                    using the inter-group distances (dissimilarity based on all
+                    the layers).
+                </li>
+            </ol>
+            <p>
+                References
+            </p>
+            <ul>
+                <li>
+                    Belbin, L., Marshall, C. and Faith, D.P. (1983). Representing
+                    relationships by the automatic assignment of colour. Australian
+                    Computer Journal, 15, 4, 160-163.
+                </li>
+                <li>
+                    Belbin, L. (1987). The Use of Non-hierarchical Allocation
+                    Methods for Clustering Large Sets of Data. Australian Computing
+                    Journal, 19, 1, 32-41.
+                </li>
+                <li>
+                    Gower J.C. (1967). Multivariate analysis and multidimensional
+                    geometry. The Statistician 17, 1, 13-28.
+                </li>
+            </ul>
+            ]]></html>
+            <separator/>
+            <div align="right">
+                <button label="hide help" onClick="help.open=false;" />
+            </div>
+        </panelchildren>
+    </panel>
     <window use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" style="padding: 10px">
 
         <style>
@@ -12,31 +103,26 @@
             }
         </style>
 
-        <!--  -->
-        <groupbox mold="3d" width="500px" style="padding: 10px">
-            <caption label="Environmental layers" />
+
+
+        <!-- <separator bar="true" /> <label value="Select your environmental layers" /> -->
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
+            <caption label="Select your environmental layers" />
             <vbox>
-                <label value="Select environmental layers for inclusion" />
-                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="400px" />
-
-                <separator spacing="20px" />
-
-                <label id="lblNoLayersSelected" value="No environmental layers selected" visible="true" />
-                <listbox id="lbSelLayers" multiple="true" checkmark="true" width="420px" visible="false" >
+                <hbox>
+                    <textbox id="tbenvfilter" visible="false" />
+                    <button id="btenvfilterclear" label="Clear filter" visible="false" />
+                </hbox>
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="99%" >
                     <listhead>
-                        <listheader label="Selected environmental layers for classification"></listheader>
+                        <listheader label="Select all layers" />
                     </listhead>
-                    <listfoot>
-                        <listfooter>
-                            <button id="btnDeleteSelected" label="Remove selected" visible="true" />
-                        </listfooter>
-                    </listfoot>
+
                 </listbox>
             </vbox>
-            
         </groupbox>
 
-        <groupbox mold="3d" width="500px" style="padding: 10px">
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Grouping" />
             <vbox>
                 <label value="Enter number of groups to generate" />
@@ -44,7 +130,7 @@
             </vbox>
         </groupbox>
 
-        <button id="btnGenerate" label="Generate classification" />
+        <button id="btnGenerate" label="Generate classification" sclass="goButton" />
 
     </window>
 </zk>

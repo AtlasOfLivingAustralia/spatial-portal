@@ -13,9 +13,16 @@
         </style>
 
         <!-- <label value="Step 1: Select your species " /> -->
-        <groupbox mold="3d" width="500px" style="padding: 10px">
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 1: Select your species" />
             <vbox>
+                <label>Search by</label>
+                <radiogroup id="rdgNameSearchType" >
+                    <hbox>
+                        <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
+                        <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
+                    </hbox>
+                </radiogroup>
 
                 <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                     <comboitem label=""/>
@@ -28,14 +35,14 @@
 
 
         <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
-        <groupbox mold="3d" width="500px" style="padding: 10px">
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 2: Select your environmental layers" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" />
                 </hbox>
-                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="450px" >
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="99%" >
                     <listhead>
                         <listheader label="Select all layers" />
                     </listhead>
@@ -48,7 +55,7 @@
 
         <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
 
-        <groupbox mold="3d" width="500px" style="padding: 10px">
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 3: Select your optional parameters" />
             <vbox>
                 <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" visible="false" />
@@ -68,7 +75,7 @@
 
         <progressmeter id="progress" value="42" visible="false" />
 
-        <button id="startmaxent" label="Start Maxent">
+        <button id="startmaxent" label="Start Maxent" sclass="goButton">
             <!--
             <attribute name="onClick">{
                 final Window win = (Window) Executions.createComponents(

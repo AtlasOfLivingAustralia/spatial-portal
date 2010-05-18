@@ -20,7 +20,7 @@ import org.zkoss.zul.Comboitem;
 public class EnvLayersCombobox extends Combobox {
 
     private String[] envLayers;
-    private String satServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://ec2-184-73-34-104.compute-1.amazonaws.com
+    private String satServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
 
     public EnvLayersCombobox(String value) throws WrongValueException {
         super(value);

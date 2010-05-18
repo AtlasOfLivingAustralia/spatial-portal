@@ -2,6 +2,8 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -9,15 +11,25 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Vector;
+
+//import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.PropertyFilter;
+import org.ala.spatial.search.TaxaCommonSearchResult;
+import org.ala.spatial.search.TaxaCommonSearchSummary;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zkmax.zul.Filedownload;
 import org.zkoss.zul.Button;
-import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
@@ -25,6 +37,7 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Popup;
+import org.zkoss.zul.Radio;
 import org.zkoss.zul.Row;
 import org.zkoss.zul.Rows;
 import org.zkoss.zul.SimpleGroupsModel;
@@ -35,7 +48,8 @@ import org.zkoss.zul.SimpleGroupsModel;
  */
 public class SamplingWCController extends UtilityComposer {
 
-    private Combobox sac;
+    private Radio rdoCommonSearch;
+    private SpeciesAutoComplete sac;
     private Listbox lbenvlayers;
     private Button btnMapSpecies;
     private Button btnPreview;
@@ -47,6 +61,7 @@ public class SamplingWCController extends UtilityComposer {
     private List layers;
     private Map layerdata;
     private String selectedLayer;
+    private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
 
@@ -73,24 +88,19 @@ public class SamplingWCController extends UtilityComposer {
 
             public void render(Listitem li, Object data) {
                 try {
-
-
                     String layername = (String) data;
                     li.setWidth(null);
                     Listcell lc = new Listcell(layername);
                     lc.setParent(li);
-                    
-                    selectedLayer = layername.replaceAll(" ", "_");
 
-                    HttpClient client = new HttpClient();
-                    GetMethod get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + selectedLayer + "/extents"); // testurl
-                    get.addRequestHeader("Accept", "text/plain");
+                    /* onclick event for popup content update */
+                    lc.addEventListener("onClick", new EventListener() {
 
-                    int result = client.executeMethod(get);
-                    String slist = get.getResponseBodyAsString();
+                        public void onEvent(Event event) throws Exception {
+                            showLayerExtents(event.getTarget());
+                        }
+                    });
 
-                    h.setContent(slist);
-                    lc.setPopup(p);
                 } catch (Exception e) {
                     e.printStackTrace(System.out);
                 }
@@ -98,6 +108,54 @@ public class SamplingWCController extends UtilityComposer {
             }
         });
         lbenvlayers.setModel(new SimpleGroupsModel(datas, new String[]{"Environmental", "Contextual"}));
+    }
+
+    private void showLayerExtents(Object o) {
+        Listcell lc = (Listcell) o;
+        Listitem li = (Listitem) lc.getParent();
+
+        selectedLayer = (String) lc.getLabel();
+        selectedLayer = selectedLayer.trim();
+        String slist = "";
+        try {
+            selectedLayer = selectedLayer.replaceAll(" ", "_");
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + selectedLayer + "/extents"); // testurl
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            slist = get.getResponseBodyAsString();
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
+        h.setContent(slist);
+
+
+        p.open(lc);
+    }
+
+    private void showLayerExtentsLabel(Object o) {
+        Label l = (Label) o;
+
+        selectedLayer = (String) l.getValue();
+        selectedLayer = selectedLayer.trim();
+        String slist = "";
+        try {
+            selectedLayer = selectedLayer.replaceAll(" ", "_");
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + selectedLayer + "/extents"); // testurl
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            slist = get.getResponseBodyAsString();
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
+        h.setContent(slist);
+
+        p.open(l);
     }
 
     /**
@@ -130,6 +188,11 @@ public class SamplingWCController extends UtilityComposer {
                 //lbenvlayers.setModel(new SimpleListModel(aslist));
                 layers.addAll(Arrays.asList(aslist));
                 layerdata.put("Environmental", aslist);
+
+                System.out.println("env:");
+                for (int k = 0; k < aslist.length; k++) {
+                    System.out.println(aslist[k] + ", ");
+                }
 
             }
 
@@ -172,6 +235,11 @@ public class SamplingWCController extends UtilityComposer {
                 //lbenvlayers.setModel(new SimpleListModel(aslist));
                 layers.addAll(Arrays.asList(aslist));
                 layerdata.put("Contextual", aslist);
+
+                System.out.println("env:");
+                for (int k = 0; k < aslist.length; k++) {
+                    System.out.println(aslist[k] + ", ");
+                }
             }
 
 
@@ -181,6 +249,16 @@ public class SamplingWCController extends UtilityComposer {
         }
 
         return aslist;
+    }
+
+    public void onCheck$rdoCommonSearch() {
+        sac.setSearchCommon(true);
+        sac.getItems().clear();
+    }
+
+    public void onCheck$rdoScientificSearch() {
+        sac.setSearchCommon(false);
+        sac.getItems().clear();
     }
 
     public void onClick$btnMapSpecies(Event event) {
@@ -208,14 +286,46 @@ public class SamplingWCController extends UtilityComposer {
             String slist = get.getResponseBodyAsString();
 
 
-            Filedownload.save(slist,"text/plain",selectedLayer + "_metadata.txt");
+            Filedownload.save(slist, "text/plain", selectedLayer + "_metadata.txt");
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
     }
 
+    private boolean isEnvironmental(String layername) {
+        layername = layername.trim();
+        String[] layernames = (String[]) layerdata.get("Environmental");
+        if (layernames != null) {
+            for (int i = 0; i < layernames.length; i++) {
+                if (layernames[i].trim().equals(layername)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isContextual(String layername) {
+        layername = layername.trim();
+        String[] layernames = (String[]) layerdata.get("Contextual");
+        if (layernames != null) {
+            for (int i = 0; i < layernames.length; i++) {
+                if (layernames[i].trim().equals(layername)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void onClick$btnPreview(Event event) {
         try {
+
+            String taxon = sac.getValue();
+            // check if its a common name, if so, grab the scientific name
+            if (rdoCommonSearch.isChecked()) {
+                taxon = getScientificName();
+            }
 
             StringBuffer sbenvsel = new StringBuffer();
 
@@ -236,13 +346,13 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(sac.getValue(), "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl 
+            GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
             //get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             get.addRequestHeader("Accept", "text/plain");
 
@@ -290,26 +400,36 @@ public class SamplingWCController extends UtilityComposer {
                     r.detach();
                 }
             }
-            /* setup contextual number to name lookups */
-            /*
-            SPLFilter[] splfilters = new SPLFilter[csv_filename[0].length];
-            for (i = 0; i < csv_filename[0].length; i++) {
-            if (csv_filename[0][i] != null) {
-            String display_name = csv_filename[0][i].trim();
-            for (int k = 0; k < _layers.size(); k++) {
-            Layer layer = (Layer) _layers.get(k);
-            if (layer.display_name.equals(display_name)) {
-            splfilters[i] = SpeciesListIndex.getLayerFilter(layer);
-            System.out.println("made splfilter: " + layer);
-            }
-            }
-            }
-            }
-             *
-             */
+
+            /* map of top row, contextual columns data lists for value lookups */
+            Map contextualLists = new Hashtable<Integer, String[]>();
 
             // add rows
+            String[] top_row = null;
             for (int i = 0; i < aslist.length; i++) {
+                if (i == 0) {
+                    top_row = aslist[i].split("~");
+
+                    for (int k = 0; k < top_row.length; k++) {
+                        if (isContextual(top_row[k])) {
+                            System.out.println("contextual column=" + top_row[k]);
+                            try {
+                                String layername = top_row[k].trim().replaceAll(" ", "_");
+                                client = new HttpClient();
+                                get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + layername + "/extents"); // testurl
+                                get.addRequestHeader("Accept", "text/plain");
+
+                                result = client.executeMethod(get);
+                                String[] salist = get.getResponseBodyAsString().split("<br>");
+                                contextualLists.put(new Integer(k), salist);
+
+                                System.out.println("# records=" + salist.length);
+                            } catch (Exception e) {
+                                e.printStackTrace(System.out);
+                            }
+                        }
+                    }
+                }
                 String[] rec = aslist[i].split("~");
                 System.out.println("Column Count: " + rec.length);
                 //System.out.println()
@@ -317,26 +437,52 @@ public class SamplingWCController extends UtilityComposer {
                 Row r = new Row();
                 r.setParent(results_rows);
                 // set the value
-                for (int k = 0; k < rec.length; k++) {
+                for (int k = 0; k < rec.length && k < top_row.length; k++) {
                     Label label = new Label(rec[k]);
                     label.setParent(r);
+
+                    /* onclick event for popup content update */
+                    boolean iscontextual = isContextual(top_row[k]);
+                    boolean isenvironmental = isEnvironmental(top_row[k]);
+
+                    System.out.println("label=" + top_row[k] + " iscontextual=" + iscontextual + " isenvironmental=" + isenvironmental);
+                    if (iscontextual || isenvironmental) {
+                        if (i == 0) {
+                            label.addEventListener("onClick", new EventListener() {
+
+                                public void onEvent(Event event) throws Exception {
+                                    showLayerExtentsLabel(event.getTarget());
+                                }
+                            });
+                        } else if (iscontextual) {
+                            try {
+                                String[] salist = (String[]) contextualLists.get(new Integer(k));
+                                int idx = Integer.parseInt(rec[k]);
+                                if (salist != null && salist.length > idx) {
+                                    label.setTooltiptext(salist[idx]);
+                                }
+                            } catch (Exception e) {
+                            }
+                        }//isenvironmental else{}
+                    }
+
 
                     /*
                     //add event listener for contextual columns
                     if (j == 0) { //add for header row
                     label.addEventListener("onClick", new EventListener() {
-                    
+
                     public void onEvent(Event event) throws Exception {
                     String display_name = ((Label) event.getTarget()).getValue().trim();
                     for (int k = 0; k < _layers.size(); k++) {
                     Layer layer = (Layer) _layers.get(k);
                     if (layer.display_name.equals(display_name)) {
                     popup_layer = layer;
-                    
+
                     Html h = (Html) getFellow("h");
                     String csv = SpeciesListIndex.getLayerExtents(layer.name);
                     h.setContent(csv);
-                    
+
                     Popup p = (Popup) getFellow("p");
                     //li.setPopup(p);
                     p.open(event.getTarget());
@@ -374,6 +520,12 @@ public class SamplingWCController extends UtilityComposer {
     public void onClick$btnDownload(Event event) {
         try {
 
+            String taxon = sac.getValue();
+            // check if its a common name, if so, grab the scientific name
+            if (rdoCommonSearch.isChecked()) {
+                taxon = getScientificName();
+            }
+
             StringBuffer sbenvsel = new StringBuffer();
 
             if (lbenvlayers.getSelectedCount() > 0) {
@@ -393,7 +545,7 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/download?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(sac.getValue(), "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
@@ -450,6 +602,7 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     private void loadSpeciesOnMap() {
+        /*
         String taxon = sac.getValue();
         String uri = null;
         String filter = null;
@@ -477,6 +630,97 @@ public class SamplingWCController extends UtilityComposer {
         logger.debug(filter);
         //mc.addWMSLayer(label, uri, 1, filter);
         mc.addKnownWMSLayer(taxon, uri, 1, filter);
+         *
+         */
 
+        String taxon = sac.getValue();
+        // check if its a common name, if so, grab the scientific name
+        if (rdoCommonSearch.isChecked()) {
+            taxon = getScientificName();
+        }
+        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        String uri = null;
+        String filter = null;
+        String entity = null;
+        MapLayer mapLayer = null;
+
+        //TODO these paramaters need to read from the config
+        String layerName = "ALA:occurrencesv1";
+        String sld = "species_point";
+        uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
+        String format = "image/png";
+
+        //get the current MapComposer instance
+        MapComposer mc = getThisMapComposer();
+
+        //contruct the filter in cql
+        filter = "species eq '" + taxon + "'";
+        mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Species occurrence for " + taxon, taxon, "1.1.1", uri, layerName, format, sld, filter);
+
+        //create a random colour
+
+        Random rand = new java.util.Random();
+        int r = rand.nextInt(99);
+        int g = rand.nextInt(99);
+        int b = rand.nextInt(99);
+        String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
+        mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
+        mc.addUserDefinedLayerToMenu(mapLayer, true);
+
+    }
+
+    private String getScientificName() {
+        String taxon = "";
+        try {
+
+            String nuri = "http://data.ala.org.au/search/commonNames/" + URLEncoder.encode(sac.getValue(), "UTF-8") + "/json";
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(nuri);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String snlist = get.getResponseBodyAsString();
+
+            TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
+            jsonConfig.setJavaPropertyFilter(new PropertyFilter() {
+
+                @Override
+                public boolean apply(Object source, String name, Object value) {
+                    if ("result".equals(name)) {
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            JSONObject jo = JSONObject.fromObject(snlist);
+
+            tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
+
+            if (tss.getRecordsReturned() > 1) {
+
+                JSONArray joResult = jo.getJSONArray("result");
+
+                JsonConfig jsonConfigResult = new JsonConfig();
+                jsonConfigResult.setRootClass(TaxaCommonSearchResult.class);
+
+                for (int i = 0; i < joResult.size(); i++) {
+                    TaxaCommonSearchResult tr = (TaxaCommonSearchResult) JSONSerializer.toJava(joResult.getJSONObject(i), jsonConfigResult);
+                    tss.addResult(tr);
+                }
+            }
+
+            //taxon = tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")";
+            taxon = tss.getResultList().get(0).getScientificName();
+            //status.setValue("Got: " + tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")");
+
+        } catch (Exception e) {
+            System.out.println("Oopps, error getting scientific name from common name");
+            e.printStackTrace(System.out);
+        }
+
+        return taxon;
     }
 }

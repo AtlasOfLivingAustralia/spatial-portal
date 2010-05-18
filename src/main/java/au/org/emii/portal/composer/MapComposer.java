@@ -241,7 +241,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Session session = (Session) Sessions.getCurrent();
         if (mainTab.getSelectedTab().getId().equalsIgnoreCase("linkNavigationTab")) {
             session.setAttribute("default_menus_width", menus.getWidth());
-            menus.setWidth("800px");
+            menus.setWidth("30%"); // 800px
         } else {
             menus.setWidth((String) session.getAttribute("default_menus_width"));
         }

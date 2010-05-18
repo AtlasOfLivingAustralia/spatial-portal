@@ -397,8 +397,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <tabpanel zclass="tabpanel_cnt" id="facilitiesTabPanel">
                                             <tabbox id="tbBiology" width="100%" mold="accordion">
                                                 <tabs>
-                                                    <tab label="Search Biology Layers"/>
-                                                    <tab label="Browse Biology Layers"/>
+                                                    <tab label="Search for species"/>
+                                                    <tab label="Browse species"/>
                                                 </tabs>
                                                 <tabpanels>
                                                     <tabpanel>

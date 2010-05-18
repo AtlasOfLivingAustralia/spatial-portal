@@ -19,7 +19,9 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
+import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 
@@ -29,6 +31,7 @@ import org.zkoss.zul.Textbox;
  */
 public class ALOCWCController extends UtilityComposer {
 
+    private Listbox lbenvlayers;
     private Combobox cbEnvLayers;
     private Label lblNoLayersSelected;
     private Listbox lbSelLayers;
@@ -37,14 +40,59 @@ public class ALOCWCController extends UtilityComposer {
     private Button btnGenerate;
     private List<String> selectedLayers;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
-    private String satServer = geoServer;  
+    private String satServer = geoServer;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
+        setupEnvironmentalLayers(); 
+        
         selectedLayers = new Vector<String>();
 
+    }
+
+    /**
+     * Iterate thru' the layer list setup in the @doAfterCompose method
+     * and setup the listbox
+     */
+    private void setupEnvironmentalLayers() {
+        try {
+
+            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+
+            //Messagebox.show("Loading env data from: " + envurl);
+
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(envurl);
+            get.addRequestHeader("Content-type", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            //Messagebox.show("done loading data: " + slist);
+
+            String[] aslist = slist.split("\n");
+
+            if (aslist.length > 0) {
+
+                lbenvlayers.setItemRenderer(new ListitemRenderer() {
+
+                    public void render(Listitem li, Object data) {
+                        li.setWidth(null);
+                        new Listcell((String) data).setParent(li);
+                    }
+                });
+
+                lbenvlayers.setModel(new SimpleListModel(aslist));
+            }
+
+
+        } catch (Exception e) {
+            System.out.println("error setting up env list");
+            e.printStackTrace(System.out);
+        }
     }
 
     public void onChange$cbEnvLayers(Event event) {
@@ -100,6 +148,8 @@ public class ALOCWCController extends UtilityComposer {
     public void onClick$btnGenerate(Event event) {
         try {
             StringBuffer sbenvsel = new StringBuffer();
+
+            /*
             if (selectedLayers.size() > 0) {
                 Iterator it = selectedLayers.iterator();
                 while (it.hasNext()) {
@@ -110,7 +160,25 @@ public class ALOCWCController extends UtilityComposer {
                 }
             } else {
                 Messagebox.show("Please select some environmental layers","ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
-                return; 
+                return;
+            }
+            *
+            */
+            if (lbenvlayers.getSelectedCount() > 0) {
+                Iterator it = lbenvlayers.getSelectedItems().iterator();
+                int i = 0;
+                while (it.hasNext()) {
+                    Listitem li = (Listitem) it.next();
+
+                    sbenvsel.append(li.getLabel());
+                    if (it.hasNext()) {
+                        sbenvsel.append(":");
+                    }
+
+                }
+            } else {
+                Messagebox.show("Please select some environmental layers","ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                return;
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
