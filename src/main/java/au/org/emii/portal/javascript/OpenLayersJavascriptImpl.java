@@ -76,6 +76,24 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         String script = "window.mapFrame.addPolygonDrawingTool()";
         execute(script);
     }
+    
+    @Override
+    public void addPolygonDrawingToolSampling() {
+        String script = "window.mapFrame.addPolygonDrawingToolSampling()";
+        execute(script);
+    }
+    
+    @Override
+    public void addPolygonDrawingToolALOC() {
+        String script = "window.mapFrame.addPolygonDrawingToolALOC()";
+        execute(script);
+    }
+    
+    @Override
+    public void addPolygonDrawingToolFiltering() {
+        String script = "window.mapFrame.addPolygonDrawingToolFiltering()";
+        execute(script);
+    }
 
     @Override
     public void addBoxDrawingTool() {

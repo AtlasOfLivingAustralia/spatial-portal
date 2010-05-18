@@ -191,6 +191,13 @@ public interface OpenLayersJavascript {
      * Adds the openlayers polygon drawing tool to the map
      */
     public void addPolygonDrawingTool();
+    
+    /**
+     * Copy for Sampling, ALOC, Filtering, Adds the openlayers polygon drawing tool to the map
+     */
+    public void addPolygonDrawingToolSampling();
+    public void addPolygonDrawingToolALOC();
+    public void addPolygonDrawingToolFiltering();
 
         /**
      * Adds the openlayers box drawing tool to the map

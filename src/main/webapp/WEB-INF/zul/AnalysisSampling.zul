@@ -47,11 +47,40 @@ This tool samples environmental and contextual data layers at locations defined 
             </vbox>
         </groupbox>
 
+		<groupbox mold="3d" style="width: 95%; padding: 5px">
+            <caption label="Step 2. Restrict samples to a polygon drawn on the map" />
+            <vbox>
+        <hbox>
+        <button label="Polygon Selection" id="btnPolygonSelection"/>
+		<button label="Clear Polygon Selection" id="btnPolygonSelectionClear"/>
+		</hbox>
+		<textbox id="selectionGeomSampling" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
+		<script type="text/javascript">		
+			 function setSelectionGeometrySampling(geometry) {
+		var tbxSelectionGeom = $e('${selectionGeomSampling.uuid}');
+		tbxSelectionGeom.value = geometry;
 
+		if (document.createEvent) {
+         	   var evt = document.createEvent('HTMLEvents');
+         	   evt.initEvent( 'blur', false, false);
+         	   tbxSelectionGeom.dispatchEvent(evt);
+   
+         	   var evt2 = document.createEvent('HTMLEvents');
+         	   evt2.initEvent( 'change', false, false);
+ 	           tbxSelectionGeom.dispatchEvent(evt2);
+       		} 
+		else if (document.createEventObject) {
+         	   tbxSelectionGeom.fireEvent('onblur');
+ 	           tbxSelectionGeom.fireEvent('onchange');
+       		}
+	    }
+		</script>
+		</vbox>
+		</groupbox>
 
         <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
         <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 2: Select the environmental and contextual layers that are to be sampled at species locations" />
+            <caption label="Step 3: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
@@ -71,7 +100,7 @@ This tool samples environmental and contextual data layers at locations defined 
         <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
         <!--
         <groupbox mold="3d" width="500px" style="padding: 10px">
-            <caption label="Step 3: Preview sampling output" />
+            <caption label="Step 4: Preview sampling output" />
             <vbox>
                 <button label="Preview sampling" id="btnPreview" />
             </vbox>

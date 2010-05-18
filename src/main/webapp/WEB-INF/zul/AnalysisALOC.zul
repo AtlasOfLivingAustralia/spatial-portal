@@ -121,6 +121,37 @@
                 </listbox>
             </vbox>
         </groupbox>
+        
+        <groupbox mold="3d" style="width: 95%; padding: 5px">
+            <caption label="Restrict environmental layers to a polygon drawn on the map" />
+            <vbox>
+        <hbox>
+        <button label="Polygon Selection" id="btnPolygonSelection"/>
+		<button label="Clear Polygon Selection" id="btnPolygonSelectionClear"/>
+		</hbox>
+		<textbox id="selectionGeomALOC" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
+		<script type="text/javascript">		
+			 function setSelectionGeometryALOC(geometry) {
+		var tbxSelectionGeom = $e('${selectionGeomALOC.uuid}');
+		tbxSelectionGeom.value = geometry;
+
+		if (document.createEvent) {
+         	   var evt = document.createEvent('HTMLEvents');
+         	   evt.initEvent( 'blur', false, false);
+         	   tbxSelectionGeom.dispatchEvent(evt);
+   
+         	   var evt2 = document.createEvent('HTMLEvents');
+         	   evt2.initEvent( 'change', false, false);
+ 	           tbxSelectionGeom.dispatchEvent(evt2);
+       		} 
+		else if (document.createEventObject) {
+         	   tbxSelectionGeom.fireEvent('onblur');
+ 	           tbxSelectionGeom.fireEvent('onchange');
+       		}
+	    }
+		</script>
+		</vbox>
+		</groupbox>
 
         <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Grouping" />
