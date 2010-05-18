@@ -35,6 +35,7 @@ import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.Textbox;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.Radio;
@@ -65,6 +66,9 @@ public class SamplingWCController extends UtilityComposer {
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
 
+    private String user_polygon = "";
+    private Textbox selectionGeomSampling;
+    
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -339,8 +343,14 @@ public class SamplingWCController extends UtilityComposer {
                     if (it.hasNext()) {
                         sbenvsel.append(":");
                     }
+                    i++;
 
                 }
+                if(i == 0){
+                	sbenvsel.append("none");
+                }
+            }else{
+            	sbenvsel.append("none");
             }
 
 
@@ -348,6 +358,11 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if(user_polygon.length() > 0){
+            	sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+            }else{
+            	sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            }
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
 
@@ -387,7 +402,6 @@ public class SamplingWCController extends UtilityComposer {
             }
              */
 
-
             // load into the results popup
             int j;
             //remove existing rows
@@ -396,7 +410,7 @@ public class SamplingWCController extends UtilityComposer {
             if (l != null) {
                 for (j = l.size() - 1; j >= 0; j--) {
                     Row r = (Row) l.get(j);
-                    System.out.println("detaching: " + ((Label) r.getChildren().get(0)).getValue());
+                  //  System.out.println("detaching: " + ((Label) r.getChildren().get(0)).getValue());
                     r.detach();
                 }
             }
@@ -538,15 +552,24 @@ public class SamplingWCController extends UtilityComposer {
                     if (it.hasNext()) {
                         sbenvsel.append(":");
                     }
-
+                    i++;
                 }
+                if(i == 0){
+                	sbenvsel.append("none");
+                }
+            }else{
+            	sbenvsel.append("none");
             }
-
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if(user_polygon.length() > 0){
+            	sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+            }else{
+            	sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            }
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
 
@@ -722,5 +745,49 @@ public class SamplingWCController extends UtilityComposer {
         }
 
         return taxon;
+    }
+    
+    /**
+     * Activate the polygon selection tool on the map
+     * @param event
+     */
+    public void onClick$btnPolygonSelection(Event event) {
+        MapComposer mc = getThisMapComposer();
+
+        mc.getOpenLayersJavascript().addPolygonDrawingToolSampling();
+    }
+    
+    /**
+     * clear the polygon selection tool on the map
+     * @param event
+     */
+    public void onClick$btnPolygonSelectionClear(Event event) {
+        user_polygon = "";
+        selectionGeomSampling.setValue("");
+    }
+    
+    /**
+     * 
+     * @param event
+     */
+    public void onChange$selectionGeomSampling(Event event) {
+        try {
+        	
+        	user_polygon = convertGeoToPoints(selectionGeomSampling.getValue());
+        	
+        } catch (Exception e) {//FIXME
+        	e.printStackTrace();
+        }
+
+    }
+    
+    String convertGeoToPoints(String geometry){
+    	if(geometry == null){
+    		return "";
+    	}
+    	geometry = geometry.replace(" ",":");
+	    geometry = geometry.replace("POLYGON((","");
+	    geometry = geometry.replace(")","");
+	    return geometry;
     }
 }

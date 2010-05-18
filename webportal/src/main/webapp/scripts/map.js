@@ -37,8 +37,8 @@ var baseLayers = new Object();
  */
 var currentBaseLayer = null;
 
-
-
+var polyControl = null;  //for deactivate after drawing
+var boxControl = null;	//for deactivate after drawing
 
 var layersLoading = 0;
 var layername; // current layer name
@@ -284,6 +284,34 @@ function addPolygonDrawingTool() {
     polyControl.activate();	
     //////
 }
+//Copy for Sampling, ALOC, Filtering
+function addPolygonDrawingToolSampling() {
+    ////adding polygon control and layer	
+    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
+    polygonLayer.destroyFeatures();
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAddedSampling});     
+    map.addControl(polyControl);
+    polyControl.activate();	
+    //////
+}
+function addPolygonDrawingToolALOC() {
+    ////adding polygon control and layer	
+    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
+    polygonLayer.destroyFeatures();
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAddedALOC});     
+    map.addControl(polyControl);
+    polyControl.activate();	
+    //////
+}
+function addPolygonDrawingToolFiltering() {
+    ////adding polygon control and layer	
+    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
+    polygonLayer.destroyFeatures();
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAddedFiltering});     
+    map.addControl(polyControl);
+    polyControl.activate();	
+    //////
+}
 
 function addBoxDrawingTool() {
     var boxLayer = new OpenLayers.Layer.Vector("Box Layer");
@@ -295,6 +323,19 @@ function addBoxDrawingTool() {
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
 	parent.setPolygonGeometry(feature.geometry);
+	polyControl.deactivate();
+     }
+// Copy for Sampling, ALOC, Filtering, This function passes the geometry up to javascript in index.zul which can then send it to the server.
+function polygonAddedSampling(feature) {
+	parent.setPolygonGeometrySampling(feature.geometry);
+	polyControl.deactivate();
+     }
+function polygonAddedALOC(feature) {
+	parent.setPolygonGeometryALOC(feature.geometry);
+	polyControl.deactivate();
+     }
+function polygonAddedFiltering(feature) {
+	parent.setPolygonGeometryFiltering(feature.geometry);
 	polyControl.deactivate();
      }
 

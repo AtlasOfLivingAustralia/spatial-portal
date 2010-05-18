@@ -42,6 +42,9 @@ public class ALOCWCController extends UtilityComposer {
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
 
+    String user_polygon = "";
+    Textbox selectionGeomALOC;
+    
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -182,9 +185,14 @@ public class ALOCWCController extends UtilityComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/process?");
+            sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeo?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(groupCount.getValue(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if(user_polygon.length() > 0){
+            	sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+            }else{
+            	sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            }
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
@@ -224,5 +232,49 @@ public class ALOCWCController extends UtilityComposer {
         mapComposer = (MapComposer) page.getFellow("mapPortalPage");
 
         return mapComposer;
+    }
+    
+    /**
+     * Activate the polygon selection tool on the map
+     * @param event
+     */
+    public void onClick$btnPolygonSelection(Event event) {
+        MapComposer mc = getThisMapComposer();
+
+        mc.getOpenLayersJavascript().addPolygonDrawingToolALOC();
+    }
+    
+    /**
+     * clear the polygon selection tool on the map
+     * @param event
+     */
+    public void onClick$btnPolygonSelectionClear(Event event) {
+        user_polygon = "";
+        selectionGeomALOC.setValue("");
+    }
+    
+    /**
+     * 
+     * @param event
+     */
+    public void onChange$selectionGeomALOC(Event event) {
+    	try {
+        	
+        	user_polygon = convertGeoToPoints(selectionGeomALOC.getValue());
+        	
+        } catch (Exception e) {//FIXME
+        	e.printStackTrace();
+        }
+
+    }
+    
+    String convertGeoToPoints(String geometry){
+    	if(geometry == null){
+    		return "";
+    	}
+    	geometry = geometry.replace(" ",":");
+	    geometry = geometry.replace("POLYGON((","");
+	    geometry = geometry.replace(")","");
+	    return geometry;
     }
 }
