@@ -94,6 +94,39 @@ public class SpatialSettingsWSController {
         return sbEnvList.toString();
     }
 
+    @RequestMapping(value = "/layers/string", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String layersAsString(HttpServletRequest req) {
+
+        ssets = new SpatialSettings();
+
+        StringBuffer sbEnvList = new StringBuffer();
+
+        _layers = new ArrayList();
+        Layer[] _layerlist = ssets.getEnvironmentalLayers();
+
+        for (int i = 0; i < _layerlist.length; i++) {
+            _layers.add(_layerlist[i]);
+            //System.out.println("Layer: " + _layerlist[i].name + " - " + _layerlist[i].display_name);
+
+            sbEnvList.append(_layerlist[i].display_name + "\n");
+
+        }
+
+        _layerlist = ssets.getContextualLayers();
+
+        for (int i = 0; i < _layerlist.length; i++) {
+            _layers.add(_layerlist[i]);
+            //System.out.println("Layer: " + _layerlist[i].name + " - " + _layerlist[i].display_name);
+
+            sbEnvList.append(_layerlist[i].display_name + "\n");
+
+        }
+
+        return sbEnvList.toString();
+    }
+
     @RequestMapping(value = "/layer/{layer}/extents", method = RequestMethod.GET)
     public
     @ResponseBody
