@@ -34,6 +34,7 @@ import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.SessionInitImpl;
+import java.awt.Color;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,6 +46,7 @@ import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.search.AutoCompleteSpecies;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
+import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -119,6 +121,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Tabpanel realtimeTabPanel;
     private Slider opacitySlider;
     private Label opacityLabel;
+    private Slider redSlider;
+    private Slider greenSlider;
+    private Slider blueSlider;
+    private Label redLabel;
+    private Label greenLabel;
+    private Label blueLabel;
     private Listbox activeLayersList;
     private Div layerControls;
     private Listbox baseLayerList;
@@ -145,6 +153,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Button addExtLayersButton;
     private Button saveMap;
     private Button mapSave;
+    private Button zoomExtent;
     private Textbox createSavedMap;
     private Button loadSavedMapButton;
     private Div loadMapcont;
@@ -186,6 +195,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private GazetteerSearchController gazetteerSearchWindow;
     private AutoComplete gazetteerAuto;
     private SpeciesAutoComplete searchSpeciesAuto;
+
+    private Div colourChooser;
+    private Image legendImg;
+    private Button applyChange;
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -250,6 +263,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
+
     /**
      * Region tab click
      */
@@ -273,6 +287,60 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         addLayer.setVisible(true);
         addExtLayersButton.setVisible(false);
 
+    }
+
+    public void onClick$zoomExtent() {
+         // change opacity for the current selected and displayed layer
+        MapLayer selectedLayer = this.getActiveLayersSelection(true);
+        if (selectedLayer != null && selectedLayer.isDisplayed()) {
+            logger.debug("zooming to extent " + selectedLayer.getId());
+            openLayersJavascript.zoomGeoJsonExtent(selectedLayer);
+        }
+    }
+
+    public void onClick$applyChange() {
+        StringBuffer script = new StringBuffer();
+
+        MapLayer selectedLayer = this.getActiveLayersSelection(true);
+        if (selectedLayer != null && selectedLayer.isDisplayed()) {
+
+             MapLayer nm = selectedLayer;
+
+           deactiveLayer(selectedLayer, true, false);
+          
+            nm.setRedVal(redSlider.getCurpos());
+            nm.setGreenVal(greenSlider.getCurpos());
+            nm.setBlueVal(blueSlider.getCurpos());
+
+            Color c =new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
+
+
+        String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
+
+        nm.setEnvColour(hexColour);
+        nm.setLayer(hexColour);
+
+
+            
+         //deactiveLayer(selectedLayer, true, true);
+          
+          deactiveLayer(selectedLayer, true, false);
+
+          
+       
+       
+        
+
+        }
+    }
+
+    public void onClick$legendImg() {
+        //toggle the colourChooser div
+        if (colourChooser.isVisible()) {
+            colourChooser.setVisible(false);
+        } else {
+            colourChooser.setVisible(true);
+        }
     }
 
     public void onClick$gazSearch() {
@@ -1438,6 +1506,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             // show animation controls if needed
             getAnimationControlsComposer().updateAnimationControls(currentSelection);
 
+            if (currentSelection.getType() == LayerUtilities.GEOJSON) {
+                LegendMaker lm = new LegendMaker();
+                //Color c = Color.decode(currentSelection.getEnvColour());
+                int red = currentSelection.getRedVal();
+                int blue = currentSelection.getBlueVal();
+                int green = currentSelection.getGreenVal();
+
+                Color c = new Color(red, green, blue);
+
+                redSlider.setCurpos(red);
+                greenSlider.setCurpos(green);
+                blueSlider.setCurpos(blue);
+
+                blueLabel.setValue(String.valueOf(blue));
+                redLabel.setValue(String.valueOf(red));
+                greenLabel.setValue(String.valueOf(green));
+                legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+            }
             layerControls.setVisible(true);
         } else {
             layerControls.setVisible(false);
@@ -1643,6 +1729,33 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
+    public void updateLegendImage() {
+        LegendMaker lm = new LegendMaker();
+        int red = redSlider.getCurpos();
+        int blue = blueSlider.getCurpos();
+        int green = greenSlider.getCurpos();
+        Color c = new Color(red, green, blue);
+        legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+    }
+
+    public void onScroll$blueSlider(){
+        int blue = blueSlider.getCurpos();
+        blueLabel.setValue(String.valueOf(blue));
+        updateLegendImage();
+    }
+
+    public void onScroll$redSlider(){
+        int red = redSlider.getCurpos();
+        redLabel.setValue(String.valueOf(red));
+        updateLegendImage();
+    }
+
+    public void onScroll$greenSlider(){
+        int green = greenSlider.getCurpos();
+        greenLabel.setValue(String.valueOf(green));
+        updateLegendImage();
+    }
+
     /*
      * image clicked for transect drawing across NCWMS layers
      */
@@ -1708,32 +1821,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void addGeoJSON(String labelValue, String uriValue) {
         if (safeToPerformMapAction()) {
             this.addGeoJSONLayer(labelValue, uriValue);
+           
         }
 
     }
 
-    public boolean addGeoJSONLayer(String label, String uri) {
-        boolean addedOk = false;
+    public MapLayer addGeoJSONLayer(String label, String uri) {
+        MapLayer mapLayer = null;
 
         if (safeToPerformMapAction()) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-                MapLayer mapLayer = remoteMap.createGeoJSONLayer(label, uri);
+                mapLayer = remoteMap.createGeoJSONLayer(label, uri);
                 if (mapLayer == null) {
                     // fail
                     logger.info("adding GEOJSON layer failed ");
                 } else {
                     mapLayer.setDisplayable(true);
-                    mapLayer.setOpacity((float) 0.75);
-                    // updating the tree (because its not displayed)
+                    mapLayer.setOpacity((float) 1);
+                    mapLayer.setQueryable(true);
+                    
                     activateLayer(mapLayer, true, true);
 
                     // we must tell any future tree menus that the map layer is already
                     // displayed as we didn't use changeSelection()
                     mapLayer.setListedInActiveLayers(true);
-                    mapLayer.setQueryable(true);
-
-                    //addUserDefinedLayerToMenu(mapLayer, true);
-                    addedOk = true;
+                   
+                    
                 }
             } else {
                 // fail
@@ -1747,7 +1860,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
 
 
-        return addedOk;
+        return mapLayer;
     }
 
     /**

@@ -182,6 +182,34 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     //parameters for the dynamic styled layers
 
+    private int redVal;
+    private int blueVal;
+    private int greenVal;
+
+    public int getBlueVal() {
+        return blueVal;
+    }
+
+    public void setBlueVal(int blueVal) {
+        this.blueVal = blueVal;
+    }
+
+    public int getGreenVal() {
+        return greenVal;
+    }
+
+    public void setGreenVal(int greenVal) {
+        this.greenVal = greenVal;
+    }
+
+    public int getRedVal() {
+        return redVal;
+    }
+
+    public void setRedVal(int redVal) {
+        this.redVal = redVal;
+    }
+
     private String envColour;
     private String envName;
     private String envSize;

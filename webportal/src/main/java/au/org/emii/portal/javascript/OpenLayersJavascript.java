@@ -75,6 +75,8 @@ public interface OpenLayersJavascript {
 
     public String defineGeoJSONMapLayer(MapLayer layer);
 
+    public void zoomGeoJsonExtent (MapLayer layer);
+
     /**
      * create an instance of OpenLayers.Layer.WMS.
      *

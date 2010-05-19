@@ -108,6 +108,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
+    public void zoomGeoJsonExtent (MapLayer ml) {
+        String script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getGeoJSON() + "')";
+        execute(script);
+    }
+
+    @Override
         public String defineAnimatedLayer(MapLayer mapLayer) {
                 List<Double> bbox = mapLayer.getMapLayerMetadata().getBbox();
 
@@ -460,21 +466,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         public String defineGeoJSONMapLayer(MapLayer layer) {
                 /* can't have a GeoJSON baselayer so we don't need to decide where to store
                  * the layer definition
-
-
-                 var geojson_format = new OpenLayers.Format.GeoJSON();
-                 var vector_layer = new OpenLayers.Layer.Vector(name);
-                 map.addLayer(vector_layer);
-                 features = geojson_format.read(feature);
-
                  */
 
-
-                String script =
-                        ""
-                       
+                String script =""
                         + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "');"
-
                         + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
                         + // register for loading images...
                         "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
