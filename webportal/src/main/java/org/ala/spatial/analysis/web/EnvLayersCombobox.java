@@ -52,7 +52,8 @@ public class EnvLayersCombobox extends Combobox {
         String[] aslist = null;
         try {
 
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+            //String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/string";
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(envurl);

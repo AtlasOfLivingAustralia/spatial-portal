@@ -36,7 +36,7 @@ public class AnalysisController extends UtilityComposer {
 
     public void onSelect$filteringTab() {
         MapComposer mc = getThisMapComposer();
-        mc.setWestWidth(MENU_MAX_WIDTH);
+        mc.setWestWidth(MENU_HALF_WIDTH);
     }
 
     public void onSelect$samplingTab() {
