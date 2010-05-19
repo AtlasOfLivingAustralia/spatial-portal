@@ -50,6 +50,8 @@ var libraryCheckIntervalMs=100;
 var secondsToWaitForLibrary=30;
 var maxAttempts = (secondsToWaitForLibrary * 1000) / libraryCheckIntervalMs;
 
+var gazetteerURL = "http"
+
 function stopCheckingLibraryLoaded() {
     clearInterval(checkLibraryLoadedTimeout);
 }
@@ -352,11 +354,10 @@ function regionAdded(feature) {
 
 function addJsonFeatureToMap(feature, name, hexColour) {
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
-        {fillColor: hexColour, fillOpacity: 0.75, strokeColor: hexColour},
+        {fillColor: hexColour, fillOpacity: 1, strokeColor: hexColour},
         OpenLayers.Feature.Vector.style["default"]));
     var geojson_format = new OpenLayers.Format.GeoJSON();
     var vector_layer = new OpenLayers.Layer.Vector(name, {styleMap: styleMap});
-    //map.addLayer(vector_layer);
     features = geojson_format.read(feature);
     vector_layer.addFeatures(features);
     return vector_layer;
@@ -380,7 +381,18 @@ function zoomBoundsGeoJSON(feature) {
 
         }
 
-        map.zoomToExtent(bounds);
+        if (features.length == 1) {
+            
+           if (features[0].geometry.getVertices().length == 1) {
+              //its a point just center the map
+              map.setCenter(new OpenLayers.LonLat(features[0].geometry.getCentroid().x, features[0].geometry.getCentroid().y),5);
+           } else {
+             map.zoomToExtent(bounds);
+           }
+        } else {
+            
+             map.zoomToExtent(bounds);
+        }
     } else {
         //alert("failed");
     }
@@ -473,14 +485,18 @@ function getpointInfo(e) {
 
     var wmsLayers = map.getLayersByClass("OpenLayers.Layer.WMS");
     var imageLayers = map.getLayersByClass("OpenLayers.Layer.Image");
+    var geoJsonLayers = map.getLayersByClass("OpenLayers.Layer.Vector");
     wmsLayers = wmsLayers.concat(imageLayers);
-    //alert(Event.findElement(e,Event.elemet));
-    
+    wmsLayers = wmsLayers.concat(geoJsonLayers);
 
+    var url = false;
+    
      if (parent.disableDepthServlet == false) {
         getDepth(e);
     }
-        
+
+
+    
    
 
     for (key in wmsLayers) {
@@ -492,7 +508,7 @@ function getpointInfo(e) {
             
 
             if ((! layer.isBaseLayer) && layer.queryable) {
-                var url = false;
+                
                 
 
                 if (layer.animatedNcwmsLayer) {
@@ -614,6 +630,9 @@ function getpointInfo(e) {
 
 
                 }
+            } else {
+
+                
             }
         }
     }
@@ -624,6 +643,33 @@ function getpointInfo(e) {
     }
 
 //setTimeout('hidepopup()', 4000);
+}
+
+
+function onPopupClose(evt) {
+    // 'this' is the popup.
+    selectControl.unselect(this.feature);
+}
+function onFeatureSelect(evt) {
+    feature = evt.feature;
+    popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                             feature.geometry.getBounds().getCenterLonLat(),
+                             new OpenLayers.Size(100,100),
+                             "<h2>"+feature.attributes.title + "</h2>" +
+                             feature.attributes.description,
+                             null, true, onPopupClose);
+    feature.popup = popup;
+    popup.feature = feature;
+    map.addPopup(popup);
+}
+function onFeatureUnselect(evt) {
+    feature = evt.feature;
+    if (feature.popup) {
+        popup.feature = null;
+        map.removePopup(feature.popup);
+        feature.popup.destroy();
+        feature.popup = null;
+    }
 }
 
 function handleQueryStatus(theobj) {

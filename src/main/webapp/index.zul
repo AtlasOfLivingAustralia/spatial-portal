@@ -16,130 +16,121 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
 
-    <html><![CDATA[
+<html><![CDATA[
             <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
             <link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
           ]]>
-    </html>
+</html>
 
-    <!-- style src="css/zkprint.css" media="print" /-->
-    <script src="/scripts/jquery-1.2.6.min.js" type="text/javascript"></script>
-    <script src="/scripts/jqDnR.js" type="text/javascript"></script>
+<!-- style src="css/zkprint.css" media="print" /-->
+<script src="/scripts/jquery-1.2.6.min.js" type="text/javascript"></script>
+<script src="/scripts/jqDnR.js" type="text/javascript"></script>
 
-    <script type="text/javascript">
-        var mapLayers = null;
-        var map = null;
-        var OpenLayers = null;
-        var baseLayers = null;
-        var currentBaseLayer = null;
-        var safeToLoadMapId = null;
-        var registerLayer = null;
-        var tmpvars;
-        var disableDepthServlet= ${settings.disableDepthServlet};
-
-
-        var wms100 = ${layerUtilities.wms100};
-        var wms110 = ${layerUtilities.wms110};
-        var wms111 = ${layerUtilities.wms111};
-        var wms130 = ${layerUtilities.wms130};
-        var ncwms = ${layerUtilities.ncwms};
-        var thredds = ${layerUtilities.thredds};
-        var georss = ${layerUtilities.georss};
-        var kml = ${layerUtilities.kml};
-        var unsupported =${layerUtilities.unsupported};
-
-    </script>
+<script type="text/javascript">
+    var mapLayers = null;
+    var map = null;
+    var OpenLayers = null;
+    var baseLayers = null;
+    var currentBaseLayer = null;
+    var safeToLoadMapId = null;
+    var registerLayer = null;
+    var tmpvars;
+    var disableDepthServlet= ${settings.disableDepthServlet};
 
 
-    <window id="mapPortalPage" width="100%" height="100%"
-            use="au.org.emii.portal.composer.MapComposer" apply="au.org.emii.portal.composer.MapComposer"
-            style="overflow:hidden;">
-        <!--
+    var wms100 = ${layerUtilities.wms100};
+    var wms110 = ${layerUtilities.wms110};
+    var wms111 = ${layerUtilities.wms111};
+    var wms130 = ${layerUtilities.wms130};
+    var ncwms = ${layerUtilities.ncwms};
+    var thredds = ${layerUtilities.thredds};
+    var georss = ${layerUtilities.georss};
+    var kml = ${layerUtilities.kml};
+    var unsupported =${layerUtilities.unsupported};
+
+</script>
+
+
+<window id="mapPortalPage" width="100%" height="100%"
+        use="au.org.emii.portal.composer.MapComposer" apply="au.org.emii.portal.composer.MapComposer"
+        style="overflow:hidden;">
+<!--
             Nasty hack to stop you getting SEVERE errors in the console. The
             iframe in the holder gets moved into ErrorMessageWithDetail.zul when
             raw text is required to be displayed and then gets moved back here
             when the window is closed. Yuk
         -->
-        <div id="rawMessageHackHolder" visible="false">
-            <iframe id="rawMessageIframeHack" width="100%" height="250px" />
-        </div>
+<div id="rawMessageHackHolder" visible="false">
+    <iframe id="rawMessageIframeHack" width="100%" height="250px" />
+</div>
 
 
-        <!--  flag indicating whether safe to load map (OL library loaded) -->
-        <textbox visible="false" id="safeToLoadMap" value="false" />
-        <script type="text/javascript">
-            var safeToLoadMapId = '${safeToLoadMap.uuid}';
+<!--  flag indicating whether safe to load map (OL library loaded) -->
+<textbox visible="false" id="safeToLoadMap" value="false" />
+<script type="text/javascript">
+    var safeToLoadMapId = '${safeToLoadMap.uuid}';
 
-            function updateSafeToLoadMap(status) {
-            document.getElementById(safeToLoadMapId).value = status;
-            zkTxbox.updateChange($e(safeToLoadMapId), false);
-            }
-        </script>
-        <doublebox id="southReal" visible="false" />
-        <doublebox id="northReal" visible="false" />
-        <doublebox id="westReal" visible="false" />
-        <doublebox id="eastReal" visible="false" />
+    function updateSafeToLoadMap(status) {
+    document.getElementById(safeToLoadMapId).value = status;
+    zkTxbox.updateChange($e(safeToLoadMapId), false);
+    }
+</script>
+<doublebox id="southReal" visible="false" />
+<doublebox id="northReal" visible="false" />
+<doublebox id="westReal" visible="false" />
+<doublebox id="eastReal" visible="false" />
 
-	<!-- textboxes to hold polygon geometry 
-	the value is set by setPolygonGeometry, which notifies the server by generating an onChange
-		 -->
-	<textbox id="polyGeom" visible="false"/>
+<!-- textboxes to hold polygon geometry 
+        the value is set by setPolygonGeometry, which notifies the server by generating an onChange
+                 -->
+<textbox id="polyGeom" visible="false"/>
 
-        <script type="text/JavaScript">
-            function roundNumber(num, dec) {
-            var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
-            return result;
-            }
+<script type="text/JavaScript">
+    function roundNumber(num, dec) {
+    var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+    return result;
+    }
 
-            function setExtent() {
-            var extent = window.frames.mapFrame.map.getExtent();
-            extent = extent.toArray()
+    function setExtent() {
+    var extent = window.frames.mapFrame.map.getExtent();
+    extent = extent.toArray()
 
 
-            var northReal = $e('${northReal.uuid}');
-            var eastReal = $e('${eastReal.uuid}');
-            var southReal = $e('${southReal.uuid}');
-            var westReal = $e('${westReal.uuid}');
+    var northReal = $e('${northReal.uuid}');
+    var eastReal = $e('${eastReal.uuid}');
+    var southReal = $e('${southReal.uuid}');
+    var westReal = $e('${westReal.uuid}');
 
-            northReal.value = roundNumber(extent[3],3);
-            eastReal.value = roundNumber(extent[2],3);
-            southReal.value = roundNumber(extent[1],3);
-            westReal.value = roundNumber(extent[0],3)
+    northReal.value = roundNumber(extent[3],3);
+    eastReal.value = roundNumber(extent[2],3);
+    southReal.value = roundNumber(extent[1],3);
+    westReal.value = roundNumber(extent[0],3)
 
-            if (getGeographicExtentControls != undefined) {
-            getGeographicExtentControls();
-            }
+    if (getGeographicExtentControls != undefined) {
+    getGeographicExtentControls();
+    }
 
-            return extent;
-            }
+    return extent;
+    }
 
-	    function setPolygonGeometry(geometry) {
-		var tbxPolyGeom = $e('${polyGeom.uuid}');
-		tbxPolyGeom.value = geometry;
+    function setPolygonGeometry(geometry) {
+    var tbxPolyGeom = $e('${polyGeom.uuid}');
+    tbxPolyGeom.value = geometry;
 
-		if (document.createEvent) {
-         	   var evt = document.createEvent('HTMLEvents');
-         	   evt.initEvent( 'blur', false, false);
-         	   tbxPolyGeom.dispatchEvent(evt);
-   
-         	   var evt2 = document.createEvent('HTMLEvents');
-         	   evt2.initEvent( 'change', false, false);
- 	           tbxPolyGeom.dispatchEvent(evt2);
-       		} 
-		else if (document.createEventObject) {
-         	   tbxPolyGeom.fireEvent('onblur');
- 	           tbxPolyGeom.fireEvent('onchange');
-       		}
-		
-		 if (setSelectionGeometry != undefined) {
-		    setSelectionGeometry(geometry);
-		}
-	    }
+    if (document.createEvent) {
+    var evt = document.createEvent('HTMLEvents');
+    evt.initEvent( 'blur', false, false);
+    tbxPolyGeom.dispatchEvent(evt);
 
-	    function setRegionGeometry(geometry) {
-		 if (setBoxGeometry != undefined) {
-		    setBoxGeometry(geometry);
-		}
+    var evt2 = document.createEvent('HTMLEvents');
+    evt2.initEvent( 'change', false, false);
+    tbxPolyGeom.dispatchEvent(evt2);
+    }
+    else if (document.createEventObject) {
+    tbxPolyGeom.fireEvent('onblur');
+    tbxPolyGeom.fireEvent('onchange');
+    }
+
 
 	    }
 	    
@@ -210,532 +201,555 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 		}
 	    }
 	    
+      
+
+
+    function setRegionGeometry(geometry) {
+    if (setSelectionGeometry != undefined) {
+    setSelectionGeometry(geometry);
+    }
+
+    }
+
+</script>
+
+
+<!-- external content (Links) popup -->
+<window id="externalContentWindow" visible="false" width="80%"
+        height="80%" border="normal" sizable="true"
+        use="au.org.emii.portal.composer.ExternalContentComposer"
+        apply="au.org.emii.portal.composer.ExternalContentComposer">
+    <caption id="caption">
+        <toolbarbutton id="breakout" label="Open in new Window" />
+        <toolbarbutton id="hide" label="Close" />
+    </caption>
+    <iframe id="externalContentIframe" width="100%" height="100%" />
+</window>
+
+<borderlayout width="100%">
+<north id="header" height="45">
+
+    <div>
+        <!--  top right menu links -->
+        <div sclass="toplinks">
+            <zk if="${! settings.disablePortalUsers}">
+                <toolbarbutton label="Logout"
+                               zclass="leftmenu_ahref"
+                               id="logoutButton" visible="${session.attributes.portalSession.portalUser.loggedIn}" />
+                <toolbarbutton label="Login"
+                               tooltiptext="Login and view your stored searches and maps" zclass="leftmenu_ahref"
+                               id="loginButton"  visible="${! session.attributes.portalSession.portalUser.loggedIn}" />
+
+            </zk>
+
+            <zk forEach="${session.attributes.portalSession.staticMenuLinks}" if="${! settings.disableTopLinks}">
+
+                <!--  external links -->
+                <toolbarbutton if="${each.external}" label="${each.name}"
+                               tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
+
+                <!--  internal links -->
+                <toolbarbutton if="${! each.external}" label="${each.name}"
+                               tooltiptext="${each.description}" zclass="leftmenu_ahref"
+                               forward="onClick=onActivateLink()" >
+                    <custom-attributes link="${each}" />
+                </toolbarbutton>
+
+            </zk>
+        </div>
+
+
+
+        <div sclass="highlighted spaced" visible="false" >
+            This form should be hidden
+            <textbox id="extUrl"/>
+            <separator />
+            <textbox id="extSld"/>
+            <separator />
+            <textbox id="extCql"  />
+            <separator />
+            <textbox id="extLabel" />
+            <separator />
+            <textbox id="extLayer" />
+            <separator />
+            <textbox id="extType" />
+            <separator />
+            <textbox id="extSubmit"  />
+            <separator />
+        </div>
+        <script type="text/javascript">
+
+            // for external KML etc layers
+            function setExtLayer(url,label,type) {
+            document.getElementById('${extUrl.uuid}').value = url;
+            document.getElementById('${extLabel.uuid}').value = label;
+            document.getElementById('${extType.uuid}').value = type;
+            document.getElementById('${extSubmit.uuid}').value = true;
+            updateExtLayers();
+
+            return false;
+            }
+            // for external WMS layers
+            function setExtWmsLayer(url,label,type,layer,sld,cql) {
+            document.getElementById('${extUrl.uuid}').value = url;
+            document.getElementById('${extSld.uuid}').value = sld;
+            document.getElementById('${extCql.uuid}').value = cql;
+            document.getElementById('${extLabel.uuid}').value = label;
+            document.getElementById('${extLayer.uuid}').value = layer;
+            document.getElementById('${extType.uuid}').value = type;
+            document.getElementById('${extSubmit.uuid}').value = true;
+            updateExtLayers();
+
+            return false;
+            }
+            function updateExtLayers() {
+            try {
+            zkTxbox.updateChange($e('${extUrl.uuid}'), false);
+            zkTxbox.updateChange($e('${extSld.uuid}'), false);
+            zkTxbox.updateChange($e('${extCql.uuid}'), false);
+            zkTxbox.updateChange($e('${extLabel.uuid}'), false);
+            zkTxbox.updateChange($e('${extLayer.uuid}'), false);
+            zkTxbox.updateChange($e('${extType.uuid}'), false);
+            zkTxbox.updateChange($e('${extSubmit.uuid}'), false);
+            } catch (err) {
+            }
+            }
         </script>
+    </div>
+</north>
+<west 	style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
+       id="menus" collapsible="true"
+       splittable="true" minsize="250">
+    <div id="westChild">
+        <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
+            <div zclass="closebox" zindex="500" left="2px" top="2px">
+                <toolbarbutton
+                    id="showLeftMenu"
+                    label=""
+                    image="img/buttonopen.png"
+                    hoverImage="img/buttonopen-over.png"
+                    />
+            </div>
+        </div>
 
-
-        <!-- external content (Links) popup -->
-        <window id="externalContentWindow" visible="false" width="80%"
-                height="80%" border="normal" sizable="true"
-                use="au.org.emii.portal.composer.ExternalContentComposer"
-                apply="au.org.emii.portal.composer.ExternalContentComposer">
-            <caption id="caption">
-                <toolbarbutton id="breakout" label="Open in new Window" />
-                <toolbarbutton id="hide" label="Close" />
-            </caption>
-            <iframe id="externalContentIframe" width="100%" height="100%" />
-        </window>
-
-        <borderlayout width="100%">
-            <north id="header" height="45">
-
-                <div>
-                    <!--  top right menu links -->
-                    <div sclass="toplinks">
-                        <zk if="${! settings.disablePortalUsers}">
-                            <toolbarbutton label="Logout"
-                                           zclass="leftmenu_ahref"
-                                           id="logoutButton" visible="${session.attributes.portalSession.portalUser.loggedIn}" />
-                            <toolbarbutton label="Login"
-                                           tooltiptext="Login and view your stored searches and maps" zclass="leftmenu_ahref"
-                                           id="loginButton"  visible="${! session.attributes.portalSession.portalUser.loggedIn}" />
-
-                        </zk>
-
-                        <zk forEach="${session.attributes.portalSession.staticMenuLinks}" if="${! settings.disableTopLinks}">
-
-                            <!--  external links -->
-                            <toolbarbutton if="${each.external}" label="${each.name}"
-                                           tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
-
-                            <!--  internal links -->
-                            <toolbarbutton if="${! each.external}" label="${each.name}"
-                                           tooltiptext="${each.description}" zclass="leftmenu_ahref"
-                                           forward="onClick=onActivateLink()" >
-                                <custom-attributes link="${each}" />
-                            </toolbarbutton>
-
-                        </zk>
-                    </div>
+        <div id="westContent" class="westContent" visible="true">
 
 
 
-                    <div sclass="highlighted spaced" visible="false" >
-                        This form should be hidden
-                        <textbox id="extUrl"/>
-                        <separator />
-                        <textbox id="extSld"/>
-                        <separator />
-                        <textbox id="extCql"  />
-                        <separator />
-                        <textbox id="extLabel" />
-                        <separator />
-                        <textbox id="extLayer" />
-                        <separator />
-                        <textbox id="extType" />
-                        <separator />
-                        <textbox id="extSubmit"  />
-                        <separator />
-                    </div>
-                    <script type="text/javascript">
 
-                        // for external KML etc layers
-                        function setExtLayer(url,label,type) {
-                        document.getElementById('${extUrl.uuid}').value = url;
-                        document.getElementById('${extLabel.uuid}').value = label;
-                        document.getElementById('${extType.uuid}').value = type;
-                        document.getElementById('${extSubmit.uuid}').value = true;
-                        updateExtLayers();
 
-                        return false;
-                        }
-                        // for external WMS layers
-                        function setExtWmsLayer(url,label,type,layer,sld,cql) {
-                        document.getElementById('${extUrl.uuid}').value = url;
-                        document.getElementById('${extSld.uuid}').value = sld;
-                        document.getElementById('${extCql.uuid}').value = cql;
-                        document.getElementById('${extLabel.uuid}').value = label;
-                        document.getElementById('${extLayer.uuid}').value = layer;
-                        document.getElementById('${extType.uuid}').value = type;
-                        document.getElementById('${extSubmit.uuid}').value = true;
-                        updateExtLayers();
-
-                        return false;
-                        }
-                        function updateExtLayers() {
-                        try {
-                        zkTxbox.updateChange($e('${extUrl.uuid}'), false);
-                        zkTxbox.updateChange($e('${extSld.uuid}'), false);
-                        zkTxbox.updateChange($e('${extCql.uuid}'), false);
-                        zkTxbox.updateChange($e('${extLabel.uuid}'), false);
-                        zkTxbox.updateChange($e('${extLayer.uuid}'), false);
-                        zkTxbox.updateChange($e('${extType.uuid}'), false);
-                        zkTxbox.updateChange($e('${extSubmit.uuid}'), false);
-                        } catch (err) {
-                        }
-                        }
-                    </script>
+            <div sclass="leftmenutabs">
+                <!--  hide the left menu (west element) -->
+                <div zclass="closebox" zindex="500" width="22px" top="5px">
+                    <toolbarbutton
+                        id="hideLeftMenu"
+                        label=""
+                        image="img/buttonclose.png"
+                        hoverImage="img/buttonclose-over.png" />
                 </div>
-            </north>
-            <west 	style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
-                   id="menus" collapsible="true"
-                   splittable="true" minsize="250">
-                <div id="westChild">
-                    <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
-                        <div zclass="closebox" zindex="500" left="2px" top="2px">
-                            <toolbarbutton
-                                id="showLeftMenu"
-                                label=""
-                                image="img/buttonopen.png"
-                                hoverImage="img/buttonopen-over.png"
-                                />
+
+                <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
+                    <tabs>
+                        <!--  layers -->
+                        <tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />
+
+                        <!--  links -->
+                        <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
+
+                        <!--  search  -->
+                        <tab id="searchNavigationTab" label="Search" if="${! settings.disableSearch}"/>
+
+                    </tabs>
+                </tabbox>
+            </div>
+            <div id="layerNavigationTabContent"
+                 visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}">
+
+                <label sclass="h2 title" value="Layer Selector" />
+
+
+                <!--  baselayer selection -->
+                <div sclass="highlighted">
+                    <label value="Base Layer" sclass="h3" />
+                    <listbox id="baseLayerList" mold="select" />
+                </div>
+
+
+                <!-- active layers -->
+                <div id="activeLayersHolder">
+                    <listbox id="activeLayersList" />
+                </div>
+
+                <div id="layerControls" sclass="highlighted" visible="false">
+                    <button id="zoomExtent" label="Zoom to layer extent" />
+                    <!-- opacity-->
+                    <div id="opacityControls" >
+                        <div style="float:left;padding-top:4px" width="60px">
+                            <label value="Opacity: " sclass="h3" />
+                        </div>
+                        <div style="float:left;" width="60%">
+                            <slider id="opacitySlider" width="95%" />
+                        </div>
+                        <div align="right" style="padding-top:4px">
+                            <label id="opacityLabel" />
+                        </div>
+
+                        <separator />
+
+                        <div id="styleControls" style="margin-top:10px">
+                            <label value="Style:" sclass="h3 inputlabel" />
+                            <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
                         </div>
                     </div>
 
-                    <div id="westContent" class="westContent" visible="true">
-
-
-
-
-
-                        <div sclass="leftmenutabs">
-                            <!--  hide the left menu (west element) -->
-                            <div zclass="closebox" zindex="500" width="22px" top="5px">
-                                <toolbarbutton
-                                    id="hideLeftMenu"
-                                    label=""
-                                    image="img/buttonclose.png"
-                                    hoverImage="img/buttonclose-over.png" />
-                            </div>
-
-                            <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
-                                <tabs>
-                                    <!--  layers -->
-                                    <tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />
-
-                                    <!--  links -->
-                                    <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
-
-                                    <!--  search  -->
-                                    <tab id="searchNavigationTab" label="Search" if="${! settings.disableSearch}"/>
-
-                                </tabs>
-                            </tabbox>
+                    <separator sclass="hr" height="10px" />
+                        <div style="float:left;padding-top:4px" width="60px">
+                            <label value="Colour: " sclass="h3" />
                         </div>
-                        <div id="layerNavigationTabContent"
-                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}">
-
-                            <label sclass="h2 title" value="Layer Selector" />
-
-
-                            <!--  baselayer selection -->
-                            <div sclass="highlighted">
-                                <label value="Base Layer" sclass="h3" />
-                                <listbox id="baseLayerList" mold="select" />
-                            </div>
+                        <div style="float:left;" width="60%">
+                            <image id="legendImg" width="50px" height="50px" tooltiptext="Click to change symbol" />
+                        </div>
 
 
-                            <!-- active layers -->
-                            <div id="activeLayersHolder">
-                                <listbox id="activeLayersList" />
-                            </div>
+                    <separator sclass="hr" height="10px" />
 
-                            <div id="layerControls" sclass="highlighted" visible="false">
-                                <!-- opacity-->
-                                <div id="opacityControls" >
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Opacity: " sclass="h3" />
-                                    </div>
-                                    <div style="float:left;" width="60%">
-                                        <slider id="opacitySlider" width="95%" />
-                                    </div>
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="opacityLabel" />
-                                    </div>
+                    <div id="colourChooser" visible="false">
 
-                                    <separator />
+                     <div style="float:right;" width="60%">
+                        <button id="applyChange" label="Apply" />
+                     </div>
 
-                                    <div id="styleControls" style="margin-top:10px">
-                                        <label value="Style:" sclass="h3 inputlabel" />
-                                        <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
-                                    </div>
-                                    
-                                     <separator />
+                     <separator sclass="hr" height="10px" />
 
-                                    <div id="symbolControl" visible="true" sclass="highlighted" >
-                                    <label value="Change symbol" />
+                    <div style="float:left;padding-top:4px" width="60px">
+                        <label value="Red: " sclass="h3" />
+                    </div>
 
-                                    <combobox id="cboSymbols">
-                                        <comboitem label="Circle" />
-                                        <comboitem label="Square" />
-                                        <comboitem label="Triangle" />
-                                    </combobox>
+                    <div style="float:left;" width="60%">
+                        <slider id="redSlider" maxpos="255" width="95%" />
+                    </div>
 
-                                    <hbox width="100%">
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Red: " sclass="h3" />
-                                    </div>
+                    <div align="right" style="padding-top:4px">
+                        <label id="redLabel" />
+                    </div>
 
-                                    <div style="float:left;" width="60%">
-                                        <slider id="redSlider" width="95%" />
-                                    </div>
+                    <separator sclass="hr" height="2px" />
 
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="redLabel" />
-                                    </div>
-                                    </hbox>
-                                    <hbox>
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Green: " sclass="h3" />
-                                    </div>
+                    <div style="float:left;padding-top:4px" width="60px">
+                        <label value="Green: " sclass="h3" />
+                    </div>
 
-                                    <div style="float:left;" width="60%">
-                                        <slider id="greenSlider" width="95%" />
-                                    </div>
+                    <div style="float:left;" width="60%">
+                        <slider id="greenSlider" maxpos="255" width="95%" />
+                    </div>
 
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="greenLabel" />
-                                    </div>
-                                    </hbox>
-                                    <hbox>
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Blue: " sclass="h3" />
-                                    </div>
+                    <div align="right" style="padding-top:4px">
+                        <label id="greenLabel" />
+                    </div>
 
-                                    <div style="float:left;" width="60%">
-                                        <slider id="blueSlider" width="95%" />
-                                    </div>
+                    <separator sclass="hr" height="2px" />
 
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="blueLabel" />
-                                    </div>
-                                    </hbox>
-                                </div>
+                    <div style="float:left;padding-top:4px" width="60px">
+                        <label value="Blue: " sclass="h3" />
+                    </div>
 
+                    <div style="float:left;" width="60%">
+                        <slider id="blueSlider" maxpos="255" width="95%" />
+                    </div>
 
-                                </div>
+                    <div align="right" style="padding-top:4px">
+                        <label id="blueLabel" />
+                    </div>
 
-                                <div id="transectControl" visible="false" >
-                                    <separator sclass="hr" height="10px" />
-                                    <label value="Turn on transect graphing for this layer" />
-                                    <image id="turnonTransectDrawing" src="img/draw.png" style="width:16px" />
-                                </div>
+                    </div>
 
-                                
-
-                                <!--  animation  -->
-                                <animationControlsComposer id="animationControlsComposer" />
-
-                            </div>
+               <separator sclass="hr" height="2px" />
 
 
 
-                            <!--  reset / save map buttons -->
-                            <div align="right" style="margin-right:5px;" sclass="resetdiv" >
-                                <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
-                                <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
-                                <button id="removeAllLayers" label="Clear Layers" sclass="h3" />
-                                <button id="reloadPortal" label="Reset Map" sclass="h3" />
-                            </div>
 
-                            <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">
-                                <!--Dialog to save map as.. -->
-                                <div  id="createMapcont" visible="false" >
-                                    <label sclass="h4" value="Map Name:" />
-                                    <textbox id="createSavedMap" sclass="inputspace" constraint="no empty" maxlength="28"  width="150px" />
-                                    <button id="mapSave" label="Save"  />
-
-                                </div>
-                                <label id="createSavedMapError" sclass="h3 error"  visible="false" value="Please give your map a name" />
-                                <label id="createSavedMapAdvice" sclass="h4 "  visible="false" value="You have no Saved Maps yet!" />
+                <div id="transectControl" visible="false" >
+                    <separator sclass="hr" height="10px" />
+                    <label value="Turn on transect graphing for this layer" />
+                    <image id="turnonTransectDrawing" src="img/draw.png" style="width:16px" />
+                </div>
 
 
-                                <!--Dialog to load maps-->
-                                <div  id="loadMapcont" visible="true" >
-                                    <listbox id="savedMaps" sclass="inputspace" mold="select" width="200px"></listbox>
-                                    <button label="Load" id="loadSavedMapButton" />
-                                    <button label="Delete" id="mapDel" />
-                                </div>
-                            </div>
+
+                <!--  animation  -->
+                <animationControlsComposer id="animationControlsComposer" />
+
+            </div>
 
 
-                            <!--separator height="20px" /-->
+
+            <!--  reset / save map buttons -->
+            <div align="right" style="margin-right:5px;" sclass="resetdiv" >
+                <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
+                <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
+                <button id="removeAllLayers" label="Clear Layers" sclass="h3" />
+                <button id="reloadPortal" label="Reset Map" sclass="h3" />
+            </div>
+
+            <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">
+                <!--Dialog to save map as.. -->
+                <div  id="createMapcont" visible="false" >
+                    <label sclass="h4" value="Map Name:" />
+                    <textbox id="createSavedMap" sclass="inputspace" constraint="no empty" maxlength="28"  width="150px" />
+                    <button id="mapSave" label="Save"  />
+
+                </div>
+                <label id="createSavedMapError" sclass="h3 error"  visible="false" value="Please give your map a name" />
+                <label id="createSavedMapAdvice" sclass="h4 "  visible="false" value="You have no Saved Maps yet!" />
+
+
+                <!--Dialog to load maps-->
+                <div  id="loadMapcont" visible="true" >
+                    <listbox id="savedMaps" sclass="inputspace" mold="select" width="200px"></listbox>
+                    <button label="Load" id="loadSavedMapButton" />
+                    <button label="Delete" id="mapDel" />
+                </div>
+            </div>
+
+
+            <!--separator height="20px" /-->
 
                                         <!--  save Map dialog box -->
-                            <tree id="saveMaps">
-                                <treecols>
-                                    <treecol width="90%" />
-                                    <treecol width="10%" />
-                                </treecols>
-                            </tree>
+            <tree id="saveMaps">
+                <treecols>
+                    <treecol width="90%" />
+                    <treecol width="10%" />
+                </treecols>
+            </tree>
 
-                            <radiogroup>
-                                <tabbox id="accordionMenu"  tooltip="yes" >
-                                    <tabs>
-                                        <!--  facilities -->
-                                        <tab id="facilitiesTab" label="Biological" if="${! settings.disableFacility}" />
+            <radiogroup>
+                <tabbox id="accordionMenu"  tooltip="yes" >
+                    <tabs>
+                        <!--  facilities -->
+                        <tab id="facilitiesTab" label="Biological" if="${! settings.disableFacility}" />
 
-                                        <!--  regions -->
-                                        <tab id="regionsTab" label="Environmental" if="${! settings.disableRegion}" visible="false"/>
+                        <!--  regions -->
+                        <tab id="regionsTab" label="Environmental" if="${! settings.disableRegion}" visible="false"/>
 
-                                        <!--  realtime -->
-                                        <tab id="realtimeTab" label="Environmental" if="${! settings.disableRealtime}"/>
+                        <!--  realtime -->
+                        <tab id="realtimeTab" label="Environmental" if="${! settings.disableRealtime}"/>
 
-                                        <!--  user defined -->
-                                        <tab id="userTab" label="User Defined" if="${! settings.disableUserDefined}"/>
-                                    </tabs>
-                                    <tabpanels>
+                        <!--  user defined -->
+                        <tab id="userTab" label="User Defined" if="${! settings.disableUserDefined}"/>
+                    </tabs>
+                    <tabpanels>
 
-                                        <!--  facilities -->
-                                        <tabpanel zclass="tabpanel_cnt" id="facilitiesTabPanel">
-                                            <tabbox id="tbBiology" width="100%" mold="accordion">
-                                                <tabs>
-                                                    <tab label="Search for species"/>
-                                                    <tab label="Browse species"/>
-                                                </tabs>
-                                                <tabpanels>
-                                                    <tabpanel>
-                                                        <label>Search by</label>
-                                                        <radiogroup id="rdgNameSearchType" >
-                                                            <hbox>
-                                                                <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
-                                                                <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
-                                                            </hbox>
-                                                        </radiogroup>
-                                                        <!--<textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>
+                        <!--  facilities -->
+                        <tabpanel zclass="tabpanel_cnt" id="facilitiesTabPanel">
+                            <tabbox id="tbBiology" width="100%" mold="accordion">
+                                <tabs>
+                                    <tab label="Search for species"/>
+                                    <tab label="Browse species"/>
+                                </tabs>
+                                <tabpanels>
+                                    <tabpanel>
+                                        <label>Search by</label>
+                                        <radiogroup id="rdgNameSearchType" >
+                                            <hbox>
+                                                <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
+                                                <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
+                                            </hbox>
+                                        </radiogroup>
+                                        <!--<textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>
                                                         <combobox id="searchSpeciesAuto" use="org.ala.spatial.search.AutoCompleteSpecies" autodrop="true" width="240px"></combobox>
                                                         <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()" />-->
 
-                                                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
-                                                            <comboitem label=""/>
-                                                        </combobox>
+                                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                                            <comboitem label=""/>
+                                        </combobox>
 
-                                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()"/>
-                                                        
-                                                        <html>
-                                                            <![CDATA[ <br> ]]>
-                                                        </html>
-                                                        <html>
-                                                            <![CDATA[ <br> ]]>
-                                                        </html>
-                                                    </tabpanel>
-                                                    <tabpanel>
-                                                        <div id="facilityControls">
-                                                            <zk forEach="${session.attributes.portalSession.facilities}">
-                                                                <div visible="false">
-                                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                                           tooltiptext="${each.value.description}" sclass="tabheader"
-                                                                           forward="onCheck=onSelectFacility()">
+                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()"/>
 
-                                                                        <custom-attributes systemId="${each.value.id}" />
-                                                                    </radio>
-                                                                    <tree id="tree_${each.value.id}" />
-                                                                </div>
-                                                            </zk>
-                                                            <html><![CDATA[
+                                        <html>
+                                            <![CDATA[ <br> ]]>
+                                        </html>
+                                        <html>
+                                            <![CDATA[ <br> ]]>
+                                        </html>
+                                    </tabpanel>
+                                    <tabpanel>
+                                        <div id="facilityControls">
+                                            <zk forEach="${session.attributes.portalSession.facilities}">
+                                                <div visible="false">
+                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                                           tooltiptext="${each.value.description}" sclass="tabheader"
+                                                           forward="onCheck=onSelectFacility()">
+
+                                                        <custom-attributes systemId="${each.value.id}" />
+                                                    </radio>
+                                                    <tree id="tree_${each.value.id}" />
+                                                </div>
+                                            </zk>
+                                            <html><![CDATA[
 
                                                                     <div style="width:inherit;" >
                                                                         <a href="http://data.ala.org.au/species/" target="_blank" class="external wrap" title="ALA Species Data">ALA Species Data</a><BR>
                                                                     </div>
 
                                                                         ]]>
-                                                           </html>
-                                                        </div>
+                                            </html>
+                                        </div>
 
 
-                                                    </tabpanel>
-                                                </tabpanels>
-                                            </tabbox>
-
-
-
-
-
-
-                                        </tabpanel>
-
-                                        <!--  Regions -->
-                                        <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel" visible="false">
-
-                                           
-                                            <div id="regionControls" >
-                                                <zk forEach="${session.attributes.portalSession.regions}">
-                                                    <div>
-                                                        <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                               tooltiptext="${each.value.description}" sclass="tabheader"
-                                                               forward="onCheck=onSelectRegion()">
-                                                            <custom-attributes systemId="${each.value.id}" />
-                                                        </radio>
-
-                                                        <tree id="tree_${each.value.id}" />
-                                                    </div>
-                                                </zk>
-                                            </div>
-                                           
-                                        </tabpanel>
-
-                                        <!--  realtime -->
-                                        <tabpanel zclass="tabpanel_cnt" id="realtimeTabPanel">
-                                            
-                                            <tabbox id="context" width="100%" mold="accordion">
-                                                <tabs>
-                                                    <tab label="Search"/>
-                                                    <tab label="Browse Environmental Layers"/>
-                                                </tabs>
-                                                <tabpanels>
-                                                <tabpanel>
-                                                    <div>
-                                                        <vbox width="100%">
-                                                            <label value="Enter Place Name" />
-                                                        <hbox>
-                                                           <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
-                                                            <button id="gazSearch" label="Search" />
-                                                            <label id="resultGaz" />
-                                                        </hbox>
-                                                        <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                            <listhead>
-                                                            <listheader label="Name"/>
-                                                            <listheader label="View" />
-                                                            </listhead>
-                                                        </listbox>
-							                                                        </vbox>
-                                                    </div>
-
-
-                                                </tabpanel>
-                                                <tabpanel>
+                                    </tabpanel>
+                                </tabpanels>
+                            </tabbox>
 
 
 
 
-                                            <div id="realtimeControls">
-                                                <zk forEach="${session.attributes.portalSession.realtimes}">
-                                                    <div>
-                                                        <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                               tooltiptext="${each.value.description}" sclass="tabheader"
-                                                               forward="onCheck=onSelectRealtime()">
-                                                            <custom-attributes systemId="${each.value.id}" />
-                                                        </radio>
-                                                        <tree id="tree_${each.value.id}" />
-                                                    </div>
-                                                </zk>
-                                            </div>
-                                             </tabpanel>
-                                            </tabpanels>
-                                            </tabbox>
-                                        </tabpanel>
-                                        <!--  user defined layers-->
-                                        <tabpanel zclass="tabpanel_cnt" id="userTabPanel" >
-                                            <div align="right" style="margin-right:5px;" sclass="resetdiv">
-                                                <button id="addExtLayersButton" label="Add Layers from a WMS server" />
-                                            </div>
-                                            <div zclass="tabpanel_cnt" id="addLayer" visible="false">
-                                                <addLayer id="addLayerMacro" />
-                                            </div>
-                                            <tree id="tree_user">
-                                                <treecols>
-                                                    <treecol width="90%" />
-                                                    <treecol width="10%" />
-                                                </treecols>
-                                            </tree>
-                                        </tabpanel>
-
-                                    </tabpanels>
-                                </tabbox>
-                            </radiogroup>
-                        </div>
-
-                        
-                        <div id="linkNavigationTabContent"
-                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
-                            <leftMenuLinks id="leftMenuLinks" />
-                        </div>
-
-                        <div id="searchNavigationTabContent"
-                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
-                            <leftMenuSearch id="leftMenuSearch" />
-                        </div>
-
-                    </div>
-                </div>
-            </west>
 
 
-            <center id="center">
-                <div id="mapcontainer" width="100%" height="100%" >
-                    <div style="float:left" width="100%" height="100%" >
-                        <iframe id="mapIframe" width="100%" height="100%" name="mapFrame"  />
-                    </div>
-                    <script type="text/javascript">
-                        window.frames["mapFrame"].location.href = "";
-                        window.frames["mapFrame"].location.href = "./map.html?";
-                    </script>
-                    <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="true" >
-                        <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"
-                                visible="true" style="float:right;margin-bottom:10px;" />
-                        <image 	id="layerSwitcherHide" src="/img/layer-switcher-minimize.png"
-                                visible="false" style="float:right;margin-bottom:10px;"/>
-                    </div>
-                </div>
+                        </tabpanel>
 
-            </center>
+                        <!--  Regions -->
+                        <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel" visible="false">
 
 
-            <south id="south">
-                <footer id="footer" />
-            </south>
-        </borderlayout>
+                            <div id="regionControls" >
+                                <zk forEach="${session.attributes.portalSession.regions}">
+                                    <div>
+                                        <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                               tooltiptext="${each.value.description}" sclass="tabheader"
+                                               forward="onCheck=onSelectRegion()">
+                                            <custom-attributes systemId="${each.value.id}" />
+                                        </radio>
 
+                                        <tree id="tree_${each.value.id}" />
+                                    </div>
+                                </zk>
+                            </div>
+
+                        </tabpanel>
+
+                        <!--  realtime -->
+                        <tabpanel zclass="tabpanel_cnt" id="realtimeTabPanel">
+
+                            <tabbox id="context" width="100%" mold="accordion">
+                                <tabs>
+                                    <tab label="Search"/>
+                                    <tab label="Browse Environmental Layers"/>
+                                </tabs>
+                                <tabpanels>
+                                    <tabpanel>
+                                        <div>
+                                            <vbox width="100%">
+                                                <label value="Enter Place Name" />
+                                                <hbox>
+                                                    <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                    <button id="gazSearch" label="Search" />
+                                                    <label id="resultGaz" />
+                                                </hbox>
+                                                <listbox id="gazetteerResults" fixedLayout="true" visible="false">
+                                                    <listhead>
+                                                        <listheader label="Name"/>
+                                                        <listheader label="View" />
+                                                    </listhead>
+                                                </listbox>
+                                            </vbox>
+                                        </div>
+
+
+                                    </tabpanel>
+                                    <tabpanel>
+
+
+
+
+                                        <div id="realtimeControls">
+                                            <zk forEach="${session.attributes.portalSession.realtimes}">
+                                                <div>
+                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                                           tooltiptext="${each.value.description}" sclass="tabheader"
+                                                           forward="onCheck=onSelectRealtime()">
+                                                        <custom-attributes systemId="${each.value.id}" />
+                                                    </radio>
+                                                    <tree id="tree_${each.value.id}" />
+                                                </div>
+                                            </zk>
+                                        </div>
+                                    </tabpanel>
+                                </tabpanels>
+                            </tabbox>
+                        </tabpanel>
+                        <!--  user defined layers-->
+                        <tabpanel zclass="tabpanel_cnt" id="userTabPanel" >
+                            <div align="right" style="margin-right:5px;" sclass="resetdiv">
+                                <button id="addExtLayersButton" label="Add Layers from a WMS server" />
+                            </div>
+                            <div zclass="tabpanel_cnt" id="addLayer" visible="false">
+                                <addLayer id="addLayerMacro" />
+                            </div>
+                            <tree id="tree_user">
+                                <treecols>
+                                    <treecol width="90%" />
+                                    <treecol width="10%" />
+                                </treecols>
+                            </tree>
+                        </tabpanel>
+
+                    </tabpanels>
+                </tabbox>
+            </radiogroup>
+        </div>
+
+
+        <div id="linkNavigationTabContent"
+             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
+            <leftMenuLinks id="leftMenuLinks" />
+        </div>
+
+        <div id="searchNavigationTabContent"
+             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
+            <leftMenuSearch id="leftMenuSearch" />
+        </div>
+
+    </div>
+    </div>
+</west>
+
+
+<center id="center">
+    <div id="mapcontainer" width="100%" height="100%" >
+        <div style="float:left" width="100%" height="100%" >
+            <iframe id="mapIframe" width="100%" height="100%" name="mapFrame"  />
+        </div>
         <script type="text/javascript">
-            var onIframeMapFullyLoaded = function() {
-            ${session.attributes.portalSession.onIframeMapFullyLoaded}
-            };
-
-            jQuery('.hidden_image :hidden').show();
+            window.frames["mapFrame"].location.href = "";
+            window.frames["mapFrame"].location.href = "./map.html?";
         </script>
+        <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="true" >
+            <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"
+                    visible="true" style="float:right;margin-bottom:10px;" />
+            <image 	id="layerSwitcherHide" src="/img/layer-switcher-minimize.png"
+                    visible="false" style="float:right;margin-bottom:10px;"/>
+        </div>
+    </div>
+
+</center>
+
+
+<south id="south">
+    <footer id="footer" />
+</south>
+</borderlayout>
+
+<script type="text/javascript">
+    var onIframeMapFullyLoaded = function() {
+    ${session.attributes.portalSession.onIframeMapFullyLoaded}
+    };
+
+    jQuery('.hidden_image :hidden').show();
+</script>
 
 
 
-    </window>
+</window>
 
 
 </zk>

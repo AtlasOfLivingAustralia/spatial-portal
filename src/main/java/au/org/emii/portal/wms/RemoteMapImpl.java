@@ -10,6 +10,7 @@ import au.org.emii.portal.config.xmlbeans.Service;
 import au.org.emii.portal.factory.DiscoveryProcessorFactory;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.net.HttpConnection;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
@@ -285,21 +286,33 @@ public class RemoteMapImpl implements RemoteMap {
         MapLayer geoJSON = new MapLayer();
 
         geoJSON.setName(label);
+
         geoJSON.setUri(uri);
         geoJSON.setId(uri);
         geoJSON.setLayer(label);
 
+        logger.debug(uri);
+
         //get a random colour
         Random rand = new java.util.Random();
-        int r = rand.nextInt(99);
-        int g = rand.nextInt(99);
-        int b = rand.nextInt(99);
-        String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
+        int r = rand.nextInt(255);
+        int g = rand.nextInt(255);
+        int b = rand.nextInt(255);
+
+        geoJSON.setBlueVal(b);
+        geoJSON.setGreenVal(g);
+        geoJSON.setRedVal(r);
+
+        Color c =new Color(r,g,b);
+
+
+        String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
 
         geoJSON.setEnvColour(hexColour);
 
         geoJSON.setType(layerUtilities.GEOJSON);
         geoJSON.setGeoJSON(getJson(uri));
+        geoJSON.setQueryable(true);
         return geoJSON;
     }
 
