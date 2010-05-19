@@ -42,7 +42,7 @@ public class FilteringWCController extends UtilityComposer {
     private static final String GEOSERVER_PASSWORD = "geoserver_password";
     private static final String SAT_URL = "sat_url";
 
-    private Combobox cbEnvLayers;
+    private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
     public Popup popup_continous;
     public Slider popup_slider_min;
@@ -63,8 +63,8 @@ public class FilteringWCController extends UtilityComposer {
     private String pid;
 
     private MapComposer mc;
-    private String geoServer = "http://localhost:8080";
-    private String satServer = "http://localhost:8080";
+    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
+    private String satServer = geoServer;
 
     /**
      * for functions in popup box
@@ -168,12 +168,14 @@ public class FilteringWCController extends UtilityComposer {
 
                 public void render(Listitem li, Object data) {
                     String layername = (String) data;
+                    SPLFilter f = getSPLFilter(layername);
 
                     // Col 1: Add the layer name
-                    new Listcell(layername + " (Terrestrial)").setParent(li);
+                    new Listcell(f.layer.display_name + " (Terrestrial)").setParent(li);
 
                     // Col 2: Add the filter string and set the onClick event
-                    String filterString = getFilterString(layername);
+                    //String filterString = getFilterString(layername);
+                    String filterString = f.getFilterString();
                     System.out.println("Filter String for " + layername + " is " + filterString);
 
                     Listcell lc = new Listcell(filterString); // f.getFilterString()
@@ -190,7 +192,8 @@ public class FilteringWCController extends UtilityComposer {
                     });
 
                     // Col 3: Add the species count and set the onClick event
-                    Listcell count = new Listcell("0"); // String.valueOf(f.count)
+                    Listcell count = new Listcell(String.valueOf(f.count)); 
+                    count.setStyle("text-decoration: underline;");
                     count.setParent(li);
                     count.addEventListener("onClick", new EventListener() {
 
@@ -217,6 +220,7 @@ public class FilteringWCController extends UtilityComposer {
 
                     // Col 4: Add the action to remove and set onClick event
                     Listcell remove = new Listcell("remove");
+                    remove.setStyle("text-decoration: underline;");
                     remove.setParent(li);
                     remove.addEventListener("onClick", new EventListener() {
 
@@ -419,7 +423,7 @@ public class FilteringWCController extends UtilityComposer {
             //((Listcell) popup_item.getLastChild().getPreviousSibling()).setLabel(popup_filter.getFilterString());
             ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
-            serverFilter();
+            serverFilter(false);
 
         } catch (Exception e) {
             System.out.println("slider change min:" + e.toString());
@@ -428,7 +432,7 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     public void onScroll$popup_slider_max(Event event) {
-        System.out.println("Changing min slider");
+        System.out.println("Changing max slider");
         try {
 
             int curpos = popup_slider_max.getCurpos();
@@ -442,7 +446,7 @@ public class FilteringWCController extends UtilityComposer {
             //((Listcell) popup_item.getLastChild().getPreviousSibling()).setLabel(popup_filter.getFilterString());
             ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
-            serverFilter();
+            serverFilter(false);
         } catch (Exception e) {
             System.out.println("slider change max:" + e.toString());
             e.printStackTrace(System.out);
@@ -504,8 +508,8 @@ public class FilteringWCController extends UtilityComposer {
 
             //Clients.evalJavaScript("applyFilter(" + idx + "," + (mincursor / 100.0) + "," + (maxcursor / 100.0) + ");"); 	//should take out missing value
             ///filteringImage.applyFilter(idx, mincursor / 100.0, maxcursor / 100.0);
-            //doApplyFilter(pid, layername, "environmental", Double.toString(mincursor / 100.0), Double.toString(maxcursor / 100.0));
-            doApplyFilter(pid);
+            doApplyFilter(pid, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
+            //doApplyFilter(pid);
 
             popup_slider_min.setCurpos(mincursor);
             popup_slider_max.setCurpos(maxcursor);
@@ -517,7 +521,7 @@ public class FilteringWCController extends UtilityComposer {
 
     }
 
-    private void serverFilter() {
+    private void serverFilter(boolean commit) {
         double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
         double maxcurpos = ((popup_filter.maximum_value - popup_filter.minimum_initial)
                 / (range));
@@ -531,9 +535,9 @@ public class FilteringWCController extends UtilityComposer {
         System.out.println("applying filter from idx:" + idx);
 
         if (popup_filter.layer.type.equalsIgnoreCase("environmental")) {
-            //doApplyFilter(pid, idx, "environmental", Double.toString(mincurpos), Double.toString(maxcurpos));
+            doApplyFilter(pid, idx, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
             // SPLFilter sf =
-            doApplyFilter(pid);
+            //doApplyFilter(pid);
         } else {
             // write code for categorical 
         }
@@ -596,19 +600,24 @@ public class FilteringWCController extends UtilityComposer {
         getInfo(urlPart);
     }
 
-    private void doApplyFilter(String pid, String layername, String type, String val1, String val2) {
+    private void doApplyFilter(String pid, String layername, String type, String val1, String val2, boolean commit) {
         try {
 
+            System.out.print("Apply filter to layer: " );
+            System.out.println(lbSelLayers.getSelectedItems().size());
             String urlPart = "";
-            urlPart += "/filtering/apply";
-            urlPart += "/pid/" + pid;
-            urlPart += "/layer/" + URLEncoder.encode(layername, "UTF-8");
-            urlPart += "/type/" + type;
-            urlPart += "/val1/" + val1;
-            urlPart += "/val2/" + val2;
+            if (commit) urlPart += "/filtering/apply4";
+            else urlPart += "/filtering/apply3";
+            urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
+            urlPart += "/layers/" + URLEncoder.encode(layername, "UTF-8");
+            urlPart += "/types/" + URLEncoder.encode(type, "UTF-8");
+            urlPart += "/val1s/" + URLEncoder.encode(val1, "UTF-8");
+            urlPart += "/val2s/" + URLEncoder.encode(val2, "UTF-8");
+            urlPart += "/depth/" + lbSelLayers.getSelectedItems().size();
 
             System.out.println("Applying server side filter");
-            getInfo(urlPart);
+            String imagefilepath = getInfo(urlPart);
+            loadMap(imagefilepath); 
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -653,11 +662,11 @@ public class FilteringWCController extends UtilityComposer {
 
         ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
-        String strCount = getInfo("/filtering/apply/pid/" + pid + "/species/count");
+        serverFilter(true);
+
+        String strCount = getInfo("/filtering/apply/pid/" + pid + "/species/count/shape/none");
         popup_filter.count = Integer.parseInt(strCount);
         ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount);
-
-        serverFilter();
     }
 
     private String join(String[] arr, String glue) {
@@ -672,6 +681,22 @@ public class FilteringWCController extends UtilityComposer {
         }
         return sbString.toString();
     }
+
+    private void loadMap(String filename) {
+        String label = "Filtering - " + pid;
+        String uri = satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
+        float opacity = Float.parseFloat("0.75");
+
+        List <Double> bbox = new ArrayList<Double>();
+        bbox.add(112.0);
+        bbox.add(-44.0000000007);
+        bbox.add(154.00000000084);
+        bbox.add(-9.0);
+
+        mc.addImageLayer(pid, label, uri, opacity, bbox);
+
+    }
+
     /**
      * Gets the main pages controller so we can add a
      * layer to the map

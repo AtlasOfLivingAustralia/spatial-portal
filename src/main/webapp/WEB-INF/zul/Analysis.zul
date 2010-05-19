@@ -41,8 +41,8 @@
                 <samplingForm id="sf" />
             </tabpanel>
             <tabpanel>
-                <iframe src="http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial2/speciesList.zul" width="100%" height="800px" />
-                <!-- <filteringForm id="ff" /> -->
+                <!-- <iframe src="http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial2/speciesList.zul" width="100%" height="800px" /> -->
+                <filteringForm id="ff" />
             </tabpanel>
             <tabpanel>
                 <!-- <iframe src="http://ec2-184-73-34-104.compute-1.amazonaws.com/alaspatial/maxent2.zul" width="100%" height="800px" /> -->

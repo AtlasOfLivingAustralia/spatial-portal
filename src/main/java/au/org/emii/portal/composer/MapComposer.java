@@ -1099,6 +1099,70 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return addedOk;
     }
 
+    public boolean addImageLayer(String id, String label, String uri, float opacity, List<Double> bbox) {
+        boolean addedOk = false;
+
+        if (safeToPerformMapAction()) {
+            /*
+                MapLayer tmpML = portalSessionUtilities.getUserDefinedById(getPortalSession(), id);
+                if (tmpML == null) {
+                    System.out.println("tmpML is null");
+                } else {
+                    System.out.println("tmpML is available: " + tmpML.getId()); 
+                }
+                    MapLayer tmpML2 = portalSessionUtilities.getMapLayerByIdAndLayer(getPortalSession(), id, "wms.png");
+                    if (tmpML2 == null) {
+                        System.out.println("tmpML2 is null");
+                    } else {
+                        System.out.println("tmpML2 is available: " + tmpML2.getId());
+                    }
+            */
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), id) == null) {
+
+                            //start with a new MapLayer
+                MapLayer imageLayer = new MapLayer();
+                //set its type
+                imageLayer.setType(LayerUtilities.IMAGELAYER);
+                //the name is what will appear in the active layer list
+                imageLayer.setName(label);
+
+                //where do i find the image at the moment it is only enabled for png
+                imageLayer.setId(uri);
+
+                //the combination of the next two is used by openlayers to create a unique name
+                //its a bit dull using the ural and layer name but its a hangover from thinking
+                //everything in the world is a WMS layer
+                imageLayer.setLayer("wms.png");
+                imageLayer.setUri(uri);
+
+                //set the layers opacity 0 - 1
+                imageLayer.setOpacity(opacity); // (float) 0.75
+
+                //need the bbox so the map knows where to put it
+                //bbox info is stored in here
+                MapLayerMetadata md = new MapLayerMetadata();
+                md.setBbox(bbox);
+                //remember to add the MapLayerMetadata to the MapLayer
+                imageLayer.setMapLayerMetadata(md);
+
+                //needs to be true or the map won't bother rendering it
+                imageLayer.setDisplayable(true);
+
+                System.out.println("activating new layer");
+
+                //call this to add it to the map and also put it in the active layer list
+                activateLayer(imageLayer, true, true);
+
+            } else {
+                    System.out.println("refreshing exisiting layer"); 
+                // layer already exists, so lets just update that.
+                // refreshActiveLayer(imageLayer);
+            }
+        }
+
+        return addedOk;
+    }
+
     /**
      * Select a tab and activate it - same as if a user clicked
      * it in the gui.  There is no corresponding deactivate
@@ -1969,8 +2033,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         searchSpeciesAuto.getItems().clear();
     }
 
-
-    
     public void onSearchSpecies(ForwardEvent event) {
 
         //get the params from the controls
