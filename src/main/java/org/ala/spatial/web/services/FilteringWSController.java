@@ -162,6 +162,7 @@ public class FilteringWSController {
 	                File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + pid + "/"));
 	                	
 	                File file = File.createTempFile("spl", ".png", workingDir);
+                        //File file = new File(workingDir + "/filtering.png");
 
 	                filteringImage2 = new FilteringImage2(file.getPath(), colours[layer_depth%colours.length]);
 	                
@@ -259,6 +260,7 @@ public class FilteringWSController {
  	                File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + pid + "/"));
  	                	
  	                File file = File.createTempFile("spl", ".png", workingDir);
+                        //File file = new File(workingDir + "/filtering.png");
 
  	                filteringImage2 = new FilteringImage2(file.getPath(), colours[layer_depth%colours.length]);
  	                
@@ -446,6 +448,14 @@ public class FilteringWSController {
         return "";
     }
     
+    /**
+     * Returns a list of species as a string delimited by a new line
+     * 
+     * @param pid
+     * @param shape
+     * @param req
+     * @return
+     */
     @RequestMapping(value = "/apply/pid/{pid}/species/list/shape/{shape}", method = RequestMethod.GET)
     public
     @ResponseBody
@@ -464,6 +474,14 @@ public class FilteringWSController {
         return "";
     }
     
+    /**
+     * Returns a relative path to a zip file of the filtered georeferenced data 
+     * 
+     * @param pid
+     * @param shape
+     * @param req
+     * @return
+     */
     @RequestMapping(value = "/apply/pid/{pid}/samples/list/shape/{shape}", method = RequestMethod.GET)
     public
     @ResponseBody

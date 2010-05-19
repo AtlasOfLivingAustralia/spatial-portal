@@ -1262,6 +1262,12 @@ System.out.println("speciesranklen: " + species_rank.length);
             return null;
         }
 
+        // check that the tabulationsettings is loaded.
+        // if not, load it.
+        if (!TabulationSettings.loaded) {
+            TabulationSettings.load();
+        }
+
         /* is it continous (grid file) */
         System.out.println("getLayerFilter: " + layer.name);
 
@@ -1269,6 +1275,9 @@ System.out.println("speciesranklen: " + species_rank.length);
                 + layer.name + ".gri");
 
         SPLFilter splfilter;        
+
+        System.out.println("Looking for " + TabulationSettings.environmental_data_path
+                + layer.name + ".gri : " + continous_file.exists());
 
         if (continous_file.exists()) {
             System.out.println("filename=" + continous_file.getName());
