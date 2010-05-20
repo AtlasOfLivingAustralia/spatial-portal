@@ -114,6 +114,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
+    public void zoomLayerExtent (MapLayer ml) {
+        String script = "window.mapFrame.zoomBoundsLayer('" + ml.getName() + "')";
+        execute(script);
+    }
+
+    @Override
         public String defineAnimatedLayer(MapLayer mapLayer) {
                 List<Double> bbox = mapLayer.getMapLayerMetadata().getBbox();
 
@@ -212,6 +218,15 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 // 'http://obsidian:8080/ncWMS/wms?LAYERS=67%2Ftemp&ELEVATION=-5&TIME=2006-09-01T12:00:00.000Z/2006-09-19T12:00:00.000Z&TRANSPARENT=true&STYLES=BOXFILL%2Frainbow&CRS=EPSG%3A4326&COLORSCALERANGE=9.405405%2C29.66159&NUMCOLORBANDS=254&LOGSCALE=false&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&EXCEPTIONS=XML&FORMAT=image/gif&BBOX=-180,-90,180,90&WIDTH=512&HEIGHT=400', // URL to the image
                 mapLayer.setDisplayed(true);
                 return wrapWithSafeToProceed(script);
+        }
+
+    @Override
+        public void removeGeoJsonLayer(MapLayer ml) {
+
+
+            String script = "window.mapFrame.removeItFromTheList('" + ml.getName() + "')";
+            execute(script);
+
         }
 
     @Override
@@ -461,6 +476,16 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
                 return wrapWithSafeToProceed(script);
         }
+
+
+     @Override
+
+     public void redrawFeatures(MapLayer selectedLayer) {
+         String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() +"')";
+         execute(script);
+
+
+     }
 
      @Override
         public String defineGeoJSONMapLayer(MapLayer layer) {

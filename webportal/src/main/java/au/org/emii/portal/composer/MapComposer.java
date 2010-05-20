@@ -60,6 +60,7 @@ import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zkex.zul.West;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Caption;
+import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Iframe;
@@ -67,6 +68,7 @@ import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
+import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
@@ -294,7 +296,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("zooming to extent " + selectedLayer.getId());
-            openLayersJavascript.zoomGeoJsonExtent(selectedLayer);
+            if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
+                openLayersJavascript.zoomGeoJsonExtent(selectedLayer);
+            } else {
+                openLayersJavascript.zoomLayerExtent(selectedLayer);
+            }
         }
     }
 
@@ -304,32 +310,28 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
 
-             MapLayer nm = selectedLayer;
-
-           deactiveLayer(selectedLayer, true, false);
+            
           
-            nm.setRedVal(redSlider.getCurpos());
-            nm.setGreenVal(greenSlider.getCurpos());
-            nm.setBlueVal(blueSlider.getCurpos());
+            selectedLayer.setRedVal(redSlider.getCurpos());
+            selectedLayer.setGreenVal(greenSlider.getCurpos());
+            selectedLayer.setBlueVal(blueSlider.getCurpos());
 
             Color c =new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
 
 
         String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
 
-        nm.setEnvColour(hexColour);
-        nm.setLayer(hexColour);
-
-
-            
-         //deactiveLayer(selectedLayer, true, true);
-          
-          deactiveLayer(selectedLayer, true, false);
-
-          
-       
-       
+        selectedLayer.setEnvColour(hexColour);
         
+
+
+        //openLayersJavascript.removeGeoJsonLayer(selectedLayer);
+
+        openLayersJavascript.redrawFeatures(selectedLayer);
+
+        
+        
+       
 
         }
     }
@@ -1171,20 +1173,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         boolean addedOk = false;
 
         if (safeToPerformMapAction()) {
-            /*
-                MapLayer tmpML = portalSessionUtilities.getUserDefinedById(getPortalSession(), id);
-                if (tmpML == null) {
-                    System.out.println("tmpML is null");
-                } else {
-                    System.out.println("tmpML is available: " + tmpML.getId()); 
-                }
-                    MapLayer tmpML2 = portalSessionUtilities.getMapLayerByIdAndLayer(getPortalSession(), id, "wms.png");
-                    if (tmpML2 == null) {
-                        System.out.println("tmpML2 is null");
-                    } else {
-                        System.out.println("tmpML2 is available: " + tmpML2.getId());
-                    }
-            */
+           
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), id) == null) {
 
                             //start with a new MapLayer
@@ -1322,6 +1311,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // only one item can be selected at a time
         Listitem selected = (Listitem) activeLayersList.getSelectedItem();
+
         if (selected != null) {
             mapLayer = (MapLayer) selected.getValue();
         } else if (alertOnNoSelection) {
@@ -1341,6 +1331,31 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         return mapLayer;
+    }
+
+    public void toggleActiveLayer(boolean bCheck) {
+        Listitem selected = (Listitem) activeLayersList.getSelectedItem();
+
+        if (selected != null) {
+            for (Object cell : ((Listitem) selected).getChildren()) {
+					logger.debug("cell :" + cell);
+					// CHILDREN COUNT is ALWAYS 1
+					if (cell instanceof Listcell) {
+						Listcell listcell = (Listcell) cell;
+
+						logger.debug("cell :" + listcell.getLabel());
+						for (Object innercell : listcell.getChildren()) {
+							// NEVER GET HERE
+							if (innercell instanceof Checkbox) {
+								logger.debug("InnerCell = Checkbox");
+								((Checkbox) innercell).setChecked(bCheck);
+
+							}
+						}
+					}
+				}
+        }
+
     }
 
     /**
@@ -1484,8 +1499,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             /*
              * populate the list of styles
              */
-            if (currentSelection.hasStyles()) {
-
+            if (currentSelection.hasStyles() && currentSelection.isNcWmsType() ) {
                 styleList.setModel(new ListModelList(currentSelection.getStyles()));
                 logger.debug("select style: " + currentSelection.getSelectedSystemStyleName());
                 styleList.setValue(currentSelection.getSelectedSystemStyleName());

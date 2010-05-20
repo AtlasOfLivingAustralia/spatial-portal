@@ -57,6 +57,10 @@ public interface OpenLayersJavascript {
      */
     public void activateMapLayersNow(List<MapLayer> layers);
 
+    public void removeGeoJsonLayer(MapLayer ml);
+
+    public void redrawFeatures(MapLayer selectedLayer);
+
     /**
      * Animate the layer - display a big ass animated
      * GIF
@@ -76,6 +80,8 @@ public interface OpenLayersJavascript {
     public String defineGeoJSONMapLayer(MapLayer layer);
 
     public void zoomGeoJsonExtent (MapLayer layer);
+
+    public void zoomLayerExtent (MapLayer ml);
 
     /**
      * create an instance of OpenLayers.Layer.WMS.
