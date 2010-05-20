@@ -184,11 +184,11 @@ function buildMapReal() {
         controls: [
         new OpenLayers.Control.PanZoomBar({
             div: document.getElementById('controlPanZoom')
-            }),
+        }),
         new OpenLayers.Control.LayerSwitcher(),
         new OpenLayers.Control.ScaleLine({
             div: document.getElementById('mapscale')
-            }),
+        }),
         //new OpenLayers.Control.Permalink('Map by IMOS Australia'),
         new OpenLayers.Control.OverviewMap({
             autoPan: true,
@@ -197,10 +197,10 @@ function buildMapReal() {
                 resolutions: [  0.3515625, 0.17578125, 0.087890625, 0.0439453125, 0.02197265625, 0.010986328125, 0.0054931640625
                 , 0.00274658203125, 0.001373291015625, 0.0006866455078125, 0.00034332275390625,  0.000171661376953125
                 ]
-                }
-            }),
-    //new OpenLayers.Control.KeyboardDefaults(),
-    new OpenLayers.Control.Attribution(),
+            }
+        }),
+        //new OpenLayers.Control.KeyboardDefaults(),
+        new OpenLayers.Control.Attribution(),
         new OpenLayers.Control.MousePosition({
             div: document.getElementById('mapcoords'),
             prefix: '<b>Lon:</b> ',
@@ -243,7 +243,9 @@ function buildMapReal() {
     map.addControl(toolPanel);
 
     drawinglayer = new OpenLayers.Layer.Vector( "Drawing"); // utilised in 'addLineDrawingLayer'
-    drawingLayerControl = new OpenLayers.Control.DrawFeature(drawinglayer, OpenLayers.Handler.Path, {title:'Draw a transect line'});
+    drawingLayerControl = new OpenLayers.Control.DrawFeature(drawinglayer, OpenLayers.Handler.Path, {
+        title:'Draw a transect line'
+    });
     toolPanel.addControls( [ drawingLayerControl ] );
     // This will be replaced by ZK call
     //addLine DrawingLayer("ocean_east_aus_temp/temp","http://emii3.its.utas.edu.au/ncWMS/wms");
@@ -281,86 +283,148 @@ function buildMapReal() {
 function addPolygonDrawingTool() {
     ////adding polygon control and layer	
     var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAdded});     
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
+        'featureAdded':polygonAdded
+    });
     map.addControl(polyControl);
     polyControl.activate();	
-    //////
+//////
 }
 //Copy for Sampling, ALOC, Filtering
 function addPolygonDrawingToolSampling() {
     ////adding polygon control and layer	
     var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
     polygonLayer.destroyFeatures();
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAddedSampling});     
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
+        'featureAdded':polygonAddedSampling
+    });
     map.addControl(polyControl);
     polyControl.activate();	
-    //////
+//////
 }
 function addPolygonDrawingToolALOC() {
     ////adding polygon control and layer	
     var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
     polygonLayer.destroyFeatures();
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAddedALOC});     
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
+        'featureAdded':polygonAddedALOC
+    });
     map.addControl(polyControl);
     polyControl.activate();	
-    //////
+//////
 }
 function addPolygonDrawingToolFiltering() {
     ////adding polygon control and layer	
     var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
     polygonLayer.destroyFeatures();
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{'featureAdded':polygonAddedFiltering});     
+    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
+        'featureAdded':polygonAddedFiltering
+    });
     map.addControl(polyControl);
     polyControl.activate();	
-    //////
+//////
 }
 
 function addBoxDrawingTool() {
     var boxLayer = new OpenLayers.Layer.Vector("Box Layer");
-    boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{'featureAdded':regionAdded});     
+    boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{
+        'featureAdded':regionAdded
+    });
     map.addControl(boxControl);
     boxControl.activate();	
 }
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
-	parent.setPolygonGeometry(feature.geometry);
-	polyControl.deactivate();
-     }
+    parent.setPolygonGeometry(feature.geometry);
+    polyControl.deactivate();
+}
 // Copy for Sampling, ALOC, Filtering, This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAddedSampling(feature) {
-	parent.setPolygonGeometrySampling(feature.geometry);
-	polyControl.deactivate();
-     }
+    parent.setPolygonGeometrySampling(feature.geometry);
+    polyControl.deactivate();
+}
 function polygonAddedALOC(feature) {
-	parent.setPolygonGeometryALOC(feature.geometry);
-	polyControl.deactivate();
-     }
+    parent.setPolygonGeometryALOC(feature.geometry);
+    polyControl.deactivate();
+}
 function polygonAddedFiltering(feature) {
-	parent.setPolygonGeometryFiltering(feature.geometry);
-	polyControl.deactivate();
-     }
+    parent.setPolygonGeometryFiltering(feature.geometry);
+    polyControl.deactivate();
+}
 
 // This function passes the region geometry up to javascript in index.zul which can then send it to the server.
 function regionAdded(feature) {
-	//converting bounds from pixel value to lonlat - annoying!
-	var geoBounds = new OpenLayers.Bounds();
-	geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
-	geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
-	parent.setRegionGeometry(geoBounds.toGeometry());
-	boxControl.deactivate();
-     }
+    //converting bounds from pixel value to lonlat - annoying!
+    var geoBounds = new OpenLayers.Bounds();
+    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
+    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
+    parent.setRegionGeometry(geoBounds.toGeometry());
+    boxControl.deactivate();
+}
 
 
 function addJsonFeatureToMap(feature, name, hexColour) {
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
-        {fillColor: hexColour, fillOpacity: 1, strokeColor: hexColour},
-        OpenLayers.Feature.Vector.style["default"]));
+    {
+        fillColor: hexColour,
+        fillOpacity: 0.6,
+        strokeOpacity: 1,
+        strokeWidth: 2,
+        strokeColor: hexColour
+    },
+    OpenLayers.Feature.Vector.style["new"]));
+
+    var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = hexColour;
+    layer_style.strokeColor = hexColour;
+
+
     var geojson_format = new OpenLayers.Format.GeoJSON();
-    var vector_layer = new OpenLayers.Layer.Vector(name, {styleMap: styleMap});
+    var vector_layer = new OpenLayers.Layer.Vector(name);
+    vector_layer.style = layer_style;
     features = geojson_format.read(feature);
     vector_layer.addFeatures(features);
     return vector_layer;
+}
+
+function redrawFeatures(feature, name, hexColour) {
+    var gjLayers = map.getLayersByName(name);
+    var geojson_format = new OpenLayers.Format.GeoJSON();
+    features = geojson_format.read(feature);
+
+    var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = hexColour;
+    layer_style.strokeColor = hexColour;
+
+    var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
+    {
+        fillColor: hexColour,
+        fillOpacity: 1,
+        strokeColor: hexColour
+    },
+    OpenLayers.Feature.Vector.style["new"]));
+
+    for (key in gjLayers) {
+
+        if (gjLayers[key] != undefined) {
+
+            var layer = map.getLayer(gjLayers[key].id);
+
+            if (layer.name == name) {
+
+                layer.destroyFeatures();
+                layer.style = layer_style;
+
+                for(var i=0; i<features.length; ++i) {
+                    layer.drawFeature(features[i]);
+                }
+
+
+            }
+        }
+    }
+
 }
 
 function zoomBoundsGeoJSON(feature) {
@@ -383,20 +447,61 @@ function zoomBoundsGeoJSON(feature) {
 
         if (features.length == 1) {
             
-           if (features[0].geometry.getVertices().length == 1) {
-              //its a point just center the map
-              map.setCenter(new OpenLayers.LonLat(features[0].geometry.getCentroid().x, features[0].geometry.getCentroid().y),5);
-           } else {
-             map.zoomToExtent(bounds);
-           }
+            if (features[0].geometry.getVertices().length == 1) {
+                //its a point just center the map
+                map.setCenter(new OpenLayers.LonLat(features[0].geometry.getCentroid().x, features[0].geometry.getCentroid().y),5);
+            } else {
+                map.zoomToExtent(bounds);
+            }
         } else {
             
-             map.zoomToExtent(bounds);
+            map.zoomToExtent(bounds);
         }
     } else {
-        //alert("failed");
+//alert("failed");
+}
+}
+
+function zoomBoundsLayer(layername) {
+
+    var wmsLayers = map.getLayersByClass("OpenLayers.Layer.WMS");
+    for (key in wmsLayers) {
+
+        if (map.layers[key] != undefined) {
+
+            var layer = map.getLayer(map.layers[key].id);
+
+            if (layer.name == layername){
+                map.zoomToExtent(layer.getExtent());
+            }
+        }
+
     }
-  }
+
+     
+//var layer = map.getLayer(key);
+     
+}
+
+function removeItFromTheList(layername) {
+    var gjLayers = map.getLayersByName(layername);
+    
+    for (key in gjLayers) {
+        
+        if (gjLayers[key] != undefined) {
+
+            var layer = map.getLayer(gjLayers[key].id);
+            
+            if (layer.name == layername) {
+                
+                map.removeLayer(layer);
+                
+               
+            }
+        }
+    }
+
+}
 
 // Create a layer on which users can draw transects for single w (i.e. lines on the map)
 // handles query
@@ -424,13 +529,13 @@ function addLineDrawingLayer (label,layerName,serverUrl) {
 
         // Load an image of the transect
         var transectUrl =   serverUrl +
-            '?REQUEST=GetTransect' +
-            '&LAYER=' + URLEncode(layerName) +
-            '&CRS=' + map.baseLayer.projection.toString() +
-            //'&ELEVATION=-5'  +
-            //'&TIME=' + isoTValue +
-            '&LINESTRING=' + URLEncode(line) +
-            '&FORMAT=image/png';
+        '?REQUEST=GetTransect' +
+        '&LAYER=' + URLEncode(layerName) +
+        '&CRS=' + map.baseLayer.projection.toString() +
+        //'&ELEVATION=-5'  +
+        //'&TIME=' + isoTValue +
+        '&LINESTRING=' + URLEncode(line) +
+        '&FORMAT=image/png';
         var inf = new Object();
         inf.transectUrl = transectUrl;
         inf.line = dressUpMyLine(line);
@@ -491,7 +596,7 @@ function getpointInfo(e) {
 
     var url = false;
     
-     if (parent.disableDepthServlet == false) {
+    if (parent.disableDepthServlet == false) {
         getDepth(e);
     }
 
@@ -633,7 +738,7 @@ function getpointInfo(e) {
             } else {
 
                 
-            }
+        }
         }
     }
 
@@ -653,11 +758,11 @@ function onPopupClose(evt) {
 function onFeatureSelect(evt) {
     feature = evt.feature;
     popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-                             feature.geometry.getBounds().getCenterLonLat(),
-                             new OpenLayers.Size(100,100),
-                             "<h2>"+feature.attributes.title + "</h2>" +
-                             feature.attributes.description,
-                             null, true, onPopupClose);
+        feature.geometry.getBounds().getCenterLonLat(),
+        new OpenLayers.Size(100,100),
+        "<h2>"+feature.attributes.title + "</h2>" +
+        feature.attributes.description,
+        null, true, onPopupClose);
     feature.popup = popup;
     popup.feature = feature;
     map.addPopup(popup);
@@ -741,7 +846,7 @@ function handleQueryStatus(theobj) {
         }
         // try to get the general information
         // setDepth will try to set 'featureinfoGeneral' as well
-         if (parent.disableDepthServlet == false) {
+        if (parent.disableDepthServlet == false) {
             body = "<div id=\"featureinfoGeneral\">" + jQuery('#featureinfodepth').html() + "</div>" + body;
         }
         
@@ -779,8 +884,8 @@ function getDepth(e) {
     var click = map.getLonLatFromPixel(new OpenLayers.Pixel(I,J));
 
     var url = "DepthServlet?" +
-            "lon=" + click.lon +
-            "&lat="  + click.lat ;
+    "lon=" + click.lon +
+    "&lat="  + click.lat ;
     
     var request = OpenLayers.Request.GET({
         url: url,
@@ -805,8 +910,8 @@ function setDepth(response) {
     
     // if this id is available populate it and hide featureinfodepth
     if (jQuery('#featureinfoGeneral')) {
-      jQuery('#featureinfoGeneral').html(str).fadeIn(400);
-      jQuery('#featureinfodepth').hide();
+        jQuery('#featureinfoGeneral').html(str).fadeIn(400);
+        jQuery('#featureinfodepth').hide();
     }
     
 
@@ -815,25 +920,25 @@ function setDepth(response) {
 // designed for Geoserver valid response
 function setHTML2(response) {
 
-        var pointInfo_str = '';
+    var pointInfo_str = '';
 
-        tmp_response = response.responseText;
-        var html_content = "";
+    tmp_response = response.responseText;
+    var html_content = "";
 
-        if (tmp_response.match(/<\/body>/m)) {
+    if (tmp_response.match(/<\/body>/m)) {
 
-            html_content  = tmp_response.match(/(.|\s)*?<body[^>]*>((.|\s)*?)<\/body>(.|\s)*?/m);
-            if (html_content) {
-                //trimmed_content= html_content[2].replace(/(\n|\r|\s)/mg, ''); // replace all whitespace
-                html_content  = html_content[2].replace(/^\s+|\s+$/g, '');  // trim
-            }
+        html_content  = tmp_response.match(/(.|\s)*?<body[^>]*>((.|\s)*?)<\/body>(.|\s)*?/m);
+        if (html_content) {
+            //trimmed_content= html_content[2].replace(/(\n|\r|\s)/mg, ''); // replace all whitespace
+            html_content  = html_content[2].replace(/^\s+|\s+$/g, '');  // trim
         }
+    }
 
-        if (html_content.length > 0) {
-            // at least one valid query
-            queries_valid_content = true;
-            this.layer_data = true;
-        }
+    if (html_content.length > 0) {
+        // at least one valid query
+        queries_valid_content = true;
+        this.layer_data = true;
+    }
         
     if (handleQueryStatus(this)) {
         setFeatureInfo(html_content,true);
@@ -896,10 +1001,10 @@ function setHTML_ncWMS(response) {
             html = "<h3>"+layer_type+"</h3><div class=\"feature\"><b>Lon:</b> " + lon + "<br /><b>Lat:</b> " + lat +
             vals + "\n<BR />" + tmp_response;
 
-                // to do add transect drawing here
-                //
-           html = html +"<BR><h6>Get a graph of the data along a transect via layer options!</h6>\n";
-           // html = html +" <div  ><a href="#" onclick=\"addLineDrawingLayer('ocean_east_aus_temp/temp','http://emii3.its.utas.edu.au/ncWMS/wms')\" >Turn on transect graphing for this layer </a></div>";
+            // to do add transect drawing here
+            //
+            html = html +"<BR><h6>Get a graph of the data along a transect via layer options!</h6>\n";
+            // html = html +" <div  ><a href="#" onclick=\"addLineDrawingLayer('ocean_east_aus_temp/temp','http://emii3.its.utas.edu.au/ncWMS/wms')\" >Turn on transect graphing for this layer </a></div>";
 
             html = html +"</div>" ;
         }
@@ -935,7 +1040,7 @@ function setFeatureInfo(content,line_break) {
     }
     if (jQuery('#featureinfocontent').html() != "") {
         map.popup.setSize(new OpenLayers.Size(popupWidth,popupHeight));
-        //
+    //
     }
 
     jQuery('#featureinfocontent').fadeIn(400);
@@ -949,11 +1054,11 @@ function mkTransectPopup(inf) {
     var posi = map.getLonLatFromViewPortPx(new OpenLayers.Geometry.Point(60,20));
 
     var html = "<div id=\"transectImageheader\">" +
-                "</div>" +
-                "<div id=\"transectinfostatus\">" +
-                "<h3>" + inf.label + "</h3><h5>Data along the transect: </h5>" + inf.line +  "</div>" +
-                "<BR><img src=\"" + inf.transectUrl + "\" />" +
-                "</div>" ;    
+    "</div>" +
+    "<div id=\"transectinfostatus\">" +
+    "<h3>" + inf.label + "</h3><h5>Data along the transect: </h5>" + inf.line +  "</div>" +
+    "<BR><img src=\"" + inf.transectUrl + "\" />" +
+    "</div>" ;
 
     popup2 = new OpenLayers.Popup.AnchoredBubble( "transectfeaturepopup",
         posi,
@@ -1041,7 +1146,7 @@ function showpopup() {
         //jQuery('div.olPopup').show(200);
         setTimeout('imgSizer()', 500); // ensure the popup is ready
     }
-    // zoom into view
+// zoom into view
 }
 
 //server might be down
@@ -1177,14 +1282,14 @@ function destroy_imagePopup(imagePopup) {
  *  ie: #theId or .theClass
  */
 function showhide(css_id) {
-      $(css_id).toggle(450);
+    $(css_id).toggle(450);
 }
 /*jQuery show 
  *  param: the dom element
  *  ie: #theId or .theClass
  */
 function show(css_id) {
-      $(css_id).show(450);
+    $(css_id).show(450);
 }
 
 function dressUpMyLine(line){
@@ -1193,10 +1298,10 @@ function dressUpMyLine(line){
     var newString = "";
 
     for(i = 0; i < x.length; i++){
-            var latlon = x[i].split(" ");
-            var lon = latlon[0].substring(0, latlon[0].lastIndexOf(".") + 4);
-            var lat = latlon[1].substring(0, latlon[1].lastIndexOf(".") + 4);
-            newString = newString + "Lon:" + lon + " Lat:" +lat + ",<BR>";
+        var latlon = x[i].split(" ");
+        var lon = latlon[0].substring(0, latlon[0].lastIndexOf(".") + 4);
+        var lat = latlon[1].substring(0, latlon[1].lastIndexOf(".") + 4);
+        newString = newString + "Lon:" + lon + " Lat:" +lat + ",<BR>";
     }
     return newString;
 }
@@ -1216,62 +1321,62 @@ function drawSingleArgo(base_url, argo_id) {
 
 function IsInt(sText) {
 
-   var ValidChars = "0123456789";
-   var IsInt= true;
-   sText = sText.trim();
-   var Char;
-   if (sText.length == "0") {
-         IsInt = false;
-   }
-   else {
-       for (i = 0; i < sText.length && IsInt == true; i++) {
-          Char = sText.charAt(i);
-          if (ValidChars.indexOf(Char) == -1) {
-             IsInt = false;
-          }
-       }
-   }   
-   return IsInt;
+    var ValidChars = "0123456789";
+    var IsInt= true;
+    sText = sText.trim();
+    var Char;
+    if (sText.length == "0") {
+        IsInt = false;
+    }
+    else {
+        for (i = 0; i < sText.length && IsInt == true; i++) {
+            Char = sText.charAt(i);
+            if (ValidChars.indexOf(Char) == -1) {
+                IsInt = false;
+            }
+        }
+    }
+    return IsInt;
 
 }
 
 
 function acornHistory(request_string,div) {
-        if (window.XMLHttpRequest)  {
+    if (window.XMLHttpRequest)  {
         xhttp=new XMLHttpRequest();
-        }
-        else // Internet Explorer 5/6
-        {
+    }
+    else // Internet Explorer 5/6
+    {
         xhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        theurl = URLEncode(request_string);
-        xhttp.open("GET","RemoteRequest?url=" + theurl,false);
-//&cql_filter=position_index={feature.position_index.value}
-        xhttp.send("");
-        xmlDoc=xhttp.responseXML;
-        str= "";
+    }
+    theurl = URLEncode(request_string);
+    xhttp.open("GET","RemoteRequest?url=" + theurl,false);
+    //&cql_filter=position_index={feature.position_index.value}
+    xhttp.send("");
+    xmlDoc=xhttp.responseXML;
+    str= "";
         
-        var x=xmlDoc.getElementsByTagName("topp:acorn_gbr");
+    var x=xmlDoc.getElementsByTagName("topp:acorn_gbr");
         
-        if (x.length > 1) {
-            str = str + ("<table class=\"featureInfo\">");
-            str =str + ("<tr><th>Date/Time</th><th>Speed</th><th>Direction</th></tr>");
-            for (i=0;i<x.length;i++)
-                {
-                str = str + ("<tr><td>");
-                str = str + (x[i].getElementsByTagName("topp:timecreated")[0].childNodes[0].nodeValue);
-                str = str + ("</td><td>");
-                str = str + (x[i].getElementsByTagName("topp:speed")[0].childNodes[0].nodeValue) + "m/s";
-                str = str + ("</td><td>");
-                str = str + (x[i].getElementsByTagName("topp:direction")[0].childNodes[0].nodeValue) + "&#176;N";
-                str = str + ("</td></tr>");
-            }
-            str = str + ("</table>");
+    if (x.length > 1) {
+        str = str + ("<table class=\"featureInfo\">");
+        str =str + ("<tr><th>Date/Time</th><th>Speed</th><th>Direction</th></tr>");
+        for (i=0;i<x.length;i++)
+        {
+            str = str + ("<tr><td>");
+            str = str + (x[i].getElementsByTagName("topp:timecreated")[0].childNodes[0].nodeValue);
+            str = str + ("</td><td>");
+            str = str + (x[i].getElementsByTagName("topp:speed")[0].childNodes[0].nodeValue) + "m/s";
+            str = str + ("</td><td>");
+            str = str + (x[i].getElementsByTagName("topp:direction")[0].childNodes[0].nodeValue) + "&#176;N";
+            str = str + ("</td></tr>");
         }
-        else {
-            str="<p class=\"error\">No previous results.</p>";
-        }
-        jQuery("#acorn"+div).html(str);
-//alert(jQuery(".acorn"+div).html());
+        str = str + ("</table>");
+    }
+    else {
+        str="<p class=\"error\">No previous results.</p>";
+    }
+    jQuery("#acorn"+div).html(str);
+    //alert(jQuery(".acorn"+div).html());
     return false;
 }
