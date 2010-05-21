@@ -42,8 +42,8 @@ import org.zkoss.zul.Window;
 
 public class ALOCZK extends GenericForwardComposer {
 	
-	private String geoServer = "http://localhost:8080"; //"http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  
-    private String satServer = geoServer;  
+	private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  
+    private String satServer = "http://localhost:8080";// ws/aloc/processgeo?gc=20&envlist=Annual+Mean+Temperature%3AMean+Diurnal+Range&points=none 
     
 	List _layer_filters = new ArrayList();
 	List _layer_filters_original = new ArrayList();
