@@ -206,6 +206,9 @@ public interface OpenLayersJavascript {
     public void addPolygonDrawingToolSampling();
     public void addPolygonDrawingToolALOC();
     public void addPolygonDrawingToolFiltering();
+    public void removePolygonSampling();
+    public void removePolygonALOC();
+    public void removePolygonFiltering();
 
         /**
      * Adds the openlayers box drawing tool to the map

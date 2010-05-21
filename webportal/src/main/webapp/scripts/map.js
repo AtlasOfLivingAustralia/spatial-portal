@@ -14,7 +14,7 @@ var queries_valid_content = false;
 var timestamp; // timestamp for getFeatureInfo requests
 var X,Y; // getfeatureInfo Click point
 
-var clickEventHandler; // single click handler
+var clickEventHandler; // single clickhandler
 var drawinglayer; // OpenLayers.Layer.Vector layer for ncwms transects
 var drawingLayerControl; // control wigit for drawinglayer
 var toolPanel; // container for OpenLayer controls
@@ -39,6 +39,10 @@ var currentBaseLayer = null;
 
 var polyControl = null;  //for deactivate after drawing
 var boxControl = null;	//for deactivate after drawing
+
+var samplingPolygon = null;		//temporary for destroy option after display
+var filteringPolygon = null;	//temporary for destroy option after display
+var alocPolygon = null;			//temporary for destroy option after display
 
 var layersLoading = 0;
 var layername; // current layer name
@@ -292,37 +296,66 @@ function addPolygonDrawingTool() {
 }
 //Copy for Sampling, ALOC, Filtering
 function addPolygonDrawingToolSampling() {
-    ////adding polygon control and layer	
-    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
-    polygonLayer.destroyFeatures();
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
-        'featureAdded':polygonAddedSampling
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "blue";
+    layer_style.strokeColor = "blue";	
+    samplingPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {style: layer_style});
+
+    samplingPolygon.setVisibility(true);
+    map.addLayer(samplingPolygon);
+    polyControl =new OpenLayers.Control.DrawFeature(samplingPolygon,OpenLayers.Handler.Polygon,{
+    	'featureAdded':polygonAddedSampling
     });
     map.addControl(polyControl);
     polyControl.activate();	
 //////
 }
+function removePolygonSampling(){
+	if(samplingPolygon != null){
+		samplingPolygon.destroy();
+		samplingPolygon = null;
+	}
+}
+
 function addPolygonDrawingToolALOC() {
-    ////adding polygon control and layer	
-    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
-    polygonLayer.destroyFeatures();
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
-        'featureAdded':polygonAddedALOC
-    });
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "green";
+    layer_style.strokeColor = "green";	
+    alocPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {style: layer_style});
+
+    alocPolygon.setVisibility(true);
+    map.addLayer(alocPolygon);    
+    polyControl =new OpenLayers.Control.DrawFeature(alocPolygon,OpenLayers.Handler.Polygon,{
+    	'featureAdded':polygonAddedALOC
+    });  
     map.addControl(polyControl);
     polyControl.activate();	
 //////
 }
+function removePolygonALOC(){
+	if(alocPolygon != null){
+		alocPolygon.destroy();
+		alocPolygon = null;
+	}
+}
+
 function addPolygonDrawingToolFiltering() {
     ////adding polygon control and layer	
-    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
-    polygonLayer.destroyFeatures();
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
-        'featureAdded':polygonAddedFiltering
-    });
+    filteringPolygon = new OpenLayers.Layer.Vector("Polygon Layer");
+    filteringPolygon.setVisibility(true);
+    map.addLayer(filteringPolygon);    
+    polyControl =new OpenLayers.Control.DrawFeature(filteringPolygon,OpenLayers.Handler.Polygon,{
+    	'featureAdded':polygonAddedFiltering
+    });  
     map.addControl(polyControl);
     polyControl.activate();	
 //////
+}
+function removePolygonFiltering(){
+	if(filteringPolygon != null){
+		filteringPolygon.destroy();
+		filteringPolygon = null;
+	}
 }
 
 function addBoxDrawingTool() {
