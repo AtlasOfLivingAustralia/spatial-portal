@@ -57,7 +57,7 @@ public class SamplingWSController {
             vFiles.add(datafile);
 
             /* add each catagorical layer */
-            if (layers != null) {
+            /*if (layers != null) {
                 for (String s : layers) {
                     String csv = SpeciesListIndex.getLayerExtents(s);
                     if (csv != null) {
@@ -73,7 +73,7 @@ public class SamplingWSController {
                         vFiles.add(tmpLayerFile.getAbsolutePath());
                     }
                 }
-            }
+            }*/
 
             String[] files = (String[]) vFiles.toArray(new String[vFiles.size()]);
 

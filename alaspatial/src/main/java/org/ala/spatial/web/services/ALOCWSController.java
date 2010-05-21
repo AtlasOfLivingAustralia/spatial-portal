@@ -108,6 +108,27 @@ public class ALOCWSController {
             SimpleRegion simpleregion = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
            
             ALOC.run(outputfile, envList, Integer.parseInt(groupCount),simpleregion);
+            
+            generateWorldFiles(outputpath);
+
+            Hashtable htGeoserver = ssets.getGeoserverSettings();
+            String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/aloc_" + currTime + "/file.worldimage?coverageName=aloc_class_" + currTime;
+            String extra = "";
+            String username = (String) htGeoserver.get("geoserver_username");
+            String password = (String) htGeoserver.get("geoserver_password");
+
+            String[] files = new String[]{
+                outputpath + "aloc.png",
+                outputpath + "aloc.pgw",
+                outputpath + "aloc.prj"
+            };
+
+            String pngZipFile = outputpath + "aloc.zip";
+            Zipper.zipFiles(files, pngZipFile);
+            // Upload the file to GeoServer using REST calls
+            System.out.println("Uploading file: " + pngZipFile + " to \n" + url);
+            UploadSpatialResource.loadResource(url, extra, username, password, pngZipFile);
+
 
             pid = "" + currTime;
         } catch (Exception e) {

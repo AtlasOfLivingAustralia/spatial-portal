@@ -348,8 +348,12 @@ public class SamplingIndex implements AnalysisIndexService {
 			String filenameI = TabulationSettings.index_path
 				+ CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
 
-			ArrayList<String> output = new ArrayList<String>(record_end-record_start+1);
-
+			String [] output = new String[record_end - record_start + 1];
+			int p = 0;
+			
+			String [] lookup_values = SamplingIndex.getLayerCatagories(
+				SamplingService.getLayer(layer_name));			
+			
 			if((new File(filenameD)).exists()){
 				RandomAccessFile raf = new RandomAccessFile(filenameD,"r");
 				raf.seek(record_start*4);
@@ -357,9 +361,9 @@ public class SamplingIndex implements AnalysisIndexService {
 				for(i=record_start;i<=record_end;i++){
 					f = raf.readFloat();
 					if(Float.isNaN(f)){
-						output.add("");
+						output[p++] = "";
 					}else{
-						output.add(String.valueOf(f));
+						output[p++] = String.valueOf(f);
 					}
 				}
 				raf.close();
@@ -369,20 +373,19 @@ public class SamplingIndex implements AnalysisIndexService {
 				short v;
 				for(i=record_start;i<=record_end;i++){
 					v = raf.readShort();
-					if(v >= 0){
-						output.add(String.valueOf(v));
+					if(v >= 0 && v < lookup_values.length){
+						output[p++] = lookup_values[v];
 					}else{
-						output.add("");
+						output[p++] = "";
 					}
 				}
 				raf.close();
 			}
-
-			if(output.size() > 0){
-				String str [] = new String [output.size ()];
-				output.toArray (str);
-				return str;
-			}
+			
+			//byte [] data = new byte[(record_end-record_start+1)*4];
+				
+			
+			return output;
 		}catch(Exception e){
 			(new SpatialLogger()).log("getRecords",e.toString());
 		}
@@ -488,6 +491,38 @@ public class SamplingIndex implements AnalysisIndexService {
 		 * TODO: make safe
 		 */
 		return null;
+	}
+	
+	static public String[] getLayerCatagories(Layer layer){
+		if(layer == null || layer.fields == null || layer.fields.length < 1){
+			return null;
+		}
+		File catagories_file = new File(
+                TabulationSettings.index_path
+                + SamplingIndex.CATAGORY_LIST_PREFIX
+                + layer.name + "_" + layer.fields[0].name
+                + SamplingIndex.CATAGORY_LIST_POSTFIX);
+        if (catagories_file.exists()) {
+            byte[] data = new byte[(int) catagories_file.length()];
+            try {
+                FileInputStream fis = new FileInputStream(catagories_file);
+                fis.read(data);
+                fis.close();
+
+                /* insert (row number) as beginning of each line */
+                String str = new String(data);
+                data = null;
+
+                String[] lines = str.split("\n");
+                return lines;
+            } catch (Exception e) {
+                (new SpatialLogger()).log("getLayerExtents(" + layer.name + "), catagorical",
+                        e.toString());
+                e.printStackTrace();
+            }
+        }
+        return null;
+
 	}
 
 }
