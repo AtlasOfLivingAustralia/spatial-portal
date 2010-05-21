@@ -45,6 +45,8 @@ public class ALOCWCController extends UtilityComposer {
     String user_polygon = "";
     Textbox selectionGeomALOC;
     
+    int generation_count = 1;
+    
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -209,7 +211,9 @@ public class ALOCWCController extends UtilityComposer {
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
 
-            mc.addWMSLayer("ALOC " + slist, mapurl, (float) 0.5);
+            //mc.addWMSLayer("ALOC " + slist, mapurl, (float) 0.5);
+            mc.addWMSLayer("ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count, mapurl, (float) 0.5);
+            generation_count++;
 
         } catch (Exception ex) {
             //Logger.getLogger(ALOCWCController.class.getName()).log(Level.SEVERE, null, ex);
@@ -251,6 +255,10 @@ public class ALOCWCController extends UtilityComposer {
     public void onClick$btnPolygonSelectionClear(Event event) {
         user_polygon = "";
         selectionGeomALOC.setValue("");
+        
+        MapComposer mc = getThisMapComposer();
+
+        mc.getOpenLayersJavascript().removePolygonALOC();
     }
     
     /**

@@ -69,6 +69,7 @@ public class SamplingWCController extends UtilityComposer {
     private String user_polygon = "";
     private Textbox selectionGeomSampling;
     
+        
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -468,7 +469,8 @@ public class SamplingWCController extends UtilityComposer {
                                     showLayerExtentsLabel(event.getTarget());
                                 }
                             });
-                        } else if (iscontextual) {
+                        }/*//no longer required
+                        	else if (iscontextual) {
                             try {
                                 String[] salist = (String[]) contextualLists.get(new Integer(k));
                                 int idx = Integer.parseInt(rec[k]);
@@ -477,7 +479,7 @@ public class SamplingWCController extends UtilityComposer {
                                 }
                             } catch (Exception e) {
                             }
-                        }//isenvironmental else{}
+                        }//isenvironmental else{}*/
                     }
 
 
@@ -764,6 +766,10 @@ public class SamplingWCController extends UtilityComposer {
     public void onClick$btnPolygonSelectionClear(Event event) {
         user_polygon = "";
         selectionGeomSampling.setValue("");
+        
+        MapComposer mc = getThisMapComposer();
+
+        mc.getOpenLayersJavascript().removePolygonSampling();
     }
     
     /**
