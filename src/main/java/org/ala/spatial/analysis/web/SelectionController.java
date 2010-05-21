@@ -102,6 +102,7 @@ public class SelectionController extends UtilityComposer {
      */
     public void onChange$selectionGeom(Event event) {
         try {
+            
             wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
@@ -110,7 +111,7 @@ public class SelectionController extends UtilityComposer {
 
     public void onChange$boxGeom(Event event) {
         try {
-           
+          
             wfsQueryBBox(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
@@ -151,7 +152,7 @@ public class SelectionController extends UtilityComposer {
         try {
            
             String response = POSTRequest(baseQueryXML);
-           // Messagebox.show(response);
+        //    Messagebox.show(response);
          
         } catch (Exception e) { //FIXME
         }
@@ -187,6 +188,7 @@ public class SelectionController extends UtilityComposer {
                 response+=line;
             }
             //Parse the response
+//            Messagebox.show(response);
             String speciesList = parse(response);
             wr.close();
            // rd.close();
@@ -202,9 +204,9 @@ public class SelectionController extends UtilityComposer {
      * @param xmlResponse The response of an WFS query.
      * @return
      */
-    public String parse(String responseXML) throws ParserConfigurationException, XPathExpressionException,SAXException, IOException {
+    public String parse(String responseXML) throws ParserConfigurationException, XPathExpressionException,SAXException, IOException, InterruptedException {
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-        domFactory.setNamespaceAware(true);
+        domFactory.setNamespaceAware(false);
         
          DocumentBuilder builder = domFactory.newDocumentBuilder();
          
@@ -227,6 +229,7 @@ public class SelectionController extends UtilityComposer {
                  speciesSet.add((String) species.item(i).getNodeValue());
         }
 
+        
         results = (String[])speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
         popup_results.open(30, 30);
