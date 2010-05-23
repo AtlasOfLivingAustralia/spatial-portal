@@ -2,8 +2,10 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -14,12 +16,14 @@ import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Button;
-import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.ListModelArray;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
@@ -36,12 +40,10 @@ import org.zkoss.zul.Textbox;
 public class FilteringWCController extends UtilityComposer {
 
     private static final long serialVersionUID = -26560838825366347L;
-    
     private static final String GEOSERVER_URL = "geoserver_url";
     private static final String GEOSERVER_USERNAME = "geoserver_username";
     private static final String GEOSERVER_PASSWORD = "geoserver_password";
     private static final String SAT_URL = "sat_url";
-
     private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
     public Popup popup_continous;
@@ -56,16 +58,23 @@ public class FilteringWCController extends UtilityComposer {
     public Textbox popup_results_seek;
     public Button apply_continous;
     public Button apply_catagorical;
+    public Button download;
+    public Button downloadsamples;
+    public Listbox popup_listbox_results;
+    public Popup popup_results;
+    public Button results_prev;
+    public Button results_next;
+    public Label results_label;
+    int results_pos;
+    String[] results = null;
     private List<String> selectedLayers;
     private List _layer_filters = new ArrayList();
     //private SPLFilter[] selectedSPLFilterLayers;
     private Map<String, SPLFilter> selectedSPLFilterLayers;
     private String pid;
-
     private MapComposer mc;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     private String satServer = geoServer;
-
     /**
      * for functions in popup box
      */
@@ -87,7 +96,7 @@ public class FilteringWCController extends UtilityComposer {
         if (mc.getSettingsSupplementary() == null) {
             System.out.println("mc.ss is null");
         } else {
-            System.out.println("mc.ss is NOT null"); 
+            System.out.println("mc.ss is NOT null");
         }
         if (mc.getSettings() == null) {
             System.out.println("mc.gs is null");
@@ -192,7 +201,7 @@ public class FilteringWCController extends UtilityComposer {
                     });
 
                     // Col 3: Add the species count and set the onClick event
-                    Listcell count = new Listcell(String.valueOf(f.count)); 
+                    Listcell count = new Listcell(String.valueOf(f.count));
                     count.setStyle("text-decoration: underline;");
                     count.setParent(li);
                     count.addEventListener("onClick", new EventListener() {
@@ -213,6 +222,23 @@ public class FilteringWCController extends UtilityComposer {
                                 }
                                  *
                                  */
+
+                                if (lbSelLayers.getItemCount() > 0) {
+                                    StringBuffer sbProcessUrl = new StringBuffer();
+                                    sbProcessUrl.append("/filtering/apply");
+                                    sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+                                    sbProcessUrl.append("/species/list");
+                                    //String point = lb_points.getValue();
+                                    //if (point.length() == 0) {
+                                    //    point = "none";
+                                    //}
+                                    //sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
+                                    sbProcessUrl.append("/shape/none");
+                                    results = getInfo(sbProcessUrl.toString()).split("\r\n");
+                                    Arrays.sort(results);
+                                    seekToResultsPosition(0);
+                                    popup_results.open(30, 30);
+                                }
                             }
                             //}
                         }
@@ -236,20 +262,29 @@ public class FilteringWCController extends UtilityComposer {
             });
 
             lbSelLayers.setModel(new SimpleListModel(selectedLayers));
+            System.out.println("total items: " + lbSelLayers.getItemCount()); 
             Listitem li = lbSelLayers.getItemAtIndex(lbSelLayers.getItemCount() - 1);
-            Listcell lc = (Listcell) li.getLastChild();
-            System.out.println(lc);
-            lc = (Listcell) lc.getPreviousSibling();
+            List lich = li.getChildren();
+            System.out.println("li: \n" + li + " - " + lich.size());
+            for (int i = 0; i < lich.size(); i++) {
+                Listcell tlc = (Listcell)lich.get(i);
+                System.out.println(i + ": " + tlc.getLabel() + " -- " + tlc.getChildren().size());
+            }
+            Listcell lc = (Listcell) li.getFirstChild();
+            System.out.print("first child: ");
+            System.out.println(lc.getValue() + " - " + lc.getLabel());
+            lc = (Listcell) lc.getNextSibling();
+            System.out.println("lc: \n" + lc);
 
             listFix();
 
+            showAdjustPopup(lc);
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
 
 
-        ///showAdjustPopup(lc);
     }
 
     private String getFilterString(String layername) {
@@ -350,6 +385,17 @@ public class FilteringWCController extends UtilityComposer {
 
         System.out.println("deleteSelectedFilters(" + label + ")");
 
+        StringBuffer sbProcessUrl = new StringBuffer();
+        sbProcessUrl.append("/filtering/apply4");
+        sbProcessUrl.append("/pid/" + pid);
+        sbProcessUrl.append("/layers/none");
+        sbProcessUrl.append("/types/none");
+        sbProcessUrl.append("/val1s/none");
+        sbProcessUrl.append("/val2s/none");
+        sbProcessUrl.append("/depth/" + lbSelLayers.getItemCount());
+
+        String imagefilepath = getInfo(sbProcessUrl.toString());
+
 
         /*
         for (Object oi : _layer_filters_selected) {
@@ -382,6 +428,8 @@ public class FilteringWCController extends UtilityComposer {
          * 
          */
 
+        mc.removeLayer("Filtering - " + pid + " - layer " + lbSelLayers.getItemCount());
+
         selectedLayers.remove(label);
 
         li.detach();
@@ -394,13 +442,13 @@ public class FilteringWCController extends UtilityComposer {
         List list = lbSelLayers.getItems();
         for (i = 0; list != null && i < list.size() - 1; i++) {
             Listitem li = (Listitem) list.get(i);
-            ((Listcell) li.getFirstChild()).setLabel("");
+            ((Listcell) li.getLastChild()).setLabel("");
 
             li.setDisabled(true);
         }
         if (list != null && list.size() > 0) {
             Listitem li = (Listitem) list.get(i);
-            ((Listcell) li.getFirstChild()).setLabel("remove");
+            ((Listcell) li.getLastChild()).setLabel("remove");
 
             li.setDisabled(false);
         }
@@ -465,6 +513,8 @@ public class FilteringWCController extends UtilityComposer {
             System.out.println(li.getLabel());
             List list = li.getChildren();
 
+            System.out.println("list has " + list.size() + " children"); 
+
             for (Object o2 : list) {
                 Listcell m = (Listcell) o2;
                 System.out.println("**" + o2 + ">" + m.getLabel());
@@ -517,8 +567,167 @@ public class FilteringWCController extends UtilityComposer {
             lc.focus();
             System.out.println("attaching: " + lc + lc.getValue());
             popup_continous.open(li); // .open(30, 30);
+        } else { //catagorical values
+
+            popup_listbox.setModel(new SimpleListModel(popup_filter.catagory_names));
+
+            int idx = 0;
+            for (idx = 0; idx < _layer_filters.size(); idx++) {
+                if (((SPLFilter) _layer_filters.get(idx)).layer.name == popup_filter.layer.name) {
+                    System.out.println("popup for " + popup_filter.layer.display_name);
+                    break;
+                }
+            }
+            popup_idx.setValue(String.valueOf(idx));
+
+            String javascript = "applyFilterCtx(" + idx + ",-2,false);"; 	//should take out missing value
+            //filteringImage.applyFilterCtx(idx,-2,false);
+
+            /* set check boxes */
+            for (int i : popup_filter.catagories) {
+                Listitem listitem = popup_listbox.getItemAtIndex(i);
+                popup_listbox.addItemToSelection(listitem);
+            }
+            for (int i = 0; i < popup_filter.catagory_names.length; i++) {
+                int j = 0;
+                for (j = 0; j < popup_filter.catagories.length; j++) {
+                    if (i == popup_filter.catagories[j]) {
+                        javascript += "applyFilterCtx(" + idx + "," + i + ",true);"; 	//should take out missing value
+                        //filteringImage.applyFilterCtx(idx,i,true);
+                        break;
+                    }
+                }
+                if (j == popup_filter.catagories.length) {
+                    //hide
+                    //	javascript += "applyFilterCtx(" + idx + "," + i + ",false);"; 	//should take out missing value
+                    //	filteringImage.applyFilterCtx(idx,i,false);
+                }
+            }
+            lc.focus();
+            //		System.out.println("attaching: " + lc + lc.getValue());
+            popup_catagorical.open(30, 30);//.open(li);
+            //Clients.evalJavaScript(javascript);
+
+
+            Set selected = popup_listbox.getSelectedItems();
+            int[] items_selected = new int[selected.size()];
+            int pos = 0;
+
+            for (Object obj : selected) {
+                Listitem lisel = (Listitem) obj;
+                items_selected[pos++] = lisel.getIndex();
+            }
+
+            popup_filter.catagories = items_selected;
+
+            doApplyFilter(pid, popup_filter.layer.display_name, popup_filter.catagories, false);
+
+
         }
 
+    }
+
+    public void onClick$results_prev(Event event) {
+        if (results_pos == 0) {
+            return;
+        }
+
+        seekToResultsPosition(results_pos - 15);
+    }
+
+    public void onClick$results_next(Event event) {
+        if (results_pos + 15 >= results.length) {
+            return;
+        }
+
+        seekToResultsPosition(results_pos + 15);
+    }
+
+    public void onClick$download() {
+        if (lbSelLayers.getItemCount() > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (String s : results) {
+                sb.append(s);
+                sb.append("\r\n");
+            }
+            Filedownload.save(sb.toString(), "text/plain", "filter.csv");
+        } else {
+        }
+    }
+
+    public void onClick$downloadsamples() {
+        if (lbSelLayers.getItemCount() > 0) {
+            try {
+                StringBuffer sbProcessUrl = new StringBuffer();
+                sbProcessUrl.append("/filtering/apply");
+                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+                sbProcessUrl.append("/samples/list");
+                //String point = lb_points.getValue();
+                //if (point.length() == 0) {
+                //    point = "none";
+                //}
+                //sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
+                sbProcessUrl.append("/shape/none");
+                System.out.println("attempt to download: " + satServer + "/alaspatial/ws" + sbProcessUrl.toString());
+                org.zkoss.zul.Filedownload.save(new URL(satServer + "/alaspatial/ws" + sbProcessUrl.toString()), "application/zip");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+        }
+    }
+
+    public void onChange$popup_results_seek(InputEvent event) {
+        if (!event.isChangingBySelectBack()) {
+            System.out.println("onchange triggered");
+        }
+        
+    }
+
+    public void onChanging$popup_results_seek11(InputEvent event) {
+        //seek results list
+        System.out.print("Searching for ");
+        System.out.println(event.getValue());
+        String search_for = event.getValue();
+        //if(search_for.length() > 1){
+        //	search_for = search_for.substring(0,1).toUpperCase() + search_for.substring(1,search_for.length()).toLowerCase();
+		/*}else*/ if (search_for.length() > 0) {
+            search_for = search_for.toLowerCase();
+        }
+
+        int pos = java.util.Arrays.binarySearch(results, search_for);
+        System.out.println("seek to: " + pos + " " + search_for);
+        if (pos < 0) {
+            pos = (pos * -1) - 1;
+        }
+        seekToResultsPosition(pos);
+    }
+
+    private void seekToResultsPosition(int newpos) {
+        results_pos = newpos;
+
+        if (results_pos < 0) {
+            results_pos = 0;
+        }
+        if (results_pos >= results.length) {
+            results_pos = results.length - 1;
+        }
+
+        int sz = results_pos + 15;
+        if (results.length < sz) {
+            sz = results.length;
+        }
+
+        String[] list = new String[sz - results_pos];
+        int i;
+        for (i = results_pos; i < sz; i++) {
+            list[i - results_pos] = results[i];
+        }
+
+        ListModelArray slm = new ListModelArray(list, true);
+
+        popup_listbox_results.setModel(slm);
+        results_label.setValue(results_pos + " to " + (sz) + " of " + results.length);
     }
 
     private void serverFilter(boolean commit) {
@@ -588,36 +797,40 @@ public class FilteringWCController extends UtilityComposer {
 
     }
 
-    private void doApplyFilter(String pid, int layerIndex, String val1, String val2) {
-        String urlPart = "";
-        urlPart += "/filtering/apply";
-        urlPart += "/pid/" + pid;
-        urlPart += "/layer/" + layerIndex;
-        urlPart += "/val1/" + val1;
-        urlPart += "/val2/" + val2;
+    private void doApplyFilter(String pid, String layername, int[] catagories_to_show, boolean commit) {
+        StringBuffer show = new StringBuffer();
+        int i;
+        for (i = 0; i < catagories_to_show.length; i++) {
+            show.append(catagories_to_show[i]);
+            if (i < catagories_to_show.length - 1) {
+                show.append(",");
+            }
+        }
 
-        System.out.println("Applying server side filter");
-        getInfo(urlPart);
+        doApplyFilter(pid, layername, "ctx", show.toString(), "none", commit);
     }
 
     private void doApplyFilter(String pid, String layername, String type, String val1, String val2, boolean commit) {
         try {
 
-            System.out.print("Apply filter to layer: " );
+            System.out.print("Apply filter to layer: ");
             System.out.println(lbSelLayers.getSelectedItems().size());
             String urlPart = "";
-            if (commit) urlPart += "/filtering/apply4";
-            else urlPart += "/filtering/apply3";
+            if (commit) {
+                urlPart += "/filtering/apply4";
+            } else {
+                urlPart += "/filtering/apply3";
+            }
             urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
             urlPart += "/layers/" + URLEncoder.encode(layername, "UTF-8");
             urlPart += "/types/" + URLEncoder.encode(type, "UTF-8");
             urlPart += "/val1s/" + URLEncoder.encode(val1, "UTF-8");
             urlPart += "/val2s/" + URLEncoder.encode(val2, "UTF-8");
-            urlPart += "/depth/" + lbSelLayers.getSelectedItems().size();
+            urlPart += "/depth/" + lbSelLayers.getItemCount();
 
             System.out.println("Applying server side filter");
             String imagefilepath = getInfo(urlPart);
-            loadMap(imagefilepath); 
+            loadMap(imagefilepath);
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -683,11 +896,11 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     private void loadMap(String filename) {
-        String label = "Filtering - " + pid;
+        String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
         String uri = satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
         float opacity = Float.parseFloat("0.75");
 
-        List <Double> bbox = new ArrayList<Double>();
+        List<Double> bbox = new ArrayList<Double>();
         bbox.add(112.0);
         bbox.add(-44.0000000007);
         bbox.add(154.00000000084);
@@ -711,5 +924,4 @@ public class FilteringWCController extends UtilityComposer {
 
         return mapComposer;
     }
-
 }
