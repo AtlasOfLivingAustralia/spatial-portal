@@ -62,14 +62,14 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
 
     @Override
-        public void initialiseTransectDrawing(MapLayer mapLayer) {
-            String script = "window.mapFrame.addLineDrawingLayer('" +
-                                        mapLayer.getNameJS() + "','" +
-                                        mapLayer.getLayer()    + "','" +
-                                        mapLayer.getUriJS() +  "')";
-            execute(script) ; // Safe to proceed - map loaded way beforehand
+    public void initialiseTransectDrawing(MapLayer mapLayer) {
+        String script = "window.mapFrame.addLineDrawingLayer('" +
+                                    mapLayer.getNameJS() + "','" +
+                                    mapLayer.getLayer()    + "','" +
+                                    mapLayer.getUriJS() +  "')";
+        execute(script) ; // Safe to proceed - map loaded way beforehand
 
-        }
+    }
 
     @Override
     public void addPolygonDrawingTool() {
@@ -110,6 +110,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
     public void removePolygonFiltering() {
         String script = "window.mapFrame.removePolygonFiltering()";
+        execute(script);
+    }
+
+    @Override
+    public void removeSpeciesSelection() {
+        String script = "window.mapFrame.removeSpeciesSelection()";
         execute(script);
     }
 

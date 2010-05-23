@@ -43,6 +43,8 @@ var boxControl = null;	//for deactivate after drawing
 var samplingPolygon = null;		//temporary for destroy option after display
 var filteringPolygon = null;	//temporary for destroy option after display
 var alocPolygon = null;			//temporary for destroy option after display
+var polygonLayer = null;
+var boxLayer = null; 
 
 var layersLoading = 0;
 var layername; // current layer name
@@ -285,9 +287,16 @@ function buildMapReal() {
 }
 
 function addPolygonDrawingTool() {
-    ////adding polygon control and layer	
-    var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
-    polyControl =new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
+    removeSpeciesSelection();
+    ////adding polygon control and layer
+      var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";	
+	
+    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {style: layer_style});
+    polygonLayer.setVisibility(true);
+    map.addLayer(polygonLayer);
+    polyControl = new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
         'featureAdded':polygonAdded
     });
     map.addControl(polyControl);
@@ -339,6 +348,16 @@ function removePolygonALOC(){
 	}
 }
 
+function removeSpeciesSelection() {
+	if(polygonLayer != null){
+		polygonLayer.destroy();
+		polygonLayer = null;
+	}
+	if(boxLayer != null) {
+		boxLayer.destroy();
+		boxLayer = null;	
+	}
+}
 function addPolygonDrawingToolFiltering() {
     ////adding polygon control and layer	
     filteringPolygon = new OpenLayers.Layer.Vector("Polygon Layer");
@@ -359,13 +378,44 @@ function removePolygonFiltering(){
 }
 
 function addBoxDrawingTool() {
-    var boxLayer = new OpenLayers.Layer.Vector("Box Layer");
-    boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{
+    removeSpeciesSelection();
+   var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";	
+
+    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {style : layer_style });
+
+      boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{
         'featureAdded':regionAdded
     });
     map.addControl(boxControl);
+
     boxControl.activate();	
 }
+
+// This function passes the region geometry up to javascript in index.zul which can then send it to the server.
+function regionAdded(feature) {
+    //alert(feature.geometry.toGeometry());
+
+    //converting bounds from pixel value to lonlat - annoying!
+    var geoBounds = new OpenLayers.Bounds();
+    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
+    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
+
+    removeSpeciesSelection();
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";	
+    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {style : layer_style });
+    boxLayer.setVisibility(true);
+    map.addLayer(boxLayer);
+    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
+
+    parent.setRegionGeometry(geoBounds.toGeometry());
+    boxControl.deactivate();
+}
+
+
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
@@ -384,16 +434,6 @@ function polygonAddedALOC(feature) {
 function polygonAddedFiltering(feature) {
     parent.setPolygonGeometryFiltering(feature.geometry);
     polyControl.deactivate();
-}
-
-// This function passes the region geometry up to javascript in index.zul which can then send it to the server.
-function regionAdded(feature) {
-    //converting bounds from pixel value to lonlat - annoying!
-    var geoBounds = new OpenLayers.Bounds();
-    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
-    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
-    parent.setRegionGeometry(geoBounds.toGeometry());
-    boxControl.deactivate();
 }
 
 
