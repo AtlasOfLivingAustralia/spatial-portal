@@ -38,13 +38,12 @@ import java.awt.Color;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
-import org.ala.spatial.search.AutoCompleteSpecies;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -197,7 +196,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private GazetteerSearchController gazetteerSearchWindow;
     private AutoComplete gazetteerAuto;
     private SpeciesAutoComplete searchSpeciesAuto;
-
     private Div colourChooser;
     private Image legendImg;
     private Button applyChange;
@@ -265,7 +263,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-
     /**
      * Region tab click
      */
@@ -292,7 +289,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$zoomExtent() {
-         // change opacity for the current selected and displayed layer
+        // change opacity for the current selected and displayed layer
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("zooming to extent " + selectedLayer.getId());
@@ -310,28 +307,28 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
 
-            
-          
+
+
             selectedLayer.setRedVal(redSlider.getCurpos());
             selectedLayer.setGreenVal(greenSlider.getCurpos());
             selectedLayer.setBlueVal(blueSlider.getCurpos());
 
-            Color c =new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
+            Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
 
 
-        String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
+            String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
 
-        selectedLayer.setEnvColour(hexColour);
-        
+            selectedLayer.setEnvColour(hexColour);
 
 
-        //openLayersJavascript.removeGeoJsonLayer(selectedLayer);
 
-        openLayersJavascript.redrawFeatures(selectedLayer);
+            //openLayersJavascript.removeGeoJsonLayer(selectedLayer);
 
-        
-        
-       
+            openLayersJavascript.redrawFeatures(selectedLayer);
+
+
+
+
 
         }
     }
@@ -1169,22 +1166,67 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return addedOk;
     }
 
+    public MapLayer getMapLayer(String label) {
+        // check if layer already present
+        List udl = getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        System.out.println("session active layers: " + udl.size());
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            //System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
+            if (ml.getName().equals(label)) {
+                return ml;
+            }
+        }
+
+        return null;
+
+    }
+
+    public void removeLayer(String label) {
+        if (safeToPerformMapAction()) {
+            MapLayer mapLayer = getMapLayer(label);
+            if (mapLayer != null) {
+                System.out.println("removing layer " + label);
+                String script = openLayersJavascript.removeMapLayer(mapLayer);
+                System.out.println("remove response: " + script);
+                deactiveLayer(mapLayer, true, true);
+                updateLayerControls();
+                updateUserDefinedView();
+                openLayersJavascript.execute(
+                    openLayersJavascript.iFrameReferences
+                    + script.toString());
+                //Clients.evalJavaScript("map.removeLayer('" + label + "');");
+            } else {
+                // fail
+                showMessage(languagePack.getLang("wms_layer_remove_error"));
+                logger.info("unable to remove layer with label" + label);
+            }
+            
+        }
+
+    }
+
     public boolean addImageLayer(String id, String label, String uri, float opacity, List<Double> bbox) {
         boolean addedOk = false;
 
         if (safeToPerformMapAction()) {
-           
-            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), id) == null) {
 
-                            //start with a new MapLayer
-                MapLayer imageLayer = new MapLayer();
+            // check if layer already present
+            MapLayer imageLayer = getMapLayer(label); 
+
+            if (imageLayer == null) {
+                System.out.println("activating new layer");
+
+                //start with a new MapLayer
+                imageLayer = new MapLayer();
                 //set its type
                 imageLayer.setType(LayerUtilities.IMAGELAYER);
                 //the name is what will appear in the active layer list
                 imageLayer.setName(label);
 
                 //where do i find the image at the moment it is only enabled for png
-                imageLayer.setId(uri);
+                imageLayer.setId(label);
 
                 //the combination of the next two is used by openlayers to create a unique name
                 //its a bit dull using the ural and layer name but its a hangover from thinking
@@ -1205,15 +1247,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //needs to be true or the map won't bother rendering it
                 imageLayer.setDisplayable(true);
 
-                System.out.println("activating new layer");
-
                 //call this to add it to the map and also put it in the active layer list
                 activateLayer(imageLayer, true, true);
+                //addUserDefinedLayerToMenu(imageLayer, true);
+
+                addedOk = true;
+
 
             } else {
-                    System.out.println("refreshing exisiting layer"); 
+                System.out.println("refreshing exisiting layer");
+                imageLayer.setUri(uri);
+
                 // layer already exists, so lets just update that.
-                // refreshActiveLayer(imageLayer);
+                //refreshActiveLayer(imageLayer);
+                //Clients.evalJavaScript(
+                //        "map.getLayersByName('" + label + "')[0].setUrl('" + uri + "');");
+                openLayersJavascript.reloadMapLayerNow(imageLayer); 
+
+                addedOk = true;
             }
         }
 
@@ -1338,22 +1389,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (selected != null) {
             for (Object cell : ((Listitem) selected).getChildren()) {
-					logger.debug("cell :" + cell);
-					// CHILDREN COUNT is ALWAYS 1
-					if (cell instanceof Listcell) {
-						Listcell listcell = (Listcell) cell;
+                logger.debug("cell :" + cell);
+                // CHILDREN COUNT is ALWAYS 1
+                if (cell instanceof Listcell) {
+                    Listcell listcell = (Listcell) cell;
 
-						logger.debug("cell :" + listcell.getLabel());
-						for (Object innercell : listcell.getChildren()) {
-							// NEVER GET HERE
-							if (innercell instanceof Checkbox) {
-								logger.debug("InnerCell = Checkbox");
-								((Checkbox) innercell).setChecked(bCheck);
+                    logger.debug("cell :" + listcell.getLabel());
+                    for (Object innercell : listcell.getChildren()) {
+                        // NEVER GET HERE
+                        if (innercell instanceof Checkbox) {
+                            logger.debug("InnerCell = Checkbox");
+                            ((Checkbox) innercell).setChecked(bCheck);
 
-							}
-						}
-					}
-				}
+                        }
+                    }
+                }
+            }
         }
 
     }
@@ -1499,7 +1550,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             /*
              * populate the list of styles
              */
-            if (currentSelection.hasStyles() && currentSelection.isNcWmsType() ) {
+            if (currentSelection.hasStyles() && currentSelection.isNcWmsType()) {
                 styleList.setModel(new ListModelList(currentSelection.getStyles()));
                 logger.debug("select style: " + currentSelection.getSelectedSystemStyleName());
                 styleList.setValue(currentSelection.getSelectedSystemStyleName());
@@ -1752,19 +1803,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
     }
 
-    public void onScroll$blueSlider(){
+    public void onScroll$blueSlider() {
         int blue = blueSlider.getCurpos();
         blueLabel.setValue(String.valueOf(blue));
         updateLegendImage();
     }
 
-    public void onScroll$redSlider(){
+    public void onScroll$redSlider() {
         int red = redSlider.getCurpos();
         redLabel.setValue(String.valueOf(red));
         updateLegendImage();
     }
 
-    public void onScroll$greenSlider(){
+    public void onScroll$greenSlider() {
         int green = greenSlider.getCurpos();
         greenLabel.setValue(String.valueOf(green));
         updateLegendImage();
@@ -1835,7 +1886,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void addGeoJSON(String labelValue, String uriValue) {
         if (safeToPerformMapAction()) {
             this.addGeoJSONLayer(labelValue, uriValue);
-           
+
         }
 
     }
@@ -1853,14 +1904,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     mapLayer.setDisplayable(true);
                     mapLayer.setOpacity((float) 1);
                     mapLayer.setQueryable(true);
-                    
+
                     activateLayer(mapLayer, true, true);
 
                     // we must tell any future tree menus that the map layer is already
                     // displayed as we didn't use changeSelection()
                     mapLayer.setListedInActiveLayers(true);
-                   
-                    
+
+
                 }
             } else {
                 // fail

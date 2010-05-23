@@ -1,4 +1,4 @@
-<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<!-- <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?> -->
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk>
     <panel id="help" title="Click for Species List Tool Help"
@@ -96,10 +96,11 @@ This tool filters all species known to the ALA by environmental and contextual d
                         <separator/>
 
 
-                        <button label="download" id="download" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
+                        <button label="download species list" id="download" />
+                        <button label="download samples" id="downloadsamples" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
                     </vbox>
                 </popup>
-                
+
             </vbox>
 
         </groupbox>
