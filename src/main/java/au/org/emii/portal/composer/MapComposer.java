@@ -1883,11 +1883,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void addGeoJSON(String labelValue, String uriValue) {
+    public MapLayer addGeoJSON(String labelValue, String uriValue) {
         if (safeToPerformMapAction()) {
-            this.addGeoJSONLayer(labelValue, uriValue);
+            return this.addGeoJSONLayer(labelValue, uriValue);
 
         }
+        else return null;
 
     }
 
