@@ -78,7 +78,7 @@ public class GazetteerSearchController extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
         sSearchTerm = (String) sess.getAttribute("searchGazetteerTerm");
-       // searchGazetteer(getURI());
+        // searchGazetteer(getURI());
         renderGazetteerResults();
     }
 
@@ -101,7 +101,6 @@ public class GazetteerSearchController extends UtilityComposer {
 //        }
 //
 //    }
-
     private String getURI() {
         String uri;
 
@@ -146,18 +145,18 @@ public class GazetteerSearchController extends UtilityComposer {
             XPath xpath = factory.newXPath();
             XPathExpression namesExpr = xpath.compile("//search/results/result/name/text()");
             XPathExpression descriptionsExpr = xpath.compile("//search/results/result/description/text()");
-           // XPathExpression statesExpr = xpath.compile("//search/results/result/state/text()");
+            // XPathExpression statesExpr = xpath.compile("//search/results/result/state/text()");
             XPathExpression linksExpr = xpath.compile("//search/results/result/@*");
 
             NodeList names = (NodeList) namesExpr.evaluate(resultDoc, XPathConstants.NODESET);
             NodeList descriptions = (NodeList) descriptionsExpr.evaluate(resultDoc, XPathConstants.NODESET);
-          //  NodeList states = (NodeList) statesExpr.evaluate(resultDoc, XPathConstants.NODESET);
+            //  NodeList states = (NodeList) statesExpr.evaluate(resultDoc, XPathConstants.NODESET);
             NodeList links = (NodeList) linksExpr.evaluate(resultDoc, XPathConstants.NODESET);
 
             for (int i = 0; i < names.getLength(); i++) {
                 String name = (String) names.item(i).getNodeValue();
                 String description = (String) descriptions.item(i).getNodeValue();
-              //  String state = (String) states.item(i).getNodeValue();
+                //  String state = (String) states.item(i).getNodeValue();
                 String link = (String) links.item(i).getNodeValue();
 
                 Listitem li = new Listitem();
@@ -183,7 +182,7 @@ public class GazetteerSearchController extends UtilityComposer {
                 //Add State
                 lc = new Listcell();
                 lb = new Label();
-             //   lb.setValue(state);
+                //   lb.setValue(state);
                 lc.appendChild(lb);
                 li.appendChild(lc);
 
@@ -210,11 +209,9 @@ public class GazetteerSearchController extends UtilityComposer {
 
             gazetteerResults.setVisible(true);
         } catch (Exception e) {
-
         }
 
     }
-
 
     /**
      * Gets the main pages controller so we can add a
@@ -241,19 +238,23 @@ public class GazetteerSearchController extends UtilityComposer {
             MapLayer mapLayer = null;
 
             //get the entity value from the button id
-            entity = event.getTarget().getId();         
+            entity = event.getTarget().getId();
             Label ln = (Label) event.getTarget().getFellow("ln" + entity);
             label = ln.getValue();
 
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
 
-            mc.addGeoJSON(entity, gazServer+label);
+            //add feature to the map as a new layer
+            mapLayer = mc.addGeoJSON(entity, gazServer + label);
+
+//            //zoom to the feature/layer
+//            if (mapLayer != null) {
+//                mc.getOpenLayersJavascript().zoomGeoJsonExtent(mapLayer);
+//            }
+
             
-            mc.getOpenLayersJavascript().zoomGeoJsonExtent(mapLayer);
         }
-
-
     }
 }
 
