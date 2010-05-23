@@ -210,7 +210,9 @@ public interface OpenLayersJavascript {
     public void removePolygonALOC();
     public void removePolygonFiltering();
 
-        /**
+    public void removeSpeciesSelection();
+
+    /**
      * Adds the openlayers box drawing tool to the map
      */
     public void addBoxDrawingTool();

@@ -249,7 +249,8 @@ public class GazetteerSearchController extends UtilityComposer {
             MapComposer mc = getThisMapComposer();
 
             mc.addGeoJSON(entity, gazServer+label);
-
+            
+            mc.getOpenLayersJavascript().zoomGeoJsonExtent(mapLayer);
         }
 
 

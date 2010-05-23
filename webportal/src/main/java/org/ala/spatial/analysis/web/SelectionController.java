@@ -59,12 +59,14 @@ public class SelectionController extends UtilityComposer {
 
     private Textbox selectionGeom;
     private Textbox boxGeom;
+    private Textbox displayGeom;
     public Button download;
     public Listbox popup_listbox_results;
     public Popup popup_results;
     public Button results_prev;
     public Button results_next;
     public Label results_label;
+
     String[] results = null;
     int results_pos;
     SortedSet speciesSet;
@@ -74,13 +76,18 @@ public class SelectionController extends UtilityComposer {
         super.afterCompose();
     }
 
-    /**
+    public void onClick$btnClearSelection(Event event) {
+        MapComposer mc = getThisMapComposer();
+        mc.getOpenLayersJavascript().removeSpeciesSelection();
+        displayGeom.setValue("");
+    }
+
+     /**
      * Activate the polygon selection tool on the map
      * @param event
      */
     public void onClick$btnPolygonSelection(Event event) {
         MapComposer mc = getThisMapComposer();
-
         mc.getOpenLayersJavascript().addPolygonDrawingTool();
 
     }
@@ -91,7 +98,6 @@ public class SelectionController extends UtilityComposer {
      */
     public void onClick$btnBoxSelection(Event event) {
         MapComposer mc = getThisMapComposer();
-
         mc.getOpenLayersJavascript().addBoxDrawingTool();
 
     }
@@ -102,7 +108,7 @@ public class SelectionController extends UtilityComposer {
      */
     public void onChange$selectionGeom(Event event) {
         try {
-            
+            displayGeom.setValue(selectionGeom.getValue());
             wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
@@ -111,7 +117,7 @@ public class SelectionController extends UtilityComposer {
 
     public void onChange$boxGeom(Event event) {
         try {
-          
+           displayGeom.setValue(boxGeom.getValue());
             wfsQueryBBox(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
@@ -143,16 +149,18 @@ public class SelectionController extends UtilityComposer {
      */
     public void wfsQueryBBox(String selectionGeom) {
         String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
-        String upperCorner = selectionGeom.replace("POLYGON(","").replace(")","").split(",")[3].toString();
-        String lowerCorner = selectionGeom.replace("POLYGON(","").replace("(","").split(",")[1].toString(); 
+        selectionGeom = selectionGeom.replace("(","");
+        selectionGeom = selectionGeom.replace(")","");
+        String upperCorner = selectionGeom.replace("POLYGON","").split(",")[3].toString();
+        String lowerCorner = selectionGeom.replace("POLYGON","").split(",")[1].toString();
         baseQueryXML = baseQueryXML.replace("UPPERCORNER", upperCorner);
         baseQueryXML = baseQueryXML.replace("LOWERCORNER", lowerCorner);
         
         //       String completeQuery = baseQuery + selection + ")";
         try {
-           
+            
             String response = POSTRequest(baseQueryXML);
-        //    Messagebox.show(response);
+           // Messagebox.show(response);
          
         } catch (Exception e) { //FIXME
         }
@@ -201,7 +209,7 @@ public class SelectionController extends UtilityComposer {
 
     /**
      * Takes a WFS response and returns species list
-     * @param xmlResponse The response of an WFS query.
+     * @param responseXML The response of an WFS query.
      * @return
      */
     public String parse(String responseXML) throws ParserConfigurationException, XPathExpressionException,SAXException, IOException, InterruptedException {
@@ -232,7 +240,7 @@ public class SelectionController extends UtilityComposer {
         
         results = (String[])speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
-        popup_results.open(30, 30);
+        popup_results.open(40,150);
 //        for(Object speciesName : speciesSet) {
 //            Listitem li = new Listitem();
 //            Listcell lc = new Listcell();
