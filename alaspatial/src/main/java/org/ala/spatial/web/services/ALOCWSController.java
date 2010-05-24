@@ -55,7 +55,7 @@ public class ALOCWSController {
             String groupCount = req.getParameter("gc");
             Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
            
-            ALOC.run(outputfile, envList, Integer.parseInt(groupCount));
+            ALOC.run(outputfile, envList, Integer.parseInt(groupCount),Long.toString(currTime));
 
             generateWorldFiles(outputpath);
 
@@ -76,7 +76,12 @@ public class ALOCWSController {
             // Upload the file to GeoServer using REST calls
             System.out.println("Uploading file: " + pngZipFile + " to \n" + url);
             UploadSpatialResource.loadResource(url, extra, username, password, pngZipFile);
-
+            
+            /* create style */
+            UploadSpatialResource.postCall((String) htGeoserver.get("geoserver_url") + "/rest/styles",username,password,outputfile+".xml","text/xml");
+        	
+        	/* upload style */
+            UploadSpatialResource.putCall((String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + currTime,username,password,outputfile+".sld","application/vnd.ogc.sld+xml");
 
             // if it doesn't die by now, then all is good
             // set the pid and sent the response back to the client 
@@ -107,7 +112,7 @@ public class ALOCWSController {
             Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
             SimpleRegion simpleregion = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
            
-            ALOC.run(outputfile, envList, Integer.parseInt(groupCount),simpleregion);
+            ALOC.run(outputfile, envList, Integer.parseInt(groupCount),simpleregion,Long.toString(currTime));
             
             generateWorldFiles(outputpath);
 
@@ -129,6 +134,31 @@ public class ALOCWSController {
             System.out.println("Uploading file: " + pngZipFile + " to \n" + url);
             UploadSpatialResource.loadResource(url, extra, username, password, pngZipFile);
 
+            
+            try{
+            	FileWriter fw = new FileWriter(outputfile + ".xml");
+            	fw.append("<style><name>aloc_" + currTime + "</name><filename>aloc.png.sld</filename></style>");
+            	fw.close();
+            	
+            	fw = new FileWriter(outputfile + "_.xml");
+            	fw.append("<layer><defaultStyle><name>aloc_" + currTime + "</name></defaultStyle></layer>");
+            	fw.close();
+            }catch(Exception e){
+            	e.printStackTrace();
+            }
+        	// .xml fw.append("
+        	// .2.xml fw.append(
+        	
+        	/* create style */
+            UploadSpatialResource.postCall((String) htGeoserver.get("geoserver_url") + "/rest/styles",username,password,outputfile+".xml","text/xml");
+        	
+        	/* upload style */
+            UploadSpatialResource.putCall((String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + currTime,username,password,outputfile+".sld","application/vnd.ogc.sld+xml");
+        	
+        	/* assign style */
+        //    UploadSpatialResource.putCall((String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:aloc_class_" + currTime,username,password,outputfile+"_.xml","text/xml");
+            	
+            
 
             pid = "" + currTime;
         } catch (Exception e) {

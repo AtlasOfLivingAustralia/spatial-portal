@@ -34,6 +34,7 @@ import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.SessionInitImpl;
+import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -198,6 +199,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private SpeciesAutoComplete searchSpeciesAuto;
     private Div colourChooser;
     private Image legendImg;
+    
     private Button applyChange;
 
     public UserDataDao getUserDataManager() {
@@ -1093,6 +1095,50 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         return addedOk;
     }
+    
+    /**
+     * Add a WMS layer identified by the given parameters to the menu system
+     * and activate it
+     * @param label Name of map layer
+     * @param uri URI for the WMS service
+     * @param opacity 0 for invisible, 1 for solid
+     * @param filter filter
+     * @param legend URI for map layer legend
+     */
+    public boolean addWMSLayer(String label, String uri, float opacity, String filter, String legend) {
+        boolean addedOk = false;
+        if (safeToPerformMapAction()) {
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+                MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                if (mapLayer == null) {
+                    // fail
+                    errorMessageBrokenWMSLayer(imageTester);
+                    logger.info("adding WMS layer failed ");
+                } else {
+                    // ok
+                	WMSStyle style = new WMSStyle();
+                	style.setName("Default");
+                    style.setDescription("Default style");
+                    style.setTitle("Default");
+                    style.setLegendUri(legend);
+                    mapLayer.addStyle(style);
+                    mapLayer.setSelectedStyleIndex(1);
+                    logger.info("adding WMSStyle with legendUri: " + legend);                    
+                	
+                    addUserDefinedLayerToMenu(mapLayer, true);
+                    addedOk = true;
+                }
+            } else {
+                // fail
+                showMessage(languagePack.getLang("wms_layer_already_exists"));
+                logger.info(
+                        "refusing to add a new layer with URI " + uri
+                        + " because it already exists in the menu");
+            }
+        }
+        return addedOk;
+    }
+
 
     /**
      * Overridden to allow for the adding of a OGC Filter
@@ -1570,7 +1616,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             // show animation controls if needed
             getAnimationControlsComposer().updateAnimationControls(currentSelection);
-
+            
             if (currentSelection.getType() == LayerUtilities.GEOJSON) {
                 LegendMaker lm = new LegendMaker();
                 //Color c = Color.decode(currentSelection.getEnvColour());
@@ -1588,6 +1634,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 redLabel.setValue(String.valueOf(red));
                 greenLabel.setValue(String.valueOf(green));
                 legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+                legendImg.setWidth("50px");		//repair width and height should a WMS layer have been in use
+                legendImg.setHeight("50px");
+            }else if(currentSelection.getSelectedStyle() != null 
+            		/*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
+            				|| currentSelection.getType() == LayerUtilities.WMS_1_1_0
+            				|| currentSelection.getType() == LayerUtilities.WMS_1_1_1
+            				|| currentSelection.getType() == LayerUtilities.WMS_1_3_0
+            		)*/){
+            	String legendUri = currentSelection.getSelectedStyle().getLegendUri();   
+            	legendImg.setSrc(legendUri);  
+            	legendImg.setWidth("");
+                legendImg.setHeight("");            	
             }
             layerControls.setVisible(true);
         } else {

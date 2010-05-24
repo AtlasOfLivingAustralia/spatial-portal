@@ -17,10 +17,10 @@ public class ALOC {
 
     public static void main(String args[]) {
         TabulationSettings.load();
-        run("output.png", TabulationSettings.environmental_data_files, 20);
+        run("output.png", TabulationSettings.environmental_data_files, 20,"test");
     }
 
-    public static int[] run(String filename, Layer[] layers, int numberofgroups) {
+    public static int[] run(String filename, Layer[] layers, int numberofgroups, String id) {
         int i, j;
         float[][] data = null;
         j = 0;
@@ -109,7 +109,8 @@ public class ALOC {
             
             /* export means + colours */
             exportMeansColours(filename + ".csv",group_means,colours,layers);
-
+            exportSLD(filename + ".sld",group_means,colours,layers,id);
+           
             /* map back as colours, grey scale for now */
             BufferedImage image = new BufferedImage(width, height,
                     BufferedImage.TYPE_INT_ARGB);
@@ -136,7 +137,7 @@ public class ALOC {
 
                 //set up rgb colour for this group
                 //image_bytes[mapping[i]] = 0x00000000 & (colour[0] << 16) & (colour[1] << 8) & (colour[0]);
-                image_bytes[mapping[i]] = 0xff000000 | ((colour[0] * 255 + colour[1]) * 255 + colour[2]);
+                image_bytes[mapping[i]] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
             }
 
             image.setRGB(0, 0, image.getWidth(), image.getHeight(),
@@ -411,11 +412,11 @@ public class ALOC {
         return groups;
     }
     
-    public static int[] run(String filename, Layer[] layers, int numberofgroups, SimpleRegion simpleregion) {
+    public static int[] run(String filename, Layer[] layers, int numberofgroups, SimpleRegion simpleregion,String id) {
     	TabulationSettings.load();
     	
     	if(simpleregion == null){
-    		return run(filename,layers,numberofgroups);
+    		return run(filename,layers,numberofgroups,id);
     	}
     	
         int i, j;
@@ -516,7 +517,6 @@ public class ALOC {
                 }
             }
 
-
             /* get RGB for colouring group means */
 
             /* PCA */
@@ -524,7 +524,13 @@ public class ALOC {
             
             /* export means + colours */
             exportMeansColours(filename + ".csv",group_means,colours,layers);
+            exportSLD(filename + ".sld",group_means,colours,layers,id);
 
+            for(i=0;i<colours.length;i++){
+            	System.out.println("colour: " + colours[i][0] + " " + colours[i][1] + " " + colours[i][2] + " :"
++ Integer.toHexString((colours[i][0] << 16 + colours[i][1]) << 8 + colours[i][2]));
+            }
+            
 
             /* map back as colours, grey scale for now */
             BufferedImage image = new BufferedImage(width, height,
@@ -552,7 +558,8 @@ public class ALOC {
 
                 //set up rgb colour for this group
                 //image_bytes[mapping[i]] = 0x00000000 & (colour[0] << 16) & (colour[1] << 8) & (colour[0]);
-                image_bytes[mapping[i]] = 0xff000000 | ((colour[0] * 255 + colour[1]) * 255 + colour[2]);
+                image_bytes[mapping[i]] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
+                
             }
 
             image.setRGB(0, 0, image.getWidth(), image.getHeight(),
@@ -592,11 +599,11 @@ public class ALOC {
     		for(i=0;i<means.length;i++){
     			fw.append(String.valueOf(i));
     			fw.append(",");
-    			fw.append(String.valueOf(colours[0]));
+    			fw.append(String.valueOf(colours[i][0]));
     			fw.append(",");
-    			fw.append(String.valueOf(colours[1]));
+    			fw.append(String.valueOf(colours[i][1]));
     			fw.append(",");
-    			fw.append(String.valueOf(colours[2]));
+    			fw.append(String.valueOf(colours[i][2]));
     			
     			for(j=0;j<means[i].length;j++){
     				fw.append(",");
@@ -606,6 +613,61 @@ public class ALOC {
     			fw.append("\r\n");
     		}
     		
+    		fw.close();
+    	}catch(Exception e){
+    		e.printStackTrace();    		
+    	}
+    }
+    
+    /* SLD */
+    /*
+
+              
+            
+*/
+     
+    /* move somewhere better */
+    static void exportSLD(String filename, double [][] means, int [][] colours, Layer [] layers, String id){
+    	try{
+    		StringBuffer sld = new StringBuffer();
+    		sld.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
+    		
+    		/* header */
+    		sld.append("<StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\"");
+			sld.append(" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
+			sld.append(" xsi:schemaLocation=\"http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd\">");
+			sld.append(" <NamedLayer>");
+			sld.append(" <Name>aloc_" + id + "</Name>");
+			sld.append(" <UserStyle>");
+			sld.append(" <Name>aloc_" + id + "</Name>");
+			sld.append(" <Title>ALA ALOC distribution</Title>");
+			sld.append(" <FeatureTypeStyle>");
+			sld.append(" <Rule>");
+			sld.append(" <RasterSymbolizer>");
+			sld.append(" <ColorMap type=\"values\" >");
+		   							    		
+    		int i,j;
+    		String s;   		
+    		  		
+    		/* outputs */
+    		for(i=0;i<colours.length-1;i++){	//TODO: fix reason for -1
+    			j = 0x00000000 | ((colours[i][0] << 16) | (colours[i][1] << 8) | colours[i][2]);    			
+    			s = Integer.toHexString(j).toUpperCase();
+    			while(s.length() < 6){
+    				s = "0" + s;
+    			}
+    			System.out.println("s: " + s
+    					+ " " + colours[i][0] + ":" + Integer.toHexString(colours[i][0])
+    					+ " " + colours[i][1] + ":" + Integer.toHexString(colours[i][1])
+    					+ " " + colours[i][2] + ":" + Integer.toHexString(colours[i][2]));
+    			sld.append("<ColorMapEntry color=\"#" + s + "\" quantity=\"" + (i+1) + ".0\" label=\"group " + (i+1) + "\" opacity=\"1\"/>\r\n");
+    		}
+    		
+    		/* footer */
+    		sld.append("</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>");
+    		
+    		FileWriter fw = new FileWriter(filename);
+    		fw.append(sld.toString());
     		fw.close();
     	}catch(Exception e){
     		e.printStackTrace();    		
