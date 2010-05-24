@@ -289,11 +289,17 @@ public class MaxentWCController extends UtilityComposer {
 
             String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid[1] + "&styles=alastyles&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
 
-
+            String legendurl = geoServer 
+	            + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20" 
+	            + "&LAYER=ALA:species_" + pid[1]
+	            + "&STYLE=alastyles";  
+            
+            System.out.println(legendurl);
+        
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
 
-            mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5);
+            mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5,"",legendurl);
 
             this.status.setValue("Status: " + status[1]);
             if (status[1].equalsIgnoreCase("success")) {

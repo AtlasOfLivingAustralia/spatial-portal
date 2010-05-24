@@ -10,6 +10,9 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+
+import javax.imageio.ImageIO;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
@@ -24,6 +27,8 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Window;
+import org.zkoss.zul.Image;
 
 /**
  *
@@ -40,7 +45,9 @@ public class ALOCWCController extends UtilityComposer {
     private Button btnGenerate;
     private List<String> selectedLayers;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
-    private String satServer = geoServer;
+    private String satServer = geoServer;//"http://localhost:8080";//geoServer;
+    
+    private Image legend;
 
     String user_polygon = "";
     Textbox selectionGeomALOC;
@@ -208,13 +215,19 @@ public class ALOCWCController extends UtilityComposer {
 
             String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_class_" + slist + "&styles=&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
 
+            String legendurl = geoServer 
+	            + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=" 
+	            + (Integer.parseInt((groupCount.getValue()))) 
+	            + "&LAYER=ALA:aloc_class_" + slist
+	            + "&STYLE=aloc_" + slist;  
+            
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
-
+            
             //mc.addWMSLayer("ALOC " + slist, mapurl, (float) 0.5);
-            mc.addWMSLayer("ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count, mapurl, (float) 0.5);
-            generation_count++;
-
+            mc.addWMSLayer("ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count, mapurl, (float) 0.5, "", legendurl);
+            generation_count++;    
+          
         } catch (Exception ex) {
             //Logger.getLogger(ALOCWCController.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Opps!: ");
