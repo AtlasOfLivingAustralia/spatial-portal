@@ -185,6 +185,15 @@
       <!--size after which the window stacking will roll over again
             to prevent drawing too far off screen - an integer (=px)-->
       <window_stacking_constant>600</window_stacking_constant>
+      <!-- GeoServer details -->
+      <geoserver_url>http://localhost:8080</geoserver_url>
+      <geoserver_username>admin</geoserver_username>
+      <geoserver_password>geoserver</geoserver_password>
+      <!-- ALA Spatial Analysis Toolkit -->
+      <sat_url>http://localhost:8080</sat_url>
+      <!-- Common Name search url -->
+      <!-- replace the _query_ with the common name query string -->
+      <common_name_url>http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=_query_</common_name_url>
     </tns:supplementary>
   </tns:settings>
   <!--Menu
