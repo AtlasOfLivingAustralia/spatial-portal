@@ -1,25 +1,11 @@
 package org.ala.spatial.analysis.web;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.util.Iterator;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
-import net.sf.json.util.PropertyFilter;
-import org.ala.spatial.search.TaxaCommonSearchSummary;
 import org.apache.commons.httpclient.HttpClient;
 
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.util.EntityUtils;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
@@ -31,9 +17,14 @@ import org.zkoss.zul.Comboitem;
 public class SpeciesAutoComplete extends Combobox {
 
     //TODO get these from the config file
-    private static final String cnUrl = "data.ala.org.au";
-    private static final String commonSearch = "/search/commonNames/";
+    private static final String COMMON_NAME_URL = "common_name_url";
+    private static final String SAT_URL = "sat_url";
+    //private static final String cnUrl = "data.ala.org.au";
+    //private static final String commonSearch = "/search/commonNames/";
+    private String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=_query_";
+    private String satServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     private boolean bSearchCommon = false;
+    private SettingsSupplementary settingsSupplementary = null;
 
     public boolean isSearchCommon() {
         return bSearchCommon;
@@ -45,10 +36,18 @@ public class SpeciesAutoComplete extends Combobox {
 
     public SpeciesAutoComplete() {
         refresh(""); //init the child comboitems
+        System.out.println("setting cnurl in sac()");
+        //cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
+        System.out.println("setting satserver in sac()");
+        //satServer = settingsSupplementary.getValue(SAT_URL);
     }
 
     public SpeciesAutoComplete(String value) {
         super(value); //it invokes setValue(), which inits the child comboitems
+        System.out.println("setting cnurl in sac(val)");
+        //cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
+        System.out.println("setting satserver in sac(val)");
+        //satServer = settingsSupplementary.getValue(SAT_URL);
     }
 
     @Override
@@ -66,9 +65,17 @@ public class SpeciesAutoComplete extends Combobox {
     }
 
     private void refreshBIE(String val) {
-        String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=";
+        //String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=";
         try {
-            String nsurl = cnUrl + URLEncoder.encode(val, "UTF-8");
+            //TODO get this from the config file
+            if (settingsSupplementary != null) {
+                System.out.println("setting ss.bie.val");
+                cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
+            } else {
+                System.out.println("NOT setting ss.bie.val");
+            }
+
+            String nsurl = cnUrl.replaceAll("_query_", URLEncoder.encode(val, "UTF-8"));
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(nsurl);
 
@@ -126,7 +133,14 @@ public class SpeciesAutoComplete extends Combobox {
     private void refresh(String val) {
 
         //TODO get this from the config file
-        String snUrl = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial/species/taxon/";
+        if (settingsSupplementary != null) {
+            System.out.println("setting ss.val");
+            satServer = settingsSupplementary.getValue(SAT_URL);
+        } else {
+            System.out.println("NOT setting ss.val");
+        }
+
+        String snUrl = satServer + "/alaspatial/species/taxon/";
         //String snUrl = "http://localhost:8080/alaspatial/species/taxon/";
 
 
@@ -157,7 +171,7 @@ public class SpeciesAutoComplete extends Combobox {
              */
 
 
-            System.out.println("Looking up scientific name for '" + val + "' at " + snUrl ); 
+            System.out.println("Looking up scientific name for '" + val + "' at " + snUrl);
 
             Iterator it = getItems().iterator();
             if (val.length() == 0) {
@@ -230,5 +244,4 @@ public class SpeciesAutoComplete extends Combobox {
         }
 
     }
-
 }

@@ -6,12 +6,12 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import javax.imageio.ImageIO;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -27,7 +27,6 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
-import org.zkoss.zul.Window;
 import org.zkoss.zul.Image;
 
 /**
@@ -36,6 +35,10 @@ import org.zkoss.zul.Image;
  */
 public class ALOCWCController extends UtilityComposer {
 
+    private static final String GEOSERVER_URL = "geoserver_url";
+    private static final String GEOSERVER_USERNAME = "geoserver_username";
+    private static final String GEOSERVER_PASSWORD = "geoserver_password";
+    private static final String SAT_URL = "sat_url";
     private Listbox lbenvlayers;
     private Combobox cbEnvLayers;
     private Label lblNoLayersSelected;
@@ -44,22 +47,27 @@ public class ALOCWCController extends UtilityComposer {
     private Textbox groupCount;
     private Button btnGenerate;
     private List<String> selectedLayers;
+    private MapComposer mc;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
-    private String satServer = geoServer;//"http://localhost:8080";//geoServer;
-    
+    private String satServer = geoServer;
+    private SettingsSupplementary settingsSupplementary = null;
     private Image legend;
-
     String user_polygon = "";
     Textbox selectionGeomALOC;
-    
     int generation_count = 1;
-    
+
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        setupEnvironmentalLayers(); 
-        
+        mc = getThisMapComposer();
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            satServer = settingsSupplementary.getValue(SAT_URL);
+        }
+
+        setupEnvironmentalLayers();
+
         selectedLayers = new Vector<String>();
 
     }
@@ -163,19 +171,19 @@ public class ALOCWCController extends UtilityComposer {
 
             /*
             if (selectedLayers.size() > 0) {
-                Iterator it = selectedLayers.iterator();
-                while (it.hasNext()) {
-                    sbenvsel.append(it.next());
-                    if (it.hasNext()) {
-                        sbenvsel.append(":");
-                    }
-                }
-            } else {
-                Messagebox.show("Please select some environmental layers","ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
-                return;
+            Iterator it = selectedLayers.iterator();
+            while (it.hasNext()) {
+            sbenvsel.append(it.next());
+            if (it.hasNext()) {
+            sbenvsel.append(":");
             }
-            *
-            */
+            }
+            } else {
+            Messagebox.show("Please select some environmental layers","ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+            return;
+            }
+             *
+             */
             if (lbenvlayers.getSelectedCount() > 0) {
                 Iterator it = lbenvlayers.getSelectedItems().iterator();
                 int i = 0;
@@ -189,7 +197,7 @@ public class ALOCWCController extends UtilityComposer {
 
                 }
             } else {
-                Messagebox.show("Please select some environmental layers","ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                Messagebox.show("Please select some environmental layers", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 return;
             }
 
@@ -197,10 +205,10 @@ public class ALOCWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeo?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(groupCount.getValue(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if(user_polygon.length() > 0){
-            	sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
-            }else{
-            	sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            if (user_polygon.length() > 0) {
+                sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+            } else {
+                sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
             }
 
             HttpClient client = new HttpClient();
@@ -215,19 +223,19 @@ public class ALOCWCController extends UtilityComposer {
 
             String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_class_" + slist + "&styles=&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
 
-            String legendurl = geoServer 
-	            + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=" 
-	            + (Integer.parseInt((groupCount.getValue()))) 
-	            + "&LAYER=ALA:aloc_class_" + slist
-	            + "&STYLE=aloc_" + slist;  
-            
+            String legendurl = geoServer
+                    + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT="
+                    + (Integer.parseInt((groupCount.getValue())))
+                    + "&LAYER=ALA:aloc_class_" + slist
+                    + "&STYLE=aloc_" + slist;
+
             //get the current MapComposer instance
-            MapComposer mc = getThisMapComposer();
-            
+            //MapComposer mc = getThisMapComposer();
+
             //mc.addWMSLayer("ALOC " + slist, mapurl, (float) 0.5);
             mc.addWMSLayer("ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count, mapurl, (float) 0.5, "", legendurl);
-            generation_count++;    
-          
+            generation_count++;
+
         } catch (Exception ex) {
             //Logger.getLogger(ALOCWCController.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Opps!: ");
@@ -250,17 +258,17 @@ public class ALOCWCController extends UtilityComposer {
 
         return mapComposer;
     }
-    
+
     /**
      * Activate the polygon selection tool on the map
      * @param event
      */
     public void onClick$btnPolygonSelection(Event event) {
-        MapComposer mc = getThisMapComposer();
+        //MapComposer mc = getThisMapComposer();
 
         mc.getOpenLayersJavascript().addPolygonDrawingToolALOC();
     }
-    
+
     /**
      * clear the polygon selection tool on the map
      * @param event
@@ -268,34 +276,34 @@ public class ALOCWCController extends UtilityComposer {
     public void onClick$btnPolygonSelectionClear(Event event) {
         user_polygon = "";
         selectionGeomALOC.setValue("");
-        
-        MapComposer mc = getThisMapComposer();
+
+        //MapComposer mc = getThisMapComposer();
 
         mc.getOpenLayersJavascript().removePolygonALOC();
     }
-    
+
     /**
      * 
      * @param event
      */
     public void onChange$selectionGeomALOC(Event event) {
-    	try {
-        	
-        	user_polygon = convertGeoToPoints(selectionGeomALOC.getValue());
-        	
+        try {
+
+            user_polygon = convertGeoToPoints(selectionGeomALOC.getValue());
+
         } catch (Exception e) {//FIXME
-        	e.printStackTrace();
+            e.printStackTrace();
         }
 
     }
-    
-    String convertGeoToPoints(String geometry){
-    	if(geometry == null){
-    		return "";
-    	}
-    	geometry = geometry.replace(" ",":");
-	    geometry = geometry.replace("POLYGON((","");
-	    geometry = geometry.replace(")","");
-	    return geometry;
+
+    String convertGeoToPoints(String geometry) {
+        if (geometry == null) {
+            return "";
+        }
+        geometry = geometry.replace(" ", ":");
+        geometry = geometry.replace("POLYGON((", "");
+        geometry = geometry.replace(")", "");
+        return geometry;
     }
 }

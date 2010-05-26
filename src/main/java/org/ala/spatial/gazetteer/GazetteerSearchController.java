@@ -9,24 +9,12 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.net.HttpConnection;
 
-import java.io.IOException;
-import java.io.InputStream;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.UnsupportedEncodingException;
-import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
 import org.ala.rest.GazetteerSearch;
-import org.ala.rest.SearchResultItem;
-import org.apache.commons.io.IOUtils;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
@@ -48,7 +36,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.zkoss.zhtml.Messagebox;
 
 /**
  *
@@ -57,6 +44,8 @@ import org.zkoss.zhtml.Messagebox;
  */
 public class GazetteerSearchController extends UtilityComposer {
 
+    private static final String GAZ_URL = "geoserver_url";
+
     private Session sess = (Session) Sessions.getCurrent();
     private String sSearchTerm;
     private String sFeatureType;
@@ -64,11 +53,13 @@ public class GazetteerSearchController extends UtilityComposer {
     private HttpConnection httpConnection = null;
     private Window gazetteerSearchResults;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
+    private SettingsSupplementary settingsSupplementary = null;
 
     public HttpConnection getHttpConnection() {
         return httpConnection;
     }
-    //TODO get this from the config
+    //TODO get this from the config - done by Ajay
+
     private String gazServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     private String gazSearchURL = "/geoserver/rest/gazetteer/result.xml?q=";
     private JSONArray arr = null;
@@ -77,6 +68,9 @@ public class GazetteerSearchController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+        if (settingsSupplementary != null) {
+            gazServer = settingsSupplementary.getValue(GAZ_URL);
+        }
         sSearchTerm = (String) sess.getAttribute("searchGazetteerTerm");
         // searchGazetteer(getURI());
         renderGazetteerResults();

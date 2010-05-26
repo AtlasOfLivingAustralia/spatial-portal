@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import java.net.URLEncoder;
 import java.util.Hashtable;
@@ -74,8 +75,10 @@ public class MaxentWCController extends UtilityComposer {
     private Window maxentWindow;
     private Window maxentInfoWindow;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
+    private MapComposer mc;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
+    private SettingsSupplementary settingsSupplementary = null;
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
@@ -95,6 +98,12 @@ public class MaxentWCController extends UtilityComposer {
 
         try {
             //Messagebox.show("Hello world afterCompose!");
+            mc = getThisMapComposer();
+            if (settingsSupplementary != null) {
+                geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+                satServer = settingsSupplementary.getValue(SAT_URL);
+            }
+
             setupEnvironmentalLayers();
         } catch (Exception e) {
             System.out.println("opps in after compose");
@@ -225,7 +234,7 @@ public class MaxentWCController extends UtilityComposer {
             if (rdoCommonSearch.isChecked()) {
                 taxon = getScientificName();
             }
-            
+
             String msg = "";
             String[] envsel = null;
             StringBuffer sbenvsel = new StringBuffer();
@@ -289,17 +298,17 @@ public class MaxentWCController extends UtilityComposer {
 
             String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid[1] + "&styles=alastyles&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
 
-            String legendurl = geoServer 
-	            + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20" 
-	            + "&LAYER=ALA:species_" + pid[1]
-	            + "&STYLE=alastyles";  
-            
-            System.out.println(legendurl);
-        
-            //get the current MapComposer instance
-            MapComposer mc = getThisMapComposer();
+            String legendurl = geoServer
+                    + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                    + "&LAYER=ALA:species_" + pid[1]
+                    + "&STYLE=alastyles";
 
-            mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5,"",legendurl);
+            System.out.println(legendurl);
+
+            //get the current MapComposer instance
+            //MapComposer mc = getThisMapComposer();
+
+            mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5, "", legendurl);
 
             this.status.setValue("Status: " + status[1]);
             if (status[1].equalsIgnoreCase("success")) {
@@ -409,11 +418,11 @@ public class MaxentWCController extends UtilityComposer {
         //TODO these paramaters need to read from the config
         String layerName = "ALA:occurrencesv1";
         String sld = "species_point";
-        uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
+        uri = geoServer + "/geoserver/wms?service=WMS";
         String format = "image/png";
 
         //get the current MapComposer instance
-        MapComposer mc = getThisMapComposer();
+        //MapComposer mc = getThisMapComposer();
 
         //contruct the filter in cql
         filter = "species eq '" + taxon + "'";
