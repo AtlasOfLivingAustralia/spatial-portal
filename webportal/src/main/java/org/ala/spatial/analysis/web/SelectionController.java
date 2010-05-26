@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -12,10 +13,7 @@ import java.io.InputStreamReader;
 import java.lang.String;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.xml.parsers.DocumentBuilder;
@@ -31,25 +29,19 @@ import org.w3c.dom.NodeList;
 
 import org.xml.sax.SAXException;
 
-import org.zkoss.zhtml.Messagebox;
 
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 
-import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 
-import org.zkoss.zul.ListModelArray;
 import org.zkoss.zul.Listbox;
 
 
-import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
-
 
 /**
  *
@@ -57,6 +49,7 @@ import org.zkoss.zul.Textbox;
  */
 public class SelectionController extends UtilityComposer {
 
+    private static final String GEOSERVER_URL = "geoserver_url";
     private Textbox selectionGeom;
     private Textbox boxGeom;
     private Textbox displayGeom;
@@ -66,7 +59,8 @@ public class SelectionController extends UtilityComposer {
     public Button results_prev;
     public Button results_next;
     public Label results_label;
-
+    private SettingsSupplementary settingsSupplementary = null;
+    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     String[] results = null;
     int results_pos;
     SortedSet speciesSet;
@@ -74,6 +68,10 @@ public class SelectionController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+        }
     }
 
     public void onClick$btnClearSelection(Event event) {
@@ -82,7 +80,7 @@ public class SelectionController extends UtilityComposer {
         displayGeom.setValue("");
     }
 
-     /**
+    /**
      * Activate the polygon selection tool on the map
      * @param event
      */
@@ -117,7 +115,7 @@ public class SelectionController extends UtilityComposer {
 
     public void onChange$boxGeom(Event event) {
         try {
-           displayGeom.setValue(boxGeom.getValue());
+            displayGeom.setValue(boxGeom.getValue());
             wfsQueryBBox(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
@@ -131,14 +129,14 @@ public class SelectionController extends UtilityComposer {
      */
     public void wfsQueryPolygon(String selectionGeom) {
         String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName>";
-        String filterPart =   "<ogc:Filter><Intersects><PropertyName>the_geom</PropertyName><gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:coordinates cs=\" \" decimal=\".\" ts=\",\">COORDINATES</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></Intersects></ogc:Filter></wfs:Query></wfs:GetFeature>";
-        String coordinateString = selectionGeom.replace("POLYGON","").replace(")","").replace("(","");
-        String request = baseQueryXML+filterPart.replace("COORDINATES",coordinateString);
+        String filterPart = "<ogc:Filter><Intersects><PropertyName>the_geom</PropertyName><gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:coordinates cs=\" \" decimal=\".\" ts=\",\">COORDINATES</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></Intersects></ogc:Filter></wfs:Query></wfs:GetFeature>";
+        String coordinateString = selectionGeom.replace("POLYGON", "").replace(")", "").replace("(", "");
+        String request = baseQueryXML + filterPart.replace("COORDINATES", coordinateString);
         try {
             //Messagebox.show(request);
             String response = POSTRequest(request);
-           // Messagebox.show(response);
-         
+            // Messagebox.show(response);
+
         } catch (Exception e) { //FIXME
         }
     }
@@ -149,19 +147,19 @@ public class SelectionController extends UtilityComposer {
      */
     public void wfsQueryBBox(String selectionGeom) {
         String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
-        selectionGeom = selectionGeom.replace("(","");
-        selectionGeom = selectionGeom.replace(")","");
-        String upperCorner = selectionGeom.replace("POLYGON","").split(",")[3].toString();
-        String lowerCorner = selectionGeom.replace("POLYGON","").split(",")[1].toString();
+        selectionGeom = selectionGeom.replace("(", "");
+        selectionGeom = selectionGeom.replace(")", "");
+        String upperCorner = selectionGeom.replace("POLYGON", "").split(",")[3].toString();
+        String lowerCorner = selectionGeom.replace("POLYGON", "").split(",")[1].toString();
         baseQueryXML = baseQueryXML.replace("UPPERCORNER", upperCorner);
         baseQueryXML = baseQueryXML.replace("LOWERCORNER", lowerCorner);
-        
+
         //       String completeQuery = baseQuery + selection + ")";
         try {
-            
+
             String response = POSTRequest(baseQueryXML);
-           // Messagebox.show(response);
-         
+            // Messagebox.show(response);
+
         } catch (Exception e) { //FIXME
         }
     }
@@ -175,17 +173,17 @@ public class SelectionController extends UtilityComposer {
         try {
             // Construct data
             //String data = URLEncoder.encode(query, "UTF-8");// + "=" + URLEncoder.encode(query, "UTF-8");
-            
+
 
             // Send data 
-            URL url = new URL("http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wfs?");
+            URL url = new URL(geoServer + "/geoserver/wfs?");
             URLConnection conn = url.openConnection();
             conn.setDoOutput(true);
-            conn.setDoInput (true);
-            conn.setUseCaches (false);
+            conn.setDoInput(true);
+            conn.setUseCaches(false);
             conn.setRequestProperty("Content-Type", "application/xml");
 
-            DataOutputStream wr = new DataOutputStream (conn.getOutputStream());
+            DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
             wr.writeBytes(query);
             wr.flush();
             // Get the response
@@ -193,13 +191,13 @@ public class SelectionController extends UtilityComposer {
             String line;
             String response = "";
             while ((line = rd.readLine()) != null) {
-                response+=line;
+                response += line;
             }
             //Parse the response
 //            Messagebox.show(response);
             String speciesList = parse(response);
             wr.close();
-           // rd.close();
+            // rd.close();
             return speciesList;
         } catch (Exception e) {
             return e.getMessage();
@@ -212,14 +210,14 @@ public class SelectionController extends UtilityComposer {
      * @param responseXML The response of an WFS query.
      * @return
      */
-    public String parse(String responseXML) throws ParserConfigurationException, XPathExpressionException,SAXException, IOException, InterruptedException {
+    public String parse(String responseXML) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException, InterruptedException {
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
         domFactory.setNamespaceAware(false);
-        
-         DocumentBuilder builder = domFactory.newDocumentBuilder();
-         
+
+        DocumentBuilder builder = domFactory.newDocumentBuilder();
+
         InputStream is = new java.io.ByteArrayInputStream(responseXML.getBytes());
-        
+
         Document resultDoc = builder.parse(is);
 
 //        try {
@@ -234,13 +232,13 @@ public class SelectionController extends UtilityComposer {
         NodeList species = (NodeList) speciesExpr.evaluate(resultDoc, XPathConstants.NODESET);
         speciesSet = new TreeSet();
         for (int i = 0; i < species.getLength(); i++) {
-                 speciesSet.add((String) species.item(i).getNodeValue());
+            speciesSet.add((String) species.item(i).getNodeValue());
         }
 
-        
-        results = (String[])speciesSet.toArray(new String[speciesSet.size()]);
+
+        results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
-        popup_results.open(40,150);
+        popup_results.open(40, 150);
 //        for(Object speciesName : speciesSet) {
 //            Listitem li = new Listitem();
 //            Listcell lc = new Listcell();
@@ -249,8 +247,8 @@ public class SelectionController extends UtilityComposer {
 //            popup_listbox_results.addItemToSelection(li);
 //        }
         return String.valueOf(speciesSet.size());
-        
-        
+
+
 
     }
 
@@ -294,17 +292,15 @@ public class SelectionController extends UtilityComposer {
     public void onClick$download() {
 //		SPLFilter [] layer_filters = getSelectedFilters();
 //		if(layer_filters != null){
-			StringBuffer sb = new StringBuffer();
-			for(String s : results){
-				sb.append(s);
-				sb.append("\r\n");
-			}
-			org.zkoss.zhtml.Filedownload.save(sb.toString(),"text/plain","species.csv");
+        StringBuffer sb = new StringBuffer();
+        for (String s : results) {
+            sb.append(s);
+            sb.append("\r\n");
+        }
+        org.zkoss.zhtml.Filedownload.save(sb.toString(), "text/plain", "species.csv");
 //		}else{
 
     }
-    
-
 //    public void onClick$results_prev(Event event) {
 //        if (results_pos == 0) {
 //            return;

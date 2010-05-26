@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.Arrays;
 import java.util.Iterator;
 import org.apache.commons.httpclient.HttpClient;
@@ -19,8 +20,11 @@ import org.zkoss.zul.Comboitem;
  */
 public class EnvLayersCombobox extends Combobox {
 
+    private static final String SAT_URL = "sat_url";
+
     private String[] envLayers;
-    private String satServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
+    private SettingsSupplementary settingsSupplementary = null;
+    private String satServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
 
     public EnvLayersCombobox(String value) throws WrongValueException {
         super(value);
@@ -51,6 +55,14 @@ public class EnvLayersCombobox extends Combobox {
     private String[] setupEnvironmentalLayers() {
         String[] aslist = null;
         try {
+
+            if (settingsSupplementary != null) {
+                System.out.println("setting sat_url for EnvLyr combo");
+                satServer = settingsSupplementary.getValue(SAT_URL);
+            } else {
+                System.out.println("NOT setting sat_url for EnvLyr combo");
+            }
+
 
             //String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
             String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/string";

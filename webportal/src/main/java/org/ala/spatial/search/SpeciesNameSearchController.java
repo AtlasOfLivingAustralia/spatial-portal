@@ -34,11 +34,9 @@ import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.wms.WMSStyle;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import au.org.emii.portal.wms.RemoteMap;
-import java.awt.Color;
-import java.util.Random;
 
 /**
  * @author brendon
@@ -50,6 +48,8 @@ public class SpeciesNameSearchController extends UtilityComposer {
      * run the species searches
      */
     private static final long serialVersionUID = -7475055275833653831L;
+    private static final String GEOSERVER_URL = "geoserver_url";
+
     private static final String Common = "common";
     private static final String Scientific = "scientific";
     // TODO these need to be sourced from the config file
@@ -73,9 +73,14 @@ public class SpeciesNameSearchController extends UtilityComposer {
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
     private URLConnection connection = null;
     private HttpConnection httpConnection = null;
+    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
+    private SettingsSupplementary settingsSupplementary = null;
 
     public void afterCompose() {
         super.afterCompose();
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+        }
         sSearchTerm = (String) sess.getAttribute("searchTerm");
         sSearchType = (String) sess.getAttribute("searchType");
         runSearch(sSearchTerm, sSearchType, getURI());
@@ -514,7 +519,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
             String layerName = "ALA:occurrencesv1";
             String sld = "species_point";
 
-            uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
+            uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
 
 
 

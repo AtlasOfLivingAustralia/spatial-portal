@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -49,6 +50,10 @@ import org.zkoss.zul.SimpleGroupsModel;
  */
 public class SamplingWCController extends UtilityComposer {
 
+    private static final String GEOSERVER_URL = "geoserver_url";
+    private static final String GEOSERVER_USERNAME = "geoserver_username";
+    private static final String GEOSERVER_PASSWORD = "geoserver_password";
+    private static final String SAT_URL = "sat_url";
     private Radio rdoCommonSearch;
     private SpeciesAutoComplete sac;
     private Listbox lbenvlayers;
@@ -63,16 +68,22 @@ public class SamplingWCController extends UtilityComposer {
     private Map layerdata;
     private String selectedLayer;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
+    private MapComposer mc;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
-
+    private SettingsSupplementary settingsSupplementary = null;
     private String user_polygon = "";
     private Textbox selectionGeomSampling;
-    
-        
+
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        mc = getThisMapComposer();
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            satServer = settingsSupplementary.getValue(SAT_URL);
+        }
 
         layers = new Vector();
         layerdata = new Hashtable<String, String[]>();
@@ -347,11 +358,11 @@ public class SamplingWCController extends UtilityComposer {
                     i++;
 
                 }
-                if(i == 0){
-                	sbenvsel.append("none");
+                if (i == 0) {
+                    sbenvsel.append("none");
                 }
-            }else{
-            	sbenvsel.append("none");
+            } else {
+                sbenvsel.append("none");
             }
 
 
@@ -359,10 +370,10 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if(user_polygon.length() > 0){
-            	sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
-            }else{
-            	sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            if (user_polygon.length() > 0) {
+                sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+            } else {
+                sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
             }
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
@@ -411,7 +422,7 @@ public class SamplingWCController extends UtilityComposer {
             if (l != null) {
                 for (j = l.size() - 1; j >= 0; j--) {
                     Row r = (Row) l.get(j);
-                  //  System.out.println("detaching: " + ((Label) r.getChildren().get(0)).getValue());
+                    //  System.out.println("detaching: " + ((Label) r.getChildren().get(0)).getValue());
                     r.detach();
                 }
             }
@@ -470,15 +481,15 @@ public class SamplingWCController extends UtilityComposer {
                                 }
                             });
                         }/*//no longer required
-                        	else if (iscontextual) {
-                            try {
-                                String[] salist = (String[]) contextualLists.get(new Integer(k));
-                                int idx = Integer.parseInt(rec[k]);
-                                if (salist != null && salist.length > idx) {
-                                    label.setTooltiptext(salist[idx]);
-                                }
-                            } catch (Exception e) {
-                            }
+                        else if (iscontextual) {
+                        try {
+                        String[] salist = (String[]) contextualLists.get(new Integer(k));
+                        int idx = Integer.parseInt(rec[k]);
+                        if (salist != null && salist.length > idx) {
+                        label.setTooltiptext(salist[idx]);
+                        }
+                        } catch (Exception e) {
+                        }
                         }//isenvironmental else{}*/
                     }
 
@@ -556,21 +567,21 @@ public class SamplingWCController extends UtilityComposer {
                     }
                     i++;
                 }
-                if(i == 0){
-                	sbenvsel.append("none");
+                if (i == 0) {
+                    sbenvsel.append("none");
                 }
-            }else{
-            	sbenvsel.append("none");
+            } else {
+                sbenvsel.append("none");
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if(user_polygon.length() > 0){
-            	sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
-            }else{
-            	sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            if (user_polygon.length() > 0) {
+                sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+            } else {
+                sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
             }
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
@@ -672,11 +683,11 @@ public class SamplingWCController extends UtilityComposer {
         //TODO these paramaters need to read from the config
         String layerName = "ALA:occurrencesv1";
         String sld = "species_point";
-        uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
+        uri = geoServer + "/geoserver/wms?service=WMS";
         String format = "image/png";
 
         //get the current MapComposer instance
-        MapComposer mc = getThisMapComposer();
+        //MapComposer mc = getThisMapComposer();
 
         //contruct the filter in cql
         filter = "species eq '" + taxon + "'";
@@ -748,17 +759,17 @@ public class SamplingWCController extends UtilityComposer {
 
         return taxon;
     }
-    
+
     /**
      * Activate the polygon selection tool on the map
      * @param event
      */
     public void onClick$btnPolygonSelection(Event event) {
-        MapComposer mc = getThisMapComposer();
+        //MapComposer mc = getThisMapComposer();
 
         mc.getOpenLayersJavascript().addPolygonDrawingToolSampling();
     }
-    
+
     /**
      * clear the polygon selection tool on the map
      * @param event
@@ -766,34 +777,34 @@ public class SamplingWCController extends UtilityComposer {
     public void onClick$btnPolygonSelectionClear(Event event) {
         user_polygon = "";
         selectionGeomSampling.setValue("");
-        
-        MapComposer mc = getThisMapComposer();
+
+        //MapComposer mc = getThisMapComposer();
 
         mc.getOpenLayersJavascript().removePolygonSampling();
     }
-    
+
     /**
      * 
      * @param event
      */
     public void onChange$selectionGeomSampling(Event event) {
         try {
-        	
-        	user_polygon = convertGeoToPoints(selectionGeomSampling.getValue());
-        	
+
+            user_polygon = convertGeoToPoints(selectionGeomSampling.getValue());
+
         } catch (Exception e) {//FIXME
-        	e.printStackTrace();
+            e.printStackTrace();
         }
 
     }
-    
-    String convertGeoToPoints(String geometry){
-    	if(geometry == null){
-    		return "";
-    	}
-    	geometry = geometry.replace(" ",":");
-	    geometry = geometry.replace("POLYGON((","");
-	    geometry = geometry.replace(")","");
-	    return geometry;
+
+    String convertGeoToPoints(String geometry) {
+        if (geometry == null) {
+            return "";
+        }
+        geometry = geometry.replace(" ", ":");
+        geometry = geometry.replace("POLYGON((", "");
+        geometry = geometry.replace(")", "");
+        return geometry;
     }
 }

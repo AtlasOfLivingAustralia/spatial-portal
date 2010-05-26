@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
@@ -75,6 +77,7 @@ public class FilteringWCController extends UtilityComposer {
     private MapComposer mc;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     private String satServer = geoServer;
+    private SettingsSupplementary settingsSupplementary = null;
     /**
      * for functions in popup box
      */
@@ -88,24 +91,10 @@ public class FilteringWCController extends UtilityComposer {
 
         //get the current MapComposer instance
         mc = getThisMapComposer();
-        if (mc == null) {
-            System.out.println("mcobj is null");
-        } else {
-            System.out.println("mcobj is NOT null");
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            satServer = settingsSupplementary.getValue(SAT_URL);
         }
-        if (mc.getSettingsSupplementary() == null) {
-            System.out.println("mc.ss is null");
-        } else {
-            System.out.println("mc.ss is NOT null");
-        }
-        if (mc.getSettings() == null) {
-            System.out.println("mc.gs is null");
-        } else {
-            System.out.println("mc.gs is NOT null");
-        }
-        //geoServer = mc.getSettingsSupplementary().getValue(GEOSERVER_URL);
-        //satServer = mc.getSettingsSupplementary().getValue(SAT_URL);
-
 
         selectedLayers = new Vector<String>();
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
@@ -262,12 +251,12 @@ public class FilteringWCController extends UtilityComposer {
             });
 
             lbSelLayers.setModel(new SimpleListModel(selectedLayers));
-            System.out.println("total items: " + lbSelLayers.getItemCount()); 
+            System.out.println("total items: " + lbSelLayers.getItemCount());
             Listitem li = lbSelLayers.getItemAtIndex(lbSelLayers.getItemCount() - 1);
             List lich = li.getChildren();
             System.out.println("li: \n" + li + " - " + lich.size());
             for (int i = 0; i < lich.size(); i++) {
-                Listcell tlc = (Listcell)lich.get(i);
+                Listcell tlc = (Listcell) lich.get(i);
                 System.out.println(i + ": " + tlc.getLabel() + " -- " + tlc.getChildren().size());
             }
             Listcell lc = (Listcell) li.getFirstChild();
@@ -323,6 +312,18 @@ public class FilteringWCController extends UtilityComposer {
             splf.setChanged(jo.getBoolean("changed"));
             splf.setFilterString(jo.getString("filterString"));
 
+            if (lbean.getString("type").equalsIgnoreCase("contextual")) {
+                JSONArray jaCatNames = jo.getJSONArray("catagory_names");
+                if (jaCatNames != null) {
+                    splf.setCatagory_names((String[]) jaCatNames.toArray(new String[0]));
+                }
+
+                JSONArray jaCatNums = jo.getJSONArray("catagories");
+                if (jaCatNums != null) {
+                    splf.setCatagories(toPrimitive((Integer[])jaCatNums.toArray(new Integer[0])));
+                }
+            }
+
             selectedSPLFilterLayers.put(layername, splf);
         } else {
             System.out.println("splf already present. ");
@@ -330,6 +331,28 @@ public class FilteringWCController extends UtilityComposer {
 
         return splf;
 
+    }
+
+    /**
+     * Based on ArrayUtils class under the Commons-Lang Apache project
+     *
+     * http://commons.apache.org/lang/api/org/apache/commons/lang/ArrayUtils.html#toPrimitive(java.lang.Integer[])
+     * code: http://svn.apache.org/viewvc/commons/proper/lang/trunk/src/main/java/org/apache/commons/lang3/ArrayUtils.java?view=markup
+     * 
+     * @param array
+     * @return
+     */
+    private static int[] toPrimitive(Integer[] array) {
+        if (array == null) {
+            return null;
+        } else if (array.length == 0) {
+            return new int[0];
+        }
+        final int[] result = new int[array.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i].intValue();
+        }
+        return result;
     }
 
     private String getInfo(String value, String type) {
@@ -513,7 +536,7 @@ public class FilteringWCController extends UtilityComposer {
             System.out.println(li.getLabel());
             List list = li.getChildren();
 
-            System.out.println("list has " + list.size() + " children"); 
+            System.out.println("list has " + list.size() + " children");
 
             for (Object o2 : list) {
                 Listcell m = (Listcell) o2;
@@ -568,6 +591,13 @@ public class FilteringWCController extends UtilityComposer {
             System.out.println("attaching: " + lc + lc.getValue());
             popup_continous.open(li); // .open(30, 30);
         } else { //catagorical values
+
+            if (popup_filter.catagory_names != null) {
+                System.out.println("popup_filter.catagory_names is NOT null: " + popup_filter.catagory_names.length);
+
+            } else {
+                System.out.println("popup_filter.catagory_names is null");
+            }
 
             popup_listbox.setModel(new SimpleListModel(popup_filter.catagory_names));
 
@@ -681,10 +711,10 @@ public class FilteringWCController extends UtilityComposer {
         if (!event.isChangingBySelectBack()) {
             System.out.println("onchange triggered");
         }
-        
+
     }
 
-    public void onChanging$popup_results_seek11(InputEvent event) {
+    public void onChanging$popup_results_seek(InputEvent event) {
         //seek results list
         System.out.print("Searching for ");
         System.out.println(event.getValue());
@@ -744,11 +774,12 @@ public class FilteringWCController extends UtilityComposer {
         System.out.println("applying filter from idx:" + idx);
 
         if (popup_filter.layer.type.equalsIgnoreCase("environmental")) {
-            doApplyFilter(pid, idx, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
+            doApplyFilter(pid, popup_filter.layer.display_name, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
             // SPLFilter sf =
             //doApplyFilter(pid);
         } else {
-            // write code for categorical 
+            // write code for categorical
+            doApplyFilter(pid, popup_filter.layer.display_name, popup_filter.getCatagories(), commit);
         }
 
 
