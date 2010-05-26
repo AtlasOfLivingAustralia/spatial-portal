@@ -18,6 +18,7 @@ import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang.ArrayUtils;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -320,7 +321,7 @@ public class FilteringWCController extends UtilityComposer {
 
                 JSONArray jaCatNums = jo.getJSONArray("catagories");
                 if (jaCatNums != null) {
-                    splf.setCatagories(toPrimitive((Integer[])jaCatNums.toArray(new Integer[0])));
+                    splf.setCatagories(ArrayUtils.toPrimitive((Integer[])jaCatNums.toArray(new Integer[0])));
                 }
             }
 
@@ -331,28 +332,6 @@ public class FilteringWCController extends UtilityComposer {
 
         return splf;
 
-    }
-
-    /**
-     * Based on ArrayUtils class under the Commons-Lang Apache project
-     *
-     * http://commons.apache.org/lang/api/org/apache/commons/lang/ArrayUtils.html#toPrimitive(java.lang.Integer[])
-     * code: http://svn.apache.org/viewvc/commons/proper/lang/trunk/src/main/java/org/apache/commons/lang3/ArrayUtils.java?view=markup
-     * 
-     * @param array
-     * @return
-     */
-    private static int[] toPrimitive(Integer[] array) {
-        if (array == null) {
-            return null;
-        } else if (array.length == 0) {
-            return new int[0];
-        }
-        final int[] result = new int[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i].intValue();
-        }
-        return result;
     }
 
     private String getInfo(String value, String type) {
