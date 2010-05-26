@@ -18,33 +18,6 @@ import org.restlet.data.Response;
 
 public class SearchResource extends AbstractResource {//ReflectiveResource {
 
-//    @Override
-//    protected Object handleObjectGet() throws Exception {
-//
-//        String query = getRequest().getAttributes().get("q").toString();
-//        String nameTerm = query.split("=")[1].replace(",type","");
-//
-//        if (query.contains("type")) {
-//            String typeTerm =  query.split("=")[2].replace(",","");
-//            return new Search(nameTerm.replace("+", "* AND ") + "*", typeTerm);
-//        } else {
-//            return new Search(nameTerm.replace("+", "* AND ") + "*");
-//        }
-//    }
-
-//    @Override
-//    public Map getMap() throws Exception {
-//         String query = getRequest().getAttributes().get("q").toString();
-//        String nameTerm = query.split("=")[1].replace(",type","");
-//
-//        if (query.contains("type")) {
-//            String typeTerm =  query.split("=")[2].replace(",","");
-//            return new Search(nameTerm.replace("+", "* AND ") + "*", typeTerm).getMap();
-//        } else {
-//            return new Search(nameTerm.replace("+", "* AND ") + "*").getMap();
-//        }
-//     }
-
     @Override
     protected List<DataFormat> createSupportedFormats(Request request, Response response) {
 
@@ -61,6 +34,8 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
 
         String query = getRequest().getAttributes().get("q").toString();
         String nameTerm = query.split("=")[1].replace(",type","");
+        //Support & as separator as well
+        nameTerm = nameTerm.replace("&type","");
         Search searchObj;
         if (query.contains("type")) {
             String typeTerm =  query.split("=")[2].replace(",","");

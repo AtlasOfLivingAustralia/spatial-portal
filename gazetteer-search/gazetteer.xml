@@ -1,0 +1,44 @@
+
+<gazetteer>
+<!--<layer>
+    <name>GeoRegionFeatures</name>
+    <idAttribute>id</idAttribute>
+    <nameAttribute>name</nameAttribute>
+</layer> -->
+<layer>
+    <name>NamedPlaces</name>
+    <idAttribute>NAME</idAttribute>
+    <nameAttribute>NAME</nameAttribute>
+</layer>
+<!--<layer>
+    <name>aus0</name>
+    <idAttribute>name_0</idAttribute>
+    <nameAttribute>name_0</nameAttribute>
+</layer>
+<layer>
+    <name>aus1</name>
+    <idAttribute>name_1</idAttribute>
+    <nameAttribute>name_1</nameAttribute>
+</layer>
+<layer>
+    <name>aus2</name>
+    <idAttribute>name_2</idAttribute>
+    <nameAttribute>name_2</nameAttribute>
+</layer>
+<layer>
+    <name>imcra4_pb</name>
+    <idAttribute>pb_name</idAttribute>
+    <nameAttribute>pb_name</nameAttribute>
+</layer>
+<layer>
+    <name>ibra_reg_shape</name>
+    <idAttribute>reg_name</idAttribute>
+    <nameAttribute>reg_name</nameAttribute>
+</layer>
+<layer>
+    <name>all_gaz_2008</name>
+    <idAttribute>record_id</idAttribute>
+    <nameAttribute>name</nameAttribute>
+</layer> -->
+
+</gazetteer>

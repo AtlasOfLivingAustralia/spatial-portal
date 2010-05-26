@@ -66,7 +66,7 @@ public class Search {
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = is.doc(scoreDoc.doc);
                 List<Fieldable> fields = doc.getFields();
-                results.add(new SearchResultItem(fields));
+                results.add(new SearchResultItem(fields,true));
             }
         } catch (IOException e1) {
             //FIXME: Log error - return http error code?
@@ -94,7 +94,7 @@ public class Search {
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = is.doc(scoreDoc.doc);
                 List<Fieldable> fields = doc.getFields();
-                results.add(new SearchResultItem(fields));
+                results.add(new SearchResultItem(fields,true));
             }
         } catch (IOException e1) {
             //FIXME: Log error - return http error code?

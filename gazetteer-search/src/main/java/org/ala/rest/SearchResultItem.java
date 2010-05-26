@@ -19,26 +19,16 @@ public class SearchResultItem {
     @XStreamAsAttribute
     String link;
 
-    SearchResultItem(String name, String serial, String description, String state) {
-        this.name = name;
-        this.serial = serial;
-        this.description = description;
-        this.state = state;
-
-    }
-
-    SearchResultItem(List<Fieldable> fields) {
-        this.link = "http://localhost:8080/geoserver/rest/gazetteer/";
+    SearchResultItem(List<Fieldable> fields, Boolean includeLink) {
+        
         String id = "";
+        this.description = "";
         for (Fieldable field : fields) {
             if (field.name().contentEquals("name")) {
                 this.name = field.stringValue();
             }
             if (field.name().contentEquals("serial")) {
                 this.serial = field.stringValue();
-            }
-            if (field.name().contentEquals("type")) {
-                this.description = field.stringValue();
             }
             if (field.name().contentEquals("state")) {
                 this.state = field.stringValue();
@@ -49,7 +39,13 @@ public class SearchResultItem {
             if (field.name().contentEquals("id")) {
                 id = field.stringValue();
             }
+            else
+                this.description+=field.stringValue() + ",";
         }
-        this.link += this.type + '/' + id.replace(" ", "_") + ".json";
+        this.description.trim();
+        if (includeLink == true) {
+            this.link = "/geoserver/rest/gazetteer/";
+            this.link += this.type + '/' + id.replace(" ", "_") + ".json";
+        }
     }
 }

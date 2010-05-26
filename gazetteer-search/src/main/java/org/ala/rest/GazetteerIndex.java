@@ -36,6 +36,7 @@ import org.vfny.geoserver.util.DataStoreUtils;
 
 public class GazetteerIndex implements InitializingBean {
 
+    @Override
     public void afterPropertiesSet() {
         //Get geoserver catalog from Geoserver config
         GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
@@ -44,8 +45,8 @@ public class GazetteerIndex implements InitializingBean {
         ServletContext sc = GeoServerExtensions.bean(ServletContext.class);
 
 
-        GazetteerConfig gc = new GazetteerConfig();
-
+        GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
+        //GazetteerConfig gc = new GazetteerConfig();
 
         gc.getLayerNames();
         DataStore dataStore = null;
