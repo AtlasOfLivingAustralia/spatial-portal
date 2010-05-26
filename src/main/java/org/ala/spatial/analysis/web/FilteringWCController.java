@@ -678,7 +678,11 @@ public class FilteringWCController extends UtilityComposer {
                 //sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
                 sbProcessUrl.append("/shape/none");
                 System.out.println("attempt to download: " + satServer + "/alaspatial/ws" + sbProcessUrl.toString());
-                org.zkoss.zul.Filedownload.save(new URL(satServer + "/alaspatial/ws" + sbProcessUrl.toString()), "application/zip");
+                String samplesfile = getInfo(sbProcessUrl.toString());
+                //org.zkoss.zul.Filedownload.save(new URL(outputfile), "application/zip");
+                URL u = new URL(satServer + "/alaspatial/" + samplesfile);
+                System.out.println("opening stream to " + samplesfile); 
+                Filedownload.save(u.openStream(), "application/zip", "filter_samples_" + pid + ".zip");
             } catch (Exception e) {
                 e.printStackTrace();
             }
