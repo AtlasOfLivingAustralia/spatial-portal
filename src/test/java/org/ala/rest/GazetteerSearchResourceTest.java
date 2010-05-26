@@ -7,6 +7,10 @@ import net.sf.json.JSON;
 import net.sf.json.JSONObject;
 import java.io.File;
 import java.util.List;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 import junit.framework.Test;
 import org.vfny.geoserver.global.GeoserverDataDirectory;
 import org.apache.commons.io.FileUtils;
@@ -20,6 +24,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.geoserver.data.test.MockData;
+import org.w3c.dom.NodeList;
 
 public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 
@@ -35,11 +40,10 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 
     public MockData buildTestData() throws Exception {
         MockData dataDirectory = super.buildTestData();
-        FileUtils.copyDirectoryToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParent(), "test-index"), dataDirectory.getDataDirectoryRoot());
-        FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParent(), "gazetteer.xml"), dataDirectory.getDataDirectoryRoot());
+        FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParentFile().getParent(), "gazetteer.xml"), dataDirectory.getDataDirectoryRoot());
         return dataDirectory;
     }
-//
+
 //    public void testGetAsXML() throws Exception {
 //        //make the request, parsing the result as a dom
 //        Document dom = getAsDOM("/rest/gazetteer-search/result.xml?q=Australia");
@@ -75,7 +79,7 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
         Document dom = getAsDOM("/rest/gazetteer/result.xml?q=ashton");
 
         //print out the result
-        print(dom);
+       // print(dom);
         assertTrue(1==1);
         //make assertions
         
@@ -84,13 +88,13 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 //        assertTrue(result.contains("ashton"));
     }
 
-    public void testSearchNameAndType() throws Exception {
-         Document dom = getAsDOM("/rest/gazetteer/result.json?q=ashton,type=NamedPlaces");
+    public void testSearchNameCommaType() throws Exception {
+        Document dom = getAsDOM("/rest/gazetteer/result.json?q=ashton,type=NamedPlaces");
 
         //print out the result
-        print(dom);
+    //    print(dom);
 
-         assertTrue(1==1);
+        // assertTrue(1==1);
         //make assertions
 //        assertTrue(json instanceof JSONObject);
 //        JSONObject search = ((JSONObject) json).getJSONObject("org.ala.rest.Search");
@@ -98,66 +102,81 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 //        assertTrue(result.contains("ashton"));
     }
 
-//    public void testSearchWrongType() throws Exception {
-//         JSON json = getAsJSON("/rest/gazetteer/result.xml?q=ashton,type=NOT_A_VALID_TYPE");
-//
-//        //print out the result
-//        print(json);
-//
-//        //make assertions
-//        assertTrue(json instanceof JSONObject);
-//        JSONObject search = ((JSONObject) json).getJSONObject("org.ala.rest.Search");
-//        String result = search.getString("results");
-//        assertTrue(result.contentEquals(""));
-//    }
-//    public void testSearchGetHyperlink() throws Exception {
-//         JSON json = getAsJSON("/rest/gazetteer/result.json?q=ashton");
-//
-//        //print out the result
-//        //print(json);
-//
-//        //make assertions
-//        assertTrue(json instanceof JSONObject);
-//        JSONObject search = ((JSONObject) json).getJSONObject("org.ala.rest.Search");
-//        String result = (String) ((JSONObject) (search.getJSONObject("results").getJSONArray("org.ala.rest.SearchResultItem").get(0))).get("");
-//        assertTrue(result.contains("ashton"));
-//    }
+    public void testSearchNameAndType() throws Exception {
+        Document dom = getAsDOM("/rest/gazetteer/result.json?q=ashton&type=NamedPlaces");
+        
+        print(dom);
 
-//    public void testFeatureServiceJSON() throws Exception {
-////      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
-//        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton.json");
-//        print(json);
-//    }
-//
-//    public void testFeatureServiceWhiteSpaceInName() throws Exception {
-////      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
-//        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Goose_Island.json");
-//        print(json);
-//    }
-//
-//    public void testGazetteerLuceneIndex() throws Exception {
-//        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-//        if (file.exists()) {
-//            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
-//            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
-//            Query nameQuery = qp.parse("Ash*");
-//
-//            TopDocs topDocs = is.search(nameQuery, 20);
-//
-//            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-//                org.apache.lucene.document.Document doc = is.doc(scoreDoc.doc);
-//                List<Fieldable> fields = doc.getFields();
-//                for (Fieldable field : fields) {
-//                    System.out.println(field.name() + ": " + field.stringValue());
-//                }
-//                System.out.println("---------------------------------------------");
-//            }
-//
-//            System.out.println("---------------------------------------------");
-//            System.out.println("Total hits: " + topDocs.totalHits);
-//            System.out.println("---------------------------------------------");
-//        } else {
-//            assertTrue(0 == 1);
-//        }
-//    }
+         XPathFactory factory = XPathFactory.newInstance();
+         XPath xpath = factory.newXPath();
+         XPathExpression namesExpr = xpath.compile("//search/results/result/name/text()");
+         NodeList names = (NodeList) namesExpr.evaluate(dom, XPathConstants.NODESET);
+        //make assertions
+
+        assertTrue(names.getLength()==1);
+        
+    }
+
+    public void testSearchWrongType() throws Exception {
+         Document dom = getAsDOM("/rest/gazetteer/result.xml?q=ashton&type=NOT_A_VALID_TYPE");
+
+        //print out the result
+        print(dom);
+
+         XPathFactory factory = XPathFactory.newInstance();
+         XPath xpath = factory.newXPath();
+         XPathExpression namesExpr = xpath.compile("//search/results/result/name/text()");
+         NodeList names = (NodeList) namesExpr.evaluate(dom, XPathConstants.NODESET);
+        //make assertions
+        
+        assertTrue(names.getLength()==0);
+        
+    }
+    public void testSearchGetHyperlink() throws Exception {
+         Document dom = getAsDOM("/rest/gazetteer/result.json?q=ashton");
+
+        //print out the result
+        //print(dom);
+
+        //make assertions
+        
+    }
+
+    public void testFeatureServiceJSON() throws Exception {
+//      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
+        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton.json");
+        //print(json);
+    }
+
+    public void testFeatureServiceWhiteSpaceInName() throws Exception {
+//      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
+        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Goose_Island.json");
+       // print(json);
+    }
+
+    public void testGazetteerLuceneIndex() throws Exception {
+        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
+        if (file.exists()) {
+            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
+            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
+            Query nameQuery = qp.parse("Ash*");
+
+            TopDocs topDocs = is.search(nameQuery, 20);
+
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                org.apache.lucene.document.Document doc = is.doc(scoreDoc.doc);
+                List<Fieldable> fields = doc.getFields();
+                for (Fieldable field : fields) {
+                    System.out.println(field.name() + ": " + field.stringValue());
+                }
+                System.out.println("---------------------------------------------");
+            }
+
+            System.out.println("---------------------------------------------");
+            System.out.println("Total hits: " + topDocs.totalHits);
+            System.out.println("---------------------------------------------");
+        } else {
+            assertTrue(0 == 1);
+        }
+    }
 }

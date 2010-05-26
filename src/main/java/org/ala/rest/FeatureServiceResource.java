@@ -6,7 +6,8 @@ import org.geoserver.rest.MapResource;
 
 
 /**
- *
+ * This class handles requests for gazetteer features and returns a Map which
+ * is serialized as GeoJSON
  * @author angus
  */
 public class FeatureServiceResource extends MapResource {//ReflectiveResource {

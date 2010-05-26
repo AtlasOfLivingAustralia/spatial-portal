@@ -1,19 +1,6 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
  <beans>
-    <bean id="gazetteer" class="org.ala.rest.GazetteerSearchResource"/>
-   
-    <bean id="gazetteerMapping" class="org.geoserver.rest.RESTMapping">
-       <property name="routes">
-          <map>
-            <entry>
-              <key><value>/gazetteer-search/result.{format}</value></key>
-              <value>gazetteer</value>
-            </entry>
-         </map>
-      </property>
-    </bean> 
-
    <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
 
     <bean id="featureServiceMapping" class="org.geoserver.rest.RESTMapping">
@@ -26,6 +13,8 @@
          </map>
       </property>
     </bean> 
+
+    <bean id="gazetteerConfig" class="org.ala.rest.GazetteerConfig"/>
 
     <bean id="gazetteerIndex" class="org.ala.rest.GazetteerIndex"/>
 
