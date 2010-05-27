@@ -54,6 +54,8 @@ import org.zkoss.zk.ui.HtmlMacroComponent;
 import org.zkoss.zk.ui.Path;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
@@ -199,7 +201,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private SpeciesAutoComplete searchSpeciesAuto;
     private Div colourChooser;
     private Image legendImg;
-    
     private Button applyChange;
 
     public UserDataDao getUserDataManager() {
@@ -298,39 +299,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
                 openLayersJavascript.zoomGeoJsonExtent(selectedLayer);
             } else {
-                openLayersJavascript.zoomLayerExtent(selectedLayer);
+                //openLayersJavascript.zoomLayerExtent(selectedLayer);
             }
         }
     }
 
     public void onClick$applyChange() {
-        StringBuffer script = new StringBuffer();
-
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
-
-
-
             selectedLayer.setRedVal(redSlider.getCurpos());
             selectedLayer.setGreenVal(greenSlider.getCurpos());
             selectedLayer.setBlueVal(blueSlider.getCurpos());
 
-            Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
+            //Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
+            String rgbColour = "rgb(" + String.valueOf(redSlider.getCurpos()) + "," + greenSlider.getCurpos() + "," + blueSlider.getCurpos() + ")";
+            selectedLayer.setEnvColour(rgbColour);
 
-
-            String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
-
-            selectedLayer.setEnvColour(hexColour);
-
-
-
-            //openLayersJavascript.removeGeoJsonLayer(selectedLayer);
-
-            openLayersJavascript.redrawFeatures(selectedLayer);
-
-
-
-
+            if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
+                openLayersJavascript.redrawFeatures(selectedLayer);
+            } else {
+                selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
+            }
 
         }
     }
@@ -1095,7 +1084,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         return addedOk;
     }
-    
+
     /**
      * Add a WMS layer identified by the given parameters to the menu system
      * and activate it
@@ -1116,15 +1105,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
-                	WMSStyle style = new WMSStyle();
-                	style.setName("Default");
+                    WMSStyle style = new WMSStyle();
+                    style.setName("Default");
                     style.setDescription("Default style");
                     style.setTitle("Default");
                     style.setLegendUri(legend);
                     mapLayer.addStyle(style);
                     mapLayer.setSelectedStyleIndex(1);
-                    logger.info("adding WMSStyle with legendUri: " + legend);                    
-                	
+                    logger.info("adding WMSStyle with legendUri: " + legend);
+
                     addUserDefinedLayerToMenu(mapLayer, true);
                     addedOk = true;
                 }
@@ -1138,7 +1127,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         return addedOk;
     }
-
 
     /**
      * Overridden to allow for the adding of a OGC Filter
@@ -1240,15 +1228,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 updateLayerControls();
                 updateUserDefinedView();
                 openLayersJavascript.execute(
-                    openLayersJavascript.iFrameReferences
-                    + script.toString());
+                        openLayersJavascript.iFrameReferences
+                        + script.toString());
                 //Clients.evalJavaScript("map.removeLayer('" + label + "');");
             } else {
                 // fail
                 showMessage(languagePack.getLang("wms_layer_remove_error"));
                 logger.info("unable to remove layer with label" + label);
             }
-            
+
         }
 
     }
@@ -1259,7 +1247,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (safeToPerformMapAction()) {
 
             // check if layer already present
-            MapLayer imageLayer = getMapLayer(label); 
+            MapLayer imageLayer = getMapLayer(label);
 
             if (imageLayer == null) {
                 System.out.println("activating new layer");
@@ -1308,7 +1296,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //refreshActiveLayer(imageLayer);
                 //Clients.evalJavaScript(
                 //        "map.getLayersByName('" + label + "')[0].setUrl('" + uri + "');");
-                openLayersJavascript.reloadMapLayerNow(imageLayer); 
+                openLayersJavascript.reloadMapLayerNow(imageLayer);
 
                 addedOk = true;
             }
@@ -1446,6 +1434,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         if (innercell instanceof Checkbox) {
                             logger.debug("InnerCell = Checkbox");
                             ((Checkbox) innercell).setChecked(bCheck);
+                            Events.sendEvent(((Checkbox) innercell), new Event("onCheck", ((Checkbox) innercell)));
 
                         }
                     }
@@ -1616,8 +1605,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             // show animation controls if needed
             getAnimationControlsComposer().updateAnimationControls(currentSelection);
-            
-            if (currentSelection.getType() == LayerUtilities.GEOJSON) {
+
+            if (currentSelection.isDynamicStyle()) {
                 LegendMaker lm = new LegendMaker();
                 //Color c = Color.decode(currentSelection.getEnvColour());
                 int red = currentSelection.getRedVal();
@@ -1636,16 +1625,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
                 legendImg.setWidth("50px");		//repair width and height should a WMS layer have been in use
                 legendImg.setHeight("50px");
-            }else if(currentSelection.getSelectedStyle() != null 
-            		/*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
-            				|| currentSelection.getType() == LayerUtilities.WMS_1_1_0
-            				|| currentSelection.getType() == LayerUtilities.WMS_1_1_1
-            				|| currentSelection.getType() == LayerUtilities.WMS_1_3_0
-            		)*/){
-            	String legendUri = currentSelection.getSelectedStyle().getLegendUri();   
-            	legendImg.setSrc(legendUri);  
-            	legendImg.setWidth("");
-                legendImg.setHeight("");            	
+            } else if (currentSelection.getSelectedStyle() != null /*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
+                    || currentSelection.getType() == LayerUtilities.WMS_1_1_0
+                    || currentSelection.getType() == LayerUtilities.WMS_1_1_1
+                    || currentSelection.getType() == LayerUtilities.WMS_1_3_0
+                    )*/) {
+                String legendUri = currentSelection.getSelectedStyle().getLegendUri();
+                legendImg.setSrc(legendUri);
+                legendImg.setWidth("");
+                legendImg.setHeight("");
             }
             layerControls.setVisible(true);
         } else {
@@ -1945,8 +1933,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (safeToPerformMapAction()) {
             return this.addGeoJSONLayer(labelValue, uriValue);
 
+        } else {
+            return null;
         }
-        else return null;
 
     }
 

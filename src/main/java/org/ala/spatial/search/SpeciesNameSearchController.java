@@ -73,7 +73,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
     private URLConnection connection = null;
     private HttpConnection httpConnection = null;
-    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
+    private String geoServer = null;
     private SettingsSupplementary settingsSupplementary = null;
 
     public void afterCompose() {
@@ -436,8 +436,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
         runSearch(sSearchTerm, sSearchType, sURL);
     }
 
-    public void AddToMap() {
-    }
+    
 
     /**
      * Gets the main pages controller so we can add a
@@ -479,7 +478,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
             MapLayer mapLayer = null;
 
             //TODO these paramaters need to read from the config
-                       /* String layerName = "ALA:occurrencesv1";
+           /* String layerName = "ALA:occurrencesv1";
             String sld = "species_point";
             uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
             String format = "image/png";
@@ -503,16 +502,25 @@ public class SpeciesNameSearchController extends UtilityComposer {
             int r = rand.nextInt(99);
             int g = rand.nextInt(99);
             int b = rand.nextInt(99);
-            String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
-            mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
-            mc.addUserDefinedLayerToMenu(mapLayer, true);*/
+
+
+            Color c =new Color(r,g,b);
+            String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
+            
+            mapLayer.setBlueVal(b);
+            mapLayer.setRedVal(r);
+            mapLayer.setGreenVal(g);
+            mapLayer.setDynamicStyle(true);
+            mapLayer.setEnvName("circle");
+            mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:8");
+            mc.addUserDefinedLayerToMenu(mapLayer, true);
+
+            */
 
 
 
 
-
-
-
+            
             RemoteMap rm;
 
             //TODO these paramaters need to read from the config
@@ -520,8 +528,6 @@ public class SpeciesNameSearchController extends UtilityComposer {
             String sld = "species_point";
 
             uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
-
-
 
             //get the entity value from the button id
             entity = event.getTarget().getId();
@@ -535,9 +541,9 @@ public class SpeciesNameSearchController extends UtilityComposer {
             //contruct the filter in cql
             filter = "species eq '" + label + "'";
 
-
-
             mc.addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
+            
+
 
         }
     }

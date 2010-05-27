@@ -132,9 +132,16 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
-    public void zoomGeoJsonExtent (MapLayer ml) {
-        String script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getGeoJSON() + "')";
+    public void addFeatureSelection() {
+        String script = "window.mapFrame.setFeatureSelect();";
         execute(script);
+    }
+
+    @Override
+    public void zoomGeoJsonExtent (MapLayer ml) {
+        String script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName() + "')";
+        execute(script);
+
     }
 
     @Override
@@ -245,7 +252,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
     @Override
-        public void removeGeoJsonLayer(MapLayer ml) {
+        public void removeLayer(MapLayer ml) {
 
 
             String script = "window.mapFrame.removeItFromTheList('" + ml.getName() + "')";
@@ -520,7 +527,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 String script =""
                         + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "');"
                         + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
-                        + // register for loading images...
+                        +
                         "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
                
                 return wrapWithSafeToProceed(script);
@@ -620,7 +627,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + "			queryable: " + layer.isQueryable() + ", "
                         + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
                         + "			gutter: " + gutter + ", "
-                        + "			wrapDateLine: true "
+                        + "			wrapDateLine: true, "
                         + "		}  "
                         + "	); "
                         + // decorate with getFeatureInfoBuffer field - do not set buffer

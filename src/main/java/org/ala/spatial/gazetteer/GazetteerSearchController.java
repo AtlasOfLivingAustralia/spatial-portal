@@ -239,8 +239,11 @@ public class GazetteerSearchController extends UtilityComposer {
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
 
+             logger.debug(gazServer + label);
+
             //add feature to the map as a new layer
             mapLayer = mc.addGeoJSON(entity, gazServer + label);
+
 
 //            //zoom to the feature/layer
 //            if (mapLayer != null) {

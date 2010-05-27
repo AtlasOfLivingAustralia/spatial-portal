@@ -4,6 +4,8 @@
 var map;
 var proxy_script="/webportal/RemoteRequest?url=";
 var tmp_response;
+var popup;
+var selectControl;
 
 var popupWidth = 435; //pixels
 var popupHeight = 320; //pixels
@@ -57,6 +59,12 @@ var secondsToWaitForLibrary=30;
 var maxAttempts = (secondsToWaitForLibrary * 1000) / libraryCheckIntervalMs;
 
 var gazetteerURL = "http"
+var overCallback = {
+        over: featureOver,
+        out: hideTooltip
+    };
+
+ var selecteFeature;
 
 function stopCheckingLibraryLoaded() {
     clearInterval(checkLibraryLoadedTimeout);
@@ -257,7 +265,7 @@ function buildMapReal() {
     //addLine DrawingLayer("ocean_east_aus_temp/temp","http://emii3.its.utas.edu.au/ncWMS/wms");
 
     // create a new event handler for single click query
-    clickEventHandler = new OpenLayers.Handler.Click({
+   /* clickEventHandler = new OpenLayers.Handler.Click({
         'map': map
     }, {
         'click': function(e) {
@@ -266,7 +274,7 @@ function buildMapReal() {
         }
     });
     clickEventHandler.activate();
-    clickEventHandler.fallThrough = false;
+    clickEventHandler.fallThrough = false;*/
 
     // cursor mods
     map.div.style.cursor="pointer";
@@ -289,11 +297,13 @@ function buildMapReal() {
 function addPolygonDrawingTool() {
     removeSpeciesSelection();
     ////adding polygon control and layer
-      var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";	
 	
-    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {style: layer_style});
+    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+        style: layer_style
+    });
     polygonLayer.setVisibility(true);
     map.addLayer(polygonLayer);
     polyControl = new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
@@ -308,55 +318,59 @@ function addPolygonDrawingToolSampling() {
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "blue";
     layer_style.strokeColor = "blue";	
-    samplingPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {style: layer_style});
+    samplingPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {
+        style: layer_style
+    });
 
     samplingPolygon.setVisibility(true);
     map.addLayer(samplingPolygon);
     polyControl =new OpenLayers.Control.DrawFeature(samplingPolygon,OpenLayers.Handler.Polygon,{
-    	'featureAdded':polygonAddedSampling
+        'featureAdded':polygonAddedSampling
     });
     map.addControl(polyControl);
     polyControl.activate();	
 //////
 }
 function removePolygonSampling(){
-	if(samplingPolygon != null){
-		samplingPolygon.destroy();
-		samplingPolygon = null;
-	}
+    if(samplingPolygon != null){
+        samplingPolygon.destroy();
+        samplingPolygon = null;
+    }
 }
 
 function addPolygonDrawingToolALOC() {
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "green";
     layer_style.strokeColor = "green";	
-    alocPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {style: layer_style});
+    alocPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {
+        style: layer_style
+    });
 
     alocPolygon.setVisibility(true);
     map.addLayer(alocPolygon);    
     polyControl =new OpenLayers.Control.DrawFeature(alocPolygon,OpenLayers.Handler.Polygon,{
-    	'featureAdded':polygonAddedALOC
+        'featureAdded':polygonAddedALOC
     });  
     map.addControl(polyControl);
     polyControl.activate();	
 //////
 }
 function removePolygonALOC(){
-	if(alocPolygon != null){
-		alocPolygon.destroy();
-		alocPolygon = null;
-	}
+    if(alocPolygon != null){
+        alocPolygon.destroy();
+        alocPolygon = null;
+    }
 }
 
 function removeSpeciesSelection() {
-	if(polygonLayer != null){
-		polygonLayer.destroy();
-		polygonLayer = null;
-	}
-	if(boxLayer != null) {
-		boxLayer.destroy();
-		boxLayer = null;	
-	}
+    if(polygonLayer != null){
+        polygonLayer.destroy();
+        polygonLayer = null;
+    }
+    if(boxLayer != null) {
+        boxLayer.destroy();
+        boxLayer = null;
+    }
 }
 function addPolygonDrawingToolFiltering() {
     ////adding polygon control and layer	
@@ -364,28 +378,30 @@ function addPolygonDrawingToolFiltering() {
     filteringPolygon.setVisibility(true);
     map.addLayer(filteringPolygon);    
     polyControl =new OpenLayers.Control.DrawFeature(filteringPolygon,OpenLayers.Handler.Polygon,{
-    	'featureAdded':polygonAddedFiltering
+        'featureAdded':polygonAddedFiltering
     });  
     map.addControl(polyControl);
     polyControl.activate();	
 //////
 }
 function removePolygonFiltering(){
-	if(filteringPolygon != null){
-		filteringPolygon.destroy();
-		filteringPolygon = null;
-	}
+    if(filteringPolygon != null){
+        filteringPolygon.destroy();
+        filteringPolygon = null;
+    }
 }
 
 function addBoxDrawingTool() {
     removeSpeciesSelection();
-   var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";	
 
-    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {style : layer_style });
+    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+        style : layer_style
+    });
 
-      boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{
+    boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{
         'featureAdded':regionAdded
     });
     map.addControl(boxControl);
@@ -406,7 +422,9 @@ function regionAdded(feature) {
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";	
-    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {style : layer_style });
+    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+        style : layer_style
+    });
     boxLayer.setVisibility(true);
     map.addLayer(boxLayer);
     boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
@@ -437,6 +455,73 @@ function polygonAddedFiltering(feature) {
 }
 
 
+ function selected (evt) {
+
+    var feature = evt.feature;
+    var attrs = evt.feature.attributes;
+    
+    //test to see if its occurrence data
+
+    if (attrs["occurrenceId"] != null) {
+        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            feature.geometry.getBounds().getCenterLonLat(),
+            new OpenLayers.Size(100,100),
+            "<h2>Occurrence for " + attrs["species"] + "</h2>" +
+            " Longitude: "+attrs['latitude'] + " , Longitude: " + attrs['longitude'] + "<br>" +
+            "Species Occurence <a href='http://data.ala.org.au/occurrences/" + attrs["occurrenceId"] + "' target='_blank'>View details</a>"
+            ,
+            null, true, onPopupClose);
+
+    } else {
+
+
+        var html = "<h2>Feature Details</h2>";
+
+
+        for (key in attrs) {
+            html = html + "<br>" +  key + " : "  + attrs[key];
+        }
+
+        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            feature.geometry.getBounds().getCenterLonLat(),
+            new OpenLayers.Size(100,100),
+            html
+            ,
+            null, true, onPopupClose);
+
+    }
+    feature.popup = popup;
+    popup.feature = feature;
+    map.addPopup(popup);
+    
+   
+}
+
+ function onFeatureUnselect(feature) {
+            alert("try");
+            map.removePopup(feature.popup);
+            feature.popup.destroy();
+            feature.popup = null;
+        }
+
+function onPopupClose(evt) {
+    
+    try {
+
+     map.removePopup(this.feature.popup);
+     this.feature.popup.destroy();
+     this.feature.popup = null;
+    
+     selectControl.unselect(this.feature);
+
+    } catch(err) {
+        //alert(err);
+    }
+}
+
+
+
+
 function addJsonFeatureToMap(feature, name, hexColour) {
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
@@ -455,9 +540,17 @@ function addJsonFeatureToMap(feature, name, hexColour) {
 
     var geojson_format = new OpenLayers.Format.GeoJSON();
     var vector_layer = new OpenLayers.Layer.Vector(name);
+
     vector_layer.style = layer_style;
+    vector_layer.isFixed = false;
     features = geojson_format.read(feature);
     vector_layer.addFeatures(features);
+
+
+    vector_layer.events.register("featureselected", vector_layer, selected);
+     selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
+    map.addControl(selectControl);
+    selectControl.activate();
     return vector_layer;
 }
 
@@ -500,39 +593,22 @@ function redrawFeatures(feature, name, hexColour) {
 
 }
 
-function zoomBoundsGeoJSON(feature) {
-    var bounds;
-    var geojson_format = new OpenLayers.Format.GeoJSON();
-    features = geojson_format.read(feature);
+function zoomBoundsGeoJSON(layerName) {
+    
 
-    if(features) {
-        if(features.constructor != Array) {
-            features = [features];
-        }
-        for(var i=0; i<features.length; ++i) {
-            if (!bounds) {
-                bounds = features[i].geometry.getBounds();
-            } else {
-                bounds.extend(features[i].geometry.getBounds());
-            }
+    //get the other geojson layers and force them to redraw
+    var geoJsonLayers = map.getLayersByClass("OpenLayers.Layer.Vector");
+    for (key in geoJsonLayers) {
+        var layer = geoJsonLayers[key];
 
-        }
+        if (layer.name == layerName) {
+            map.zoomToExtent(layer.getDataExtent());
+        } 
+    }
 
-        if (features.length == 1) {
-            
-            if (features[0].geometry.getVertices().length == 1) {
-                //its a point just center the map
-                map.setCenter(new OpenLayers.LonLat(features[0].geometry.getCentroid().x, features[0].geometry.getCentroid().y),5);
-            } else {
-                map.zoomToExtent(bounds);
-            }
-        } else {
-            
-            map.zoomToExtent(bounds);
-        }
-    } else {
-//alert("failed");
-}
+
+
+
 }
 
 function zoomBoundsLayer(layername) {
@@ -559,17 +635,11 @@ function zoomBoundsLayer(layername) {
 function removeItFromTheList(layername) {
     var gjLayers = map.getLayersByName(layername);
     
-    for (key in gjLayers) {
-        
+    for (key in gjLayers) {        
         if (gjLayers[key] != undefined) {
-
-            var layer = map.getLayer(gjLayers[key].id);
-            
-            if (layer.name == layername) {
-                
-                map.removeLayer(layer);
-                
-               
+            var layer = map.getLayer(gjLayers[key].id);            
+            if (layer.name == layername) {                
+                map.removeLayer(layer);               
             }
         }
     }
@@ -663,9 +733,9 @@ function getpointInfo(e) {
 
     var wmsLayers = map.getLayersByClass("OpenLayers.Layer.WMS");
     var imageLayers = map.getLayersByClass("OpenLayers.Layer.Image");
-    var geoJsonLayers = map.getLayersByClass("OpenLayers.Layer.Vector");
+    //var geoJsonLayers = map.getLayersByClass("OpenLayers.Layer.Vector");
     wmsLayers = wmsLayers.concat(imageLayers);
-    wmsLayers = wmsLayers.concat(geoJsonLayers);
+    //wmsLayers = wmsLayers.concat(geoJsonLayers);
 
     var url = false;
     
@@ -810,6 +880,8 @@ function getpointInfo(e) {
                 }
             } else {
 
+               
+
                 
         }
         }
@@ -823,32 +895,6 @@ function getpointInfo(e) {
 //setTimeout('hidepopup()', 4000);
 }
 
-
-function onPopupClose(evt) {
-    // 'this' is the popup.
-    selectControl.unselect(this.feature);
-}
-function onFeatureSelect(evt) {
-    feature = evt.feature;
-    popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-        feature.geometry.getBounds().getCenterLonLat(),
-        new OpenLayers.Size(100,100),
-        "<h2>"+feature.attributes.title + "</h2>" +
-        feature.attributes.description,
-        null, true, onPopupClose);
-    feature.popup = popup;
-    popup.feature = feature;
-    map.addPopup(popup);
-}
-function onFeatureUnselect(evt) {
-    feature = evt.feature;
-    if (feature.popup) {
-        popup.feature = null;
-        map.removePopup(feature.popup);
-        feature.popup.destroy();
-        feature.popup = null;
-    }
-}
 
 function handleQueryStatus(theobj) {
 
