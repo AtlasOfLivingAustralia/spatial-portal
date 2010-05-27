@@ -57,7 +57,7 @@ public interface OpenLayersJavascript {
      */
     public void activateMapLayersNow(List<MapLayer> layers);
 
-    public void removeGeoJsonLayer(MapLayer ml);
+    public void removeLayer(MapLayer ml);
 
     public void redrawFeatures(MapLayer selectedLayer);
 
@@ -80,6 +80,8 @@ public interface OpenLayersJavascript {
     public String defineGeoJSONMapLayer(MapLayer layer);
 
     public void zoomGeoJsonExtent (MapLayer layer);
+
+    public void addFeatureSelection();
 
     public void zoomLayerExtent (MapLayer ml);
 

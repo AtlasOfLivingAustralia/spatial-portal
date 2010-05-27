@@ -303,16 +303,17 @@ public class RemoteMapImpl implements RemoteMap {
         geoJSON.setGreenVal(g);
         geoJSON.setRedVal(r);
 
-        Color c =new Color(r,g,b);
+        //Color c =new Color(r,g,b);
+        //String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
 
+        String rgbColour = "rgb(" + String.valueOf(r) + "," + String.valueOf(g) + "," + String.valueOf(b) + ")";
 
-        String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
-
-        geoJSON.setEnvColour(hexColour);
+        geoJSON.setEnvColour(rgbColour);
 
         geoJSON.setType(layerUtilities.GEOJSON);
         geoJSON.setGeoJSON(getJson(uri));
         geoJSON.setQueryable(true);
+        geoJSON.setDynamicStyle(true);
         return geoJSON;
     }
 
