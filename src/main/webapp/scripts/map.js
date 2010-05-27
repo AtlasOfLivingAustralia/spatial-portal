@@ -265,7 +265,7 @@ function buildMapReal() {
     //addLine DrawingLayer("ocean_east_aus_temp/temp","http://emii3.its.utas.edu.au/ncWMS/wms");
 
     // create a new event handler for single click query
-   /* clickEventHandler = new OpenLayers.Handler.Click({
+    clickEventHandler = new OpenLayers.Handler.Click({
         'map': map
     }, {
         'click': function(e) {
@@ -274,7 +274,7 @@ function buildMapReal() {
         }
     });
     clickEventHandler.activate();
-    clickEventHandler.fallThrough = false;*/
+    clickEventHandler.fallThrough = false;
 
     // cursor mods
     map.div.style.cursor="pointer";
@@ -1213,36 +1213,44 @@ function mkpopup(e) {
         map.popup = null;
     }
 
-    var html = "<div id=\"featureinfoheader\"><h4>New Query:</h4></div>" +
-    "<div id=\"featureinfostatus\">" +
-    "Waiting on the response for <b>" + requestCount + "</b> layers..." +
-    "<img src=\"/img/loading_small.gif\" /></div>"  +
-    "<div id=\"featureinfodepth\"></div>" +
-    "<div class=\"spacer\" style=\"clear:both;height:10px;\">&nbsp;</div>" +
-    "<div id=\"featureinfocontent_topborder\"><img id=\"featureinfocontent_topborderimg\" src=\"img/mapshadow.png\" />\n" +
-    "<div id=\"featureinfocontent\"></div>\n</div>" ;
-    popup = new OpenLayers.Popup.AnchoredBubble( "getfeaturepopup",
-        pointclick,
-        new OpenLayers.Size(popupWidth,popupHeight), 
-        html,
-        null, true, null);
+    
+
+        var html = "<div id=\"featureinfoheader\"><h4>New Query:</h4></div>" +
+        "<div id=\"featureinfostatus\">" +
+        "Waiting on the response for <b>" + requestCount + "</b> layers..." +
+        "<img src=\"/img/loading_small.gif\" /></div>"  +
+        "<div id=\"featureinfodepth\"></div>" +
+        "<div class=\"spacer\" style=\"clear:both;height:10px;\">&nbsp;</div>" +
+        "<div id=\"featureinfocontent_topborder\"><img id=\"featureinfocontent_topborderimg\" src=\"img/mapshadow.png\" />\n" +
+        "<div id=\"featureinfocontent\"></div>\n</div>" ;
+        popup = new OpenLayers.Popup.AnchoredBubble( "getfeaturepopup",
+            pointclick,
+            new OpenLayers.Size(popupWidth,popupHeight),
+            html,
+            null, true, null);
 
 
-    popup.panMapIfOutOfView = true; 
-    //popup.autoSize = true;
-    map.popup = popup;
-    map.addPopup(popup);
-    map.popup.setOpacity(0.9);
 
-    /* shrink back down while searching.
-     * popup will always pan into view with previous size.
-     * close image always therefore visible
-    */
-    map.popup.setSize(new OpenLayers.Size(popupWidth,60));
+     if (requestCount == "0") {
+           
+        //nothing to see here
+        //move along
+        // a prompt for stupid people
+        //  jQuery('#featureinfostatus').html("<font class=\"error\">Please choose a queryable layer from the menu..</font>").fadeIn(400);
+    } else {
 
-    // a prompt for stupid people
-    if (requestCount == "0") {
-        jQuery('#featureinfostatus').html("<font class=\"error\">Please choose a queryable layer from the menu..</font>").fadeIn(400);
+        popup.panMapIfOutOfView = true;
+        //popup.autoSize = true;
+        map.popup = popup;
+        map.addPopup(popup);
+        map.popup.setOpacity(0.9);
+
+        /* shrink back down while searching.
+         * popup will always pan into view with previous size.
+         * close image always therefore visible
+        */
+        map.popup.setSize(new OpenLayers.Size(popupWidth,60));
+
     }
 }
 
