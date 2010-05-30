@@ -24,7 +24,7 @@ This tool samples environmental and contextual data layers at locations defined 
 ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
 </panel>
 <separator/>
-<window id="win" use="org.ala.spatial.analysis.tabulation.SamplingZK" title="Sampling Tool" width="600px" border="normal">
+<window id="win" use="org.ala.spatial.web.zk.SamplingZK" title="Sampling Tool" width="600px" border="normal">
 
 <separator/>
 <hbox>

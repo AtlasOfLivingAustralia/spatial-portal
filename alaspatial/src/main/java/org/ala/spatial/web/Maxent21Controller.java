@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
-import org.ala.spatial.analysis.tabulation.SamplingService;
+import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.Species;
 import org.ala.spatial.util.Layer;

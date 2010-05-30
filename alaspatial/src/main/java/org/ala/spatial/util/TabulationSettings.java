@@ -1,7 +1,4 @@
-package org.ala.spatial.analysis.tabulation;
-
-import java.io.Serializable;
-import org.ala.spatial.util.*;
+package org.ala.spatial.util;
 
 /**
  * home of all relevant tabulation settings as loaded from
@@ -16,58 +13,58 @@ import org.ala.spatial.util.*;
  * @see Layer
  * @see Field
  */
-public class TabulationSettings { //  implements Serializable
+public class TabulationSettings { 
 	/**
 	 * postgis enabled database
 	 */
-	static String db_connection_string;
-	static String db_username;
-	static String db_password;
+	public static String db_connection_string;
+	public static String db_username;
+	public static String db_password;
 
 	/**
 	 * table housing species occurances
 	 */
-	static String source_table_name;
+	public static String source_table_name;
 
 	/**
 	 * true if species occurances table has location in field the_geom
 	 */
-	static boolean point_type;
+	public static boolean point_type;
 
 	/**
 	 * longitude used when <code>point_type == false</code>
 	 */
-	static String longitude_field;
+	public static String longitude_field;
 
 	/**
 	 * latitude used when <code>point_type == false</code>
 	 */
-	static String latitude_field;
+	public static String latitude_field;
 
 	/**
 	 * field in occurances to filter by, likely called <code>species</code>
 	 */
-	static String key_field;
+	public static String key_field;
 
 	/**
 	 * optional query prefix for the <code>key_field</code> value in the
 	 * select query:
 	 * <code> WHERE key_field = concat(key_value_prefix,key_value,key_value_postfix)</code>
 	 */
-	static String key_value_prefix;
+	public static String key_value_prefix;
 
 	/**
 	 * optional query postfix for the <code>key_field</code> value in the
 	 * select query:
 	 * <code> WHERE key_field = concat(key_value_prefix,key_value,key_value_postfix)</code>
 	 */
-	static String key_value_postfix;
+	public static String key_value_postfix;
 
 	/**
 	 * array of additional fields available in the occurances table
 	 * that may be useful, such as <code>family</code> and <code>sample date</code>
 	 */
-	static Field [] additional_fields;
+	public static Field [] additional_fields;
 
 	/**
 	 * array of <code>Layer</code> representing geo enabled tables
@@ -92,26 +89,25 @@ public class TabulationSettings { //  implements Serializable
 	 *
 	 * TODO : getter
 	 */
-	static boolean loaded = false;
+	public static boolean loaded = false;
 
 	/**
 	 * occurances csv file full path
 	 *
 	 */
-	static String occurances_csv;
+	public static String occurances_csv;
 
 	/**
 	 * occurances csv fields, in hierarchy order ending
 	 * with fields for species, longitude and latitude
 	 */
-	static String [] occurances_csv_fields;
+	public static String [] occurances_csv_fields;
 
 	/**
 	 * directory for indexes
 	 */
 	public static String index_path;
-    private static final long serialVersionUID = -2806584316583831954L;
-
+		
     /**
      * alaspatial url for services call
      */

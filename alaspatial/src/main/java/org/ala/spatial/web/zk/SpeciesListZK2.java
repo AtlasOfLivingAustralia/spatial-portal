@@ -1,4 +1,4 @@
-package org.ala.spatial.analysis.tabulation;
+package org.ala.spatial.web.zk;
 
 import java.io.File;
 import java.net.URL;
@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-
+import org.ala.spatial.analysis.index.*;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.*;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -26,7 +26,6 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
-import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
@@ -52,7 +51,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	/**
 	 * for functions in popup box
 	 */
-	SPLFilter popup_filter;
+	LayerFilter popup_filter;
 	Listcell popup_cell;
 	Listitem popup_item;
 
@@ -102,27 +101,27 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		geoServer = TabulationSettings.alaspatial_path;
 		satServer = TabulationSettings.alaspatial_path;
 
-		SPLFilter layer_filter;
+		LayerFilter layer_filter;
 
 		/* list of all layers */
 		for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
 			layer_filter =
-				SpeciesListIndex.getLayerFilter(
-						TabulationSettings.environmental_data_files[i]);
+				FilteringIndex.getLayerFilter(
+						TabulationSettings.environmental_data_files[i].name);
 			_layer_filters.add(layer_filter);
 			layer_filter =
-				SpeciesListIndex.getLayerFilter(
-						TabulationSettings.environmental_data_files[i]);
+				FilteringIndex.getLayerFilter(
+						TabulationSettings.environmental_data_files[i].name);
 			_layer_filters_original.add(layer_filter);
 		}
 		for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
 			layer_filter =
-				SpeciesListIndex.getLayerFilter(
-						TabulationSettings.geo_tables[i]);
+				FilteringIndex.getLayerFilter(
+						TabulationSettings.geo_tables[i].name);
 			_layer_filters.add(layer_filter);
 			layer_filter =
-				SpeciesListIndex.getLayerFilter(
-						TabulationSettings.geo_tables[i]);
+				FilteringIndex.getLayerFilter(
+						TabulationSettings.geo_tables[i].name);
 			_layer_filters_original.add(layer_filter);
 		}
 
@@ -151,12 +150,12 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			int i=0;
 			while(i < _layer_filters_original.size()){
 				if(it != null && it.hasNext()){
-					((Comboitem) it.next()).setLabel(((SPLFilter)_layer_filters_original.get(i)).layer.display_name + " (Terrestrial)");
+					((Comboitem) it.next()).setLabel(((LayerFilter)_layer_filters_original.get(i)).layer.display_name + " (Terrestrial)");
 				}else{
 					it = null;
-					new Comboitem(((SPLFilter)_layer_filters_original.get(i)).layer.display_name + " (Terrestrial)").setParent(cb);
+					new Comboitem(((LayerFilter)_layer_filters_original.get(i)).layer.display_name + " (Terrestrial)").setParent(cb);
 				}
-				//System.out.println("*x*" + ((SPLFilter)_layer_filters_original.get(i)).layer.display_name);
+				//System.out.println("*x*" + ((LayerFilter)_layer_filters_original.get(i)).layer.display_name);
 				i++;
 			}
 			while(it != null && it.hasNext()){
@@ -186,7 +185,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 
 		for(Object o : _layer_filters_selected){
-			SPLFilter f = (SPLFilter) o;
+			LayerFilter f = (LayerFilter) o;
 			if(f.layer.display_name.equals(new_value)){
 				//System.out.println("already added");
 				return; //already added
@@ -194,7 +193,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		}
 		//System.out.println("not already added");
 		for(Object o : _layer_filters){
-			SPLFilter f = (SPLFilter) o;
+			LayerFilter f = (LayerFilter) o;
 			System.out.println(f.layer.display_name);
 			if(f.layer.display_name.equals(new_value)){
 				System.out.println("found");
@@ -206,7 +205,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 		lb.setItemRenderer(new ListitemRenderer(){
 			public void render(Listitem li, Object data) {
-                SPLFilter f = (SPLFilter)data;
+                LayerFilter f = (LayerFilter)data;
                 Listcell remove = new Listcell("remove");
                 remove.setParent(li);
                 remove.addEventListener("onClick",new EventListener(){
@@ -219,7 +218,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
                 });
 
                 new Listcell(f.layer.display_name + " (Terrestrial)").setParent(li);
-                Listcell lc = new Listcell(f.getFilterString());
+                Listcell lc = new Listcell(f.toString());
                 lc.setParent(li);
 
                 lc.addEventListener("onClick",new EventListener() {
@@ -239,9 +238,9 @@ public class SpeciesListZK2 extends GenericForwardComposer {
                 		//if(results != null && results.length() > 0){
                 		if(!((Listcell)event.getTarget()).getLabel().equals("0")
                 				 && !((Listitem)event.getTarget().getParent()).isDisabled()){
-                			SPLFilter [] layer_filters = getSelectedFilters();
+                			LayerFilter [] layer_filters = getSelectedFilters();
                 			if(layer_filters != null){
-                				/*results = SpeciesListIndex.listArraySpeciesGeo(layer_filters);*/
+                				/*results = FilteringIndex.listArraySpeciesGeo(layer_filters);*/
                 				results = serviceSpeciesList().split("\r\n");
                 				
                 				java.util.Arrays.sort(results);
@@ -299,7 +298,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 		Listcell lc = (Listcell)o;
 		Listitem li = (Listitem) lc.getParent();
-		SPLFilter lf = (SPLFilter) _layer_filters_selected.get(li.getIndex());
+		LayerFilter lf = (LayerFilter) _layer_filters_selected.get(li.getIndex());
 
 		popup_filter = lf;
 		popup_cell = lc;
@@ -314,7 +313,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 */
 		if(popup_filter.layer.type == "environmental"){
 
-			String csv = SpeciesListIndex.getLayerExtents(lf.layer.name);
+			String csv = FilteringIndex.getLayerExtents(lf.layer.name);
 			popup_range.setValue(csv);
 			int idx = 0;
 			try{
@@ -322,7 +321,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 				popup_maximum.setValue(String.valueOf((float)popup_filter.maximum_value));
 
 				for(idx=0;idx<_layer_filters.size();idx++){
-					if(((SPLFilter)_layer_filters.get(idx)).layer.name == lf.layer.name){
+					if(((LayerFilter)_layer_filters.get(idx)).layer.name == lf.layer.name){
 						System.out.println("popup for " + lf.layer.display_name);
 						break;
 					}
@@ -357,7 +356,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 			int idx = 0;
 			for(idx=0;idx<_layer_filters.size();idx++){
-				if(((SPLFilter)_layer_filters.get(idx)).layer.name == lf.layer.name){
+				if(((LayerFilter)_layer_filters.get(idx)).layer.name == lf.layer.name){
 					System.out.println("popup for " + lf.layer.display_name);
 					break;
 				}
@@ -603,22 +602,22 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		}
 		int idx = li.getIndex();
 
-		label = ((SPLFilter)_layer_filters_selected.get(idx)).layer.display_name;
+		label = ((LayerFilter)_layer_filters_selected.get(idx)).layer.display_name;
 
 			System.out.println("deleteSelectedFilters(" + label + ")");
 
 
 			for(Object oi : _layer_filters_selected){
-				SPLFilter f =  (SPLFilter) oi;
+				LayerFilter f =  (LayerFilter) oi;
 
 				if(f.layer.display_name.equals(label)){
-					((SPLFilter)oi).count = 0;
+					((LayerFilter)oi).count = 0;
 
 					_layer_filters_selected.remove(oi);
 					int i = 0;
 					for(i=0;i<_layer_filters_original.size();i++){
-						if(((SPLFilter)_layer_filters_original.get(i)).layer.display_name.equals(label)){
-							if(((SPLFilter)_layer_filters_original.get(i)).layer.type.equals("environmental")){
+						if(((LayerFilter)_layer_filters_original.get(i)).layer.display_name.equals(label)){
+							if(((LayerFilter)_layer_filters_original.get(i)).layer.type.equals("environmental")){
 								//Clients.evalJavaScript("applyFilter(" + i + ",-999,100000);");
 								//filteringImage.applyFilter(i,-999,100000);
 							}else{
@@ -654,7 +653,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			popup_filter.maximum_value = Double.parseDouble(popup_maximum.getValue());
 
 			((Listcell)popup_item.getLastChild().getPreviousSibling()).setLabel(
-					popup_filter.getFilterString());
+					popup_filter.toString());
 
 			clientFilter();
 		}catch(Exception e){
@@ -673,7 +672,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 			popup_filter.minimum_value = Double.parseDouble(popup_minimum.getValue());
 
 			((Listcell)popup_item.getLastChild().getPreviousSibling()).setLabel(
-					popup_filter.getFilterString());
+					popup_filter.toString());
 
 			clientFilter();
 
@@ -706,7 +705,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		}else{
 		//	System.out.println("selected catagories (clientFilter()): " + popup_filter.catagories.length);
 
-//			SPLFilter lf = popup_filter; //(SPLFilter)_layer_filters_original.get(idx_n);
+//			LayerFilter lf = popup_filter; //(LayerFilter)_layer_filters_original.get(idx_n);
 //
 //			//System.out.println("selected catagories (obj): " + lf.catagories.length);
 //
@@ -793,13 +792,13 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 			//popup_cell.setLabel(popup_filter.getFilterString());
 			((Listcell)popup_item.getLastChild().getPreviousSibling()).setLabel(
-					popup_filter.getFilterString());
+					popup_filter.toString());
 			Integer count = new Integer(0);
 
-			SPLFilter [] layer_filters = getSelectedFilters();
+			LayerFilter [] layer_filters = getSelectedFilters();
 			int c = 0;
 			if(layer_filters != null){
-				//c = SpeciesListIndex.listSpeciesCountGeo(layer_filters);
+				//c = FilteringIndex.listSpeciesCountGeo(layer_filters);
 				c = serviceSpeciesCount();
 
 				popup_filter.count = c;
@@ -817,9 +816,9 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 	public int countSpeciesGeo(Integer return_count) {
 		/*
-		SPLFilter [] layer_filters = getSelectedFilters();
+		LayerFilter [] layer_filters = getSelectedFilters();
 		if(layer_filters != null){
-			int count = SpeciesListIndex.listSpeciesCountGeo(layer_filters);
+			int count = FilteringIndex.listSpeciesCountGeo(layer_filters);
 
 			try{
 				if(return_count == null){
@@ -840,14 +839,14 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 		return count;
 	}
 
-	public SPLFilter [] getSelectedFilters(){
-		SPLFilter [] f = new SPLFilter[_layer_filters_selected.size()];
+	public LayerFilter [] getSelectedFilters(){
+		LayerFilter [] f = new LayerFilter[_layer_filters_selected.size()];
 		_layer_filters_selected.toArray(f);
 		return f;
 	}
 
 	public void onClick$download(){
-		SPLFilter [] layer_filters = getSelectedFilters();
+		LayerFilter [] layer_filters = getSelectedFilters();
 		if(layer_filters != null){
 			StringBuffer sb = new StringBuffer();
 			for(String s : results){
@@ -861,7 +860,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	}
 	
 	public void onClick$downloadsamples(){
-		SPLFilter [] layer_filters = getSelectedFilters();
+		LayerFilter [] layer_filters = getSelectedFilters();
 		if(layer_filters != null){
 			try{
 				System.out.println("attempt to download: " + satServer  + this.serviceSamplesList());

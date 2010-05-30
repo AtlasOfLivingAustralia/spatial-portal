@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.ala.spatial.analysis.tabulation.SPLFilter;
-import org.ala.spatial.analysis.tabulation.SamplingService;
-import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
+import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SpatialSettings;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -134,8 +135,8 @@ public class SpatialSettingsWSController {
         String extents = "";
         try {
             layer = URLDecoder.decode(layer, "UTF-8");
-            String layer_filename = SamplingService.layerDisplayNameToName(layer.replaceAll("_", " "));
-            extents = SpeciesListIndex.getLayerExtents(layer_filename);
+            String layer_filename = Layers.layerDisplayNameToName(layer.replaceAll("_", " "));
+            extents = FilteringIndex.getLayerExtents(layer_filename);
             if (extents == null) {
                 extents = "Layer extents not available.";
             }
@@ -152,8 +153,8 @@ public class SpatialSettingsWSController {
         String metadata = "";
         try {
             layer = URLDecoder.decode(layer, "UTF-8");
-            String layer_filename = SamplingService.layerDisplayNameToName(layer.replaceAll("_", " "));
-            metadata = SamplingService.getLayerMetaData(layer_filename);
+            String layer_filename = Layers.layerDisplayNameToName(layer.replaceAll("_", " "));
+            metadata = Layers.getLayerMetaData(layer_filename);
             if (metadata == null) {
                 metadata = "Layer metadata not available.";
             }
@@ -193,9 +194,9 @@ public class SpatialSettingsWSController {
                     }
                 }
             }
-            SPLFilter sf = SpeciesListIndex.getLayerFilter(l);
+            LayerFilter sf = FilteringIndex.getLayerFilter(l.name);
             if (sf != null) {
-                return sf.getFilterString();
+                return sf.toString();
             }
 
         } catch (Exception e) {
@@ -206,10 +207,10 @@ public class SpatialSettingsWSController {
 
     }
 
-    @RequestMapping(value = "/layer/{layer}/splfilter", method = RequestMethod.GET)
+    @RequestMapping(value = "/layer/{layer}/layerfilter", method = RequestMethod.GET)
     public
     @ResponseBody
-    SPLFilter getSPLFilter(@PathVariable String layer) {
+    LayerFilter getLayerFilter(@PathVariable String layer) {
 
         try {
 
@@ -236,7 +237,7 @@ public class SpatialSettingsWSController {
                     }
                 }
             }
-            return SpeciesListIndex.getLayerFilter(l);
+            return FilteringIndex.getLayerFilter(l.name);
 
         } catch (Exception e) {
             e.printStackTrace(System.out);

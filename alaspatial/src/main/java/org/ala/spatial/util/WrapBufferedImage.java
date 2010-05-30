@@ -13,7 +13,9 @@ import javax.imageio.ImageIO;
  */
 public class WrapBufferedImage implements Serializable {
 
-    private static final long serialVersionUID = 6583156430853699407L;
+	static final long serialVersionUID = 6583156430853699407L;
+
+	
     private BufferedImage im = null;
 
     public WrapBufferedImage() {

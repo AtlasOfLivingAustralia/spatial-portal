@@ -1,16 +1,17 @@
-package org.ala.spatial.analysis.tabulation;
+package org.ala.spatial.web.zk;
+
 
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.*;
-
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 import org.ala.spatial.analysis.*;
+import org.ala.spatial.analysis.service.OccurrencesService;
+import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.analysis.index.*;
 import org.ala.spatial.util.*;
-
 import java.awt.image.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -65,9 +66,8 @@ public class SamplingZK extends Window {
 		System.out.println("combobox value=" + filter);
 
 		if(filter.length() >= 1){
-			SamplingService ss = new SamplingService();
 
-			String [] list = ss.filterSpecies(filter,40);
+			String [] list = OccurrencesService.filterSpecies(filter,40);
 			if(list == null){
 				list = new String[1];
 				list[0] = "";
@@ -177,11 +177,11 @@ public class SamplingZK extends Window {
 				/* add each catagorical layer */
 				if(layers != null){
 					for(String s : layers){
-						String csv = SpeciesListIndex.getLayerExtents(s);
+						String csv = FilteringIndex.getLayerExtents(s);
 						if(csv != null && csv.length() > 0 &&
 								csv.contains("<br>")){
 							entry = new ZipEntry(
-									SamplingService.layerNameToDisplayName(s)
+									Layers.layerNameToDisplayName(s)
 									+ "_lookup_values.csv");
 							out.putNextEntry(entry);
 							out.write(csv.replace("<br>", "").getBytes());
@@ -253,7 +253,7 @@ public class SamplingZK extends Window {
 		popup_layer = l;
 
 		Html h = (Html) getFellow("h");
-		String csv = SpeciesListIndex.getLayerExtents(l.name);
+		String csv = FilteringIndex.getLayerExtents(l.name);
 		h.setContent(csv);
 
 		Popup p = (Popup) getFellow("p");
@@ -264,7 +264,7 @@ public class SamplingZK extends Window {
 	}
 
 	public void downloadMetaData(){
-		String metadata= SamplingService.getLayerMetaData(popup_layer.name);
+		String metadata= Layers.getLayerMetaData(popup_layer.name);
 
 		org.zkoss.zhtml.Filedownload.save(
 				metadata,
@@ -357,15 +357,15 @@ public class SamplingZK extends Window {
 
 
 				/* setup contextual number to name lookups */
-				SPLFilter [] splfilters = new SPLFilter[csv_filename[0].length];
+				LayerFilter [] layerfilters = new LayerFilter[csv_filename[0].length];
 				for(i=0;i<csv_filename[0].length;i++){
 					if(csv_filename[0][i] != null){
 						String display_name = csv_filename[0][i].trim();
 						for(int k=0;k<_layers.size();k++){
 							Layer layer = (Layer)_layers.get(k);
 							if(layer.display_name.equals(display_name)){
-								splfilters[i] = SpeciesListIndex.getLayerFilter(layer);
-								System.out.println("made splfilter: " + layer);
+								layerfilters[i] = FilteringIndex.getLayerFilter(layer.name);
+								System.out.println("made layerfilter: " + layer);
 							}
 						}
 					}
@@ -394,7 +394,7 @@ public class SamplingZK extends Window {
 														popup_layer = layer;
 
 								                		Html h = (Html) getFellow("h");
-								                		String csv = SpeciesListIndex.getLayerExtents(layer.name);
+								                		String csv = FilteringIndex.getLayerExtents(layer.name);
 								                		h.setContent(csv);
 
 								                		Popup p = (Popup) getFellow("p");
@@ -406,10 +406,10 @@ public class SamplingZK extends Window {
 				                });
 						}else{
 							/* is catagorical layer */
-							if(i < splfilters.length && splfilters[i] != null && splfilters[i].catagory_names != null){
+							if(i < layerfilters.length && layerfilters[i] != null && layerfilters[i].catagory_names != null){
 								try {
 									int idx = Integer.parseInt(csv_filename[j][i]);
-									label.setTooltiptext(splfilters[i].catagory_names[idx]);
+									label.setTooltiptext(layerfilters[i].catagory_names[idx]);
 								}catch (Exception e){
 									System.out.println(e.toString());
 								}

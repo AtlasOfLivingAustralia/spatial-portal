@@ -1,16 +1,14 @@
-package org.ala.spatial.analysis.tabulation;
-
-import java.io.RandomAccessFile;
-
-import org.ala.spatial.util.*;
+package org.ala.spatial.analysis.index;
 
 /**
  * index interface, standalone and integrated
  * 
  * can be called as separate program since indexing could take a long time
  * 
+ * TODO: update for incremental update and new service classes
+ * 
  */
-public class Indexing{	
+public class Indexing {	
 	
 	/**
 	 * build_all
@@ -25,19 +23,19 @@ public class Indexing{
 	 */
 	public static void main(String [] args){
 		int i;
-		System.out.println("org.ala.spatial.analysis.tabulation.Indexing: start");
+		System.out.println("org.ala.spatial.analysis.index.Indexing: start");
 		
 		if(args.length > 0 && args[0].equals("build_all")){
 			System.out.println("building all");
 			
 			/* some indexes have dependances on others so order is important */
-			OccurancesIndex occurancesIndex = new OccurancesIndex();
+			OccurrencesIndex occurancesIndex = new OccurrencesIndex();
 			occurancesIndex.occurancesUpdate();
 			
 			SamplingIndex samplingIndex = new SamplingIndex();
 			samplingIndex.occurancesUpdate();
 			
-			SpeciesListIndex speciesListIndex = new SpeciesListIndex();
+			FilteringIndex speciesListIndex = new FilteringIndex();
 			speciesListIndex.occurancesUpdate();
 		}else if(args.length > 1 && args[0].equals("build_layer")){
 			for(i=1;i<args.length;i++){
@@ -46,19 +44,19 @@ public class Indexing{
 				SamplingIndex samplingIndex = new SamplingIndex();
 				samplingIndex.layersUpdate(args[i].replace('_',' ')); //reverse ' ' to '_'
 				
-				SpeciesListIndex speciesListIndex = new SpeciesListIndex();
+				FilteringIndex speciesListIndex = new FilteringIndex();
 				speciesListIndex.layersUpdate(args[i].replace('_',' ')); //reverse ' ' to '_'
 			}
 		}else if(args.length > 0 && args[0].equals("list_layers")){
-			System.out.println("listing layers");
+		/*	System.out.println("listing layers");
 			
 			SamplingService ss = new SamplingService();
 			
 			for(String s : ss.listLayers()){
 				System.out.println(" " + s.replace(' ','_')); //' ' to '_'
-			}
+			}*/
 		}else if(args.length > 1 && args[0].equals("filter_species")){
-			System.out.println("filtering species");
+			/*System.out.println("filtering species");
 			
 			String filter = args[1];
 			
@@ -78,9 +76,9 @@ public class Indexing{
 				}
 			}else{
 				System.out.println("found: 0");
-			}
+			}*/
 		}else if(args.length > 1 && args[0].equals("sample")){
-			System.out.println("sampling");
+			/*System.out.println("sampling");
 			
 			SamplingService ss = new SamplingService();
 			
@@ -95,7 +93,7 @@ public class Indexing{
 			}
 			int istart = i; 		//for layers start idx
 			
-			/* remove any terminating ',' */
+			// remove any terminating ',' 
 			if(species.length() > 0
 				&& species.charAt(species.length()-1) == ','){
 				species = species.substring(0,species.length()-1);
@@ -111,19 +109,19 @@ public class Indexing{
 				}	
 			}
 			
-			System.out.println(ss.sampleSpecies(species, layers));
+			System.out.println(ss.sampleSpecies(species, layers));*/
 		}else if(args.length > 1 && args[0].equals("species_list")){
-			System.out.println("species listing: " + args[1] + " argslength=" + args.length);
-			SPLFilter [] filters = new SPLFilter[args.length-1];
+		/*	System.out.println("species listing: " + args[1] + " argslength=" + args.length);
+			LayerFilter [] filters = new LayerFilter[args.length-1];
 			for(i=1;i<args.length;i++){
 				String [] line = args[i].split(":");
 		System.out.println("(" + i + ") terms count=" + line.length);
-				filters[i-1] = new SPLFilter();
+				filters[i-1] = new LayerFilter();
 				filters[i-1].layername = 
 					SamplingService.layerDisplayNameToName(
 							line[0].replace('_',' '));		//TODO: move this
 				if(line.length > 2){
-					/* min/max */
+					// min/max 
 					try{
 						filters[i-1].minimum_value = Double.parseDouble(line[1]);
 						filters[i-1].maximum_value = Double.parseDouble(line[2]);
@@ -132,7 +130,7 @@ public class Indexing{
 						+ ", cannot parse " + line[1] + " or " + line[2]);
 					}
 				}else{
-					/* catagorical */
+					// catagorical 
 					String [] catagories = line[1].split(",");
 					filters[i].catagories = new int[catagories.length];
 					try{
@@ -145,31 +143,27 @@ public class Indexing{
 					}
 				}	
 			}
-			/*
-			 * TODO: make SpeciesListService
-			 */
-			for(SPLFilter f : filters){
+			
+			for(LayerFilter f : filters){
 				System.out.println("filter: "
 						+ f.layername + "," 
 						+ f.catagories + "," 
 						+ f.minimum_value + ","
 						+ f.maximum_value);
 			}
-			String output = SpeciesListIndex.listSpeciesGeo(filters);
+			String output = FilteringIndex.listSpeciesGeo(filters);
 			System.out.println(">" + output);				
-						
+					*/	
 		}else if(args.length > 1 && args[0].equals("layer_extents")){
-			System.out.println("list layer extends for " + args[1]);
+			/*System.out.println("list layer extends for " + args[1]);
 			
-			/*
-			 * TODO: tidy up layerDisplayNameToName call
-			 */
-			String output = SpeciesListIndex.getLayerExtents(
+		
+			String output = FilteringIndex.getLayerExtents(
 					SamplingService.layerDisplayNameToName(
 							args[1].replace('_',' ')));
 			
 			System.out.println(">" + output);
-			/*
+			
 			"layer_filter_extents <layer_name>",
 			"	print out catagories and their values, or min and max layer values"
 			};*/
@@ -177,10 +171,10 @@ public class Indexing{
 			/* print usage */
 			String [] usage = {
 				"usage:",
-				"	java -Xmx1000m -cp :postgresdriver.jar org.ala.spatial.analysis.tabulation.Indexing <command>",
+				"	java -Xmx1800m org.ala.spatial.analysis.index.Indexing <command>",
 				"",
-				"- memory usage depends on data				",
-				"- ensure postgresdriver.jar is available and with the actual filename.",
+				"- memory usage depends on data				",	
+				"- tabulation_settings.xml must be up to date",
 				"			",
 				"commands:",
 				"",
@@ -214,9 +208,8 @@ public class Indexing{
 			for(String s : usage){
 				System.out.println(s);
 			}
-		}
-			
+		}			
 		
-		System.out.println("org.ala.spatial.analysis.tabulation.Indexing: end");
+		System.out.println("org.ala.spatial.analysis.index.Indexing: end");
 	}
 }
