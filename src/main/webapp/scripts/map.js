@@ -241,6 +241,8 @@ function buildMapReal() {
         this.src="img/blank.png";
     }
 
+
+
     var container = document.getElementById("navtoolbar");
     pan = new OpenLayers.Control.Navigation({
         id: 'navpan',
@@ -291,6 +293,9 @@ function buildMapReal() {
         parent.setExtent();
         Event.stop(e);
     });
+
+    //var layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
+    // map.addLayer(layer);
 
 }
 

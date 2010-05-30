@@ -475,53 +475,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
             String uri = null;
             String filter = null;
             String entity = null;
-            MapLayer mapLayer = null;
-
-            //TODO these paramaters need to read from the config
-           /* String layerName = "ALA:occurrencesv1";
-            String sld = "species_point";
-            uri = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/wms?service=WMS";
-            String format = "image/png";
-
-            //get the entity value from the button id
-            entity = event.getTarget().getId();
-            //get the scientific name from the hidden label
-            Label ln = (Label) event.getTarget().getFellow("ln" + entity);
-            label = ln.getValue();
-
-            //get the current MapComposer instance
-            MapComposer mc = getThisMapComposer();
-
-            //contruct the filter in cql
-            filter = "species eq '" + label + "'";
-            mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Species occurrence for " + label,label, "1.1.1", uri, layerName, format, sld, filter);
-
-            //create a random colour
-
-            Random rand = new java.util.Random();
-            int r = rand.nextInt(99);
-            int g = rand.nextInt(99);
-            int b = rand.nextInt(99);
-
-
-            Color c =new Color(r,g,b);
-            String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
-            
-            mapLayer.setBlueVal(b);
-            mapLayer.setRedVal(r);
-            mapLayer.setGreenVal(g);
-            mapLayer.setDynamicStyle(true);
-            mapLayer.setEnvName("circle");
-            mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:8");
-            mc.addUserDefinedLayerToMenu(mapLayer, true);
-
-            */
-
-
-
-
-            
-            RemoteMap rm;
+           
 
             //TODO these paramaters need to read from the config
             String layerName = "ALA:occurrencesv1";
@@ -542,9 +496,6 @@ public class SpeciesNameSearchController extends UtilityComposer {
             filter = "species eq '" + label + "'";
 
             mc.addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
-            
-
-
         }
     }
 }

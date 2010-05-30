@@ -10,12 +10,9 @@ import au.org.emii.portal.config.xmlbeans.Service;
 import au.org.emii.portal.factory.DiscoveryProcessorFactory;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.net.HttpConnection;
-import java.awt.Color;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
+import au.org.emii.portal.util.GeoJSONUtilities;
 import java.util.Random;
-import org.apache.commons.io.IOUtils;
+import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -57,6 +54,22 @@ public class RemoteMapImpl implements RemoteMap {
 
     private DiscoveryProcessorFactory discoveryProcessorFactory = null;
     private HttpConnection httpConnection = null;
+
+    private GeoJSONUtilities geoJSONUtilities = null;
+
+    public GeoJSONUtilities getGeoJSONUtilities() {
+        return geoJSONUtilities;
+    }
+
+
+    @Autowired
+    public void setGeoJSONUtilities(GeoJSONUtilities geoJSONUtilities) {
+        this.geoJSONUtilities = geoJSONUtilities;
+    }
+
+
+
+
 
     public HttpConnection getHttpConnection() {
         return httpConnection;
@@ -284,7 +297,7 @@ public class RemoteMapImpl implements RemoteMap {
 
     public MapLayer createGeoJSONLayer(String label, String uri) {
         MapLayer geoJSON = new MapLayer();
-
+        
         geoJSON.setName(label);
 
         geoJSON.setUri(uri);
@@ -311,29 +324,26 @@ public class RemoteMapImpl implements RemoteMap {
         geoJSON.setEnvColour(rgbColour);
 
         geoJSON.setType(layerUtilities.GEOJSON);
-        geoJSON.setGeoJSON(getJson(uri));
-        geoJSON.setQueryable(true);
-        geoJSON.setDynamicStyle(true);
+        geoJSON.setGeoJSON(geoJSONUtilities.getJson(uri));
+
+        //lets parse the json to find out what type of feature it is
+        JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
+        int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
+
+        if (geomTypeCheck >= 0) {
+            geoJSON.setGeometryType(geoJSONUtilities.getFirstFeatureType(jo));
+            geoJSON.setQueryable(true);
+            geoJSON.setDynamicStyle(true);
+        } else {
+            geoJSON = null;
+        }
+        
         return geoJSON;
     }
 
-     public String getJson(String url) {
-            InputStream in = null;
-            String json = null;
-            URLConnection connection = null;
 
-            try {
 
-                connection = httpConnection.configureURLConnection(url);
-                in = connection.getInputStream();
-                json = IOUtils.toString(in);
-                return json;
-            } catch (IOException iox) {
-                logger.debug(iox.toString());
-            }
-            return "fail";
 
-        }
 
     /**
      * Create a MapLayer instance and test that an image can be read from

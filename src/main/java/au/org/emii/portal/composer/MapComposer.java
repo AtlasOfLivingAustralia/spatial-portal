@@ -31,18 +31,23 @@ import au.org.emii.portal.session.PortalUser;
 import au.org.emii.portal.userdata.DaoRegistry;
 import au.org.emii.portal.userdata.UserDataDao;
 import au.org.emii.portal.userdata.UserDataDaoImpl;
+import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
@@ -97,8 +102,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private SettingsSupplementary settingsSupplementary = null;
     private static final String MENU_DEFAULT_WIDTH = "menu_default_width";
     private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";
+    private static final String GEOSERVER_URL = "geoserver_url";
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
+    private String geoServer;
 
     /*
      * Autowired controls
@@ -158,8 +165,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Button saveMap;
     private Button mapSave;
     private Button zoomExtent;
+    private Button btnSearchSpecies;
     private Textbox createSavedMap;
     private Button loadSavedMapButton;
+    private Button closeLayerControls;
     private Div loadMapcont;
     private Div saveLoadMapContainer;
     private Label createSavedMapAdvice;
@@ -333,6 +342,31 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
+    public void onClick$btnSearchSpecies() {
+       //get the selected species and see if we can map it
+        //get the params from the controls
+
+        String sSearchTerm = searchSpeciesAuto.getValue();
+        String sSearchType = null;
+
+        Session session = (Session) Sessions.getCurrent();
+
+        if (rdoCommonSearch.isChecked()) {
+            searchCommonName(sSearchTerm);
+        } else {
+            mapSpeciesByName(sSearchTerm);
+        }
+
+        btnSearchSpecies.setVisible(false);
+
+    }
+
+    public void onClick$closeLayerControls() {
+        layerControls.setVisible(false);
+        activeLayersList.clearSelection();
+
+    }
+
     public void onClick$gazSearch() {
         String pName = gazetteerAuto.getValue();
         //String pName = placeName.getValue();
@@ -356,6 +390,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         gazetteerSearchWindow.setPosition("center");
         gazetteerSearchWindow.doOverlapped();
 
+    }
+
+
+    public void onSelect$searchSpeciesAuto() {
+        btnSearchSpecies.setVisible(true);
     }
 
     public void closeAddLayerDiv() {
@@ -1578,67 +1617,70 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
              * the current layer opacity
              */
             int percentage = (int) (currentSelection.getOpacity() * 100);
-            Slider slider = (Slider) layerControls.getFellow("opacitySlider");
-            slider.setCurpos(percentage);
-            opacityLabel.setValue(percentage + "%");
+                Slider slider = (Slider) layerControls.getFellow("opacitySlider");
+                slider.setCurpos(percentage);
+                opacityLabel.setValue(percentage + "%");
 
-            /*
-             * populate the list of styles
-             */
-            if (currentSelection.hasStyles() && currentSelection.isNcWmsType()) {
-                styleList.setModel(new ListModelList(currentSelection.getStyles()));
-                logger.debug("select style: " + currentSelection.getSelectedSystemStyleName());
-                styleList.setValue(currentSelection.getSelectedSystemStyleName());
-                styleControls.setVisible(true);
-            } else {
-                styleControls.setVisible(false);
+                /*
+                 * populate the list of styles
+                 */
+                if (currentSelection.hasStyles() && currentSelection.isNcWmsType()) {
+                    styleList.setModel(new ListModelList(currentSelection.getStyles()));
+                    logger.debug("select style: " + currentSelection.getSelectedSystemStyleName());
+                    styleList.setValue(currentSelection.getSelectedSystemStyleName());
+                    styleControls.setVisible(true);
+                } else {
+                    styleControls.setVisible(false);
+                }
+
+                /*
+                 * switch the transect drawing div
+                 */
+                if (currentSelection.isNcWmsType()) {
+                    transectControl.setVisible(true);
+                } else {
+                    transectControl.setVisible(false);
+                }
+
+                // show animation controls if needed
+                getAnimationControlsComposer().updateAnimationControls(currentSelection);
+
+                if (currentSelection.isDynamicStyle()) {
+                    LegendMaker lm = new LegendMaker();
+                    int red = currentSelection.getRedVal();
+                    int blue = currentSelection.getBlueVal();
+                    int green = currentSelection.getGreenVal();
+
+                    Color c = new Color(red, green, blue);
+
+                    redSlider.setCurpos(red);
+                    greenSlider.setCurpos(green);
+                    blueSlider.setCurpos(blue);
+
+                    blueLabel.setValue(String.valueOf(blue));
+                    redLabel.setValue(String.valueOf(red));
+                    greenLabel.setValue(String.valueOf(green));
+
+                    if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
+                        legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+                    } else {
+                        legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
+                    }
+                    legendImg.setWidth("50px");		//repair width and height should a WMS layer have been in use
+                    legendImg.setHeight("50px");
+                } else if (currentSelection.getSelectedStyle() != null /*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
+                        || currentSelection.getType() == LayerUtilities.WMS_1_1_0
+                        || currentSelection.getType() == LayerUtilities.WMS_1_1_1
+                        || currentSelection.getType() == LayerUtilities.WMS_1_3_0
+                        )*/) {
+                    String legendUri = currentSelection.getSelectedStyle().getLegendUri();
+                    legendImg.setSrc(legendUri);
+                    legendImg.setWidth("");
+                    legendImg.setHeight("");
+                }
+                layerControls.setVisible(true);
             }
-
-            /*
-             * switch the transect drawing div
-             */
-            if (currentSelection.isNcWmsType()) {
-                transectControl.setVisible(true);
-            } else {
-                transectControl.setVisible(false);
-            }
-
-            // show animation controls if needed
-            getAnimationControlsComposer().updateAnimationControls(currentSelection);
-
-            if (currentSelection.isDynamicStyle()) {
-                LegendMaker lm = new LegendMaker();
-                //Color c = Color.decode(currentSelection.getEnvColour());
-                int red = currentSelection.getRedVal();
-                int blue = currentSelection.getBlueVal();
-                int green = currentSelection.getGreenVal();
-
-                Color c = new Color(red, green, blue);
-
-                redSlider.setCurpos(red);
-                greenSlider.setCurpos(green);
-                blueSlider.setCurpos(blue);
-
-                blueLabel.setValue(String.valueOf(blue));
-                redLabel.setValue(String.valueOf(red));
-                greenLabel.setValue(String.valueOf(green));
-                legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
-                legendImg.setWidth("50px");		//repair width and height should a WMS layer have been in use
-                legendImg.setHeight("50px");
-            } else if (currentSelection.getSelectedStyle() != null /*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
-                    || currentSelection.getType() == LayerUtilities.WMS_1_1_0
-                    || currentSelection.getType() == LayerUtilities.WMS_1_1_1
-                    || currentSelection.getType() == LayerUtilities.WMS_1_3_0
-                    )*/) {
-                String legendUri = currentSelection.getSelectedStyle().getLegendUri();
-                legendImg.setSrc(legendUri);
-                legendImg.setWidth("");
-                legendImg.setHeight("");
-            }
-            layerControls.setVisible(true);
-        } else {
-            layerControls.setVisible(false);
-        }
+      
     }
 
     public void mapLoaded(String text) {
@@ -1846,7 +1888,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int blue = blueSlider.getCurpos();
         int green = greenSlider.getCurpos();
         Color c = new Color(red, green, blue);
-        legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+
+        MapLayer selectedLayer = this.getActiveLayersSelection(true);
+        if (selectedLayer.getGeometryType() != GeoJSONUtilities.POINT) {
+            legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+        } else {
+            legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
+        }
     }
 
     public void onScroll$blueSlider() {
@@ -1931,6 +1979,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public MapLayer addGeoJSON(String labelValue, String uriValue) {
         if (safeToPerformMapAction()) {
+            
             return this.addGeoJSONLayer(labelValue, uriValue);
 
         } else {
@@ -1947,6 +1996,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer = remoteMap.createGeoJSONLayer(label, uri);
                 if (mapLayer == null) {
                     // fail
+                    showMessage("No mappable features available");
                     logger.info("adding GEOJSON layer failed ");
                 } else {
                     mapLayer.setDisplayable(true);
@@ -2251,12 +2301,49 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onCheck$rdoCommonSearch() {
         searchSpeciesAuto.setSearchCommon(true);
         searchSpeciesAuto.getItems().clear();
+        btnSearchSpecies.setLabel("Search");
+        btnSearchSpecies.setVisible(true);
 
     }
 
     public void onCheck$rdoScientificSearch() {
         searchSpeciesAuto.setSearchCommon(false);
         searchSpeciesAuto.getItems().clear();
+        btnSearchSpecies.setLabel("Add to map");
+        btnSearchSpecies.setVisible(false);
+    }
+
+    public void searchCommonName(String searchTerm) {
+
+        Session session = (Session) Sessions.getCurrent();
+
+        session.setAttribute("searchTerm", searchTerm);
+        session.setAttribute("searchType", "common");
+
+        Window win = new Window();
+        win.detach();
+
+
+
+        win = (Window) Path.getComponent("/searchResults");
+
+        if (win == null) {
+            win = (Window) Executions.createComponents(
+                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
+        } else {
+            win.detach();
+            win = (Window) Executions.createComponents(
+                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
+        }
+
+
+        win.setTitle("Search Results for " + searchTerm);
+        win.setMaximizable(true);
+        win.setClosable(true);
+        win.setSizable(true);
+        win.setPosition("center");
+        win.doOverlapped();
+
     }
 
     public void onSearchSpecies(ForwardEvent event) {
@@ -2338,6 +2425,38 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
 
     }
+
+    public void mapSpeciesByName(String speciesName) {
+            String filter;
+            String uri;
+            String layerName = "ALA:occurrencesv1";
+            String sld = "species_point";
+
+            if (settingsSupplementary != null) {
+                geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            }
+
+            uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
+
+
+            //contruct the filter in cql
+            //have to check the Genus name is in Capitals
+            filter = "species eq '" + capitalise(speciesName.trim()) + "'";
+
+        try {
+            addGeoJSON(speciesName, uri + URLEncoder.encode(filter, "UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            logger.debug(ex.getMessage());
+        }
+            
+    }
+
+    public static String capitalise(String s) {
+        if (s.length() == 0) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
+
+
 
     /**
      * Handy getter to handle typecasting the AnimationControlsComposer
