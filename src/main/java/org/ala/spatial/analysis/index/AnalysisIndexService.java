@@ -1,6 +1,4 @@
-
-
-package org.ala.spatial.analysis.tabulation;
+package org.ala.spatial.analysis.index;
 
 /**
  * interface for indexing of point, grid and shape files for analysis

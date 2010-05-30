@@ -18,7 +18,7 @@ This tool filters all species known to the ALA by environmental and contextual d
 ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
 </panel>
 <separator/>
-<window id="win" apply="org.ala.spatial.analysis.tabulation.SpeciesListZK2" 
+<window id="win" apply="org.ala.spatial.web.zk.SpeciesListZK2" 
 title="Species List Tool" width="600px" border="normal">
 <separator/>
 <hbox>

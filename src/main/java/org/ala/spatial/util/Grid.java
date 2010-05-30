@@ -15,8 +15,7 @@ import java.io.Serializable;
  * Interface for .gri/.grd files for now
 */
 public class Grid { //  implements Serializable
-    private static final long serialVersionUID = -9131332771485308982L;
-
+   
   public Boolean byteorderLSB; // true if file is LSB (Intel)
   public int ncols, nrows;
   public double nodatavalue;

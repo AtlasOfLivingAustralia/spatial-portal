@@ -10,7 +10,7 @@ import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.ala.spatial.analysis.aloc.ALOC;
+import org.ala.spatial.analysis.service.AlocService;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
@@ -55,7 +55,7 @@ public class ALOCWSController {
             String groupCount = req.getParameter("gc");
             Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
            
-            ALOC.run(outputfile, envList, Integer.parseInt(groupCount),Long.toString(currTime));
+            AlocService.run(outputfile, envList, Integer.parseInt(groupCount),null,Long.toString(currTime));
 
             generateWorldFiles(outputpath);
 
@@ -78,11 +78,17 @@ public class ALOCWSController {
             UploadSpatialResource.loadResource(url, extra, username, password, pngZipFile);
             
             /* create style */
-            UploadSpatialResource.postCall((String) htGeoserver.get("geoserver_url") + "/rest/styles",username,password,outputfile+".xml","text/xml");
+            UploadSpatialResource.httpCall(UploadSpatialResource.POST
+            		,(String) htGeoserver.get("geoserver_url") + "/rest/styles"
+            		,username,password
+            		,outputfile+".xml","text/xml");
         	
         	/* upload style */
-            UploadSpatialResource.putCall((String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + currTime,username,password,outputfile+".sld","application/vnd.ogc.sld+xml");
-
+            UploadSpatialResource.httpCall(UploadSpatialResource.PUT
+            		,(String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + currTime
+            		,username,password
+            		,outputfile+".sld","application/vnd.ogc.sld+xml");
+            
             // if it doesn't die by now, then all is good
             // set the pid and sent the response back to the client 
             pid = "" + currTime;
@@ -112,7 +118,7 @@ public class ALOCWSController {
             Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
             SimpleRegion simpleregion = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
            
-            ALOC.run(outputfile, envList, Integer.parseInt(groupCount),simpleregion,Long.toString(currTime));
+            AlocService.run(outputfile, envList, Integer.parseInt(groupCount),simpleregion,Long.toString(currTime));
             
             generateWorldFiles(outputpath);
 
@@ -149,16 +155,17 @@ public class ALOCWSController {
         	// .xml fw.append("
         	// .2.xml fw.append(
         	
-        	/* create style */
-            UploadSpatialResource.postCall((String) htGeoserver.get("geoserver_url") + "/rest/styles",username,password,outputfile+".xml","text/xml");
+            /* create style */
+            UploadSpatialResource.httpCall(UploadSpatialResource.POST
+            		,(String) htGeoserver.get("geoserver_url") + "/rest/styles"
+            		,username,password
+            		,outputfile+".xml","text/xml");
         	
         	/* upload style */
-            UploadSpatialResource.putCall((String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + currTime,username,password,outputfile+".sld","application/vnd.ogc.sld+xml");
-        	
-        	/* assign style */
-        //    UploadSpatialResource.putCall((String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:aloc_class_" + currTime,username,password,outputfile+"_.xml","text/xml");
-            	
-            
+            UploadSpatialResource.httpCall(UploadSpatialResource.PUT
+            		,(String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + currTime
+            		,username,password
+            		,outputfile+".sld","application/vnd.ogc.sld+xml");
 
             pid = "" + currTime;
         } catch (Exception e) {

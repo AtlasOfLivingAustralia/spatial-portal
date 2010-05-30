@@ -1,21 +1,10 @@
 package org.ala.spatial.web.services;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
-import org.ala.spatial.analysis.tabulation.SamplingService;
-import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
-import org.ala.spatial.analysis.tabulation.TabulationSettings;
-import org.ala.spatial.util.Layer;
-import org.ala.spatial.util.SpatialSettings;
-import org.ala.spatial.util.Zipper;
+
+import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.service.OccurrencesService;
+import org.ala.spatial.analysis.service.SamplingService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,9 +25,7 @@ public class SamplingAutoComplete {
         try {
         	String species = req.getParameter("sp").replaceAll("_"," ");
         	
-        	SamplingService ss = new SamplingService();
-        	
-			String [] list = ss.filterSpecies(species,40);
+			String [] list = OccurrencesService.filterSpecies(species,40);
 			
 			if(list != null){			
 				StringBuffer sb = new StringBuffer();

@@ -12,48 +12,34 @@ import java.io.Serializable;
  */
 public class Layer extends Object implements Serializable {
 
-    private static final long serialVersionUID = -5934705833069133162L;
+	static final long serialVersionUID = 8072828752153146503L;
+
+    
     /**
      * table for file name
      */
     public String name;
+    
     /**
      * short text for UI
      */
     public String display_name;
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDisplay_name() {
-        return display_name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public Field[] getFields() {
-        return fields;
-    }
+    
     /**
      * detailed description for UI
      */
     public String description;
+    
     /**
      * catagory of 'contextual' or 'environmental'
      */
     public String type;
+    
     /**
      * associated table fields
      */
     public Field[] fields;
-
+    
     /**
      * Constructor for this data structure
      * @param _name table or file name as String

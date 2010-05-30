@@ -23,7 +23,7 @@ Process</b>
 ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
 </panel>
 <separator/>
-<window id="win" apply="org.ala.spatial.analysis.aloc.ALOCZK" 
+<window id="win" apply="org.ala.spatial.web.zk.ALOCZK" 
 title="ALOC Tool" width="440px" border="normal">
 <separator/>
 <hbox>

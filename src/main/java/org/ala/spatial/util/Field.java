@@ -9,15 +9,19 @@ import java.io.Serializable;
  */
 public class Field extends Object implements Serializable {
 
-    private static final long serialVersionUID = 6830737456209385909L;
+	static final long serialVersionUID = 6830737456209385909L;
+
+  
     /**
      * name of column in an associated table
      */
     public String name;
+    
     /**
      * text to display in a UI, keep it short
      */
     public String display_name;
+    
     /**
      * more detailed text on this field
      */

@@ -19,8 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
-import org.ala.spatial.analysis.tabulation.SamplingService;
+import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
@@ -267,7 +268,7 @@ public class MaxentWSController {
 
             //Layer[] _layerlist = ssets.getEnvironmentalLayers();
 
-            pathlist[j] = SamplingService.layerDisplayNameToName(nameslist[j]);
+            pathlist[j] = Layers.layerDisplayNameToName(nameslist[j]);
             /*
             for (int i = 0; i < _layerlist.length; i++) {
             if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {

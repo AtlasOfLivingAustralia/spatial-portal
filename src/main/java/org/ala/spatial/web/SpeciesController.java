@@ -3,7 +3,9 @@ package org.ala.spatial.web;
 import java.net.URLDecoder;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
-import org.ala.spatial.analysis.tabulation.SamplingService;
+
+import org.ala.spatial.analysis.service.OccurrencesService;
+import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -93,8 +95,7 @@ public class SpeciesController {
 
             name = URLDecoder.decode(name, "UTF-8");
 
-            SamplingService ss = new SamplingService();
-            String[] aslist = ss.filterSpecies(name, 40);
+            String[] aslist = OccurrencesService.filterSpecies(name, 40);
             if (aslist == null) {
                 aslist = new String[1];
                 aslist[0] = "";

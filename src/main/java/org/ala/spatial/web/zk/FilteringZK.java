@@ -1,11 +1,9 @@
-package org.ala.spatial.analysis.tabulation;
+package org.ala.spatial.web.zk;
 
 import org.zkoss.zul.*;
 import java.util.*;
-import org.ala.spatial.analysis.*;
 import org.ala.spatial.util.*;
 import org.ala.spatial.util.Grid;
-
 import java.awt.image.*;
 
 public class FilteringZK extends Window {

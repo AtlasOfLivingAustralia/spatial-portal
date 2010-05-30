@@ -2,7 +2,9 @@ package org.ala.spatial.web;
 
 import java.net.URLEncoder;
 import java.util.Iterator;
-import org.ala.spatial.analysis.tabulation.SamplingService;
+
+import org.ala.spatial.analysis.service.OccurrencesService;
+import org.ala.spatial.analysis.service.SamplingService;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.codehaus.jackson.JsonFactory;
@@ -139,8 +141,7 @@ public class SpeciesAutoComplete extends Combobox {
                 setDroppable("true");
             }
 
-            SamplingService ss = new SamplingService();
-            String[] aslist = ss.filterSpecies(val, 40);
+            String[] aslist = OccurrencesService.filterSpecies(val, 40);
             if (aslist == null) {
                 aslist = new String[1];
                 aslist[0] = "";

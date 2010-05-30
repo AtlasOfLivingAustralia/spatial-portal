@@ -10,9 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
-import org.ala.spatial.analysis.tabulation.SamplingService;
-import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
+import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.Zipper;
@@ -59,7 +60,7 @@ public class SamplingWSController {
             /* add each catagorical layer */
             /*if (layers != null) {
                 for (String s : layers) {
-                    String csv = SpeciesListIndex.getLayerExtents(s);
+                    String csv = FilteringIndex.getLayerExtents(s);
                     if (csv != null) {
                         System.out.println("csv:\n " + csv);
                     }
@@ -198,7 +199,7 @@ public class SamplingWSController {
             //Layer[] _layerlist1 = ssets.getEnvironmentalLayers();
             //Layer[] _layerlist2 = ssets.getContextualLayers();
 
-            pathlist[j] = SamplingService.layerDisplayNameToName(nameslist[j]); 
+            pathlist[j] = Layers.layerDisplayNameToName(nameslist[j]); 
             /*
             for (int i = 0; i < _layerlist1.length; i++) {
                 if (_layerlist1[i].display_name.equalsIgnoreCase(nameslist[j])) {
