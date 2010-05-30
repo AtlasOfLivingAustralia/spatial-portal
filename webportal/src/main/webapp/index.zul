@@ -368,7 +368,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </div>
 
                             <div id="layerControls" sclass="highlighted" visible="false">
-                                <button id="zoomExtent" label="Zoom to layer extent" />
+                                <hbox  width="100%">
+                                    <hbox  align="left" style="float:left">
+                                        <button id="zoomExtent" label="Zoom to layer extent" />
+                                    </hbox>
+
+                                    <hbox  align="right" style="float:right" >
+                                        <button id="closeLayerControls" label="Close Legend" />
+                                    </hbox>
+                                </hbox>           
                                 <!-- opacity-->
                                 <div id="opacityControls" >
                                     <div style="float:left;padding-top:4px" width="60px">
@@ -514,13 +522,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <tabbox id="accordionMenu"  tooltip="yes" >
                                     <tabs>
                                         <!--  facilities -->
-                                        <tab id="facilitiesTab" label="Biological" if="${! settings.disableFacility}" />
+                                        <tab id="facilitiesTab" label="Species" if="${! settings.disableFacility}" />
 
                                         <!--  regions -->
-                                        <tab id="regionsTab" label="Environmental" if="${! settings.disableRegion}" visible="false"/>
+                                        <tab id="regionsTab" label="Environment" if="${! settings.disableRegion}" visible="false"/>
 
                                         <!--  realtime -->
-                                        <tab id="realtimeTab" label="Environmental" if="${! settings.disableRealtime}"/>
+                                        <tab id="realtimeTab" label="Environment" if="${! settings.disableRealtime}"/>
 
                                         <!--  user defined -->
                                         <tab id="userTab" label="User Defined" if="${! settings.disableUserDefined}"/>
@@ -551,7 +559,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                             <comboitem label=""/>
                                                         </combobox>
 
-                                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()"/>
+                                                        <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
 
                                                         <html>
                                                             <![CDATA[ <br> ]]>
@@ -621,7 +629,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             <tabbox id="context" width="100%" mold="accordion">
                                                 <tabs>
                                                     <tab label="Search"/>
-                                                    <tab label="Browse Environmental Layers"/>
+                                                    <tab label="Browse Environment Layers"/>
                                                 </tabs>
                                                 <tabpanels>
                                                     <tabpanel>

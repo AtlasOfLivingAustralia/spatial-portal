@@ -175,7 +175,15 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     private long userMapId;
     private long maplayermetadataid;
     private boolean userDefinedLayer = false;
+    private int geometryType;
 
+    public int getGeometryType() {
+        return geometryType;
+    }
+
+    public void setGeometryType(int geometryType) {
+        this.geometryType = geometryType;
+    }
 
 
     private boolean dynamicStyle = false;
