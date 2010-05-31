@@ -15,6 +15,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.protocol.BasicHttpContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.zkoss.zhtml.Messagebox;
 
 public class AutoComplete extends Combobox {
 
@@ -26,12 +27,14 @@ public class AutoComplete extends Combobox {
         super(value); //it invokes setValue(), which inits the child comboitems
     }
 
+    @Override
     public void setValue(String value) {
         super.setValue(value);
         refresh(value); //refresh the child comboitems
     }
 
-    /** Listens what an user is entering.
+    /** Listens for what a user is entering.
+     * @param evt
      */
     public void onChanging(InputEvent evt) {
         refresh(evt.getValue());
@@ -41,17 +44,13 @@ public class AutoComplete extends Combobox {
      */
     private void refresh(String val) {
         //TODO: remove hardcoded host,
-        //HttpHost targetHost = new HttpHost("ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com", 80, "http");
         HttpHost targetHost = new HttpHost("ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com", 80, "http");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         BasicHttpContext localcontext = new BasicHttpContext();
         String searchString = val.trim().replaceAll("\\s+", "+");
 
-        
-
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
         domFactory.setNamespaceAware(true); 
-
 
         try {
             
@@ -65,21 +64,35 @@ public class AutoComplete extends Combobox {
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();
             XPathExpression expr = xpath.compile("//search/results/result/name/text()");
+            XPathExpression descriptionsExpr = xpath.compile("//search/results/result/description/text()");
+            XPathExpression linksExpr = xpath.compile("//search/results/result/@*");
 
             Object result = expr.evaluate(resultDoc, XPathConstants.NODESET);
+            NodeList descriptions = (NodeList) descriptionsExpr.evaluate(resultDoc, XPathConstants.NODESET);
+            NodeList links = (NodeList) linksExpr.evaluate(resultDoc, XPathConstants.NODESET);
+
             NodeList nodes = (NodeList) result;
           
             Iterator it = getItems().iterator();
             
-            
             for(int i=0;i<nodes.getLength();i++) {
-                //Messagebox.show(nodes.item(i).getNodeValue());
+                
                 String itemString = (String) nodes.item(i).getNodeValue();
+                String link = (String) links.item(i).getNodeValue();
+                String description = (String) descriptions.item(i).getNodeValue();
+                // Messagebox.show(link);
                 if (it != null && it.hasNext()) {
                     ((Comboitem) it.next()).setLabel(itemString);
+                    ((Comboitem) it.next()).setValue(link);
+                    ((Comboitem) it.next()).setDescription(description);
                 } else {
                     it = null;
-                    new Comboitem(itemString).setParent(this);
+                    Comboitem ci = new Comboitem();
+                    ci.setLabel(itemString);
+                    ci.setValue(link);
+                    ci.setDescription(description);
+                    ci.setParent(this);
+                    //new Comboitem(itemString).setParent(this);
                 }
 
             }
