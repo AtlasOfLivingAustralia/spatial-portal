@@ -408,6 +408,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <div align="right" style="padding-top:4px">
                                     <label id="legendLabel" value="Click symbol to edit" />
                                 </div>
+                                <div style="float:left;" width="60%">
+                                    <image id="legendImgUri" visible="false"/>
+                                </div>
 
                                 <div id="colourChooser" visible="false">
                                     <separator sclass="hr" height="10px" />

@@ -210,6 +210,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private SpeciesAutoComplete searchSpeciesAuto;
     private Div colourChooser;
     private Image legendImg;
+    private Image legendImgUri;
+    private Label legendLabel;
     private Button applyChange;
 
     public UserDataDao getUserDataManager() {
@@ -1666,17 +1668,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     } else {
                         legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
                     }
-                    legendImg.setWidth("50px");		//repair width and height should a WMS layer have been in use
-                    legendImg.setHeight("50px");
+                    legendImg.setVisible(true);
+                    legendLabel.setVisible(true);
+                    legendImgUri.setVisible(false);
                 } else if (currentSelection.getSelectedStyle() != null /*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
                         || currentSelection.getType() == LayerUtilities.WMS_1_1_0
                         || currentSelection.getType() == LayerUtilities.WMS_1_1_1
                         || currentSelection.getType() == LayerUtilities.WMS_1_3_0
                         )*/) {
                     String legendUri = currentSelection.getSelectedStyle().getLegendUri();
-                    legendImg.setSrc(legendUri);
-                    legendImg.setWidth("");
-                    legendImg.setHeight("");
+                    legendImgUri.setSrc(legendUri);
+                    legendImgUri.setVisible(true);
+                    legendImg.setVisible(false);
+                    legendLabel.setVisible(false);
+                    colourChooser.setVisible(false);
+                } else {
+                	legendImg.setVisible(false);
+                	legendImgUri.setVisible(false);
+                	legendLabel.setVisible(false);
+                	colourChooser.setVisible(false);
                 }
                 layerControls.setVisible(true);
             }
