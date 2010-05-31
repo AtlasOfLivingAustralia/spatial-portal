@@ -404,6 +404,7 @@ public class MaxentWCController extends UtilityComposer {
          *
          */
 
+        /*
         String taxon = sac.getValue();
         // check if its a common name, if so, grab the scientific name
         if (rdoCommonSearch.isChecked()) {
@@ -437,9 +438,15 @@ public class MaxentWCController extends UtilityComposer {
         String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
         mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
         mc.addUserDefinedLayerToMenu(mapLayer, true);
+        */
 
-
-
+        String taxon = sac.getValue();
+        // check if its a common name, if so, grab the scientific name
+        if (rdoCommonSearch.isChecked()) {
+            taxon = getScientificName();
+        }
+        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        mc.mapSpeciesByName(taxon);
     }
 
     private String getScientificName() {
