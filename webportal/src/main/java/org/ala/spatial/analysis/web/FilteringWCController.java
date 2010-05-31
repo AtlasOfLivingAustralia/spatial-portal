@@ -188,7 +188,9 @@ public class FilteringWCController extends UtilityComposer {
                     SPLFilter f = getSPLFilter(layername);
 
                     // Col 1: Add the layer name
-                    new Listcell(f.layer.display_name + " (Terrestrial)").setParent(li);
+                    Listcell lname = new Listcell(f.layer.display_name + " (Terrestrial)");
+                    lname.setStyle("white-space: normal;");
+                    lname.setParent(li);
 
                     // Col 2: Add the filter string and set the onClick event
                     //String filterString = getFilterString(layername);
@@ -212,7 +214,8 @@ public class FilteringWCController extends UtilityComposer {
 
                     // Col 3: Add the species count and set the onClick event
                     Listcell count = new Listcell(String.valueOf(f.count));
-                    count.setStyle("text-decoration: underline; text-align: right;");
+                    count.setStyle("text-decoration: underline; text-align: right; text-align: center");
+                    //count.setStyle("word-wrap: break-word");
                     count.setParent(li);
                     count.addEventListener("onClick", new EventListener() {
 
@@ -251,6 +254,8 @@ public class FilteringWCController extends UtilityComposer {
                     // Col 4: Add the action to remove and set onClick event
                    /* Listcell remove = new Listcell("remove");
                     remove.setStyle("text-decoration: underline;");
+                    remove.setStyle("width: 30px");
+                    remove.setStyle("text-align: center");
                     remove.setParent(li);
                     remove.addEventListener("onClick", new EventListener() {
 

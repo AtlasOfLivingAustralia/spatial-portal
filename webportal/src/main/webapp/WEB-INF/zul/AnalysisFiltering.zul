@@ -25,6 +25,11 @@ This tool filters all species known to the ALA by environmental and contextual d
             align: center;
             vertical-align: middle;
             }
+            div.z-list-header-cnt {
+                white-space: normal;
+                width: 70px; 
+            }
+
         </style>
 
         <groupbox mold="3d" style="width: 95%; padding: 5px">
