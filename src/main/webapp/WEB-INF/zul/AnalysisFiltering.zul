@@ -31,7 +31,7 @@ This tool filters all species known to the ALA by environmental and contextual d
             <caption label="Environmental and Categorical layers" />
             <vbox>
                 <label value="Select layers for inclusion" />
-                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="95%" />
+                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="90%" />
 
                 <separator spacing="20px" />
 
@@ -83,7 +83,7 @@ This tool filters all species known to the ALA by environmental and contextual d
 
                 <popup id="popup_results" width="330px">
                     <vbox>
-                        <textbox id="popup_results_seek" width="200px"></textbox>
+                        <textbox id="popup_results_seek" width="200px" visible="false"></textbox>
                         <listbox id="popup_listbox_results" width="290px" rows="15" >
 
                         </listbox>
