@@ -587,9 +587,15 @@ function redrawFeatures(feature, name, hexColour) {
                 layer.destroyFeatures();
                 layer.style = layer_style;
 
-                for(var i=0; i<features.length; ++i) {
+                /*for(var i=0; i<features.length; ++i) {
                     layer.drawFeature(features[i]);
                 }
+
+                layer.events.register("featureselected", layer, selected);
+                selectControl = new OpenLayers.Control.SelectFeature(layer);
+                map.addControl(selectControl);
+                selectControl.activate();*/
+                layer.addFeatures(features);
 
 
             }

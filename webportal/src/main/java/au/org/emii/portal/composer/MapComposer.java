@@ -2013,6 +2013,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     mapLayer.setOpacity((float) 1);
                     mapLayer.setQueryable(true);
 
+
                     activateLayer(mapLayer, true, true);
 
                     // we must tell any future tree menus that the map layer is already

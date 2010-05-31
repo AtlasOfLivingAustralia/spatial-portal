@@ -75,6 +75,8 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
         switch (objType) {
         case FEATURE:
             prototype = obj;
+            JSONObject objGeom = prototype.getJSONObject("geometry");
+            objType = type(objGeom.getString("type"));
 
             break;
 
@@ -86,9 +88,9 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
 
             try {
             prototype = obj.getJSONArray("features").getJSONObject(0);
-            //get the first feature and check that
-            JSONObject objGeom = prototype.getJSONObject("geometry");
-            objType = type(objGeom.getString("type"));
+            //get the first fe1ature and check that
+            JSONObject objGeom1 = prototype.getJSONObject("geometry");
+            objType = type(objGeom1.getString("type"));
 
             } catch (IndexOutOfBoundsException ioex) {
                 //no mappable features found
