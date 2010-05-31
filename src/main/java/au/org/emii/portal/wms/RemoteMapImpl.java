@@ -331,6 +331,7 @@ public class RemoteMapImpl implements RemoteMap {
         int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
 
         if (geomTypeCheck >= 0) {
+
             geoJSON.setGeometryType(geoJSONUtilities.getFirstFeatureType(jo));
             geoJSON.setQueryable(true);
             geoJSON.setDynamicStyle(true);

@@ -243,13 +243,6 @@ public class GazetteerSearchController extends UtilityComposer {
 
             //add feature to the map as a new layer
             mapLayer = mc.addGeoJSON(entity, gazServer + label);
-
-
-//            //zoom to the feature/layer
-//            if (mapLayer != null) {
-//                mc.getOpenLayersJavascript().zoomGeoJsonExtent(mapLayer);
-//            }
-
             
         }
     }
