@@ -53,6 +53,7 @@ import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
@@ -69,6 +70,7 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Caption;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
+import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
@@ -369,28 +371,48 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
+    /**
+     * Adds the currently selected gazetteer feature to the map
+     */
     public void onClick$gazSearch() {
-        String pName = gazetteerAuto.getValue();
+
+        Comboitem ci = gazetteerAuto.getSelectedItem();
+        String link = (String)ci.getValue();
+        String label = ci.getLabel();
+        if (settingsSupplementary != null) {
+                geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+//        try {
+//            Messagebox.show(geoServer + link);
+//        }
+//        catch (Exception e) {}
+
+        logger.debug(geoServer + link);
+
+        }
+            //add feature to the map as a new layer
+            MapLayer mapLayer = addGeoJSON(label, geoServer + link);
+
         //String pName = placeName.getValue();
         //searchGazetteer(pName);
 
-        Session session = (Session) Sessions.getCurrent();
-        session.setAttribute("searchGazetteerTerm", pName);
+//        Session session = (Session) Sessions.getCurrent();
+//        session.setAttribute("searchGazetteerTerm", pName);
 
 
-        if (gazetteerSearchWindow == null) {
-            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
-                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
-        } else {
-            gazetteerSearchWindow.detach();
-            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
-                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
-        }
 
-        gazetteerSearchWindow.setId(java.util.UUID.randomUUID().toString());
-        gazetteerSearchWindow.setMaximizable(true);
-        gazetteerSearchWindow.setPosition("center");
-        gazetteerSearchWindow.doOverlapped();
+//        if (gazetteerSearchWindow == null) {
+//            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
+//                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
+//        } else {
+//            gazetteerSearchWindow.detach();
+//            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
+//                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
+//        }
+//
+//        gazetteerSearchWindow.setId(java.util.UUID.randomUUID().toString());
+//        gazetteerSearchWindow.setMaximizable(true);
+//        gazetteerSearchWindow.setPosition("center");
+//        gazetteerSearchWindow.doOverlapped();
 
     }
 
