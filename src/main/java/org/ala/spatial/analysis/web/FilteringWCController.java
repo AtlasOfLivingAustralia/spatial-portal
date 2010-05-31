@@ -214,7 +214,7 @@ public class FilteringWCController extends UtilityComposer {
 
                     // Col 3: Add the species count and set the onClick event
                     Listcell count = new Listcell(String.valueOf(f.count));
-                    count.setStyle("text-decoration: underline; text-align: right; text-align: center");
+                    count.setStyle("text-decoration: underline; text-align: right; ");
                     //count.setStyle("word-wrap: break-word");
                     count.setParent(li);
                     count.addEventListener("onClick", new EventListener() {
