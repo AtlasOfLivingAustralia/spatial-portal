@@ -1,6 +1,9 @@
-package org.ala.spatial.analysis;
+package org.ala.spatial.analysis.method;
 
-public class PCA {
+/** 
+ * PCA to get colours
+ */
+public class Pca {
 	
 	/**
 	 * uses PCA to make colours (0-255, RGB) of data

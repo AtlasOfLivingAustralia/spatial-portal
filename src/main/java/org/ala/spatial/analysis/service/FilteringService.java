@@ -205,6 +205,32 @@ public class FilteringService implements Serializable {
     		saveTopSpeciesRecord(newspeciesrecord);
     	} else {    		
     		//TODO: incremental updates
+    		
+    		/* test for any change */
+    		LayerFilter top_filter = getTopFilter();
+    		
+    		//comparison
+    		if(top_filter.layername == new_filter.layername){
+    			if(top_filter.catagories == null && new_filter.catagories == null){
+    				//enviornmental layers check
+    				if(top_filter.minimum_value == new_filter.minimum_value 
+    						&& top_filter.maximum_value == top_filter.maximum_value){
+    					return; //no changes required
+    				}
+    			}
+    			if(top_filter.catagories != null && new_filter.catagories != null){
+    				int i;    				
+    				for (i = 0; i < top_filter.catagories.length && i < new_filter.catagories.length; i++) {
+    					if(top_filter.catagories[i] != new_filter.catagories[i]){
+    						break;
+    					}
+    				}
+    				if(i == top_filter.catagories.length && 
+    						i == new_filter.catagories.length){
+    					return; //no changes required
+    				}
+    			}
+    		}
     		popFilter();
     		updateFilter(new_filter);
     	}

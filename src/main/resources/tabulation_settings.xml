@@ -248,9 +248,9 @@
         <username>admin</username>
         <password>geoserver</password>
     </geoserver>
-    <geoserver_url>http://localhost:8080/geoserver</geoserver_url>
+    <geoserver_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver</geoserver_url>
     <geoserver_username>admin</geoserver_username>
-    <geoserver_password>geoserver</geoserver_password>
+    <geoserver_password>at1as0f0z</geoserver_password>
 
     <!--  <alaspatial_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial2/</alaspatial_url>
     -->
