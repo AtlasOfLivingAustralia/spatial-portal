@@ -18,6 +18,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Label;
@@ -165,7 +167,17 @@ public class ALOCWCController extends UtilityComposer {
 
     }
 
+    public void onDoInit(Event event) throws Exception {
+        runclassification();
+        Clients.showBusy("", false);
+    }
+
     public void onClick$btnGenerate(Event event) {
+        Clients.showBusy("Running Classification, please wait...", true);
+        Events.echoEvent("onDoInit", this, event.toString());
+    }
+
+    public void runclassification() {
         try {
             StringBuffer sbenvsel = new StringBuffer();
 

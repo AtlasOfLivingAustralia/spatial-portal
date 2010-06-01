@@ -32,6 +32,8 @@ import org.xml.sax.SAXException;
 
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
@@ -106,8 +108,11 @@ public class SelectionController extends UtilityComposer {
      */
     public void onChange$selectionGeom(Event event) {
         try {
-            displayGeom.setValue(selectionGeom.getValue());
-            wfsQueryBBox(selectionGeom.getValue());
+            Clients.showBusy("Filtering species, please wait...", true);
+            Events.echoEvent("onDoInit", this, selectionGeom.getValue());
+
+            //displayGeom.setValue(selectionGeom.getValue());
+            //wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
 
@@ -115,12 +120,22 @@ public class SelectionController extends UtilityComposer {
 
     public void onChange$boxGeom(Event event) {
         try {
-            displayGeom.setValue(boxGeom.getValue());
-            wfsQueryBBox(boxGeom.getValue());
+            Clients.showBusy("Filtering species, please wait...", true);
+            Events.echoEvent("onDoInit", this, boxGeom.getValue());
+            
+            //displayGeom.setValue(boxGeom.getValue());
+            //wfsQueryBBox(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
         }
 
+    }
+
+    public void onDoInit(Event event) throws Exception {
+        String geomData = (String) event.getData();
+        displayGeom.setValue(geomData);
+        wfsQueryBBox(geomData);
+        Clients.showBusy("", false);
     }
 
     /**
