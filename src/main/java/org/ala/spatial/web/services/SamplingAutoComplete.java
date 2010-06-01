@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.util.TabulationSettings;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,6 +24,8 @@ public class SamplingAutoComplete {
     @ResponseBody
     String species(HttpServletRequest req) {
         try {
+            TabulationSettings.load();
+
         	String species = req.getParameter("sp").replaceAll("_"," ");
         	
 			String [] list = OccurrencesService.filterSpecies(species,40);

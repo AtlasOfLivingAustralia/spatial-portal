@@ -7,6 +7,7 @@ import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
+import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -92,6 +93,8 @@ public class SpeciesController {
         try {
 
             System.out.println("Looking up names for: " + name);
+
+            TabulationSettings.load(); 
 
             name = URLDecoder.decode(name, "UTF-8");
 

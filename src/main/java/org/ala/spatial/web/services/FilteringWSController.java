@@ -26,6 +26,7 @@ import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
+import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Zipper;
 //import org.jboss.serial.io.JBossObjectInputStream;
 //import org.jboss.serial.io.JBossObjectOutputStream;
@@ -57,6 +58,8 @@ public class FilteringWSController {
     @ResponseBody
     String doInit(HttpServletRequest req) {
         try {
+            TabulationSettings.load();
+
             String pid = "";
             long currTime = System.currentTimeMillis();
             pid = "" + currTime;
