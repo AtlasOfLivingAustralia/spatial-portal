@@ -23,6 +23,7 @@ import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SpatialSettings;
+import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
 import org.springframework.stereotype.Controller;
@@ -46,6 +47,8 @@ public class MaxentWSController {
     String process(HttpServletRequest req) {
 
         try {
+
+            TabulationSettings.load(); 
 
 
             HttpSession session = req.getSession(true);

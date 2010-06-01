@@ -15,6 +15,7 @@ import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
+import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
 import org.springframework.stereotype.Controller;
@@ -42,6 +43,8 @@ public class ALOCWSController {
     String process(HttpServletRequest req) {
         String pid = "";
         try {
+            TabulationSettings.load();
+
             long currTime = System.currentTimeMillis();
 
             String currentPath = req.getSession(true).getServletContext().getRealPath("/");
@@ -104,6 +107,8 @@ public class ALOCWSController {
     String processgeo(HttpServletRequest req) {
         String pid = "";
         try {
+            TabulationSettings.load();
+            
             long currTime = System.currentTimeMillis();
 
             String currentPath = req.getSession(true).getServletContext().getRealPath("/");
