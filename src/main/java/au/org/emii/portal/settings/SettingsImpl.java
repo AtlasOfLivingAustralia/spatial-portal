@@ -214,6 +214,10 @@ public class SettingsImpl implements Settings {
      */
     private boolean disableRegion = false;
     /**
+     * Disable the gazetteer tab (left menu)
+     */
+    private boolean disableGazetteer = false;
+    /**
      * Disable the facility tab (left menu)
      */
     private boolean disableFacility = false;
@@ -581,6 +585,16 @@ public class SettingsImpl implements Settings {
     @Override
     public void setDisableRegion(boolean disableRegion) {
         this.disableRegion = disableRegion;
+    }
+
+    @Override
+    public boolean isDisableGazetteer() {
+        return disableGazetteer;
+    }
+
+    @Override
+    public void setDisableGazetteer(boolean disableGazetteer) {
+        this.disableGazetteer = disableGazetteer;
     }
 
     @Override
