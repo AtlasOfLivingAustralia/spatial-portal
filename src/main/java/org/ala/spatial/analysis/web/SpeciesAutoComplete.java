@@ -94,13 +94,16 @@ public class SpeciesAutoComplete extends Combobox {
             if (aslist.length > 0) {
 
                 for (int i = 0; i < aslist.length; i++) {
+                    String taxon = aslist[i];
+                    //taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1).toLowerCase();
+
                     Comboitem myci = null;
                     if (it != null && it.hasNext()) {
                         myci = ((Comboitem) it.next());
-                        myci.setLabel(aslist[i]);
+                        myci.setLabel(taxon);
                     } else {
                         it = null;
-                        myci = new Comboitem(aslist[i]);
+                        myci = new Comboitem(taxon);
                         myci.setParent(this);
                     }
                     //myci.setDescription("description goes here... ");
@@ -207,13 +210,16 @@ public class SpeciesAutoComplete extends Combobox {
                     for (int i = 0; i < aslist.length; i++) {
                         String[] spVal = aslist[i].split("/");
 
+                        String taxon = spVal[0].trim();
+                        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1).toLowerCase();
+
                         Comboitem myci = null;
                         if (it != null && it.hasNext()) {
                             myci = ((Comboitem) it.next());
-                            myci.setLabel(spVal[0].trim());
+                            myci.setLabel(taxon);
                         } else {
                             it = null;
-                            myci = new Comboitem(spVal[0].trim());
+                            myci = new Comboitem(taxon);
                             myci.setParent(this);
                         }
                         myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim());
