@@ -527,6 +527,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <!--  facilities -->
                                         <tab id="facilitiesTab" label="Species" if="${! settings.disableFacility}" />
 
+					<!-- Gazetteer -->
+					<tab id="gazetteerTab" label="Gazetteer" if="${! settings.disableGazetteer}"/>
+
                                         <!--  regions -->
                                         <tab id="regionsTab" label="Environment" if="${! settings.disableRegion}" visible="false"/>
 
@@ -605,6 +608,27 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                                         </tabpanel>
+					
+					<!--Gazetteer -->
+					<tabpanel zclass="tabpanel_cnt" id="gazetteerTabPanel">
+						 <div>
+                                                            <vbox width="100%">
+                                                                <label value="Enter Place Name" />
+                                                                <hbox>
+                                                                    <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                                    <button id="gazSearch" label="Add to Map" />
+                                                                    <label id="resultGaz" />
+                                                                </hbox>
+                                                                <listbox id="gazetteerResults" fixedLayout="true" visible="false">
+                                                                    <listhead>
+                                                                        <listheader label="Name"/>
+                                                                        <listheader label="View" />
+                                                                    </listhead>
+                                                                </listbox>
+                                                            </vbox>
+                                                        </div>
+
+					</tabpanel>
 
                                         <!--  Regions -->
                                         <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel" visible="false">
@@ -625,36 +649,14 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </div>
 
                                         </tabpanel>
-
-                                        <!--  realtime -->
+				                                        <!--  realtime -->
                                         <tabpanel zclass="tabpanel_cnt" id="realtimeTabPanel">
 
                                             <tabbox id="context" width="100%" mold="accordion">
                                                 <tabs>
-                                                    <tab label="Search"/>
                                                     <tab label="Browse Environment Layers"/>
                                                 </tabs>
                                                 <tabpanels>
-                                                    <tabpanel>
-                                                        <div>
-                                                            <vbox width="100%">
-                                                                <label value="Enter Place Name" />
-                                                                <hbox>
-                                                                    <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
-                                                                    <button id="gazSearch" label="Add to Map" />
-                                                                    <label id="resultGaz" />
-                                                                </hbox>
-                                                                <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                                    <listhead>
-                                                                        <listheader label="Name"/>
-                                                                        <listheader label="View" />
-                                                                    </listhead>
-                                                                </listbox>
-                                                            </vbox>
-                                                        </div>
-
-
-                                                    </tabpanel>
                                                     <tabpanel>
 
 

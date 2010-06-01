@@ -82,9 +82,10 @@ public class AutoComplete extends Combobox {
                 String description = (String) descriptions.item(i).getNodeValue();
                 // Messagebox.show(link);
                 if (it != null && it.hasNext()) {
-                    ((Comboitem) it.next()).setLabel(itemString);
-                    ((Comboitem) it.next()).setValue(link);
-                    ((Comboitem) it.next()).setDescription(description);
+                    Comboitem ci = (Comboitem) it.next();
+                    ci.setLabel(itemString);
+                    ci.setValue(link);
+                    ci.setDescription(description);
                 } else {
                     it = null;
                     Comboitem ci = new Comboitem();
