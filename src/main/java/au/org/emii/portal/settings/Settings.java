@@ -133,6 +133,10 @@ public interface Settings {
 
     public void setDisableRegion(boolean disableRegion);
 
+    public boolean isDisableGazetteer();
+
+    public void setDisableGazetteer(boolean disableGazetteer);
+
     public boolean isDisableSearch();
 
     public void setDisableSearch(boolean disableSearch);
