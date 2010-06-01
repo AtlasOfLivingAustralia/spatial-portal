@@ -2,7 +2,6 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import java.net.URL;
@@ -12,7 +11,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Vector;
 
 //import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
@@ -29,6 +27,8 @@ import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkmax.zul.Filedownload;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Html;
@@ -334,7 +334,17 @@ public class SamplingWCController extends UtilityComposer {
         return false;
     }
 
+    public void onDoInit(Event event) throws Exception {
+        runsampling();
+        Clients.showBusy("", false);
+    }
+
     public void onClick$btnPreview(Event event) {
+        Clients.showBusy("Running Sampling, please wait...", true);
+        Events.echoEvent("onDoInit", this, event.toString());
+    }
+
+    public void runsampling() {
         try {
 
             String taxon = sac.getValue();

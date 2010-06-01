@@ -2,7 +2,6 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import java.net.URLEncoder;
@@ -10,7 +9,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONArray;
@@ -28,7 +26,9 @@ import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.InputEvent;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Label;
@@ -36,6 +36,7 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Tabbox;
@@ -227,7 +228,17 @@ public class MaxentWCController extends UtilityComposer {
         }
     }
 
+    public void onDoInit(Event event) throws Exception {
+        runmaxent();
+        Clients.showBusy("", false);
+    }
+
     public void onClick$startmaxent(Event event) {
+        Clients.showBusy("Running Maxent, please wait...", true);
+        Events.echoEvent("onDoInit", this, event.toString());
+    }
+
+    public void runmaxent() {
         try {
             String taxon = sac.getValue();
             // check if its a common name, if so, grab the scientific name
@@ -296,30 +307,33 @@ public class MaxentWCController extends UtilityComposer {
             String[] pid = maxentresponse[1].split(":");
             String[] info = maxentresponse[2].split(":");
 
-            String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid[1] + "&styles=alastyles&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
-
-            String legendurl = geoServer
-                    + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
-                    + "&LAYER=ALA:species_" + pid[1]
-                    + "&STYLE=alastyles";
-
-            System.out.println(legendurl);
-
-            //get the current MapComposer instance
-            //MapComposer mc = getThisMapComposer();
-
-            mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5, "", legendurl);
-
             this.status.setValue("Status: " + status[1]);
             if (status[1].equalsIgnoreCase("success")) {
+                String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid[1] + "&styles=alastyles&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
+
+                String legendurl = geoServer
+                        + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                        + "&LAYER=ALA:species_" + pid[1]
+                        + "&STYLE=alastyles";
+
+                System.out.println(legendurl);
+
+                //get the current MapComposer instance
+                //MapComposer mc = getThisMapComposer();
+
+                mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5, "", legendurl);
+
                 if (info.length == 2) {
                     infourl.setValue("Show process information");
                     showInfoWindow(info[1]);
                 }
-            }
 
-            infourl.setValue(info[1]);
-            btnInfo.setVisible(true);
+                infourl.setValue(info[1]);
+                btnInfo.setVisible(true);
+
+            } else {
+                Messagebox.show("Unable to process Maxent", "Maxent", Messagebox.OK, Messagebox.INFORMATION);
+            }
 
             //Messagebox.show(msg, "Maxent", Messagebox.OK, Messagebox.INFORMATION);
         } catch (Exception e) {
@@ -408,7 +422,7 @@ public class MaxentWCController extends UtilityComposer {
         String taxon = sac.getValue();
         // check if its a common name, if so, grab the scientific name
         if (rdoCommonSearch.isChecked()) {
-            taxon = getScientificName();
+        taxon = getScientificName();
         }
         taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
         String uri = null;
@@ -438,7 +452,7 @@ public class MaxentWCController extends UtilityComposer {
         String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
         mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
         mc.addUserDefinedLayerToMenu(mapLayer, true);
-        */
+         */
 
         String taxon = sac.getValue();
         // check if its a common name, if so, grab the scientific name

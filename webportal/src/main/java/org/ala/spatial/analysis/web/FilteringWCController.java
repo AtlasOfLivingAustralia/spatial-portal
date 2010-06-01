@@ -3,10 +3,8 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -19,23 +17,19 @@ import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.ArrayUtils;
-import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.ForwardEvent;
-import org.zkoss.zk.ui.event.InputEvent;
-import org.zkoss.zk.ui.event.KeyEvent;
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Label;
-import org.zkoss.zul.ListModelArray;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
-import org.zkoss.zul.Popup;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
 import org.zkoss.zul.Textbox;
@@ -851,106 +845,6 @@ public class FilteringWCController extends UtilityComposer {
     }
      *
      */
-    public void onChanging$prs(ForwardEvent event) {
-        //seek results list
-        event.stopPropagation();
-        System.out.print("Searching for ");
-        System.out.print(event.getData());
-        System.out.print(" - " + event.toString());
-        System.out.print(" - " + event.getTarget().getId());
-        System.out.println(" = " + prs.getRawValue());
-
-        String search_for = (String)event.getData();
-
-        Event orig = event.getOrigin();
-        System.out.println(orig.isPropagatable());
-	//because the event may be forwarded multi times,
-	//therefore we have to use while loop
-	while (orig instanceof ForwardEvent) {
-		orig = ((ForwardEvent) orig).getOrigin();
-	}
-	if (orig instanceof KeyEvent) {
-		//onCtrlKeys((KeyEvent) orig);
-            System.out.println("onCtrlKeys");
-            onChanging$prs((ForwardEvent) orig);
-	} else {
-		System.out.println("not ForwardEvent");
-	}
-
-
-        /*
-        if (search_for.length() > 0) {
-            search_for = search_for.toLowerCase();
-        }
-
-        int pos = java.util.Arrays.binarySearch(results, search_for);
-        System.out.println("seek to: " + pos + " " + search_for);
-        if (pos < 0) {
-            pos = (pos * -1) - 1;
-        }
-        seekToResultsPosition(pos);
-         *
-         */
-    }
-
-    public void onChange$prs(Event event) {
-        System.out.print("onChange for ");
-        System.out.print(event.getData());
-        System.out.print(" - " + event.toString());
-        System.out.print(" - " + event.getTarget().getId());
-        System.out.println(" = " + prs.getRawText());
-
-    }
-
-    public void onChanging$popup_results_seek(InputEvent event) {
-        //seek results list
-        System.out.print("Searching for ");
-        System.out.println(event.getValue());
-        String search_for = event.getValue();
-        /*
-        //if(search_for.length() > 1){
-        //	search_for = search_for.substring(0,1).toUpperCase() + search_for.substring(1,search_for.length()).toLowerCase();
-	    //}else
-        if (search_for.length() > 0) {
-        search_for = search_for.toLowerCase();
-        }
-
-        int pos = java.util.Arrays.binarySearch(results, search_for);
-        System.out.println("seek to: " + pos + " " + search_for);
-        if (pos < 0) {
-        pos = (pos * -1) - 1;
-        }
-        seekToResultsPosition(pos);
-         * 
-         */
-    }
-
-   /* private void seekToResultsPosition(int newpos) {
-        results_pos = newpos;
-
-        if (results_pos < 0) {
-            results_pos = 0;
-        }
-        if (results_pos >= results.length) {
-            results_pos = results.length - 1;
-        }
-
-        int sz = results_pos + 15;
-        if (results.length < sz) {
-            sz = results.length;
-        }
-
-        String[] list = new String[sz - results_pos];
-        int i;
-        for (i = results_pos; i < sz; i++) {
-            list[i - results_pos] = results[i];
-        }
-
-        ListModelArray slm = new ListModelArray(list, true);
-
-        popup_listbox_results.setModel(slm);
-        results_label.setValue(results_pos + " to " + (sz) + " of " + results.length);
-    }*/
 
     private void serverFilter(boolean commit) {
         double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
@@ -1108,7 +1002,17 @@ public class FilteringWCController extends UtilityComposer {
     	}
     }
 
-    private void applyFilter() {
+    public void onLater(Event event) throws Exception {
+        applyFilterEvented();
+        Clients.showBusy("", false);
+    }
+
+    public void applyFilter() {
+        Clients.showBusy("Applying filter, please wait...", true);
+        Events.echoEvent("onLater", this, null);
+    }
+
+    private void applyFilterEvented() {
         /* two cases: catagorical and continous */
         if (popup_filter.catagory_names == null) {
             try {
