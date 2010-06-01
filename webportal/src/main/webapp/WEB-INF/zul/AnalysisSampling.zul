@@ -21,7 +21,7 @@ This tool samples environmental and contextual data layers at locations defined 
     <window use="org.ala.spatial.analysis.web.SamplingWCController" apply="org.ala.spatial.analysis.web.SamplingWCController" style="padding: 10px">
 
         <style>
-            .z-list-group-inner div input {
+            .z-list-header-cnt input, .z-list-group-inner div input {
             display: none;
             }
 
@@ -88,7 +88,7 @@ This tool samples environmental and contextual data layers at locations defined 
                 </hbox>
                 <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="100%" >
                     <listhead>
-                        <listheader label="Select all layers" />
+                        <listheader label="Select layers" />
                     </listhead>
 
                 </listbox>

@@ -456,6 +456,7 @@ public class FilteringWCController extends UtilityComposer {
          * 
          */
 
+        System.out.println("filtering.removing layer: " + "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount());
         mc.removeLayer("Filtering - " + pid + " - layer " + lbSelLayers.getItemCount());
 
         selectedLayers.remove(label);
