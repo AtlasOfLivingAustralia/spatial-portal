@@ -1293,7 +1293,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 openLayersJavascript.execute(
                         openLayersJavascript.iFrameReferences
                         + script.toString());
-                //Clients.evalJavaScript("map.removeLayer('" + label + "');");
+                // openLayersJavascript.removeMapLayerNow(mapLayer);
+                // Clients.evalJavaScript("alert('removing layer: " + label + " ');");
+                // Clients.evalJavaScript("map.removeLayer(map.getLayersByName('"+label+"')[0])");
             } else {
                 // fail
                 showMessage(languagePack.getLang("wms_layer_remove_error"));
@@ -2469,6 +2471,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             }
 
+            // geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
             uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
 
 
