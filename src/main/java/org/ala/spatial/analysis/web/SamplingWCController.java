@@ -340,7 +340,7 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     public void onClick$btnPreview(Event event) {
-        Clients.showBusy("Running Sampling, please wait...", true);
+        Clients.showBusy("Sampling...", true);
         Events.echoEvent("onDoInit", this, event.toString());
     }
 

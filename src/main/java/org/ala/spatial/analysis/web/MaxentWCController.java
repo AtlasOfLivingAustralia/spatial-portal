@@ -234,7 +234,7 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     public void onClick$startmaxent(Event event) {
-        Clients.showBusy("Running Maxent, please wait...", true);
+        Clients.showBusy("Maxent running...", true);
         Events.echoEvent("onDoInit", this, event.toString());
     }
 
