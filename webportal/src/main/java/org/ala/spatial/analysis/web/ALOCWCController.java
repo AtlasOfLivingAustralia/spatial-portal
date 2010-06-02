@@ -173,7 +173,7 @@ public class ALOCWCController extends UtilityComposer {
     }
 
     public void onClick$btnGenerate(Event event) {
-        Clients.showBusy("Running Classification, please wait...", true);
+        Clients.showBusy("Classification running...", true);
         Events.echoEvent("onDoInit", this, event.toString());
     }
 
@@ -245,7 +245,9 @@ public class ALOCWCController extends UtilityComposer {
             //MapComposer mc = getThisMapComposer();
 
             //mc.addWMSLayer("ALOC " + slist, mapurl, (float) 0.5);
-            mc.addWMSLayer("ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count, mapurl, (float) 0.5, "", legendurl);
+            //String label = "ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count;
+            String label = "Classification #" + generation_count + " - " + groupCount.getValue() + " groups";
+            mc.addWMSLayer(label, mapurl, (float) 0.5, "", legendurl);
             generation_count++;
 
         } catch (Exception ex) {

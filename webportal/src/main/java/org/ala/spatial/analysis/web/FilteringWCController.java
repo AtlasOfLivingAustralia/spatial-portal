@@ -1008,7 +1008,7 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     public void applyFilter() {
-        Clients.showBusy("Applying filter, please wait...", true);
+        Clients.showBusy("Applying filter...", true);
         Events.echoEvent("onLater", this, null);
     }
 
@@ -1063,6 +1063,7 @@ public class FilteringWCController extends UtilityComposer {
 
     private void loadMap(String filename) {
         String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
+        label = selectedLayers.get(selectedLayers.size()-1); 
         String uri = satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
         float opacity = Float.parseFloat("0.75");
 
