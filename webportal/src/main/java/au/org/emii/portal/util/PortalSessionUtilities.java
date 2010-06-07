@@ -40,6 +40,9 @@ public class PortalSessionUtilities {
     private final static String LAYER_TAB = "LAYER";
     private final static String LINK_TAB = "LINK";
     private final static String SEARCH_TAB = "SEARCH";
+    private final static String AREA_TAB = "AREA";
+    private final static String MAP_TAB = "MAP";
+    private final static String START_TAB = "START";
     private final static String LAYER_FACILITY_TAB = "FACILITY";
     private final static String LAYER_REGION_TAB = "REGION";
     private final static String LAYER_REALTIME_TAB = "REALTIME";
@@ -334,9 +337,15 @@ public class PortalSessionUtilities {
         if (str.equals(LAYER_TAB)) {
             tab = PortalSession.LAYER_TAB;
         } else if (str.equals(LINK_TAB)) {
-            tab = PortalSession.LINK_TAB;
+            tab = PortalSession.START_TAB;
         } else if (str.equals(SEARCH_TAB)) {
             tab = PortalSession.SEARCH_TAB;
+        } else if (str.equals(AREA_TAB)) {
+            tab = PortalSession.AREA_TAB;
+        } else if (str.equals(MAP_TAB)) {
+            tab = PortalSession.MAP_TAB;
+        } else if (str.equals(START_TAB)) {
+            tab = PortalSession.START_TAB;
         } else {
             tab = PortalSession.UNKNOWN;
         }

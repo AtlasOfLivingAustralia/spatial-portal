@@ -42,6 +42,9 @@ public class PortalSession implements Cloneable, Serializable {
     public final static int LAYER_TAB = 0;
     public final static int SEARCH_TAB = 1;
     public final static int LINK_TAB = 2;
+    public final static int START_TAB = 3;
+    public final static int AREA_TAB = 4;
+    public final static int MAP_TAB = 5;
 
     /*
      * User info for logged in users - just gets set to a new instance

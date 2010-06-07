@@ -120,6 +120,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Tab layerNavigationTab;
     private Tab searchNavigationTab;
     private Tab linkNavigationTab;
+    private Tab areaNavigationTab;
+    private Tab startNavigationTab;
+    private Tab mapNavigationTab;
     private Tab facilitiesTab;
     private Tab regionsTab;
     private Tab userTab;
@@ -128,6 +131,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Component layerNavigationTabContent;
     private Component searchNavigationTabContent;
     private Component linkNavigationTabContent;
+    private Component mapNavigationTabContent;
+    private Component areaNavigationTabContent;
+    private Component startNavigationTabContent;
     private Tabpanel facilitiesTabPanel;
     private Tabpanel regionsTabPanel;
     private Tabpanel userTabPanel;
@@ -215,6 +221,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Image legendImgUri;
     private Label legendLabel;
     private Button applyChange;
+    private Tab filteringTab;
+    private Tab selectionTab;
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -363,6 +371,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         btnSearchSpecies.setVisible(false);
 
+    }
+
+    public void onClick$filteringTab() {
+        if (filteringTab.isSelected()) {
+            selectionTab.setSelected(true);
+        } else {
+            filteringTab.setSelected(true);
+        }
     }
 
     public void onClick$closeLayerControls() {
@@ -1284,18 +1300,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (safeToPerformMapAction()) {
             MapLayer mapLayer = getMapLayer(label);
             if (mapLayer != null) {
-                System.out.println("removing layer " + label);
-                String script = openLayersJavascript.removeMapLayer(mapLayer);
-                System.out.println("remove response: " + script);
-                deactiveLayer(mapLayer, true, true);
-                updateLayerControls();
-                updateUserDefinedView();
-                openLayersJavascript.execute(
-                        openLayersJavascript.iFrameReferences
-                        + script.toString());
-                // openLayersJavascript.removeMapLayerNow(mapLayer);
-                // Clients.evalJavaScript("alert('removing layer: " + label + " ');");
-                // Clients.evalJavaScript("map.removeLayer(map.getLayersByName('"+label+"')[0])");
+                deactiveLayer(mapLayer, true, false);
+
             } else {
                 // fail
                 showMessage(languagePack.getLang("wms_layer_remove_error"));
@@ -1537,6 +1543,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             case PortalSession.LINK_TAB:
                 component = linkNavigationTab;
                 break;
+            case PortalSession.AREA_TAB:
+                component = areaNavigationTab;
+                break;
+            case PortalSession.MAP_TAB:
+                component = mapNavigationTab;
+                break;
+            case PortalSession.START_TAB:
+                component = startNavigationTab;
+                break;
             default:
                 logger.warn("no navigation tab found for " + tab);
         }
@@ -1557,6 +1572,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             case PortalSession.LINK_TAB:
                 component = linkNavigationTabContent;
                 break;
+            case PortalSession.AREA_TAB:
+                component = areaNavigationTabContent;
+                break;
+            case PortalSession.MAP_TAB:
+                component = mapNavigationTabContent;
+                break;
+            case PortalSession.START_TAB:
+                component = startNavigationTabContent;
+                break;
             default:
                 logger.warn("no navigation tab content found for " + tab);
         }
@@ -1566,6 +1590,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onClick$layerNavigationTab() {
         activateNavigationTab(PortalSession.LAYER_TAB);
+    }
+
+    public void onClick$areaNavigationTab() {
+        activateNavigationTab(PortalSession.AREA_TAB);
+    }
+
+    public void onClick$mapNavigationTab() {
+        activateNavigationTab(PortalSession.MAP_TAB);
+    }
+
+    public void onClick$startNavigationTab() {
+        activateNavigationTab(PortalSession.START_TAB);
     }
 
     public void onClick$searchNavigationTab() {
