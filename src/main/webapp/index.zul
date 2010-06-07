@@ -2,7 +2,7 @@
 <?component name="addLayer" macro-uri="/WEB-INF/zul/AddLayer.zul"?>
 <?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
 <?component name="leftMenuAnalysis" macro-uri="/WEB-INF/zul/Analysis.zul"?>
-<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/LeftMenuLinks.zul"?>
+<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/leftMenuLinks.zul"?>
 <?component name="featureInfo" macro-uri="/WEB-INF/zul/featureInfo.zul"?>
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
 <?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"?>
