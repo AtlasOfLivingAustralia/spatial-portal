@@ -1,11 +1,13 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?component name="addLayer" macro-uri="/WEB-INF/zul/AddLayer.zul"?>
 <?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
-<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/Analysis.zul"?>
+<?component name="leftMenuAnalysis" macro-uri="/WEB-INF/zul/Analysis.zul"?>
+<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/LeftMenuLinks.zul"?>
 <?component name="featureInfo" macro-uri="/WEB-INF/zul/featureInfo.zul"?>
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
 <?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"?>
-
+<?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
+<?component name="filteringForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
 
 
 <?page id="MapZul" title="${portalNaming.portalName}" cacheable="false"
@@ -114,9 +116,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             }
 
             function setPolygonGeometry(geometry) {
-		 if (setSelectionGeometry != undefined) {
-            		setSelectionGeometry(geometry);
-            	}
+            if (setSelectionGeometry != undefined) {
+            setSelectionGeometry(geometry);
+            }
 
 
             }
@@ -336,21 +338,114 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </div>
 
                             <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
-                                <tabs>
-                                    <!--  layers -->
-                                    <tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />
-
-                                    <!--  links -->
+                                <tabs>                                  
+                                    <tab id="startNavigationTab" label="Intro" />
+                                    <tab id="mapNavigationTab" label="Map" />
+                                    <tab id="areaNavigationTab" label="Area" />
                                     <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
-
-                                    <!--  search  -->
-                                    <tab id="searchNavigationTab" label="Search" if="${! settings.disableSearch}"/>
-
+                                    <tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />
                                 </tabs>
                             </tabbox>
                         </div>
-                        <div id="layerNavigationTabContent"
-                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}">
+
+                        <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
+                            <label sclass="h2 title" value="The Atlas of Living Australia Mapping Toolkit" />
+                            <label value="here is a lot of text desribibg our fabulous tool" />
+                            
+                            <leftMenuLinks id="leftMenuLinks" />
+
+
+
+                        </div>
+                        <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
+                            <tabbox mold="accordion">
+                                <tabs>
+                                    <tab label="Map species occurrences" />
+                                    <tab label="Map gazetteer features" />
+                                </tabs>
+                                <tabpanels>
+                                    <tabpanel>
+                                        <div>
+                                        <label>Search by</label>
+                                        <radiogroup id="rdgNameSearchType" >
+                                            <hbox>
+                                                <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
+                                                <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
+                                            </hbox>
+                                        </radiogroup>
+                                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                                            <comboitem label=""/>
+                                        </combobox>
+
+                                        <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
+
+                                        <html>
+                                            <![CDATA[ <br> ]]>
+                                        </html>
+                                        <html>
+                                            <![CDATA[ <br> ]]>
+                                        </html>
+                                        </div>
+                                    </tabpanel>
+                                    <tabpanel>
+                                         <div>
+                                                <vbox width="100%">
+                                                    <label value="Enter Place Name" />
+                                                    <hbox>
+                                                        <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                        <button id="gazSearch" label="Add to Map" />
+                                                        <label id="resultGaz" />
+                                                    </hbox>
+                                                    <listbox id="gazetteerResults" fixedLayout="true" visible="false">
+                                                        <listhead>
+                                                            <listheader label="Name"/>
+                                                            <listheader label="View" />
+                                                        </listhead>
+                                                    </listbox>
+                                                </vbox>
+                                            </div>
+                                    </tabpanel>
+
+
+                                </tabpanels>
+
+
+
+                            </tabbox>
+
+
+
+
+
+
+
+                        </div>
+                        <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
+                            <label sclass="h2 title" value="Define your area of interest" />
+
+                            <tabbox  mold="accordion">
+                                <tabs>
+                                    <!--  filtering -->
+                                    <tab id="filteringTab" label="Filtering" />
+
+                                    <!-- selection tools -->
+                                    <tab id="selectionTab" label="Selection"  />
+                                </tabs>
+                                <tabpanels>
+                                    <tabpanel >
+                                        <filteringForm id="ff" />
+                                    </tabpanel>
+                                    <tabpanel>
+                                        <selectionForm id="sf" />
+                                    </tabpanel>
+                                </tabpanels>
+                            </tabbox>
+
+
+                        </div>
+
+                        <div id="layerNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}">
+
 
                             <label sclass="h2 title" value="Layer Selector" />
 
@@ -376,7 +471,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <hbox  align="right" style="float:right" >
                                         <button id="closeLayerControls" label="Close Legend" />
                                     </hbox>
-                                </hbox>           
+                                </hbox>
                                 <!-- opacity-->
                                 <div id="opacityControls" >
                                     <div style="float:left;padding-top:4px" width="60px">
@@ -414,7 +509,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                 <div id="colourChooser" visible="false">
                                     <separator sclass="hr" height="10px" />
-                                    
+
                                     <div style="float:left;padding-top:4px" width="60px">
                                         <label value="Red: " sclass="h3" />
                                     </div>
@@ -527,9 +622,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <!--  facilities -->
                                         <tab id="facilitiesTab" label="Species" if="${! settings.disableFacility}" />
 
-					<!-- Gazetteer -->
-					<tab id="gazetteerTab" label="Gazetteer" if="${! settings.disableGazetteer}"/>
-
+                                        
                                         <!--  regions -->
                                         <tab id="regionsTab" label="Environment" if="${! settings.disableRegion}" visible="false"/>
 
@@ -550,29 +643,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </tabs>
                                                 <tabpanels>
                                                     <tabpanel>
-                                                        <label>Search by</label>
-                                                        <radiogroup id="rdgNameSearchType" >
-                                                            <hbox>
-                                                                <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
-                                                                <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
-                                                            </hbox>
-                                                        </radiogroup>
-                                                        <!--<textbox id="txtSearchSpecies" forward="onOK=onSearchSpecies()" width="240px"/>
-                                                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.search.AutoCompleteSpecies" autodrop="true" width="240px"></combobox>
-                                                        <button id="btnSearchSpecies" label="Search" forward="onClick=onSearchSpecies()" />-->
+                                                        <div>
+                                                            <label value="test" />
 
-                                                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
-                                                            <comboitem label=""/>
-                                                        </combobox>
-
-                                                        <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
-
-                                                        <html>
-                                                            <![CDATA[ <br> ]]>
-                                                        </html>
-                                                        <html>
-                                                            <![CDATA[ <br> ]]>
-                                                        </html>
+                                                        </div>
                                                     </tabpanel>
                                                     <tabpanel>
                                                         <div id="facilityControls">
@@ -608,27 +682,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                                         </tabpanel>
-					
-					<!--Gazetteer -->
-					<tabpanel zclass="tabpanel_cnt" id="gazetteerTabPanel">
-						 <div>
-                                                            <vbox width="100%">
-                                                                <label value="Enter Place Name" />
-                                                                <hbox>
-                                                                    <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
-                                                                    <button id="gazSearch" label="Add to Map" />
-                                                                    <label id="resultGaz" />
-                                                                </hbox>
-                                                                <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                                    <listhead>
-                                                                        <listheader label="Name"/>
-                                                                        <listheader label="View" />
-                                                                    </listhead>
-                                                                </listbox>
-                                                            </vbox>
-                                                        </div>
 
-					</tabpanel>
+                                       
 
                                         <!--  Regions -->
                                         <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel" visible="false">
@@ -649,7 +704,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </div>
 
                                         </tabpanel>
-				                                        <!--  realtime -->
+                                        <!--  realtime -->
                                         <tabpanel zclass="tabpanel_cnt" id="realtimeTabPanel">
 
                                             <tabbox id="context" width="100%" mold="accordion">
@@ -702,7 +757,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                         <div id="linkNavigationTabContent"
                              visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
-                            <leftMenuLinks id="leftMenuLinks" />
+                             <leftMenuAnalysis id="leftMenuAnalysis" />
                         </div>
 
                         <div id="searchNavigationTabContent"

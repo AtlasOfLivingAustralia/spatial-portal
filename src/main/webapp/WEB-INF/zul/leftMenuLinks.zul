@@ -1,12 +1,12 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Links" contentType="text/html;charset=UTF-8" id="leftMenuLinksPage"?>
 <zk>
-    <label value="Links"  sclass="h2 title"/>
+    
 <div sclass="spaced" style="padding:10px" >
 		
 	
         <separator height="20" />
-        <label value="IMOS"  sclass="h3"/>
+        
 	
 	<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
 	
