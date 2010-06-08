@@ -86,7 +86,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         the value is set by setPolygonGeometry, which notifies the server by generating an onChange
         -->
         <textbox id="polyGeom" visible="false"/>
-
+	<textbox id="tbxTabSelection" visible="false"/>
         <script type="text/JavaScript">
             function roundNumber(num, dec) {
             var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
@@ -200,8 +200,30 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             }
 
+	    function setAreaTabSelected() {
+		var tbxTabSelection =  $e('${tbxTabSelection.uuid}');
+		var currentTime = new Date();
+		tbxTabSelection.value = "area" + currentTime.getSeconds();
+
+		if (document.createEvent) {
+		    var evt = document.createEvent('HTMLEvents');
+		    evt.initEvent( 'blur', false, false);
+		    tbxTabSelection.dispatchEvent(evt);
+
+		    var evt2 = document.createEvent('HTMLEvents');
+		    evt2.initEvent( 'change', false, false);
+		    tbxTabSelection.dispatchEvent(evt2);
+		}
+		else if (document.createEventObject) {
+		    tbxTabSelection.fireEvent('onblur');
+		    tbxTabSelection.fireEvent('onchange');
+		}
+		
+	//	tbxTabSelection.value = "";	
+	    }
         </script>
 
+	
 
         <!-- external content (Links) popup -->
         <window id="externalContentWindow" visible="false" width="80%"
@@ -471,20 +493,23 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                             <tabbox  mold="accordion">
                                 <tabs>
-                                    <!--  filtering -->
+                                    
+                                    <!-- selection tools -->
+                                    <tab id="selectionTab" label="Selection"  />
+
+				    <!--  filtering -->
                                     <tab id="filteringTab" label="Filtering"  />
 
-                                    <!-- selection tools -->
-                                    <tab id="selectionTab" label="Selection"  selected="true"/>
                                 </tabs>
                                 <tabpanels>
+				     <tabpanel>
+                                        <selectionForm id="sf" />
+                                    </tabpanel>
+
                                     <tabpanel >
                                         <filteringForm id="ff" />
                                     </tabpanel>
-                                    <tabpanel>
-                                        <selectionForm id="sf" />
-                                    </tabpanel>
-                                </tabpanels>
+				    </tabpanels>
                             </tabbox>
 
 

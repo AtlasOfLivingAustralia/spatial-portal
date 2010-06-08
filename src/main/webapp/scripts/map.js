@@ -22,7 +22,7 @@ var drawingLayerControl; // control wigit for drawinglayer
 var toolPanel; // container for OpenLayer controls
 var pan; // OpenLayers.Control.Navigation
 var zoom; // OpenLayers.Control.ZoomBox
-
+var areaToolsButton// OpenLayers.Control.Button
 /**
  * Associative array of all current active map layers except
  * for baselayers
@@ -255,9 +255,26 @@ function buildMapReal() {
         defaultControl: pan,
         div: container
     });
+
     toolPanel.addControls( [ zoom,pan] );
     map.addControl(toolPanel);
+    
+    areaToolsButton = new OpenLayers.Control.Button({
+   	trigger: navigateToAreaTab
+	});
 
+    var areaToolContainer = document.getElementById("areaTool");
+    var areaToolPanel = new OpenLayers.Control.Panel({
+	//defaultControl:areaToolsButton,
+	div:areaToolContainer
+    });
+
+    areaToolPanel.addControls( [areaToolsButton] );
+    map.addControl(areaToolPanel); 
+
+//createAreaToolsButton();
+    
+  
     drawinglayer = new OpenLayers.Layer.Vector( "Drawing"); // utilised in 'addLineDrawingLayer'
     drawingLayerControl = new OpenLayers.Control.DrawFeature(drawinglayer, OpenLayers.Handler.Path, {
         title:'Draw a transect line'
@@ -297,6 +314,17 @@ function buildMapReal() {
     //var layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
     // map.addLayer(layer);
 
+}
+
+function createAreaToolsButton() {
+    var button = new OpenLayers.Control.Button({
+   'displayClass': '#navtoolbar div.olControlDrawFeatureZoomBoxItemInactive', trigger: addPolygonDrawingTool
+	});
+    return button;
+}
+
+function navigateToAreaTab() {
+    parent.setAreaTabSelected();
 }
 
 function addPolygonDrawingTool() {
