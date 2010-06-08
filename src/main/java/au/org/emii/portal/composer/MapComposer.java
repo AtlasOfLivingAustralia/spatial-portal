@@ -2507,7 +2507,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             }
 
-            // geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
+            geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
             uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
 
 

@@ -16,6 +16,7 @@
         <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 1: Select your species" />
             <vbox>
+                <!--
                 <label>Search by</label>
                 <radiogroup id="rdgNameSearchType" >
                     <hbox>
@@ -23,7 +24,7 @@
                         <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
                     </hbox>
                 </radiogroup>
-
+                -->
                 <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                     <comboitem label=""/>
                 </combobox>

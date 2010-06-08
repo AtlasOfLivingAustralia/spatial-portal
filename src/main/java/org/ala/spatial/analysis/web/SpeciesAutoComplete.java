@@ -2,7 +2,16 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.Iterator;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.PropertyFilter;
+import org.ala.spatial.search.TaxaCommonSearchResult;
+import org.ala.spatial.search.TaxaCommonSearchSummary;
+import org.ala.spatial.search.TaxaScientificSearchSummary;
 import org.apache.commons.httpclient.HttpClient;
 
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -36,6 +45,7 @@ public class SpeciesAutoComplete extends Combobox {
 
     public SpeciesAutoComplete() {
         refresh(""); //init the child comboitems
+        //refreshJSON("");
         System.out.println("setting cnurl in sac()");
         //cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
         System.out.println("setting satserver in sac()");
@@ -54,6 +64,7 @@ public class SpeciesAutoComplete extends Combobox {
     public void setValue(String value) {
         super.setValue(value);
         refresh(value); //refresh the child comboitems
+        //refreshJSON(value);
     }
 
     /** Listens what an user is entering.
@@ -61,6 +72,7 @@ public class SpeciesAutoComplete extends Combobox {
     public void onChanging(InputEvent evt) {
         if (!evt.isChangingBySelectBack()) {
             refresh(evt.getValue());
+            //refreshJSON(evt.getValue());
         }
     }
 
@@ -106,7 +118,7 @@ public class SpeciesAutoComplete extends Combobox {
                         myci = new Comboitem(taxon);
                         myci.setParent(this);
                     }
-                    //myci.setDescription("description goes here... ");
+                    myci.setDescription("scientific name: " + getScientificName(taxon));
                 }
             } else {
                 if (it != null && it.hasNext()) {
@@ -135,6 +147,12 @@ public class SpeciesAutoComplete extends Combobox {
      */
     private void refresh(String val) {
 
+        // Start by constraining the search to a min 3-chars
+        if (val.length() < 3) {
+            getItems().clear();
+            return;
+        }
+
         //TODO get this from the config file
         if (settingsSupplementary != null) {
             System.out.println("setting ss.val");
@@ -151,6 +169,7 @@ public class SpeciesAutoComplete extends Combobox {
 
             System.out.println("Looking for common name: " + isSearchCommon());
 
+            /*
             if (isSearchCommon()) {
                 if (val.trim().equalsIgnoreCase("")) {
                     if (val.length() == 0) {
@@ -163,6 +182,8 @@ public class SpeciesAutoComplete extends Combobox {
                 }
                 return;
             }
+            *
+            */
 
             /*
             if (val.length() == 0) {
@@ -202,10 +223,15 @@ public class SpeciesAutoComplete extends Combobox {
                 System.out.println("Response status code: " + result);
                 System.out.println("Response: \n" + slist);
 
+                System.out.println("adding common names to this");
+                slist += refreshCommonNames(val);
+
                 String[] aslist = slist.split("\n");
                 System.out.println("Got " + aslist.length + " records.");
 
                 if (aslist.length > 0) {
+
+                    Arrays.sort(aslist);
 
                     for (int i = 0; i < aslist.length; i++) {
                         String[] spVal = aslist[i].split("/");
@@ -222,8 +248,16 @@ public class SpeciesAutoComplete extends Combobox {
                             myci = new Comboitem(taxon);
                             myci.setParent(this);
                         }
-                        myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim());
+                        myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim() + " records");
                         myci.setDisabled(false);
+
+                        // since we are sorting and interleaving all names
+                        // the common names ('contains') might be on the top
+                        // of the scientific names ('starts with'), so we
+                        // want to select the first 'starts with' option
+                        if (taxon.startsWith(val)) {
+                            this.setSelectedItem(myci);
+                        }
                     }
                 }
                 /*else {
@@ -248,6 +282,262 @@ public class SpeciesAutoComplete extends Combobox {
 
             //new Comboitem("No species found. error.").setParent(this);
         }
+
+    }
+
+    private String refreshCommonNames(String val) {
+        StringBuffer cnListString = new StringBuffer();
+        cnListString.append("");
+        String baseUrl = "http://data.ala.org.au/search/";
+        String cnUrl = "commonNames/_val_/json";
+
+        String callUrl = baseUrl + cnUrl;
+
+        val = val.trim();
+
+        // Start by constraining the search to a min 3-chars
+        if (val.length() < 3) {
+            return "";
+        }
+
+        try {
+
+            System.out.println("Looking for common name: " + val);
+
+            String searchValue = val.replaceAll(" ", " AND ");
+            callUrl = callUrl.replaceAll("_val_", URLEncoder.encode(searchValue, "UTF-8"));
+
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(callUrl);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+
+
+            JSONArray results = new JSONArray();
+            results = searchCommon(slist);
+
+            for (int i = 0; i < results.size(); i++) {
+
+                cnListString.append(results.getJSONObject(i).get("commonName"));
+                cnListString.append(" / ");
+                cnListString.append("Scientific name: " + results.getJSONObject(i).get("scientificName"));
+                cnListString.append(" / ");
+                cnListString.append(" found " + results.getJSONObject(i).get("occurrenceCoordinateCount"));
+                cnListString.append("\n");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refreshRemote");
+            e.printStackTrace(System.out);
+
+            //new Comboitem("No species found. error.").setParent(this);
+        }
+
+        return cnListString.toString();
+    }
+
+    private void refreshJSON(String val) {
+
+        String baseUrl = "http://data.ala.org.au/search/";
+        String cnUrl = "commonNames/_val_/json";
+        String snUrl = "scientificNames/_val_/json";
+
+        String callUrl = baseUrl;
+
+        val = val.trim();
+
+        // Start by constraining the search to a min 3-chars
+        if (val.length() < 3) {
+            return;
+        }
+
+        //TODO get this from the config file
+        if (settingsSupplementary != null) {
+            System.out.println("setting ss.val");
+            satServer = settingsSupplementary.getValue(SAT_URL);
+        } else {
+            System.out.println("NOT setting ss.val");
+        }
+
+        //String snUrl = satServer + "/alaspatial/species/taxon/";
+        //String snUrl = "http://localhost:8080/alaspatial/species/taxon/";
+
+
+        try {
+
+            System.out.println("Looking for common name: " + isSearchCommon());
+
+            if (isSearchCommon()) {
+                callUrl += cnUrl;
+            } else {
+                callUrl += snUrl;
+            }
+
+            String searchValue = val.replaceAll(" ", " AND ");
+            callUrl = callUrl.replaceAll("_val_", URLEncoder.encode(searchValue, "UTF-8"));
+
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(callUrl);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+
+
+            JSONArray results = new JSONArray();
+            results = searchCommon(slist);
+
+            for (int i = 0; i < results.size(); i++) {
+                String itemString = "";
+                String descString = "";
+                itemString = (String) results.getJSONObject(i).get("commonName");
+                descString = "Scientific name: " + (String) results.getJSONObject(i).get("scientificName");
+                descString += " - " + ((Integer) results.getJSONObject(i).get("occurrenceCoordinateCount")).toString() + " records";
+
+
+            }
+
+        } catch (Exception e) {
+            System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refreshRemote");
+            e.printStackTrace(System.out);
+
+            //new Comboitem("No species found. error.").setParent(this);
+        }
+    }
+
+    public JSONArray searchScientific(String json) {
+
+        JSONArray joResult = new JSONArray();
+
+        TaxaScientificSearchSummary tss = new TaxaScientificSearchSummary();
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setRootClass(TaxaScientificSearchSummary.class);
+        jsonConfig.setJavaPropertyFilter(
+                new PropertyFilter() {
+
+                    @Override
+                    public boolean apply(Object source, String name,
+                            Object value) {
+                        if ("result".equals(name)) {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+        JSONObject jo = JSONObject.fromObject(json);
+
+        tss = (TaxaScientificSearchSummary) JSONSerializer.toJava(jo,
+                jsonConfig);
+
+
+
+
+        if (tss.getRecordsReturned() > 1) {
+            joResult = jo.getJSONArray("result");
+
+        }
+        return joResult;
+    }
+
+    public JSONArray searchCommon(String json) {
+        JSONArray joResult = new JSONArray();
+        TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
+        jsonConfig.setJavaPropertyFilter(
+                new PropertyFilter() {
+
+                    @Override
+                    public boolean apply(Object source, String name,
+                            Object value) {
+                        if ("result".equals(name)) {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+        JSONObject jo = JSONObject.fromObject(json);
+
+        tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
+
+
+
+
+        if (tss.getRecordsReturned() > 1) {
+
+            joResult = jo.getJSONArray("result");
+
+        }
+        return joResult;
+    }
+
+    private String getScientificName(String cname) {
+        String taxon = "";
+
+
+        try {
+
+            String nuri = "http://data.ala.org.au/search/commonNames/" + URLEncoder.encode(cname, "UTF-8") + "/json";
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(nuri);
+            get.addRequestHeader("Content-type", "application/json");
+
+
+
+            int result = client.executeMethod(get);
+            String snlist = get.getResponseBodyAsString();
+
+            TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
+            jsonConfig.setJavaPropertyFilter(
+                    new PropertyFilter() {
+
+                        @Override
+                        public boolean apply(Object source, String name,
+                                Object value) {
+                            if ("result".equals(name)) {
+                                return true;
+                            }
+                            return false;
+                        }
+                    });
+            JSONObject jo = JSONObject.fromObject(snlist);
+
+            tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
+
+
+
+
+            if (tss.getRecordsReturned() > 1) {
+
+                JSONArray joResult = jo.getJSONArray("result");
+
+                JsonConfig jsonConfigResult = new JsonConfig();
+                jsonConfigResult.setRootClass(TaxaCommonSearchResult.class);
+
+                for (int i = 0; i < joResult.size(); i++) {
+                    TaxaCommonSearchResult tr = (TaxaCommonSearchResult) JSONSerializer.toJava(joResult.getJSONObject(i), jsonConfigResult);
+                    tss.addResult(tr);
+                }
+            }
+            //taxon = tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")";
+            taxon = tss.getResultList().get(0).getScientificName();
+            //status.setValue("Got: " + tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")");
+        } catch (Exception e) {
+            System.out.println("Oopps, error getting scientific name from common name");
+            e.printStackTrace(System.out);
+
+
+        }
+
+        return taxon;
 
     }
 }
