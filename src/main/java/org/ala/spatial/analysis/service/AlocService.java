@@ -140,8 +140,8 @@ public class AlocService {
             int[] groups = Aloc.runGowerMetric(data_clean, numberofgroups);
 
             /* calculate group means */
-            double[][] group_means = new double[numberofgroups + 1][data_clean[0].length];
-            int[] group_counts = new int[numberofgroups + 1];
+            double[][] group_means = new double[numberofgroups][data_clean[0].length];
+            int[] group_counts = new int[numberofgroups];
 
             /* TODO: handle numerical overflow when calculating means */
             for (i = 0; i < groups.length; i++) {
@@ -313,7 +313,7 @@ public class AlocService {
     		String s;   		
     		  		
     		/* outputs */
-    		for (i = 0; i < (colours.length - 1); i++) {	//TODO: fix reason for -1
+    		for (i = 0; i < colours.length; i++) {	
     			j = 0x00000000 | ((colours[i][0] << 16) | (colours[i][1] << 8) | colours[i][2]);    			
     			s = Integer.toHexString(j).toUpperCase();
     			while (s.length() < 6) {

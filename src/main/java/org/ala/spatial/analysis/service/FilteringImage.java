@@ -41,6 +41,11 @@ public class FilteringImage implements Serializable {
     final int TRANSPARENT = 0x00000000;
     
     /**
+     * value of edge of transparent area
+     */
+    int edgeColour;
+    
+    /**
      * hidden colour for current filtered image
      */
     int hidden_colour;
@@ -87,7 +92,14 @@ public class FilteringImage implements Serializable {
         /* init with hidden colour */
         for (i = 0; i < image_bytes.length; i++) {
             image_bytes[i] = hidden_colour; 
-        }       
+        }  
+        
+        /* setup edge colour as darker version of hidden_colour */
+        int r = (hidden_colour & 0x00ff0000);
+        int g = (hidden_colour & 0x0000ff00);
+        int b = (hidden_colour & 0x000000ff);
+        
+        edgeColour = 0xff000000 | ((r/3) & 0x00ff0000) | ((b/3) & 0x0000ff00) | ((b/3) & 0x000000ff);
     }
 
 
@@ -97,9 +109,64 @@ public class FilteringImage implements Serializable {
      */
     public void writeImage() {
         try {
+        	/* edge detect before writeback 
+        	 * - if not transparent and any neighbor (x8) is
+        	 * 
+        	 * TODO: decide if image is nice or not
+        	 */
+        	int i, j, pos;
+        	int n1, n2, n3;
+        	int n4,     n5;
+        	int n6, n7, n8;
+        	pos = 0;
+        	for (i = 0; i < HEIGHT; i++) {
+        		for (j = 0; j < WIDTH; j++) {
+        			if (image_bytes[pos] != TRANSPARENT) {
+        				/* check neighbours */
+    					n1 = pos - WIDTH - 1;
+    					n2 = pos - WIDTH;
+    					n3 = pos - WIDTH + 1;
+    					n4 = pos - 1;
+    					n5 = pos + 1;
+    					n6 = pos + WIDTH - 1;
+    					n7 = pos + WIDTH;
+    					n8 = pos + WIDTH + 1;
+    					
+    					if (j == 0) {
+    						n1 = -1;
+    						n4 = -1;
+    						n6 = -1;
+    					} else if( j == WIDTH - 1) {
+    						n3 = -1;
+    						n5 = -1;
+    						n8 = -1;
+    					}
+    					//n1, n2, n3 already < 0 if (i == 0)
+    					if (i == HEIGHT - 1) {
+    						n6 = -1;
+    						n7 = -1;
+    						n8 = -1;
+    					}
+    					
+    					if ( (n1 >= 0 && image_bytes[n1] == TRANSPARENT)
+    						|| (n2 >= 0 && image_bytes[n2] == TRANSPARENT)
+    						|| (n3 >= 0 && image_bytes[n3] == TRANSPARENT)
+    						|| (n4 >= 0 && image_bytes[n4] == TRANSPARENT)
+    						|| (n5 >= 0 && image_bytes[n5] == TRANSPARENT)
+    						|| (n6 >= 0 && image_bytes[n6] == TRANSPARENT)
+    						|| (n7 >= 0 && image_bytes[n7] == TRANSPARENT)
+    						|| (n8 >= 0 && image_bytes[n8] == TRANSPARENT)
+    						){
+    						image_bytes[pos] = edgeColour;
+    					}
+        			}
+        			pos++;
+        		}
+        	}
+        	
         	/* write back image bytes */
         	image.setRGB(0, 0, image.getWidth(), image.getHeight(),
-                     image_bytes, 0, image.getWidth());
+                     image_bytes, 0, image.getWidth());       	
         	 
         	/* write image */
             ImageIO.write(image, "png",

@@ -1,7 +1,9 @@
 package org.ala.spatial.web.services;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -11,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.service.AlocService;
+import org.ala.spatial.analysis.service.LayerImgService;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
@@ -32,11 +35,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ALOCWSController {
 
     private SpatialSettings ssets;
-    private double xMin;
-    private double yMin;
-    private double xRes;
-    private double yRes;
-
+	private double xMin;
+	private double yMin;
+	private double xRes;
+	private double yRes;
+  
     @RequestMapping(value = "/process", method = RequestMethod.GET)
     public
     @ResponseBody
@@ -94,6 +97,23 @@ public class ALOCWSController {
             
             // if it doesn't die by now, then all is good
             // set the pid and sent the response back to the client 
+            
+            /* register with LayerImgService */
+            String extents = "252\n210\n112.083333333335\n-9.083333333335\n154.083333333335\n-44.083333333335";
+            StringBuffer legend = new StringBuffer();
+            System.out.println("legend path:" + outputpath + "aloc.png.csv");
+            BufferedReader flegend = new BufferedReader(new FileReader(outputpath + "aloc.png.csv"));
+            String line;
+            while((line = flegend.readLine()) != null) {
+            	legend.append(line);
+            	legend.append("\r\n");
+            }
+            flegend.close();
+            System.out.println("registering layer image (A)");
+            if (!LayerImgService.registerLayerImage(currentPath, pid, outputfile, extents, legend.toString())) {
+            	//error
+            }
+            
             pid = "" + currTime;
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -144,7 +164,6 @@ public class ALOCWSController {
             // Upload the file to GeoServer using REST calls
             System.out.println("Uploading file: " + pngZipFile + " to \n" + url);
             UploadSpatialResource.loadResource(url, extra, username, password, pngZipFile);
-
             
             try{
             	FileWriter fw = new FileWriter(outputfile + ".xml");
@@ -171,6 +190,24 @@ public class ALOCWSController {
             		,(String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + currTime
             		,username,password
             		,outputfile+".sld","application/vnd.ogc.sld+xml");
+            
+            /* register with LayerImgService */
+            String extents = "252\n210\n112.083333333335\n-9.083333333335\n154.083333333335\n-44.083333333335";
+            
+            StringBuffer legend = new StringBuffer();
+            System.out.println("legend path:" + outputpath + "aloc.png.csv");
+            BufferedReader flegend = new BufferedReader(new FileReader(outputpath + "aloc.png.csv"));
+            String line;
+            while((line = flegend.readLine()) != null) {
+            	legend.append(line);
+            	legend.append("\r\n");
+            }
+            flegend.close();
+            System.out.println("registering layer image (A): pid=" + currTime);
+            if (!LayerImgService.registerLayerImage(currentPath, "" + currTime, outputfile, extents, legend.toString())) {
+            	//error
+            }
+            
 
             pid = "" + currTime;
         } catch (Exception e) {

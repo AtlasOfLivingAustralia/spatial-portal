@@ -1,18 +1,15 @@
 package org.ala.spatial.util;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.io.RandomAccessFile;
 import java.util.Calendar;
-import java.io.FileWriter;
+
 /**
  * SimpleShapeFile is a representation of a Shape File for 
  * intersections with points
@@ -21,8 +18,6 @@ import java.io.FileWriter;
  * .dbf can read values from String and Number columns only
  * 
  * TODO: finish serialization
- * TODO: include update for speeding up intersections on 
- * shape files with large numbers of shapes.
  * 
  * @author Adam Collins
  */
@@ -51,6 +46,11 @@ public class SimpleShapeFile extends Object implements Serializable{
 	DBF dbf;
 	
 	/**
+	 * for balancing shape files with large numbers of shapes.
+	 */
+	ShapesReference shapesreference;
+	
+	/**
 	 * Constructor for a SimpleShapeFile, requires .dbf and .shp files present
 	 * on the fileprefix provided.
 	 * 
@@ -69,6 +69,9 @@ public class SimpleShapeFile extends Object implements Serializable{
 
 		/* get ComplexRegion list from shape records */
 		regions = shaperecords.getRegions();		
+		
+		/* create shapes reference for intersections */
+		shapesreference = new ShapesReference(shaperecords);
 	}
 	
 	/**
@@ -512,6 +515,15 @@ class ShapeRecords extends Object implements Serializable{
 		}		
 
 		return sra;		
+	}
+	
+	/**
+	 * gets number of shape records
+	 * 
+	 * @return
+	 */
+	public int getNumberOfRecords(){
+		return records.size();
 	}
 }
 
@@ -1279,4 +1291,152 @@ class DBFRecord extends Object implements Serializable{
 		}
 		return sb.toString();
 	}
+}
+
+/**
+ * for balancing shape files with large numbers of shapes.
+ * 
+ * creates a grid with each cell listing shapes that overlap with it.
+ * 
+ * TODO: not square dimensions
+ * 
+ * @author adam
+ *
+ */
+class ShapesReference extends Object  implements Serializable {
+	/**
+	 * grid with shape index lists as cells
+	 */
+	ArrayList<Integer> [][] mask;
+	
+	/**
+	 * width/height of mask
+	 */
+	int mask_dimension;
+	
+	/**
+	 * intersection multiplier for longitude
+	 */
+	double mask_long_multiplier;
+	
+	/**
+	 * intersection multiplier for latitude
+	 */
+	double mask_lat_multiplier;
+	
+	/**
+	 * mask bounding box, see SimpleRegion boundingbox.
+	 */
+	double [][] boundingbox_all;
+	
+	/**
+	 * reference to all shapes
+	 */
+	ShapeRecords sr;
+
+	/**
+	 * constructor
+	 * 
+	 * @param sr_ all shapes for this mask as ShapeRecords
+	 */
+	public ShapesReference(ShapeRecords sr_){		
+		sr = sr_;
+		boundingbox_all = new double[2][2];
+
+		mask_dimension = (int) Math.sqrt(sr.getNumberOfRecords());
+		
+		/* define minimum mask size */
+		if(mask_dimension < 3){
+			mask = null;
+			return;
+		}
+
+		/* create mask */
+		mask = new ArrayList[mask_dimension][mask_dimension];	
+
+		/* update boundingbox_all */
+		boolean first_time = true;
+		for(ComplexRegion s : sr_.getRegions()){
+			double [][] bb = s.getBoundingBox();
+			if(first_time || boundingbox_all[0][0] > bb[0][0]){
+				boundingbox_all[0][0] = bb[0][0];
+			}
+			if(first_time || boundingbox_all[1][0] < bb[1][0]){
+				boundingbox_all[1][0] = bb[1][0];
+			}
+			if(first_time || boundingbox_all[0][1] > bb[0][1]){
+				boundingbox_all[0][1] = bb[0][1];
+			}
+			if(first_time || boundingbox_all[1][1] < bb[1][1]){
+				boundingbox_all[1][1] = bb[1][1];
+			}
+			first_time = false;
+		}
+
+		/* get intersecting cells and add */
+		ArrayList<ComplexRegion> sra = sr.getRegions();
+		for(int j=0;j<sra.size();j++){
+			ComplexRegion s = sra.get(j);
+			int [][] map = s.getOverlapGridCells_Box(
+				boundingbox_all[0][0], boundingbox_all[0][1]
+				,boundingbox_all[1][0], boundingbox_all[1][1]
+				,mask_dimension, mask_dimension,s.getBoundingBox());
+
+			for(int i=0;i<map.length;i++){
+				if(mask[map[i][0]][map[i][1]] == null){
+					mask[map[i][0]][map[i][1]] = new ArrayList<Integer>();
+				}
+				mask[map[i][0]][map[i][1]].add(j);
+			}
+		}
+
+		/* calculate multipliers */
+		mask_long_multiplier = mask_dimension/(double)(boundingbox_all[1][0]-boundingbox_all[0][0]);
+		mask_lat_multiplier = mask_dimension/(double)(boundingbox_all[1][1]-boundingbox_all[0][1]);
+	}
+
+	/**
+	 * performs intersection on one point
+	 * 
+	 * @param longitude longitude of point to intersect as double
+	 * @param latitude latitude of point to intersect as double
+	 * @return shape index if intersection found, or -1 for no intersection
+	 */
+	public int intersection(double longitude, double latitude){
+		ArrayList<ComplexRegion> sra = sr.getRegions();
+		
+		/* test for mask */
+		if(mask != null){
+			/* apply multipliers */
+			int long1 = (int) Math.floor((longitude - boundingbox_all[0][0])*mask_long_multiplier);
+			int lat1 = (int) Math.floor((latitude - boundingbox_all[0][1])*mask_lat_multiplier);
+		
+			/* check is within mask bounds */
+			if(long1 >= 0 && long1 < mask[0].length
+				&& lat1 >=0 && lat1 < mask.length 
+				&& mask[long1][lat1] != null){
+				
+				/* get list of shapes to check at this mask cell */
+				ArrayList<Integer> ali = mask[long1][lat1];
+
+				/* check each potential cell */
+				for(int i=0;i<ali.size();i++){
+					if(sra.get(ali.get(i).intValue()).isWithin(longitude,latitude)){					
+						return i;
+					}
+					
+				}	
+							
+			}
+		}else{	
+			/* no mask, check all shapes */
+			for(int i=0;i<sra.size();i++){
+				if(sra.get(i).isWithin(longitude,latitude)){
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+	
 }
