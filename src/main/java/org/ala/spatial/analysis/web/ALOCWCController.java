@@ -5,9 +5,12 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
+
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import org.ala.spatial.util.LayersUtil;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -16,6 +19,7 @@ import java.util.Vector;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
@@ -30,6 +34,7 @@ import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Image;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -57,6 +62,11 @@ public class ALOCWCController extends UtilityComposer {
     String user_polygon = "";
     Textbox selectionGeomALOC;
     int generation_count = 1;
+    String pid;
+    
+    String layerLabel;
+    
+    LayersUtil layersUtil;
 
     @Override
     public void afterCompose() {
@@ -67,11 +77,12 @@ public class ALOCWCController extends UtilityComposer {
             geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
+        
+        layersUtil = new LayersUtil(mc,satServer);
 
         setupEnvironmentalLayers();
 
         selectedLayers = new Vector<String>();
-
     }
 
     /**
@@ -80,22 +91,7 @@ public class ALOCWCController extends UtilityComposer {
      */
     private void setupEnvironmentalLayers() {
         try {
-
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
-
-            //Messagebox.show("Loading env data from: " + envurl);
-
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            //Messagebox.show("done loading data: " + slist);
-
-            String[] aslist = slist.split("\n");
+            String[] aslist = layersUtil.getEnvironmentalLayers();
 
             if (aslist.length > 0) {
 
@@ -246,10 +242,22 @@ public class ALOCWCController extends UtilityComposer {
 
             //mc.addWMSLayer("ALOC " + slist, mapurl, (float) 0.5);
             //String label = "ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count;
-            String label = "Classification #" + generation_count + " - " + groupCount.getValue() + " groups";
-            mc.addWMSLayer(label, mapurl, (float) 0.5, "", legendurl);
+            layerLabel = "Classification #" + generation_count + " - " + groupCount.getValue() + " groups";
+           /* mc.addWMSLayer(label, mapurl, (float) 0.5, "", legendurl);*/
+
             generation_count++;
 
+            pid = slist;
+            
+            loadMap();
+            
+            java.util.Map args = new java.util.HashMap();                                                     
+        	args.put("pid",pid);
+        	args.put("layer",layerLabel);
+    		Window win = (Window) Executions.createComponents(
+                    "/WEB-INF/zul/AnalysisClassificationLegend.zul", null, args);
+        	win.doModal();
+        	
         } catch (Exception ex) {
             //Logger.getLogger(ALOCWCController.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Opps!: ");
@@ -308,7 +316,6 @@ public class ALOCWCController extends UtilityComposer {
         } catch (Exception e) {//FIXME
             e.printStackTrace();
         }
-
     }
 
     String convertGeoToPoints(String geometry) {
@@ -319,5 +326,41 @@ public class ALOCWCController extends UtilityComposer {
         geometry = geometry.replace("POLYGON((", "");
         geometry = geometry.replace(")", "");
         return geometry;
+    }
+    
+    /**
+     * populate sampling screen with values from active layers
+     * 
+     * TODO: run this on 'tab' open
+     */
+    public void callPullFromActiveLayers(){
+    	//get list of env/ctx layers
+    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
+    	
+      	/* set as selected each envctx layer found */
+    	if (layers != null) {
+    		List<Listitem> lis = lbenvlayers.getItems();
+	    	for (int i = 0; i < lis.size(); i++) {
+	    		for (int j = 0; j < layers.length; j++) {
+	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+	    				lbenvlayers.addItemToSelection(lis.get(i));
+	    				break;
+	    			}
+	    		}
+	    	}    	    	
+    	}
+    }
+    
+    private void loadMap() {             
+        String uri = satServer + "/alaspatial/output/layers/" + pid + "/img.png";
+        float opacity = Float.parseFloat("0.75");
+
+        List<Double> bbox = new ArrayList<Double>();
+        bbox.add(112.0);
+        bbox.add(-44.0000000007);
+        bbox.add(154.00000000084);
+        bbox.add(-9.0);
+
+        mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);
     }
 }

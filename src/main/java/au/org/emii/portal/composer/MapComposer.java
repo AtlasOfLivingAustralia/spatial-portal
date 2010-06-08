@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
+import org.ala.spatial.analysis.web.FilteringWCController;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zhtml.Messagebox;
@@ -224,6 +225,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Tab filteringTab;
     private Tab selectionTab;
 
+    private HtmlMacroComponent ff;
+    
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
             userDataManager = DaoRegistry.getUserDataDao();
@@ -378,6 +381,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             selectionTab.setSelected(true);
         } else {
             filteringTab.setSelected(true);
+
+            ((FilteringWCController)ff.getFellow("filteringwindow")).callPullFromActiveLayers();
         }
     }
 

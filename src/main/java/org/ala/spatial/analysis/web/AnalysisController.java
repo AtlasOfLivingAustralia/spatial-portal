@@ -1,12 +1,18 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
+
 import au.org.emii.portal.composer.UtilityComposer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zk.ui.HtmlMacroComponent;
+import org.zkoss.zul.Window;
+import org.ala.spatial.analysis.web.SamplingWCController;
+import org.ala.spatial.analysis.web.MaxentWCController;
+import org.ala.spatial.analysis.web.ALOCWCController;
 
 /**
  * Controller class for the Analysis tab
@@ -21,7 +27,10 @@ public class AnalysisController extends UtilityComposer {
     private static final String MENU_MAX_WIDTH = "100%";
 
     private Session sess = (Session) Sessions.getCurrent();
-
+    
+    private HtmlMacroComponent sf;
+    private HtmlMacroComponent mf;
+    private HtmlMacroComponent af;
 
 
     @Override
@@ -43,15 +52,25 @@ public class AnalysisController extends UtilityComposer {
         MapComposer mc = getThisMapComposer();
         mc.setWestWidth(MENU_HALF_WIDTH);
     }
+    
+    public void onClick$samplingTab() {
+    	((SamplingWCController)sf.getFellow("samplingwindow")).callPullFromActiveLayers();
+    }
 
     public void onSelect$maxentTab() {
         MapComposer mc = getThisMapComposer();
         mc.setWestWidth(MENU_HALF_WIDTH);
     }
+    
+    public void onClick$maxentTab() {        
+        ((MaxentWCController)mf.getFellow("maxentwindow")).callPullFromActiveLayers();
+    }
 
     public void onSelect$alocTab() {
         MapComposer mc = getThisMapComposer();
         mc.setWestWidth(MENU_HALF_WIDTH);
+        
+        ((ALOCWCController)af.getFellow("alocwindow")).callPullFromActiveLayers();
     }
 
      /**

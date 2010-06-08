@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
+import au.org.emii.portal.menu.MapLayer;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.ArrayList;
 
 //import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
 import net.sf.json.JSONArray;
@@ -21,6 +23,8 @@ import net.sf.json.JsonConfig;
 import net.sf.json.util.PropertyFilter;
 import org.ala.spatial.search.TaxaCommonSearchResult;
 import org.ala.spatial.search.TaxaCommonSearchSummary;
+import org.ala.spatial.analysis.web.SpeciesAutoComplete;
+import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
@@ -31,11 +35,13 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkmax.zul.Filedownload;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Popup;
@@ -74,6 +80,9 @@ public class SamplingWCController extends UtilityComposer {
     private SettingsSupplementary settingsSupplementary = null;
     private String user_polygon = "";
     private Textbox selectionGeomSampling;
+    Button pullFromActiveLayers;
+    
+    LayersUtil layersUtil;
 
     @Override
     public void afterCompose() {
@@ -84,16 +93,11 @@ public class SamplingWCController extends UtilityComposer {
             geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
-
+        
+        layersUtil = new LayersUtil(mc,satServer);
+        
         layers = new Vector();
         layerdata = new Hashtable<String, String[]>();
-
-        // Load the layers
-        //setupEnvironmentalLayers();
-        //setupContextualLayers();
-        //lbenvlayers.setModel(new SimpleListModel(layers));
-
-        //lbenvlayers.setModel(new SimpleGroupsModel((Object[][]) layerdata.values().toArray(),layerdata.keySet().toArray()));
 
         String[][] datas = new String[][]{
             setupEnvironmentalLayers(),
@@ -120,7 +124,6 @@ public class SamplingWCController extends UtilityComposer {
                 } catch (Exception e) {
                     e.printStackTrace(System.out);
                 }
-
             }
         });
         lbenvlayers.setModel(new SimpleGroupsModel(datas, new String[]{"Environmental", "Contextual"}));
@@ -174,98 +177,7 @@ public class SamplingWCController extends UtilityComposer {
         p.open(l);
     }
 
-    /**
-     * Iterate thru' the layer list setup in the @doAfterCompose method
-     * and setup the listbox
-     */
-    private String[] setupEnvironmentalLayers() {
-        String[] aslist = null;
-        try {
-
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
-
-            //Messagebox.show("Loading env data from: " + envurl);
-
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            //Messagebox.show("done loading data: " + slist);
-
-            aslist = slist.split("\n");
-
-            if (aslist.length > 0) {
-
-
-                //lbenvlayers.setModel(new SimpleListModel(aslist));
-                layers.addAll(Arrays.asList(aslist));
-                layerdata.put("Environmental", aslist);
-
-                System.out.println("env:");
-                for (int k = 0; k < aslist.length; k++) {
-                    System.out.println(aslist[k] + ", ");
-                }
-
-            }
-
-
-        } catch (Exception e) {
-            System.out.println("error setting up env list");
-            e.printStackTrace(System.out);
-        }
-
-        return aslist;
-    }
-
-    /**
-     * Iterate thru' the layer list setup in the @doAfterCompose method
-     * and setup the listbox
-     */
-    private String[] setupContextualLayers() {
-        String[] aslist = null;
-        try {
-
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/contextual/string";
-
-            //Messagebox.show("Loading env data from: " + envurl);
-
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            //Messagebox.show("done loading data: " + slist);
-
-            aslist = slist.split("\n");
-
-            if (aslist.length > 0) {
-
-
-                //lbenvlayers.setModel(new SimpleListModel(aslist));
-                layers.addAll(Arrays.asList(aslist));
-                layerdata.put("Contextual", aslist);
-
-                System.out.println("env:");
-                for (int k = 0; k < aslist.length; k++) {
-                    System.out.println(aslist[k] + ", ");
-                }
-            }
-
-
-        } catch (Exception e) {
-            System.out.println("error setting up env list");
-            e.printStackTrace(System.out);
-        }
-
-        return aslist;
-    }
+   
 
     public void onCheck$rdoCommonSearch() {
         sac.setSearchCommon(true);
@@ -343,6 +255,61 @@ public class SamplingWCController extends UtilityComposer {
         Clients.showBusy("Sampling...", true);
         Events.echoEvent("onDoInit", this, event.toString());
     }
+    
+    /**
+     * Iterate thru' the layer list setup in the @doAfterCompose method
+     * and setup the listbox
+     */
+    private String [] setupEnvironmentalLayers() {
+    	String [] aslist = null;
+        try {          
+            aslist = layersUtil.getEnvironmentalLayers();
+
+
+            if (aslist.length > 0) {
+                layers.addAll(Arrays.asList(aslist));
+                layerdata.put("Environmental", aslist);
+
+                System.out.println("env:");
+                for (int k = 0; k < aslist.length; k++) {
+                    System.out.println(aslist[k] + ", ");
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("error setting up env list");
+            e.printStackTrace(System.out);
+        }
+        
+        return aslist;
+    }
+    
+    /**
+     * Iterate thru' the layer list setup in the @doAfterCompose method
+     * and setup the listbox
+     */
+    private String [] setupContextualLayers() {
+    	String [] aslist = null;
+        try {          
+            aslist = layersUtil.getContextualLayers();
+
+            if (aslist.length > 0) {
+                layers.addAll(Arrays.asList(aslist));
+                layerdata.put("Contextual", aslist);
+                
+                for (int k = 0; k < aslist.length; k++) {
+                    System.out.println(aslist[k] + ", ");
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("error setting up env list");
+            e.printStackTrace(System.out);
+        }
+        
+        return aslist;
+    }
+
 
     public void runsampling() {
         try {
@@ -827,4 +794,59 @@ public class SamplingWCController extends UtilityComposer {
         geometry = geometry.replace(")", "");
         return geometry;
     }
+    
+      
+    /**
+     * populate sampling screen with values from active layers
+     * 
+     * TODO: run this on 'tab' open
+     */
+    public void onClick$pullFromActiveLayers(){
+    	//get top species and list of env/ctx layers
+    	String species = layersUtil.getFirstSpeciesLayer();
+    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
+    	
+    	/* set species from layer selector */
+    	if (species != null) {
+    		sac.setValue(species);
+    	}
+    	
+    	/* set as selected each envctx layer found */
+    	if (layers != null) {
+	    	List<Listitem> lis = lbenvlayers.getItems();
+	    	for (int i = 0; i < lis.size(); i++) {
+	    		for (int j = 0; j < layers.length; j++) {
+	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+	    				lbenvlayers.addItemToSelection(lis.get(i));
+	    				break;
+	    			}
+	    		}
+	    	}    	
+    	}
+    }
+    
+    public void callPullFromActiveLayers(){
+    	//get top species and list of env/ctx layers
+    	String species = layersUtil.getFirstSpeciesLayer();
+    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
+    	
+    	/* set species from layer selector */
+    	if (species != null) {
+    		sac.setValue(species);
+    	}
+    	
+    	/* set as selected each envctx layer found */
+    	if (layers != null) {
+	    	List<Listitem> lis = lbenvlayers.getItems();
+	    	for (int i = 0; i < lis.size(); i++) {
+	    		for (int j = 0; j < layers.length; j++) {
+	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+	    				lbenvlayers.addItemToSelection(lis.get(i));
+	    				break;
+	    			}
+	    		}
+	    	}    	
+    	}
+    }  
+    
 }

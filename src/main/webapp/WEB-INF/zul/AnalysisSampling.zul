@@ -18,7 +18,7 @@ This tool samples environmental and contextual data layers at locations defined 
 <br><br>&nbsp;&nbsp;&nbsp;4.  Click download to download the CSV-format file to your system.
         ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
     </panel>
-    <window use="org.ala.spatial.analysis.web.SamplingWCController" apply="org.ala.spatial.analysis.web.SamplingWCController" style="padding: 10px">
+    <window id="samplingwindow" use="org.ala.spatial.analysis.web.SamplingWCController" apply="org.ala.spatial.analysis.web.SamplingWCController" style="padding: 10px">
 
         <style>
             .z-list-header-cnt input, .z-list-group-inner div input {
@@ -26,7 +26,6 @@ This tool samples environmental and contextual data layers at locations defined 
             }
 
         </style>
-
 
         <!-- <label value="Step 1: Select your species " /> -->
         <groupbox mold="3d" style="width: 95%; padding: 5px">
@@ -142,5 +141,6 @@ This tool samples environmental and contextual data layers at locations defined 
             <label id="v_label" value="tool tip" ></label>
         </popup>
 
+	
     </window>
 </zk>

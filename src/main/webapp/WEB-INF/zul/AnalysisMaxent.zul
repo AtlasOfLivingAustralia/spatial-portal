@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
 <zk>
-    <window use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" style="padding: 10px">
+    <window id="maxentwindow" use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" style="padding: 10px">
 
         <style>
             .z-loading {
@@ -11,6 +11,7 @@
             vertical-align: middle;
             }
         </style>
+
 
         <!-- <label value="Step 1: Select your species " /> -->
         <groupbox mold="3d" style="width: 95%; padding: 5px">

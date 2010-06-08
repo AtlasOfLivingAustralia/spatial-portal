@@ -42,6 +42,7 @@ import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
+import org.ala.spatial.util.LayersUtil;
 
 /**
  *
@@ -80,6 +81,8 @@ public class MaxentWCController extends UtilityComposer {
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
+    
+    LayersUtil layersUtil;
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
@@ -104,6 +107,8 @@ public class MaxentWCController extends UtilityComposer {
                 geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
                 satServer = settingsSupplementary.getValue(SAT_URL);
             }
+            
+            layersUtil = new LayersUtil(mc,satServer);
 
             setupEnvironmentalLayers();
         } catch (Exception e) {
@@ -117,23 +122,8 @@ public class MaxentWCController extends UtilityComposer {
      * and setup the listbox
      */
     private void setupEnvironmentalLayers() {
-        try {
-
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
-
-            //Messagebox.show("Loading env data from: " + envurl);
-
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            //Messagebox.show("done loading data: " + slist);
-
-            String[] aslist = slist.split("\n");
+        try {          
+            String[] aslist = layersUtil.getEnvironmentalLayers();
 
             if (aslist.length > 0) {
 
@@ -517,5 +507,34 @@ public class MaxentWCController extends UtilityComposer {
         }
 
         return taxon;
+    }
+    
+    /**
+     * populate sampling screen with values from active layers
+     * 
+     * TODO: run this on 'tab' open
+     */
+    public void callPullFromActiveLayers(){
+    	//get top species and list of env/ctx layers
+    	String species = layersUtil.getFirstSpeciesLayer();
+    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
+    	
+    	/* set species from layer selector */
+    	if (species != null) {
+    		sac.setValue(species);
+    	}
+    	
+    	/* set as selected each envctx layer found */
+    	if (layers != null) {
+	    	List<Listitem> lis = lbenvlayers.getItems();
+	    	for (int i = 0; i < lis.size(); i++) {
+	    		for (int j = 0; j < layers.length; j++) {
+	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+	    				lbenvlayers.addItemToSelection(lis.get(i));
+	    				break;
+	    			}
+	    		}
+	    	}    	
+    	}
     }
 }

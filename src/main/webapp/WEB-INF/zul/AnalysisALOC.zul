@@ -92,7 +92,7 @@
             </div>
         </panelchildren>
     </panel>
-    <window use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" style="padding: 10px">
+    <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" style="padding: 10px">
 
         <style>
             .z-loading {
