@@ -232,9 +232,9 @@ public class MaxentWCController extends UtilityComposer {
         try {
             String taxon = sac.getValue();
             // check if its a common name, if so, grab the scientific name
-            if (rdoCommonSearch.isChecked()) {
-                taxon = getScientificName();
-            }
+           // if (rdoCommonSearch.isChecked()) {
+            //    taxon = getScientificName();
+           // }
 
             String msg = "";
             String[] envsel = null;

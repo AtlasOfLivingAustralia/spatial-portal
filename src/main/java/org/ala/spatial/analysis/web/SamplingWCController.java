@@ -316,9 +316,9 @@ public class SamplingWCController extends UtilityComposer {
 
             String taxon = sac.getValue();
             // check if its a common name, if so, grab the scientific name
-            if (rdoCommonSearch.isChecked()) {
-                taxon = getScientificName();
-            }
+            //if (rdoCommonSearch.isChecked()) {
+            //    taxon = getScientificName();
+            //}
 
             StringBuffer sbenvsel = new StringBuffer();
 
@@ -526,9 +526,9 @@ public class SamplingWCController extends UtilityComposer {
 
             String taxon = sac.getValue();
             // check if its a common name, if so, grab the scientific name
-            if (rdoCommonSearch.isChecked()) {
-                taxon = getScientificName();
-            }
+            //if (rdoCommonSearch.isChecked()) {
+            //    taxon = getScientificName();
+            //}
 
             StringBuffer sbenvsel = new StringBuffer();
 

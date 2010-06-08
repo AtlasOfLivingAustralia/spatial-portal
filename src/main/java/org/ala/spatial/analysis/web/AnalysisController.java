@@ -31,6 +31,10 @@ public class AnalysisController extends UtilityComposer {
     private HtmlMacroComponent sf;
     private HtmlMacroComponent mf;
     private HtmlMacroComponent af;
+    
+    boolean samplingTabActive = false;	
+	boolean maxentTabActive = false;
+	boolean alocTabActive = true;		//default
 
 
     @Override
@@ -54,6 +58,9 @@ public class AnalysisController extends UtilityComposer {
     }
     
     public void onClick$samplingTab() {
+    	samplingTabActive = true;
+    	maxentTabActive = false;
+    	alocTabActive = false;
     	((SamplingWCController)sf.getFellow("samplingwindow")).callPullFromActiveLayers();
     }
 
@@ -62,11 +69,17 @@ public class AnalysisController extends UtilityComposer {
         mc.setWestWidth(MENU_HALF_WIDTH);
     }
     
-    public void onClick$maxentTab() {        
+    public void onClick$maxentTab() {    
+    	samplingTabActive = false;
+    	maxentTabActive = true;
+    	alocTabActive = false;
         ((MaxentWCController)mf.getFellow("maxentwindow")).callPullFromActiveLayers();
     }
 
     public void onSelect$alocTab() {
+    	samplingTabActive = false;
+    	maxentTabActive = false;
+    	alocTabActive = true;
         MapComposer mc = getThisMapComposer();
         mc.setWestWidth(MENU_HALF_WIDTH);
         
@@ -87,5 +100,13 @@ public class AnalysisController extends UtilityComposer {
         return mapComposer;
     }
 
-
+    public void callPullFromActiveLayers() {
+    	if (samplingTabActive) {
+    		((SamplingWCController)sf.getFellow("samplingwindow")).callPullFromActiveLayers();
+    	} else if(maxentTabActive) {
+    		((MaxentWCController)mf.getFellow("maxentwindow")).callPullFromActiveLayers();
+    	} else if(alocTabActive) {
+    		((ALOCWCController)af.getFellow("alocwindow")).callPullFromActiveLayers();
+    	}
+    }
 }
