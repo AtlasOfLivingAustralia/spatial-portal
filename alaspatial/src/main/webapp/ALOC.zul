@@ -66,6 +66,26 @@ Environmental layers for use in classification.
 <separator />
 <button label="download" id="download" visible="false"/>
 
+<div id="colours" visible="true">
+<listbox id="legend" multiple="false" checkmark="false" width="420px" rows="12" >	
+<listhead>
+<listheader label="group" ></listheader>
+<listheader label="colour" width="60px"></listheader>
+</listhead>
+</listbox>
+<hbox>
+<vbox>
+<slider id="sred" slidingtext="">
+</slider>
+<slider id="sgreen" slidingtext="">
+</slider>
+<slider id="sblue" slidingtext="">
+</slider>
+</vbox>
+<label value="new colour" id="newcolour" />
+</hbox>
+<button id="applyColour" label="change colour" />
+</div>
 </vbox>
 
 <popup id="popup_results" width="640px" height="480px">
@@ -79,7 +99,7 @@ Environmental layers for use in classification.
 	<h:a/>
 	<label id="lb_points" visible="false" />
 </div>
-	
+
 </window>
 </vbox>
 <vbox>

@@ -489,7 +489,7 @@ public class SimpleRegion extends Object implements Serializable {
 		case 0:
 			return null;
 		case 1:
-			return getOverlapGridCells_Box(longitude1, latitude1, longitude2, latitude2, width, height);
+			return getOverlapGridCells_Box(longitude1, latitude1, longitude2, latitude2, width, height, bounding_box);
 		case 2:
 			return null; /* TODO: circle grid */
 		case 3:
@@ -508,11 +508,14 @@ public class SimpleRegion extends Object implements Serializable {
 	 * @param latitude2
 	 * @param xres number of longitude segements as int
 	 * @param yres number of latitude segments as int
+	 * @param bb bounding box as double[2][2] with [][0] as longitude, [][1] as latitude, 
+	 * [0][] as minimum values, [1][] as maximum values
 	 * @return (x,y) as double [][2] for each grid cell at least partially falling 
 	 * within the specified region of the specified resolution beginning at 0,0 
 	 * for minimum longitude and latitude through to xres,yres for maximums
 	 */
-	int [][] getOverlapGridCells_Box(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height){
+	public int [][] getOverlapGridCells_Box(double longitude1, double latitude1, 
+			double longitude2, double latitude2, int width, int height, double [][] bb){
 			
 		double xstep = Math.abs(longitude2 - longitude1) / (double)width;
 		double ystep = Math.abs(latitude2 - latitude1) / (double)height;
@@ -523,10 +526,10 @@ public class SimpleRegion extends Object implements Serializable {
 		double minlat = Math.min(latitude1, latitude2);
 		
 		//setup minimums from bounding box (TODO: should this have -1 on steps?)
-		int xstart = (int)Math.floor((points[0][0] - minlong)/xstep);
-		int ystart = (int)Math.ceil((points[1][1] - maxlat)/ystep);
-		int xend = (int)Math.ceil((points[1][0] - minlong)/xstep);
-		int yend = (int)Math.floor((points[0][1] - maxlat)/ystep);		
+		int xstart = (int)Math.floor((bb[0][0] - minlong)/xstep);
+		int ystart = (int)Math.ceil((bb[1][1] - maxlat)/ystep);
+		int xend = (int)Math.ceil((bb[1][0] - minlong)/xstep);
+		int yend = (int)Math.floor((bb[0][1] - maxlat)/ystep);		
 		if (xstart < 0) {
 			xstart = 0;
 		}

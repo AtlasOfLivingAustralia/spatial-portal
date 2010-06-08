@@ -236,8 +236,8 @@ public class LayerFilter extends Object implements Serializable {
 				return string.toString();
 			}
 		 }else {
-			return "between " + ((float)minimum_value) 
-				+ " and " + ((float)maximum_value);			
+			return "between " + String.format("%.4f",((float)minimum_value)) 
+				+ " and " + String.format("%.4f",((float)maximum_value));			
 		}
 	
 	}	

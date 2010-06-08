@@ -207,6 +207,9 @@ public class ComplexRegion extends SimpleRegion {
 							mask[i][j] = 2;			//completely outside (inside of a cutout region)
 						}
 					}
+					
+					/* reset shapemask for next part */
+					shapemask[i][j] = 0;
 				}
 			}
 		}	

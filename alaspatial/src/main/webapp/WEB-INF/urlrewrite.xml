@@ -31,6 +31,10 @@
 		<to>/output/aloc/$1</to>
 	</rule>
 	<rule>
+		<from>/output/layers/**</from>
+		<to>/output/layers/$1</to>
+	</rule>
+	<rule>
 		<from>/output/filtering/**</from>
 		<to>/output/filtering/$1</to>
 	</rule>
