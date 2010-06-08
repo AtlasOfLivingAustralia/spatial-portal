@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.web;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 
 import au.org.emii.portal.composer.MapComposer;
@@ -12,6 +13,8 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.awt.Color;
+import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
@@ -23,6 +26,7 @@ import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Image;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
@@ -48,6 +52,7 @@ public class ClassificationLegend extends UtilityComposer {
 	
 	String pid = "";
 	String layerLabel = "";
+	String imagePath = "";
 	
 	MapComposer mc;
 
@@ -60,8 +65,9 @@ public class ClassificationLegend extends UtilityComposer {
 	public int colours_index;
 	public Button applyColour;
 	public Listcell legend_cell;
-	public Label newcolour;
+	public Image newcolour;
 	public int legend_counter = 0;
+	public Div colours;
 
 	public Listbox legend;
 	
@@ -134,7 +140,7 @@ public class ClassificationLegend extends UtilityComposer {
 				public void render(Listitem li, Object data) {
 					String s = (String) data;
 					String[] ss = s.split(",");
-					Listcell lc = new Listcell(ss[0]);
+					Listcell lc = new Listcell("group " + ss[0]);
 					lc.setParent(li);				
 
 					int red = Integer.parseInt(ss[1]);
@@ -143,6 +149,7 @@ public class ClassificationLegend extends UtilityComposer {
 
 					lc = new Listcell(ss[0]);
 					lc.setStyle("background-color: rgb(" + red + "," + green
+							+ "," + blue + "); color: rgb(" + red + "," + green
 							+ "," + blue + ")");
 					lc.setParent(li);
 					lc.addEventListener("onClick", new EventListener() {
@@ -174,8 +181,8 @@ public class ClassificationLegend extends UtilityComposer {
 		}
 		String[] la = legend_lines.get(i).split(",");
 		int red = Integer.parseInt(la[1]);
-		int blue = Integer.parseInt(la[2]);
-		int green = Integer.parseInt(la[3]);
+		int green = Integer.parseInt(la[2]);
+		int blue = Integer.parseInt(la[3]);
 
 		colours_index = i;
 		
@@ -183,8 +190,11 @@ public class ClassificationLegend extends UtilityComposer {
 		sgreen.setCurpos(green * 100 / 255);
 		sblue.setCurpos(blue * 100 / 255);
 		
-		newcolour.setStyle("background-color: rgb(" + red + "," + green + ","
-				+ blue + ")");
+		LegendMaker lm = new LegendMaker();
+		Color c = new Color(red, green, blue);		
+		newcolour.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+		
+		colours.setVisible(true);
 	}
 
 	public void onClick$applyColour() {
@@ -202,8 +212,9 @@ public class ClassificationLegend extends UtilityComposer {
 		}
 		legend_lines.set(colours_index, las);
 		legend_cell.setValue(las);
-		legend_cell.setStyle("background-color: rgb(" + red + "," + green + ","
-				+ blue + ")");		
+		legend_cell.setStyle("background-color: rgb(" + red + "," + green
+				+ "," + blue + "); color: rgb(" + red + "," + green
+				+ "," + blue + ")");
 
 		// service call to change map layer
 		// pid
@@ -232,20 +243,14 @@ public class ClassificationLegend extends UtilityComposer {
 
 			int result = client.executeMethod(get);
 			String slist = get.getResponseBodyAsString();
-			System.out.println("updated layer image:" + slist);
-
-			// redraw image
-			/*String img = satServer + "output/layers/" + pid + "/img.png";
-			String client_request = "getALOCimage('" + img + "?" + legend_counter
-					+ "',112,-9,154,-44,252,210);";
-			legend_counter++;
-			System.out.println("evaljavascript: " + client_request);
-			Clients.evalJavaScript(client_request);*/
-
+			System.out.println("updated layer image:" + slist);		
+			imagePath = satServer + "/alaspatial/" + slist.split("\r\n")[0];
 			loadMap();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		colours.setVisible(false);
 	}	
 
 	public void onScroll$sred(Event event) {
@@ -253,8 +258,9 @@ public class ClassificationLegend extends UtilityComposer {
 		int red = sred.getCurpos() * 255 / 100;
 		int green = sgreen.getCurpos() * 255 / 100;
 		int blue = sblue.getCurpos() * 255 / 100;
-		newcolour.setStyle("background-color: rgb(" + red + "," + green + ","
-				+ blue + ")");		
+		LegendMaker lm = new LegendMaker();
+		Color c = new Color(red, green, blue);		
+		newcolour.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
 	}
 	
 	public void onScroll$sgreen(Event event) {
@@ -262,8 +268,9 @@ public class ClassificationLegend extends UtilityComposer {
 		int red = sred.getCurpos() * 255 / 100;
 		int green = sgreen.getCurpos() * 255 / 100;
 		int blue = sblue.getCurpos() * 255 / 100;
-		newcolour.setStyle("background-color: rgb(" + red + "," + green + ","
-				+ blue + ")");		
+		LegendMaker lm = new LegendMaker();
+		Color c = new Color(red, green, blue);		
+		newcolour.setContent(lm.singleRectImage(c, 50, 50, 45, 45));		
 	}
 	
 	public void onScroll$sblue(Event event) {
@@ -271,8 +278,9 @@ public class ClassificationLegend extends UtilityComposer {
 		int red = sred.getCurpos() * 255 / 100;
 		int green = sgreen.getCurpos() * 255 / 100;
 		int blue = sblue.getCurpos() * 255 / 100;
-		newcolour.setStyle("background-color: rgb(" + red + "," + green + ","
-				+ blue + ")");		
+		LegendMaker lm = new LegendMaker();
+		Color c = new Color(red, green, blue);		
+		newcolour.setContent(lm.singleRectImage(c, 50, 50, 45, 45));		
 	}
 	
 	/**
@@ -300,7 +308,7 @@ public class ClassificationLegend extends UtilityComposer {
         bbox.add(154.00000000084);
         bbox.add(-9.0);
 
-        mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);
+        mc.addImageLayer(pid, layerLabel, imagePath, opacity, bbox);
 
     }
 	

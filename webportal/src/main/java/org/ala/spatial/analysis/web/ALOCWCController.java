@@ -7,7 +7,9 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.wms.WMSStyle;
 import org.ala.spatial.util.LayersUtil;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -65,6 +67,7 @@ public class ALOCWCController extends UtilityComposer {
     String pid;
     
     String layerLabel;
+    String legendPath;
     
     LayersUtil layersUtil;
 
@@ -249,14 +252,17 @@ public class ALOCWCController extends UtilityComposer {
 
             pid = slist;
             
-            loadMap();
+            legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
             
-            java.util.Map args = new java.util.HashMap();                                                     
-        	args.put("pid",pid);
-        	args.put("layer",layerLabel);
-    		Window win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/AnalysisClassificationLegend.zul", null, args);
-        	win.doModal();
+            loadMap();            
+            
+           // java.util.Map args = new java.util.HashMap();                                                     
+        	//args.put("pid",pid);
+        	//args.put("layer",layerLabel);
+    		//Window win = (Window) Executions.createComponents(
+             //       "/WEB-INF/zul/AnalysisClassificationLegend.zul", null, args);
+    				//legendPath,null,args);
+        	//win.doModal();
         	
         } catch (Exception ex) {
             //Logger.getLogger(ALOCWCController.class.getName()).log(Level.SEVERE, null, ex);
@@ -362,5 +368,17 @@ public class ALOCWCController extends UtilityComposer {
         bbox.add(-9.0);
 
         mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);
+        MapLayer mapLayer = mc.getMapLayer(layerLabel);
+        if (mapLayer != null) {
+        	 WMSStyle style = new WMSStyle();
+             style.setName("Default");
+             style.setDescription("Default style");
+             style.setTitle("Default");
+             style.setLegendUri(legendPath);
+             
+             System.out.println("legend:" + legendPath);
+             mapLayer.addStyle(style);
+             mapLayer.setSelectedStyleIndex(1);
+        }
     }
 }

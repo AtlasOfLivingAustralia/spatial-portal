@@ -24,6 +24,7 @@ import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -90,13 +91,22 @@ public class LayerImgWSController {
 
             String currentPath = req.getSession(true).getServletContext().getRealPath("/");
             String outputpath = currentPath + "output/layers/" + pid + "/";
-            String layerimage = outputpath + "img.png";            
-            String layerlegend = outputpath + "legend.txt";
-            String layerextents = outputpath + "extents.txt";
+            String layerimage = outputpath + "img.png";
             
             LayerImgService.changeColour(outputpath,Integer.parseInt(idx),Integer.parseInt(red),Integer.parseInt(green),Integer.parseInt(blue));
+            
+            /* copy img.png to new filename */
+            String id = "" +  System.currentTimeMillis();
+            String layerimagenew = outputpath + "img" + id + ".png";            
+            FileUtils.copyFile(new File(layerimage), new File(layerimagenew));
+            
+            String layerlegend = "output/layers/" + pid + "/" + "legend.txt";
+            String layerextents = "output/layers/" + pid + "/" + "extents.txt";
+            
+            //redo layerimagenew path
+            layerimagenew = "output/layers/" + pid + "/img" + id + ".png";           
         
-            return layerimage + "\r\n" +  layerlegend + "\r\n" + layerextents;
+            return layerimagenew + "\r\n" +  layerlegend + "\r\n" + layerextents;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

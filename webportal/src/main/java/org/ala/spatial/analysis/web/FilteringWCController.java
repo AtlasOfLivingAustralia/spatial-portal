@@ -132,7 +132,7 @@ public class FilteringWCController extends UtilityComposer {
         Clients.showBusy("", false);
         try {
             Messagebox.show("Filtered. Now adding new layer: " + cbEnvLayers.getValue());
-            doAdd();
+            doAdd("");
         } catch (Exception e) {
             System.out.println("Opps added new layer");
             e.printStackTrace(System.out);
@@ -150,34 +150,13 @@ public class FilteringWCController extends UtilityComposer {
         applyFilter(true);
     }
 
-    public void doAdd() {
+    public void doAdd(String new_value) {
 
-        String new_value = "";
-
-        if(lbSelLayers.getItemCount() > 0){
-        	applyFilter();
-        }
-        
-        new_value = cbEnvLayers.getValue();
-        
-        addFilterLayer(new_value);
-   }
-    
-    void addFilterLayer(String new_value){
         try {
 
-            /*
-            System.out.println("Getting SPLFilter from WS");
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod("http://localhost:8080/alaspatial/ws/spatial/settings/layer/" + URLEncoder.encode(new_value, "UTF-8") + "/splfilter"); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, * /*");
-            //get.addRequestHeader("Accept", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            System.out.println("Got response from ALOCWSController: \n" + slist);
-
+        	if (new_value.length() == 0) {
+        		new_value = cbEnvLayers.getValue();
+        	}
             if (new_value.equals("") || new_value.indexOf("(") < 0) {
                 return;
             }
@@ -210,21 +189,10 @@ public class FilteringWCController extends UtilityComposer {
                     System.out.println("Filter String for " + layername + " is " + filterString);
 
                     Listcell lc = new Listcell(filterString); // f.getFilterString()
+                    lc.setStyle("white-space: normal;");
                     lc.setParent(li);
 
                
-
-                    /*always visible, this bit not required anymore
-                     * lc.addEventListener("onClick", new EventListener() {
-
-                    public void onEvent(Event event) throws Exception {
-                    if (!((Listcell) event.getTarget()).getLabel().equals("")
-                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
-                    showAdjustPopup(event.getTarget());
-                    }
-                    }
-                    });*/
-
                     // Col 3: Add the species count and set the onClick event
                     Listcell count = new Listcell(String.valueOf(f.count));
                     count.setStyle("text-decoration: underline; text-align: right; ");
@@ -235,23 +203,10 @@ public class FilteringWCController extends UtilityComposer {
                         public void onEvent(Event event) throws Exception {
                             //if(results != null && results.length() > 0){
                             if (!((Listcell) event.getTarget()).getLabel().equals("0")
-                                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
-                                /*
-                                SPLFilter[] layer_filters = getSelectedFilters();
-                                if (layer_filters != null) {
-                                results = SpeciesListIndex.listArraySpeciesGeo(layer_filters);
-                                java.util.Arrays.sort(results);
-
-                                seekToResultsPosition(0);
-
-                                popup_results.open(30, 30);//.open(event.getTarget());
-                                }
-                                 *
-                                 */
-
+                                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {                            
 
                                 if (lbSelLayers.getItemCount() > 0) {
-                                    applyFilter();
+                                	applyFilterEvented();
                                     java.util.Map args = new java.util.HashMap();
                                     args.put("pid", pid);
                                     Window win = (Window) Executions.createComponents(
@@ -927,7 +882,7 @@ public class FilteringWCController extends UtilityComposer {
 
     public void onClick$preview_continous(Event event) {
         try {
-            applyFilter();
+            applyFilterEvented();
             if (lbSelLayers.getItemCount() > 0) {
 
                 java.util.Map args = new java.util.HashMap();
@@ -952,7 +907,7 @@ public class FilteringWCController extends UtilityComposer {
     public void onClick$preview_catagorical(Event event) {
         try {
             if (lbSelLayers.getItemCount() > 0) {
-                applyFilter();
+            	applyFilterEvented();
                 java.util.Map args = new java.util.HashMap();
                 args.put("pid", pid);
                 Window win = (Window) Executions.createComponents(
@@ -970,7 +925,7 @@ public class FilteringWCController extends UtilityComposer {
 
     public void onLateron(Event event) throws Exception {
         applyFilterEvented();
-        doAdd(); 
+        doAdd(""); 
         Clients.showBusy("", false);
     }
 
@@ -987,7 +942,7 @@ public class FilteringWCController extends UtilityComposer {
     public void applyFilter(boolean doAdd) {
         if (lbSelLayers.getItemCount() == 0) {
             
-            if (doAdd) doAdd();
+            if (doAdd) doAdd("");
             
             return;
         }
@@ -1101,7 +1056,7 @@ public class FilteringWCController extends UtilityComposer {
     	System.out.println("pullFromActiveLayers Filtering layer " + layer);
     	
     	if (layer != null) {
-    		addFilterLayer(layer + " (Terrestrial)");
+    		doAdd(layer + " (Terrestrial)");
     	}
     }
 }

@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,6 +53,7 @@ import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.FilteringWCController;
+import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zhtml.Messagebox;
@@ -220,11 +222,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Div colourChooser;
     private Image legendImg;
     private Image legendImgUri;
+    private Div legendHtml;
     private Label legendLabel;
     private Button applyChange;
     private Tab filteringTab;
     private Tab selectionTab;
     private Textbox tbxArea;
+    private HtmlMacroComponent leftMenuAnalysis;
 
     private HtmlMacroComponent ff;
     
@@ -1378,7 +1382,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             } else {
                 System.out.println("refreshing exisiting layer");
-                imageLayer.setUri(uri + "&_lt=" + System.currentTimeMillis());
+                imageLayer.setUri(uri); // + "&_lt=" + System.currentTimeMillis());
 
                 // layer already exists, so lets just update that.
                 //refreshActiveLayer(imageLayer);
@@ -1626,6 +1630,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$linkNavigationTab() {
+    	((AnalysisController)leftMenuAnalysis.getFellow("analysiswindow")).callPullFromActiveLayers();
         activateNavigationTab(PortalSession.LINK_TAB);
     }
 
@@ -1748,22 +1753,55 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     legendImg.setVisible(true);
                     legendLabel.setVisible(true);
                     legendImgUri.setVisible(false);
+                    legendHtml.setVisible(false);
                 } else if (currentSelection.getSelectedStyle() != null /*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
                         || currentSelection.getType() == LayerUtilities.WMS_1_1_0
                         || currentSelection.getType() == LayerUtilities.WMS_1_1_1
                         || currentSelection.getType() == LayerUtilities.WMS_1_3_0
                         )*/) {
-                    String legendUri = currentSelection.getSelectedStyle().getLegendUri();
-                    legendImgUri.setSrc(legendUri);
-                    legendImgUri.setVisible(true);
-                    legendImg.setVisible(false);
-                    legendLabel.setVisible(false);
+                	/* classification legend has uri without .png content 
+                	 * TODO: do this nicely when implementing editable prediction layers 
+                	 */
+                	String legendUri = currentSelection.getSelectedStyle().getLegendUri();
+                	if (legendUri.indexOf(".png") < 0) {   
+                		//remove all
+                		List<Component> components = legendHtml.getChildren();
+                		for (Component c : components) {
+                			c.detach();
+                		}
+	                    //parse legendUri to ger pid and layer parameters
+	                    String path = legendUri.substring(0, legendUri.indexOf('?'));
+	                    String p = legendUri.substring(legendUri.indexOf("pid=")+4,legendUri.indexOf("&lay"));
+	                    String layer = legendUri.substring(legendUri.indexOf("&layer=")+7,legendUri.length());
+	                    layer = URLDecoder.decode(layer);                    
+	                   
+	                    java.util.Map args = new java.util.HashMap();                                                     
+	                	args.put("pid",p);
+	                	args.put("layer",layer);
+	            		Window win = (Window) Executions.createComponents(
+	                            path, null, args);            		
+	                	win.setParent(legendHtml);
+	                	win.doEmbedded();
+	                	win.setVisible(true);
+	                	legendHtml.setVisible(true);
+	                	legendImgUri.setVisible(false);
+	                	legendLabel.setVisible(true);
+                	} else {                    
+                		legendImgUri.setSrc(legendUri);
+                		legendImgUri.setVisible(true);
+                		legendHtml.setVisible(false);
+                		legendLabel.setVisible(false);
+                	}
+                    legendImg.setVisible(false);                    
                     colourChooser.setVisible(false);
+                    
                 } else {
+                	legendHtml.setVisible(false);
                 	legendImg.setVisible(false);
                 	legendImgUri.setVisible(false);
                 	legendLabel.setVisible(false);
                 	colourChooser.setVisible(false);
+                	legendHtml.setVisible(false);
                 }
                 layerControls.setVisible(true);
             }
