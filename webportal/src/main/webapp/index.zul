@@ -472,10 +472,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <tabbox  mold="accordion">
                                 <tabs>
                                     <!--  filtering -->
-                                    <tab id="filteringTab" label="Filtering" />
+                                    <tab id="filteringTab" label="Filtering"  />
 
                                     <!-- selection tools -->
-                                    <tab id="selectionTab" label="Selection"  />
+                                    <tab id="selectionTab" label="Selection"  selected="true"/>
                                 </tabs>
                                 <tabpanels>
                                     <tabpanel >
