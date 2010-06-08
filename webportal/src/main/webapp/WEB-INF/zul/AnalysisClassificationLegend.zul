@@ -1,0 +1,29 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+
+<zk>
+<window
+ title="Classification Legend" border="normal" 
+ width="330px"                 
+ apply="org.ala.spatial.analysis.web.ClassificationLegend" 
+ use="org.ala.spatial.analysis.web.ClassificationLegend" closable="true" mode="embedded">
+<listbox id="legend" multiple="false" checkmark="false" width="420px" rows="12" >	
+<listhead>
+<listheader label="group" width="100px"></listheader>
+<listheader label="colour" width="60px"></listheader>
+</listhead>
+</listbox>
+<hbox>
+<vbox>
+<label value="Red" /> <slider id="sred" slidingtext="">
+</slider>
+<label value="Green" /> <slider id="sgreen" slidingtext="">
+</slider>
+<label value="Blue" /> <slider id="sblue" slidingtext="">
+</slider>
+</vbox>
+<label value="" id="newcolour" />
+</hbox>
+<button id="applyColour" label="change colour" />
+</window>
+
+</zk>

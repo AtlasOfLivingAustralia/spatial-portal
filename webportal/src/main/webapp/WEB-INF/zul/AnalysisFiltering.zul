@@ -15,7 +15,7 @@ This tool filters all species known to the ALA by environmental and contextual d
         ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
     </panel>
 
-    <window apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController" style="padding: 10px">
+    <window id="filteringwindow" apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController" style="padding: 10px">
         <!-- apply="org.ala.spatial.analysis.web.FilteringWCController"  -->
 
         <style>

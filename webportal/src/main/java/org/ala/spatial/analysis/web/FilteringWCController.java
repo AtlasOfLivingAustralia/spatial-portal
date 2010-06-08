@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
+import org.ala.spatial.util.LayersUtil;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
@@ -89,6 +90,9 @@ public class FilteringWCController extends UtilityComposer {
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
+    
+    LayersUtil layersUtil;
+    
     /**
      * for functions in popup box
      */
@@ -106,10 +110,11 @@ public class FilteringWCController extends UtilityComposer {
             geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
+        
+        layersUtil = new LayersUtil(mc, satServer);
 
         selectedLayers = new Vector<String>();
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
-
 
         // init the session on the server and get a pid (process_id)
         pid = getInfo("/filtering/init");
@@ -149,6 +154,16 @@ public class FilteringWCController extends UtilityComposer {
 
         String new_value = "";
 
+        if(lbSelLayers.getItemCount() > 0){
+        	applyFilter();
+        }
+        
+        new_value = cbEnvLayers.getValue();
+        
+        addFilterLayer(new_value);
+   }
+    
+    void addFilterLayer(String new_value){
         try {
 
             /*
@@ -163,28 +178,6 @@ public class FilteringWCController extends UtilityComposer {
 
             System.out.println("Got response from ALOCWSController: \n" + slist);
 
-            //Map classMap = new HashMap();
-            //classMap.put("layer", Layer.class);
-            JSONObject jo = JSONObject.fromObject(slist);
-            //SPLFilter splf = (SPLFilter) JSONObject.toBean(jo, SPLFilter.class, classMap);
-
-            JSONObject lbean = jo.getJSONObject("layer");
-            Layer rLayer = new Layer(lbean.getString("name"), lbean.getString("display_name"), lbean.getString("description"), lbean.getString("type"), null);
-            SPLFilter splf = new SPLFilter();
-            splf.setCount(jo.getInt("count"));
-            splf.setLayername(jo.getString("layername"));
-            //splf.setCatagories(null);
-            splf.setLayer(rLayer);
-            splf.setMinimum_value(jo.getDouble("minimum_value"));
-            splf.setMaximum_value(jo.getDouble("maximum_value"));
-            splf.setMinimum_initial(jo.getDouble("minimum_initial"));
-            splf.setMaximum_initial(jo.getDouble("maximum_initial"));
-            splf.setChanged(jo.getBoolean("changed"));
-            splf.setFilterString(jo.getString("filterString"));
-
-             */
-
-            new_value = cbEnvLayers.getValue();
             if (new_value.equals("") || new_value.indexOf("(") < 0) {
                 return;
             }
@@ -219,6 +212,7 @@ public class FilteringWCController extends UtilityComposer {
                     Listcell lc = new Listcell(filterString); // f.getFilterString()
                     lc.setParent(li);
 
+               
 
                     /*always visible, this bit not required anymore
                      * lc.addEventListener("onClick", new EventListener() {
@@ -270,22 +264,7 @@ public class FilteringWCController extends UtilityComposer {
                         }
                     });
 
-                    // Col 4: Add the action to remove and set onClick event
-                   /* Listcell remove = new Listcell("remove");
-                    remove.setStyle("text-decoration: underline;");
-                    remove.setStyle("width: 30px");
-                    remove.setStyle("text-align: center");
-                    remove.setParent(li);
-                    remove.addEventListener("onClick", new EventListener() {
-
-                    public void onEvent(Event event) throws Exception {
-                    if (!((Listcell) event.getTarget()).getLabel().equals("")
-                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
-                    deleteSelectedFilters(event.getTarget());
-                    }
-                    }
-                    });*/
-
+               
                 }
             });
 
@@ -311,8 +290,6 @@ public class FilteringWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
-
-
     }
 
     private String getFilterString(String layername) {
@@ -443,45 +420,11 @@ public class FilteringWCController extends UtilityComposer {
 
         String imagefilepath = getInfo(sbProcessUrl.toString());
 
-
-        /*
-        for (Object oi : _layer_filters_selected) {
-        SPLFilter f = (SPLFilter) oi;
-
-        if (f.layer.display_name.equals(label)) {
-        ((SPLFilter) oi).count = 0;
-
-        _layer_filters_selected.remove(oi);
-        int i = 0;
-        for (i = 0; i < _layer_filters_original.size(); i++) {
-        if (((SPLFilter) _layer_filters_original.get(i)).layer.display_name.equals(label)) {
-        if (((SPLFilter) _layer_filters_original.get(i)).layer.type.equals("environmental")) {
-        Clients.evalJavaScript("applyFilter(" + i + ",-999,100000);");
-        } else {
-        String javascript = "applyFilterCtx(" + i + ",-2,true);";
-        Clients.evalJavaScript(javascript);
-        }
-        System.out.println("done client applyFilter call for idx=" + i);
-        break;
-        }
-        }
-
-        System.out.println("deleting from seletion list success!");
-
-        break;
-        }
-
-        }
-         * 
-         */
-
         System.out.println("filtering.removing layer: " + "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount());
-        // String label = selectedLayers.get(selectedLayers.size()-1);
-        // "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount()
         mc.removeLayer(label);
 
         selectedLayers.remove(label);
-
+        
         li.detach();
 
         showAdjustPopup(null);
@@ -801,7 +744,6 @@ public class FilteringWCController extends UtilityComposer {
 
             doApplyFilter(pid, popup_filter.layer.display_name, popup_filter.catagories, false);
 
-
         }
 
     }
@@ -893,11 +835,6 @@ public class FilteringWCController extends UtilityComposer {
             // write code for categorical
             doApplyFilter(pid, popup_filter.layer.display_name, popup_filter.getCatagories(), commit);
         }
-
-
-
-
-
     }
 
     private void doApplyFilter(String pid) {
@@ -1038,6 +975,7 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     public void applyFilter() {
+        Clients.showBusy("Applying filter...", true);        
         if (lbSelLayers.getItemCount() == 0) {
             return;
         }
@@ -1141,5 +1079,29 @@ public class FilteringWCController extends UtilityComposer {
         mapComposer = (MapComposer) page.getFellow("mapPortalPage");
 
         return mapComposer;
+    }
+    
+    /**
+     * populate sampling screen with values from active layers
+     * 
+     * only operates if no filter layers present
+     * 
+     * TODO: run this on 'tab' open
+     */        
+    public void callPullFromActiveLayers(){
+    	//already has layers applied, do nothing 
+    	System.out.println("pullFromActiveLayers Filtering count " + lbSelLayers.getItemCount());
+    	if (lbSelLayers.getItemCount() != 0) {
+    		return;
+    	}
+    	
+    	//get top env layer
+    	String layer = layersUtil.getFirstEnvLayer();
+    	
+    	System.out.println("pullFromActiveLayers Filtering layer " + layer);
+    	
+    	if (layer != null) {
+    		addFilterLayer(layer + " (Terrestrial)");
+    	}
     }
 }
