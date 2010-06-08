@@ -1361,7 +1361,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             } else {
                 System.out.println("refreshing exisiting layer");
-                imageLayer.setUri(uri);
+                imageLayer.setUri(uri + "&_lt=" + System.currentTimeMillis());
 
                 // layer already exists, so lets just update that.
                 //refreshActiveLayer(imageLayer);
