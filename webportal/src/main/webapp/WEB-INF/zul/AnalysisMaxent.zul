@@ -17,8 +17,8 @@
         <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 1: Select your species" />
             <vbox>
+                <label>Enter a scientific or common name</label>
                 <!--
-                <label>Search by</label>
                 <radiogroup id="rdgNameSearchType" >
                     <hbox>
                         <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
