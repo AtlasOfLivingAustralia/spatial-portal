@@ -985,8 +985,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         // select the correct accordian tab for above
-        accordionMenu.setSelectedPanel(
-                getTabpanel(portalSession.getCurrentLayerTab()));
+       // accordionMenu.setSelectedPanel(
+        //        getTabpanel(portalSession.getCurrentLayerTab()));
 
         showCurrentMenu();
 
@@ -1004,7 +1004,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             boolean display = portalSession.isUserDefinedViewDisplayable();
 
             getTabpanel(PortalSession.LAYER_USER_TAB).setVisible(display);
-            getTab(PortalSession.LAYER_USER_TAB).setVisible(display);
+            //getTab(PortalSession.MAP_TAB).setVisible(display);
         }
     }
 
