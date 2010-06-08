@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.Layer;
@@ -17,6 +19,7 @@ import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.ArrayUtils;
+import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -60,23 +63,22 @@ public class FilteringWCController extends UtilityComposer {
     public Button remove_continous;
     public Button preview_catagorical;
     public Button preview_continous;
-    
     public Label label_catagorical;
     public Label label_continous;
     public Listbox popup_listbox;
-   // public Textbox popup_results_seek;
+    // public Textbox popup_results_seek;
     public Textbox popup_results_seek;
     public Textbox prs;
     public Button apply_continous;
     public Button apply_catagorical;
     public Button download;
     public Button downloadsamples;
-   // public Listbox popup_listbox_results;
+    // public Listbox popup_listbox_results;
     //public Window popup_results;
-   // public Button results_prev;
-   // public Button results_next;
-   // public Label results_label;
-   // int results_pos;
+    // public Button results_prev;
+    // public Button results_next;
+    // public Label results_label;
+    // int results_pos;
     String[] results = null;
     private List<String> selectedLayers;
     private List _layer_filters = new ArrayList();
@@ -87,8 +89,6 @@ public class FilteringWCController extends UtilityComposer {
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
-    
-    
     /**
      * for functions in popup box
      */
@@ -117,13 +117,38 @@ public class FilteringWCController extends UtilityComposer {
 
     }
 
+    public void onAdded(Event event) throws Exception {
+
+        try {
+            Messagebox.show("Filtered3");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(FilteringWCController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Clients.showBusy("", false);
+        try {
+            Messagebox.show("Filtered. Now adding new layer: " + cbEnvLayers.getValue());
+            doAdd();
+        } catch (Exception e) {
+            System.out.println("Opps added new layer");
+            e.printStackTrace(System.out);
+        }
+
+    }
+
     public void onChange$cbEnvLayers(Event event) {
+        //Clients.showBusy("Applying filter...", true);
+        //Events.echoEvent("onAdded", this, null);
+        //applyFilter();
+
+        //doAdd();
+
+        applyFilter(true);
+    }
+
+    public void doAdd() {
+
         String new_value = "";
 
-        if(lbSelLayers.getItemCount() > 0){
-        	applyFilter();
-        }
-        
         try {
 
             /*
@@ -194,16 +219,16 @@ public class FilteringWCController extends UtilityComposer {
                     Listcell lc = new Listcell(filterString); // f.getFilterString()
                     lc.setParent(li);
 
-                    
+
                     /*always visible, this bit not required anymore
                      * lc.addEventListener("onClick", new EventListener() {
 
-                        public void onEvent(Event event) throws Exception {
-                            if (!((Listcell) event.getTarget()).getLabel().equals("")
-                                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
-                                showAdjustPopup(event.getTarget());
-                            }
-                        }
+                    public void onEvent(Event event) throws Exception {
+                    if (!((Listcell) event.getTarget()).getLabel().equals("")
+                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
+                    showAdjustPopup(event.getTarget());
+                    }
+                    }
                     });*/
 
                     // Col 3: Add the species count and set the onClick event
@@ -230,15 +255,15 @@ public class FilteringWCController extends UtilityComposer {
                                  *
                                  */
 
-                            	
+
                                 if (lbSelLayers.getItemCount() > 0) {
-                                	applyFilter();
-                                	java.util.Map args = new java.util.HashMap();                                                     
-                                	args.put("pid",pid);
-                                	Window win = (Window) Executions.createComponents(
+                                    applyFilter();
+                                    java.util.Map args = new java.util.HashMap();
+                                    args.put("pid", pid);
+                                    Window win = (Window) Executions.createComponents(
                                             "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
-                                	win.doModal();
-                                
+                                    win.doModal();
+
                                 }
                             }
                             //}
@@ -253,12 +278,12 @@ public class FilteringWCController extends UtilityComposer {
                     remove.setParent(li);
                     remove.addEventListener("onClick", new EventListener() {
 
-                        public void onEvent(Event event) throws Exception {
-                            if (!((Listcell) event.getTarget()).getLabel().equals("")
-                                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
-                                deleteSelectedFilters(event.getTarget());
-                            }
-                        }
+                    public void onEvent(Event event) throws Exception {
+                    if (!((Listcell) event.getTarget()).getLabel().equals("")
+                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
+                    deleteSelectedFilters(event.getTarget());
+                    }
+                    }
                     });*/
 
                 }
@@ -281,7 +306,7 @@ public class FilteringWCController extends UtilityComposer {
 
             listFix();
 
-            showAdjustPopup(new_value,lc,li);
+            showAdjustPopup(new_value, lc, li);
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -386,18 +411,18 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     public void deleteSelectedFilters(Object o) {
-         Listitem li;
+        Listitem li;
         String label;
-        
+
         popup_continous.setVisible(false);
         popup_catagorical.setVisible(false);
-       
+
         if (o == null) {
             //li = (Listitem) lb.getSelectedItem();
-        	
-        	//change to get last item
-        	int count = lbSelLayers.getItemCount();
-        	li = (Listitem) lbSelLayers.getItemAtIndex(count-1);
+
+            //change to get last item
+            int count = lbSelLayers.getItemCount();
+            li = (Listitem) lbSelLayers.getItemAtIndex(count - 1);
         } else {
             li = (Listitem) ((Listcell) o).getParent();
         }
@@ -451,12 +476,14 @@ public class FilteringWCController extends UtilityComposer {
          */
 
         System.out.println("filtering.removing layer: " + "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount());
-        mc.removeLayer("Filtering - " + pid + " - layer " + lbSelLayers.getItemCount());
+        // String label = selectedLayers.get(selectedLayers.size()-1);
+        // "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount()
+        mc.removeLayer(label);
 
         selectedLayers.remove(label);
 
         li.detach();
-        
+
         showAdjustPopup(null);
 
         listFix();
@@ -467,13 +494,13 @@ public class FilteringWCController extends UtilityComposer {
         List list = lbSelLayers.getItems();
         for (i = 0; list != null && i < list.size() - 1; i++) {
             Listitem li = (Listitem) list.get(i);
-          //  ((Listcell) li.getLastChild()).setLabel("");
+            //  ((Listcell) li.getLastChild()).setLabel("");
 
             li.setDisabled(true);
         }
-       if (list != null && list.size() > 0) {
+        if (list != null && list.size() > 0) {
             Listitem li = (Listitem) list.get(i);
-          //  ((Listcell) li.getLastChild()).setLabel("remove");
+            //  ((Listcell) li.getLastChild()).setLabel("remove");
 
             li.setDisabled(false);
         }
@@ -489,7 +516,7 @@ public class FilteringWCController extends UtilityComposer {
 
             double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
 
-            popup_minimum.setValue(String.format("%.4f",((float) (curpos / 100.0 * range + popup_filter.minimum_initial))));
+            popup_minimum.setValue(String.format("%.4f", ((float) (curpos / 100.0 * range + popup_filter.minimum_initial))));
 
             popup_filter.minimum_value = Double.parseDouble(popup_minimum.getValue());
 
@@ -512,7 +539,7 @@ public class FilteringWCController extends UtilityComposer {
 
             double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
 
-            popup_maximum.setValue(String.format("%.4f",((float) (curpos / 100.0 * range + popup_filter.minimum_initial))));
+            popup_maximum.setValue(String.format("%.4f", ((float) (curpos / 100.0 * range + popup_filter.minimum_initial))));
 
             popup_filter.maximum_value = Double.parseDouble(popup_maximum.getValue());
 
@@ -533,8 +560,8 @@ public class FilteringWCController extends UtilityComposer {
 
             //get the Count cell
             int i = lbSelLayers.getItemCount();
-            if(i < 1){
-            	popup_continous.setVisible(false);
+            if (i < 1) {
+                popup_continous.setVisible(false);
                 popup_catagorical.setVisible(false);
                 return;
             }
@@ -552,8 +579,8 @@ public class FilteringWCController extends UtilityComposer {
             //layername = ((Listcell) list.get(1)).getLabel();
             o = list.get(list.size() - 2);
             System.out.println(li);
-            System.out.println(o);         
-            
+            System.out.println(o);
+
         }
 
         Listcell lc = (Listcell) o;
@@ -572,13 +599,13 @@ public class FilteringWCController extends UtilityComposer {
 
         if (popup_filter.layer.type.equalsIgnoreCase("environmental")) {
 
-        	label_continous.setValue("edit filter: " + layername);
+            label_continous.setValue("edit filter: " + layername);
             //String csv = getInfo(layername,"extents");
-            String csv = String.format("%.4f",(float)popup_filter.minimum_value) + " - " + String.format("%.4f",(float)popup_filter.maximum_value);
+            String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
             popup_range.setValue(csv);
 
-            popup_minimum.setValue(String.format("%.4f", (float)(popup_filter.minimum_value)));
-            popup_maximum.setValue(String.format("%.4f", (float)(popup_filter.maximum_value)));
+            popup_minimum.setValue(String.format("%.4f", (float) (popup_filter.minimum_value)));
+            popup_maximum.setValue(String.format("%.4f", (float) (popup_filter.maximum_value)));
 
             double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
             int maxcursor = (int) ((popup_filter.maximum_value - popup_filter.minimum_initial)
@@ -602,8 +629,8 @@ public class FilteringWCController extends UtilityComposer {
             popup_catagorical.setVisible(false);
         } else { //catagorical values
 
-        	label_catagorical.setValue("edit filter: " + layername);
-        	
+            label_catagorical.setValue("edit filter: " + layername);
+
             if (popup_filter.catagory_names != null) {
                 System.out.println("popup_filter.catagory_names is NOT null: " + popup_filter.catagory_names.length);
 
@@ -668,10 +695,10 @@ public class FilteringWCController extends UtilityComposer {
         }
 
     }
-    
+
     private void showAdjustPopup(String layername, Listcell lc, Listitem li) {
         System.out.println("sAP.layername: " + layername);
-        
+
         popup_filter = getSPLFilter(layername);
         popup_idx.setValue(layername);
 
@@ -682,14 +709,14 @@ public class FilteringWCController extends UtilityComposer {
 
         if (popup_filter.layer.type.equalsIgnoreCase("environmental")) {
 
-        	label_continous.setValue("edit filter: " + layername);
-        	
+            label_continous.setValue("edit filter: " + layername);
+
             //String csv = getInfo(layername,"extents");
-        	String csv = String.format("%.4f",(float)popup_filter.minimum_value) + " - " + String.format("%.4f",(float)popup_filter.maximum_value);
+            String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
             popup_range.setValue(csv);
 
-            popup_minimum.setValue(String.format("%.4f", (float)(popup_filter.minimum_value)));
-            popup_maximum.setValue(String.format("%.4f", (float)(popup_filter.maximum_value)));
+            popup_minimum.setValue(String.format("%.4f", (float) (popup_filter.minimum_value)));
+            popup_maximum.setValue(String.format("%.4f", (float) (popup_filter.maximum_value)));
 
             double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
             int maxcursor = (int) ((popup_filter.maximum_value - popup_filter.minimum_initial)
@@ -707,13 +734,13 @@ public class FilteringWCController extends UtilityComposer {
             popup_slider_min.setCurpos(mincursor);
             popup_slider_max.setCurpos(maxcursor);
 
-           // lc.focus();
-           // System.out.println("attaching: " + lc + lc.getValue());
+            // lc.focus();
+            // System.out.println("attaching: " + lc + lc.getValue());
             popup_continous.setVisible(true);//.open(li); // .open(30, 30);
             popup_catagorical.setVisible(false);
         } else { //catagorical values
 
-        	label_catagorical.setValue("edit filter: " + layername);
+            label_catagorical.setValue("edit filter: " + layername);
             if (popup_filter.catagory_names != null) {
                 System.out.println("popup_filter.catagory_names is NOT null: " + popup_filter.catagory_names.length);
 
@@ -778,64 +805,64 @@ public class FilteringWCController extends UtilityComposer {
         }
 
     }
-/*
+    /*
     public void onClick$results_prev(Event event) {
-        if (results_pos == 0) {
-            return;
-        }
+    if (results_pos == 0) {
+    return;
+    }
 
-        seekToResultsPosition(results_pos - 15);
+    seekToResultsPosition(results_pos - 15);
     }
 
     public void onClick$results_next(Event event) {
-        if (results_pos + 15 >= results.length) {
-            return;
-        }
+    if (results_pos + 15 >= results.length) {
+    return;
+    }
 
-        seekToResultsPosition(results_pos + 15);
+    seekToResultsPosition(results_pos + 15);
     }
 
     public void onClick$download() {
-        if (lbSelLayers.getItemCount() > 0) {
-            StringBuffer sb = new StringBuffer();
-            for (String s : results) {
-                sb.append(s);
-                sb.append("\r\n");
-            }
-            Filedownload.save(sb.toString(), "text/plain", "filter.csv");
-        } else {
-        }
+    if (lbSelLayers.getItemCount() > 0) {
+    StringBuffer sb = new StringBuffer();
+    for (String s : results) {
+    sb.append(s);
+    sb.append("\r\n");
+    }
+    Filedownload.save(sb.toString(), "text/plain", "filter.csv");
+    } else {
+    }
     }
 
     public void onClick$downloadsamples() {
-        if (lbSelLayers.getItemCount() > 0) {
-            try {
-                StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append("/filtering/apply");
-                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-                sbProcessUrl.append("/samples/list");
-                //String point = lb_points.getValue();
-                //if (point.length() == 0) {
-                //    point = "none";
-                //}
-                //sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
-                sbProcessUrl.append("/shape/none");
-                System.out.println("attempt to download: " + satServer + "/alaspatial/ws" + sbProcessUrl.toString());
-                String samplesfile = getInfo(sbProcessUrl.toString());
-                //org.zkoss.zul.Filedownload.save(new URL(outputfile), "application/zip");
-                URL u = new URL(satServer + "/alaspatial/" + samplesfile);
-                System.out.println("opening stream to " + samplesfile); 
-                Filedownload.save(u.openStream(), "application/zip", "filter_samples_" + pid + ".zip");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-        }
+    if (lbSelLayers.getItemCount() > 0) {
+    try {
+    StringBuffer sbProcessUrl = new StringBuffer();
+    sbProcessUrl.append("/filtering/apply");
+    sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+    sbProcessUrl.append("/samples/list");
+    //String point = lb_points.getValue();
+    //if (point.length() == 0) {
+    //    point = "none";
+    //}
+    //sbProcessUrl.append("/shape/" + URLEncoder.encode(point, "UTF-8"));
+    sbProcessUrl.append("/shape/none");
+    System.out.println("attempt to download: " + satServer + "/alaspatial/ws" + sbProcessUrl.toString());
+    String samplesfile = getInfo(sbProcessUrl.toString());
+    //org.zkoss.zul.Filedownload.save(new URL(outputfile), "application/zip");
+    URL u = new URL(satServer + "/alaspatial/" + samplesfile);
+    System.out.println("opening stream to " + samplesfile);
+    Filedownload.save(u.openStream(), "application/zip", "filter_samples_" + pid + ".zip");
+    } catch (Exception e) {
+    e.printStackTrace();
+    }
+    } else {
+    }
     }*/
 
     /*public void onChange$popup_results_seek(InputEvent event) {
-        if (!event.isChangingBySelectBack()) {
-            System.out.println("onchange triggered");
+    if (!event.isChangingBySelectBack()) {
+    System.out.println("onchange triggered");
     /*
     public void onChange$popup_results_seek(InputEvent event) {
     if (!event.isChangingBySelectBack()) {
@@ -845,7 +872,6 @@ public class FilteringWCController extends UtilityComposer {
     }
      *
      */
-
     private void serverFilter(boolean commit) {
         double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
         double maxcurpos = ((popup_filter.maximum_value - popup_filter.minimum_initial)
@@ -957,49 +983,47 @@ public class FilteringWCController extends UtilityComposer {
         System.out.println("applycontinous" + event.toString());
         applyFilter();
     }
-    
+
     public void onClick$remove_continous(Event event) {
-    	deleteSelectedFilters(null);
+        deleteSelectedFilters(null);
     }
-    
+
     public void onClick$preview_continous(Event event) {
-    	try{
-    		applyFilter();
-    	if (lbSelLayers.getItemCount() > 0) {
-    		
-    		java.util.Map args = new java.util.HashMap();                                                     
-        	args.put("pid",pid);
-    		Window win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
-        	win.doModal();
+        try {
+            applyFilter();
+            if (lbSelLayers.getItemCount() > 0) {
+
+                java.util.Map args = new java.util.HashMap();
+                args.put("pid", pid);
+                Window win = (Window) Executions.createComponents(
+                        "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
+                win.doModal();
+            }
+        } catch (Exception e) {
         }
-    	}catch(Exception e){
-    		
-    	}
     }
 
     public void onClick$apply_catagorical(Event event) {
         System.out.println("applycontinous" + event.toString());
         applyFilter();
     }
-    
+
     public void onClick$remove_catagorical(Event event) {
-    	deleteSelectedFilters(null);
+        deleteSelectedFilters(null);
     }
-    
+
     public void onClick$preview_catagorical(Event event) {
-    	try{
-    	if (lbSelLayers.getItemCount() > 0) {
-    		applyFilter();
-    		java.util.Map args = new java.util.HashMap();                                                     
-        	args.put("pid",pid);
-    		Window win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
-        	win.doModal();
+        try {
+            if (lbSelLayers.getItemCount() > 0) {
+                applyFilter();
+                java.util.Map args = new java.util.HashMap();
+                args.put("pid", pid);
+                Window win = (Window) Executions.createComponents(
+                        "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
+                win.doModal();
+            }
+        } catch (Exception e) {
         }
-    	}catch(Exception e){
-    		
-    	}
     }
 
     public void onLater(Event event) throws Exception {
@@ -1007,9 +1031,36 @@ public class FilteringWCController extends UtilityComposer {
         Clients.showBusy("", false);
     }
 
+    public void onLateron(Event event) throws Exception {
+        applyFilterEvented();
+        doAdd(); 
+        Clients.showBusy("", false);
+    }
+
     public void applyFilter() {
+        if (lbSelLayers.getItemCount() == 0) {
+            return;
+        }
+
         Clients.showBusy("Applying filter...", true);
         Events.echoEvent("onLater", this, null);
+    }
+
+    public void applyFilter(boolean doAdd) {
+        if (lbSelLayers.getItemCount() == 0) {
+            
+            if (doAdd) doAdd();
+            
+            return;
+        }
+
+        if (doAdd) {
+            Clients.showBusy("Applying filter...", true);
+            Events.echoEvent("onLateron", this, null);
+        } else {
+            applyFilter(); 
+        }
+        //if (doAdd) doAdd();
     }
 
     private void applyFilterEvented() {
@@ -1063,7 +1114,7 @@ public class FilteringWCController extends UtilityComposer {
 
     private void loadMap(String filename) {
         String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
-        label = selectedLayers.get(selectedLayers.size()-1); 
+        label = selectedLayers.get(selectedLayers.size() - 1);
         String uri = satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
         float opacity = Float.parseFloat("0.75");
 
