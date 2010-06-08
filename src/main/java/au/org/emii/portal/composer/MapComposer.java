@@ -367,11 +367,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         Session session = (Session) Sessions.getCurrent();
 
+        /*
         if (rdoCommonSearch.isChecked()) {
             searchCommonName(sSearchTerm);
         } else {
             mapSpeciesByName(sSearchTerm);
         }
+         *
+         */
+
+        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
+        if (spVal.trim().startsWith("Scientific")) {
+            //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+            sSearchTerm = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+        }
+        mapSpeciesByName(sSearchTerm);
 
         btnSearchSpecies.setVisible(false);
 

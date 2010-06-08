@@ -383,25 +383,30 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <tabbox mold="accordion">
                                 <tabs>
                                     <tab label="Map species occurrences" />
-                                    <tab label="Map gazetteer features" />
-                                    <tab id="realtimeTab" label="Add data library layer" if="${! settings.disableRealtime}"/>
-                                    <tab label="Add user defined layer" />
+                                    <tab label="Map locations" />
+                                    <tab id="realtimeTab" label="Map environment or context" if="${! settings.disableRealtime}"/>
+                                    <tab label="Map WMS layer" />
                                 </tabs>
                                 <tabpanels>
                                     <tabpanel>
                                         <div>
-                                            <label>Search by</label>
+                                            <!--
                                             <radiogroup id="rdgNameSearchType" >
                                                 <hbox>
                                                     <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
                                                     <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
                                                 </hbox>
                                             </radiogroup>
+                                            -->
+                                            <vbox>
+                                            <label>Enter a scientific or common name</label>
+                                            
                                             <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                                                 <comboitem label=""/>
                                             </combobox>
-
+                                            
                                             <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
+                                            </vbox>
 
                                             <html>
                                                 <![CDATA[ <br> ]]>
@@ -431,7 +436,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <tabpanel>
                                         <div>
                                             <vbox width="100%">
-                                                <label value="Enter Place Name" />
+                                                <label value="Enter place name" />
                                                 <hbox>
                                                     <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
                                                     <button id="gazSearch" label="Add to Map" />

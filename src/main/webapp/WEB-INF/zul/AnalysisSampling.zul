@@ -31,13 +31,15 @@ This tool samples environmental and contextual data layers at locations defined 
         <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 1: Select your species" />
             <vbox>
-                <label>Search by</label>
+                <label>Enter a scientific or common name</label>
+                <!--
                 <radiogroup id="rdgNameSearchType" >
                     <hbox>
                         <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
                         <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
                     </hbox>
                 </radiogroup>
+                -->
                 <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                     <comboitem label=""/>
                 </combobox>
@@ -46,7 +48,7 @@ This tool samples environmental and contextual data layers at locations defined 
             </vbox>
         </groupbox>
 
-		<groupbox mold="3d" style="width: 95%; padding: 5px">
+		<groupbox mold="3d" style="width: 95%; padding: 5px" visible="false">
             <caption label="Step 2. Restrict samples to a polygon drawn on the map" />
             <vbox>
         <hbox>

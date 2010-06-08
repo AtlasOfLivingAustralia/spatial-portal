@@ -1,6 +1,8 @@
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.PortalSessionUtilities;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -18,6 +20,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Label;
 
 /**
  *
@@ -63,7 +66,7 @@ public class SpeciesAutoComplete extends Combobox {
     @Override
     public void setValue(String value) {
         super.setValue(value);
-        refresh(value); //refresh the child comboitems
+        //refresh(value); //refresh the child comboitems
         //refreshJSON(value);
     }
 
@@ -149,7 +152,7 @@ public class SpeciesAutoComplete extends Combobox {
 
         // Start by constraining the search to a min 3-chars
         if (val.length() < 3) {
-            getItems().clear();
+            //getItems().clear();
             return;
         }
 
@@ -239,6 +242,10 @@ public class SpeciesAutoComplete extends Combobox {
                         String taxon = spVal[0].trim();
                         taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1).toLowerCase();
 
+                        //Label hiddenVal = new Label();
+                        //hiddenVal.setValue(spVal[1].trim());
+                        //hiddenVal.setVisible(false);
+
                         Comboitem myci = null;
                         if (it != null && it.hasNext()) {
                             myci = ((Comboitem) it.next());
@@ -250,6 +257,14 @@ public class SpeciesAutoComplete extends Combobox {
                         }
                         myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim() + " records");
                         myci.setDisabled(false);
+                        //hiddenVal.setParent(myci);
+                        
+                        if (spVal[1].trim().startsWith("Scientific")) {
+                            //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+                            myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":") + 1).trim());
+                        } else {
+                            myci.setValue(taxon);
+                        }
 
                         // since we are sorting and interleaving all names
                         // the common names ('contains') might be on the top

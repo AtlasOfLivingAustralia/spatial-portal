@@ -81,7 +81,6 @@ public class MaxentWCController extends UtilityComposer {
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
-    
     LayersUtil layersUtil;
 
     @Override
@@ -107,8 +106,8 @@ public class MaxentWCController extends UtilityComposer {
                 geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
                 satServer = settingsSupplementary.getValue(SAT_URL);
             }
-            
-            layersUtil = new LayersUtil(mc,satServer);
+
+            layersUtil = new LayersUtil(mc, satServer);
 
             setupEnvironmentalLayers();
         } catch (Exception e) {
@@ -122,7 +121,7 @@ public class MaxentWCController extends UtilityComposer {
      * and setup the listbox
      */
     private void setupEnvironmentalLayers() {
-        try {          
+        try {
             String[] aslist = layersUtil.getEnvironmentalLayers();
 
             if (aslist.length > 0) {
@@ -446,10 +445,20 @@ public class MaxentWCController extends UtilityComposer {
          */
 
         String taxon = sac.getValue();
-        // check if its a common name, if so, grab the scientific name
-        if (rdoCommonSearch.isChecked()) {
-            taxon = getScientificName();
+
+        String spVal = sac.getSelectedItem().getDescription();
+        if (spVal.trim().startsWith("Scientific")) {
+            //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
         }
+
+
+        System.out.println(">>>>> " + taxon);
+
+        // check if its a common name, if so, grab the scientific name
+        //if (rdoCommonSearch.isChecked()) {
+        //    taxon = getScientificName();
+        //}
         taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
         mc.mapSpeciesByName(taxon);
     }
@@ -508,33 +517,33 @@ public class MaxentWCController extends UtilityComposer {
 
         return taxon;
     }
-    
+
     /**
      * populate sampling screen with values from active layers
      * 
      * TODO: run this on 'tab' open
      */
-    public void callPullFromActiveLayers(){
-    	//get top species and list of env/ctx layers
-    	String species = layersUtil.getFirstSpeciesLayer();
-    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
-    	
-    	/* set species from layer selector */
-    	if (species != null) {
-    		sac.setValue(species);
-    	}
-    	
-    	/* set as selected each envctx layer found */
-    	if (layers != null) {
-	    	List<Listitem> lis = lbenvlayers.getItems();
-	    	for (int i = 0; i < lis.size(); i++) {
-	    		for (int j = 0; j < layers.length; j++) {
-	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-	    				lbenvlayers.addItemToSelection(lis.get(i));
-	    				break;
-	    			}
-	    		}
-	    	}    	
-    	}
+    public void callPullFromActiveLayers() {
+        //get top species and list of env/ctx layers
+        String species = layersUtil.getFirstSpeciesLayer();
+        String[] layers = layersUtil.getActiveEnvCtxLayers();
+
+        /* set species from layer selector */
+        if (species != null) {
+            sac.setValue(species);
+        }
+
+        /* set as selected each envctx layer found */
+        if (layers != null) {
+            List<Listitem> lis = lbenvlayers.getItems();
+            for (int i = 0; i < lis.size(); i++) {
+                for (int j = 0; j < layers.length; j++) {
+                    if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+                        lbenvlayers.addItemToSelection(lis.get(i));
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
