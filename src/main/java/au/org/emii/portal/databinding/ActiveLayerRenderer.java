@@ -71,6 +71,20 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		remove.setParent(listcell);
 		remove.setStyle("float:right;");
 		remove.setTooltiptext("remove layer");
+
+                Image info = new Image(languagePack.getLang("layer_info_icon"));
+                info.setParent(listcell);
+                info.setStyle("float:right;");
+                info.setTooltiptext("metadata");
+
+
+                Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
+                zoomextent.setParent(listcell);
+                zoomextent.setStyle("float:right");
+                zoomextent.setTooltiptext("zoom to extent");
+
+                
+
 		
 		if (layer.isDefaultStyleLegendUriSet()) {
 			/* animated layers get a "special" key icon
@@ -92,7 +106,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 			}
 			else {
 				// just a plain layer
-				legend = new Image(languagePack.getLang("map_legend_icon"));
+				legend = new Image(languagePack.getLang("layer_legend_icon"));
 			}
 			
 			/* hack to get things to align properly - want everything
@@ -102,6 +116,8 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 			legend.setStyle("float:right;");
 			
 			legend.setParent(listcell);
+
+
 			
 			// hover a tooltip image over the icon
 			Popup popup = (Popup) Executions.createComponents("/WEB-INF/zul/LegendPopup.zul", legend.getRoot(), null);	
@@ -109,7 +125,20 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 			legend.setTooltip(popup);
 			legend.addEventListener("onClick", new LegendClickEventListener(layer));
 
-		}		
+		} else {
+                    Image legend;
+                    legend = new Image(languagePack.getLang("layer_legend_icon"));
+                    legend.setStyle("float:right;");
+		    legend.setParent(listcell);
+                    legend.setTooltip("View/edit the legend");
+                }
+
+                
+
+                //Image legend = new Image(languagePack.getLang("layer_le_icon"));
+                //info.setParent(listcell);
+
+
 	}
 
     public LanguagePack getLanguagePack() {

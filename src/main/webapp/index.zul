@@ -370,14 +370,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </tabbox>
                         </div>
 
-                        <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
-                            <label sclass="h2 title" value="The Atlas of Living Australia Mapping Toolkit" />
-                            <label value="here is a lot of text desribibg our fabulous tool" />
-
+                        <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">                          
                             <leftMenuLinks id="leftMenuLinks" />
-
-
-
                         </div>
                         <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
                             <tabbox mold="accordion">
