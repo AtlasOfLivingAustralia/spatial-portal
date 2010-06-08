@@ -26,7 +26,7 @@
             <tab id="maxentTab" label="Prediction"  />
 
             <!--  aloc -->
-            <tab id="alocTab" label="Classification"  />
+            <tab id="alocTab" label="Classification" selected="true"  />
 
         </tabs>
         <tabpanels>

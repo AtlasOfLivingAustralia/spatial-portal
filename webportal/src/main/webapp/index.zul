@@ -338,7 +338,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </div>
 
                             <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
-                                <tabs>                                  
+                                <tabs>
                                     <tab id="startNavigationTab" label="Intro" />
                                     <tab id="mapNavigationTab" label="Map" />
                                     <tab id="areaNavigationTab" label="Area" />
@@ -351,7 +351,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
                             <label sclass="h2 title" value="The Atlas of Living Australia Mapping Toolkit" />
                             <label value="here is a lot of text desribibg our fabulous tool" />
-                            
+
                             <leftMenuLinks id="leftMenuLinks" />
 
 
@@ -362,51 +362,97 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <tabs>
                                     <tab label="Map species occurrences" />
                                     <tab label="Map gazetteer features" />
+                                    <tab id="realtimeTab" label="Add data library layer" if="${! settings.disableRealtime}"/>
+                                    <tab label="Add user defined layer" />
                                 </tabs>
                                 <tabpanels>
                                     <tabpanel>
                                         <div>
-                                        <label>Search by</label>
-                                        <radiogroup id="rdgNameSearchType" >
-                                            <hbox>
-                                                <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
-                                                <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
-                                            </hbox>
-                                        </radiogroup>
-                                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
-                                            <comboitem label=""/>
-                                        </combobox>
+                                            <label>Search by</label>
+                                            <radiogroup id="rdgNameSearchType" >
+                                                <hbox>
+                                                    <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
+                                                    <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
+                                                </hbox>
+                                            </radiogroup>
+                                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                                                <comboitem label=""/>
+                                            </combobox>
 
-                                        <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
+                                            <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
 
-                                        <html>
-                                            <![CDATA[ <br> ]]>
-                                        </html>
-                                        <html>
-                                            <![CDATA[ <br> ]]>
-                                        </html>
+                                            <html>
+                                                <![CDATA[ <br> ]]>
+                                            </html>
+                                            <html>
+                                                <![CDATA[ <br> ]]>
+                                            </html>
+                                        </div>
+
+                                        <div id="facilityControls">
+                                            <zk forEach="${session.attributes.portalSession.facilities}">
+                                                <div visible="false">
+                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                                           tooltiptext="${each.value.description}" sclass="tabheader"
+                                                           forward="onCheck=onSelectFacility()">
+
+                                                        <custom-attributes systemId="${each.value.id}" />
+                                                    </radio>
+                                                    <tree id="tree_${each.value.id}" />
+                                                </div>
+                                            </zk>
+
+                                        </div>
+
+
+                                    </tabpanel>
+                                    <tabpanel>
+                                        <div>
+                                            <vbox width="100%">
+                                                <label value="Enter Place Name" />
+                                                <hbox>
+                                                    <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                    <button id="gazSearch" label="Add to Map" />
+                                                    <label id="resultGaz" />
+                                                </hbox>
+                                                <listbox id="gazetteerResults" fixedLayout="true" visible="false">
+                                                    <listhead>
+                                                        <listheader label="Name"/>
+                                                        <listheader label="View" />
+                                                    </listhead>
+                                                </listbox>
+                                            </vbox>
                                         </div>
                                     </tabpanel>
                                     <tabpanel>
-                                         <div>
-                                                <vbox width="100%">
-                                                    <label value="Enter Place Name" />
-                                                    <hbox>
-                                                        <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
-                                                        <button id="gazSearch" label="Add to Map" />
-                                                        <label id="resultGaz" />
-                                                    </hbox>
-                                                    <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                        <listhead>
-                                                            <listheader label="Name"/>
-                                                            <listheader label="View" />
-                                                        </listhead>
-                                                    </listbox>
-                                                </vbox>
-                                            </div>
+                                        <div id="realtimeControls">
+                                            <zk forEach="${session.attributes.portalSession.realtimes}">
+                                                <div>
+                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                                           tooltiptext="${each.value.description}" sclass="tabheader"
+                                                           forward="onCheck=onSelectRealtime()">
+                                                        <custom-attributes systemId="${each.value.id}" />
+                                                    </radio>
+                                                    <tree id="tree_${each.value.id}" />
+                                                </div>
+                                            </zk>
+                                        </div>
                                     </tabpanel>
 
-
+                                    <tabpanel  id="userTabPanel" >
+                                        <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">
+                                            <button id="addExtLayersButton" label="Add Layers from a WMS server" />
+                                        </div>-->
+                                        <div zclass="tabpanel_cnt" id="addLayer" visible="true">
+                                            <addLayer id="addLayerMacro" />
+                                        </div>
+                                        <tree id="tree_user">
+                                            <treecols>
+                                                <treecol width="90%" />
+                                                <treecol width="10%" />
+                                            </treecols>
+                                        </tree>
+                                    </tabpanel>
                                 </tabpanels>
 
 
@@ -559,20 +605,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                 <separator sclass="hr" height="2px" />
 
-
-
-
                                 <div id="transectControl" visible="false" >
                                     <separator sclass="hr" height="10px" />
                                     <label value="Turn on transect graphing for this layer" />
                                     <image id="turnonTransectDrawing" src="img/draw.png" style="width:16px" />
                                 </div>
-
-
-
                                 <!--  animation  -->
                                 <animationControlsComposer id="animationControlsComposer" />
-
                             </div>
 
 
@@ -616,142 +655,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 </treecols>
                             </tree>
 
-                            <radiogroup>
-                                <tabbox id="accordionMenu"  tooltip="yes" >
-                                    <tabs>
-                                        <!--  facilities -->
-                                        <tab id="facilitiesTab" label="Species" if="${! settings.disableFacility}" />
-
-                                        
-                                        <!--  regions -->
-                                        <tab id="regionsTab" label="Environment" if="${! settings.disableRegion}" visible="false"/>
-
-                                        <!--  realtime -->
-                                        <tab id="realtimeTab" label="Environment" if="${! settings.disableRealtime}"/>
-
-                                        <!--  user defined -->
-                                        <tab id="userTab" label="User Defined" if="${! settings.disableUserDefined}"/>
-                                    </tabs>
-                                    <tabpanels>
-
-                                        <!--  facilities -->
-                                        <tabpanel zclass="tabpanel_cnt" id="facilitiesTabPanel">
-                                            <tabbox id="tbBiology" width="100%" mold="accordion">
-                                                <tabs>
-                                                    <tab label="Search for species"/>
-                                                    <tab label="Browse species"/>
-                                                </tabs>
-                                                <tabpanels>
-                                                    <tabpanel>
-                                                        <div>
-                                                            <label value="test" />
-
-                                                        </div>
-                                                    </tabpanel>
-                                                    <tabpanel>
-                                                        <div id="facilityControls">
-                                                            <zk forEach="${session.attributes.portalSession.facilities}">
-                                                                <div visible="false">
-                                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                                           tooltiptext="${each.value.description}" sclass="tabheader"
-                                                                           forward="onCheck=onSelectFacility()">
-
-                                                                        <custom-attributes systemId="${each.value.id}" />
-                                                                    </radio>
-                                                                    <tree id="tree_${each.value.id}" />
-                                                                </div>
-                                                            </zk>
-                                                            <html><![CDATA[
-
-                                                                    <div style="width:inherit;" >
-                                                                        <a href="http://data.ala.org.au/species/" target="_blank" class="external wrap" title="ALA Species Data">ALA Species Data</a><BR>
-                                                                    </div>
-
-                                                                        ]]>
-                                                            </html>
-                                                        </div>
-
-
-                                                    </tabpanel>
-                                                </tabpanels>
-                                            </tabbox>
-
-
-
-
-
-
-                                        </tabpanel>
-
-                                       
-
-                                        <!--  Regions -->
-                                        <tabpanel zclass="tabpanel_cnt" id="regionsTabPanel" visible="false">
-
-
-                                            <div id="regionControls" >
-                                                <zk forEach="${session.attributes.portalSession.regions}">
-                                                    <div>
-                                                        <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                               tooltiptext="${each.value.description}" sclass="tabheader"
-                                                               forward="onCheck=onSelectRegion()">
-                                                            <custom-attributes systemId="${each.value.id}" />
-                                                        </radio>
-
-                                                        <tree id="tree_${each.value.id}" />
-                                                    </div>
-                                                </zk>
-                                            </div>
-
-                                        </tabpanel>
-                                        <!--  realtime -->
-                                        <tabpanel zclass="tabpanel_cnt" id="realtimeTabPanel">
-
-                                            <tabbox id="context" width="100%" mold="accordion">
-                                                <tabs>
-                                                    <tab label="Browse Environment Layers"/>
-                                                </tabs>
-                                                <tabpanels>
-                                                    <tabpanel>
-
-
-
-
-                                                        <div id="realtimeControls">
-                                                            <zk forEach="${session.attributes.portalSession.realtimes}">
-                                                                <div>
-                                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                                           tooltiptext="${each.value.description}" sclass="tabheader"
-                                                                           forward="onCheck=onSelectRealtime()">
-                                                                        <custom-attributes systemId="${each.value.id}" />
-                                                                    </radio>
-                                                                    <tree id="tree_${each.value.id}" />
-                                                                </div>
-                                                            </zk>
-                                                        </div>
-                                                    </tabpanel>
-                                                </tabpanels>
-                                            </tabbox>
-                                        </tabpanel>
-                                        <!--  user defined layers-->
-                                        <tabpanel zclass="tabpanel_cnt" id="userTabPanel" >
-                                            <div align="right" style="margin-right:5px;" sclass="resetdiv">
-                                                <button id="addExtLayersButton" label="Add Layers from a WMS server" />
-                                            </div>
-                                            <div zclass="tabpanel_cnt" id="addLayer" visible="false">
-                                                <addLayer id="addLayerMacro" />
-                                            </div>
-                                            <tree id="tree_user">
-                                                <treecols>
-                                                    <treecol width="90%" />
-                                                    <treecol width="10%" />
-                                                </treecols>
-                                            </tree>
-                                        </tabpanel>
-
-                                    </tabpanels>
-                                </tabbox>
-                            </radiogroup>
+                           
                         </div>
 
 
