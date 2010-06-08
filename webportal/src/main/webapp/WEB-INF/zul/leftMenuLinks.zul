@@ -3,80 +3,73 @@
 <zk>
     
 <div sclass="spaced" style="padding:10px" >
-		
-	
-        <separator height="20" />
-        
-	
-	<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
-	
-			<!--  external links -->
-			<span sclass="list">
-			<toolbarbutton 
-				if="${each.external}"
-				label="${each.name}" 
-				tooltiptext="${each.description}" 
-				zclass="external"
-				href="${each.uri}"
-				orient="vertical" />					
-			</span>	
-			<!--  internal links -->
-			<toolbarbutton 
-				if="${! each.external}"
-				label="${each.name}" 
-				tooltiptext="${each.description}" 
-				zclass="list"
-				forward="onClick=${mapPortalPage}.onActivateLink">
-				<custom-attributes link="${each}" />							
-			</toolbarbutton> 
-			
-		
-		
-	</zk>
-	
-	
-	
-	<span sclass="list">
-	<html><![CDATA[ 
-	               
-	<span sclass="list">	   			            
- 		<a href="http://imosmest.aodn.org.au" class="external wrap">IMOS MEST</a>
- 	</span>
 
-     <h3>IMOS Data Tools</h3>
+        <html>
 
-    <p><A class="external" href="http://code.google.com/p/imos-toolbox" name="Matlab Toolbox">Matlab Toolbox</A> - data processing and Visualisation<BR>
-    <small>(No Matlab licence required)</small>
-    </p>
+            <![CDATA[
 
-    <p><A class="external" href="https://df.arcs.org.au/ARCS/projects/IMOS/public/ANFOG/Glider_visualisation_tool" name="Glider data visualisation">Glider Data Visualisation Tool</A>
-    <small>(Windows installation)</small>
-    </p>
- 	
-    
-	]]></html>
-	</span>
+            <h2>The Spatial Portal</h2>
 
-        <separator height="20" />
-		
-	<label value="Related"  sclass="h3"/>
+            <br>
+
+            <h3> This is the location focused view of the Atlas. With this perspective, you can
+            <br> Map three types of spatial data</h3>
+
+            <li>species, or any taxonomic level to Class</li>
+            <li>Locations from the gazetteer</li>
+            <li>Environmental (grids) or contextual (polygons)</li>
+
+            <br>
+            <h3>Define an area of interest to apply across the spatial portal </h3>
+
+            <li> The extent of the map window</li>
+            <li>A rectangle drawn on the map</li>
+            <li>A polygon drawn on the map</li>
+            <li> A polygon selected on the map</li>
+            <li>An environmental envelope</li>
+            <br>
+            <h3> Analyse spatial data </h3>
+
+            <li>Sample environmental and contextual data at species locations
+            <li>Predict where a species could occur
+            <li>Classify environmental layers (environmental domains)
+            <h3>        Manage all mapped data. </h3>
+            <li>Mapped data is added to the top of the listed layers.</li>
+            <li>Layers can be deleted, metadata listed, zoomed to (spatial extent) and a legend displayed.</li>
+            <li>In most cases, the legend can be used to modify the associated data.</li>
+
+            ]]>
+
+
+        </html>
 	
-	<span sclass="list">
-	<html><![CDATA[  			
-	               
-    <div style="width:inherit;" >
-	<a href="http://www.arcs.org.au" class="external wrap" title="Australian Research Collaboration Service">Australian Research Collaboration Service (ARCS)</a><BR>
-	<a href="http://www.aodc.gov.au" class="external wrap" title="Australian Ocean Data Centre Joint Facility">Australian Ocean Data Centre Joint Facility (AODCJF)</a> <BR>
-	<a href="http://www.pfc.org.au" class="external wrap" title="Platforms for Collaboration">Platforms for Collaboration</a><BR>
-	<a href="http://www.ands.org.au" class="external wrap" title="Australian National Data Service">Australian National Data Service (ANDS)</a> <BR>
-	<a href="http://ncris.innovation.gov.au" class="external wrap" title="National Collaborative Research Infrastructure Strategy">National Collaborative Research Infrastructure Strategy (NCRIS)</a> <BR>
-	<a href="ftp://ftp.bom.gov.au/anon/home/ntc/james/currents/SEcurrent.loop.shtml" class="external wrap" title="National Tidal Centre - tidal current predictions ">National Tidal Centre - tidal current predictions </a>
-	
-    </div>
-   
-	]]></html>
-	</span>
 	<separator height="15px" />  	
 </div>
+<div>
+<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
 
+			<!--  external links -->
+			<span sclass="list">
+			<toolbarbutton
+				if="${each.external}"
+				label="${each.name}"
+				tooltiptext="${each.description}"
+				zclass="external"
+				href="${each.uri}"
+				orient="vertical" />
+			</span>
+			<!--  internal links -->
+			<toolbarbutton
+				if="${! each.external}"
+				label="${each.name}"
+				tooltiptext="${each.description}"
+				zclass="list"
+				forward="onClick=${mapPortalPage}.onActivateLink">
+				<custom-attributes link="${each}" />
+			</toolbarbutton>
+
+
+
+	</zk>
+</div>
 </zk>
