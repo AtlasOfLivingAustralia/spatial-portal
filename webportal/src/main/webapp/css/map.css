@@ -334,6 +334,33 @@ float: left;
     background-image: url('../img/raa_y.gif');
     height: 25px;
 }
+
+#areaTool {
+    position: absolute;
+    float: left;
+    width: 42px;
+    z-index: 1001;
+    margin-top: 300px;
+    margin-left: 9px;
+	
+}
+
+#areaTool .olControlButtonItemActive {
+  
+    height: 222px;
+    background-image: url("../img/draw_polygon_on.png?");
+    background-position:12px 1px;
+    background-repeat: no-repeat;
+    display: block;
+}
+#areaTool .olControlButtonItemInactive {
+  height: 222px;
+    background-image: url("../img/draw_polygon_off.png?");
+    background-position:12px 1px;
+    background-repeat: no-repeat;
+    display: block;
+}
+
 #navtoolbar .olControlDrawFeatureItemActive {
   
     height: 22px;
@@ -517,6 +544,8 @@ float: left;
 {
     background-position: -1800px 0;
 }
+
+
 
 .olControlOverviewMapElement
 {

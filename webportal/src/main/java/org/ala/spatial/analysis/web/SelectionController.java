@@ -86,7 +86,7 @@ public class SelectionController extends UtilityComposer {
      * Activate the polygon selection tool on the map
      * @param event
      */
-    public void onClick$btnPolygonSelection(Event event) {
+    public void onCheck$rdoPolygonSelection(Event event) {
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addPolygonDrawingTool();
 
@@ -96,7 +96,7 @@ public class SelectionController extends UtilityComposer {
      * Activate the box selection tool on the map
      * @param event
      */
-    public void onClick$btnBoxSelection(Event event) {
+    public void onCheck$rdoBoxSelection(Event event) {
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addBoxDrawingTool();
 
@@ -108,10 +108,10 @@ public class SelectionController extends UtilityComposer {
      */
     public void onChange$selectionGeom(Event event) {
         try {
-            Clients.showBusy("Filtering species, please wait...", true);
-            Events.echoEvent("onDoInit", this, selectionGeom.getValue());
+//            Clients.showBusy("Filtering species, please wait...", true);
+//            Events.echoEvent("onDoInit", this, selectionGeom.getValue());
 
-            //displayGeom.setValue(selectionGeom.getValue());
+            displayGeom.setValue(selectionGeom.getValue());
             //wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
@@ -120,10 +120,10 @@ public class SelectionController extends UtilityComposer {
 
     public void onChange$boxGeom(Event event) {
         try {
-            Clients.showBusy("Filtering species, please wait...", true);
-            Events.echoEvent("onDoInit", this, boxGeom.getValue());
+//            Clients.showBusy("Filtering species, please wait...", true);
+//            Events.echoEvent("onDoInit", this, boxGeom.getValue());
             
-            //displayGeom.setValue(boxGeom.getValue());
+            displayGeom.setValue(boxGeom.getValue());
             //wfsQueryBBox(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
@@ -131,9 +131,14 @@ public class SelectionController extends UtilityComposer {
 
     }
 
-    public void onDoInit(Event event) throws Exception {
+    public void onClick$btnShowSpecies() {
+        Clients.showBusy("Filtering species, please wait...", true);
+            Events.echoEvent("showSpecies", this, displayGeom.getValue());
+    }
+
+    public void showSpecies(Event event) throws Exception {
         String geomData = (String) event.getData();
-        displayGeom.setValue(geomData);
+        //displayGeom.setValue(geomData);
         wfsQueryBBox(geomData);
         Clients.showBusy("", false);
     }

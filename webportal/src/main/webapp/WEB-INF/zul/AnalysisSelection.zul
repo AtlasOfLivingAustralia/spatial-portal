@@ -6,15 +6,27 @@
 
    <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Select Region of Interest" />
-
-	<button label="Polygon Selection" id="btnPolygonSelection"/>
+	<vbox>
+	<radiogroup>
+	    <vbox>
+	    <radio label="From box selection" id="rdoBoxSelection"/>
+	    <radio label="From current view" id="rdoExtentsSelection"/>
+	    <radio label="From digitized polygon" id="rdoPolygonSelection"/>
+	    <radio label="From point and radius" id="rdoPointRadiusSelection"/>
+	    <radio label="From existing feature" id="rdoExistingFeatureSelection"/>
+	    <radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/>
+	    </vbox>
+	<!--<button label="Polygon Selection" id="btnPolygonSelection"/>
 	
 	<button label="Box Selection" id="btnBoxSelection"/>
 
-	<button label="Clear Selection" id="btnClearSelection"/>
-
+	<button label="Clear Selection" id="btnClearSelection"/> -->
+	</radiogroup>
+	</vbox>
+	<vbox>
 	<textbox id="displayGeom" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
-
+	<button label="Show Species" id="btnShowSpecies"/>
+	</vbox>
 	</groupbox>
 	<popup id="popup_results" width="330px">
 <vbox>

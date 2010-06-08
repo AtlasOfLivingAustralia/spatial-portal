@@ -224,6 +224,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Button applyChange;
     private Tab filteringTab;
     private Tab selectionTab;
+    private Textbox tbxArea;
 
     private HtmlMacroComponent ff;
     
@@ -2263,6 +2264,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             }
         }
+    }
+
+    /**
+     * Use the onChange for tbxTabSelection to decide selected tab
+     * tbxTabSelection change event can be triggered via javascript
+     */
+    public void onChange$tbxTabSelection() {
+        areaNavigationTab.setSelected(_visible);
+        onClick$areaNavigationTab();
+        
     }
 
     public void updateUserMapList() {
