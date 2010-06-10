@@ -2,15 +2,12 @@
 <?page title="Links" contentType="text/html;charset=UTF-8" id="leftMenuLinksPage"?>
 <zk>
     
-<div sclass="spaced" style="padding:10px" >
-
+<div sclass="spaced" >
         <html>
 
             <![CDATA[
 
             <h2>The Spatial Portal</h2>
-
-            <br>
 
             <h3> This is the location focused view of the Atlas. With this perspective, you can
             <br> Map three types of spatial data</h3>
@@ -40,11 +37,9 @@
 
             ]]>
 
-
         </html>
-	
-	<separator height="15px" />  	
 </div>
+
 <div>
 <zk forEach="${session.attributes.portalSession.staticMenuLinks}">
 
