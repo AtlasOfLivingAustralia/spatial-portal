@@ -98,10 +98,21 @@ public class TabulationSettings {
 	public static String occurances_csv;
 
 	/**
-	 * occurances csv fields, in hierarchy order ending
-	 * with fields for species, longitude and latitude
+	 * occurances csv fields for use
 	 */
 	public static String [] occurances_csv_fields;
+       
+        /**
+	 * in the same order as occurances_csv_fields_to_index,
+         * "0" to output
+         * "1" to sort
+         * "2" to sort and index
+         * "3" to longitude
+         * "4" to latitude
+         * index field.
+         *
+	 */
+	public static String [] occurances_csv_field_settings;
 
 	/**
 	 * directory for indexes
@@ -255,7 +266,11 @@ public class TabulationSettings {
 		occurances_csv_fields = xr.getValue("occurances_csv_fields").split(",");
 		for(String ocf : occurances_csv_fields){
 			System.out.println(ocf);
-		}
+		}               
+                occurances_csv_field_settings = xr.getValue("occurances_csv_field_settings").split(",");
+		for(String ocf : occurances_csv_field_settings){
+			System.out.println(ocf);
+		}                
 		index_path = xr.getValue("index_path");
 		System.out.println(index_path);
 		

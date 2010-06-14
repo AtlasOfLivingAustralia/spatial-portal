@@ -81,6 +81,16 @@ public class ComplexRegion extends SimpleRegion {
 		return value;
 	}
 
+        /**
+         * gets the bounding box for shapes in this ComplexRegion
+         * 
+         * @return bounding box for ComplexRegion as double [][]
+         */
+        @Override
+	public double [][] getBoundingBox(){
+		return boundingbox_all;
+	}
+
 	/**
 	 * adds a new polygon
 	 * 
@@ -141,7 +151,8 @@ public class ComplexRegion extends SimpleRegion {
 
 			if(mask[lat1][long1] == SimpleRegion.GI_FULLY_PRESENT) {
 				return true;
-			} else if (mask[lat1][long1] == SimpleRegion.GI_UNDEFINED) {		//TODO: || GI_ABSENT
+			} else if (mask[lat1][long1] == SimpleRegion.GI_UNDEFINED
+                                || mask[lat1][long1] == SimpleRegion.GI_ABSENCE) {
 				return false;
 			}
 		}

@@ -57,9 +57,7 @@ Select the environmental and contextual layers you want sampled at the geographi
 </hbox>
 <vbox width="100%">
 <listbox id="lb" multiple="true" checkmark="true" width="100%" rows="12" >
-	<listitem forEach="${win.layers}" value="${each}">
-   		<listcell label="${each.display_name}" onClick="win.showLayerExtents(self)" />
-   </listitem>
+	
 </listbox>
 </vbox>
 <separator/>

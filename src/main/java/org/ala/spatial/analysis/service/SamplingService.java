@@ -8,6 +8,7 @@ import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.index.SamplingIndex;
 import org.ala.spatial.util.Layers;
+import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.TabulationSettings;
 
@@ -39,7 +40,9 @@ public class SamplingService {
 		StringBuffer output = new StringBuffer();
 
 		/* output header */
-		for (String s : TabulationSettings.occurances_csv_fields) {
+		OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+
+		for (String s : ofu.getOutputColumnNames()) {
 			output.append(s);
 			output.append(",");
 		}
@@ -199,7 +202,9 @@ public class SamplingService {
 
 		int number_of_columns = TabulationSettings.occurances_csv_fields.length;
 
-		for (String s : TabulationSettings.occurances_csv_fields) {
+		OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+
+		for (String s : ofu.getOutputColumnNames()) {
 			output.append(s);
 			output.append(",");
 		}
@@ -254,6 +259,9 @@ public class SamplingService {
 					columns.clear();
 
 					sortedrecords = OccurrencesIndex.getSortedRecords(rstart, rend);
+                                        for (String ss : sortedrecords){
+                                            System.out.println(ss + ",");
+                                        }
 					sortedrecords[0] = lastpart + sortedrecords[0];
 
 					columns.add(sortedrecords);
@@ -362,7 +370,9 @@ public class SamplingService {
 	public String sampleSpecies(String filter, String [] layers, SimpleRegion region){
 		StringBuffer output = new StringBuffer();
 
-		for (String s : TabulationSettings.occurances_csv_fields) {
+                OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+
+		for (String s : ofu.getOutputColumnNames()) {
 			output.append(s);
 			output.append(",");
 		}
@@ -387,8 +397,6 @@ public class SamplingService {
 				column_len += layers.length;
 			}
 			ArrayList<String[]> columns = new ArrayList<String[]>(column_len);
-
-		
 
 			try {
 				/* open output file */
@@ -489,6 +497,7 @@ public class SamplingService {
 				fw.close();
 				return temporary_file.getPath();
 			}catch (Exception e){
+                            e.printStackTrace();
 			}
 		}
 

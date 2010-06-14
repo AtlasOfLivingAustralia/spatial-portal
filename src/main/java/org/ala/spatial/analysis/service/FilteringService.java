@@ -15,7 +15,6 @@ import java.util.BitSet;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.index.FilteringIndex;
-import org.ala.spatial.analysis.index.SpeciesRecord;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
@@ -91,7 +90,7 @@ public class FilteringService implements Serializable {
      * for top filter applied in a session
      * 
      */
-    ArrayList<SpeciesRecord> getTopSpeciesRecord() {
+    ArrayList<Integer> getTopSpeciesRecord() {
         /* no filters, return null */
         if (layerfilters.size() == 0) {
             return null;
@@ -105,7 +104,7 @@ public class FilteringService implements Serializable {
                     + session_id + "_filter_" + layerfilters.size());
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
-            ArrayList<SpeciesRecord> rka = (ArrayList<SpeciesRecord>) ois.readObject();
+            ArrayList<Integer> rka = (ArrayList<Integer>) ois.readObject();
             ois.close();
 
             return rka;
@@ -121,7 +120,7 @@ public class FilteringService implements Serializable {
      * for top filter applied in a session
      * 
      */
-    void saveTopSpeciesRecord(ArrayList<SpeciesRecord> speciesrecord) {
+    void saveTopSpeciesRecord(ArrayList<Integer> speciesrecord) {
         try {
             /* write out as object, tag with sessionid, 'filter' and filtersize */
             FileOutputStream fos = new FileOutputStream(
@@ -156,11 +155,11 @@ public class FilteringService implements Serializable {
 
 
             /* get current top speciesrecord */
-            ArrayList<SpeciesRecord> topspeciesrecord = getTopSpeciesRecord();
+            ArrayList<Integer> topspeciesrecord = getTopSpeciesRecord();
 
             /* get new top record key list */
             layerfilters.add(new_filter);
-            ArrayList<SpeciesRecord> newspeciesrecord;
+            ArrayList<Integer> newspeciesrecord;
             if (new_filter.catagories == null) {
                 newspeciesrecord = FilteringIndex.getGridSampleSet(new_filter);
             } else {
@@ -170,25 +169,25 @@ public class FilteringService implements Serializable {
             //reduce size of newspeciesrecord
             int i, j;
             if (topspeciesrecord != null) {
-                ArrayList<SpeciesRecord> output = new ArrayList<SpeciesRecord>(topspeciesrecord.size());
+                ArrayList<Integer> output = new ArrayList<Integer>(topspeciesrecord.size());
 
                 for (i = 0, j = 0; i < topspeciesrecord.size() && j < newspeciesrecord.size(); /*iterator in loop*/) {
-                    if (topspeciesrecord.get(i).record < newspeciesrecord.get(j).record) {
+                    if (topspeciesrecord.get(i).intValue() < newspeciesrecord.get(j).intValue()) {
                         //move forward
                         i++;
-                    } else if (topspeciesrecord.get(i).record == newspeciesrecord.get(j).record) {
+                    } else if (topspeciesrecord.get(i).intValue() == newspeciesrecord.get(j).intValue()) {
                         //save
-                        output.add(topspeciesrecord.get(i));
+                        output.add(topspeciesrecord.get(i).intValue());
 
                         //increment both
                         i++;
                         while (i < topspeciesrecord.size()
-                                && topspeciesrecord.get(i).record == topspeciesrecord.get(i - 1).record) {
+                                && topspeciesrecord.get(i).intValue() == topspeciesrecord.get(i - 1).intValue()) {
                             i++;
                         }
                         j++;
                         while (j < newspeciesrecord.size()
-                                && newspeciesrecord.get(j).record == newspeciesrecord.get(j - 1).record) {
+                                && newspeciesrecord.get(j).intValue() == newspeciesrecord.get(j - 1).intValue()) {
                             j++;
                         }
                     } else {
@@ -271,26 +270,14 @@ public class FilteringService implements Serializable {
         FilteringService fs = FilteringService.getSession(session_id_);
 
         /* get top filter speciesrecord */
-        ArrayList<SpeciesRecord> rk = fs.getTopSpeciesRecord();
+        ArrayList<Integer> rk = fs.getTopSpeciesRecord();
         if (rk == null) {
             return 0;
         }
 
         /* make list of species, for inside region filter */
-        BitSet species = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
-        if (region == null) {
-            //no region, use all
-            for (i = 0; i < rk.size(); i++) {
-                species.set(rk.get(i).species);
-            }
-        } else {
-            for (i = 0; i < rk.size(); i++) {
-                if (OccurrencesIndex.inRegion(rk.get(i).record, region)) {
-                    species.set(rk.get(i).species);
-                }
-            }
-        }
-
+        BitSet species = OccurrencesIndex.getSpeciesBitset(rk, region); //new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+        
         /* count species */
         int count = 0;
         for (i = 0; i < species.length(); i++) {
@@ -316,30 +303,11 @@ public class FilteringService implements Serializable {
         FilteringService fs = FilteringService.getSession(session_id_);
 
         /* get top speciesrecords */
-        ArrayList<SpeciesRecord> rk = fs.getTopSpeciesRecord();
+        ArrayList<Integer> rk = fs.getTopSpeciesRecord();
 
         /* make species list */
-        BitSet species = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
-        if (region == null) {
-            for (i = 0; i < rk.size(); i++) {
-                species.set(rk.get(i).species);
-            }
-        } else {
-            for (i = 0; i < rk.size(); i++) {
-                if (OccurrencesIndex.inRegion(rk.get(i).record, region)) {
-                    species.set(rk.get(i).species);
-                }
-            }
-        }
-
-        /* count */
-        int count = 0;
-        for (i = 0; i < species.length(); i++) {
-            if (species.get(i)) {
-                count++;
-            }
-        }
-
+        BitSet species = OccurrencesIndex.getSpeciesBitset(rk, region);
+       
         /* make into string of species names */
         StringBuffer sb = new StringBuffer();
         for (i = 0; i < species.size(); i++) {
@@ -363,7 +331,7 @@ public class FilteringService implements Serializable {
         FilteringService fs = FilteringService.getSession(session_id_);
 
         /* get top speciesrecord */
-        ArrayList<SpeciesRecord> rk = fs.getTopSpeciesRecord();
+        ArrayList<Integer> rk = fs.getTopSpeciesRecord();
 
         /* get record indexes */
         if (rk.size() == 0) {
@@ -375,7 +343,7 @@ public class FilteringService implements Serializable {
         if (region == null) {
             /* no defined region, use all */
             for (i = 0; i < rk.size(); i++) {
-                records[p++] = rk.get(i).record;
+                records[p++] = rk.get(i);
             }
         } else {
             /* restrict by region */
@@ -384,8 +352,8 @@ public class FilteringService implements Serializable {
              * OccurrencesIndex.getRecordsInside(region)
              */
             for (i = 0; i < rk.size(); i++) {
-                if (OccurrencesIndex.inRegion(rk.get(i).record, region)) {
-                    records[p++] = rk.get(i).record;
+                if (OccurrencesIndex.inRegion(rk.get(i), region)) {
+                    records[p++] = rk.get(i);
                 }
             }
             if (p > 0) {

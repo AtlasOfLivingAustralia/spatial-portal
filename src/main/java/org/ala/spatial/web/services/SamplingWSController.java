@@ -128,8 +128,7 @@ public class SamplingWSController {
 
             List rList = new Vector();
             StringBuilder sbResults = new StringBuilder();
-
-            System.out.println("results: " + results.length + " - " + results[0].length);
+            
             for (int i = 0; i < results.length; i++) {
                 //System.out.println(results[i]);
                 //System.out.println("");
