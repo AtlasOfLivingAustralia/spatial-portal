@@ -209,7 +209,7 @@ public class SimpleRegion extends Object implements Serializable {
 		if (points_ != null && points_.length > 1) {
 			type = POLYGON;
 			int i;
-			
+
 			/* copy and ensure last point == first point */
 			int len = points_.length-1;
 			if (points_[0][0] != points_[len][0] || points_[0][1] != points_[len][1]) {
@@ -527,9 +527,9 @@ public class SimpleRegion extends Object implements Serializable {
 		
 		//setup minimums from bounding box (TODO: should this have -1 on steps?)
 		int xstart = (int)Math.floor((bb[0][0] - minlong)/xstep);
-		int ystart = (int)Math.ceil((bb[1][1] - maxlat)/ystep);
+		int ystart = (int)Math.floor((bb[0][1] - minlat)/ystep);
 		int xend = (int)Math.ceil((bb[1][0] - minlong)/xstep);
-		int yend = (int)Math.floor((bb[0][1] - maxlat)/ystep);		
+		int yend = (int)Math.ceil((bb[1][1] - minlat)/ystep);
 		if (xstart < 0) {
 			xstart = 0;
 		}
@@ -548,8 +548,8 @@ public class SimpleRegion extends Object implements Serializable {
 		int out_height = yend - ystart;
 		int [][] data = new int[out_width*out_height][2];
 		int j,i,p = 0;
-		for (j=ystart; j<=yend; j++) {
-			for (i=xstart; i<=xend; i++) {
+		for (j=ystart; j<yend; j++) {
+			for (i=xstart; i<xend; i++) {
 				data[p][0] = i;
 				data[p][1] = j;
 				p++;

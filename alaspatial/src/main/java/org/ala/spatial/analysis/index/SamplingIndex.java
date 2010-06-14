@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
@@ -68,6 +67,7 @@ public class SamplingIndex implements AnalysisIndexService {
 	/**
 	 * performs update of 'indexing' for new points data
 	 */
+    @Override
 	public void occurancesUpdate(){
 		/*
 		 * for grid files
@@ -78,7 +78,7 @@ public class SamplingIndex implements AnalysisIndexService {
 		 * for shape files of catagorical layers,
 		 * shape files instead of grids
 		 */
-		intersectCatagories();		
+		intersectCatagories();
 	}
 
 	/**
@@ -87,6 +87,7 @@ public class SamplingIndex implements AnalysisIndexService {
 	 * @param layername name of the layer to update as String.  To update
 	 * all layers use null.
 	 */
+    @Override
 	public void layersUpdate(String layername){
 
 	}
@@ -96,6 +97,7 @@ public class SamplingIndex implements AnalysisIndexService {
 	 *
 	 * @return true if index is up to date
 	 */
+    @Override
 	public boolean isUpdated(){
 		return true;
 	}
@@ -198,7 +200,8 @@ public class SamplingIndex implements AnalysisIndexService {
 				SimpleShapeFile ssf = new SimpleShapeFile(
 							TabulationSettings.environmental_data_path
 							+ l.name);
-				
+				(new SpatialLogger()).log("shapefile open: " + l.name);
+
 				/* export catagories				
 				 * TODO: operate on more than one field and remove assumption
 				 * that there is one
@@ -229,7 +232,7 @@ public class SamplingIndex implements AnalysisIndexService {
 						+ CATAGORICAL_PREFIX + tablename + VALUE_POSTFIX,"rw");
 
 				//repeat for each point
-				(new SpatialLogger()).log("intersectCatagories, begin queries");
+				(new SpatialLogger()).log("intersectCatagories, begin intersect: " + points.length);
 				
 				int [] values = ssf.intersect(points, catagories, column_idx);
 				
@@ -237,10 +240,13 @@ public class SamplingIndex implements AnalysisIndexService {
 					raf.writeShort((short)values[i]);
 				}
 				raf.close();
+                                
+                                (new SpatialLogger()).log("shapefile done: " + l.name);
 			} catch (Exception e) {
 				(new SpatialLogger()).log("intersectCatagories",
 						e.toString() + "\r\n>query="+ query + "\r\n>i=" + i
 						+ "\r\n>longitude, latitude=" + longitude + "," + latitude);
+                                e.printStackTrace();
 			}
 		}
 	}
@@ -261,7 +267,7 @@ public class SamplingIndex implements AnalysisIndexService {
 		 * gridded data is 4byte double
 		 * catagorical data is 4byte int
 		 */
-
+System.out.println("getRecords(" + layer_name + ","+ record_start + "," + record_end + ")");
 		try {
 			int i;
 			
@@ -275,9 +281,11 @@ public class SamplingIndex implements AnalysisIndexService {
 			int p = 0;
 			
 			String [] lookup_values = SamplingIndex.getLayerCatagories(
-				Layers.getLayer(layer_name));	
+				Layers.getLayer(layer_name));
+                        System.out.println("lookupvalues="+ lookup_values);
 			
 			if ((new File(filenameD)).exists()) {
+                            System.out.println("D file found");
 				/* if continous file name sampling file exists, get values from it */
 				RandomAccessFile raf = new RandomAccessFile(filenameD,"r");
 				raf.seek(record_start*4);
@@ -291,7 +299,8 @@ public class SamplingIndex implements AnalysisIndexService {
 					}
 				}
 				raf.close();
-			} else if((new File(filenameI)).exists()) { 
+			} else if((new File(filenameI)).exists()) {
+                            System.out.println("I file found");
 				/* if continous file name sampling file exists, get values from it */
 				RandomAccessFile raf = new RandomAccessFile(filenameI,"r");
 				raf.seek(record_start*2);
@@ -310,6 +319,7 @@ public class SamplingIndex implements AnalysisIndexService {
 			return output;
 		} catch(Exception e) {
 			(new SpatialLogger()).log("getRecords",e.toString());
+                        e.printStackTrace();
 		}
 		
 		return null;
