@@ -160,7 +160,7 @@ public class MaxentWCController extends UtilityComposer {
         //if (rdoCommonSearch.isChecked()) {
         //    status.setValue("Selected species: " + getScientificName() + " (" + sac.getValue() + ")");
         //}
-        // loadSpeciesOnMap();
+        loadSpeciesOnMap();
     }
 
     public void onClick$btnMapSpecies(Event event) {

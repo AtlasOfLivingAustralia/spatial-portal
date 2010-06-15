@@ -57,9 +57,9 @@
                     <button id="btenvfilterclear" label="Clear filter" visible="false" />
                 </hbox>
                 <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="99%" >
-                   <!--  <listhead>
+                   <listhead>
                         <listheader label="Select layers" />
-                    </listhead> -->
+                    </listhead>
 
                 </listbox>
             </vbox>

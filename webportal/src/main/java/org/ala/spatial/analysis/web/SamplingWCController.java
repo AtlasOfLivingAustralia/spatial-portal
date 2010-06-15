@@ -4,7 +4,6 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
-import au.org.emii.portal.menu.MapLayer;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -13,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import java.util.ArrayList;
 
 //import org.ala.spatial.analysis.tabulation.SpeciesListIndex;
 import net.sf.json.JSONArray;
@@ -23,10 +21,10 @@ import net.sf.json.JsonConfig;
 import net.sf.json.util.PropertyFilter;
 import org.ala.spatial.search.TaxaCommonSearchResult;
 import org.ala.spatial.search.TaxaCommonSearchSummary;
-import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang.ArrayUtils;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -35,17 +33,15 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkmax.zul.Filedownload;
 import org.zkoss.zul.Button;
-import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
-import org.zkoss.zul.SimpleListModel;
-import org.zkoss.zul.Textbox;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Listgroup;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Row;
 import org.zkoss.zul.Rows;
@@ -80,11 +76,9 @@ public class SamplingWCController extends UtilityComposer {
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     private String user_polygon = "";
-
+    private String[] groupLabels = null;
     Button pullFromActiveLayers;
-
     Checkbox useArea;
-    
     LayersUtil layersUtil;
 
     @Override
@@ -96,9 +90,9 @@ public class SamplingWCController extends UtilityComposer {
             geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
-        
-        layersUtil = new LayersUtil(mc,satServer);
-        
+
+        layersUtil = new LayersUtil(mc, satServer);
+
         layers = new Vector();
         layerdata = new Hashtable<String, String[]>();
 
@@ -129,7 +123,24 @@ public class SamplingWCController extends UtilityComposer {
                 }
             }
         });
-        lbenvlayers.setModel(new SimpleGroupsModel(datas, new String[]{"Environmental", "Contextual"}));
+        groupLabels = new String[]{"Environmental", "Contextual"};
+        lbenvlayers.setModel(new SimpleGroupsModel(datas, groupLabels));
+
+        // need to renderAll() as being a group list
+        // items hidden initially weren't being selected
+        // when selecting all layers without scrolling
+        lbenvlayers.renderAll();
+
+        // disable the checkboxes for the groups
+        List groups = lbenvlayers.getGroups();
+        Iterator<Listgroup> itGroups = groups.iterator();
+        while (itGroups.hasNext()) {
+            Listgroup lg = itGroups.next();
+            System.out.println("ListGroup: " + lg.getLabel() + " - " + lg.isListenerAvailable("select", true));
+            lg.setCheckable(false);
+        }
+
+
     }
 
     private void showLayerExtents(Object o) {
@@ -179,8 +190,6 @@ public class SamplingWCController extends UtilityComposer {
 
         p.open(l);
     }
-
-   
 
     public void onCheck$rdoCommonSearch() {
         sac.setSearchCommon(true);
@@ -258,14 +267,14 @@ public class SamplingWCController extends UtilityComposer {
         Clients.showBusy("Sampling...", true);
         Events.echoEvent("onDoInit", this, event.toString());
     }
-    
+
     /**
      * Iterate thru' the layer list setup in the @doAfterCompose method
      * and setup the listbox
      */
-    private String [] setupEnvironmentalLayers() {
-    	String [] aslist = null;
-        try {          
+    private String[] setupEnvironmentalLayers() {
+        String[] aslist = null;
+        try {
             aslist = layersUtil.getEnvironmentalLayers();
 
 
@@ -283,23 +292,23 @@ public class SamplingWCController extends UtilityComposer {
             System.out.println("error setting up env list");
             e.printStackTrace(System.out);
         }
-        
+
         return aslist;
     }
-    
+
     /**
      * Iterate thru' the layer list setup in the @doAfterCompose method
      * and setup the listbox
      */
-    private String [] setupContextualLayers() {
-    	String [] aslist = null;
-        try {          
+    private String[] setupContextualLayers() {
+        String[] aslist = null;
+        try {
             aslist = layersUtil.getContextualLayers();
 
             if (aslist.length > 0) {
                 layers.addAll(Arrays.asList(aslist));
                 layerdata.put("Contextual", aslist);
-                
+
                 for (int k = 0; k < aslist.length; k++) {
                     System.out.println(aslist[k] + ", ");
                 }
@@ -309,10 +318,9 @@ public class SamplingWCController extends UtilityComposer {
             System.out.println("error setting up env list");
             e.printStackTrace(System.out);
         }
-        
+
         return aslist;
     }
-
 
     public void runsampling() {
         try {
@@ -330,6 +338,14 @@ public class SamplingWCController extends UtilityComposer {
                 int i = 0;
                 while (it.hasNext()) {
                     Listitem li = (Listitem) it.next();
+
+                    if (li.getLabel() == null) {
+                        // seems to be null, shouldn't be, but let's ignore it
+                        continue;
+                    } else if (ArrayUtils.contains(groupLabels, li.getLabel())) {
+                        // this must be the group header, let's ignore it
+                        continue;
+                    }
 
                     sbenvsel.append(li.getLabel());
                     if (it.hasNext()) {
@@ -350,12 +366,12 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if(useArea.isChecked()) {
+            if (useArea.isChecked()) {
                 user_polygon = convertGeoToPoints(mc.getSelectionArea());
             } else {
                 user_polygon = "";
             }
-System.out.println("user_polygon: " + user_polygon);
+            System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
                 sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
@@ -564,12 +580,12 @@ System.out.println("user_polygon: " + user_polygon);
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if(useArea.isChecked()) {
+            if (useArea.isChecked()) {
                 user_polygon = convertGeoToPoints(mc.getSelectionArea());
             } else {
                 user_polygon = "";
             }
-System.out.println("user_polygon: " + user_polygon);
+            System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
                 sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
@@ -695,7 +711,7 @@ System.out.println("user_polygon: " + user_polygon);
         return taxon;
     }
 
-      String convertGeoToPoints(String geometry) {
+    String convertGeoToPoints(String geometry) {
         if (geometry == null) {
             return "";
         }
@@ -704,59 +720,57 @@ System.out.println("user_polygon: " + user_polygon);
         geometry = geometry.replace(")", "");
         return geometry;
     }
-    
-      
+
     /**
      * populate sampling screen with values from active layers
      * 
      * TODO: run this on 'tab' open
      */
-    public void onClick$pullFromActiveLayers(){
-    	//get top species and list of env/ctx layers
-    	String species = layersUtil.getFirstSpeciesLayer();
-    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
-    	
-    	/* set species from layer selector */
-    	if (species != null) {
-    		sac.setValue(species);
-    	}
-    	
-    	/* set as selected each envctx layer found */
-    	if (layers != null) {
-	    	List<Listitem> lis = lbenvlayers.getItems();
-	    	for (int i = 0; i < lis.size(); i++) {
-	    		for (int j = 0; j < layers.length; j++) {
-	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-	    				lbenvlayers.addItemToSelection(lis.get(i));
-	    				break;
-	    			}
-	    		}
-	    	}    	
-    	}
+    public void onClick$pullFromActiveLayers() {
+        //get top species and list of env/ctx layers
+        String species = layersUtil.getFirstSpeciesLayer();
+        String[] layers = layersUtil.getActiveEnvCtxLayers();
+
+        /* set species from layer selector */
+        if (species != null) {
+            sac.setValue(species);
+        }
+
+        /* set as selected each envctx layer found */
+        if (layers != null) {
+            List<Listitem> lis = lbenvlayers.getItems();
+            for (int i = 0; i < lis.size(); i++) {
+                for (int j = 0; j < layers.length; j++) {
+                    if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+                        lbenvlayers.addItemToSelection(lis.get(i));
+                        break;
+                    }
+                }
+            }
+        }
     }
-    
-    public void callPullFromActiveLayers(){
-    	//get top species and list of env/ctx layers
-    	String species = layersUtil.getFirstSpeciesLayer();
-    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
-    	
-    	/* set species from layer selector */
-    	if (species != null) {
-    		sac.setValue(species);
-    	}
-    	
-    	/* set as selected each envctx layer found */
-    	if (layers != null) {
-	    	List<Listitem> lis = lbenvlayers.getItems();
-	    	for (int i = 0; i < lis.size(); i++) {
-	    		for (int j = 0; j < layers.length; j++) {
-	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-	    				lbenvlayers.addItemToSelection(lis.get(i));
-	    				break;
-	    			}
-	    		}
-	    	}    	
-    	}
-    }  
-    
+
+    public void callPullFromActiveLayers() {
+        //get top species and list of env/ctx layers
+        String species = layersUtil.getFirstSpeciesLayer();
+        String[] layers = layersUtil.getActiveEnvCtxLayers();
+
+        /* set species from layer selector */
+        if (species != null) {
+            sac.setValue(species);
+        }
+
+        /* set as selected each envctx layer found */
+        if (layers != null) {
+            List<Listitem> lis = lbenvlayers.getItems();
+            for (int i = 0; i < lis.size(); i++) {
+                for (int j = 0; j < layers.length; j++) {
+                    if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+                        lbenvlayers.addItemToSelection(lis.get(i));
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }

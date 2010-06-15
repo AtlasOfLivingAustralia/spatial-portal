@@ -230,10 +230,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Tab selectionTab;
     private Textbox tbxArea;
     private HtmlMacroComponent leftMenuAnalysis;
-    
     private HtmlMacroComponent ff;
     private HtmlMacroComponent sf;
-    
+
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
             userDataManager = DaoRegistry.getUserDataDao();
@@ -365,7 +364,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$btnSearchSpecies() {
-       //get the selected species and see if we can map it
+        //get the selected species and see if we can map it
         //get the params from the controls
 
         String sSearchTerm = searchSpeciesAuto.getValue();
@@ -375,9 +374,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         /*
         if (rdoCommonSearch.isChecked()) {
-            searchCommonName(sSearchTerm);
+        searchCommonName(sSearchTerm);
         } else {
-            mapSpeciesByName(sSearchTerm);
+        mapSpeciesByName(sSearchTerm);
         }
          *
          */
@@ -393,7 +392,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
-
     public void onClick$selectionTab() {
         System.out.println("area:" + getSelectionArea());
         if (!selectionTab.isSelected()) {
@@ -404,12 +402,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$filteringTab() {
         if (!filteringTab.isSelected()) {
             filteringTab.setSelected(true);
-            ((FilteringWCController)ff.getFellow("filteringwindow")).callPullFromActiveLayers();
+            ((FilteringWCController) ff.getFellow("filteringwindow")).callPullFromActiveLayers();
         }
     }
 
     public String getSelectionArea() {
-        return ((SelectionController)sf.getFellow("selectionwindow")).getGeom();
+        return ((SelectionController) sf.getFellow("selectionwindow")).getGeom();
     }
 
     public void onClick$closeLayerControls() {
@@ -424,20 +422,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$gazSearch() {
 
         Comboitem ci = gazetteerAuto.getSelectedItem();
-        String link = (String)ci.getValue();
+        String link = (String) ci.getValue();
         String label = ci.getLabel();
         if (settingsSupplementary != null) {
-                geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
 //        try {
 //            Messagebox.show(geoServer + link);
 //        }
 //        catch (Exception e) {}
 
-        logger.debug(geoServer + link);
+            logger.debug(geoServer + link);
 
         }
-            //add feature to the map as a new layer
-            MapLayer mapLayer = addGeoJSON(label, geoServer + link);
+        //add feature to the map as a new layer
+        MapLayer mapLayer = addGeoJSON(label, geoServer + link);
 
         //String pName = placeName.getValue();
         //searchGazetteer(pName);
@@ -463,9 +461,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
+    public void onChange$searchSpeciesAuto() {
+        //btnSearchSpecies.setVisible(true);
+        String taxon = searchSpeciesAuto.getValue();
 
-    public void onSelect$searchSpeciesAuto() {
-        btnSearchSpecies.setVisible(true);
+        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
+        if (spVal.trim().startsWith("Scientific")) {
+            //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+        }
+
+
+        System.out.println(">>>>> " + taxon + " <<<<<");
+
+        // check if its a common name, if so, grab the scientific name
+        //if (rdoCommonSearch.isChecked()) {
+        //    taxon = getScientificName();
+        //}
+        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        mapSpeciesByName(taxon);
+
     }
 
     public void closeAddLayerDiv() {
@@ -583,7 +598,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         PortalSession portalSession = getPortalSession();
         MapLayer baseLayer = portalSessionUtilities.getBaseLayerById(portalSession, id);
         portalSession.setCurrentBaseLayer(baseLayer);
-        baseLayer.setOpacity((float)0.4);
+        baseLayer.setOpacity((float) 0.4);
         activateBaseLayer(baseLayer);
     }
 
@@ -1017,7 +1032,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         // select the correct accordian tab for above
-       // accordionMenu.setSelectedPanel(
+        // accordionMenu.setSelectedPanel(
         //        getTabpanel(portalSession.getCurrentLayerTab()));
 
         showCurrentMenu();
@@ -1643,7 +1658,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$linkNavigationTab() {
-    	((AnalysisController)leftMenuAnalysis.getFellow("analysiswindow")).callPullFromActiveLayers();
+        ((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).callPullFromActiveLayers();
         activateNavigationTab(PortalSession.LINK_TAB);
     }
 
@@ -1714,123 +1729,123 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
              * the current layer opacity
              */
             int percentage = (int) (currentSelection.getOpacity() * 100);
-                Slider slider = (Slider) layerControls.getFellow("opacitySlider");
-                slider.setCurpos(percentage);
-                opacityLabel.setValue(percentage + "%");
+            Slider slider = (Slider) layerControls.getFellow("opacitySlider");
+            slider.setCurpos(percentage);
+            opacityLabel.setValue(percentage + "%");
 
-                /*
-                 * populate the list of styles
-                 */
-                if (currentSelection.hasStyles() && currentSelection.isNcWmsType()) {
-                    styleList.setModel(new ListModelList(currentSelection.getStyles()));
-                    logger.debug("select style: " + currentSelection.getSelectedSystemStyleName());
-                    styleList.setValue(currentSelection.getSelectedSystemStyleName());
-                    styleControls.setVisible(true);
+            /*
+             * populate the list of styles
+             */
+            if (currentSelection.hasStyles() && currentSelection.isNcWmsType()) {
+                styleList.setModel(new ListModelList(currentSelection.getStyles()));
+                logger.debug("select style: " + currentSelection.getSelectedSystemStyleName());
+                styleList.setValue(currentSelection.getSelectedSystemStyleName());
+                styleControls.setVisible(true);
+            } else {
+                styleControls.setVisible(false);
+            }
+
+            /*
+             * switch the transect drawing div
+             */
+            if (currentSelection.isNcWmsType()) {
+                transectControl.setVisible(true);
+            } else {
+                transectControl.setVisible(false);
+            }
+
+            // show animation controls if needed
+            getAnimationControlsComposer().updateAnimationControls(currentSelection);
+
+            if (currentSelection.isDynamicStyle()) {
+                LegendMaker lm = new LegendMaker();
+                int red = currentSelection.getRedVal();
+                int blue = currentSelection.getBlueVal();
+                int green = currentSelection.getGreenVal();
+
+                Color c = new Color(red, green, blue);
+
+                redSlider.setCurpos(red);
+                greenSlider.setCurpos(green);
+                blueSlider.setCurpos(blue);
+
+                blueLabel.setValue(String.valueOf(blue));
+                redLabel.setValue(String.valueOf(red));
+                greenLabel.setValue(String.valueOf(green));
+
+                if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
+                    legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
                 } else {
-                    styleControls.setVisible(false);
+                    legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
                 }
-
-                /*
-                 * switch the transect drawing div
+                legendImg.setVisible(true);
+                legendLabel.setVisible(true);
+                legendImgUri.setVisible(false);
+                legendHtml.setVisible(false);
+            } else if (currentSelection.getSelectedStyle() != null) {
+                /* 1. classification legend has uri without ".png" content
+                 * 2. prediction legend works here
+                 * TODO: do this nicely when implementing editable prediction layers
                  */
-                if (currentSelection.isNcWmsType()) {
-                    transectControl.setVisible(true);
-                } else {
-                    transectControl.setVisible(false);
-                }
-
-                // show animation controls if needed
-                getAnimationControlsComposer().updateAnimationControls(currentSelection);
-
-                if (currentSelection.isDynamicStyle()) {
-                    LegendMaker lm = new LegendMaker();
-                    int red = currentSelection.getRedVal();
-                    int blue = currentSelection.getBlueVal();
-                    int green = currentSelection.getGreenVal();
-
-                    Color c = new Color(red, green, blue);
-
-                    redSlider.setCurpos(red);
-                    greenSlider.setCurpos(green);
-                    blueSlider.setCurpos(blue);
-
-                    blueLabel.setValue(String.valueOf(blue));
-                    redLabel.setValue(String.valueOf(red));
-                    greenLabel.setValue(String.valueOf(green));
-
-                    if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
-                        legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
-                    } else {
-                        legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
+                String legendUri = currentSelection.getSelectedStyle().getLegendUri();
+                if (legendUri.indexOf(".zul") >= 0) {
+                    //remove all
+                    while (legendHtml.getChildren().size() > 0) {
+                        legendHtml.removeChild(legendHtml.getFirstChild());
                     }
-                    legendImg.setVisible(true);
-                    legendLabel.setVisible(true);
+
+                    //put any parameters into map
+                    Map map = null;
+                    if (legendUri.indexOf("?") > 0) {
+                        String[] parameters = legendUri.substring(legendUri.indexOf("?") + 1,
+                                legendUri.length()).split("&");
+                        if (parameters.length > 0) {
+                            map = new HashMap();
+                        }
+                        for (String p : parameters) {
+                            String[] parameter = p.split("=");
+                            if (parameter.length == 2) {
+                                map.put(parameter[0], parameter[1]);
+                            }
+                        }
+                        legendUri = legendUri.substring(0, legendUri.indexOf("?"));
+                    }
+
+                    //open .zul with parameters
+                    Executions.createComponents(
+                            legendUri, legendHtml, map);
+
+                    legendHtml.setVisible(true);
                     legendImgUri.setVisible(false);
-                    legendHtml.setVisible(false);
-                } else if (currentSelection.getSelectedStyle() != null) {
-                    /* 1. classification legend has uri without ".png" content
-                     * 2. prediction legend works here
-                     * TODO: do this nicely when implementing editable prediction layers
-                     */
-                    String legendUri = currentSelection.getSelectedStyle().getLegendUri();
-                    if (legendUri.indexOf(".zul") >= 0) {
-                        //remove all
-                        while (legendHtml.getChildren().size() > 0) {
-                            legendHtml.removeChild(legendHtml.getFirstChild());
-                        }
-
-                        //put any parameters into map
-                        Map map = null;
-                        if (legendUri.indexOf("?") > 0) {
-                            String[] parameters = legendUri.substring(legendUri.indexOf("?") + 1,
-                                    legendUri.length()).split("&");
-                            if(parameters.length > 0){
-                                map = new HashMap();
-                            }
-                            for (String p : parameters) {
-                                String [] parameter = p.split("=");
-                                if( parameter.length == 2){
-                                    map.put(parameter[0], parameter[1]);
-                                }
-                            }
-                            legendUri = legendUri.substring(0,legendUri.indexOf("?"));
-                        }
-
-                        //open .zul with parameters
-                        Executions.createComponents(
-                                legendUri, legendHtml, map);
-
-                        legendHtml.setVisible(true);
-                        legendImgUri.setVisible(false);
-                        legendLabel.setVisible(true);
-                    } else {
-                        legendImgUri.setSrc(legendUri);
-                        legendImgUri.setVisible(true);
-                        legendHtml.setVisible(false);
-                        legendLabel.setVisible(false);
-                    }
-                    legendImg.setVisible(false);                    
-                    colourChooser.setVisible(false);
-                } else if (currentSelection.getCurrentLegendUri() != null) {
-                    // works for normal wms layers
-                    legendImgUri.setSrc(currentSelection.getCurrentLegendUri());
+                    legendLabel.setVisible(true);
+                } else {
+                    legendImgUri.setSrc(legendUri);
                     legendImgUri.setVisible(true);
                     legendHtml.setVisible(false);
                     legendLabel.setVisible(false);
-                    legendImg.setVisible(false);
-                    colourChooser.setVisible(false);
-                } else {
-                    // hide everything
-                    legendHtml.setVisible(false);
-                    legendImg.setVisible(false);
-                    legendImgUri.setVisible(false);
-                    legendLabel.setVisible(false);
-                    colourChooser.setVisible(false);
-                    legendHtml.setVisible(false);
                 }
-                layerControls.setVisible(true);
+                legendImg.setVisible(false);
+                colourChooser.setVisible(false);
+            } else if (currentSelection.getCurrentLegendUri() != null) {
+                // works for normal wms layers
+                legendImgUri.setSrc(currentSelection.getCurrentLegendUri());
+                legendImgUri.setVisible(true);
+                legendHtml.setVisible(false);
+                legendLabel.setVisible(false);
+                legendImg.setVisible(false);
+                colourChooser.setVisible(false);
+            } else {
+                // hide everything
+                legendHtml.setVisible(false);
+                legendImg.setVisible(false);
+                legendImgUri.setVisible(false);
+                legendLabel.setVisible(false);
+                colourChooser.setVisible(false);
+                legendHtml.setVisible(false);
             }
-      
+            layerControls.setVisible(true);
+        }
+
     }
 
     public void mapLoaded(String text) {
@@ -2129,7 +2144,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public MapLayer addGeoJSON(String labelValue, String uriValue) {
         if (safeToPerformMapAction()) {
-            
+
             return this.addGeoJSONLayer(labelValue, uriValue);
 
         } else {
@@ -2347,7 +2362,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onChange$tbxTabSelection() {
         areaNavigationTab.setSelected(_visible);
         onClick$areaNavigationTab();
-        
+
     }
 
     public void updateUserMapList() {
@@ -2588,37 +2603,37 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void mapSpeciesByName(String speciesName) {
-            String filter;
-            String uri;
-            String layerName = "ALA:occurrencesv1";
-            String sld = "species_point";
+        String filter;
+        String uri;
+        String layerName = "ALA:occurrencesv1";
+        String sld = "species_point";
 
-            if (settingsSupplementary != null) {
-                geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
-            }
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+        }
 
-            geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
-            uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
+        geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
+        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
 
 
-            //contruct the filter in cql
-            //have to check the Genus name is in Capitals
-            filter = "species eq '" + capitalise(speciesName.trim()) + "'";
+        //contruct the filter in cql
+        //have to check the Genus name is in Capitals
+        filter = "species eq '" + capitalise(speciesName.trim()) + "'";
 
         try {
             addGeoJSON(speciesName, uri + URLEncoder.encode(filter, "UTF-8"));
         } catch (UnsupportedEncodingException ex) {
             logger.debug(ex.getMessage());
         }
-            
+
     }
 
     public static String capitalise(String s) {
-        if (s.length() == 0) return s;
+        if (s.length() == 0) {
+            return s;
+        }
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
-
-
 
     /**
      * Handy getter to handle typecasting the AnimationControlsComposer
