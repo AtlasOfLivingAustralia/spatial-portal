@@ -2,10 +2,10 @@
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk>
     <panel id="help" title="Click for Species List Tool Help"
-           width="99%" border="normal"  open="false"
+           style="padding: 5px" border="normal"  open="false"
            onClick="if(help.isOpen())help.open=false; else help.open=true;">
-        <panelchildren><html><![CDATA[
-This tool filters all species known to the ALA by environmental and contextual data: Only those species that occur within the user-defined environmental envelope will be retained by the filter. Filters are added, one layer at a time. The list of species remaining at any step can be exported. A layer can be removed by clicking on the remove button. This will update the filtering.
+        <panelchildren><html style="white-space: normal;"><![CDATA[
+Th is tool filters all species known to the ALA by environmental and contextual data: Only those species that occur within the user-defined environmental envelope will be retained by the filter. Filters are added, one layer at a time. The list of species remaining at any step can be exported. A layer can be removed by clicking on the remove button. This will update the filtering.
 <br><br><b>Process</b>
 <br><br>&nbsp;&nbsp;&nbsp;1.  Select an environmental layer to be used as a filter. This layer will be added to the table. Clicking on the layer will link to metadata describing this layer.
 <br><br>&nbsp;&nbsp;&nbsp;2.  If the layer is of continuous values (e.g. temperature), select lower and upper values for the selected layer. If the layer added is categorical (e.g. land-use types or states/territories), select the categories to be applied as a filter. These bounds or categories will be added to the table.
@@ -15,9 +15,7 @@ This tool filters all species known to the ALA by environmental and contextual d
         ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
     </panel>
 
-    <window id="filteringwindow" apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController" style="padding: 10px">
-        <!-- apply="org.ala.spatial.analysis.web.FilteringWCController"  -->
-
+    <window id="filteringwindow" apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController">
         <style>
             .z-loading {
             top: 50% !important;
@@ -26,89 +24,65 @@ This tool filters all species known to the ALA by environmental and contextual d
             vertical-align: middle;
             }
             div.z-list-header-cnt {
-                white-space: normal;
-                width: 70px; 
+            white-space: normal;
+            width: 70px;
             }
-
         </style>
 
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Environmental and Categorical layers" />
+        <div sclass="highlighted">
             <vbox>
-                <label value="Select layers for inclusion" />
-                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="270px" />
-
-                <separator spacing="20px" />
-
-                <label value="Species List filters" />
-                <listbox id="lbSelLayers" multiple="false" checkmark="false" width="310px" visible="true" height="350px" >
-                    <listhead>
-                        <listheader label="Layer" width="110px"></listheader>
-                        <listheader>
-                        	<label value="Filter range" width="110px"></label>
-						</listheader>
-                        <listheader width="55px">
-	                        <vbox>
-	                        <label value="Species"></label>
-	                        <label value="count"></label> 
-	                        </vbox>                       
-						</listheader>					
-                    </listhead>   
-                     
-
-				<listfoot>
-				<listfooter span="3">
-				<div id="popup_continous" visible="false" width="270px">
-					<vbox>
-						<label style="font-weight:bold" value="edit filter for this layer" id="label_continous" width="250px"
- multiline="true"/>
-                        <label value="full range"/><label id="popup_range"/>
-                        <hbox>
-                            <slider id="popup_slider_min" slidingtext="{}">
-                            </slider>
-                            <textbox id="popup_minimum" width="60px"></textbox>
-                        </hbox>
-
-                        <hbox>
-                            <slider id="popup_slider_max" slidingtext="{}">
-                            </slider>
-                            <textbox id="popup_maximum" width="60px"></textbox>
-                            <textbox id="popup_idx" width="1px" visible="false"></textbox>
-                        </hbox>
-
-						<hbox>
-                        <button label="apply filter" id="apply_continous"/>    
-                        <button label="preview results" id="preview_continous"/>    
-                       <div align="right"> <button label="remove" id="remove_continous"/>  </div>        
-                        
-                        </hbox>
-
-                    </vbox>
-				</div>
-				<div id="popup_catagorical" visible="false">
-					<vbox>
-					 	<label style="font-weight:bold" value="edit filter for this layer" id="label_catagorical" />
-                        <listbox id="popup_listbox" multiple="true"
-                                 checkmark="true" rows="6" >
-
-                        </listbox>
-                        <hbox>
-                        <button label="apply filter" id="apply_catagorical" />
-                        <button label="preview results" id="preview_catagorical"/>
-                        <div align="right"><button label="remove" id="remove_catagorical"/></div>
-                        </hbox>
-                    </vbox>
-				</div>
-				</listfooter>
-				</listfoot>               
-                </listbox>
-                <label id="lblNoLayersSelected" value="No environmental layers selected" visible="false" />
-
-
-
+                <label value="Step 1: Add environmental layer to the filter" />
+                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="90%" />
             </vbox>
+        </div>
 
-        </groupbox>
+        <div sclass="highlighted">
+            <label value="filter" />
+            <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" vflex="true">
+                <listhead sizable="true">
+                    <listheader label="Layer" width="40%" ></listheader>
+                    <listheader>
+                        <label value="Filter range" width="40%"></label>
+                    </listheader>
+                    <listheader width="20%">
+                        <vbox>
+                            <label value="Species"></label>
+                            <label value="count"></label>
+                        </vbox>
+                    </listheader>
+                </listhead>
 
+                <listfoot>
+                    <listfooter span="3">
+                        <div id="popup_continous" visible="false" width="90%" sclass="highlighted">
+
+                            <label sclass="word-wrap" style="white-space: normal; font-weight:bold" value="edit filter for this layer" id="label_continous" multiline="true"/>
+
+                            <separator sclass="hr" height="2px" />
+                            <vbox><label value="full range"/><label id="popup_range"/>
+                                <hbox>
+                                    <slider id="popup_slider_min" slidingtext="">
+                                    </slider>
+                                    <textbox id="popup_minimum" width="60px"></textbox>
+                                </hbox>
+
+                                <hbox>
+                                    <slider id="popup_slider_max" slidingtext="">
+                                    </slider>
+                                    <textbox id="popup_maximum" width="60px"></textbox>
+                                    <textbox id="popup_idx" width="1px" visible="false"></textbox>
+                                </hbox>
+                                <hbox>
+                                    <button label="apply filter" id="apply_continous"/>
+                                    <button label="preview results" id="preview_continous"/>
+                                    <div align="right"> <button label="remove" id="remove_continous"/>  </div>
+                                </hbox>
+                            </vbox>
+                        </div>
+
+                    </listfooter>
+                </listfoot>
+            </listbox>
+        </div>
     </window>
 </zk>

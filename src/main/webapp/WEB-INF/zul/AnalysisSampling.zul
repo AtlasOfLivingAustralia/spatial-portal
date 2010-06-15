@@ -1,9 +1,9 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
 <zk>
-    <panel id="help" title="Click for Sampling Tool Help" width="99%" border="normal"  open="false"
-           onClick="if(help.isOpen())help.open=false; else help.open=true;">
-        <panelchildren><html><![CDATA[
+    <panel id="help" title="Click for Sampling Tool Help" border="normal"  open="false"
+           onClick="if(help.isOpen())help.open=false; else help.open=true;" style="padding: 5px" >
+        <panelchildren><html style="white-space: normal;"><![CDATA[
 This tool samples environmental and contextual data layers at locations defined by species observations. Think of this tool as driving a sample tool through a user-selected set of layers at the locations of all user-selected species and reading off the values at that point." The output is a CSV-formatted file of the locations and environmental/contextual values."
 <br><br>
 
@@ -18,95 +18,50 @@ This tool samples environmental and contextual data layers at locations defined 
 <br><br>&nbsp;&nbsp;&nbsp;4.  Click download to download the CSV-format file to your system.
         ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
     </panel>
-    <window id="samplingwindow" use="org.ala.spatial.analysis.web.SamplingWCController" apply="org.ala.spatial.analysis.web.SamplingWCController" style="padding: 10px">
+
+    <window id="samplingwindow" use="org.ala.spatial.analysis.web.SamplingWCController"
+            apply="org.ala.spatial.analysis.web.SamplingWCController">
 
         <style>
             .z-list-header-cnt input, .z-list-group-inner div input {
             display: none;
             }
-
         </style>
 
-        <!-- <label value="Step 1: Select your species " /> -->
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 1: Select your species" />
+        <div sclass="highlighted" >
+            <vbox>
+            <label value="Step 1: Restrict area" />
+            <checkbox id="useArea" label="use area defined in the Area tab" onCheck="" />
+            </vbox>
+        </div>
+
+        <div sclass="highlighted" >
+            <label value="Step 2: Select your species" />
             <vbox>
                 <label>Enter a scientific or common name</label>
-                <!--
-                <radiogroup id="rdgNameSearchType" >
-                    <hbox>
-                        <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
-                        <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
-                    </hbox>
-                </radiogroup>
-                -->
-                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="90%" >
                     <comboitem label=""/>
                 </combobox>
-                <button id="btnMapSpecies" label="Add to Map" visible="true" />
-                <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
             </vbox>
-        </groupbox>
+        </div>
 
-		<groupbox mold="3d" style="width: 95%; padding: 5px" visible="false">
-            <caption label="Step 2. Restrict samples to a polygon drawn on the map" />
-            <vbox>
-        <hbox>
-        <button label="Polygon Selection" id="btnPolygonSelection"/>
-		<button label="Clear Polygon Selection" id="btnPolygonSelectionClear"/>
-		</hbox>
-		<textbox id="selectionGeomSampling" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
-		<script type="text/javascript">		
-			 function setSelectionGeometrySampling(geometry) {
-		var tbxSelectionGeom = $e('${selectionGeomSampling.uuid}');
-		tbxSelectionGeom.value = geometry;
-
-		if (document.createEvent) {
-         	   var evt = document.createEvent('HTMLEvents');
-         	   evt.initEvent( 'blur', false, false);
-         	   tbxSelectionGeom.dispatchEvent(evt);
-   
-         	   var evt2 = document.createEvent('HTMLEvents');
-         	   evt2.initEvent( 'change', false, false);
- 	           tbxSelectionGeom.dispatchEvent(evt2);
-       		} 
-		else if (document.createEventObject) {
-         	   tbxSelectionGeom.fireEvent('onblur');
- 	           tbxSelectionGeom.fireEvent('onchange');
-       		}
-	    }
-		</script>
-		</vbox>
-		</groupbox>
-
-        <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 3: Select the environmental and contextual layers that are to be sampled at species locations" />
+        <div sclass="highlighted" >
+            <label multiline="true" sclass="word-wrap" style="white-space: normal;"
+            value="Step 3: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" />
                 </hbox>
-                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="100%" >
+                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="90%" >
                     <listhead>
                         <listheader label="Select layers" />
                     </listhead>
 
                 </listbox>
             </vbox>
-        </groupbox>
+        </div>
 
-
-
-        <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
-        <!--
-        <groupbox mold="3d" width="500px" style="padding: 10px">
-            <caption label="Step 4: Preview sampling output" />
-            <vbox>
-                <button label="Preview sampling" id="btnPreview" />
-            </vbox>
-        </groupbox>
-        -->
         <button label="Preview sampling" id="btnPreview" sclass="goButton" />
 
         <popup id="results" width="640px" >
@@ -142,7 +97,5 @@ This tool samples environmental and contextual data layers at locations defined 
         <popup id="v" >
             <label id="v_label" value="tool tip" ></label>
         </popup>
-
-	
     </window>
 </zk>

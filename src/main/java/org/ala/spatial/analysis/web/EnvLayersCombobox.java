@@ -63,19 +63,14 @@ public class EnvLayersCombobox extends Combobox {
                 System.out.println("NOT setting sat_url for EnvLyr combo");
             }
 
-
-            //String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/string";
-
+            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+  
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(envurl);
             get.addRequestHeader("Content-type", "text/plain");
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
-
-            System.out.println("For ALOC");
-            System.out.println(slist);
 
             aslist = slist.split("\n");
 

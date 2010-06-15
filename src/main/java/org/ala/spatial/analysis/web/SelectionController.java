@@ -381,4 +381,8 @@ public class SelectionController extends UtilityComposer {
 //        popup_listbox_results.setModel(slm);
 //        results_label.setValue(results_pos + " to " + (sz) + " of " + results.length);
 //    }
+
+    public String getGeom() {
+        return displayGeom.getValue();
+    }
 }

@@ -54,6 +54,7 @@ import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.FilteringWCController;
 import org.ala.spatial.analysis.web.AnalysisController;
+import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zhtml.Messagebox;
@@ -229,8 +230,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Tab selectionTab;
     private Textbox tbxArea;
     private HtmlMacroComponent leftMenuAnalysis;
-
+    
     private HtmlMacroComponent ff;
+    private HtmlMacroComponent sf;
     
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -391,14 +393,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
-    public void onClick$filteringTab() {
-        if (filteringTab.isSelected()) {
-            selectionTab.setSelected(true);
-        } else {
-            filteringTab.setSelected(true);
 
+    public void onClick$selectionTab() {
+        System.out.println("area:" + getSelectionArea());
+        if (!selectionTab.isSelected()) {
+            selectionTab.setSelected(true);
+        }
+    }
+
+    public void onClick$filteringTab() {
+        if (!filteringTab.isSelected()) {
+            filteringTab.setSelected(true);
             ((FilteringWCController)ff.getFellow("filteringwindow")).callPullFromActiveLayers();
         }
+    }
+
+    public String getSelectionArea() {
+        return ((SelectionController)sf.getFellow("selectionwindow")).getGeom();
     }
 
     public void onClick$closeLayerControls() {
@@ -1214,6 +1225,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     mapLayer.setSelectedStyleIndex(1);
                     logger.info("adding WMSStyle with legendUri: " + legend);
 
+                    mapLayer.setDefaultStyleLegendUriSet(true);
+
                     addUserDefinedLayerToMenu(mapLayer, true);
                     addedOk = true;
                 }
@@ -1754,54 +1767,66 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     legendLabel.setVisible(true);
                     legendImgUri.setVisible(false);
                     legendHtml.setVisible(false);
-                } else if (currentSelection.getSelectedStyle() != null /*&& (currentSelection.getType() == LayerUtilities.WMS_1_0_0
-                        || currentSelection.getType() == LayerUtilities.WMS_1_1_0
-                        || currentSelection.getType() == LayerUtilities.WMS_1_1_1
-                        || currentSelection.getType() == LayerUtilities.WMS_1_3_0
-                        )*/) {
-                	/* classification legend has uri without .png content 
-                	 * TODO: do this nicely when implementing editable prediction layers 
-                	 */
-                	String legendUri = currentSelection.getSelectedStyle().getLegendUri();
-                	if (legendUri.indexOf(".png") < 0) {   
-                		//remove all
-                		List<Component> components = legendHtml.getChildren();
-                		for (Component c : components) {
-                			c.detach();
-                		}
-	                    //parse legendUri to ger pid and layer parameters
-	                    String path = legendUri.substring(0, legendUri.indexOf('?'));
-	                    String p = legendUri.substring(legendUri.indexOf("pid=")+4,legendUri.indexOf("&lay"));
-	                    String layer = legendUri.substring(legendUri.indexOf("&layer=")+7,legendUri.length());
-	                    layer = URLDecoder.decode(layer);                    
-	                   
-	                    java.util.Map args = new java.util.HashMap();                                                     
-	                	args.put("pid",p);
-	                	args.put("layer",layer);
-	            		Window win = (Window) Executions.createComponents(
-	                            path, null, args);            		
-	                	win.setParent(legendHtml);
-	                	win.doEmbedded();
-	                	win.setVisible(true);
-	                	legendHtml.setVisible(true);
-	                	legendImgUri.setVisible(false);
-	                	legendLabel.setVisible(true);
-                	} else {                    
-                		legendImgUri.setSrc(legendUri);
-                		legendImgUri.setVisible(true);
-                		legendHtml.setVisible(false);
-                		legendLabel.setVisible(false);
-                	}
+                } else if (currentSelection.getSelectedStyle() != null) {
+                    /* 1. classification legend has uri without ".png" content
+                     * 2. prediction legend works here
+                     * TODO: do this nicely when implementing editable prediction layers
+                     */
+                    String legendUri = currentSelection.getSelectedStyle().getLegendUri();
+                    if (legendUri.indexOf(".zul") >= 0) {
+                        //remove all
+                        while (legendHtml.getChildren().size() > 0) {
+                            legendHtml.removeChild(legendHtml.getFirstChild());
+                        }
+
+                        //put any parameters into map
+                        Map map = null;
+                        if (legendUri.indexOf("?") > 0) {
+                            String[] parameters = legendUri.substring(legendUri.indexOf("?") + 1,
+                                    legendUri.length()).split("&");
+                            if(parameters.length > 0){
+                                map = new HashMap();
+                            }
+                            for (String p : parameters) {
+                                String [] parameter = p.split("=");
+                                if( parameter.length == 2){
+                                    map.put(parameter[0], parameter[1]);
+                                }
+                            }
+                            legendUri = legendUri.substring(0,legendUri.indexOf("?"));
+                        }
+
+                        //open .zul with parameters
+                        Executions.createComponents(
+                                legendUri, legendHtml, map);
+
+                        legendHtml.setVisible(true);
+                        legendImgUri.setVisible(false);
+                        legendLabel.setVisible(true);
+                    } else {
+                        legendImgUri.setSrc(legendUri);
+                        legendImgUri.setVisible(true);
+                        legendHtml.setVisible(false);
+                        legendLabel.setVisible(false);
+                    }
                     legendImg.setVisible(false);                    
                     colourChooser.setVisible(false);
-                    
+                } else if (currentSelection.getCurrentLegendUri() != null) {
+                    // works for normal wms layers
+                    legendImgUri.setSrc(currentSelection.getCurrentLegendUri());
+                    legendImgUri.setVisible(true);
+                    legendHtml.setVisible(false);
+                    legendLabel.setVisible(false);
+                    legendImg.setVisible(false);
+                    colourChooser.setVisible(false);
                 } else {
-                	legendHtml.setVisible(false);
-                	legendImg.setVisible(false);
-                	legendImgUri.setVisible(false);
-                	legendLabel.setVisible(false);
-                	colourChooser.setVisible(false);
-                	legendHtml.setVisible(false);
+                    // hide everything
+                    legendHtml.setVisible(false);
+                    legendImg.setVisible(false);
+                    legendImgUri.setVisible(false);
+                    legendLabel.setVisible(false);
+                    colourChooser.setVisible(false);
+                    legendHtml.setVisible(false);
                 }
                 layerControls.setVisible(true);
             }

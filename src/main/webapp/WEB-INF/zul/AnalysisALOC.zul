@@ -1,10 +1,13 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
-    <panel id="help" title="Click for Classification Tool Help" width="99%" border="normal"  open="false"
-           onClick="if(help.isOpen())help.open=false; else help.open=true;">
-        <panelchildren>
-            <html><![CDATA[
+
+    <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" >
+
+        <panel id="help" title="Click for Classification Tool Help" border="normal"  open="false"
+               onClick="if(help.isOpen())help.open=false; else help.open=true;" style="padding: 5px">
+            <panelchildren>
+                <html style="white-space: normal;"><![CDATA[
             <p>
                 ALOC (short for allocation) is an efficient classification method
                 for large volumes of data. Think of it as combining multiple layers
@@ -85,14 +88,13 @@
                     geometry. The Statistician 17, 1, 13-28.
                 </li>
             </ul>
-            ]]></html>
-            <separator/>
-            <div align="right">
-                <button label="hide help" onClick="help.open=false;" />
-            </div>
-        </panelchildren>
-    </panel>
-    <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" style="padding: 10px">
+                ]]></html>
+                <separator/>
+                <div align="right">
+                    <button label="hide help" onClick="help.open=false;" />
+                </div>
+            </panelchildren>
+        </panel>
 
         <style>
             .z-loading {
@@ -103,63 +105,32 @@
             }
         </style>
 
-
-
-        <!-- <separator bar="true" /> <label value="Select your environmental layers" /> -->
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Select your environmental layers" />
+        <div sclass="highlighted" >
+            <vbox>
+            <label value="Step 1: Restrict area" />
+            <checkbox id="useArea" label="use area defined in the Area tab" onCheck="" />
+            </vbox>
+        </div>
+        <div sclass="highlighted" >
+            <label value="Step 2: Select your environmental layers" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" />
                 </hbox>
                 <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="99%" >
-                    <listhead>
+                    <!-- <listhead>
                         <listheader label="Select all layers" />
-                    </listhead>
-
+                    </listhead> -->
                 </listbox>
             </vbox>
-        </groupbox>
-        
-        <groupbox mold="3d" style="width: 95%; padding: 5px" visible="false">
-            <caption label="Restrict environmental layers to a polygon drawn on the map" />
+        </div>
+        <div sclass="highlighted" >
             <vbox>
-        <hbox>
-        <button label="Polygon Selection" id="btnPolygonSelection"/>
-		<button label="Clear Polygon Selection" id="btnPolygonSelectionClear"/>
-		</hbox>
-		<textbox id="selectionGeomALOC" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
-		<script type="text/javascript">		
-			 function setSelectionGeometryALOC(geometry) {
-		var tbxSelectionGeom = $e('${selectionGeomALOC.uuid}');
-		tbxSelectionGeom.value = geometry;
-
-		if (document.createEvent) {
-         	   var evt = document.createEvent('HTMLEvents');
-         	   evt.initEvent( 'blur', false, false);
-         	   tbxSelectionGeom.dispatchEvent(evt);
-   
-         	   var evt2 = document.createEvent('HTMLEvents');
-         	   evt2.initEvent( 'change', false, false);
- 	           tbxSelectionGeom.dispatchEvent(evt2);
-       		} 
-		else if (document.createEventObject) {
-         	   tbxSelectionGeom.fireEvent('onblur');
- 	           tbxSelectionGeom.fireEvent('onchange');
-       		}
-	    }
-		</script>
-		</vbox>
-		</groupbox>
-
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Grouping" />
-            <vbox>
-                <label value="Enter number of groups to generate" />
+                <label value="Step 3: Enter number of groups to generate" />
                 <textbox id="groupCount" value="20"/>
             </vbox>
-        </groupbox>
+        </div>
 
         <button id="btnGenerate" label="Generate classification" sclass="goButton" />
 
