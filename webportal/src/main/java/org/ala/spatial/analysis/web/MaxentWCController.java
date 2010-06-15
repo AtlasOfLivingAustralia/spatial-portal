@@ -43,6 +43,7 @@ import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 import org.ala.spatial.util.LayersUtil;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -156,10 +157,6 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     public void onChange$sac(Event event) {
-        //status.setValue("Selected species: " + sac.getValue());
-        //if (rdoCommonSearch.isChecked()) {
-        //    status.setValue("Selected species: " + getScientificName() + " (" + sac.getValue() + ")");
-        //}
         loadSpeciesOnMap();
     }
 
@@ -542,6 +539,11 @@ System.out.println("user_polygon: " + user_polygon);
         //get top species and list of env/ctx layers
         String species = layersUtil.getFirstSpeciesLayer();
         String[] layers = layersUtil.getActiveEnvCtxLayers();
+
+        // get rid of the common name if present
+        if (species.contains(" (")) {
+            species = StringUtils.substringBefore(species, " (");
+        }
 
         /* set species from layer selector */
         if (species != null) {
