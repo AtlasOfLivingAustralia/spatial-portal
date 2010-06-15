@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
@@ -20,8 +22,10 @@ import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
+import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
@@ -202,6 +206,161 @@ public class MaxentWSController {
 
     }
 
+    @RequestMapping(value = "/processgeo", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String processgeo(HttpServletRequest req) {
+
+        try {
+
+            TabulationSettings.load();
+
+
+            HttpSession session = req.getSession(true);
+            long currTime = System.currentTimeMillis();
+
+            String currentPath = session.getServletContext().getRealPath("/");
+
+            String taxon = req.getParameter("taxonid");
+
+            ssets = new SpatialSettings();
+
+            // dump the species data to a file
+            System.out.println("dumping species data");
+            SamplingService ss = new SamplingService();
+
+            String speciesfile = ss.sampleSpecies(taxon, null);
+            CSVReader reader = new CSVReader(new FileReader(speciesfile));
+
+            StringBuffer sbSpecies = new StringBuffer();
+            String[] nextLine;
+
+            // get the header
+            nextLine = reader.readNext();
+            sbSpecies.append("species, longitude, latitude");
+            sbSpecies.append(System.getProperty("line.separator"));
+
+            while ((nextLine = reader.readNext()) != null) {
+                // nextLine[] is an array of values from the line
+                System.out.println(nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1] + "etc...");
+                sbSpecies.append("species, " + nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1]);
+                sbSpecies.append(System.getProperty("line.separator"));
+            }
+
+
+            String envlist = req.getParameter("envlist");
+            String[] envnameslist = envlist.split(":");
+            String[] envpathlist = getEnvFiles(envlist);
+
+            //handle cut layers
+            SimpleRegion simpleregion = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
+            String cutDataPath = ssets.getEnvDataPath();
+            if (simpleregion != null) {
+                Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
+                cutDataPath = GridCutter.cut(layers, simpleregion);
+            }
+            System.out.println("CUTDATAPATH: " + simpleregion + " " + cutDataPath);
+
+            MaxentSettings msets = new MaxentSettings();
+            msets.setMaxentPath(ssets.getMaxentCmd());
+            msets.setEnvList(Arrays.asList(envpathlist));
+            msets.setRandomTestPercentage(Integer.parseInt(req.getParameter("txtTestPercentage")));
+            msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
+            msets.setEnvVarToggler("world");
+            msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output/maxent/" + currTime + "/"));
+            msets.setOutputPath(currentPath + "output/maxent/" + currTime + "/");
+            if (req.getParameter("chkJackknife") != null) {
+                msets.setDoJackknife(true);
+            }
+            if (req.getParameter("chkResponseCurves") != null) {
+                msets.setDoResponsecurves(true);
+            }
+
+            System.out.println("To run: " + msets.toString());
+
+
+            MaxentServiceImpl maxent = new MaxentServiceImpl();
+            maxent.setMaxentSettings(msets);
+            int exitValue = maxent.process();
+
+            System.out.println("Completed: " + exitValue);
+
+            Hashtable htProcess = new Hashtable();
+            if (exitValue == 0) {
+                // TODO: Should probably move this part an external "parent"
+                // function so can be used by other functions
+                //
+
+                // rename the env filenames to their display names
+                for (int ei = 0; ei < envnameslist.length; ei++) {
+                    readReplace(currentPath + "output/maxent/" + currTime + "/species.html", envpathlist[ei], envnameslist[ei]);
+                }
+
+                Hashtable htGeoserver = ssets.getGeoserverSettings();
+
+                // if generated successfully, then add it to geoserver
+                String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/maxent_" + currTime + "/file.arcgrid?coverageName=species_" + currTime;
+                String extra = "";
+                String username = (String) htGeoserver.get("geoserver_username");
+                String password = (String) htGeoserver.get("geoserver_password");
+
+                // first zip up the file as it's going to be sent as binary
+                String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+
+                // Upload the file to GeoServer using REST calls
+                System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
+                UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
+
+                //extraout += "status: success"; ///  \n <br />
+                //extraout += "file: " + "output/maxent/" + currTime + "/species.asc \n <br />";
+                //extraout += "info: " + "output/maxent/" + currTime + "/species.html \n <br />";
+                //extraout += "map: " + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + currTime + "&styles=alastyles&bbox=112.0,-44.0,154.0,-9.0&width=700&height=500&srs=EPSG:4326&format=application/openlayers";
+                //extraout += "";
+
+                //mapframe.setSrc((String) htGeoserver.get("geoserver_url") + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + currTime + "&styles=alastyles&bbox=112.0,-44.0,154.0,-9.0&width=700&height=500&srs=EPSG:4326&format=application/openlayers");
+                //infoframe.setSrc("/output/maxent/" + currTime + "/species.html");
+                //outputtab.setVisible(true);
+
+                htProcess.put("status", "success"); ///
+                htProcess.put("pid", currTime);
+                htProcess.put("info", "/output/maxent/" + currTime + "/species.html");
+                //htProcess.put("","");
+                //htProcess.put("","");
+
+                /*
+                StringWriter sw = new StringWriter();
+
+                JsonFactory f = new JsonFactory();
+                JsonGenerator g = f.createJsonGenerator(sw);
+                g.writeObject(htProcess);
+                g.close();
+
+                System.out.println("sw: \n" + sw.toString());
+                 *
+                 */
+
+
+                //return "status:success;pid:" + currTime + ";info:"+"/output/maxent/" + currTime + "/species.html";
+
+                return "status:success;pid:" + currTime + ";info:" + "/output/maxent/" + currTime + "/species.html";
+
+
+            } else {
+                //extraout += "Status: failure\n";
+                //htProcess.put("status", "failure");
+                return "status:failure;";
+
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error processing Maxent request:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+
+    }
+
     // Copies src file to dst file.
     // If the dst file does not exist, it is created
     private void copy(File src, File dst) throws IOException {
@@ -304,5 +463,34 @@ public class MaxentWSController {
             System.err.println("*** exception ***");
             e.printStackTrace(System.out);
         }
+    }
+
+    private Layer[] getEnvFilesAsLayers(String envNames) {
+        try {
+            System.out.println("envNames.pre: " + envNames);
+            envNames = URLDecoder.decode(envNames, "UTF-8");
+            System.out.println("envNames.post: " + envNames);
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace(System.out);
+        }
+        String[] nameslist = envNames.split(":");
+        Layer[] sellayers = new Layer[nameslist.length];
+
+        Layer[] _layerlist = ssets.getEnvironmentalLayers();
+        String _layerPath = ssets.getEnvDataPath();
+
+
+        for (int j = 0; j < nameslist.length; j++) {
+            for (int i = 0; i < _layerlist.length; i++) {
+                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
+                    sellayers[j] = _layerlist[i];
+                    //sellayers[j].name = _layerPath + sellayers[j].name;
+                    System.out.println("Adding layer for ALOC: " + sellayers[j].name);
+                    continue;
+                }
+            }
+        }
+
+        return sellayers;
     }
 }

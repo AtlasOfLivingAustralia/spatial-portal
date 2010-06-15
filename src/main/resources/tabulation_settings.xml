@@ -240,7 +240,7 @@
     -->
     <occurances_csv_field_settings>0,0,0,0,0,0,0,0,1,0,1,0,2,0,2,0,2,0,2,0,2,0,0,4,3,0,0,0,0,0,0,0</occurances_csv_field_settings>
 
-	<index_path>/mnt/ala/data/index/tabulation_20100615/</index_path>
+	<index_path>/mnt/ala/data/index/tabulation/</index_path>
 
         <maxent>
             <cmdpath>java -mx900m -jar /mnt/ala/modelling/maxent/maxent.jar </cmdpath>
@@ -254,7 +254,7 @@
 
         <geoserver_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver</geoserver_url>
         <geoserver_username>admin</geoserver_username>
-        <geoserver_password>...</geoserver_password>
+        <geoserver_password>at1as0f0z</geoserver_password>
 
 
 <alaspatial_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial/</alaspatial_url>
