@@ -554,7 +554,7 @@ public class SamplingWCController extends UtilityComposer {
     public void onClick$btnDownload(Event event) {
         try {
 
-            String taxon = sac.getValue();
+            String taxon = cleanTaxon(sac.getValue());
             // check if its a common name, if so, grab the scientific name
             //if (rdoCommonSearch.isChecked()) {
             //    taxon = getScientificName();
@@ -656,9 +656,12 @@ public class SamplingWCController extends UtilityComposer {
         if (spVal.trim().startsWith("Scientific")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            mc.mapSpeciesByName(taxon, sac.getValue());
+        } else {
+            mc.mapSpeciesByName(taxon);
         }
-        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        mc.mapSpeciesByName(taxon);
+        //taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        //mc.mapSpeciesByName(taxon);
     }
 
     private String getScientificName() {
@@ -755,15 +758,28 @@ public class SamplingWCController extends UtilityComposer {
         }
     }
 
+    /**
+     * get rid of the common name if present
+     *
+     * @param taxon
+     * @return
+     */
+    private String cleanTaxon(String taxon) {
+        if (StringUtils.isNotBlank(taxon)) {
+
+            if (taxon.contains(" (")) {
+                taxon = StringUtils.substringBefore(taxon, " (");
+            }
+        }
+
+        return taxon; 
+    }
+
     public void callPullFromActiveLayers() {
         //get top species and list of env/ctx layers
         String species = layersUtil.getFirstSpeciesLayer();
         String[] layers = layersUtil.getActiveEnvCtxLayers();
 
-        // get rid of the common name if present
-        if (species.contains(" (")) {
-            species = StringUtils.substringBefore(species, " ("); 
-        }
 
         /* set species from layer selector */
         if (species != null) {
