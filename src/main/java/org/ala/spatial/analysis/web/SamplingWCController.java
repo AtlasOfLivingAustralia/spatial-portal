@@ -25,6 +25,7 @@ import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -199,6 +200,10 @@ public class SamplingWCController extends UtilityComposer {
     public void onCheck$rdoScientificSearch() {
         sac.setSearchCommon(false);
         sac.getItems().clear();
+    }
+
+    public void onChange$sac(Event event) {
+        loadSpeciesOnMap();
     }
 
     public void onClick$btnMapSpecies(Event event) {
@@ -754,6 +759,11 @@ public class SamplingWCController extends UtilityComposer {
         //get top species and list of env/ctx layers
         String species = layersUtil.getFirstSpeciesLayer();
         String[] layers = layersUtil.getActiveEnvCtxLayers();
+
+        // get rid of the common name if present
+        if (species.contains(" (")) {
+            species = StringUtils.substringBefore(species, " ("); 
+        }
 
         /* set species from layer selector */
         if (species != null) {

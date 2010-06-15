@@ -57,6 +57,7 @@ import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -385,8 +386,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (spVal.trim().startsWith("Scientific")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             sSearchTerm = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            mapSpeciesByName(sSearchTerm, searchSpeciesAuto.getValue());
+        } else {
+            mapSpeciesByName(sSearchTerm);
         }
-        mapSpeciesByName(sSearchTerm);
 
         btnSearchSpecies.setVisible(false);
 
@@ -469,6 +472,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (spVal.trim().startsWith("Scientific")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
+        } else {
+            mapSpeciesByName(taxon);
         }
 
 
@@ -478,8 +484,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //if (rdoCommonSearch.isChecked()) {
         //    taxon = getScientificName();
         //}
-        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        mapSpeciesByName(taxon);
+        //taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        //mapSpeciesByName(taxon);
 
     }
 
@@ -2603,6 +2609,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void mapSpeciesByName(String speciesName) {
+        mapSpeciesByName(speciesName, null);
+    }
+
+    public void mapSpeciesByName(String speciesName, String commonName) {
         String filter;
         String uri;
         String layerName = "ALA:occurrencesv1";
@@ -2620,8 +2630,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //have to check the Genus name is in Capitals
         filter = "species eq '" + capitalise(speciesName.trim()) + "'";
 
+        String label = speciesName;
+        if (StringUtils.isNotBlank(commonName)) {
+            label += " (" + commonName + ")";
+        }
+
+        System.out.println("Mapping: " + label); 
+
         try {
-            addGeoJSON(speciesName, uri + URLEncoder.encode(filter, "UTF-8"));
+            addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
         } catch (UnsupportedEncodingException ex) {
             logger.debug(ex.getMessage());
         }
