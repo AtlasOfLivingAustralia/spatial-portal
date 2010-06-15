@@ -1,8 +1,14 @@
 package org.ala.spatial.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Grid.java
@@ -492,6 +498,66 @@ public class Grid { //  implements Serializable
 	  }
 	  return ret;
   }
+
+  /**
+   * for grid cutter
+   *
+   * writes out a list of double (same as getGrid() returns) to a file
+   * 
+   * byteorderlsb, picked one
+   * data types, picked FLOAT
+   * 
+   * //all temporary
+   * 
+   * @param newfilename
+   * @param dfiltered
+   */
+    void writeGrid(String newfilename, double[] dfiltered) {
+        try {
+            //copy header
+            FileUtils.copyFile(new File(filename + ".grd"), new File(newfilename + ".grd"));
+        } catch (IOException ex) {
+          //  Logger.getLogger(Grid.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //write data as whole file
+        RandomAccessFile afile;
+        int size, i, length = dfiltered.length, pos;
+        try { //read of random access file can throw an exception
+		  afile = new RandomAccessFile(newfilename + ".gri", "rw");
+                  System.out.println("LSB: " + this.byteorderLSB);
+
+
+                  
+		if (datatype == "FLOAT") {
+			  size = 4;
+                          byte [] b = new byte[size * length];
+                          ByteBuffer bb = ByteBuffer.wrap(b);
+
+                          if(byteorderLSB){
+                              bb.order(ByteOrder.LITTLE_ENDIAN);
+                          } else {
+                              bb.order(ByteOrder.BIG_ENDIAN);
+                          }
+			  System.out.println("FLOAT: " + length);
+			  for ( i = 0; i < length; i++) {
+                              if (Double.isNaN(dfiltered[i])){
+                                  bb.putFloat((float)nodatavalue);
+                              } else {
+                                bb.putFloat((float)dfiltered[i]);
+                              }
+			  }
+
+                          afile.write(b);
+		  } else {
+                      System.out.println("WRITE GRID: unsupported format datatype=" + datatype);
+                  }
+
+		  afile.close();
+	  } catch (Exception e) {
+		  e.printStackTrace();
+	  }
+    }
   
 
 }

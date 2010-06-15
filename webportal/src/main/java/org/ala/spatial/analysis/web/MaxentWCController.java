@@ -82,6 +82,7 @@ public class MaxentWCController extends UtilityComposer {
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
+    Checkbox useArea;
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
@@ -271,7 +272,7 @@ public class MaxentWCController extends UtilityComposer {
 
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/process?");
+            sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/processgeo?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
@@ -281,6 +282,20 @@ public class MaxentWCController extends UtilityComposer {
                 sbProcessUrl.append("&chkResponseCurves=on");
             }
             sbProcessUrl.append("&txtTestPercentage=" + txtTestPercentage.getValue());
+
+            /* user selected region support */
+            String user_polygon;
+            if(useArea.isChecked()) {
+                user_polygon = convertGeoToPoints(mc.getSelectionArea());
+            } else {
+                user_polygon = "";
+            }
+System.out.println("user_polygon: " + user_polygon);
+            if (user_polygon.length() > 0) {
+                sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+            } else {
+                sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+            }
 
 
             HttpClient client = new HttpClient();
@@ -545,5 +560,15 @@ public class MaxentWCController extends UtilityComposer {
                 }
             }
         }
+    }
+
+    String convertGeoToPoints(String geometry) {
+        if (geometry == null) {
+            return "";
+        }
+        geometry = geometry.replace(" ", ":");
+        geometry = geometry.replace("POLYGON((", "");
+        geometry = geometry.replace(")", "");
+        return geometry;
     }
 }
