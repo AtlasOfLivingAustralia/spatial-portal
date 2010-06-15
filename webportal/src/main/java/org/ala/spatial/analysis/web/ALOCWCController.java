@@ -37,6 +37,7 @@ import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Window;
+import org.zkoss.zul.Checkbox;
 
 /**
  *
@@ -70,6 +71,8 @@ public class ALOCWCController extends UtilityComposer {
     String legendPath;
     
     LayersUtil layersUtil;
+
+    Checkbox useArea;
 
     @Override
     public void afterCompose() {
@@ -134,12 +137,9 @@ public class ALOCWCController extends UtilityComposer {
             selectedLayers.add(new_value);
         }
 
-        //lbSelLayers.appendItem(new_value, new_value);
-
         lbSelLayers.setModel(new SimpleListModel(selectedLayers));
 
         toggleVisibleComponents();
-
     }
 
     public void onClick$btnDeleteSelected(Event event) {
@@ -180,21 +180,6 @@ public class ALOCWCController extends UtilityComposer {
         try {
             StringBuffer sbenvsel = new StringBuffer();
 
-            /*
-            if (selectedLayers.size() > 0) {
-            Iterator it = selectedLayers.iterator();
-            while (it.hasNext()) {
-            sbenvsel.append(it.next());
-            if (it.hasNext()) {
-            sbenvsel.append(":");
-            }
-            }
-            } else {
-            Messagebox.show("Please select some environmental layers","ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
-            return;
-            }
-             *
-             */
             if (lbenvlayers.getSelectedCount() > 0) {
                 Iterator it = lbenvlayers.getSelectedItems().iterator();
                 int i = 0;
@@ -205,7 +190,6 @@ public class ALOCWCController extends UtilityComposer {
                     if (it.hasNext()) {
                         sbenvsel.append(":");
                     }
-
                 }
             } else {
                 Messagebox.show("Please select some environmental layers", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
@@ -216,6 +200,12 @@ public class ALOCWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeo?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(groupCount.getValue(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if(useArea.isChecked()) {
+                user_polygon = convertGeoToPoints(mc.getSelectionArea());
+            } else {
+                user_polygon = "";
+            }
+System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
                 sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
@@ -230,39 +220,15 @@ public class ALOCWCController extends UtilityComposer {
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-            System.out.println("Got response from ALOCWSController: \n" + slist);
-
-            String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_class_" + slist + "&styles=&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
-
-            String legendurl = geoServer
-                    + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT="
-                    + (Integer.parseInt((groupCount.getValue())))
-                    + "&LAYER=ALA:aloc_class_" + slist
-                    + "&STYLE=aloc_" + slist;
-
-            //get the current MapComposer instance
-            //MapComposer mc = getThisMapComposer();
-
-            //mc.addWMSLayer("ALOC " + slist, mapurl, (float) 0.5);
-            //String label = "ALOC (groups=" + groupCount.getValue() + ") classification#" + generation_count;
+          
             layerLabel = "Classification #" + generation_count + " - " + groupCount.getValue() + " groups";
-           /* mc.addWMSLayer(label, mapurl, (float) 0.5, "", legendurl);*/
-
+   
             generation_count++;
-
             pid = slist;
             
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
             
-            loadMap();            
-            
-           // java.util.Map args = new java.util.HashMap();                                                     
-        	//args.put("pid",pid);
-        	//args.put("layer",layerLabel);
-    		//Window win = (Window) Executions.createComponents(
-             //       "/WEB-INF/zul/AnalysisClassificationLegend.zul", null, args);
-    				//legendPath,null,args);
-        	//win.doModal();
+            loadMap(); 
         	
         } catch (Exception ex) {
             //Logger.getLogger(ALOCWCController.class.getName()).log(Level.SEVERE, null, ex);
@@ -287,42 +253,7 @@ public class ALOCWCController extends UtilityComposer {
         return mapComposer;
     }
 
-    /**
-     * Activate the polygon selection tool on the map
-     * @param event
-     */
-    public void onClick$btnPolygonSelection(Event event) {
-        //MapComposer mc = getThisMapComposer();
-
-        mc.getOpenLayersJavascript().addPolygonDrawingToolALOC();
-    }
-
-    /**
-     * clear the polygon selection tool on the map
-     * @param event
-     */
-    public void onClick$btnPolygonSelectionClear(Event event) {
-        user_polygon = "";
-        selectionGeomALOC.setValue("");
-
-        //MapComposer mc = getThisMapComposer();
-
-        mc.getOpenLayersJavascript().removePolygonALOC();
-    }
-
-    /**
-     * 
-     * @param event
-     */
-    public void onChange$selectionGeomALOC(Event event) {
-        try {
-
-            user_polygon = convertGeoToPoints(selectionGeomALOC.getValue());
-
-        } catch (Exception e) {//FIXME
-            e.printStackTrace();
-        }
-    }
+    
 
     String convertGeoToPoints(String geometry) {
         if (geometry == null) {

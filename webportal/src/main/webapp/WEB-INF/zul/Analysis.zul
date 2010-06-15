@@ -15,7 +15,7 @@
         }
     </style>
 
-    <label value="Analysis Tools"  sclass="h2 title"/>
+  <!--  <label value="Analysis Tools"  sclass="h2 title"/> -->
 
     <tabbox zindex="600" style="border:0px!important;" mold="accordion"> <!-- zclass="menuswitch"  -->
         <tabs>

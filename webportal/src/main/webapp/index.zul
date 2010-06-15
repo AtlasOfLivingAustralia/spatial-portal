@@ -488,7 +488,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                         </div>
                         <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
-                            <label sclass="h2 title" value="Define your area of interest" />
+                          <!--  <label sclass="h2 title" value="Define your area of interest" /> -->
 
                             <tabbox  mold="accordion">
                                 <tabs>
@@ -576,7 +576,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <div style="float:left;" width="60%">
                                     <image id="legendImgUri" visible="false"/>
                                 </div>
-                                <div style="float:left;" width="60%">
+                                <div style="float:left;" width="100%">
                                     <div id="legendHtml" visible="true"/>
                                 </div>
 

@@ -1,11 +1,12 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Selection" contentType="text/html;charset=UTF-8" id="AnalysisSelectionPage"?>
 <zk>
-	 
-<window use="org.ala.spatial.analysis.web.SelectionController" apply="org.ala.spatial.analysis.web.SelectionController" style="padding: 10px">
 
-   <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Select Region of Interest" />
+<window id="selectionwindow" use="org.ala.spatial.analysis.web.SelectionController"
+apply="org.ala.spatial.analysis.web.SelectionController">
+
+<div sclass="highlighted">
+             <label value="Select Region of Interest" />
 	<vbox>
 	<radiogroup>
 	    <vbox>
@@ -17,32 +18,38 @@
 	    <radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/>
 	    </vbox>
 	<!--<button label="Polygon Selection" id="btnPolygonSelection"/>
-	
+
 	<button label="Box Selection" id="btnBoxSelection"/>
 
 	<button label="Clear Selection" id="btnClearSelection"/> -->
 	</radiogroup>
 	</vbox>
+
 	<vbox>
 	<textbox id="displayGeom" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
+
 	<button label="Show Species" id="btnShowSpecies"/>
 	</vbox>
-	</groupbox>
+    </div>
+
 	<popup id="popup_results" width="330px">
 <vbox>
+
 <!--<textbox id="popup_results_seek" width="200px"></textbox> -->
+
 <listbox id="popup_listbox_results" width="290px" rows="15" >
-	
+
 </listbox>
+
+
 <label id="results_label" />
 <hbox>
 <!--<button id="results_prev" label="previous"/>
 <button id="results_next" label="next"/> -->
 </hbox>
 <separator/>
-<separator/>			
-		
-		
+<separator/>
+
 <button label="download" id="download" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
 </vbox>
 </popup>
@@ -57,11 +64,11 @@
          	   var evt = document.createEvent('HTMLEvents');
          	   evt.initEvent( 'blur', false, false);
          	   tbxSelectionGeom.dispatchEvent(evt);
-   
+
          	   var evt2 = document.createEvent('HTMLEvents');
          	   evt2.initEvent( 'change', false, false);
  	           tbxSelectionGeom.dispatchEvent(evt2);
-       		} 
+       		}
 		else if (document.createEventObject) {
          	   tbxSelectionGeom.fireEvent('onblur');
  	           tbxSelectionGeom.fireEvent('onchange');
@@ -75,19 +82,17 @@
          	   var evt = document.createEvent('HTMLEvents');
          	   evt.initEvent( 'blur', false, false);
          	   tbxBoxGeom.dispatchEvent(evt);
-   
+
          	   var evt2 = document.createEvent('HTMLEvents');
          	   evt2.initEvent( 'change', false, false);
  	           tbxBoxGeom.dispatchEvent(evt2);
-       		} 
+       		}
 		else if (document.createEventObject) {
          	   tbxBoxGeom.fireEvent('onblur');
  	           tbxBoxGeom.fireEvent('onchange');
        		}
 	    }
-
-
 		</script>
 	</window>
-	
+
 </zk>

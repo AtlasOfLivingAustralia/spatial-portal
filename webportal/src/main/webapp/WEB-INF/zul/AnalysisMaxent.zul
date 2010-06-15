@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
 <zk>
-    <window id="maxentwindow" use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" style="padding: 10px">
+    <window id="maxentwindow" use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" >
 
         <style>
             .z-loading {
@@ -14,8 +14,10 @@
 
 
         <!-- <label value="Step 1: Select your species " /> -->
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 1: Select your species" />
+        <!-- <groupbox mold="3d" style="width: 95%; padding: 5px"> 
+            <caption label="Step 1: Select your species" /> -->
+        <div sclass="highlighted">
+            <label value="Step 1: Select your species" />
             <vbox>
                 <label>Enter a scientific or common name</label>
                 <!--
@@ -29,36 +31,42 @@
                 <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                     <comboitem label=""/>
                 </combobox>
-                <button id="btnMapSpecies" label="Add to Map" visible="true" />
+               <!-- <button id="btnMapSpecies" label="Add to Map" visible="true" /> -->
                 <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
             </vbox>
-        </groupbox>
+       <!--  </groupbox> -->
+       </div>
 
 
 
         <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 2: Select your environmental layers" />
+        <!-- <groupbox mold="3d" style="width: 95%; padding: 5px"> 
+            <caption label="Step 2: Select your environmental layers" />-->
+        <div sclass="highlighted">
+            <label value="Step 2: Select your environmental layers" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" />
                 </hbox>
                 <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="99%" >
-                    <listhead>
-                        <listheader label="Select all layers" />
-                    </listhead>
+                   <!--  <listhead>
+                        <listheader label="Select layers" />
+                    </listhead> -->
 
                 </listbox>
             </vbox>
-        </groupbox>
+        <!-- </groupbox> -->
+        </div>
 
 
 
         <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
 
-        <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 3: Select your optional parameters" />
+        <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
+            <caption label="Step 3: Select your optional parameters" /> -->
+        <div sclass="highlighted">
+            <label value="Step 3: Select your optional parameters" />
             <vbox>
                 <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" visible="false" />
                 <checkbox id="chkRCurves" label="Create response curves" />
@@ -67,7 +75,8 @@
                     <textbox id="txtTestPercentage" value="0" />
                 </hbox>
             </vbox>
-        </groupbox>
+        <!-- </groupbox> -->
+        </div>
 
 
 

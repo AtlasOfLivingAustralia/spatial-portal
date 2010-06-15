@@ -45,6 +45,7 @@ import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Popup;
+import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Row;
 import org.zkoss.zul.Rows;
@@ -79,8 +80,10 @@ public class SamplingWCController extends UtilityComposer {
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     private String user_polygon = "";
-    private Textbox selectionGeomSampling;
+
     Button pullFromActiveLayers;
+
+    Checkbox useArea;
     
     LayersUtil layersUtil;
 
@@ -347,6 +350,12 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if(useArea.isChecked()) {
+                user_polygon = convertGeoToPoints(mc.getSelectionArea());
+            } else {
+                user_polygon = "";
+            }
+System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
                 sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
@@ -555,6 +564,12 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if(useArea.isChecked()) {
+                user_polygon = convertGeoToPoints(mc.getSelectionArea());
+            } else {
+                user_polygon = "";
+            }
+System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
                 sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
@@ -615,74 +630,6 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     private void loadSpeciesOnMap() {
-        /*
-        String taxon = sac.getValue();
-        String uri = null;
-        String filter = null;
-
-        // capitalise the taxon name
-        System.out.print("Changing taxon name from '" + taxon);
-        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        System.out.println("' to '" + taxon + "' ");
-
-
-        //uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
-        uri = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
-
-        //get the current MapComposer instance
-        MapComposer mc = getThisMapComposer();
-
-        //contruct the filter
-        //filter = "<Filter><PropertyIsEqualTo><PropertyName>url</PropertyName><Literal><![CDATA["+mapWMS+entity+"&type=1&unit=1]]></Literal></PropertyIsEqualTo></Filter>";
-        //lets try it in cql
-        //filter = "species eq '" + taxon + "'";
-        String desc = sac.getSelectedItem().getDescription();
-        String tlevel = desc.split("-")[0].trim();
-        filter =  tlevel + " eq '" + taxon + "'";
-
-        logger.debug(filter);
-        //mc.addWMSLayer(label, uri, 1, filter);
-        mc.addKnownWMSLayer(taxon, uri, 1, filter);
-         *
-         */
-
-        /*
-        String taxon = sac.getValue();
-        // check if its a common name, if so, grab the scientific name
-        if (rdoCommonSearch.isChecked()) {
-            taxon = getScientificName();
-        }
-        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        String uri = null;
-        String filter = null;
-        String entity = null;
-        MapLayer mapLayer = null;
-
-        //TODO these paramaters need to read from the config
-        String layerName = "ALA:occurrencesv1";
-        String sld = "species_point";
-        uri = geoServer + "/geoserver/wms?service=WMS";
-        String format = "image/png";
-
-        //get the current MapComposer instance
-        //MapComposer mc = getThisMapComposer();
-
-        //contruct the filter in cql
-        filter = "species eq '" + taxon + "'";
-        mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Species occurrence for " + taxon, taxon, "1.1.1", uri, layerName, format, sld, filter);
-
-        //create a random colour
-
-        Random rand = new java.util.Random();
-        int r = rand.nextInt(99);
-        int g = rand.nextInt(99);
-        int b = rand.nextInt(99);
-        String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
-        mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
-        mc.addUserDefinedLayerToMenu(mapLayer, true);
-         *
-         */
-
         String taxon = sac.getValue();
         String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().startsWith("Scientific")) {
@@ -748,45 +695,7 @@ public class SamplingWCController extends UtilityComposer {
         return taxon;
     }
 
-    /**
-     * Activate the polygon selection tool on the map
-     * @param event
-     */
-    public void onClick$btnPolygonSelection(Event event) {
-        //MapComposer mc = getThisMapComposer();
-
-        mc.getOpenLayersJavascript().addPolygonDrawingToolSampling();
-    }
-
-    /**
-     * clear the polygon selection tool on the map
-     * @param event
-     */
-    public void onClick$btnPolygonSelectionClear(Event event) {
-        user_polygon = "";
-        selectionGeomSampling.setValue("");
-
-        //MapComposer mc = getThisMapComposer();
-
-        mc.getOpenLayersJavascript().removePolygonSampling();
-    }
-
-    /**
-     * 
-     * @param event
-     */
-    public void onChange$selectionGeomSampling(Event event) {
-        try {
-
-            user_polygon = convertGeoToPoints(selectionGeomSampling.getValue());
-
-        } catch (Exception e) {//FIXME
-            e.printStackTrace();
-        }
-
-    }
-
-    String convertGeoToPoints(String geometry) {
+      String convertGeoToPoints(String geometry) {
         if (geometry == null) {
             return "";
         }

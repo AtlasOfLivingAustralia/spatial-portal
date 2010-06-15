@@ -1,31 +1,24 @@
-<!-- <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?> -->
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk> 
-                <window
-                title="Filtering Results" border="normal" 
-                id="popup_results" width="330px"                 
-                apply="org.ala.spatial.analysis.web.FilteringResultsWCController" 
-                use="org.ala.spatial.analysis.web.FilteringResultsWCController" closable="true" mode="embedded">
-                    <vbox>
-                        <textbox id="popup_results_seek" width="200px" visible="false"></textbox>
-                        <listbox id="popup_listbox_results" width="290px" rows="15" >
+    <window
+        title="Filtering Results" border="normal"
+        id="popup_results" width="330px"
+        apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
+        use="org.ala.spatial.analysis.web.FilteringResultsWCController" closable="true" mode="embedded">
+        <vbox>
+            <label id="results_label" />
 
-                        </listbox>
-                        <label id="results_label" />
-                        <hbox>
-                            <button id="results_prev" label="previous"/>
-                            <button id="results_next" label="next"/>
-                        </hbox>
-                        <separator/>
-                        <separator/>
+            <listbox id="popup_listbox_results" width="290px" rows="15" >
 
+            </listbox>           
+        
+        <separator/>
 
-                        <button label="download species list" id="download" />
-                        <button label="download samples" id="downloadsamples" />
-                        <div align="right">	
-                       		 <button label="close" onClick="popup_results.detach();" />
-                        </div>
-                    </vbox>
-                </window>
-
+            <button label="download species list" id="download" />
+            <button label="download samples" id="downloadsamples" />
+            <div align="right">
+                <button label="close" onClick="popup_results.detach();" />
+            </div>
+        </vbox>
+    </window>
 </zk>
