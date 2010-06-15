@@ -228,11 +228,11 @@ public class MaxentWCController extends UtilityComposer {
 
     public void runmaxent() {
         try {
-            String taxon = sac.getValue();
+            String taxon = cleanTaxon(sac.getValue());
             // check if its a common name, if so, grab the scientific name
-           // if (rdoCommonSearch.isChecked()) {
+            // if (rdoCommonSearch.isChecked()) {
             //    taxon = getScientificName();
-           // }
+            // }
 
             String msg = "";
             String[] envsel = null;
@@ -282,12 +282,12 @@ public class MaxentWCController extends UtilityComposer {
 
             /* user selected region support */
             String user_polygon;
-            if(useArea.isChecked()) {
+            if (useArea.isChecked()) {
                 user_polygon = convertGeoToPoints(mc.getSelectionArea());
             } else {
                 user_polygon = "";
             }
-System.out.println("user_polygon: " + user_polygon);
+            System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
                 sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
@@ -388,73 +388,6 @@ System.out.println("user_polygon: " + user_polygon);
     }
 
     private void loadSpeciesOnMap() {
-        /*
-        String taxon = sac.getValue();
-        String uri = null;
-        String filter = null;
-
-        // capitalise the taxon name
-        System.out.print("Changing taxon name from '" + taxon);
-        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        System.out.println("' to '" + taxon + "' ");
-
-
-        //uri = "http://ec2-184-73-34-104.compute-1.amazonaws.com/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
-        uri = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:occurrencesv1&styles=&srs=EPSG:4326&format=image/png";
-
-        //get the current MapComposer instance
-        MapComposer mc = getThisMapComposer();
-
-        //contruct the filter
-        //filter = "<Filter><PropertyIsEqualTo><PropertyName>url</PropertyName><Literal><![CDATA["+mapWMS+entity+"&type=1&unit=1]]></Literal></PropertyIsEqualTo></Filter>";
-        //lets try it in cql
-        //filter = "species eq '" + taxon + "'";
-        String desc = sac.getSelectedItem().getDescription(); 
-        String tlevel = desc.split("-")[0].trim();
-        filter =  tlevel + " eq '" + taxon + "'";
-        System.out.println("Setting filter: " + filter );
-
-        logger.debug(filter);
-        //mc.addWMSLayer(label, uri, 1, filter);
-        mc.addKnownWMSLayer(taxon, uri, 1, filter);
-         *
-         */
-
-        /*
-        String taxon = sac.getValue();
-        // check if its a common name, if so, grab the scientific name
-        if (rdoCommonSearch.isChecked()) {
-        taxon = getScientificName();
-        }
-        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        String uri = null;
-        String filter = null;
-        String entity = null;
-        MapLayer mapLayer = null;
-
-        //TODO these paramaters need to read from the config
-        String layerName = "ALA:occurrencesv1";
-        String sld = "species_point";
-        uri = geoServer + "/geoserver/wms?service=WMS";
-        String format = "image/png";
-
-        //get the current MapComposer instance
-        //MapComposer mc = getThisMapComposer();
-
-        //contruct the filter in cql
-        filter = "species eq '" + taxon + "'";
-        mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("Species occurrence for " + taxon, taxon, "1.1.1", uri, layerName, format, sld, filter);
-
-        //create a random colour
-
-        Random rand = new java.util.Random();
-        int r = rand.nextInt(99);
-        int g = rand.nextInt(99);
-        int b = rand.nextInt(99);
-        String hexColour = String.valueOf(r) + String.valueOf(g) + String.valueOf(b);
-        mapLayer.setEnvParams("color:" + hexColour + ";name:circle;size:6");
-        mc.addUserDefinedLayerToMenu(mapLayer, true);
-         */
 
         String taxon = sac.getValue();
 
@@ -462,17 +395,10 @@ System.out.println("user_polygon: " + user_polygon);
         if (spVal.trim().startsWith("Scientific")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            mc.mapSpeciesByName(taxon, sac.getValue());
+        } else {
+            mc.mapSpeciesByName(taxon);
         }
-
-
-        System.out.println(">>>>> " + taxon);
-
-        // check if its a common name, if so, grab the scientific name
-        //if (rdoCommonSearch.isChecked()) {
-        //    taxon = getScientificName();
-        //}
-        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        mc.mapSpeciesByName(taxon);
     }
 
     private String getScientificName() {
@@ -531,6 +457,23 @@ System.out.println("user_polygon: " + user_polygon);
     }
 
     /**
+     * get rid of the common name if present
+     *
+     * @param taxon
+     * @return
+     */
+    private String cleanTaxon(String taxon) {
+        if (StringUtils.isNotBlank(taxon)) {
+
+            if (taxon.contains(" (")) {
+                taxon = StringUtils.substringBefore(taxon, " (");
+            }
+        }
+
+        return taxon;
+    }
+
+    /**
      * populate sampling screen with values from active layers
      * 
      * TODO: run this on 'tab' open
@@ -540,10 +483,6 @@ System.out.println("user_polygon: " + user_polygon);
         String species = layersUtil.getFirstSpeciesLayer();
         String[] layers = layersUtil.getActiveEnvCtxLayers();
 
-        // get rid of the common name if present
-        if (species.contains(" (")) {
-            species = StringUtils.substringBefore(species, " (");
-        }
 
         /* set species from layer selector */
         if (species != null) {
