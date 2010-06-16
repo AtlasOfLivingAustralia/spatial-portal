@@ -604,7 +604,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         PortalSession portalSession = getPortalSession();
         MapLayer baseLayer = portalSessionUtilities.getBaseLayerById(portalSession, id);
         portalSession.setCurrentBaseLayer(baseLayer);
-        baseLayer.setOpacity((float) 0.4);
         activateBaseLayer(baseLayer);
     }
 
