@@ -23,6 +23,7 @@ var toolPanel; // container for OpenLayer controls
 var pan; // OpenLayers.Control.Navigation
 var zoom; // OpenLayers.Control.ZoomBox
 var areaToolsButton// OpenLayers.Control.Button
+var selectableLayers = new Array();
 /**
  * Associative array of all current active map layers except
  * for baselayers
@@ -228,7 +229,7 @@ function buildMapReal() {
         //	     		         , 0.00274658203125, 0.001373291015625, 0.0006866455078125, 0.00034332275390625, 0.000171661376953125
         //	     		         , 8.58306884765625e-05, 4.291534423828125e-05, 2.1457672119140625e-05, 1.0728836059570312e-05, 5.3644180297851562e-06
         //	     		         , 2.6822090148925781e-06, 1.3411045074462891e-06];
-        resolutions: [  0.17578125, 0.087890625, 0.0439453125, 0.02197265625, 0.010986328125, 0.0054931640625
+        resolutions: [ 0.3515625, 0.17578125, 0.087890625, 0.0439453125, 0.02197265625, 0.010986328125, 0.0054931640625
         , 0.00274658203125, 0.001373291015625, 0.0006866455078125, 0.00034332275390625,  0.000171661376953125
         ]
     });
@@ -312,7 +313,7 @@ function buildMapReal() {
     });
 
     //var layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
-    // map.addLayer(layer);
+    //map.addLayer(layer);
 
 }
 
@@ -487,6 +488,17 @@ function polygonAddedFiltering(feature) {
     polyControl.deactivate();
 }
 
+function setVectorLayersSelectable() {
+    try {
+        var layersV = map.getLayersByClass('OpenLayers.Layer.Vector');
+        selectControl = new OpenLayers.Control.SelectFeature(layersV);
+        map.addControl(selectControl);
+        selectControl.activate();
+    } catch (err) {
+
+    }
+}
+
 
  function selected (evt) {
 
@@ -494,7 +506,6 @@ function polygonAddedFiltering(feature) {
     var attrs = evt.feature.attributes;
     
     //test to see if its occurrence data
-
     if (attrs["occurrenceId"] != null) {
         popup = new OpenLayers.Popup.FramedCloud("featurePopup",
             feature.geometry.getBounds().getCenterLonLat(),
@@ -525,7 +536,7 @@ function polygonAddedFiltering(feature) {
     }
     feature.popup = popup;
     popup.feature = feature;
-    map.addPopup(popup);
+    map.addPopup(popup, true);
     
    
 }
@@ -581,9 +592,10 @@ function addJsonFeatureToMap(feature, name, hexColour) {
 
 
     vector_layer.events.register("featureselected", vector_layer, selected);
-     selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
-    map.addControl(selectControl);
-    selectControl.activate();
+    //add the vector layer to the array of selectable layers
+    //selectableLayers.push(vector_layer);
+
+    
     return vector_layer;
 }
 

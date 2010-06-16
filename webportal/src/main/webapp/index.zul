@@ -94,25 +94,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             }
 
             function setExtent() {
-            var extent = window.frames.mapFrame.map.getExtent();
-            extent = extent.toArray()
-
-
-            var northReal = $e('${northReal.uuid}');
-            var eastReal = $e('${eastReal.uuid}');
-            var southReal = $e('${southReal.uuid}');
-            var westReal = $e('${westReal.uuid}');
-
-            northReal.value = roundNumber(extent[3],3);
-            eastReal.value = roundNumber(extent[2],3);
-            southReal.value = roundNumber(extent[1],3);
-            westReal.value = roundNumber(extent[0],3)
+            
 
             if (getGeographicExtentControls != undefined) {
             getGeographicExtentControls();
             }
 
-            return extent;
+            
             }
 
             function setPolygonGeometry(geometry) {
@@ -374,7 +362,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <leftMenuLinks id="leftMenuLinks" />
                         </div>
                         <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
-                            <tabbox mold="accordion">
+                            <tabbox mold="accordion" height="95%" width="95%">
                                 <tabs>
                                     <tab label="Map species occurrences" />
                                     <tab label="Map locations" />
@@ -429,7 +417,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     </tabpanel>
                                     <tabpanel>
                                         <div>
-                                            <vbox width="100%">
+                                            <vbox width="95%%">
                                                 <label value="Enter place name" />
                                                 <hbox>
                                                     <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>

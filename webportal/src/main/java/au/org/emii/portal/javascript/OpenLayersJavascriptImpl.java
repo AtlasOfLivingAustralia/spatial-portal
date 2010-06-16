@@ -464,6 +464,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                                         + "currentBaseLayer='" + mapLayer.getUniqueIdJS() + "'; "
                                         + "map.setBaseLayer(" + associativeArray + "[currentBaseLayer]); ");
                         }
+                        
+                        //add all the vector layers to be the selectable list
+
+                        script.append("window.mapFrame.setVectorLayersSelectable();");
                         mapLayer.setDisplayed(true);
                 }
 
@@ -472,6 +476,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                                 script.append(activateMapLayer(child, recursive));
                         }
                 }
+
+
 
                 return wrapWithSafeToProceed(script.toString());
         }

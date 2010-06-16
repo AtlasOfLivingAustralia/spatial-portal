@@ -23,6 +23,7 @@ public interface LayerUtilities {
     public int IMAGELAYER = 9;
     public int NCWMS = 4;
     public int THREDDS = 5;
+    public int BING = 10;
     /**
      * Constants used to indicate layer type.  Do not hard code these
      * value into other applications - they may change.  Instead, for
@@ -51,6 +52,10 @@ public interface LayerUtilities {
     public int WMS_1_1_0 = 1;
     public int WMS_1_1_1 = 2;
     public int WMS_1_3_0 = 3;
+
+    public String BING_SHADED = "VEMapStyle.Shaded";
+    public String BING_AERIAL = "VEMapStyle.Aerial";
+    public String BING_HYBRID = "VEMapStyle.Hybrid";
 
     /**
      * Chomp the layer name if we need to
