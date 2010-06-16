@@ -218,12 +218,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 		    tbxTabSelection.fireEvent('onblur');
 		    tbxTabSelection.fireEvent('onchange');
 		}
-		
-	//	tbxTabSelection.value = "";	
+
+	//	tbxTabSelection.value = "";
 	    }
         </script>
 
-	
+
 
         <!-- external content (Links) popup -->
         <window id="externalContentWindow" visible="false" width="80%"
@@ -370,7 +370,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </tabbox>
                         </div>
 
-                        <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">                          
+                        <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
                             <leftMenuLinks id="leftMenuLinks" />
                         </div>
                         <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
@@ -394,11 +394,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             -->
                                             <vbox>
                                             <label>Enter a scientific or common name</label>
-                                            
+
                                             <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
                                                 <comboitem label=""/>
                                             </combobox>
-                                            
+
                                             <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
                                             </vbox>
 
@@ -492,7 +492,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                             <tabbox  mold="accordion">
                                 <tabs>
-                                    
+
                                     <!-- selection tools -->
                                     <tab id="selectionTab" label="Selection"  />
 
@@ -521,7 +521,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                             <!--  baselayer selection -->
-                            <div sclass="highlighted">
+                            <div sclass="highlighted" visible="false">
                                 <label value="Base Layer" sclass="h3" />
                                 <listbox id="baseLayerList" mold="select" />
                             </div>
@@ -682,7 +682,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 </treecols>
                             </tree>
 
-                           
+
                         </div>
 
 
@@ -740,5 +740,4 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
 </zk>
-
 
