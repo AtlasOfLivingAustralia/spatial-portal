@@ -9,31 +9,39 @@
 
             <h2>The Spatial Portal</h2>
 
-            <h3> This is the location focused view of the Atlas. With this perspective, you can
-            <br> Map three types of spatial data</h3>
+            <h3> 
+                This is the location focused view of the Atlas. With this perspective, you can
+            </h3>
 
-            <li>species, or any taxonomic level to Class</li>
-            <li>Locations from the gazetteer</li>
-            <li>Environmental (grids) or contextual (polygons)</li>
+            <h3> Map three types of spatial data</h3>
+            <ul>
+                <li>Species, or any taxonomic level to Class</li>
+                <li>Locations from the gazetteer</li>
+                <li>Environmental (grids) or contextual (polygons)</li>
+            </ul>
 
-            <br>
             <h3>Define an area of interest to apply across the spatial portal </h3>
+            <ul>
+                <li> The extent of the map window</li>
+                <li>A rectangle drawn on the map</li>
+                <li>A polygon drawn on the map</li>
+                <li>A polygon selected on the map</li>
+                <li>An environmental envelope</li>
+            </ul>
 
-            <li> The extent of the map window</li>
-            <li>A rectangle drawn on the map</li>
-            <li>A polygon drawn on the map</li>
-            <li> A polygon selected on the map</li>
-            <li>An environmental envelope</li>
-            <br>
-            <h3> Analyse spatial data </h3>
+            <h3>Analyse spatial data </h3>
+            <ul>
+                <li>Sample environmental and contextual data at species locations
+                <li>Predict where a species could occur
+                <li>Classify environmental layers (environmental domains)
+            </ul>
 
-            <li>Sample environmental and contextual data at species locations
-            <li>Predict where a species could occur
-            <li>Classify environmental layers (environmental domains)
-            <h3>        Manage all mapped data. </h3>
-            <li>Mapped data is added to the top of the listed layers.</li>
-            <li>Layers can be deleted, metadata listed, zoomed to (spatial extent) and a legend displayed.</li>
-            <li>In most cases, the legend can be used to modify the associated data.</li>
+            <h3>Manage mapped data. </h3>
+            <ul>
+                <li>Mapped data is added to the top of the listed layers</li>
+                <li>Layers can be deleted, metadata listed, zoomed to (spatial extent) and a legend displayed</li>
+                <li>In most cases, the legend can be used to modify the associated data</li>
+            </ul>
 
             ]]>
 
@@ -51,7 +59,8 @@
 				tooltiptext="${each.description}"
 				zclass="external"
 				href="${each.uri}"
-				orient="vertical" />
+				orient="vertical"
+                                visible="false" />
 			</span>
 			<!--  internal links -->
 			<toolbarbutton
@@ -59,7 +68,8 @@
 				label="${each.name}"
 				tooltiptext="${each.description}"
 				zclass="list"
-				forward="onClick=${mapPortalPage}.onActivateLink">
+				forward="onClick=${mapPortalPage}.onActivateLink"
+                                visible="false" >
 				<custom-attributes link="${each}" />
 			</toolbarbutton>
 
