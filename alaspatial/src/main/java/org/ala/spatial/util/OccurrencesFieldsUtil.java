@@ -97,6 +97,12 @@ public class OccurrencesFieldsUtil {
         //latitude
         output[pos++] = "latitude";
 
+        //dump
+        for (String s : output) {
+            System.out.println(s + ", ");
+        }
+        System.out.println("\r\n");
+
         return output;
     }
 

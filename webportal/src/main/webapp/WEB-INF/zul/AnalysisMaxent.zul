@@ -15,7 +15,7 @@
         <div sclass="highlighted" >
             <vbox>
             <label value="Step 1: Restrict area" />
-            <checkbox id="useArea" label="use area defined in the Area tab" onCheck="" />
+            <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
             </vbox>
         </div>
 

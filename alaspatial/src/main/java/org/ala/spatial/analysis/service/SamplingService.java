@@ -259,10 +259,8 @@ public class SamplingService {
 					columns.clear();
 
 					sortedrecords = OccurrencesIndex.getSortedRecords(rstart, rend);
-                                        for (String ss : sortedrecords){
-                                            System.out.println(ss + ",");
-                                        }
-					sortedrecords[0] = lastpart + sortedrecords[0];
+
+                                        sortedrecords[0] = lastpart + sortedrecords[0];
 
 					columns.add(sortedrecords);
 
@@ -272,14 +270,11 @@ public class SamplingService {
 						lastpart = "";
 					} else {
 						//do up to last record
-						recordend = recordstart + sortedrecords.length-2;
+                                                lastpart = "";
+						recordend = recordstart + sortedrecords.length-2; //inclusive
 						lastpart = sortedrecords[sortedrecords.length-1];
 				 	}
-					/* cap results to max_rows */
-					if (recordend-recordstart+1 > max_rows) {
-						recordend = recordstart + max_rows;
-					}				
-
+					
 					if (layers != null) {
 						for (i = 0; i < layers.length; i++ ) {
 							columns.add(SamplingIndex.getRecords(
@@ -299,7 +294,8 @@ public class SamplingService {
 				
 					/* output structure */
 					if (results == null) {
-						results = new String[len+1][number_of_columns+1];
+                                                //limited to 20 output rows by rowoffset in add loop
+						results = new String[20][number_of_columns+1];
 					}
 
 					int coloffset = 0;
@@ -310,11 +306,11 @@ public class SamplingService {
 					
 					double [] points = OccurrencesIndex.getPoints(recordstart,recordend);
 					
-					for (j = 0; rowoffset < 20 && j < len; j++ ) {
+					for (j = 0; rowoffset < 19 && j < len; j++ ) {
 						coloffset = 0;						
 						//test bounding box
-						if (region == null || region.isWithin(points[j*2],points[j*2+1])) {												
-							for (i = 0; i < columns.size(); i++ ) {
+                                        	if (region == null || region.isWithin(points[j*2],points[j*2+1])) {
+                                        		for (i = 0; i < columns.size(); i++ ) {
 								if (columns.get(i) != null && j < columns.get(i).length) {
 									if (i == 0) {
 										row = columns.get(i)[j].split(",");
@@ -331,7 +327,7 @@ public class SamplingService {
 									coloffset++;	
 								}
 							}
-							rowoffset++;
+                                        		rowoffset++;
 						}
 					}					
 
@@ -351,6 +347,7 @@ public class SamplingService {
 
 			return results;
 		}catch (Exception e){
+                    e.printStackTrace();
  		}
 
 		return null;

@@ -6,16 +6,16 @@
 apply="org.ala.spatial.analysis.web.SelectionController">
 
 <div sclass="highlighted">
-             <label value="Select Region of Interest" />
+             <label value="Select AREA option" />
 	<vbox>
 	<radiogroup>
 	    <vbox>
 	    <radio label="From box selection" id="rdoBoxSelection"/>
-	    <radio label="From current view" id="rdoExtentsSelection"/>
+	<!--    <radio label="From current view" id="rdoExtentsSelection"/> -->
 	    <radio label="From digitized polygon" id="rdoPolygonSelection"/>
-	    <radio label="From point and radius" id="rdoPointRadiusSelection"/>
+	    <!-- <radio label="From point and radius" id="rdoPointRadiusSelection"/>
 	    <radio label="From existing feature" id="rdoExistingFeatureSelection"/>
-	    <radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/>
+	    <radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
 	    </vbox>
 	<!--<button label="Polygon Selection" id="btnPolygonSelection"/>
 
@@ -36,7 +36,7 @@ apply="org.ala.spatial.analysis.web.SelectionController">
 <vbox>
 
 <!--<textbox id="popup_results_seek" width="200px"></textbox> -->
-
+<label id="popup_label" value="" />
 <listbox id="popup_listbox_results" width="290px" rows="15" >
 
 </listbox>

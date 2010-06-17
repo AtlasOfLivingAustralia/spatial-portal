@@ -15,6 +15,7 @@ import java.util.BitSet;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.index.FilteringIndex;
+import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
@@ -258,25 +259,45 @@ public class FilteringService implements Serializable {
 
     /**
      * gets number of species filtered in a session
-     * 
-     * @param session_id_ session id as String
+     *
+     * also supports "none" session id for returning
+     * species count against a region only.
+     *
+     * @param session_id_ session id as String, or "none"
      * @param region bounding region for results, or null for none
      * @return number of unqiue species as int
      */
     static public int getSpeciesCount(String session_id_, SimpleRegion region) {
         int i;
 
-        /* load session */
-        FilteringService fs = FilteringService.getSession(session_id_);
+        BitSet species;
 
-        /* get top filter speciesrecord */
-        ArrayList<Integer> rk = fs.getTopSpeciesRecord();
-        if (rk == null) {
-            return 0;
+        /* check for "none" session */
+        if (session_id_.equals("none")) {
+            /* TODO: fix this up when no longer using ArrayList
+             in getSpeciesBitset */
+            int [] records = OccurrencesIndex.getRecordsInside(region);
+            ArrayList<Integer> al = new ArrayList<Integer>(records.length);
+            for (i = 0; i < records.length; i++){
+                al.add(records[i]);
+            }
+
+            /* null region to getSpeciesBitset since records alreay in region */
+            species = OccurrencesIndex.getSpeciesBitset(al,null);
+        } else {
+
+            /* load session */
+            FilteringService fs = FilteringService.getSession(session_id_);
+
+            /* get top filter speciesrecord */
+            ArrayList<Integer> rk = fs.getTopSpeciesRecord();
+            if (rk == null) {
+                return 0;
+            }
+
+            /* make list of species, for inside region filter */
+            species = OccurrencesIndex.getSpeciesBitset(rk, region); //new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
         }
-
-        /* make list of species, for inside region filter */
-        BitSet species = OccurrencesIndex.getSpeciesBitset(rk, region); //new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
         
         /* count species */
         int count = 0;
@@ -291,23 +312,42 @@ public class FilteringService implements Serializable {
 
     /**
      * gets names of species filtered in a session
+     *
+     * supports "none" session id
      * 
-     * @param session_id_ session id as String
+     * @param session_id_ session id as String, none for no env filter
      * @param region region to restrict results as SimpleRegion or null for none
      * @return list of unqiue species as String, '\r\n' delimited
      */
     static public String getSpeciesList(String session_id_, SimpleRegion region) {
         int i;
 
-        /* load session */
-        FilteringService fs = FilteringService.getSession(session_id_);
+        BitSet species;
 
-        /* get top speciesrecords */
-        ArrayList<Integer> rk = fs.getTopSpeciesRecord();
+        /* check for "none" session */
+        if (session_id_.equals("none")) {
+            /* TODO: fix this up when no longer using ArrayList
+            in getSpeciesBitset */
+            int[] records = OccurrencesIndex.getRecordsInside(region);
+            System.out.println("region:" + records);
+            ArrayList<Integer> al = new ArrayList<Integer>(records.length);
+            for (i = 0; i < records.length; i++) {
+                al.add(records[i]);
+            }
 
-        /* make species list */
-        BitSet species = OccurrencesIndex.getSpeciesBitset(rk, region);
-       
+            /* null region to getSpeciesBitset since records alreay in region */
+            species = OccurrencesIndex.getSpeciesBitset(al, null);
+        } else {
+            /* load session */
+            FilteringService fs = FilteringService.getSession(session_id_);
+
+            /* get top speciesrecords */
+            ArrayList<Integer> rk = fs.getTopSpeciesRecord();
+
+            /* make species list */
+            species = OccurrencesIndex.getSpeciesBitset(rk, region);
+        }
+
         /* make into string of species names */
         StringBuffer sb = new StringBuffer();
         for (i = 0; i < species.size(); i++) {
@@ -327,40 +367,52 @@ public class FilteringService implements Serializable {
      * @return Samples records as String
      */
     static public String getSamplesList(String session_id_, SimpleRegion region) {
-        /* load session */
-        FilteringService fs = FilteringService.getSession(session_id_);
-
-        /* get top speciesrecord */
-        ArrayList<Integer> rk = fs.getTopSpeciesRecord();
-
-        /* get record indexes */
-        if (rk.size() == 0) {
-            return "";	//no records to return;
-        }
-        int[] records = new int[rk.size()];
-        int p = 0;
+        int[] records;
         int i;
-        if (region == null) {
-            /* no defined region, use all */
-            for (i = 0; i < rk.size(); i++) {
-                records[p++] = rk.get(i);
-            }
-        } else {
-            /* restrict by region */
 
-            /* TODO: check, could be faster to use
-             * OccurrencesIndex.getRecordsInside(region)
-             */
-            for (i = 0; i < rk.size(); i++) {
-                if (OccurrencesIndex.inRegion(rk.get(i), region)) {
+        /* check for "none" session */
+        if (session_id_.equals("none")) {
+            /* TODO: fix this up when no longer using ArrayList
+            in getSpeciesBitset */
+            records = OccurrencesIndex.getRecordsInside(region);
+            System.out.println("region:" + records);
+
+        } else {
+            /* load session */
+            FilteringService fs = FilteringService.getSession(session_id_);
+
+            /* get top speciesrecord */
+            ArrayList<Integer> rk = fs.getTopSpeciesRecord();
+
+            /* get record indexes */
+            if (rk.size() == 0) {
+                return "";	//no records to return;
+            }
+            records = new int[rk.size()];
+            int p = 0;
+
+            if (region == null) {
+                /* no defined region, use all */
+                for (i = 0; i < rk.size(); i++) {
                     records[p++] = rk.get(i);
                 }
-            }
-            if (p > 0) {
-                int[] records_tmp = java.util.Arrays.copyOf(records, p);
-                records = records_tmp;
             } else {
-                return "";	//no records to return
+                /* restrict by region */
+
+                /* TODO: check, could be faster to use
+                 * OccurrencesIndex.getRecordsInside(region)
+                 */
+                for (i = 0; i < rk.size(); i++) {
+                    if (OccurrencesIndex.inRegion(rk.get(i), region)) {
+                        records[p++] = rk.get(i);
+                    }
+                }
+                if (p > 0) {
+                    int[] records_tmp = java.util.Arrays.copyOf(records, p);
+                    records = records_tmp;
+                } else {
+                    return "";	//no records to return
+                }
             }
         }
 
@@ -373,8 +425,9 @@ public class FilteringService implements Serializable {
             FileWriter fw = new FileWriter(temporary_file);
 
             /* output header */
+            OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
             StringBuffer sbHeader = new StringBuffer();
-            for (String s : TabulationSettings.occurances_csv_fields) {
+            for (String s : ofu.getOutputColumnNames()) {
                 sbHeader.append(s);
                 sbHeader.append(",");
             }

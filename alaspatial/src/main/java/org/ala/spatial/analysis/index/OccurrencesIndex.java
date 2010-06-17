@@ -316,16 +316,24 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
 
+            String [] colnames = ofu.getOutputColumnNames();
+
+
+
             columnKeysToOccurrencesOrder = new int[columnsSettings.length];
             int p = 0;
             for(i=0;i<ofu.onetwoCount;i++){
                 columnKeysToOccurrencesOrder[p++] = ofu.onestwos[i];
+            System.out.print("[" + ofu.onestwos[i] + " " + colnames[p-1]);
             }
             for(i=0;i<ofu.zeroCount;i++){
                 columnKeysToOccurrencesOrder[p++] = ofu.zeros[i];
+                System.out.print("[" + ofu.zeros[i] + " " + colnames[p-1]);
             }
             columnKeysToOccurrencesOrder[p++] = ofu.longitudeColumn;
+            System.out.print("[" + ofu.longitudeColumn + " " + colnames[p-1]);
             columnKeysToOccurrencesOrder[p] = ofu.latitudeColumn;
+            System.out.print("[" + ofu.latitudeColumn + " " + colnames[p-1]);
 
             column_keys = new TreeMap<String, StringBuffer>();
 
@@ -383,10 +391,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
                             /* get int vs unique key for every column */
                             il = new int[columnsSettings.length];
                             for(i=0;i<columnsSettings.length;i++){
-                                iv = columnKeys[i].get(sa[i]);
+                                iv = columnKeys[i].get(sa[column_positions[i]]);
                                 if (iv == null) {
                                     il[i] = columnKeys[i].size();
-                                    columnKeys[i].put(sa[i],columnKeys[i].size());
+                                    columnKeys[i].put(sa[column_positions[i]],columnKeys[i].size());
                                 } else {
                                     il[i] = iv.intValue();
                                 }
@@ -708,6 +716,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
     void exportFieldIndexes() {
         System.gc();
 
+        System.out.println("doing exportFieldIndexes (after gc)");
+
         String[] columns = TabulationSettings.occurances_csv_fields;
 
         OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
@@ -794,6 +804,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             (new SpatialLogger()).log("exportFieldIndexes, read", e.toString());
         }
 
+        System.out.println("done read of indexes");
         /* write as array objects for faster reads later*/
         try {
             for (i = 0; i < fw_maps.length; i++) {
@@ -950,7 +961,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         }
 
         loadIndexes();
-
+System.out.println("indexessize:" + all_indexes.size());
         if (all_indexes.size() > 0) {
             ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>();
             int i = 0;
@@ -958,6 +969,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 for (IndexedRecord r : ir) {
                     if (r.name.equals(filter)) {
                         matches.add(r);
+                        System.out.println(r.name + "," + r.record_start);
                     }
                 }
                 i++;
@@ -1772,11 +1784,21 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         /* make overlay grid from this region */
         int[][] cells = r.getOverlapGridCells(0, -180, 360, 180, 720, 720, null);
 
+        System.out.println("poly:" + r.toString());
         int i, j;
 
+
         /* for matching cells, test each record within  */
+
         Vector<Integer> records = new Vector<Integer>();
-        for (i = 0; i < cells.length; i++) {
+        System.out.println("gdlen:" + grid_points.length);
+        for (j = 0; j < grid_points.length; j++) {
+            if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                records.add(new Integer(grid_points_idx[j]));
+            }
+        }
+
+    /*    for (i = 0; i < cells.length; i++) {
             int start = grid_key[cells[i][1]][cells[i][0]];
             int end = start;
 
@@ -1799,7 +1821,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 }
             }
         }
-
+*/
         /* format matches as int [] */
         if (records.size() > 0) {
             int[] data = new int[records.size()];
@@ -1873,6 +1895,11 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                     spos++;
                 }
 
+                if(spos == speciesSortByRecordNumber.length){
+                    spos--; //TODO: is this correct?
+                    System.out.println("rsize=" + records.size() + " r:" + r + " i:" + i);
+                }
+                
                 species.set(speciesSortByRecordNumberOrder[spos]);
                 spos++;
                 i++;
