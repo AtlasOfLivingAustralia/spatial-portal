@@ -27,6 +27,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Messagebox;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -63,10 +64,10 @@ public class SamplingWCController extends UtilityComposer {
     private Listbox lbenvlayers;
     private Button btnMapSpecies;
     private Button btnPreview;
-    private Popup results;
+    //private Popup results;
     private Popup p;
     private Html h;
-    private Rows results_rows;
+    //private Rows results_rows;
     private Button btnDownload;
     private List layers;
     private Map layerdata;
@@ -328,8 +329,11 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     public void runsampling() {
-        try {
+        SamplingResultsWCController window = (SamplingResultsWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingResults.zul", this, null);
+        window.parent = this;
 
+        try {
+            
             String taxon = sac.getValue();
             // check if its a common name, if so, grab the scientific name
             //if (rdoCommonSearch.isChecked()) {
@@ -404,36 +408,13 @@ public class SamplingWCController extends UtilityComposer {
 
             }
 
-            /*
-            //JSONObject jsonObject = JSONObject.fromObject( slist );
-            //List expected = JSONArray.toList( jsonObject.getJSONArray( "array" ) );
-            JSONArray ja = JSONArray.fromObject(slist);
-            //System.out.println("JSON RESPONSE: \n" + ja.toString(2));
-            List respData = (List) JSONArray.toCollection(ja);
-            System.out.println("Result return size: " + respData.size());
-            Iterator it = respData.iterator();
-            while (it.hasNext()) {
-            Object o = it.next();
-            System.out.println(o.getClass());
-            System.out.println(o);
-            MorphDynaBean bean = ((MorphDynaBean) o);
-            System.out.println(bean.toString());
-            }
-             */
+            window.doModal();
+            window.samplingresultslabel.setValue((aslist.length-1)+ " records shown");
+
 
             // load into the results popup
             int j;
-            //remove existing rows
-            List l = results_rows.getChildren();
-            System.out.println(l);
-            if (l != null) {
-                for (j = l.size() - 1; j >= 0; j--) {
-                    Row r = (Row) l.get(j);
-                    //  System.out.println("detaching: " + ((Label) r.getChildren().get(0)).getValue());
-                    r.detach();
-                }
-            }
-
+           
             /* map of top row, contextual columns data lists for value lookups */
             Map contextualLists = new Hashtable<Integer, String[]>();
 
@@ -445,7 +426,6 @@ public class SamplingWCController extends UtilityComposer {
 
                     for (int k = 0; k < top_row.length; k++) {
                         if (isContextual(top_row[k])) {
-                            System.out.println("contextual column=" + top_row[k]);
                             try {
                                 String layername = top_row[k].trim().replaceAll(" ", "_");
                                 client = new HttpClient();
@@ -464,11 +444,12 @@ public class SamplingWCController extends UtilityComposer {
                     }
                 }
                 String[] rec = aslist[i].split("~");
+                
                 System.out.println("Column Count: " + rec.length);
                 //System.out.println()
 
                 Row r = new Row();
-                r.setParent(results_rows);
+                r.setParent(window.results_rows);
                 // set the value
                 for (int k = 0; k < rec.length && k < top_row.length; k++) {
                     Label label = new Label(rec[k]);
@@ -487,55 +468,10 @@ public class SamplingWCController extends UtilityComposer {
                                     showLayerExtentsLabel(event.getTarget());
                                 }
                             });
-                        }/*//no longer required
-                        else if (iscontextual) {
-                        try {
-                        String[] salist = (String[]) contextualLists.get(new Integer(k));
-                        int idx = Integer.parseInt(rec[k]);
-                        if (salist != null && salist.length > idx) {
-                        label.setTooltiptext(salist[idx]);
                         }
-                        } catch (Exception e) {
-                        }
-                        }//isenvironmental else{}*/
                     }
 
 
-                    /*
-                    //add event listener for contextual columns
-                    if (j == 0) { //add for header row
-                    label.addEventListener("onClick", new EventListener() {
-
-                    public void onEvent(Event event) throws Exception {
-                    String display_name = ((Label) event.getTarget()).getValue().trim();
-                    for (int k = 0; k < _layers.size(); k++) {
-                    Layer layer = (Layer) _layers.get(k);
-                    if (layer.display_name.equals(display_name)) {
-                    popup_layer = layer;
-
-                    Html h = (Html) getFellow("h");
-                    String csv = SpeciesListIndex.getLayerExtents(layer.name);
-                    h.setContent(csv);
-
-                    Popup p = (Popup) getFellow("p");
-                    //li.setPopup(p);
-                    p.open(event.getTarget());
-                    }
-                    }
-                    }
-                    });
-                    } else {
-                    // is catagorical layer
-                    if (i < splfilters.length && splfilters[i] != null && splfilters[i].catagory_names != null) {
-                    try {
-                    int idx = Integer.parseInt(csv_filename[j][i]);
-                    label.setTooltiptext(splfilters[i].catagory_names[idx]);
-                    } catch (Exception e) {
-                    System.out.println(e.toString());
-                    }
-                    }
-                    }
-                     */
 
                 }
             }
@@ -547,18 +483,20 @@ public class SamplingWCController extends UtilityComposer {
             e.printStackTrace(System.out);
         }
 
-        results.open(100, 100);
+
+        try{
+            //window.doModal();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        //results.open(100, 100);
 
     }
 
-    public void onClick$btnDownload(Event event) {
+    public void download() {
         try {
 
             String taxon = cleanTaxon(sac.getValue());
-            // check if its a common name, if so, grab the scientific name
-            //if (rdoCommonSearch.isChecked()) {
-            //    taxon = getScientificName();
-            //}
 
             StringBuffer sbenvsel = new StringBuffer();
 
@@ -613,15 +551,6 @@ public class SamplingWCController extends UtilityComposer {
             if (slist.equalsIgnoreCase("")) {
                 Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
             } else {
-                /*
-                URL url = new URL(satServer + "/alaspatial" + slist);
-                url.openStream();
-                org.zkoss.zhtml.Filedownload.save(url.openStream(), "application/zip", sac.getValue() + "_sample.zip");
-                 *
-                 */
-
-                //Filedownload.save(satServer + "/alaspatial" + slist, null);
-                //Messagebox.show("Downloading sample file...", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
                 System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist);
                 Filedownload.save(new URL(satServer + "/alaspatial" + slist), "application/zip");
 
@@ -632,6 +561,9 @@ public class SamplingWCController extends UtilityComposer {
             System.out.println("Exception calling sampling.download:");
             e.printStackTrace(System.out);
         }
+    }
+    public void onClick$btnDownload(Event event) {
+        download();
 
     }
 

@@ -1,10 +1,11 @@
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk> 
     <window
-        title="Filtering Results" border="normal"
+        title="Filtering Results Preview" border="normal"
         id="popup_results" width="330px"
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        use="org.ala.spatial.analysis.web.FilteringResultsWCController" closable="true" mode="embedded">
+        use="org.ala.spatial.analysis.web.FilteringResultsWCController"
+        closable="true" mode="embedded">
         <vbox>
             <label id="results_label" />
 

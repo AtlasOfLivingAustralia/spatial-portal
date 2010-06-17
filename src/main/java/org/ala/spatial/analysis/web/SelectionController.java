@@ -16,6 +16,8 @@ import java.net.URLConnection;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -24,13 +26,17 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import org.xml.sax.SAXException;
+import org.zkoss.zk.ui.Executions;
 
 
 import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
@@ -44,6 +50,7 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -51,6 +58,7 @@ import org.zkoss.zul.Textbox;
  */
 public class SelectionController extends UtilityComposer {
 
+    private static final String SAT_URL = "sat_url";
     private static final String GEOSERVER_URL = "geoserver_url";
     private Textbox selectionGeom;
     private Textbox boxGeom;
@@ -61,8 +69,10 @@ public class SelectionController extends UtilityComposer {
     public Button results_prev;
     public Button results_next;
     public Label results_label;
+    public Label popup_label;
     private SettingsSupplementary settingsSupplementary = null;
     private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
+    String satServer;
     String[] results = null;
     int results_pos;
     SortedSet speciesSet;
@@ -72,7 +82,8 @@ public class SelectionController extends UtilityComposer {
         super.afterCompose();
 
         if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+           // geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            satServer = settingsSupplementary.getValue(SAT_URL);
         }
     }
 
@@ -240,9 +251,6 @@ public class SelectionController extends UtilityComposer {
 
         Document resultDoc = builder.parse(is);
 
-//        try {
-//        Messagebox.show(responseXML);
-//        } catch (Exception e) {}
         //Get a list of names
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
@@ -254,22 +262,39 @@ public class SelectionController extends UtilityComposer {
         for (int i = 0; i < species.getLength(); i++) {
             speciesSet.add((String) species.item(i).getNodeValue());
         }
-
+  
 
         results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
-        popup_results.open(40, 150);
-//        for(Object speciesName : speciesSet) {
-//            Listitem li = new Listitem();
-//            Listcell lc = new Listcell();
-//            lc.setLabel((String)speciesName);
-//            lc.setParent(li);
-//            popup_listbox_results.addItemToSelection(li);
-//        }
+
+        popup_label.setValue("Number of species: " + speciesSet.size());
+
+        //popup_results.open(40, 150);
+        openResults();
+        
         return String.valueOf(speciesSet.size());
 
 
 
+    }
+
+    void openResults() {
+        java.util.Map args = new java.util.HashMap();
+        args.put("pid", "none");
+        args.put("shape", convertGeoToPoints(getGeom()));
+        args.put("manual","true");
+        FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
+                "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
+        try {
+            /* TODO: fix species listing for polygons service so this
+             * is not required
+             */
+            win.results = results;
+            win.populateList();
+            win.doModal();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -286,32 +311,7 @@ public class SelectionController extends UtilityComposer {
         return mapComposer;
     }
 
-//    /**
-//     *
-//     * @param cmdId
-//     * @return
-//     */
-//    public Command getCommand(String cmdId) {
-//        if (cmdId.equals("onNotifyServer")) {
-//            return new CustomCommand(cmdId);
-//        }
-//        return super.getCommand(cmdId);
-//    }
-//
-//    private class CustomCommand extends ComponentCommand {
-//
-//        public CustomCommand(String command) {
-//            super(command,
-//                    Command.SKIP_IF_EVER_ERROR | Command.CTRL_GROUP);
-//        }
-//
-//        protected void process(AuRequest request) {
-//            Events.postEvent(new Event(request.getCommand().getId(), request.getComponent(), request.getData()));
-//        }
-//    }
     public void onClick$download() {
-//		SPLFilter [] layer_filters = getSelectedFilters();
-//		if(layer_filters != null){
         StringBuffer sb = new StringBuffer();
         for (String s : results) {
             sb.append(s);
@@ -321,68 +321,40 @@ public class SelectionController extends UtilityComposer {
 //		}else{
 
     }
-//    public void onClick$results_prev(Event event) {
-//        if (results_pos == 0) {
-//            return;
-//        }
-//
-//        seekToResultsPosition(results_pos - 15);
-//    }
-//
-//    public void onClick$results_next(Event event) {
-//        if (results_pos + 15 >= results.length) {
-//            return;
-//        }
-//
-//        seekToResultsPosition(results_pos + 15);
-//    }
-//
-//    public void onChanging$popup_results_seek(InputEvent event) {
-//        //seek results list
-//        String search_for = event.getValue();
-//        //if(search_for.length() > 1){
-//        //	search_for = search_for.substring(0,1).toUpperCase() + search_for.substring(1,search_for.length()).toLowerCase();
-//		/*}else*/
-//        if (search_for.length() > 0) {
-//            search_for = search_for.toLowerCase();
-//        }
-//
-//        int pos = java.util.Arrays.binarySearch(results, search_for);
-//        System.out.println("seek to: " + pos + " " + search_for);
-//        if (pos < 0) {
-//            pos = (pos * -1) - 1;
-//        }
-//        seekToResultsPosition(pos);
-//    }
-//
-//    void seekToResultsPosition(int newpos) {
-//        results_pos = newpos;
-//
-//        if (results_pos < 0) {
-//            results_pos = 0;
-//        }
-//        if (results_pos >= results.length) {
-//            results_pos = results.length - 1;
-//        }
-//
-//        int sz = results_pos + 15;
-//        if (results.length < sz) {
-//            sz = results.length;
-//        }
-//
-//        String[] list = new String[sz - results_pos];
-//        int i;
-//        for (i = results_pos; i < sz; i++) {
-//            list[i - results_pos] = results[i];
-//        }
-//
-//        ListModelArray slm = new ListModelArray(list, true);
-//
-//        popup_listbox_results.setModel(slm);
-//        results_label.setValue(results_pos + " to " + (sz) + " of " + results.length);
-//    }
+
 
     public String getGeom() {
         return displayGeom.getValue();
+    }
+
+     private String getInfo(String urlPart) {
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(get);
+
+            //TODO: test results
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception ex) {
+            //TODO: error message
+            //Logger.getLogger(FilteringWCController.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("getInfo.error:");
+            ex.printStackTrace(System.out);
+        }
+        return null;
+    }
+
+      String convertGeoToPoints(String geometry) {
+        if (geometry == null) {
+            return "";
+        }
+        geometry = geometry.replace(" ", ":");
+        geometry = geometry.replace("POLYGON((", "");
+        geometry = geometry.replace(")", "");
+        return geometry;
     }
 }

@@ -39,8 +39,10 @@ public class FilteringResultsWCController extends UtilityComposer {
     public int results_pos;
     public String[] results = null;
     public String pid;
+    String shape;
     private String satServer;
     private SettingsSupplementary settingsSupplementary = null;
+
     /**
      * for functions in popup box
      */
@@ -59,34 +61,67 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         pid = (String) (Executions.getCurrent().getArg().get("pid"));
-  
+        shape = (String) (Executions.getCurrent().getArg().get("shape"));
+        String manual = (String) (Executions.getCurrent().getArg().get("manual"));
+
+        /* set nulls to none
+         *
+         * in case of a service update, do not set both to null or everything
+         * will be returned.
+         */
+        if(pid == null){
+            pid = "none";
+        } else if(shape == null){
+            shape = "none";
+        }
+        if(pid.equals("none") && shape.equals("none")){
+            return;
+        }
+
+        if(manual == null){
+            populateList();
+        }
+    }
+
+    public void populateList() {
+
         try {
-            long t1 = System.currentTimeMillis();
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/filtering/apply");
-            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-            sbProcessUrl.append("/species/list");
-            sbProcessUrl.append("/shape/none");
-            results = getInfo(sbProcessUrl.toString()).split("\r\n");
-            long t2 = System.currentTimeMillis();
+            System.out.println("resuts:" + results);
+            if(results == null) {
+                long t1 = System.currentTimeMillis();
+                StringBuffer sbProcessUrl = new StringBuffer();
+                sbProcessUrl.append("/filtering/apply");
+                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+                sbProcessUrl.append("/species/list");
+                sbProcessUrl.append("/shape/" + shape); //TODO: encode/decode
+                results = getInfo(sbProcessUrl.toString()).split("\r\n");
+                long t2 = System.currentTimeMillis();
 
-            // results should already be sorted: Arrays.sort(results);
-            int length = results.length;
-            if (results.length > 200) {
-                String [] tmp = java.util.Arrays.copyOf(results, 200);
-                results = tmp;
-            }
-            long t3 = System.currentTimeMillis();
+                // results should already be sorted: Arrays.sort(results);
+                int length = results.length;
+                String [] tmp = results;
+                if (results.length > 200) {
+                    tmp = java.util.Arrays.copyOf(results, 200);
+                }
+                long t3 = System.currentTimeMillis();
 
-            popup_listbox_results.setModel(new ListModelArray(results,false));
-            if(length < 200){
-                results_label.setValue("species found: " + length);
+                popup_listbox_results.setModel(new ListModelArray(tmp,false));
+                if(length < 200){
+                    results_label.setValue("species found: " + length);
+                } else {
+                    results_label.setValue("species found: " + length + " (first 200 in this list)");
+                }
+                long t4 = System.currentTimeMillis();
+
+                System.out.println("predisplay filtering result timings: sz=" + results.length + " timing: " + (t2-t1) + " " + (t3-t1) + " " + (t4-t1));
             } else {
-                results_label.setValue("species found: " + length + " (first 200 in this list)");
-            }
-            long t4 = System.currentTimeMillis();
+                int length = results.length;
+                String [] tmp = results;
 
-            System.out.println("predisplay filtering result timings: sz=" + results.length + " timing: " + (t2-t1) + " " + (t3-t1) + " " + (t4-t1));
+                popup_listbox_results.setModel(new ListModelArray(tmp,false));
+                results_label.setValue("species found: " + length);
+                System.out.println("using provided species list");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,7 +143,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/samples/list");
 
-            sbProcessUrl.append("/shape/none");
+            sbProcessUrl.append("/shape/" + shape);
             String samplesfile = getInfo(sbProcessUrl.toString());
 
             URL u = new URL(satServer + "/alaspatial/" + samplesfile);
