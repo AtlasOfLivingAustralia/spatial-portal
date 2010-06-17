@@ -465,6 +465,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onChange$searchSpeciesAuto() {
+
+        // check if the species name is not valid
+        // this might happen as we are automatically mapping
+        // species without the user pressing a button
+        if (searchSpeciesAuto.getSelectedItem() == null) return;
+
         //btnSearchSpecies.setVisible(true);
         String taxon = searchSpeciesAuto.getValue();
 

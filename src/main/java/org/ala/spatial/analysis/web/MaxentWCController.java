@@ -389,6 +389,12 @@ public class MaxentWCController extends UtilityComposer {
 
     private void loadSpeciesOnMap() {
 
+        // check if the species name is not valid
+        // this might happen as we are automatically mapping
+        // species without the user pressing a button
+        if (sac.getSelectedItem() == null) return;
+
+
         String taxon = sac.getValue();
 
         String spVal = sac.getSelectedItem().getDescription();
