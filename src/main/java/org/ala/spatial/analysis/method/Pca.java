@@ -20,10 +20,37 @@ public class Pca {
 		int nvars = data[0].length;
 		
 		int i,j,k;
-		
-		if(data[0].length <= 3){					//no need for pca
+
+                /* to bring more colour variation,
+                 * when 2 columns, double columns (add small randomness)
+                 * when 3 columns, continue
+                 * when 1 column, triple it
+                 */
+                if(data[0].length == 1){
+                    double [][] datamultiply = new double[data.length][3];
+                    for (i=0;i<data.length;i++){
+                        datamultiply[i][0] = data[i][0];
+                        datamultiply[i][1] = data[i][0];
+                        datamultiply[i][2] = data[i][0];
+                    }
+                    data = datamultiply;
+                    nvars = 3;
+                }
+                if(data[0].length == 2){
+                    double [][] datamultiply = new double[data.length][4];
+                    for (i=0;i<data.length;i++){
+                        datamultiply[i][0] = data[i][0];
+                        datamultiply[i][1] = data[i][1];
+                        datamultiply[i][2] = data[i][0];
+                        datamultiply[i][3] = data[i][1];
+                    }
+                    data = datamultiply;
+                    nvars = 4;
+                }
+                /* treat columns as colours
+		if(data[0].length <= 3){	//no need for pca
 			
-			/* max/min per data column */
+			// max/min per data column
 			double [] minval = new double[3];
 			double [] maxval = new double[3];
 			double [] range = new double[3];
@@ -41,7 +68,7 @@ public class Pca {
 				range[j] = maxval[j] - minval[j];
 			}
 			
-			/* transfer as colours */
+			// transfer as colours
 			for(i=0;i<data.length;i++){
 				for(j=0;j<nvars;j++){
 					output[i][j] = (int)((data[i][j] - minval[j])/((double)range[j])*255);
@@ -51,7 +78,8 @@ public class Pca {
 					//output[i][j] = missing_value;
 				}
 			}
-		}else{
+		}else */
+                {
 			/* use PCA to get top 3 eigenvectors for colours */
 			
 			/* column means, 

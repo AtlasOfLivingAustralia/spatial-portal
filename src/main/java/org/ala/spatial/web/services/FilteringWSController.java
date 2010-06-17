@@ -71,24 +71,16 @@ public class FilteringWSController {
             File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + "/"));
             workingDir.mkdirs();
 
-            //File file = File.createTempFile("spl", ".png", workingDir);
+           
             File file = new File(workingDir + "/filtering.png"); 
-         //   filteringImage = new FilteringImage(file.getPath());
-         //   filteringImage.writeImage();
-
-         //  System.out.println("Created initial image at: " + file.getPath());
+   
 
             _layer_filters_selected = new ArrayList();
 
             userMap.put("pid", pid);
-            //userMap.put("filteringImage", filteringImage);
+           
             userMap.put("imgpath", file.getPath());
-            //userMap.put("selectedLayerFilters", _layer_filters_selected);
-
-
-            //session.setAttribute(pid, userMap);
-        //    writeUserBytes(session.getServletContext().getRealPath("/output/filtering/" + currTime + "/usermap.ser"));
-            //writeUserMapXML(session.getServletContext().getRealPath("/output/filtering/" + currTime + "/usermap.xml"));
+           
 
             return pid;
         } catch (Exception ex) {
@@ -299,11 +291,8 @@ public class FilteringWSController {
     public
     @ResponseBody
     String getSpeciesCount(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
-        try {
-        	System.out.println("[[[]]] getcount: " + pid + " " + shape);
-        //    String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");
-        //    readUserBytes(sessionfile);
-            
+        TabulationSettings.load();
+        try {         
             SimpleRegion region = SimpleRegion.parseSimpleRegion(shape);
             
             return String.valueOf(FilteringService.getSpeciesCount(pid, region));
@@ -325,6 +314,7 @@ public class FilteringWSController {
     public
     @ResponseBody
     String getSpeciesList(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
+        TabulationSettings.load();
         try {
         	System.out.println("[[[]]] getlist: " + pid + " " + shape);
      //       String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");
@@ -351,6 +341,8 @@ public class FilteringWSController {
     public
     @ResponseBody
     String getSamplesList(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
+        TabulationSettings.load();
+
         try {
         	System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
         //    String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");

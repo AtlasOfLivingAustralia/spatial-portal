@@ -351,9 +351,9 @@
                     <execution>
                         <id>install</id>
                         <phase>install</phase>
-                        <goals>
+                      <!-- <goals>
                             <goal>sources</goal>
-                        </goals>
+                        </goals> -->
                     </execution>
                 </executions>
             </plugin>
