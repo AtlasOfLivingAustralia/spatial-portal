@@ -11,11 +11,11 @@ apply="org.ala.spatial.analysis.web.SelectionController">
 	<radiogroup>
 	    <vbox>
 	    <radio label="From box selection" id="rdoBoxSelection"/>
-	<!--    <radio label="From current view" id="rdoExtentsSelection"/> -->
+	    <!--<radio label="From current view" id="rdoExtentsSelection"/> -->
 	    <radio label="From digitized polygon" id="rdoPolygonSelection"/>
-	    <!-- <radio label="From point and radius" id="rdoPointRadiusSelection"/>
-	    <radio label="From existing feature" id="rdoExistingFeatureSelection"/>
-	    <radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
+	    <radio label="From point and radius" id="rdoPointRadiusSelection"/>
+	    <!--<radio label="From existing feature" id="rdoExistingFeatureSelection"/> -->
+	    <!--<radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
 	    </vbox>
 	<!--<button label="Polygon Selection" id="btnPolygonSelection"/>
 
@@ -29,6 +29,7 @@ apply="org.ala.spatial.analysis.web.SelectionController">
 	<textbox id="displayGeom" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
 
 	<button label="Show Species" id="btnShowSpecies"/>
+        <button label="Clear Selection" id="btnClearSelection"/>
 	</vbox>
     </div>
 

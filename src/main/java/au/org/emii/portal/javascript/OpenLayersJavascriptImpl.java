@@ -76,7 +76,19 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         String script = "window.mapFrame.addPolygonDrawingTool()";
         execute(script);
     }
-    
+
+    @Override
+    public void addRadiusDrawingTool() {
+        String script = "window.mapFrame.addRadiusDrawingTool()";
+        execute(script);
+    }
+
+    @Override
+    public void addFeatureSelectionTool() {
+        String script = "window.mapFrame.addFeatureSelectionTool()";
+        execute(script);
+    }
+
     @Override
     public void addPolygonDrawingToolSampling() {
         String script = "window.mapFrame.addPolygonDrawingToolSampling()";
@@ -114,8 +126,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
-    public void removeSpeciesSelection() {
-        String script = "window.mapFrame.removeSpeciesSelection()";
+    public void removeAreaSelection() {
+        String script = "window.mapFrame.removeAreaSelection()";
         execute(script);
     }
 
