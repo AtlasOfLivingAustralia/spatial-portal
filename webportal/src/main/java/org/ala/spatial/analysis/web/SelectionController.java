@@ -3,6 +3,11 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
+import com.vividsolutions.jts.io.gml2.GMLWriter;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -32,6 +37,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import org.xml.sax.SAXException;
+import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
 
 
@@ -71,11 +77,15 @@ public class SelectionController extends UtilityComposer {
     public Label results_label;
     public Label popup_label;
     private SettingsSupplementary settingsSupplementary = null;
-    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
+    private String geoServer;// = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     String satServer;
     String[] results = null;
     int results_pos;
     SortedSet speciesSet;
+
+    public String getGeom() {
+        return displayGeom.getText();
+    }
 
     @Override
     public void afterCompose() {
@@ -89,7 +99,7 @@ public class SelectionController extends UtilityComposer {
 
     public void onClick$btnClearSelection(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.getOpenLayersJavascript().removeSpeciesSelection();
+        mc.getOpenLayersJavascript().removeAreaSelection();
         displayGeom.setValue("");
     }
 
@@ -110,7 +120,16 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoBoxSelection(Event event) {
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addBoxDrawingTool();
+    }
 
+    public void onCheck$rdoPointRadiusSelection(Event event) {
+        MapComposer mc = getThisMapComposer();
+        mc.getOpenLayersJavascript().addRadiusDrawingTool();
+    }
+
+    public void onCheck$rdoExistingFeatureSelection(Event event) {
+        MapComposer mc = getThisMapComposer();
+        mc.getOpenLayersJavascript().addFeatureSelectionTool();      
     }
 
     /**
@@ -119,8 +138,12 @@ public class SelectionController extends UtilityComposer {
      */
     public void onChange$selectionGeom(Event event) {
         try {
+
+//            displayGeom.setValue(selectionGeom.getValue());
+//            wfsQueryPolygon(selectionGeom.getValue());
 //            Clients.showBusy("Filtering species, please wait...", true);
 //            Events.echoEvent("onDoInit", this, selectionGeom.getValue());
+
 
             displayGeom.setValue(selectionGeom.getValue());
             //wfsQueryBBox(selectionGeom.getValue());
@@ -143,33 +166,67 @@ public class SelectionController extends UtilityComposer {
     }
 
     public void onClick$btnShowSpecies() {
-        Clients.showBusy("Filtering species, please wait...", true);
+        if (selectionGeom.getValue() != "") {
+            Clients.showBusy("Filtering species, please wait...", true);
+            Events.echoEvent("showSpeciesPoly", this, displayGeom.getValue());
+        }
+        else if(boxGeom.getValue() != "") {
+            Clients.showBusy("Filtering species, please wait...", true);
             Events.echoEvent("showSpecies", this, displayGeom.getValue());
+        }
     }
 
     public void showSpecies(Event event) throws Exception {
         String geomData = (String) event.getData();
-        //displayGeom.setValue(geomData);
         wfsQueryBBox(geomData);
+        Clients.showBusy("", false);
+    }
+
+     public void showSpeciesPoly(Event event) throws Exception {
+        String geomData = (String) event.getData();
+        wfsQueryPolygon(geomData);
         Clients.showBusy("", false);
     }
 
     /**
      * Constructs a wfs 'species within bounding box query' for the given geometry
-     * @param selectionGeom geometry of the box
+     * @param selectionWKT geometry of the box
      */
-    public void wfsQueryPolygon(String selectionGeom) {
-        String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName>";
-        String filterPart = "<ogc:Filter><Intersects><PropertyName>the_geom</PropertyName><gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:coordinates cs=\" \" decimal=\".\" ts=\",\">COORDINATES</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></Intersects></ogc:Filter></wfs:Query></wfs:GetFeature>";
-        String coordinateString = selectionGeom.replace("POLYGON", "").replace(")", "").replace("(", "");
-        String request = baseQueryXML + filterPart.replace("COORDINATES", coordinateString);
+    public void wfsQueryPolygon(String selectionWKT) {
+        WKTReader wkt_reader = new WKTReader();
+        GMLWriter gml_writer = new GMLWriter();
+        WKTWriter wkt_writer = new WKTWriter();
+         String baseQueryXML = "<wfs:GetFeature outputFormat=\"geojson\" service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
         try {
-            //Messagebox.show(request);
-            String response = POSTRequest(request);
-            // Messagebox.show(response);
-
-        } catch (Exception e) { //FIXME
+            Geometry selection = wkt_reader.read(selectionWKT);
+            //Envelope selectionBounds = selection.getEnvelope().getEnvelopeInternal();
+            Geometry selectionBounds = selection.getEnvelope();
+            String selectionBoundsWKT = wkt_writer.write(selectionBounds);
+            selectionBoundsWKT = selectionBoundsWKT.replace("(", "");
+            selectionBoundsWKT = selectionBoundsWKT.replace(")", "");
+            String upperCorner = selectionBoundsWKT.replace("POLYGON", "").split(",")[3].toString();
+            String lowerCorner = selectionBoundsWKT.replace("POLYGON", "").split(",")[1].toString();
+            baseQueryXML = baseQueryXML.replace("UPPERCORNER", upperCorner);
+            baseQueryXML = baseQueryXML.replace("LOWERCORNER", lowerCorner);
+            //String selectionBoundsGML = gml_writer.toString(selectionBounds.)
+           // Messagebox.show(baseQueryXML);
+            String response = POSTRequest(baseQueryXML);
+            String speciesList = parseIntersection(response,selection);
+//            baseQueryXML = baseQueryXML.replace("ENVELOPE",selectionBoundsGML);
+//            String response = POSTRequest(baseQueryXML);
         }
+        catch (Exception e) {}
+//        String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName>";
+//        String filterPart = "<ogc:Filter><Intersects><PropertyName>the_geom</PropertyName><gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:coordinates cs=\" \" decimal=\".\" ts=\",\">COORDINATES</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></Intersects></ogc:Filter></wfs:Query></wfs:GetFeature>";
+//        String coordinateString = selectionGeom.replace("POLYGON", "").replace(")", "").replace("(", "");
+//        String request = baseQueryXML + filterPart.replace("COORDINATES", coordinateString);
+//        try {
+//            Messagebox.show(request);
+//            String response = POSTRequest(request);
+//            // Messagebox.show(response);
+//
+//        } catch (Exception e) { //FIXME
+//        }
     }
 
     /**
@@ -177,7 +234,7 @@ public class SelectionController extends UtilityComposer {
      * @param selectionGeom geometry of the box
      */
     public void wfsQueryBBox(String selectionGeom) {
-        String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
+        String baseQueryXML = "<wfs:GetFeature  service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
         selectionGeom = selectionGeom.replace("(", "");
         selectionGeom = selectionGeom.replace(")", "");
         String upperCorner = selectionGeom.replace("POLYGON", "").split(",")[3].toString();
@@ -189,7 +246,8 @@ public class SelectionController extends UtilityComposer {
         try {
 
             String response = POSTRequest(baseQueryXML);
-            // Messagebox.show(response);
+            String speciesList = parse(response);
+            //Messagebox.show(response);
 
         } catch (Exception e) { //FIXME
         }
@@ -225,11 +283,11 @@ public class SelectionController extends UtilityComposer {
                 response += line;
             }
             //Parse the response
-//            Messagebox.show(response);
-            String speciesList = parse(response);
+         //   Messagebox.show(response);
+           // String speciesList = parse(response);
             wr.close();
             // rd.close();
-            return speciesList;
+            return response;
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -244,13 +302,9 @@ public class SelectionController extends UtilityComposer {
     public String parse(String responseXML) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException, InterruptedException {
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
         domFactory.setNamespaceAware(false);
-
         DocumentBuilder builder = domFactory.newDocumentBuilder();
-
         InputStream is = new java.io.ByteArrayInputStream(responseXML.getBytes());
-
         Document resultDoc = builder.parse(is);
-
         //Get a list of names
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
@@ -267,17 +321,43 @@ public class SelectionController extends UtilityComposer {
         results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
 
+
         popup_label.setValue("Number of species: " + speciesSet.size());
 
         //popup_results.open(40, 150);
         openResults();
         
         return String.valueOf(speciesSet.size());
-
-
-
     }
 
+    public String parseIntersection(String responseXML, Geometry selection) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException, InterruptedException {
+        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+        domFactory.setNamespaceAware(false);
+        DocumentBuilder builder = domFactory.newDocumentBuilder();
+        InputStream is = new java.io.ByteArrayInputStream(responseXML.getBytes());
+        Document resultDoc = builder.parse(is);
+        try {
+        Messagebox.show(responseXML);
+        } catch (Exception e) {}
+        //Get a list of names
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
+        //Ugly xpath expression - using local-name() so that I can ignore namespaces
+        XPathExpression speciesExpr = xpath.compile("//*[local-name()='FeatureCollection']//*[local-name()='featureMembers']//*[local-name()='occurrencesv1']//*[local-name()='species']/text()");
+
+        NodeList species = (NodeList) speciesExpr.evaluate(resultDoc, XPathConstants.NODESET);
+        speciesSet = new TreeSet();
+        for (int i = 0; i < species.getLength(); i++) {
+            speciesSet.add((String) species.item(i).getNodeValue());
+        }
+
+
+        results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
+        popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
+        popup_results.open(40, 150);
+
+        return String.valueOf(speciesSet.size());
+    }
     void openResults() {
         java.util.Map args = new java.util.HashMap();
         args.put("pid", "none");
@@ -320,11 +400,6 @@ public class SelectionController extends UtilityComposer {
         org.zkoss.zhtml.Filedownload.save(sb.toString(), "text/plain", "species.csv");
 //		}else{
 
-    }
-
-
-    public String getGeom() {
-        return displayGeom.getValue();
     }
 
      private String getInfo(String urlPart) {

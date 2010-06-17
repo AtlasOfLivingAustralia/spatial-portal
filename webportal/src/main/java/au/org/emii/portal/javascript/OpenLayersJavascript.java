@@ -203,6 +203,16 @@ public interface OpenLayersJavascript {
     public void addPolygonDrawingTool();
     
     /**
+     * Adds the radius drawing tool to the map
+     */
+    public void addRadiusDrawingTool();
+
+    /**
+     * Adds the feature selection tool (for area) to the map
+     */
+    public void addFeatureSelectionTool();
+
+    /**
      * Copy for Sampling, ALOC, Filtering, Adds the openlayers polygon drawing tool to the map
      */
     public void addPolygonDrawingToolSampling();
@@ -212,7 +222,7 @@ public interface OpenLayersJavascript {
     public void removePolygonALOC();
     public void removePolygonFiltering();
 
-    public void removeSpeciesSelection();
+    public void removeAreaSelection();
 
     /**
      * Adds the openlayers box drawing tool to the map

@@ -40,14 +40,18 @@ var baseLayers = new Object();
  */
 var currentBaseLayer = null;
 
-var polyControl = null;  //for deactivate after drawing
-var boxControl = null;	//for deactivate after drawing
+var selectionLayers = new Array();
 
+var polygonControl = null;
+var radiusControl = null;  //for deactivate after drawing
+var boxControl = null;	//for deactivate after drawing
+var areaSelectControl = null;
 var samplingPolygon = null;		//temporary for destroy option after display
 var filteringPolygon = null;	//temporary for destroy option after display
 var alocPolygon = null;			//temporary for destroy option after display
 var polygonLayer = null;
-var boxLayer = null; 
+var boxLayer = null;
+var radiusLayer = null;
 
 var layersLoading = 0;
 var layername; // current layer name
@@ -61,11 +65,11 @@ var maxAttempts = (secondsToWaitForLibrary * 1000) / libraryCheckIntervalMs;
 
 var gazetteerURL = "http"
 var overCallback = {
-        over: featureOver,
-        out: hideTooltip
-    };
+    over: featureOver,
+    out: hideTooltip
+};
 
- var selecteFeature;
+var selecteFeature;
 
 function stopCheckingLibraryLoaded() {
     clearInterval(checkLibraryLoadedTimeout);
@@ -258,22 +262,23 @@ function buildMapReal() {
     });
 
     toolPanel.addControls( [ zoom,pan] );
+
     map.addControl(toolPanel);
     
     areaToolsButton = new OpenLayers.Control.Button({
-   	trigger: navigateToAreaTab
-	});
+        trigger: navigateToAreaTab
+    });
 
     var areaToolContainer = document.getElementById("areaTool");
     var areaToolPanel = new OpenLayers.Control.Panel({
-	//defaultControl:areaToolsButton,
-	div:areaToolContainer
+        //defaultControl:areaToolsButton,
+        div:areaToolContainer
     });
 
     areaToolPanel.addControls( [areaToolsButton] );
     map.addControl(areaToolPanel); 
 
-//createAreaToolsButton();
+    //createAreaToolsButton();
     
   
     drawinglayer = new OpenLayers.Layer.Vector( "Drawing"); // utilised in 'addLineDrawingLayer'
@@ -312,15 +317,68 @@ function buildMapReal() {
         Event.stop(e);
     });
 
-    //var layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
-    //map.addLayer(layer);
+}
 
+function addEditingTools() {
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";	
+
+    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+        style : layer_style
+    });
+    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+        style: layer_style
+    });
+    var panelControls = [
+    new OpenLayers.Control.Navigation(),
+    new OpenLayers.Control.DrawFeature(boxLayer,
+        OpenLayers.Handler.Box,
+        {
+            'displayClass': 'olControlDrawFeatureBox',
+            'featureAdded':regionAddedGlobal
+        }),
+    new OpenLayers.Control.DrawFeature(polygonLayer,
+        OpenLayers.Handler.Polygon,
+        {
+            'displayClass': 'olControlDrawFeaturePolygon',
+            'featureAdded':polygonAddedGlobal
+        })
+    ];
+    var toolbar = new OpenLayers.Control.Panel({
+        displayClass: 'olControlEditingToolbar',
+        defaultControl: panelControls[0]
+    });
+    toolbar.addControls(panelControls);
+    map.addControl(toolbar);
+
+}
+
+function createBoxDrawingTool() {
+    //removeSpeciesSelection();
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";	
+
+    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+        style : layer_style
+    });
+
+    boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{
+        'featureAdded':regionAdded,
+        'displayClass':"olControlDrawFeatureItemActive"
+    });
+    //map.addControl(boxControl);
+    //boxControl.activate();	
+ 
+    return boxControl;
 }
 
 function createAreaToolsButton() {
     var button = new OpenLayers.Control.Button({
-   'displayClass': '#navtoolbar div.olControlDrawFeatureZoomBoxItemInactive', trigger: addPolygonDrawingTool
-	});
+        'displayClass': '#navtoolbar div.olControlDrawFeatureZoomBoxItemInactive',
+        trigger: addPolygonDrawingTool
+    });
     return button;
 }
 
@@ -328,8 +386,60 @@ function navigateToAreaTab() {
     parent.setAreaTabSelected();
 }
 
+function addFeatureSelectionTool() {
+    areaSelectControl = new OpenLayers.Control.SelectFeature(
+        selectionLayers,
+        {
+            //            clickout: true,
+            //            toggle: false,
+            //            multiple: false,
+            //            hover: false,
+            //            toggleKey: "ctrlKey", // ctrl key removes from selection
+            //            multipleKey: "shiftKey" // shift key adds to selection
+            'onSelect': featureSelected
+        }
+        );
+            
+    map.addControl(areaSelectControl);
+   // selectControl.deactivate();
+    clickEventHandler.deactivate();
+    areaSelectControl.activate();
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";
+
+    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+        style: layer_style
+    });
+    polygonLayer.setVisibility(true);
+    map.addLayer(polygonLayer);
+}
+
+function addRadiusDrawingTool() {
+    removeAreaSelection();
+    radiusOptions = {
+        sides: 40
+    };
+
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";
+
+    radiusLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+        style: layer_style
+    });
+    radiusLayer.setVisibility(true);
+    map.addLayer(radiusLayer);
+    radiusControl = new OpenLayers.Control.DrawFeature(radiusLayer,OpenLayers.Handler.RegularPolygon,{
+        'featureAdded':radiusAdded,
+        handlerOptions:radiusOptions
+    });
+    map.addControl(radiusControl);
+    radiusControl.activate();
+}
+
 function addPolygonDrawingTool() {
-    removeSpeciesSelection();
+    removeAreaSelection();
     ////adding polygon control and layer
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
@@ -396,7 +506,7 @@ function removePolygonALOC(){
     }
 }
 
-function removeSpeciesSelection() {
+function removeAreaSelection() {
     if(polygonLayer != null){
         polygonLayer.destroy();
         polygonLayer = null;
@@ -404,6 +514,10 @@ function removeSpeciesSelection() {
     if(boxLayer != null) {
         boxLayer.destroy();
         boxLayer = null;
+    }
+    if(radiusLayer != null){
+        radiusLayer.destroy();
+        radiusLayer = null;
     }
 }
 function addPolygonDrawingToolFiltering() {
@@ -426,7 +540,7 @@ function removePolygonFiltering(){
 }
 
 function addBoxDrawingTool() {
-    removeSpeciesSelection();
+    removeAreaSelection();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";	
@@ -443,6 +557,20 @@ function addBoxDrawingTool() {
     boxControl.activate();	
 }
 
+function featureSelected(feature) {
+ //   alert("win!");
+    parent.setPolygonGeometry(feature.geometry);
+    
+    polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
+    areaSelectControl.deactivate();
+  //  clickEventHandler.activate();
+}
+
+function radiusAdded(feature) {
+    parent.setPolygonGeometry(feature.geometry);
+    radiusControl.deactivate();
+}
+
 // This function passes the region geometry up to javascript in index.zul which can then send it to the server.
 function regionAdded(feature) {
     //alert(feature.geometry.toGeometry());
@@ -452,7 +580,7 @@ function regionAdded(feature) {
     geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
     geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
 
-    removeSpeciesSelection();
+    removeAreaSelection();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";	
@@ -467,7 +595,44 @@ function regionAdded(feature) {
     boxControl.deactivate();
 }
 
+function regionAddedGlobal(feature) {
+    //alert(feature.geometry.toGeometry());
 
+    //converting bounds from pixel value to lonlat - annoying!
+    var geoBounds = new OpenLayers.Bounds();
+    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
+    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
+
+    //removeSpeciesSelection();
+    boxLayer.removeFeatures(boxLayer.features);
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";	
+    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+        style : layer_style
+    });
+    boxLayer.setVisibility(true);
+    map.addLayer(boxLayer);
+    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
+
+// parent.setRegionGeometry(geoBounds.toGeometry());
+//boxControl.deactivate();
+}
+
+function polygonAddedGlobal(feature) {
+   // polygonLayer.removeFeatures(polygonLayer.features);
+    polygonLayer.destroyFeatures();
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "red";
+    layer_style.strokeColor = "red";	
+    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+        style : layer_style
+    });
+    polygonLayer.setVisibility(true);
+    map.addLayer(polygonLayer);
+    //alert(feature.geometry.toGeometry());
+    polygonLayer.addFeatures([feature]);
+}
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
@@ -499,8 +664,7 @@ function setVectorLayersSelectable() {
     }
 }
 
-
- function selected (evt) {
+function selected (evt) {
 
     var feature = evt.feature;
     var attrs = evt.feature.attributes;
@@ -541,25 +705,25 @@ function setVectorLayersSelectable() {
    
 }
 
- function onFeatureUnselect(feature) {
-            alert("try");
-            map.removePopup(feature.popup);
-            feature.popup.destroy();
-            feature.popup = null;
-        }
+function onFeatureUnselect(feature) {
+    alert("try");
+    map.removePopup(feature.popup);
+    feature.popup.destroy();
+    feature.popup = null;
+}
 
 function onPopupClose(evt) {
     
     try {
 
-     map.removePopup(this.feature.popup);
-     this.feature.popup.destroy();
-     this.feature.popup = null;
+        map.removePopup(this.feature.popup);
+        this.feature.popup.destroy();
+        this.feature.popup = null;
     
-     selectControl.unselect(this.feature);
+        selectControl.unselect(this.feature);
 
     } catch(err) {
-        //alert(err);
+    //alert(err);
     }
 }
 
@@ -590,12 +754,8 @@ function addJsonFeatureToMap(feature, name, hexColour) {
     features = geojson_format.read(feature);
     vector_layer.addFeatures(features);
 
-
+    selectionLayers[selectionLayers.length] = vector_layer;
     vector_layer.events.register("featureselected", vector_layer, selected);
-    //add the vector layer to the array of selectable layers
-    //selectableLayers.push(vector_layer);
-
-    
     return vector_layer;
 }
 
@@ -1266,28 +1426,28 @@ function mkpopup(e) {
 
     
 
-        var html = "<div id=\"featureinfoheader\"><h4>New Query:</h4></div>" +
-        "<div id=\"featureinfostatus\">" +
-        "Waiting on the response for <b>" + requestCount + "</b> layers..." +
-        "<img src=\"/img/loading_small.gif\" /></div>"  +
-        "<div id=\"featureinfodepth\"></div>" +
-        "<div class=\"spacer\" style=\"clear:both;height:10px;\">&nbsp;</div>" +
-        "<div id=\"featureinfocontent_topborder\"><img id=\"featureinfocontent_topborderimg\" src=\"img/mapshadow.png\" />\n" +
-        "<div id=\"featureinfocontent\"></div>\n</div>" ;
-        popup = new OpenLayers.Popup.AnchoredBubble( "getfeaturepopup",
-            pointclick,
-            new OpenLayers.Size(popupWidth,popupHeight),
-            html,
-            null, true, null);
+    var html = "<div id=\"featureinfoheader\"><h4>New Query:</h4></div>" +
+    "<div id=\"featureinfostatus\">" +
+    "Waiting on the response for <b>" + requestCount + "</b> layers..." +
+    "<img src=\"/img/loading_small.gif\" /></div>"  +
+    "<div id=\"featureinfodepth\"></div>" +
+    "<div class=\"spacer\" style=\"clear:both;height:10px;\">&nbsp;</div>" +
+    "<div id=\"featureinfocontent_topborder\"><img id=\"featureinfocontent_topborderimg\" src=\"img/mapshadow.png\" />\n" +
+    "<div id=\"featureinfocontent\"></div>\n</div>" ;
+    popup = new OpenLayers.Popup.AnchoredBubble( "getfeaturepopup",
+        pointclick,
+        new OpenLayers.Size(popupWidth,popupHeight),
+        html,
+        null, true, null);
 
 
 
-     if (requestCount == "0") {
+    if (requestCount == "0") {
            
-        //nothing to see here
-        //move along
-        // a prompt for stupid people
-        //  jQuery('#featureinfostatus').html("<font class=\"error\">Please choose a queryable layer from the menu..</font>").fadeIn(400);
+    //nothing to see here
+    //move along
+    // a prompt for stupid people
+    //  jQuery('#featureinfostatus').html("<font class=\"error\">Please choose a queryable layer from the menu..</font>").fadeIn(400);
     } else {
 
         popup.panMapIfOutOfView = true;

@@ -36,6 +36,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.zkoss.zhtml.Messagebox;
 
 /**
  *
@@ -240,7 +241,7 @@ public class GazetteerSearchController extends UtilityComposer {
             MapComposer mc = getThisMapComposer();
 
              logger.debug(gazServer + label);
-
+       
             //add feature to the map as a new layer
             mapLayer = mc.addGeoJSON(entity, gazServer + label);
             

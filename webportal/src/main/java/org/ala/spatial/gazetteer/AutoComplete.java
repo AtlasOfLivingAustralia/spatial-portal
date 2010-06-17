@@ -57,7 +57,7 @@ public class AutoComplete extends Combobox {
             //Read in the xml response
             DocumentBuilder builder = domFactory.newDocumentBuilder();
             String uri = targetHost.toString() + "/geoserver/rest/gazetteer/result.xml?q=" + searchString;
-           //Messagebox.show(uri);
+            //Messagebox.show(uri);
             Document resultDoc = builder.parse(uri);
 
             //Get a list of names from the xml
