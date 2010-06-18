@@ -14,7 +14,7 @@ apply="org.ala.spatial.analysis.web.SelectionController">
 	    <!--<radio label="From current view" id="rdoExtentsSelection"/> -->
 	    <radio label="From digitized polygon" id="rdoPolygonSelection"/>
 	    <radio label="From point and radius" id="rdoPointRadiusSelection"/>
-	    <!--<radio label="From existing feature" id="rdoExistingFeatureSelection"/> -->
+	    <radio label="From existing feature" id="rdoExistingFeatureSelection"/> 
 	    <!--<radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
 	    </vbox>
 	<!--<button label="Polygon Selection" id="btnPolygonSelection"/>
