@@ -27,6 +27,7 @@ import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
+import org.springframework.util.StringUtils;
 
 /**
  * builder for occurances index.
@@ -333,7 +334,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             columnKeysToOccurrencesOrder[p++] = ofu.longitudeColumn;
             System.out.print("[" + ofu.longitudeColumn + " " + colnames[p-1]);
             columnKeysToOccurrencesOrder[p] = ofu.latitudeColumn;
-            System.out.print("[" + ofu.latitudeColumn + " " + colnames[p-1]);
+            System.out.print("[" + ofu.latitudeColumn + " " + colnames[p]);
 
             column_keys = new TreeMap<String, StringBuffer>();
 
@@ -869,6 +870,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
      */
     static public String[] filterIndex(String filter, int limit) {
         loadIndexes();
+        OccurrencesFieldsUtil.load();
 
         filter = filter.toLowerCase();
 
@@ -961,7 +963,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         }
 
         loadIndexes();
-System.out.println("indexessize:" + all_indexes.size());
+
         if (all_indexes.size() > 0) {
             ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>();
             int i = 0;
@@ -969,7 +971,6 @@ System.out.println("indexessize:" + all_indexes.size());
                 for (IndexedRecord r : ir) {
                     if (r.name.equals(filter)) {
                         matches.add(r);
-                        System.out.println(r.name + "," + r.record_start);
                     }
                 }
                 i++;
@@ -986,6 +987,7 @@ System.out.println("indexessize:" + all_indexes.size());
         return null;
     }
 
+    static int [] speciesNumberInRecordsOrder = null;
     /**
      * loads all OccurrencesIndex files for quicker response times
      * 
@@ -995,6 +997,9 @@ System.out.println("indexessize:" + all_indexes.size());
         if (single_index != null) {
             return;
         }
+
+        OccurrencesFieldsUtil.load();
+        
         String[] columns = TabulationSettings.occurances_csv_fields;
         String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
 
@@ -1032,6 +1037,9 @@ System.out.println("indexessize:" + all_indexes.size());
                         if (all_indexes.get(all_indexes.size() - 1) != null) {
                             count += all_indexes.get(all_indexes.size() - 1).length;
                         }
+                        //print something to double check columns
+                        System.out.println("index:" + i + " " + columns[i] + ", " + OccurrencesFieldsUtil.columnNames[i] + " == " +
+                                OccurrencesFieldsUtil.columnNames[all_indexes.get(all_indexes.size()-1)[0].type]);
 
                         indexesLoaded++;
                     }
@@ -1059,6 +1067,16 @@ System.out.println("indexessize:" + all_indexes.size());
                         return r1.name.compareTo(r2.name);
                     }
                 });
+
+       //build speciesNumberInRecordsOrder
+       getPointsPairsGrid(); //load up gridded points
+       IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
+       speciesNumberInRecordsOrder = new int[grid_points_idx.length];
+       for (i = 0; i < species.length; i++) {
+           for (int j = species[i].record_start; j <= species[i].record_end; j++) {
+               speciesNumberInRecordsOrder[j] = i;
+           }
+       }
     }
 
     /**
@@ -1086,7 +1104,7 @@ System.out.println("indexessize:" + all_indexes.size());
      * @return index type column name as String
      */
     static public String getIndexType(int type) {
-        return TabulationSettings.occurances_csv_fields[type];
+        return OccurrencesFieldsUtil.columnNames[type];
     }
 
     /**
@@ -1471,8 +1489,18 @@ System.out.println("indexessize:" + all_indexes.size());
         /* load Points object */
         Point[] pa = new Point[points.length];
         int i;
+        double longitude, latitude;
+
         for (i = 0; i < points.length; i++) {
-            pa[i] = new Point(points[i][0], points[i][1], i);
+            longitude = points[i][0];
+            latitude = points[i][1];
+
+            //assume -360 to +360, adjust
+            while(longitude <= -180) longitude += 360;
+            while(longitude > 180) longitude -= 360;
+            while(latitude <= -180) longitude += 360;
+            while(latitude > 180) longitude -= 360;
+            pa[i] = new Point(longitude, latitude,i);
         }
 
         /* sort on 0.5degree grid by latitude then longitude */
@@ -1480,9 +1508,9 @@ System.out.println("indexessize:" + all_indexes.size());
                 new Comparator<Point>() {
 
                     public int compare(Point r1, Point r2) {
-                        double result = Math.floor(2 * r1.latitude) - Math.floor(2 * r2.latitude);
+                        double result = (int)(2 * r1.latitude + 360 -1) - (int)(2 * r2.latitude + 360 -1);
                         if (result == 0) {
-                            result = r1.longitude - r2.longitude;
+                            result = (int)(2*r1.longitude + 360 -1) - (int)(2*r2.longitude + 360 -1);
                         }
                         return (int) result;
                     }
@@ -1556,27 +1584,40 @@ System.out.println("indexessize:" + all_indexes.size());
                     list[i][j] = -1;
                 }
             }
+            int lastx = 0;
+            int lasty = 0;
             for (i = 0; i < pa.length; i++) {
-                int x = (int) Math.floor(((360 + pa[p].longitude) * 2) % 720);
-                int y = (int) Math.floor(((pa[p].latitude + 180 + 360) * 2) % 720);		//latitude is -180 to 180
+                int x = (int) (pa[i].longitude * 2 + 360 -1);          //longitude is -179 to 180
+                int y = (int) (pa[i].latitude * 2 + 360 -1);		//latitude is -179 to 180
+                
                 if (list[y][x] == -1
                         || list[y][x] > i) {
                     list[y][x] = i;
                 }
+
+                if(y < lasty || (y == lasty &&  x < lastx)){
+                    System.out.print("," + x + " " + y);
+
+                }
+                lastx = x;
+                lasty = y;
             }
 
             /* populate blanks, test */
             int last_cell = pa.length;
+            int c = 0;
             for (i = (720 - 1); i >= 0; i--) {
                 for (j = (720 - 1); j >= 0; j--) {
                     if (list[i][j] == -1) {
                         list[i][j] = last_cell;
+                        c++;
                     } else if (last_cell < list[i][j]) {
                         (new SpatialLogger()).log("exportSortedGridPoints, order err");
                     }
                     last_cell = list[i][j];
                 }
             }
+            System.out.println("backfill count = " + c);
 
             /* write */
             for (i = 0; i < 720; i++) {
@@ -1635,6 +1676,10 @@ System.out.println("indexessize:" + all_indexes.size());
             (new SpatialLogger()).log("getPointsPairsGrid", e.toString());
         }
 
+        //load idx as well
+        getPointsPairsGrididx();
+        getPointsPairsGridKey();
+
         grid_points = d;
         return d;
     }
@@ -1681,18 +1726,20 @@ System.out.println("indexessize:" + all_indexes.size());
             /* read reverse order idx as int */
             points.read(b);
             ByteBuffer bb = ByteBuffer.wrap(b);
-            d1 = new int[number_of_records];
-            for (i = 0; i < number_of_records; i++) {
+            d1 = new int[number_of_records/2];
+            for (i = 0; i < number_of_records/2; i++) {
                 d1[i] = bb.getInt();
             }
 
             /* read forward order idx as int */
-            points.read(b);
-            bb = ByteBuffer.wrap(b);
-            d2 = new int[number_of_records];
-            for (i = 0; i < number_of_records; i++) {
-                d2[i] = bb.getInt();
+           // points.read(b);
+         //   bb = ByteBuffer.wrap(b);
+            d2 = new int[number_of_records/2];
+            for (; i < number_of_records; i++) {
+                d2[i-number_of_records/2] = bb.getInt();
             }
+
+            System.out.println("num records in key:" + number_of_records);
 
             points.close();
         } catch (Exception e) {
@@ -1735,7 +1782,7 @@ System.out.println("indexessize:" + all_indexes.size());
             int j;
             for (i = 0; i < 720; i++) {
                 for (j = 0; j < 720; j++) {
-                    d[i][j] = bb.getInt();
+                    d[i][j] = bb.getInt();                    
                 }
             }
             points.close();
@@ -1776,29 +1823,109 @@ System.out.println("indexessize:" + all_indexes.size());
      * @return records indexes as int []
      */
     static public int[] getRecordsInside(SimpleRegion r) {
+
         /* init */
         getPointsPairsGridKey();
         getPointsPairsGrid();
         getPointsPairsGrididx();
 
+        long starttime = System.currentTimeMillis();
+
         /* make overlay grid from this region */
-        int[][] cells = r.getOverlapGridCells(0, -180, 360, 180, 720, 720, null);
+        byte [][] mask = new byte[720][720];
+        int[][] cells = r.getOverlapGridCells(-179, -179, 180, 180, 720, 720, mask);
 
         System.out.println("poly:" + r.toString());
         int i, j;
 
-
         /* for matching cells, test each record within  */
 
+       // Vector<Integer> recordsA = new Vector<Integer>();
+        //getPointsPairs();
+      //  System.out.println("gdlen:" + all_points.length);
+       // for (j = 0; j < all_points.length; j++) {
+         //   if (r.isWithin(all_points[j][0], all_points[j][1])) {
+      //          recordsA.add(new Integer(j));
+           //     System.out.print("*" +j);
+            //}
+        //}
+      //  System.out.println("done every search:");
+
         Vector<Integer> records = new Vector<Integer>();
-        System.out.println("gdlen:" + grid_points.length);
-        for (j = 0; j < grid_points.length; j++) {
-            if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
-                records.add(new Integer(grid_points_idx[j]));
+
+        for (i = 0; i < cells.length; i++) {
+            int start = grid_key[cells[i][1]][cells[i][0]];
+            int end = start;
+
+
+            if (cells[i][0] < (720 - 1)) {
+                // not last record on a grid_key row, use limit on next line
+                end = grid_key[cells[i][1]][cells[i][0] + 1];
+            } else if (cells[i][1] < (720 - 1)) {
+                // must be last record on a grid key row,
+                // also not on last row, use next row, first cell grid key
+                end = grid_key[cells[i][1] + 1][0];
+            } else {
+                // must be at end of grid_key file, use all
+                end = grid_points.length;
+            }
+
+       //     System.out.println("cells[" + i + "](" + cells[i][1] + " " + cells[i][0] + ") " + start + " to " + end + " =" + mask[cells[i][0]][cells[i][1]]);
+
+            //test each potential match
+            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
+                for (j = start; j < end; j++) {
+                    records.add(new Integer(grid_points_idx[j]));
+                }
+            } else {
+                for (j = start; j < end; j++) {
+                    if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                        records.add(new Integer(grid_points_idx[j]));
+                    }
+                }
             }
         }
 
-    /*    for (i = 0; i < cells.length; i++) {
+        /* format matches as int [] */
+        if (records.size() > 0) {
+            int[] data = new int[records.size()];
+            Iterator<Integer> li = records.listIterator();
+            i = 0;
+            while (li.hasNext()) {
+                data[i++] = li.next();
+            }
+
+            long endtime = System.currentTimeMillis();
+            System.out.println("getRecordsInside(): len=" + data.length + " time=" + (endtime-starttime) + "ms");
+            return data;
+        }
+        return null;
+    }
+
+    /**
+     * return set of Species within a SimpleRegion
+     *
+     * @param r region for test as SimpleRegion
+     * @return list of species delimited by "," as String
+     */
+    static public String getSpeciesInside(SimpleRegion r) {
+        /* init */
+        loadIndexes();
+
+        /* make overlay grid from this region */
+        byte [][] mask = new byte[720][720];
+        int[][] cells = r.getOverlapGridCells(-179, -179, 180, 180, 720, 720, mask);
+
+        int i, j;
+
+        /* for matching cells, test each record within  */
+        StringBuffer sb = new StringBuffer();
+
+        IndexedRecord [] species = all_indexes.get(all_indexes.size()-1);
+
+        BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+
+        for (i = 0; i < cells.length; i++) {
             int start = grid_key[cells[i][1]][cells[i][0]];
             int end = start;
 
@@ -1814,25 +1941,87 @@ System.out.println("indexessize:" + all_indexes.size());
                 end = grid_points.length;
             }
 
-            //test each potential match
-            for (j = start; j < end; j++) {
-                if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
-                    records.add(new Integer(grid_points_idx[j]));
+            //test each potential match, otherwise add
+            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
+                for (j = start; j < end; j++) {
+                    bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                }
+            } else {
+                for (j = start; j < end; j++) {
+                    if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                    }
                 }
             }
         }
-*/
-        /* format matches as int [] */
-        if (records.size() > 0) {
-            int[] data = new int[records.size()];
-            Iterator<Integer> li = records.listIterator();
-            i = 0;
-            while (li.hasNext()) {
-                data[i++] = li.next();
+
+        for (i = 0; i < bitset.size(); i++) {
+            if (bitset.get(i)) {
+                sb.append(StringUtils.capitalize(species[i].name));
+                sb.append(",");
             }
-            return data;
         }
-        return null;
+
+        return sb.toString();
+    }
+
+    /**
+     * return number of Species within a SimpleRegion
+     *
+     * @param r region for test as SimpleRegion
+     * @return number of species found as int
+     */
+    static public int getSpeciesCountInside(SimpleRegion r) {
+        /* init */
+        loadIndexes();
+
+        /* make overlay grid from this region */
+        byte [][] mask = new byte[720][720];
+        int[][] cells = r.getOverlapGridCells(-179, -179, 180, 180, 720, 720, mask);
+
+        int i, j;
+
+        /* for matching cells, test each record within  */
+        BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+
+        for (i = 0; i < cells.length; i++) {
+            int start = grid_key[cells[i][1]][cells[i][0]];
+            int end = start;
+
+            if (cells[i][0] < (720 - 1)) {
+                // not last record on a grid_key row, use limit on next line
+                end = grid_key[cells[i][1]][cells[i][0] + 1];
+            } else if (cells[i][1] < (720 - 1)) {
+                // must be last record on a grid key row,
+                // also not on last row, use next row, first cell grid key
+                end = grid_key[cells[i][1] + 1][0];
+            } else {
+                // must be at end of grid_key file, use all
+                end = grid_points.length;
+            }
+
+            //test each potential match, otherwise add
+            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
+                for (j = start; j < end; j++) {
+                    bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                }
+            } else {
+                for (j = start; j < end; j++) {
+                    if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                    }
+                }
+            }
+        }
+
+        int speciesCount = 0;
+        for (i = 0; i < bitset.size(); i++) {
+            if (bitset.get(i)) {
+                speciesCount++;
+            }
+        }
+
+        return speciesCount;
     }
 
     static IndexedRecord[] speciesSortByRecordNumber = null;
@@ -1868,7 +2057,6 @@ System.out.println("indexessize:" + all_indexes.size());
 
                 speciesSortByRecordNumberOrder[i] = t;
             }
-
         }
     }
 
@@ -1880,8 +2068,15 @@ System.out.println("indexessize:" + all_indexes.size());
         BitSet species = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
 
         //assume records sorted
-        //TODO: validate sort
-
+        for (i = 1;i < records.size(); i++){
+            if (records.get(i-1).intValue() > records.get(i).intValue()) {
+                System.out.println("records not sorted");
+                java.util.Collections.sort(records);
+                break;
+            }
+        }
+        
+        
         if (region == null) {
             //no region, use all
             spos = 0;
@@ -1895,10 +2090,11 @@ System.out.println("indexessize:" + all_indexes.size());
                     spos++;
                 }
 
+
                 if(spos == speciesSortByRecordNumber.length){
                     spos--; //TODO: is this correct?
-                    System.out.println("rsize=" + records.size() + " r:" + r + " i:" + i);
-                }
+               }else{
+               }
                 
                 species.set(speciesSortByRecordNumberOrder[spos]);
                 spos++;
@@ -1924,7 +2120,9 @@ System.out.println("indexessize:" + all_indexes.size());
                     spos++;
                 }             
                 i++; //next record
-                if (OccurrencesIndex.inRegion(spos, region)) {
+                if (spos < speciesSortByRecordNumber.length 
+                        && OccurrencesIndex.inRegion(spos, region)) {
+                    
                     species.set(speciesSortByRecordNumberOrder[spos]);
 
                     spos++; //inc
