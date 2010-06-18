@@ -10,6 +10,7 @@ package org.ala.spatial.util;
  * @author adam
  */
 public class OccurrencesFieldsUtil {
+    public static String[] columnNames;
     public int longitudeColumn;
     public int latitudeColumn;
     public int speciesColumn;
@@ -22,7 +23,13 @@ public class OccurrencesFieldsUtil {
     public int [] twos;
     public int [] onestwos;
 
+    static public void load() {
+        columnNames = (new OccurrencesFieldsUtil()).getOutputColumnNames();
+    }
+
     public OccurrencesFieldsUtil(){
+        TabulationSettings.load();
+        
         String[] columns = TabulationSettings.occurances_csv_fields;
         String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
 

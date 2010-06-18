@@ -292,10 +292,16 @@ public class FilteringWSController {
     @ResponseBody
     String getSpeciesCount(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
         TabulationSettings.load();
+        long starttime = System.currentTimeMillis();
         try {         
             SimpleRegion region = SimpleRegion.parseSimpleRegion(shape);
-            
-            return String.valueOf(FilteringService.getSpeciesCount(pid, region));
+
+            String count = String.valueOf(FilteringService.getSpeciesCount(pid, region));
+
+            long endtime = System.currentTimeMillis();
+            System.out.println("getSpeciesCount()=" + count + " in " + (endtime-starttime) + "ms");
+
+            return count;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -315,14 +321,20 @@ public class FilteringWSController {
     @ResponseBody
     String getSpeciesList(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
         TabulationSettings.load();
+
+        long starttime = System.currentTimeMillis();
+
+
         try {
         	System.out.println("[[[]]] getlist: " + pid + " " + shape);
-     //       String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");
-     //       readUserBytes(sessionfile);
-            
+           
             SimpleRegion region = SimpleRegion.parseSimpleRegion(shape);
-            
-            return FilteringService.getSpeciesList(pid,region);
+
+            String list = FilteringService.getSpeciesList(pid,region);
+            long endtime = System.currentTimeMillis();
+            System.out.println("getSpeciesCount().length=" + list.length() + " in " + (endtime-starttime) + "ms");
+          
+            return list;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

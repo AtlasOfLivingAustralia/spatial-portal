@@ -276,14 +276,7 @@ public class FilteringService implements Serializable {
         if (session_id_.equals("none")) {
             /* TODO: fix this up when no longer using ArrayList
              in getSpeciesBitset */
-            int [] records = OccurrencesIndex.getRecordsInside(region);
-            ArrayList<Integer> al = new ArrayList<Integer>(records.length);
-            for (i = 0; i < records.length; i++){
-                al.add(records[i]);
-            }
-
-            /* null region to getSpeciesBitset since records alreay in region */
-            species = OccurrencesIndex.getSpeciesBitset(al,null);
+            return OccurrencesIndex.getSpeciesCountInside(region);
         } else {
 
             /* load session */
@@ -317,10 +310,12 @@ public class FilteringService implements Serializable {
      * 
      * @param session_id_ session id as String, none for no env filter
      * @param region region to restrict results as SimpleRegion or null for none
-     * @return list of unqiue species as String, '\r\n' delimited
+     * @return list of unqiue species as String, ',' delimited
      */
     static public String getSpeciesList(String session_id_, SimpleRegion region) {
         int i;
+
+        long start = System.currentTimeMillis();
 
         BitSet species;
 
@@ -328,15 +323,7 @@ public class FilteringService implements Serializable {
         if (session_id_.equals("none")) {
             /* TODO: fix this up when no longer using ArrayList
             in getSpeciesBitset */
-            int[] records = OccurrencesIndex.getRecordsInside(region);
-            System.out.println("region:" + records);
-            ArrayList<Integer> al = new ArrayList<Integer>(records.length);
-            for (i = 0; i < records.length; i++) {
-                al.add(records[i]);
-            }
-
-            /* null region to getSpeciesBitset since records alreay in region */
-            species = OccurrencesIndex.getSpeciesBitset(al, null);
+            return OccurrencesIndex.getSpeciesInside(region);
         } else {
             /* load session */
             FilteringService fs = FilteringService.getSession(session_id_);
@@ -353,9 +340,14 @@ public class FilteringService implements Serializable {
         for (i = 0; i < species.size(); i++) {
             if (species.get(i)) {
                 sb.append(OccurrencesIndex.getSpeciesIndex()[i].name);
-                sb.append("\r\n");
+                sb.append(",");
             }
         }
+
+        long end = System.currentTimeMillis();
+
+        System.out.println("getspecieslist: " + (end-start) + "ms");
+
 
         return sb.toString();
     }
