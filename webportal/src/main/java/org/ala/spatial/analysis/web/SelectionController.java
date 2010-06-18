@@ -92,7 +92,7 @@ public class SelectionController extends UtilityComposer {
         super.afterCompose();
 
         if (settingsSupplementary != null) {
-           // geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
     }
@@ -196,8 +196,13 @@ public class SelectionController extends UtilityComposer {
         WKTReader wkt_reader = new WKTReader();
         GMLWriter gml_writer = new GMLWriter();
         WKTWriter wkt_writer = new WKTWriter();
-         String baseQueryXML = "<wfs:GetFeature outputFormat=\"geojson\" service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
-        try {
+         String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrencesv1\"> <wfs:PropertyName>ALA:species</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
+       if (selectionWKT.contains("MULTIPOLYGON")) {
+           selectionWKT.replace("MULTI","");
+           selectionWKT.replace("(((","((");
+           selectionWKT.replace(")))","))");
+       }
+       try {
             Geometry selection = wkt_reader.read(selectionWKT);
             //Envelope selectionBounds = selection.getEnvelope().getEnvelopeInternal();
             Geometry selectionBounds = selection.getEnvelope();
@@ -244,7 +249,7 @@ public class SelectionController extends UtilityComposer {
 
         //       String completeQuery = baseQuery + selection + ")";
         try {
-
+            
             String response = POSTRequest(baseQueryXML);
             String speciesList = parse(response);
             //Messagebox.show(response);
@@ -262,7 +267,6 @@ public class SelectionController extends UtilityComposer {
         try {
             // Construct data
             //String data = URLEncoder.encode(query, "UTF-8");// + "=" + URLEncoder.encode(query, "UTF-8");
-
 
             // Send data 
             URL url = new URL(geoServer + "/geoserver/wfs?");
@@ -336,9 +340,9 @@ public class SelectionController extends UtilityComposer {
         DocumentBuilder builder = domFactory.newDocumentBuilder();
         InputStream is = new java.io.ByteArrayInputStream(responseXML.getBytes());
         Document resultDoc = builder.parse(is);
-        try {
-        Messagebox.show(responseXML);
-        } catch (Exception e) {}
+//        try {
+//        Messagebox.show(responseXML);
+//        } catch (Exception e) {}
         //Get a list of names
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
@@ -352,9 +356,14 @@ public class SelectionController extends UtilityComposer {
         }
 
 
-        results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
+       results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
-        popup_results.open(40, 150);
+
+
+        popup_label.setValue("Number of species: " + speciesSet.size());
+
+        //popup_results.open(40, 150);
+        openResults();
 
         return String.valueOf(speciesSet.size());
     }
