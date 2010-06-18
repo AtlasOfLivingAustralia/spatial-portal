@@ -94,8 +94,18 @@ public class FilteringResultsWCController extends UtilityComposer {
                 sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
                 sbProcessUrl.append("/species/list");
                 sbProcessUrl.append("/shape/" + shape); //TODO: encode/decode
-                results = getInfo(sbProcessUrl.toString()).split("\r\n");
+                String out = getInfo(sbProcessUrl.toString());
+                //remove trailing ','
+                if (out.length() > 0 && out.charAt(out.length()-1) == ',') {
+                    out = out.substring(0, out.length() - 1);
+                }
+                results = out.split(",");
                 long t2 = System.currentTimeMillis();
+
+                if (results.length == 0){
+                    results_label.setValue("no species found");
+                    return;
+                }
 
                 // results should already be sorted: Arrays.sort(results);
                 int length = results.length;
