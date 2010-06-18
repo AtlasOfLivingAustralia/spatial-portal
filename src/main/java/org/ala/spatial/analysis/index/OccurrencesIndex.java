@@ -179,7 +179,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         occurrencesParts();
         mergeParts();
         exportSortedGEOPoints();
-        exportSortedGridPoints();
+       exportSortedGridPoints();
         exportFieldIndexes();
     }
 
@@ -1496,10 +1496,10 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             latitude = points[i][1];
 
             //assume -360 to +360, adjust
-            while(longitude <= -180) longitude += 360;
-            while(longitude > 180) longitude -= 360;
-            while(latitude <= -180) longitude += 360;
-            while(latitude > 180) longitude -= 360;
+            while(longitude < -180) longitude += 360;
+            while(longitude >= 180) longitude -= 360;
+            while(latitude < -180) longitude += 360;
+            while(latitude >= 180) longitude -= 360;
             pa[i] = new Point(longitude, latitude,i);
         }
 
@@ -1508,9 +1508,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 new Comparator<Point>() {
 
                     public int compare(Point r1, Point r2) {
-                        double result = (int)(2 * r1.latitude + 360 -1) - (int)(2 * r2.latitude + 360 -1);
+                        double result = (int)(2 * r1.latitude + 360) - (int)(2 * r2.latitude + 360);
                         if (result == 0) {
-                            result = (int)(2*r1.longitude + 360 -1) - (int)(2*r2.longitude + 360 -1);
+                            result = (int)(2*r1.longitude + 360) - (int)(2*r2.longitude + 360);
                         }
                         return (int) result;
                     }
@@ -1587,8 +1587,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             int lastx = 0;
             int lasty = 0;
             for (i = 0; i < pa.length; i++) {
-                int x = (int) (pa[i].longitude * 2 + 360 -1);          //longitude is -179 to 180
-                int y = (int) (pa[i].latitude * 2 + 360 -1);		//latitude is -179 to 180
+                int x = (int) (pa[i].longitude * 2 + 360);          //longitude is -180 to 179.999...
+                int y = (int) (pa[i].latitude * 2 + 360);		//latitude is -180 to 179.999...
                 
                 if (list[y][x] == -1
                         || list[y][x] > i) {
@@ -1833,7 +1833,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
         /* make overlay grid from this region */
         byte [][] mask = new byte[720][720];
-        int[][] cells = r.getOverlapGridCells(-179, -179, 180, 180, 720, 720, mask);
+        int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
 
         System.out.println("poly:" + r.toString());
         int i, j;
@@ -1870,15 +1870,13 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 end = grid_points.length;
             }
 
-       //     System.out.println("cells[" + i + "](" + cells[i][1] + " " + cells[i][0] + ") " + start + " to " + end + " =" + mask[cells[i][0]][cells[i][1]]);
-
             //test each potential match
             if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
                 for (j = start; j < end; j++) {
                     records.add(new Integer(grid_points_idx[j]));
                 }
             } else {
-                for (j = start; j < end; j++) {
+                for (j = start; j < end; j++) { System.out.print("," + grid_points[j][0] + " " + grid_points[j][1]);
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                         records.add(new Integer(grid_points_idx[j]));
                     }
@@ -1914,7 +1912,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
         /* make overlay grid from this region */
         byte [][] mask = new byte[720][720];
-        int[][] cells = r.getOverlapGridCells(-179, -179, 180, 180, 720, 720, mask);
+        int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
 
         int i, j;
 
@@ -1940,6 +1938,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 // must be at end of grid_key file, use all
                 end = grid_points.length;
             }
+            
+            System.out.println("cells:" + cells[i][1] + " " + cells[i][0] + "]");
 
             //test each potential match, otherwise add
             if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
@@ -1948,6 +1948,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 }
             } else {
                 for (j = start; j < end; j++) {
+                    System.out.print("," + grid_points[j][0] + " " + grid_points[j][1]);
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                         bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                     }
@@ -1977,7 +1978,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
         /* make overlay grid from this region */
         byte [][] mask = new byte[720][720];
-        int[][] cells = r.getOverlapGridCells(-179, -179, 180, 180, 720, 720, mask);
+        int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
 
         int i, j;
 
