@@ -23,7 +23,7 @@ var toolPanel; // container for OpenLayer controls
 var pan; // OpenLayers.Control.Navigation
 var zoom; // OpenLayers.Control.ZoomBox
 var areaToolsButton// OpenLayers.Control.Button
-var selectableLayers = new Array();
+//var selectableLayers = new Array();
 /**
  * Associative array of all current active map layers except
  * for baselayers
@@ -52,7 +52,8 @@ var alocPolygon = null;			//temporary for destroy option after display
 var polygonLayer = null;
 var boxLayer = null;
 var radiusLayer = null;
-
+var featureSelectLayer = null;
+var areaSelectOn = false;
 var layersLoading = 0;
 var layername; // current layer name
 
@@ -319,40 +320,40 @@ function buildMapReal() {
 
 }
 
-function addEditingTools() {
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-    layer_style.fillColor = "red";
-    layer_style.strokeColor = "red";	
-
-    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
-        style : layer_style
-    });
-    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
-        style: layer_style
-    });
-    var panelControls = [
-    new OpenLayers.Control.Navigation(),
-    new OpenLayers.Control.DrawFeature(boxLayer,
-        OpenLayers.Handler.Box,
-        {
-            'displayClass': 'olControlDrawFeatureBox',
-            'featureAdded':regionAddedGlobal
-        }),
-    new OpenLayers.Control.DrawFeature(polygonLayer,
-        OpenLayers.Handler.Polygon,
-        {
-            'displayClass': 'olControlDrawFeaturePolygon',
-            'featureAdded':polygonAddedGlobal
-        })
-    ];
-    var toolbar = new OpenLayers.Control.Panel({
-        displayClass: 'olControlEditingToolbar',
-        defaultControl: panelControls[0]
-    });
-    toolbar.addControls(panelControls);
-    map.addControl(toolbar);
-
-}
+//function addEditingTools() {
+//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+//    layer_style.fillColor = "red";
+//    layer_style.strokeColor = "red";
+//
+//    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+//        style : layer_style
+//    });
+//    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+//        style: layer_style
+//    });
+//    var panelControls = [
+//    new OpenLayers.Control.Navigation(),
+//    new OpenLayers.Control.DrawFeature(boxLayer,
+//        OpenLayers.Handler.Box,
+//        {
+//            'displayClass': 'olControlDrawFeatureBox',
+//            'featureAdded':regionAddedGlobal
+//        }),
+//    new OpenLayers.Control.DrawFeature(polygonLayer,
+//        OpenLayers.Handler.Polygon,
+//        {
+//            'displayClass': 'olControlDrawFeaturePolygon',
+//            'featureAdded':polygonAddedGlobal
+//        })
+//    ];
+//    var toolbar = new OpenLayers.Control.Panel({
+//        displayClass: 'olControlEditingToolbar',
+//        defaultControl: panelControls[0]
+//    });
+//    toolbar.addControls(panelControls);
+//    map.addControl(toolbar);
+//
+//}
 
 function createBoxDrawingTool() {
     //removeSpeciesSelection();
@@ -387,32 +388,45 @@ function navigateToAreaTab() {
 }
 
 function addFeatureSelectionTool() {
-    areaSelectControl = new OpenLayers.Control.SelectFeature(
-        selectionLayers,
-        {
-            //            clickout: true,
-            //            toggle: false,
-            //            multiple: false,
-            //            hover: false,
-            //            toggleKey: "ctrlKey", // ctrl key removes from selection
-            //            multipleKey: "shiftKey" // shift key adds to selection
-            'onSelect': featureSelected
-        }
-        );
-            
-    map.addControl(areaSelectControl);
-   // selectControl.deactivate();
-    clickEventHandler.deactivate();
-    areaSelectControl.activate();
+//    areaSelectControl = new OpenLayers.Control.SelectFeature(
+//        selectionLayers,
+//        {
+//            //            clickout: true,
+//            //            toggle: false,
+//            //            multiple: false,
+//            //            hover: false,
+//            //            toggleKey: "ctrlKey", // ctrl key removes from selection
+//            //            multipleKey: "shiftKey" // shift key adds to selection
+//            'onSelect': featureSelected
+//        }
+//        );
+//
+//    map.addControl(areaSelectControl);
+//    selectControl.deactivate();
+//    clickEventHandler.deactivate();
+//    areaSelectControl.activate();
+    removeAreaSelection();
+    areaSelectOn = true;
+//    clickEventHandler = new OpenLayers.Handler.Click({
+//        'map': map
+//    }, {
+//        'click': function(e) {
+//            getpointInfo(e);
+//            mkpopup(e);
+//        }
+//    });
+//    clickEventHandler.activate();
+//    clickEventHandler.fallThrough = false;
+    selectControl.activate();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";
 
-    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+    featureSelectLayer = new OpenLayers.Layer.Vector("Selected Feature Layer", {
         style: layer_style
     });
-    polygonLayer.setVisibility(true);
-    map.addLayer(polygonLayer);
+    featureSelectLayer.setVisibility(true);
+    map.addLayer(featureSelectLayer);
 }
 
 function addRadiusDrawingTool() {
@@ -425,7 +439,7 @@ function addRadiusDrawingTool() {
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";
 
-    radiusLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+    radiusLayer = new OpenLayers.Layer.Vector("Point Radius Layer Layer", {
         style: layer_style
     });
     radiusLayer.setVisibility(true);
@@ -457,87 +471,108 @@ function addPolygonDrawingTool() {
     polyControl.activate();	
 //////
 }
-//Copy for Sampling, ALOC, Filtering
-function addPolygonDrawingToolSampling() {
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-    layer_style.fillColor = "blue";
-    layer_style.strokeColor = "blue";	
-    samplingPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {
-        style: layer_style
-    });
+////Copy for Sampling, ALOC, Filtering
+//function addPolygonDrawingToolSampling() {
+//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+//    layer_style.fillColor = "blue";
+//    layer_style.strokeColor = "blue";
+//    samplingPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {
+//        style: layer_style
+//    });
+//
+//    samplingPolygon.setVisibility(true);
+//    map.addLayer(samplingPolygon);
+//    polyControl =new OpenLayers.Control.DrawFeature(samplingPolygon,OpenLayers.Handler.Polygon,{
+//        'featureAdded':polygonAddedSampling
+//    });
+//    map.addControl(polyControl);
+//    polyControl.activate();
+////////
+//}
+//function removePolygonSampling(){
+//    if(samplingPolygon != null){
+//        samplingPolygon.destroy();
+//        samplingPolygon = null;
+//    }
+//}
 
-    samplingPolygon.setVisibility(true);
-    map.addLayer(samplingPolygon);
-    polyControl =new OpenLayers.Control.DrawFeature(samplingPolygon,OpenLayers.Handler.Polygon,{
-        'featureAdded':polygonAddedSampling
-    });
-    map.addControl(polyControl);
-    polyControl.activate();	
-//////
-}
-function removePolygonSampling(){
-    if(samplingPolygon != null){
-        samplingPolygon.destroy();
-        samplingPolygon = null;
-    }
-}
-
-function addPolygonDrawingToolALOC() {
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-    layer_style.fillColor = "green";
-    layer_style.strokeColor = "green";	
-    alocPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {
-        style: layer_style
-    });
-
-    alocPolygon.setVisibility(true);
-    map.addLayer(alocPolygon);    
-    polyControl =new OpenLayers.Control.DrawFeature(alocPolygon,OpenLayers.Handler.Polygon,{
-        'featureAdded':polygonAddedALOC
-    });  
-    map.addControl(polyControl);
-    polyControl.activate();	
-//////
-}
-function removePolygonALOC(){
-    if(alocPolygon != null){
-        alocPolygon.destroy();
-        alocPolygon = null;
-    }
-}
+//function addPolygonDrawingToolALOC() {
+//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+//    layer_style.fillColor = "green";
+//    layer_style.strokeColor = "green";
+//    alocPolygon = new OpenLayers.Layer.Vector("Polygon Layer", {
+//        style: layer_style
+//    });
+//
+//    alocPolygon.setVisibility(true);
+//    map.addLayer(alocPolygon);
+//    polyControl =new OpenLayers.Control.DrawFeature(alocPolygon,OpenLayers.Handler.Polygon,{
+//        'featureAdded':polygonAddedALOC
+//    });
+//    map.addControl(polyControl);
+//    polyControl.activate();
+////////
+//}
+//function removePolygonALOC(){
+//    if(alocPolygon != null){
+//        alocPolygon.destroy();
+//        alocPolygon = null;
+//    }
+//}
 
 function removeAreaSelection() {
     if(polygonLayer != null){
         polygonLayer.destroy();
         polygonLayer = null;
+        polyControl.deactivate();
     }
     if(boxLayer != null) {
         boxLayer.destroy();
         boxLayer = null;
+        boxControl.deactivate();
     }
     if(radiusLayer != null){
         radiusLayer.destroy();
         radiusLayer = null;
+        radiusControl.deactivate();
     }
-}
-function addPolygonDrawingToolFiltering() {
-    ////adding polygon control and layer	
-    filteringPolygon = new OpenLayers.Layer.Vector("Polygon Layer");
-    filteringPolygon.setVisibility(true);
-    map.addLayer(filteringPolygon);    
-    polyControl =new OpenLayers.Control.DrawFeature(filteringPolygon,OpenLayers.Handler.Polygon,{
-        'featureAdded':polygonAddedFiltering
-    });  
-    map.addControl(polyControl);
-    polyControl.activate();	
-//////
-}
-function removePolygonFiltering(){
-    if(filteringPolygon != null){
-        filteringPolygon.destroy();
-        filteringPolygon = null;
+
+    if(featureSelectLayer != null){
+        featureSelectLayer.destroy();
+        featureSelectLayer = null;
+        areaSelectOn = false;
     }
+
+    /* refreshes all the vector layers -> this is because the vector features
+     * can dissappear after selection so need to redraw
+     */
+    for(var i in selectionLayers) {
+        var layer = selectionLayers[i];
+        for(var j in layer.features) {
+            layer.drawFeature(layer.features[j]);
+        }
+    }
+
 }
+
+//function addPolygonDrawingToolFiltering() {
+//    ////adding polygon control and layer
+//    filteringPolygon = new OpenLayers.Layer.Vector("Polygon Layer");
+//    filteringPolygon.setVisibility(true);
+//    map.addLayer(filteringPolygon);
+//    polyControl =new OpenLayers.Control.DrawFeature(filteringPolygon,OpenLayers.Handler.Polygon,{
+//        'featureAdded':polygonAddedFiltering
+//    });
+//    map.addControl(polyControl);
+//    polyControl.activate();
+////////
+//}
+//function removePolygonFiltering(){
+//    if(filteringPolygon != null){
+//        filteringPolygon.destroy();
+//        filteringPolygon = null;
+//    }
+//}
 
 function addBoxDrawingTool() {
     removeAreaSelection();
@@ -560,9 +595,11 @@ function addBoxDrawingTool() {
 function featureSelected(feature) {
  //   alert("win!");
     parent.setPolygonGeometry(feature.geometry);
-    
-    polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
-    areaSelectControl.deactivate();
+
+   featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
+  //  polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
+    areaSelectOn = false;
+  //  areaSelectControl.deactivate();
   //  clickEventHandler.activate();
 }
 
@@ -595,63 +632,64 @@ function regionAdded(feature) {
     boxControl.deactivate();
 }
 
-function regionAddedGlobal(feature) {
-    //alert(feature.geometry.toGeometry());
+//function regionAddedGlobal(feature) {
+//    //alert(feature.geometry.toGeometry());
+//
+//    //converting bounds from pixel value to lonlat - annoying!
+//    var geoBounds = new OpenLayers.Bounds();
+//    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
+//    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
+//
+//    //removeSpeciesSelection();
+//    boxLayer.removeFeatures(boxLayer.features);
+//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+//    layer_style.fillColor = "red";
+//    layer_style.strokeColor = "red";
+//    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+//        style : layer_style
+//    });
+//    boxLayer.setVisibility(true);
+//    map.addLayer(boxLayer);
+//    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
+//
+//// parent.setRegionGeometry(geoBounds.toGeometry());
+//    boxControl.deactivate();
+//}
 
-    //converting bounds from pixel value to lonlat - annoying!
-    var geoBounds = new OpenLayers.Bounds();
-    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
-    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
-
-    //removeSpeciesSelection();
-    boxLayer.removeFeatures(boxLayer.features);
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-    layer_style.fillColor = "red";
-    layer_style.strokeColor = "red";	
-    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
-        style : layer_style
-    });
-    boxLayer.setVisibility(true);
-    map.addLayer(boxLayer);
-    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
-
-// parent.setRegionGeometry(geoBounds.toGeometry());
-//boxControl.deactivate();
-}
-
-function polygonAddedGlobal(feature) {
-   // polygonLayer.removeFeatures(polygonLayer.features);
-    polygonLayer.destroyFeatures();
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-    layer_style.fillColor = "red";
-    layer_style.strokeColor = "red";	
-    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
-        style : layer_style
-    });
-    polygonLayer.setVisibility(true);
-    map.addLayer(polygonLayer);
-    //alert(feature.geometry.toGeometry());
-    polygonLayer.addFeatures([feature]);
-}
+//function polygonAddedGlobal(feature) {
+//   // polygonLayer.removeFeatures(polygonLayer.features);
+//    polygonLayer.destroyFeatures();
+//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+//    layer_style.fillColor = "red";
+//    layer_style.strokeColor = "red";
+//    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
+//        style : layer_style
+//    });
+//    polygonLayer.setVisibility(true);
+//    map.addLayer(polygonLayer);
+//    //alert(feature.geometry.toGeometry());
+//    polygonLayer.addFeatures([feature]);
+//}
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
     parent.setPolygonGeometry(feature.geometry);
     polyControl.deactivate();
+  
 }
-// Copy for Sampling, ALOC, Filtering, This function passes the geometry up to javascript in index.zul which can then send it to the server.
-function polygonAddedSampling(feature) {
-    parent.setPolygonGeometrySampling(feature.geometry);
-    polyControl.deactivate();
-}
-function polygonAddedALOC(feature) {
-    parent.setPolygonGeometryALOC(feature.geometry);
-    polyControl.deactivate();
-}
-function polygonAddedFiltering(feature) {
-    parent.setPolygonGeometryFiltering(feature.geometry);
-    polyControl.deactivate();
-}
+//// Copy for Sampling, ALOC, Filtering, This function passes the geometry up to javascript in index.zul which can then send it to the server.
+//function polygonAddedSampling(feature) {
+//    parent.setPolygonGeometrySampling(feature.geometry);
+//    polyControl.deactivate();
+//}
+//function polygonAddedALOC(feature) {
+//    parent.setPolygonGeometryALOC(feature.geometry);
+//    polyControl.deactivate();
+//}
+//function polygonAddedFiltering(feature) {
+//    parent.setPolygonGeometryFiltering(feature.geometry);
+//    polyControl.deactivate();
+//}
 
 function setVectorLayersSelectable() {
     try {
@@ -669,6 +707,10 @@ function selected (evt) {
     var feature = evt.feature;
     var attrs = evt.feature.attributes;
     
+   if (areaSelectOn) {
+       featureSelected(feature);
+   }
+   else {
     //test to see if its occurrence data
     if (attrs["occurrenceId"] != null) {
         popup = new OpenLayers.Popup.FramedCloud("featurePopup",
@@ -701,7 +743,7 @@ function selected (evt) {
     feature.popup = popup;
     popup.feature = feature;
     map.addPopup(popup, true);
-    
+   }
    
 }
 
