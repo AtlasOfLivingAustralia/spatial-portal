@@ -31,7 +31,7 @@ Th is tool filters all species known to the ALA by environmental and contextual 
 
         <div sclass="highlighted">
             <vbox>
-                <label value="Step 1: Add environmental layer to the filter" />
+                <label value="Add environmental layer to the filter" />
                 <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="90%" />
             </vbox>
         </div>

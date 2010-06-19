@@ -112,7 +112,7 @@
             </vbox>
         </div>
         <div sclass="highlighted" >
-            <label value="Step 2: Select your environmental layers" />
+            <label value="Step 2: Select two or more environmental layers" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />

@@ -48,6 +48,7 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Div;
 import org.zkoss.zul.Label;
 
 import org.zkoss.zul.Listbox;
@@ -69,6 +70,9 @@ public class SelectionController extends UtilityComposer {
     private Textbox selectionGeom;
     private Textbox boxGeom;
     private Textbox displayGeom;
+    private Div polygonInfo;
+    private Div envelopeInfo;
+    private Label instructions;
     public Button download;
     public Listbox popup_listbox_results;
     public Popup popup_results;
@@ -98,6 +102,7 @@ public class SelectionController extends UtilityComposer {
     }
 
     public void onClick$btnClearSelection(Event event) {
+        hideAllInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().removeAreaSelection();
         displayGeom.setValue("");
@@ -108,6 +113,8 @@ public class SelectionController extends UtilityComposer {
      * @param event
      */
     public void onCheck$rdoPolygonSelection(Event event) {
+        instructions.setValue("Click on map to start drawing a polygon, double click to draw the last point.");
+        showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addPolygonDrawingTool();
 
@@ -118,18 +125,46 @@ public class SelectionController extends UtilityComposer {
      * @param event
      */
     public void onCheck$rdoBoxSelection(Event event) {
+        instructions.setValue("Click and drag on the map from a corner.");
+        showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addBoxDrawingTool();
     }
 
     public void onCheck$rdoPointRadiusSelection(Event event) {
+        instructions.setValue("Click and drag on the map from the centre point.");
+        showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addRadiusDrawingTool();
     }
 
     public void onCheck$rdoExistingFeatureSelection(Event event) {
+        instructions.setValue("Click a polygon on the map to select it.");
+        showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addFeatureSelectionTool();      
+    }
+
+    public void onCheck$rdoEnvironmentalEnvelope(Event event) {       
+       showEnvelopeInfo();
+    }
+
+    void showEnvelopeInfo(){
+        onClick$btnClearSelection(null);
+        envelopeInfo.setVisible(true);
+        polygonInfo.setVisible(false);
+    }
+
+    void showPolygonInfo(){
+        onClick$btnClearSelection(null);
+        envelopeInfo.setVisible(false);
+        polygonInfo.setVisible(true);
+    }
+
+    void hideAllInfo() {
+        //called by onClick$btnClearSelection();
+        envelopeInfo.setVisible(false);
+        polygonInfo.setVisible(false);
     }
 
     /**
@@ -146,6 +181,8 @@ public class SelectionController extends UtilityComposer {
 
 
             displayGeom.setValue(selectionGeom.getValue());
+
+            instructions.setValue("");
             //wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
@@ -158,6 +195,8 @@ public class SelectionController extends UtilityComposer {
 //            Events.echoEvent("onDoInit", this, boxGeom.getValue());
             
             displayGeom.setValue(boxGeom.getValue());
+
+            instructions.setValue("");
             //wfsQueryBBox(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
