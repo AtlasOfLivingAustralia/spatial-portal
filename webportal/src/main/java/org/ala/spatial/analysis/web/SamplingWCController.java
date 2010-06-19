@@ -81,6 +81,7 @@ public class SamplingWCController extends UtilityComposer {
     private String[] groupLabels = null;
     Button pullFromActiveLayers;
     Checkbox useArea;
+    String previousArea = "";
     LayersUtil layersUtil;
 
     @Override
@@ -397,19 +398,36 @@ public class SamplingWCController extends UtilityComposer {
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-            System.out.println("Got response from SamplingWSController: \n" + slist);
+            System.out.println("Got response from SamplingWSController: " + result + "\n" + slist);
 
+           
             String[] aslist = slist.split(";");
             System.out.println("Result count: " + aslist.length);
-            for (int i = 0; i < aslist.length; i++) {
+            int count = 0;
+            for (int i = 0; i < aslist.length; i++) {               
                 String[] rec = aslist[i].split("~");
-                System.out.println("Column Count: " + rec.length);
-                //System.out.println()
+                 if (rec.length > 0){
+                    count++;
+                }
+            }
+            count--; //don't include header in count
 
+             if (slist.trim().length() == 0 || count == 0) {
+                mc.showMessage("No records available for selected criteria.");
+                
+                window.detach();
+                return;
             }
 
+            //don't count header
+
             window.doModal();
-            window.samplingresultslabel.setValue((aslist.length-1)+ " records shown");
+
+            if (count == 1) {
+                window.samplingresultslabel.setValue("preview: 1 record");
+            } else {
+                window.samplingresultslabel.setValue("preview: " + count + " records");
+            }
 
 
             // load into the results popup
@@ -736,5 +754,17 @@ public class SamplingWCController extends UtilityComposer {
                 }
             }
         }
+
+        /* validate the area box presence, check if area updated */
+        String currentArea = mc.getSelectionArea();
+        if (currentArea.length() > 0) {
+            useArea.setDisabled(false);
+            if (!currentArea.equalsIgnoreCase(previousArea)) {
+                useArea.setChecked(true);
+            }
+        } else {
+            useArea.setDisabled(true);
+        }
+        previousArea = currentArea;
     }
 }

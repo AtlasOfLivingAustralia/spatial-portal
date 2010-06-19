@@ -73,6 +73,7 @@ public class ALOCWCController extends UtilityComposer {
     LayersUtil layersUtil;
 
     Checkbox useArea;
+    String previousArea = "";
 
     @Override
     public void afterCompose() {
@@ -179,8 +180,8 @@ public class ALOCWCController extends UtilityComposer {
     public void runclassification() {
         try {
             StringBuffer sbenvsel = new StringBuffer();
-
-            if (lbenvlayers.getSelectedCount() > 0) {
+                        
+            if (lbenvlayers.getSelectedCount() > 1) {
                 Iterator it = lbenvlayers.getSelectedItems().iterator();
                 int i = 0;
                 while (it.hasNext()) {
@@ -192,7 +193,7 @@ public class ALOCWCController extends UtilityComposer {
                     }
                 }
             } else {
-                Messagebox.show("Please select some environmental layers", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                Messagebox.show("Please select two or more environmental layers", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 return;
             }
 
@@ -231,7 +232,6 @@ System.out.println("user_polygon: " + user_polygon);
             loadMap(); 
         	
         } catch (Exception ex) {
-            //Logger.getLogger(ALOCWCController.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Opps!: ");
             ex.printStackTrace(System.out);
         }
@@ -286,6 +286,18 @@ System.out.println("user_polygon: " + user_polygon);
 	    		}
 	    	}    	    	
     	}
+
+        /* validate the area box presence, check if area updated */
+        String currentArea = mc.getSelectionArea();
+        if (currentArea.length() > 0) {
+            useArea.setDisabled(false);
+            if (!currentArea.equalsIgnoreCase(previousArea)) {
+                useArea.setChecked(true);
+            }
+        } else {
+            useArea.setDisabled(true);
+        }
+        previousArea = currentArea;        
     }
     
     private void loadMap() {             

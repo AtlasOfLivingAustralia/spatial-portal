@@ -84,6 +84,7 @@ public class MaxentWCController extends UtilityComposer {
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
     Checkbox useArea;
+    String previousArea = "";
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
@@ -507,6 +508,18 @@ public class MaxentWCController extends UtilityComposer {
                 }
             }
         }
+
+        /* validate the area box presence, check if area updated */
+        String currentArea = mc.getSelectionArea();
+        if (currentArea.length() > 0) {
+            useArea.setDisabled(false);
+            if (!currentArea.equalsIgnoreCase(previousArea)) {
+                useArea.setChecked(true);
+            }
+        } else {
+            useArea.setDisabled(true);
+        }
+        previousArea = currentArea;
     }
 
     String convertGeoToPoints(String geometry) {

@@ -254,7 +254,7 @@ public class SamplingService {
 				 */
 				int rowoffset = 0;
 				results = null;
-				while (rowoffset < 20 && rend <= r.file_end) {
+				while (rowoffset <= max_rows && rend <= r.file_end) {
 
 					columns.clear();
 
@@ -291,22 +291,28 @@ public class SamplingService {
 					} else {
 						len = recordend - recordstart + 1;
 					}
-				
+
+                                        String [] row;
+
 					/* output structure */
 					if (results == null) {
-                                                //limited to 20 output rows by rowoffset in add loop
-						results = new String[20][number_of_columns+1];
+                                                //limited to max_rows output rows by rowoffset in add loop
+                                                //+1 for header
+						results = new String[max_rows + 1][number_of_columns+1];
+
+                                                //populate header
+                                                row = output.toString().split(",");
+                                                for (j = 0; j < row.length; j++ ) {
+                                                        results[0][j] = row[j];
+                                                }
+                                                rowoffset++;
 					}
 
-					int coloffset = 0;
-					String [] row = output.toString().split(",");
-					for (j = 0; j < row.length; j++ ) {
-						results[0][j] = row[j];
-					}
+					int coloffset = 0;					
 					
 					double [] points = OccurrencesIndex.getPoints(recordstart,recordend);
 					
-					for (j = 0; rowoffset < 19 && j < len; j++ ) {
+					for (j = 0; rowoffset <= max_rows && j < len; j++ ) {
 						coloffset = 0;						
 						//test bounding box
                                         	if (region == null || region.isWithin(points[j*2],points[j*2+1])) {
@@ -316,13 +322,13 @@ public class SamplingService {
 										row = columns.get(i)[j].split(",");
 
 										for (int k = 0; k < row.length; k++ ) {
-											results[rowoffset+1][k] = row[k];
+											results[rowoffset][k] = row[k];
 										}
 										coloffset = row.length-1;
 									} else if (!(columns.get(i)[j] == null) && !columns.get(i)[j].equals("NaN")) {
-										results[rowoffset+1][coloffset] = columns.get(i)[j];
+										results[rowoffset][coloffset] = columns.get(i)[j];
 									} else {
-										results[rowoffset+1][coloffset] = "missing";
+										results[rowoffset][coloffset] = "missing";
 									}
 									coloffset++;	
 								}

@@ -1,21 +1,23 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Selection" contentType="text/html;charset=UTF-8" id="AnalysisSelectionPage"?>
+<?component name="envelopeForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
 <zk>
 
 <window id="selectionwindow" use="org.ala.spatial.analysis.web.SelectionController"
 apply="org.ala.spatial.analysis.web.SelectionController">
 
 <div sclass="highlighted">
-             <label value="Select AREA option" />
+             <label value="Define AREA by..." />
 	<vbox>
 	<radiogroup>
 	    <vbox>
-	    <radio label="From box selection" id="rdoBoxSelection"/>
+	    <radio label="User-defined BOX" id="rdoBoxSelection"/>
 	    <!--<radio label="From current view" id="rdoExtentsSelection"/> -->
-	    <radio label="From digitized polygon" id="rdoPolygonSelection"/>
-	    <radio label="From point and radius" id="rdoPointRadiusSelection"/>
-	    <radio label="From existing feature" id="rdoExistingFeatureSelection"/> 
+	    <radio label="User-defined POLYGON" id="rdoPolygonSelection"/>
+	    <radio label="User-defined POINT and RADIUS" id="rdoPointRadiusSelection"/>
+	    <radio label="Predefined (displayed) MAP POLYGON" id="rdoExistingFeatureSelection"/>
 	    <!--<radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
+            <radio label="User-defined ENVIRONMENTAL ENVELOPE" id="rdoEnvironmentalEnvelope"/>
 	    </vbox>
 	<!--<button label="Polygon Selection" id="btnPolygonSelection"/>
 
@@ -24,13 +26,18 @@ apply="org.ala.spatial.analysis.web.SelectionController">
 	<button label="Clear Selection" id="btnClearSelection"/> -->
 	</radiogroup>
 	</vbox>
-
+     </div>
+     <div id="polygonInfo" sclass="highlighted" visible="false" >
 	<vbox>
-	<textbox id="displayGeom" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
+        <label sclass="word-wrap" style="white-space: normal;" multiline="true" id="instructions" width="95%"/>
+        <textbox id="displayGeom" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
 
 	<button label="Show Species" id="btnShowSpecies"/>
         <button label="Clear Selection" id="btnClearSelection"/>
 	</vbox>
+    </div>
+    <div id="envelopeInfo" sclass="highlighted" visible="false">
+        <envelopeForm id="envelopeWindow" />
     </div>
 
 	<popup id="popup_results" width="330px">

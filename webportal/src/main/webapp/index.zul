@@ -7,7 +7,6 @@
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
 <?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"?>
 <?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
-<?component name="filteringForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
 
 
 <?page id="MapZul" title="${portalNaming.portalName}" cacheable="false"
@@ -484,18 +483,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <!-- selection tools -->
                                     <tab id="selectionTab" label="Selection"  />
 
-				    <!--  filtering -->
-                                    <tab id="filteringTab" label="Filtering"  />
-
                                 </tabs>
                                 <tabpanels>
 				     <tabpanel>
                                         <selectionForm id="sf" />
                                     </tabpanel>
 
-                                    <tabpanel >
-                                        <filteringForm id="ff" />
-                                    </tabpanel>
 				    </tabpanels>
                             </tabbox>
 
