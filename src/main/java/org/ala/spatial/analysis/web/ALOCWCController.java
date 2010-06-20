@@ -5,7 +5,6 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
-
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
@@ -16,27 +15,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
-import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
-import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
-import org.zkoss.zul.Image;
-import org.zkoss.zul.Window;
 import org.zkoss.zul.Checkbox;
 
 /**
@@ -45,34 +37,22 @@ import org.zkoss.zul.Checkbox;
  */
 public class ALOCWCController extends UtilityComposer {
 
-    private static final String GEOSERVER_URL = "geoserver_url";
-    private static final String GEOSERVER_USERNAME = "geoserver_username";
-    private static final String GEOSERVER_PASSWORD = "geoserver_password";
     private static final String SAT_URL = "sat_url";
     private Listbox lbenvlayers;
     private Combobox cbEnvLayers;
-    private Label lblNoLayersSelected;
-    private Listbox lbSelLayers;
-    private Button btnDeleteSelected;
     private Textbox groupCount;
-    private Button btnGenerate;
+    Checkbox useArea;
     private List<String> selectedLayers;
     private MapComposer mc;
-    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
-    private String satServer = geoServer;
+    private String satServer = "";
     private SettingsSupplementary settingsSupplementary = null;
-    private Image legend;
     String user_polygon = "";
     Textbox selectionGeomALOC;
     int generation_count = 1;
     String pid;
-    
     String layerLabel;
     String legendPath;
-    
     LayersUtil layersUtil;
-
-    Checkbox useArea;
     String previousArea = "";
 
     @Override
@@ -81,11 +61,10 @@ public class ALOCWCController extends UtilityComposer {
 
         mc = getThisMapComposer();
         if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
-        
-        layersUtil = new LayersUtil(mc,satServer);
+
+        layersUtil = new LayersUtil(mc, satServer);
 
         setupEnvironmentalLayers();
 
@@ -104,6 +83,7 @@ public class ALOCWCController extends UtilityComposer {
 
                 lbenvlayers.setItemRenderer(new ListitemRenderer() {
 
+                    @Override
                     public void render(Listitem li, Object data) {
                         li.setWidth(null);
                         new Listcell((String) data).setParent(li);
@@ -112,7 +92,6 @@ public class ALOCWCController extends UtilityComposer {
 
                 lbenvlayers.setModel(new SimpleListModel(aslist));
             }
-
 
         } catch (Exception e) {
             System.out.println("error setting up env list");
@@ -137,34 +116,6 @@ public class ALOCWCController extends UtilityComposer {
             System.out.println("is new");
             selectedLayers.add(new_value);
         }
-
-        lbSelLayers.setModel(new SimpleListModel(selectedLayers));
-
-        toggleVisibleComponents();
-    }
-
-    public void onClick$btnDeleteSelected(Event event) {
-        Iterator it = lbSelLayers.getSelectedItems().iterator();
-        while (it.hasNext()) {
-            Listitem li = (Listitem) it.next();
-            selectedLayers.remove(li.getLabel());
-        }
-
-        lbSelLayers.setModel(new SimpleListModel(selectedLayers));
-
-        toggleVisibleComponents();
-
-    }
-
-    private void toggleVisibleComponents() {
-        if (selectedLayers.size() == 0) {
-            lbSelLayers.setVisible(false);
-            lblNoLayersSelected.setVisible(true);
-        } else {
-            lbSelLayers.setVisible(true);
-            lblNoLayersSelected.setVisible(false);
-        }
-
     }
 
     public void onDoInit(Event event) throws Exception {
@@ -180,7 +131,7 @@ public class ALOCWCController extends UtilityComposer {
     public void runclassification() {
         try {
             StringBuffer sbenvsel = new StringBuffer();
-                        
+
             if (lbenvlayers.getSelectedCount() > 1) {
                 Iterator it = lbenvlayers.getSelectedItems().iterator();
                 int i = 0;
@@ -201,41 +152,39 @@ public class ALOCWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeo?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(groupCount.getValue(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if(useArea.isChecked()) {
-                user_polygon = convertGeoToPoints(mc.getSelectionArea());
+            if (useArea.isChecked()) {
+                user_polygon = mc.getSelectionArea();
             } else {
                 user_polygon = "";
             }
-System.out.println("user_polygon: " + user_polygon);
+            System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
-                sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
-                sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+                sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
             }
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
-            //get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-          
             layerLabel = "Classification #" + generation_count + " - " + groupCount.getValue() + " groups";
-   
+
             generation_count++;
             pid = slist;
-            
+
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
-            
-            loadMap(); 
-        	
+
+            loadMap();
+
         } catch (Exception ex) {
             System.out.println("Opps!: ");
             ex.printStackTrace(System.out);
         }
-
     }
 
     /**
@@ -246,46 +195,31 @@ System.out.println("user_polygon: " + user_polygon);
     private MapComposer getThisMapComposer() {
 
         MapComposer mapComposer = null;
-        //Page page = maxentWindow.getPage();
         Page page = getPage();
         mapComposer = (MapComposer) page.getFellow("mapPortalPage");
 
         return mapComposer;
     }
 
-    
-
-    String convertGeoToPoints(String geometry) {
-        if (geometry == null) {
-            return "";
-        }
-        geometry = geometry.replace(" ", ":");
-        geometry = geometry.replace("POLYGON((", "");
-        geometry = geometry.replace(")", "");
-        return geometry;
-    }
-    
     /**
-     * populate sampling screen with values from active layers
-     * 
-     * TODO: run this on 'tab' open
+     * populate sampling screen with values from active layers and areas tab
      */
-    public void callPullFromActiveLayers(){
-    	//get list of env/ctx layers
-    	String [] layers = layersUtil.getActiveEnvCtxLayers();    	
-    	
-      	/* set as selected each envctx layer found */
-    	if (layers != null) {
-    		List<Listitem> lis = lbenvlayers.getItems();
-	    	for (int i = 0; i < lis.size(); i++) {
-	    		for (int j = 0; j < layers.length; j++) {
-	    			if(lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-	    				lbenvlayers.addItemToSelection(lis.get(i));
-	    				break;
-	    			}
-	    		}
-	    	}    	    	
-    	}
+    public void callPullFromActiveLayers() {
+        //get list of env/ctx layers
+        String[] layers = layersUtil.getActiveEnvCtxLayers();
+
+        /* set as selected each envctx layer found */
+        if (layers != null) {
+            List<Listitem> lis = lbenvlayers.getItems();
+            for (int i = 0; i < lis.size(); i++) {
+                for (int j = 0; j < layers.length; j++) {
+                    if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
+                        lbenvlayers.addItemToSelection(lis.get(i));
+                        break;
+                    }
+                }
+            }
+        }
 
         /* validate the area box presence, check if area updated */
         String currentArea = mc.getSelectionArea();
@@ -296,11 +230,12 @@ System.out.println("user_polygon: " + user_polygon);
             }
         } else {
             useArea.setDisabled(true);
+            useArea.setChecked(false);
         }
-        previousArea = currentArea;        
+        previousArea = currentArea;
     }
-    
-    private void loadMap() {             
+
+    private void loadMap() {
         String uri = satServer + "/alaspatial/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 
@@ -313,15 +248,15 @@ System.out.println("user_polygon: " + user_polygon);
         mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);
         MapLayer mapLayer = mc.getMapLayer(layerLabel);
         if (mapLayer != null) {
-        	 WMSStyle style = new WMSStyle();
-             style.setName("Default");
-             style.setDescription("Default style");
-             style.setTitle("Default");
-             style.setLegendUri(legendPath);
-             
-             System.out.println("legend:" + legendPath);
-             mapLayer.addStyle(style);
-             mapLayer.setSelectedStyleIndex(1);
+            WMSStyle style = new WMSStyle();
+            style.setName("Default");
+            style.setDescription("Default style");
+            style.setTitle("Default");
+            style.setLegendUri(legendPath);
+
+            System.out.println("legend:" + legendPath);
+            mapLayer.addStyle(style);
+            mapLayer.setSelectedStyleIndex(1);
         }
     }
 }

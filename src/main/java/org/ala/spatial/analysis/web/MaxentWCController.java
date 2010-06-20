@@ -284,15 +284,15 @@ public class MaxentWCController extends UtilityComposer {
             /* user selected region support */
             String user_polygon;
             if (useArea.isChecked()) {
-                user_polygon = convertGeoToPoints(mc.getSelectionArea());
+                user_polygon = mc.getSelectionArea();
             } else {
                 user_polygon = "";
             }
             System.out.println("user_polygon: " + user_polygon);
             if (user_polygon.length() > 0) {
-                sbProcessUrl.append("&points=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
             } else {
-                sbProcessUrl.append("&points=" + URLEncoder.encode("none", "UTF-8"));
+                sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
             }
 
 
@@ -393,7 +393,9 @@ public class MaxentWCController extends UtilityComposer {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
-        if (sac.getSelectedItem() == null) return;
+        if (sac.getSelectedItem() == null) {
+            return;
+        }
 
 
         String taxon = sac.getValue();
@@ -483,7 +485,6 @@ public class MaxentWCController extends UtilityComposer {
     /**
      * populate sampling screen with values from active layers
      * 
-     * TODO: run this on 'tab' open
      */
     public void callPullFromActiveLayers() {
         //get top species and list of env/ctx layers
@@ -518,17 +519,8 @@ public class MaxentWCController extends UtilityComposer {
             }
         } else {
             useArea.setDisabled(true);
+            useArea.setChecked(false);
         }
         previousArea = currentArea;
-    }
-
-    String convertGeoToPoints(String geometry) {
-        if (geometry == null) {
-            return "";
-        }
-        geometry = geometry.replace(" ", ":");
-        geometry = geometry.replace("POLYGON((", "");
-        geometry = geometry.replace(")", "");
-        return geometry;
     }
 }

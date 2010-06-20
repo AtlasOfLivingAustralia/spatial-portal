@@ -43,6 +43,7 @@ public class FilteringWCController extends UtilityComposer {
 
     private static final long serialVersionUID = -26560838825366347L;
     private static final String SAT_URL = "sat_url";
+
     private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
     public Div popup_continous;
@@ -56,12 +57,11 @@ public class FilteringWCController extends UtilityComposer {
     public Button preview_continous;
     public Label label_continous;
     public Button apply_continous;
-    public Button download;
-    public Button downloadsamples;
+
     String[] results = null;
     private List<String> selectedLayers;
     private Map<String, SPLFilter> selectedSPLFilterLayers;
-    private String pid;
+    private String pid = "";
     private MapComposer mc;
     private String satServer = "";
     private SettingsSupplementary settingsSupplementary = null;
@@ -92,6 +92,15 @@ public class FilteringWCController extends UtilityComposer {
 
         // init the session on the server and get a pid (process_id)
         pid = getInfo("/filtering/init");
+    }
+
+    public String getPid() {
+        if (selectedLayers.size() > 0) {
+            //TODO: 'apply' only if required  //applyFilter(true);
+            return pid;
+        } else {
+            return "";
+        }
     }
 
     public void onChange$cbEnvLayers(Event event) {

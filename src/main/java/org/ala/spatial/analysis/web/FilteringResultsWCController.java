@@ -1,16 +1,13 @@
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Filedownload;
-import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
@@ -18,7 +15,6 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Popup;
-import org.zkoss.zul.Textbox;
 import org.zkoss.zul.ListModelArray;
 
 /**
@@ -28,21 +24,19 @@ import org.zkoss.zul.ListModelArray;
 public class FilteringResultsWCController extends UtilityComposer {
 
     private static final String SAT_URL = "sat_url";
-    public Textbox popup_results_seek;
+
     public Button download;
     public Button downloadsamples;
     public Listbox popup_listbox_results;
     public Popup popup_results;
-    public Button results_prev;
-    public Button results_next;
     public Label results_label;
+
     public int results_pos;
     public String[] results = null;
     public String pid;
     String shape;
     private String satServer;
     private SettingsSupplementary settingsSupplementary = null;
-
     /**
      * for functions in popup box
      */
@@ -56,8 +50,6 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(SAT_URL);
-        } else {
-            //TODO: error message
         }
 
         pid = (String) (Executions.getCurrent().getArg().get("pid"));
@@ -69,16 +61,16 @@ public class FilteringResultsWCController extends UtilityComposer {
          * in case of a service update, do not set both to null or everything
          * will be returned.
          */
-        if(pid == null){
+        if (pid == null) {
             pid = "none";
-        } else if(shape == null){
+        } else if (shape == null) {
             shape = "none";
         }
-        if(pid.equals("none") && shape.equals("none")){
+        if (pid.equals("none") && shape.equals("none")) {
             return;
         }
 
-        if(manual == null){
+        if (manual == null) {
             populateList();
         }
     }
@@ -87,48 +79,48 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         try {
             System.out.println("resuts:" + results);
-            if(results == null) {
+            if (results == null) {
                 long t1 = System.currentTimeMillis();
                 StringBuffer sbProcessUrl = new StringBuffer();
                 sbProcessUrl.append("/filtering/apply");
                 sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
                 sbProcessUrl.append("/species/list");
-                sbProcessUrl.append("/shape/" + shape); //TODO: encode/decode
+                sbProcessUrl.append("/shape/" + URLEncoder.encode(shape, "UTF-8"));
                 String out = getInfo(sbProcessUrl.toString());
                 //remove trailing ','
-                if (out.length() > 0 && out.charAt(out.length()-1) == ',') {
+                if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
                     out = out.substring(0, out.length() - 1);
                 }
                 results = out.split(",");
                 long t2 = System.currentTimeMillis();
 
-                if (results.length == 0){
+                if (results.length == 0) {
                     results_label.setValue("no species found");
                     return;
                 }
 
                 // results should already be sorted: Arrays.sort(results);
                 int length = results.length;
-                String [] tmp = results;
+                String[] tmp = results;
                 if (results.length > 200) {
                     tmp = java.util.Arrays.copyOf(results, 200);
                 }
                 long t3 = System.currentTimeMillis();
 
-                popup_listbox_results.setModel(new ListModelArray(tmp,false));
-                if(length < 200){
+                popup_listbox_results.setModel(new ListModelArray(tmp, false));
+                if (length < 200) {
                     results_label.setValue("species found: " + length);
                 } else {
                     results_label.setValue("species found: " + length + " (first 200 in this list)");
                 }
                 long t4 = System.currentTimeMillis();
 
-                System.out.println("predisplay filtering result timings: sz=" + results.length + " timing: " + (t2-t1) + " " + (t3-t1) + " " + (t4-t1));
+                System.out.println("predisplay filtering result timings: sz=" + results.length + " timing: " + (t2 - t1) + " " + (t3 - t1) + " " + (t4 - t1));
             } else {
                 int length = results.length;
-                String [] tmp = results;
+                String[] tmp = results;
 
-                popup_listbox_results.setModel(new ListModelArray(tmp,false));
+                popup_listbox_results.setModel(new ListModelArray(tmp, false));
                 results_label.setValue("species found: " + length);
                 System.out.println("using provided species list");
             }
@@ -153,7 +145,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/samples/list");
 
-            sbProcessUrl.append("/shape/" + shape);
+            sbProcessUrl.append("/shape/" + URLEncoder.encode(shape, "UTF-8"));
             String samplesfile = getInfo(sbProcessUrl.toString());
 
             URL u = new URL(satServer + "/alaspatial/" + samplesfile);

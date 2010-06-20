@@ -1,17 +1,21 @@
 <!-- <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?> -->
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk>
-    <panel id="help" title="Click for Species List Tool Help"
+    <panel id="help" title="Click for environmental envelope Help"
            style="padding: 5px" border="normal"  open="false"
            onClick="if(help.isOpen())help.open=false; else help.open=true;">
         <panelchildren><html style="white-space: normal;"><![CDATA[
-Th is tool filters all species known to the ALA by environmental and contextual data: Only those species that occur within the user-defined environmental envelope will be retained by the filter. Filters are added, one layer at a time. The list of species remaining at any step can be exported. A layer can be removed by clicking on the remove button. This will update the filtering.
-<br><br><b>Process</b>
-<br><br>&nbsp;&nbsp;&nbsp;1.  Select an environmental layer to be used as a filter. This layer will be added to the table. Clicking on the layer will link to metadata describing this layer.
-<br><br>&nbsp;&nbsp;&nbsp;2.  If the layer is of continuous values (e.g. temperature), select lower and upper values for the selected layer. If the layer added is categorical (e.g. land-use types or states/territories), select the categories to be applied as a filter. These bounds or categories will be added to the table.
-<br><br>&nbsp;&nbsp;&nbsp;3.  The map will update to show what geographic areas conform to this filter.
-<br><br>&nbsp;&nbsp;&nbsp;4.  The number of species in the environmental envelope will be displayed. Clicking on this number will display the list of species that are within this envelope.
-<br><br>&nbsp;&nbsp;&nbsp;5.  The list of species can be exported (CSV format) by clicking on the export button.
+With this option, area is defined by upper and lower values of a combination of environmental layers. For example, the selection of values of 10c and 12c of annual mean temperature will create a set of areas (polygons) on the map that conform to those limits: Areas within those polygons will have an annual mean temperature between 10-12c. The number of species in this area will be reported once 'Apply Filter' is pressed. Additional environmental layers can be added that will further restrict the environmental envelope and the number of species it contains.
+<br><br>
+Step 1. Select an environmental layer to be used as a filter. This layer will be added to the table. Clicking on the layer will link to metadata describing this layer.
+<br><br>
+   Step 2. Select the lower and upper values for the selected layer using the slider bars or entering the values directly into the upper and lower values boxes.
+<br><br>
+   Step 3. The map will update to show what geographic areas conform to this environmental envelope (filter).
+<br><br>
+   Step 4. The number of species in the environmental envelope will be displayed. Clicking on this number will display the list of species that are within this environmental envelope.
+<br><br>
+   Step 5. The list of species or the individual observations of the listed species can be exported (CSV format) by clicking on the appropriate button.
         ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
     </panel>
 
@@ -56,7 +60,10 @@ Th is tool filters all species known to the ALA by environmental and contextual 
                     <listfooter span="3">
                         <div id="popup_continous" visible="false" width="90%" sclass="highlighted">
 
-                            <label sclass="word-wrap" style="white-space: normal; font-weight:bold" value="edit filter for this layer" id="label_continous" multiline="true"/>
+                            <label sclass="word-wrap"
+                            style="white-space: normal; font-weight:bold"
+                            value="edit filter for this layer" id="label_continous"
+                            multiline="true"/>
 
                             <separator sclass="hr" height="2px" />
                             <vbox><label value="full range"/><label id="popup_range"/>
