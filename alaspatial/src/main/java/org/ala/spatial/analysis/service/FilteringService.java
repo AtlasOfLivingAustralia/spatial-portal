@@ -47,6 +47,8 @@ import org.ala.spatial.util.TabulationSettings;
 public class FilteringService implements Serializable {
 
     static final long serialVersionUID = 6598125472355988943L;
+
+
     /**
      * maintained list of filters applied
      * 
@@ -408,6 +410,11 @@ public class FilteringService implements Serializable {
             }
         }
 
+        //test for no records
+        if (records == null || records.length == 0) {
+            return "";
+        }
+
         /* get samples records from records indexes */
         String[] samples = OccurrencesIndex.getSortedRecords(records);
 
@@ -437,6 +444,7 @@ public class FilteringService implements Serializable {
 
         } catch (Exception e) {
             (new SpatialLogger()).log("FilteringService: getSamplesList()", e.toString());
+            e.printStackTrace();
         }
 
         return ""; //failed
@@ -469,6 +477,11 @@ public class FilteringService implements Serializable {
                 FilteringService fs = (FilteringService) ois.readObject();
                 ois.close();
 
+                if (fs.layerfilters == null) {
+                    System.out.println("filteringservice:" + session_id_ + " no layers");
+                } else {
+                    System.out.println("filteringservice:" + session_id_ + " layercount:" + fs.layerfilters.size());
+                }
                 return fs;
             } catch (Exception e) {
                 (new SpatialLogger()).log("FilteringService: getSession(" + session_id_ + ")", e.toString());
@@ -501,4 +514,40 @@ public class FilteringService implements Serializable {
             (new SpatialLogger()).log("FilteringService: save()", e.toString());
         }
     }
+
+     /**
+     * gets list of record numbers filtered in a session
+     *
+     * @param session_id_ valid session id as String, may be wrapped as
+      * "ENVELOPE(session_id)"
+     * @return list of record numbers as ArrayList<Integer>
+     */
+    public static ArrayList<Integer> getRecords(String session_id_) {
+        if (session_id_.startsWith("ENVELOPE(")) {
+            session_id_ = session_id_.replace("ENVELOPE(", "");
+            session_id_ = session_id_.replace(")", "");
+        }
+        FilteringService fs = FilteringService.getSession(session_id_);
+        return fs.getTopSpeciesRecord();
+    }
+
+    /**
+     * gets list of filters applied to a session (MUST BE ENVIRONMENTAL ONLY)
+     *
+     * @param session_id_ valid session id as String, may be wrapped as
+      * "ENVELOPE(session_id)"
+     * @return list of record numbers as LayerFilter[]
+     */
+    public static LayerFilter[] getFilters(String session_id_) {
+        if (session_id_.startsWith("ENVELOPE(")) {
+            session_id_ = session_id_.replace("ENVELOPE(", "");
+            session_id_ = session_id_.replace(")", "");
+        }
+        FilteringService fs = FilteringService.getSession(session_id_);
+        LayerFilter[] lf = new LayerFilter[fs.layerfilters.size()];
+        fs.layerfilters.toArray(lf);
+        System.out.println("getFilters:" + fs.layerfilters.size() + " " + lf.length);
+        return lf;
+    }
+
 }

@@ -39,6 +39,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.HtmlMacroComponent;
 
 
 import org.zkoss.zk.ui.Page;
@@ -55,6 +56,7 @@ import org.zkoss.zul.Listbox;
 
 
 import org.zkoss.zul.Popup;
+import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
@@ -80,6 +82,8 @@ public class SelectionController extends UtilityComposer {
     public Button results_next;
     public Label results_label;
     public Label popup_label;
+    public Radio rdoEnvironmentalEnvelope;
+    HtmlMacroComponent envelopeWindow;
     private SettingsSupplementary settingsSupplementary = null;
     private String geoServer;// = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
     String satServer;
@@ -88,7 +92,17 @@ public class SelectionController extends UtilityComposer {
     SortedSet speciesSet;
 
     public String getGeom() {
-        return displayGeom.getText();
+        if (rdoEnvironmentalEnvelope.isChecked()) {
+            //get PID and return as ENVELOPE(PID)
+            String envPid = ((FilteringWCController)envelopeWindow.getFellow("filteringwindow")).getPid();
+            if (envPid.length() > 0) {
+                return "ENVELOPE(" + envPid + ")";
+            } else {
+                return "";
+            }
+        } else {
+            return displayGeom.getText();
+        }
     }
 
     @Override
@@ -113,7 +127,7 @@ public class SelectionController extends UtilityComposer {
      * @param event
      */
     public void onCheck$rdoPolygonSelection(Event event) {
-        instructions.setValue("Click on map to start drawing a polygon, double click to draw the last point.");
+        instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area. On the last vertex, double click to finalise the polygon. ");
         showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addPolygonDrawingTool();
@@ -125,27 +139,28 @@ public class SelectionController extends UtilityComposer {
      * @param event
      */
     public void onCheck$rdoBoxSelection(Event event) {
-        instructions.setValue("Click and drag on the map from a corner.");
+        instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size. Release the mouse button. ");
         showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addBoxDrawingTool();
     }
 
     public void onCheck$rdoPointRadiusSelection(Event event) {
-        instructions.setValue("Click and drag on the map from the centre point.");
+        instructions.setValue("Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
         showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addRadiusDrawingTool();
     }
 
     public void onCheck$rdoExistingFeatureSelection(Event event) {
-        instructions.setValue("Click a polygon on the map to select it.");
+        instructions.setValue("Zoom and pan to the area of interest. Identify the polygon of interest by a (left) mouse click within that polygon. (The area will be reported in the Area box). ");
         showPolygonInfo();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addFeatureSelectionTool();      
     }
 
-    public void onCheck$rdoEnvironmentalEnvelope(Event event) {       
+    public void onCheck$rdoEnvironmentalEnvelope(Event event) {
+        instructions.setValue("");
        showEnvelopeInfo();
     }
 
@@ -409,7 +424,7 @@ public class SelectionController extends UtilityComposer {
     void openResults() {
         java.util.Map args = new java.util.HashMap();
         args.put("pid", "none");
-        args.put("shape", convertGeoToPoints(getGeom()));
+        args.put("shape", getGeom());
         args.put("manual","true");
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
                 "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
@@ -469,15 +484,5 @@ public class SelectionController extends UtilityComposer {
             ex.printStackTrace(System.out);
         }
         return null;
-    }
-
-      String convertGeoToPoints(String geometry) {
-        if (geometry == null) {
-            return "";
-        }
-        geometry = geometry.replace(" ", ":");
-        geometry = geometry.replace("POLYGON((", "");
-        geometry = geometry.replace(")", "");
-        return geometry;
     }
 }

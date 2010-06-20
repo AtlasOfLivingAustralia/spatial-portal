@@ -19,13 +19,16 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
+import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
@@ -253,13 +256,23 @@ public class MaxentWSController {
             String[] envpathlist = getEnvFiles(envlist);
 
             //handle cut layers
-            SimpleRegion simpleregion = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
-            String cutDataPath = ssets.getEnvDataPath();
-            if (simpleregion != null) {
-                Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
-                cutDataPath = GridCutter.cut(layers, simpleregion);
+            String area = req.getParameter("area");
+            LayerFilter[] filter = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                filter = FilteringService.getFilters(req.getParameter("area"));
+            } else {
+                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             }
-            System.out.println("CUTDATAPATH: " + simpleregion + " " + cutDataPath);
+            String cutDataPath = ssets.getEnvDataPath();
+            if (region != null) {
+                Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
+                cutDataPath = GridCutter.cut(layers, region);
+            } else if (filter != null) {
+                Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
+                cutDataPath = GridCutter.cut(layers, filter);
+            }
+            System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
             MaxentSettings msets = new MaxentSettings();
             msets.setMaxentPath(ssets.getMaxentCmd());

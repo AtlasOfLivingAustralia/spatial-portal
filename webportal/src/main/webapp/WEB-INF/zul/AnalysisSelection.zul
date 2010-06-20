@@ -1,23 +1,27 @@
-<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?page title="Selection" contentType="text/html;charset=UTF-8" id="AnalysisSelectionPage"?>
+<!--<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>-->
+<!-- <?page title="Selection" contentType="text/html;charset=UTF-8" id="AnalysisSelectionPage"?>-->
 <?component name="envelopeForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
 <zk>
 
 <window id="selectionwindow" use="org.ala.spatial.analysis.web.SelectionController"
 apply="org.ala.spatial.analysis.web.SelectionController">
 
+
+<html style="white-space: normal;"><![CDATA[
+An area can be defined by any of the options below. Once defined, the area can be used to identify what species or observation records occur there, or be used within the Analysis tab functions. These area will also be displayed in the Layers tab and can be deselected or deleted.
+]]></html>
 <div sclass="highlighted">
-             <label value="Define AREA by..." />
+        <html><![CDATA[Define <b>Area</b> by...]]></html>
 	<vbox>
 	<radiogroup>
 	    <vbox>
-	    <radio label="User-defined BOX" id="rdoBoxSelection"/>
+	    <hbox><radio label="" id="rdoBoxSelection"/><html><![CDATA[User-defined <b>box</b>]]></html></hbox>
 	    <!--<radio label="From current view" id="rdoExtentsSelection"/> -->
-	    <radio label="User-defined POLYGON" id="rdoPolygonSelection"/>
-	    <radio label="User-defined POINT and RADIUS" id="rdoPointRadiusSelection"/>
-	    <radio label="Predefined (displayed) MAP POLYGON" id="rdoExistingFeatureSelection"/>
+	    <hbox><radio label="" id="rdoPolygonSelection"/><html><![CDATA[User-defined <b>polygon</b>]]></html></hbox>
+	    <hbox><radio label="" id="rdoPointRadiusSelection"/><html><![CDATA[User-defined <b>point</b> and <b>radius</b>]]></html></hbox>
+	    <hbox><radio label="" id="rdoExistingFeatureSelection"/><html><![CDATA[Predefined (displayed) <b>map polygon</b>]]></html></hbox>
 	    <!--<radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
-            <radio label="User-defined ENVIRONMENTAL ENVELOPE" id="rdoEnvironmentalEnvelope"/>
+            <hbox><radio label="" id="rdoEnvironmentalEnvelope"/><html><![CDATA[User-defined <b>environmental envelope</b>]]></html></hbox>
 	    </vbox>
 	<!--<button label="Polygon Selection" id="btnPolygonSelection"/>
 
@@ -27,9 +31,13 @@ apply="org.ala.spatial.analysis.web.SelectionController">
 	</radiogroup>
 	</vbox>
      </div>
-     <div id="polygonInfo" sclass="highlighted" visible="false" >
+      <label sclass="word-wrap"
+        style="white-space: normal;"
+        multiline="true" id="instructions" value="" visible="true"/>
+     <div id="polygonInfo" sclass="highlighted" visible="false" width="90%" >
 	<vbox>
-        <label sclass="word-wrap" style="white-space: normal;" multiline="true" id="instructions" width="95%"/>
+       
+       
         <textbox id="displayGeom" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
 
 	<button label="Show Species" id="btnShowSpecies"/>

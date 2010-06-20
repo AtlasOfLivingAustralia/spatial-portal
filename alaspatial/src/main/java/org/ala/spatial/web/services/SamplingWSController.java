@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.index.FilteringIndex;
+import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.Zipper;
 import org.springframework.stereotype.Controller;
@@ -47,34 +50,22 @@ public class SamplingWSController {
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
-            System.out.println("points: " + req.getParameter("points"));
-            
-            SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
+            System.out.println("area: " + req.getParameter("area"));
+
+            String area = req.getParameter("area");
+            ArrayList<Integer> records = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(req.getParameter("area"));
+            } else {
+                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
+            }
 
             SamplingService ss = new SamplingService();
-            String datafile = ss.sampleSpecies(species, layers, region);
+            String datafile = ss.sampleSpecies(species, layers, region, records);
 
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);
-
-            /* add each catagorical layer */
-            /*if (layers != null) {
-                for (String s : layers) {
-                    String csv = FilteringIndex.getLayerExtents(s);
-                    if (csv != null) {
-                        System.out.println("csv:\n " + csv);
-                    }
-                    if (csv != null && csv.length() > 0
-                            && csv.contains("<br>")) {
-
-                        File tmpLayerFile = File.createTempFile(SamplingService.layerNameToDisplayName(s) + "_lookup_values", ".csv");
-                        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(tmpLayerFile)));
-                        out.write(csv.replace("<br>", ""));
-                        out.close();
-                        vFiles.add(tmpLayerFile.getAbsolutePath());
-                    }
-                }
-            }*/
 
             String[] files = (String[]) vFiles.toArray(new String[vFiles.size()]);
 
@@ -119,12 +110,19 @@ public class SamplingWSController {
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
             System.out.println("layers:" + layers);
-            System.out.println("points: " + req.getParameter("points"));
+            System.out.println("area: " + req.getParameter("area"));
             
-            SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
+            String area = req.getParameter("area");
+            ArrayList<Integer> records = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(req.getParameter("area"));
+            } else {
+                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
+            }
 
             SamplingService ss = new SamplingService();
-            String[][] results = ss.sampleSpecies(species, layers, region, 20);
+            String[][] results = ss.sampleSpecies(species, layers, region, records, 20);
 
             List rList = new Vector();
             StringBuilder sbResults = new StringBuilder();
@@ -237,9 +235,15 @@ public class SamplingWSController {
 
             SamplingService ss = new SamplingService();
             
-            SimpleRegion region = SimpleRegion.parseSimpleRegion(req.getParameter("points"));
-            
-            double [] points = ss.sampleSpeciesPoints(species,region);
+            String area = req.getParameter("area");
+            ArrayList<Integer> records = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(req.getParameter("area"));
+            } else {
+                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
+            }
+            double [] points = ss.sampleSpeciesPoints(species, region, records);
             StringBuffer sb = new StringBuffer();
             for(int i=0;i<points.length;i+=2){
             	sb.append(points[i]);
@@ -262,3 +266,5 @@ public class SamplingWSController {
     }
 
 }
+
+
