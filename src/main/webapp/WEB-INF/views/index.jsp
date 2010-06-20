@@ -81,9 +81,9 @@
         <script type="text/javascript">
             //var methodList = new Array("mfilter", "msample", "mmaxent");
 
-            var mfilterUrl = "speciesList";
-            var msampleUrl = "sampling";
-            var malocUrl = "ALOC";
+            var mfilterUrl = "speciesList.zul";
+            var msampleUrl = "sampling.zul";
+            var malocUrl = "ALOC.zul";
             var mmaxentUrl = "maxent2";
 
             function menuClick(method) {

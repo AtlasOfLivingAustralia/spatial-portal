@@ -1840,17 +1840,6 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
         /* for matching cells, test each record within  */
 
-       // Vector<Integer> recordsA = new Vector<Integer>();
-        //getPointsPairs();
-      //  System.out.println("gdlen:" + all_points.length);
-       // for (j = 0; j < all_points.length; j++) {
-         //   if (r.isWithin(all_points[j][0], all_points[j][1])) {
-      //          recordsA.add(new Integer(j));
-           //     System.out.print("*" +j);
-            //}
-        //}
-      //  System.out.println("done every search:");
-
         Vector<Integer> records = new Vector<Integer>();
 
         for (i = 0; i < cells.length; i++) {
@@ -1876,7 +1865,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                     records.add(new Integer(grid_points_idx[j]));
                 }
             } else {
-                for (j = start; j < end; j++) { System.out.print("," + grid_points[j][0] + " " + grid_points[j][1]);
+                for (j = start; j < end; j++) { 
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                         records.add(new Integer(grid_points_idx[j]));
                     }
@@ -1939,8 +1928,6 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 end = grid_points.length;
             }
             
-            System.out.println("cells:" + cells[i][1] + " " + cells[i][0] + "]");
-
             //test each potential match, otherwise add
             if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
                 for (j = start; j < end; j++) {
@@ -1948,7 +1935,6 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 }
             } else {
                 for (j = start; j < end; j++) {
-                    System.out.print("," + grid_points[j][0] + " " + grid_points[j][1]);
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                         bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                     }

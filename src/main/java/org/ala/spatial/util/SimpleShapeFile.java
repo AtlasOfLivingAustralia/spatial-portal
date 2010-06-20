@@ -340,6 +340,48 @@ public class SimpleShapeFile extends Object implements Serializable {
         tiles.toArray(tilesa);
         return tilesa;
     }
+
+
+    /**
+     * defines a region by a points string, POLYGON only
+     *
+     * TODO: define better format for parsing, including BOUNDING_BOX and CIRCLE
+     *
+     * @param pointsString points separated by ',' with longitude and latitude separated by ':'
+     * @return SimpleRegion object
+     */
+    public static SimpleRegion parseWKT(String pointsString) {
+        pointsString = convertGeoToPoints(pointsString);
+
+        String [] polygons = pointsString.split("S");
+
+        System.out.println("$" + pointsString);
+        System.out.println("L" + polygons.length);
+
+        if (polygons.length == 1) {
+            return SimpleRegion.parseSimpleRegion(polygons[0]);
+        } else {
+            return ComplexRegion.parseComplexRegion(polygons);
+        }
+    }
+
+
+    static String convertGeoToPoints(String geometry) {
+        if (geometry == null) {
+            return "";
+        }
+        geometry = geometry.replace(" ", ":");
+        geometry = geometry.replace("POLYGON((", "");
+        while (geometry.contains(")")) {
+            geometry = geometry.replace(")", "");
+        }
+
+        //for case of more than one polygon
+        while (geometry.contains(",(")) {
+            geometry = geometry.replace(",(","S");
+        }
+        return geometry;
+    }
 }
 
 /**

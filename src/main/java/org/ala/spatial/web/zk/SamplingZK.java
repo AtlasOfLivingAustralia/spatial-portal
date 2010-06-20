@@ -144,7 +144,7 @@ public class SamplingZK extends Window {
     		}
     		SimpleRegion sr = SimpleRegion.parseSimpleRegion(points);
 
-			String csv_filename = ss.sampleSpecies(species, layers, sr);
+			String csv_filename = ss.sampleSpecies(species, layers, sr, null);
 
 			//org.zkoss.zhtml.Filedownload.save(csv,"text/plain",species + ".csv");
 
@@ -331,7 +331,7 @@ public class SamplingZK extends Window {
 		}
 		SimpleRegion sr = SimpleRegion.parseSimpleRegion(points);
 
-		String [][] csv_filename = ss.sampleSpecies(species, layers, sr, 20);
+		String [][] csv_filename = ss.sampleSpecies(species, layers, sr, null, 20);
 //		System.out.println("got a " + csv_filename.length + " x " + csv_filename[0].length);
 		int j;
 		if(csv_filename != null){
