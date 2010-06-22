@@ -76,7 +76,7 @@ public class ALOCWSController {
         return pid;
     }
 
-    @RequestMapping(value = "/processgeo", method = RequestMethod.GET)
+    @RequestMapping(value = "/processgeo", method = RequestMethod.POST)
     public
     @ResponseBody
     String processgeo(HttpServletRequest req) {

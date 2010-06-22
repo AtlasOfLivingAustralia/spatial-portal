@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Vector;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -158,14 +159,19 @@ public class ALOCWCController extends UtilityComposer {
                 user_polygon = "";
             }
             System.out.println("user_polygon: " + user_polygon);
+            String area;
             if (user_polygon.length() > 0) {
-                sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                area = user_polygon;
             } else {
-                sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                area = "none";
             }
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+            get.addParameter("area",area);
 
             get.addRequestHeader("Accept", "text/plain");
 

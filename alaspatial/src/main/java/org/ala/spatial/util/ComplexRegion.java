@@ -226,7 +226,7 @@ public class ComplexRegion extends SimpleRegion {
                 }
             }
         }
-    }
+            }
 
     /**
      * determines overlap with a grid
@@ -269,7 +269,7 @@ public class ComplexRegion extends SimpleRegion {
         }
         byte[][] shapemask = new byte[height][width];
 
-
+        int q = 0;
         for (SimpleRegion sr : simpleregions) {
             sr.getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, shapemask);
 
@@ -277,16 +277,16 @@ public class ComplexRegion extends SimpleRegion {
             for (i = 0; i < height; i++) {
                 for (j = 0; j < width; j++) {
                     if (shapemask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT
-                            || three_state_map[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+                            || mask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
                         //partially inside
-                        three_state_map[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;
+                        mask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;
                     } else if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
-                        if (three_state_map[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
+                        if (mask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
                             //completely outside (inside of a cutout region)
-                            three_state_map[i][j] = SimpleRegion.GI_ABSENCE;
+                            mask[i][j] = SimpleRegion.GI_ABSENCE;
                         } else {
                             //completely inside
-                            three_state_map[i][j] = SimpleRegion.GI_FULLY_PRESENT;
+                            mask[i][j] = SimpleRegion.GI_FULLY_PRESENT;
                         }
                     }
                 }
@@ -297,8 +297,8 @@ public class ComplexRegion extends SimpleRegion {
         int count = 0;
         for (i = 0; i < height; i++) {
             for (j = 0; j < width; j++) {
-                if (three_state_map[i][j] != SimpleRegion.GI_UNDEFINED
-                        && three_state_map[i][j] != SimpleRegion.GI_ABSENCE) {
+                if (mask[i][j] != SimpleRegion.GI_UNDEFINED
+                        && mask[i][j] != SimpleRegion.GI_ABSENCE) {
                     count++;
                 }
             }
@@ -309,8 +309,8 @@ public class ComplexRegion extends SimpleRegion {
         count = 0;
         for (i = 0; i < height; i++) {
             for (j = 0; j < width; j++) {
-                if (three_state_map[i][j] != SimpleRegion.GI_UNDEFINED
-                        && three_state_map[i][j] != SimpleRegion.GI_ABSENCE) {
+                if (mask[i][j] != SimpleRegion.GI_UNDEFINED
+                        && mask[i][j] != SimpleRegion.GI_ABSENCE) {
                     output[count][0] = j;
                     output[count][1] = i;
                     count++;

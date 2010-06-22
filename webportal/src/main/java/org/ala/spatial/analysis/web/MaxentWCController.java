@@ -43,6 +43,7 @@ import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 import org.ala.spatial.util.LayersUtil;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -289,15 +290,20 @@ public class MaxentWCController extends UtilityComposer {
                 user_polygon = "";
             }
             System.out.println("user_polygon: " + user_polygon);
+            String area;
             if (user_polygon.length() > 0) {
-                sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                area = URLEncoder.encode(user_polygon,"UTF-8");
             } else {
-                sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                area = "none";
             }
 
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
+            //GetMethod get = new GetMethod(sbProcessUrl.toString());
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+            get.addParameter("area",area);
             get.addRequestHeader("Content-type", "application/json");
 
             int result = client.executeMethod(get);

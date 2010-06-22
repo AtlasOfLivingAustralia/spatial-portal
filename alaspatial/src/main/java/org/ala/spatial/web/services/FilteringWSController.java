@@ -255,14 +255,25 @@ public class FilteringWSController {
         return "";
     }
 
-    @RequestMapping(value = "/apply/pid/{pid}/species/count/shape/{shape}", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply/pid/{pid}/species/count", method = RequestMethod.GET)
     public
     @ResponseBody
-    String getSpeciesCount(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
+    String getSpeciesCount(@PathVariable String pid, HttpServletRequest req) {
+
         TabulationSettings.load();
         long starttime = System.currentTimeMillis();
         try {
-            SimpleRegion region = SimpleShapeFile.parseWKT(URLDecoder.decode(shape, "UTF-8"));
+            String shape = req.getParameter("area");
+            if (shape == null) {
+                shape = "none";
+            } else {
+                shape = URLDecoder.decode(shape,"UTF-8");
+            }
+            if (shape.equals("none") && pid.equals("none")) {
+                return "";  //error
+            }
+            
+            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String count = String.valueOf(FilteringService.getSpeciesCount(pid, region));
 
@@ -284,19 +295,27 @@ public class FilteringWSController {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/apply/pid/{pid}/species/list/shape/{shape}", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply/pid/{pid}/species/list", method = RequestMethod.POST)
     public
     @ResponseBody
-    String getSpeciesList(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
+    String getSpeciesList(@PathVariable String pid, HttpServletRequest req) {
         TabulationSettings.load();
 
         long starttime = System.currentTimeMillis();
-
-
         try {
+            String shape = req.getParameter("area");
+            if (shape == null) {
+                shape = "none";
+            } else {
+                shape = URLDecoder.decode(shape,"UTF-8");
+            }
+            if (shape.equals("none") && pid.equals("none")) {
+                return "";  //error
+            }
+
             System.out.println("[[[]]] getlist: " + pid + " " + shape);
 
-            SimpleRegion region = SimpleShapeFile.parseWKT(URLDecoder.decode(shape, "UTF-8"));
+            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String list = FilteringService.getSpeciesList(pid, region);
             long endtime = System.currentTimeMillis();
@@ -317,18 +336,26 @@ public class FilteringWSController {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/apply/pid/{pid}/samples/list/shape/{shape}", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply/pid/{pid}/samples/list", method = RequestMethod.POST)
     public
     @ResponseBody
-    String getSamplesList(@PathVariable String pid, @PathVariable String shape, HttpServletRequest req) {
+    String getSamplesList(@PathVariable String pid, HttpServletRequest req) {
         TabulationSettings.load();
 
         try {
-            System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
-            //    String sessionfile = req.getSession().getServletContext().getRealPath("/output/filtering/" + pid + "/usermap.ser");
-            //     readUserBytes(sessionfile);
+            String shape = req.getParameter("area");
+            if (shape == null) {
+                shape = "none";
+            } else {
+                shape = URLDecoder.decode(shape,"UTF-8");                
+            }
+            if (shape.equals("none") && pid.equals("none")) {
+                return "";  //error
+            }
 
-            SimpleRegion region = SimpleShapeFile.parseWKT(URLDecoder.decode(shape, "UTF-8"));
+            System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
+            
+            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String filepath = FilteringService.getSamplesList(pid, region);
 

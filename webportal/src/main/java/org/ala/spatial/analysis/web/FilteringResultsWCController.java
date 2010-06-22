@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Button;
@@ -85,8 +86,8 @@ public class FilteringResultsWCController extends UtilityComposer {
                 sbProcessUrl.append("/filtering/apply");
                 sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
                 sbProcessUrl.append("/species/list");
-                sbProcessUrl.append("/shape/" + URLEncoder.encode(shape, "UTF-8"));
-                String out = getInfo(sbProcessUrl.toString());
+                //sbProcessUrl.append("?area=" + URLEncoder.encode(shape, "UTF-8"));
+                String out = postInfo(sbProcessUrl.toString());
                 //remove trailing ','
                 if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
                     out = out.substring(0, out.length() - 1);
@@ -145,8 +146,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/samples/list");
 
-            sbProcessUrl.append("/shape/" + URLEncoder.encode(shape, "UTF-8"));
-            String samplesfile = getInfo(sbProcessUrl.toString());
+            //sbProcessUrl.append("?area=" + URLEncoder.encode(shape, "UTF-8"));
+            String samplesfile = postInfo(sbProcessUrl.toString());
 
             URL u = new URL(satServer + "/alaspatial/" + samplesfile);
             Filedownload.save(u.openStream(), "application/zip", "filter_samples_" + pid + ".zip");
@@ -161,6 +162,29 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             GetMethod get = new GetMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(get);
+
+            //TODO: confirm result
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception ex) {
+            //TODO: error message
+            System.out.println("getInfo.error:");
+            ex.printStackTrace(System.out);
+        }
+        return null;
+    }
+
+     private String postInfo(String urlPart) {
+        try {
+            HttpClient client = new HttpClient();
+
+            PostMethod get = new PostMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
 
             int result = client.executeMethod(get);
 

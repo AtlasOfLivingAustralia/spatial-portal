@@ -551,7 +551,7 @@ public class FilteringWCController extends UtilityComposer {
 
         serverFilter(true);
 
-        String strCount = getInfo("/filtering/apply/pid/" + pid + "/species/count/shape/none");
+        String strCount = getInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
         popup_filter.count = Integer.parseInt(strCount);
         ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount);
     }
