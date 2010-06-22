@@ -2,6 +2,7 @@ package org.ala.spatial.dao;
 
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.model.CommonName;
 import org.ala.spatial.model.Species;
 import org.ala.spatial.model.TaxonNames;
 
@@ -17,4 +18,6 @@ public interface SpeciesDAO {
     public List<TaxonNames> getNames();
     public List<TaxonNames> findByName(String name);
     public Map findByName(String name, int limit, int offset);
+
+    public List<CommonName> getCommonNames(String name);
 }

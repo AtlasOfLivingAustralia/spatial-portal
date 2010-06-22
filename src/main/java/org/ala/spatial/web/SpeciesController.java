@@ -1,12 +1,14 @@
 package org.ala.spatial.web;
 
 import java.net.URLDecoder;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
 
 import org.ala.spatial.analysis.service.OccurrencesService;
-import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
+import org.ala.spatial.model.CommonName;
 import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -107,6 +109,18 @@ public class SpeciesController {
             for (String s : aslist) {
                 slist += s + "\n";
             }
+
+            System.out.println(">>>>> dumping out s.names <<<<<<<<<<");
+            System.out.println(slist);
+            System.out.println(">>>>> dumping out c.names <<<<<<<<<<");
+            List<CommonName> clist = speciesDao.getCommonNames(name);
+            Iterator<CommonName> it = clist.iterator();
+            while (it.hasNext()) {
+                CommonName cn = it.next();
+                //System.out.println("> " + cn.getCommonname() + " -- " + cn.getScientificname());
+                slist += cn.getCommonname() + " / Scientific name: " + cn.getScientificname() + " / found *\n";
+            }
+            System.out.println(">>>>> done <<<<<<<<<<");
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

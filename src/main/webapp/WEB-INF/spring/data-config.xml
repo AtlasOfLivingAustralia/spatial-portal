@@ -16,8 +16,8 @@
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/spatialdb:5432" />
-        <property name="username" value="enterprisedb" />
-        <property name="password" value="postgres" />
+        <property name="username" value="postgres" />
+        <property name="password" value="P0stgres" />
         <property name="minIdle" value="1" />
         <property name="maxActive" value="10" />
     </bean>
@@ -46,6 +46,8 @@
             <list>
                 <value>org.ala.spatial.model.Species</value>
                 <value>org.ala.spatial.model.TaxonNames</value>
+                <value>org.ala.spatial.model.LayerInfo</value>
+                <value>org.ala.spatial.model.CommonName</value>
             </list>
         </property>
         <property name="hibernateProperties" ref="hibernateProperties" />

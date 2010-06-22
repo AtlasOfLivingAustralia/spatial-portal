@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import org.ala.spatial.model.CommonName;
 import org.ala.spatial.model.Species;
 import org.ala.spatial.model.TaxonNames;
 import org.hibernate.Query;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Service;
  * @version 1.0
  * 
  */
-@Service(value="personDAO")
+@Service(value="speciesDAO")
 public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
 
     /*
@@ -217,5 +218,10 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
         htNames.put("taxanames", namesList);
 
         return htNames;
+    }
+
+    @Override
+    public List<CommonName> getCommonNames(String name) {
+        return hibernateTemplate.find("from CommonName where lower(commonname) like ? ", "%" + (name.toLowerCase() + "%"));
     }
 }
