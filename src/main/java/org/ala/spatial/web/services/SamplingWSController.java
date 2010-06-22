@@ -36,7 +36,7 @@ public class SamplingWSController {
     private SpatialSettings ssets;
     private List alllayers;
 
-    @RequestMapping(value = "/process/download", method = RequestMethod.GET)
+    @RequestMapping(value = "/process/download", method = RequestMethod.POST)
     public
     @ResponseBody
     String process(HttpServletRequest req) {
@@ -94,7 +94,7 @@ public class SamplingWSController {
 
     }
 
-    @RequestMapping(value = "/process/preview", method = RequestMethod.GET)
+    @RequestMapping(value = "/process/preview", method = RequestMethod.POST)
     public
     @ResponseBody
     String preview(HttpServletRequest req) {
@@ -221,7 +221,7 @@ public class SamplingWSController {
     private void writeAsJSON() {
     }
     
-    @RequestMapping(value = "/process/points", method = RequestMethod.GET)
+    @RequestMapping(value = "/process/points", method = RequestMethod.POST)
     public
     @ResponseBody
     String processpoints(HttpServletRequest req) {

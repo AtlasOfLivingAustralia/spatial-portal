@@ -371,12 +371,16 @@ public class SimpleShapeFile extends Object implements Serializable {
             return "";
         }
         geometry = geometry.replace(" ", ":");
+        geometry = geometry.replace("MULTIPOLYGON(((", "");
         geometry = geometry.replace("POLYGON((", "");
         while (geometry.contains(")")) {
             geometry = geometry.replace(")", "");
         }
 
         //for case of more than one polygon
+        while (geometry.contains(",((")) {
+            geometry = geometry.replace(",((","S");
+        }
         while (geometry.contains(",(")) {
             geometry = geometry.replace(",(","S");
         }

@@ -209,7 +209,7 @@ public class MaxentWSController {
 
     }
 
-    @RequestMapping(value = "/processgeo", method = RequestMethod.GET)
+    @RequestMapping(value = "/processgeo", method = RequestMethod.POST)
     public
     @ResponseBody
     String processgeo(HttpServletRequest req) {
@@ -257,6 +257,7 @@ public class MaxentWSController {
 
             //handle cut layers
             String area = req.getParameter("area");
+            System.out.println("MAXENT area:" + area);
             LayerFilter[] filter = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
