@@ -344,6 +344,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
             String rgbColour = "rgb(" + String.valueOf(redSlider.getCurpos()) + "," + greenSlider.getCurpos() + "," + blueSlider.getCurpos() + ")";
             selectedLayer.setEnvColour(rgbColour);
+            float opacity = ((float) opacitySlider.getCurpos()) / 100;
+            selectedLayer.setOpacity(opacity);
 
             if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
                 openLayersJavascript.redrawFeatures(selectedLayer);
@@ -2057,14 +2059,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     public void onScroll$opacitySlider() {
         float opacity = ((float) opacitySlider.getCurpos()) / 100;
+        int percentage = (int) (opacity * 100);
+        opacitySlider.setCurpos(percentage);
+        opacityLabel.setValue(percentage + "%");
 
-        // change opacity for the current selected and displayed layer
+        if (colourChooser.isVisible()) {
+            //colourChooser.setVisible(false);
+        } else {
+            colourChooser.setVisible(true);
+        }
+
+        /** change opacity for the current selected and displayed layer
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
+        if (selectedLayer.isDynamicStyle()) {
+            //change via button
+        } else {
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("opacity change: " + selectedLayer.getId() + " "
                     + opacity + "%");
             this.changeOpacity(selectedLayer, opacity);
         }
+        }*/
     }
 
     public void updateLegendImage() {
@@ -2185,7 +2200,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     logger.info("adding GEOJSON layer failed ");
                 } else {
                     mapLayer.setDisplayable(true);
-                    mapLayer.setOpacity((float) 1);
+                    mapLayer.setOpacity((float) 0.4);
                     mapLayer.setQueryable(true);
 
 

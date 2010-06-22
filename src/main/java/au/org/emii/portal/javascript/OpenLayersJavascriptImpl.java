@@ -530,7 +530,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      @Override
 
      public void redrawFeatures(MapLayer selectedLayer) {
-         String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() +"')";
+         String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() +"', " + selectedLayer.getOpacity() + ")";
          execute(script);
 
 
