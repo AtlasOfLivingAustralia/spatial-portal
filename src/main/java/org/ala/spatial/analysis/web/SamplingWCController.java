@@ -14,6 +14,7 @@ import java.util.Vector;
 import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Messagebox;
@@ -321,7 +322,6 @@ public class SamplingWCController extends UtilityComposer {
                 sbenvsel.append("none");
             }
 
-
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
@@ -332,16 +332,20 @@ public class SamplingWCController extends UtilityComposer {
                 user_polygon = "";
             }
             System.out.println("user_polygon: " + user_polygon);
+            String area = "none";
             if (user_polygon.length() > 0) {
-                sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                area = user_polygon;
             } else {
-                sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
             }
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+//            GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+            get.addParameter("area",area);
             //get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             get.addRequestHeader("Accept", "text/plain");
 
@@ -397,11 +401,11 @@ public class SamplingWCController extends UtilityComposer {
                             try {
                                 String layername = top_row[k].trim().replaceAll(" ", "_");
                                 client = new HttpClient();
-                                get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + layername + "/extents"); // testurl
-                                get.addRequestHeader("Accept", "text/plain");
+                                GetMethod getmethod = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + layername + "/extents"); // testurl
+                                getmethod.addRequestHeader("Accept", "text/plain");
 
-                                result = client.executeMethod(get);
-                                String[] salist = get.getResponseBodyAsString().split("<br>");
+                                result = client.executeMethod(getmethod);
+                                String[] salist = getmethod.getResponseBodyAsString().split("<br>");
                                 contextualLists.put(new Integer(k), salist);
 
                                 System.out.println("# records=" + salist.length);
@@ -482,16 +486,21 @@ public class SamplingWCController extends UtilityComposer {
                 user_polygon = "";
             }
             System.out.println("user_polygon: " + user_polygon);
+            String area;
             if (user_polygon.length() > 0) {
-                sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                area = user_polygon;
             } else {
-                sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                area = "none";
             }
 
             //String testurl = satServer + "/alaspatial/ws/sampling/test";
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+            get.addParameter("area",area);
 
             get.addRequestHeader("Accept", "text/plain");
 
