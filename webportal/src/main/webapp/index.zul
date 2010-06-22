@@ -515,9 +515,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                             <div id="layerControls" sclass="highlighted" visible="false">
                                 <hbox  width="100%">
-                                    <hbox  align="left" style="float:left">
+                                    <!--<hbox  align="left" style="float:left">
                                         <button id="zoomExtent" label="Zoom to layer extent" />
-                                    </hbox>
+                                    </hbox>-->
 
                                     <hbox  align="right" style="float:right" >
                                         <button id="closeLayerControls" label="Close Legend" />

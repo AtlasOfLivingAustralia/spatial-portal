@@ -2,7 +2,10 @@ package au.org.emii.portal.databinding;
 
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.event.ActiveLayerDNDEventListener;
+import au.org.emii.portal.event.ActiveLayersInfoEventListener;
+import au.org.emii.portal.event.ActiveLayersLegendEventListener;
 import au.org.emii.portal.event.ActiveLayersRemoveEventListener;
+import au.org.emii.portal.event.ActiveLayersZoomExtentEventListener;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.event.LegendClickEventListener;
 import au.org.emii.portal.event.LegendTooltipOpenEventListener;
@@ -76,12 +79,15 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                 info.setParent(listcell);
                 info.setStyle("float:right;");
                 info.setTooltiptext("metadata");
+                info.addEventListener("onClick", new ActiveLayersInfoEventListener());
 
 
                 Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
                 zoomextent.setParent(listcell);
                 zoomextent.setStyle("float:right");
                 zoomextent.setTooltiptext("zoom to extent");
+                zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+
 
                 
 
@@ -131,6 +137,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                     legend.setStyle("float:right;");
 		    legend.setParent(listcell);
                     legend.setTooltip("View/edit the legend");
+                    legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
                 }
 
                 
