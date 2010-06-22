@@ -34,7 +34,7 @@ public class SpeciesAutoComplete extends Combobox {
     //private static final String cnUrl = "data.ala.org.au";
     //private static final String commonSearch = "/search/commonNames/";
     private String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=_query_";
-    private String satServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
+    private String satServer = "http://spatial.ala.org.au"; // http://localhost:8080
     private boolean bSearchCommon = false;
     private SettingsSupplementary settingsSupplementary = null;
 
@@ -174,19 +174,19 @@ public class SpeciesAutoComplete extends Combobox {
 
             /*
             if (isSearchCommon()) {
-                if (val.trim().equalsIgnoreCase("")) {
-                    if (val.length() == 0) {
-                        setDroppable("false");
-                    } else {
-                        setDroppable("true");
-                    }
-                } else {
-                    refreshBIE(val);
-                }
-                return;
+            if (val.trim().equalsIgnoreCase("")) {
+            if (val.length() == 0) {
+            setDroppable("false");
+            } else {
+            setDroppable("true");
             }
-            *
-            */
+            } else {
+            refreshBIE(val);
+            }
+            return;
+            }
+             *
+             */
 
             /*
             if (val.length() == 0) {
@@ -226,8 +226,8 @@ public class SpeciesAutoComplete extends Combobox {
                 System.out.println("Response status code: " + result);
                 System.out.println("Response: \n" + slist);
 
-                System.out.println("adding common names to this");
-                slist += refreshCommonNames(val);
+                //System.out.println("adding common names to this");
+                //slist += refreshCommonNames(val);
 
                 String[] aslist = slist.split("\n");
                 System.out.println("Got " + aslist.length + " records.");
@@ -258,8 +258,8 @@ public class SpeciesAutoComplete extends Combobox {
                         myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim() + " records");
                         myci.setDisabled(false);
                         //hiddenVal.setParent(myci);
-                        
-                        if (spVal[1].trim().startsWith("Scientific")) {
+
+                        if (spVal[1].trim().startsWith("Scientific name")) {
                             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
                             myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":") + 1).trim());
                         } else {
@@ -335,14 +335,15 @@ public class SpeciesAutoComplete extends Combobox {
             JSONArray results = new JSONArray();
             results = searchCommon(slist);
 
-            for (int i = 0; i < results.size(); i++) {
-
-                cnListString.append(results.getJSONObject(i).get("commonName"));
-                cnListString.append(" / ");
-                cnListString.append("Scientific name: " + results.getJSONObject(i).get("scientificName"));
-                cnListString.append(" / ");
-                cnListString.append(" found " + results.getJSONObject(i).get("occurrenceCoordinateCount"));
-                cnListString.append("\n");
+            if (results != null) {
+                for (int i = 0; i < results.size(); i++) {
+                    cnListString.append(results.getJSONObject(i).get("commonName"));
+                    cnListString.append(" / ");
+                    cnListString.append("Scientific name: " + results.getJSONObject(i).get("scientificName"));
+                    cnListString.append(" / ");
+                    cnListString.append(" found " + results.getJSONObject(i).get("occurrenceCoordinateCount"));
+                    cnListString.append("\n");
+                }
             }
 
         } catch (Exception e) {
@@ -408,14 +409,14 @@ public class SpeciesAutoComplete extends Combobox {
             JSONArray results = new JSONArray();
             results = searchCommon(slist);
 
-            for (int i = 0; i < results.size(); i++) {
-                String itemString = "";
-                String descString = "";
-                itemString = (String) results.getJSONObject(i).get("commonName");
-                descString = "Scientific name: " + (String) results.getJSONObject(i).get("scientificName");
-                descString += " - " + ((Integer) results.getJSONObject(i).get("occurrenceCoordinateCount")).toString() + " records";
-
-
+            if (results != null) {
+                for (int i = 0; i < results.size(); i++) {
+                    String itemString = "";
+                    String descString = "";
+                    itemString = (String) results.getJSONObject(i).get("commonName");
+                    descString = "Scientific name: " + (String) results.getJSONObject(i).get("scientificName");
+                    descString += " - " + ((Integer) results.getJSONObject(i).get("occurrenceCoordinateCount")).toString() + " records";
+                }
             }
 
         } catch (Exception e) {
@@ -428,68 +429,87 @@ public class SpeciesAutoComplete extends Combobox {
 
     public JSONArray searchScientific(String json) {
 
-        JSONArray joResult = new JSONArray();
+        try {
 
-        TaxaScientificSearchSummary tss = new TaxaScientificSearchSummary();
-        JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.setRootClass(TaxaScientificSearchSummary.class);
-        jsonConfig.setJavaPropertyFilter(
-                new PropertyFilter() {
+            JSONArray joResult = new JSONArray();
 
-                    @Override
-                    public boolean apply(Object source, String name,
-                            Object value) {
-                        if ("result".equals(name)) {
-                            return true;
+            TaxaScientificSearchSummary tss = new TaxaScientificSearchSummary();
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.setRootClass(TaxaScientificSearchSummary.class);
+            jsonConfig.setJavaPropertyFilter(
+                    new PropertyFilter() {
+
+                        @Override
+                        public boolean apply(Object source, String name,
+                                Object value) {
+                            if ("result".equals(name)) {
+                                return true;
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
-        JSONObject jo = JSONObject.fromObject(json);
+                    });
+            JSONObject jo = JSONObject.fromObject(json);
 
-        tss = (TaxaScientificSearchSummary) JSONSerializer.toJava(jo,
-                jsonConfig);
+            tss = (TaxaScientificSearchSummary) JSONSerializer.toJava(jo,
+                    jsonConfig);
 
+            if (tss.getRecordsReturned() > 1) {
+                joResult = jo.getJSONArray("result");
+            }
 
-
-
-        if (tss.getRecordsReturned() > 1) {
-            joResult = jo.getJSONArray("result");
-
+            return joResult;
+        } catch (Exception e) {
+            System.out.println("Something didnt work looking for scientific name");
+            e.printStackTrace(System.out);
         }
-        return joResult;
+
+        return null;
     }
 
     public JSONArray searchCommon(String json) {
-        JSONArray joResult = new JSONArray();
-        TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
-        JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
-        jsonConfig.setJavaPropertyFilter(
-                new PropertyFilter() {
+        try {
 
-                    @Override
-                    public boolean apply(Object source, String name,
-                            Object value) {
-                        if ("result".equals(name)) {
-                            return true;
+            // first check if this is a valid json
+            // we do this by looking at the first character
+            // being the '{'
+            if (!json.startsWith("{")) {
+                System.out.println("invalid common names response");
+                return null; 
+            }
+
+            JSONArray joResult = new JSONArray();
+            TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
+            jsonConfig.setJavaPropertyFilter(
+                    new PropertyFilter() {
+
+                        @Override
+                        public boolean apply(Object source, String name,
+                                Object value) {
+                            if ("result".equals(name)) {
+                                return true;
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
-        JSONObject jo = JSONObject.fromObject(json);
+                    });
+            JSONObject jo = JSONObject.fromObject(json);
 
-        tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
+            tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
 
+            if (tss.getRecordsReturned() > 1) {
 
+                joResult = jo.getJSONArray("result");
 
+            }
 
-        if (tss.getRecordsReturned() > 1) {
-
-            joResult = jo.getJSONArray("result");
-
+            return joResult;
+        } catch (Exception e) {
+            System.out.println("Something didnt work looking for common name");
+            e.printStackTrace(System.out);
         }
-        return joResult;
+
+        return null;
     }
 
     private String getScientificName(String cname) {

@@ -74,7 +74,7 @@ public class SamplingResultsWCController extends UtilityComposer {
     private String selectedLayer;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
     private MapComposer mc;
-    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
+    private String geoServer = "http://spatial.ala.org.au";  // http://localhost:8080
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     private String user_polygon = "";

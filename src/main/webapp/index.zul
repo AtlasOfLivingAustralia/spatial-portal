@@ -85,7 +85,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         the value is set by setPolygonGeometry, which notifies the server by generating an onChange
         -->
         <textbox id="polyGeom" visible="false"/>
-	<textbox id="tbxTabSelection" visible="false"/>
+        <textbox id="tbxTabSelection" visible="false"/>
         <script type="text/JavaScript">
             function roundNumber(num, dec) {
             var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
@@ -93,13 +93,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             }
 
             function setExtent() {
-            
+
 
             if (getGeographicExtentControls != undefined) {
             getGeographicExtentControls();
             }
 
-            
+
             }
 
             function setPolygonGeometry(geometry) {
@@ -187,27 +187,27 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             }
 
-	    function setAreaTabSelected() {
-		var tbxTabSelection =  $e('${tbxTabSelection.uuid}');
-		var currentTime = new Date();
-		tbxTabSelection.value = "area" + currentTime.getSeconds();
+            function setAreaTabSelected() {
+            var tbxTabSelection =  $e('${tbxTabSelection.uuid}');
+            var currentTime = new Date();
+            tbxTabSelection.value = "area" + currentTime.getSeconds();
 
-		if (document.createEvent) {
-		    var evt = document.createEvent('HTMLEvents');
-		    evt.initEvent( 'blur', false, false);
-		    tbxTabSelection.dispatchEvent(evt);
+            if (document.createEvent) {
+            var evt = document.createEvent('HTMLEvents');
+            evt.initEvent( 'blur', false, false);
+            tbxTabSelection.dispatchEvent(evt);
 
-		    var evt2 = document.createEvent('HTMLEvents');
-		    evt2.initEvent( 'change', false, false);
-		    tbxTabSelection.dispatchEvent(evt2);
-		}
-		else if (document.createEventObject) {
-		    tbxTabSelection.fireEvent('onblur');
-		    tbxTabSelection.fireEvent('onchange');
-		}
+            var evt2 = document.createEvent('HTMLEvents');
+            evt2.initEvent( 'change', false, false);
+            tbxTabSelection.dispatchEvent(evt2);
+            }
+            else if (document.createEventObject) {
+            tbxTabSelection.fireEvent('onblur');
+            tbxTabSelection.fireEvent('onchange');
+            }
 
-	//	tbxTabSelection.value = "";
-	    }
+            //	tbxTabSelection.value = "";
+            }
         </script>
 
 
@@ -319,59 +319,59 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                    id="menus" collapsible="true"
                    splittable="true" minsize="250">
                 <div id="westChild">
-                    <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
-                        <div zclass="closebox" zindex="500" left="2px" top="2px">
+                <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
+                    <div zclass="closebox" zindex="500" left="2px" top="2px">
+                        <toolbarbutton
+                            id="showLeftMenu"
+                            label=""
+                            image="img/buttonopen.png"
+                            hoverImage="img/buttonopen-over.png"
+                            />
+                    </div>
+                </div>
+
+                <div id="westContent" class="westContent" visible="true">
+
+
+
+
+
+                    <div sclass="leftmenutabs">
+                        <!--  hide the left menu (west element) -->
+                        <div zclass="closebox" zindex="500" width="22px" top="5px">
                             <toolbarbutton
-                                id="showLeftMenu"
+                                id="hideLeftMenu"
                                 label=""
-                                image="img/buttonopen.png"
-                                hoverImage="img/buttonopen-over.png"
-                                />
+                                image="img/buttonclose.png"
+                                hoverImage="img/buttonclose-over.png" />
                         </div>
+
+                        <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
+                            <tabs>
+                                <tab id="startNavigationTab" label="Intro" />
+                                <tab id="mapNavigationTab" label="Map" />
+                                <tab id="areaNavigationTab" label="Area" />
+                                <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
+                                <tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />
+                            </tabs>
+                        </tabbox>
                     </div>
 
-                    <div id="westContent" class="westContent" visible="true">
-
-
-
-
-
-                        <div sclass="leftmenutabs">
-                            <!--  hide the left menu (west element) -->
-                            <div zclass="closebox" zindex="500" width="22px" top="5px">
-                                <toolbarbutton
-                                    id="hideLeftMenu"
-                                    label=""
-                                    image="img/buttonclose.png"
-                                    hoverImage="img/buttonclose-over.png" />
-                            </div>
-
-                            <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
-                                <tabs>
-                                    <tab id="startNavigationTab" label="Intro" />
-                                    <tab id="mapNavigationTab" label="Map" />
-                                    <tab id="areaNavigationTab" label="Area" />
-                                    <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
-                                    <tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />
-                                </tabs>
-                            </tabbox>
-                        </div>
-
-                        <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
-                            <leftMenuLinks id="leftMenuLinks" />
-                        </div>
-                        <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
-                            <tabbox mold="accordion" height="95%" width="95%">
-                                <tabs>
-                                    <tab label="Map species occurrences" />
-                                    <tab label="Map locations" />
-                                    <tab id="realtimeTab" label="Map environment or context" if="${! settings.disableRealtime}"/>
-                                    <tab label="Map WMS layer" />
-                                </tabs>
-                                <tabpanels>
-                                    <tabpanel>
-                                        <div>
-                                            <!--
+                    <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
+                        <leftMenuLinks id="leftMenuLinks" />
+                    </div>
+                    <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
+                        <tabbox mold="accordion" height="95%" width="95%">
+                            <tabs>
+                                <tab label="Map species occurrences" />
+                                <tab label="Map locations" />
+                                <tab id="realtimeTab" label="Map environment or context" if="${! settings.disableRealtime}"/>
+                                <tab label="Map WMS layer" />
+                            </tabs>
+                            <tabpanels>
+                                <tabpanel>
+                                    <div>
+                                        <!--
                                             <radiogroup id="rdgNameSearchType" >
                                                 <hbox>
                                                     <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
@@ -379,7 +379,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </hbox>
                                             </radiogroup>
                                             -->
-                                            <vbox>
+                                        <vbox>
                                             <label>Enter a scientific or common name</label>
 
                                             <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
@@ -387,52 +387,61 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </combobox>
 
                                             <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
-                                            </vbox>
+                                        </vbox>
 
-                                            <html>
-                                                <![CDATA[ <br> ]]>
-                                            </html>
-                                            <html>
-                                                <![CDATA[ <br> ]]>
-                                            </html>
-                                        </div>
+                                        <html>
+                                            <![CDATA[ <br> ]]>
+                                        </html>
+                                        <html>
+                                            <![CDATA[ <br> ]]>
+                                        </html>
+                                    </div>
 
-                                        <div id="facilityControls">
-                                            <zk forEach="${session.attributes.portalSession.facilities}">
-                                                <div visible="false">
-                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                           tooltiptext="${each.value.description}" sclass="tabheader"
-                                                           forward="onCheck=onSelectFacility()">
+                                    <div id="facilityControls">
+                                        <zk forEach="${session.attributes.portalSession.facilities}">
+                                            <div visible="false">
+                                                <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                                       tooltiptext="${each.value.description}" sclass="tabheader"
+                                                       forward="onCheck=onSelectFacility()">
 
-                                                        <custom-attributes systemId="${each.value.id}" />
-                                                    </radio>
-                                                    <tree id="tree_${each.value.id}" />
-                                                </div>
-                                            </zk>
+                                                    <custom-attributes systemId="${each.value.id}" />
+                                                </radio>
+                                                <tree id="tree_${each.value.id}" />
+                                            </div>
+                                        </zk>
 
-                                        </div>
+                                    </div>
 
 
-                                    </tabpanel>
-                                    <tabpanel>
-                                        <div>
-                                            <vbox width="95%%">
-                                                <label value="Enter place name" />
-                                                <hbox>
-                                                    <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
-                                                   <!-- <button id="gazSearch" label="Add to Map" /> -->
-                                                    <label id="resultGaz" />
-                                                </hbox>
-                                                <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                    <listhead>
-                                                        <listheader label="Name"/>
-                                                        <listheader label="View" />
-                                                    </listhead>
-                                                </listbox>
-                                            </vbox>
-                                        </div>
-                                    </tabpanel>
-                                    <tabpanel>
+                                </tabpanel>
+                                <tabpanel>
+                                    <div>
+                                        <vbox width="95%%">
+                                            <label value="Enter place name" />
+                                            <hbox>
+                                                <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                <!-- <button id="gazSearch" label="Add to Map" /> -->
+                                                <label id="resultGaz" />
+                                            </hbox>
+                                            <listbox id="gazetteerResults" fixedLayout="true" visible="false">
+                                                <listhead>
+                                                    <listheader label="Name"/>
+                                                    <listheader label="View" />
+                                                </listhead>
+                                            </listbox>
+                                        </vbox>
+                                    </div>
+                                </tabpanel>
+                                <tabpanel>
+                                    <div>
+                                        <vbox>
+                                            <label value="Enter a layer name or a keyword" />
+                                            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
+                                                <comboitem label=""/>
+                                            </combobox>
+                                        </vbox>
+                                    </div>
+                                    <!--
                                         <div id="realtimeControls">
                                             <zk forEach="${session.attributes.portalSession.realtimes}">
                                                 <div>
@@ -445,27 +454,28 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </div>
                                             </zk>
                                         </div>
-                                    </tabpanel>
+                                        -->
+                                </tabpanel>
 
-                                    <tabpanel  id="userTabPanel" >
-                                        <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">
+                                <tabpanel  id="userTabPanel" >
+                                    <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">
                                             <button id="addExtLayersButton" label="Add Layers from a WMS server" />
                                         </div>-->
-                                        <div zclass="tabpanel_cnt" id="addLayer" visible="true">
-                                            <addLayer id="addLayerMacro" />
-                                        </div>
-                                        <tree id="tree_user">
-                                            <treecols>
-                                                <treecol width="90%" />
-                                                <treecol width="10%" />
-                                            </treecols>
-                                        </tree>
-                                    </tabpanel>
-                                </tabpanels>
+                                    <div zclass="tabpanel_cnt" id="addLayer" visible="true">
+                                        <addLayer id="addLayerMacro" />
+                                    </div>
+                                    <tree id="tree_user">
+                                        <treecols>
+                                            <treecol width="90%" />
+                                            <treecol width="10%" />
+                                        </treecols>
+                                    </tree>
+                                </tabpanel>
+                            </tabpanels>
 
 
 
-                            </tabbox>
+                        </tabbox>
 
 
 
@@ -473,45 +483,45 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
 
+                    </div>
+                    <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
+                        <!--  <label sclass="h2 title" value="Define your area of interest" /> -->
+
+                        <tabbox  mold="accordion">
+                            <tabs>
+
+                                <!-- selection tools -->
+                                <tab id="selectionTab" label="Selection"  />
+
+                            </tabs>
+                            <tabpanels>
+                                <tabpanel>
+                                    <selectionForm id="sf" />
+                                </tabpanel>
+
+                            </tabpanels>
+                        </tabbox>
+
+
+                    </div>
+
+                    <div id="layerNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}">
+
+
+                        <label sclass="h2 title" value="Layer Selector" />
+
+
+                        <!--  baselayer selection -->
+                        <div sclass="highlighted" visible="false">
+                            <label value="Base Layer" sclass="h3" />
+                            <listbox id="baseLayerList" mold="select" />
                         </div>
-                        <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
-                          <!--  <label sclass="h2 title" value="Define your area of interest" /> -->
-
-                            <tabbox  mold="accordion">
-                                <tabs>
-
-                                    <!-- selection tools -->
-                                    <tab id="selectionTab" label="Selection"  />
-
-                                </tabs>
-                                <tabpanels>
-				     <tabpanel>
-                                        <selectionForm id="sf" />
-                                    </tabpanel>
-
-				    </tabpanels>
-                            </tabbox>
 
 
+                        <!-- active layers -->
+                        <div id="activeLayersHolder">
+                            <listbox id="activeLayersList" />
                         </div>
-
-                        <div id="layerNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}">
-
-
-                            <label sclass="h2 title" value="Layer Selector" />
-
-
-                            <!--  baselayer selection -->
-                            <div sclass="highlighted" visible="false">
-                                <label value="Base Layer" sclass="h3" />
-                                <listbox id="baseLayerList" mold="select" />
-                            </div>
-
-
-                            <!-- active layers -->
-                            <div id="activeLayersHolder">
-                                <listbox id="activeLayersList" />
-                            </div>
 
                             <div id="layerControls" sclass="highlighted" visible="false">
                                 <hbox  width="100%">
@@ -519,46 +529,46 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <button id="zoomExtent" label="Zoom to layer extent" />
                                     </hbox>-->
 
-                                    <hbox  align="right" style="float:right" >
-                                        <button id="closeLayerControls" label="Close Legend" />
-                                    </hbox>
+                                <hbox  align="right" style="float:right" >
+                                    <button id="closeLayerControls" label="Close Legend" />
                                 </hbox>
-                                <!-- opacity-->
-                                <div id="opacityControls" >
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Opacity: " sclass="h3" />
-                                    </div>
-                                    <div style="float:left;" width="60%">
-                                        <slider id="opacitySlider" width="95%" />
-                                    </div>
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="opacityLabel" />
-                                    </div>
-
-                                    <separator />
-
-                                    <div id="styleControls" style="margin-top:10px" visible="false">
-                                        <label value="Style:" sclass="h3 inputlabel" />
-                                        <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
-                                    </div>
-                                </div>
-
-                                <separator sclass="hr" height="10px" />
-
+                            </hbox>
+                            <!-- opacity-->
+                            <div id="opacityControls" >
                                 <div style="float:left;padding-top:4px" width="60px">
-                                    <label value="Legend : " sclass="h3" />
+                                    <label value="Opacity: " sclass="h3" />
                                 </div>
                                 <div style="float:left;" width="60%">
-                                    <image id="legendImg" width="50px" height="50px" tooltiptext="Click to change symbol" />
+                                    <slider id="opacitySlider" width="95%" />
                                 </div>
                                 <div align="right" style="padding-top:4px">
-                                    <label id="legendLabel" value="Click symbol to edit" />
+                                    <label id="opacityLabel" />
                                 </div>
-                                <div style="float:left;" width="60%">
-                                    <image id="legendImgUri" visible="false"/>
+
+                                <separator />
+
+                                <div id="styleControls" style="margin-top:10px" visible="false">
+                                    <label value="Style:" sclass="h3 inputlabel" />
+                                    <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
                                 </div>
-                                <div style="float:left;" width="100%">
-                                    <div id="legendHtml" visible="true"/>
+                            </div>
+
+                            <separator sclass="hr" height="10px" />
+
+                            <div style="float:left;padding-top:4px" width="60px">
+                                <label value="Legend : " sclass="h3" />
+                            </div>
+                            <div style="float:left;" width="60%">
+                                <image id="legendImg" width="50px" height="50px" tooltiptext="Click to change symbol" />
+                            </div>
+                            <div align="right" style="padding-top:4px">
+                                <label id="legendLabel" value="Click symbol to edit" />
+                            </div>
+                            <div style="float:left;" width="60%">
+                                <image id="legendImgUri" visible="false"/>
+                            </div>
+                            <div style="float:left;" width="100%">
+                                <div id="legendHtml" visible="true"/>
                                 </div>
 
                                 <div id="colourChooser" visible="false">
@@ -669,7 +679,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                         <div id="linkNavigationTabContent"
                              visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
-                             <leftMenuAnalysis id="leftMenuAnalysis" />
+                            <leftMenuAnalysis id="leftMenuAnalysis" />
                         </div>
 
                         <div id="searchNavigationTabContent"
