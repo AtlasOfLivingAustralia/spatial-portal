@@ -74,7 +74,7 @@ public class GazetteerSearchController extends UtilityComposer {
         }
         sSearchTerm = (String) sess.getAttribute("searchGazetteerTerm");
         // searchGazetteer(getURI());
-        renderGazetteerResults();
+//        renderGazetteerResults();
     }
 
 //    public void searchGazetteer(String p) {
@@ -124,89 +124,89 @@ public class GazetteerSearchController extends UtilityComposer {
     /***
      * Renders the search results, does not load into a special object, just reads straight from xml
      */
-    public void renderGazetteerResults() {
-
-        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-        domFactory.setNamespaceAware(true);
-        try {
-            //Read in the xml response
-            DocumentBuilder builder = domFactory.newDocumentBuilder();
-            String uri = getURI();
-            //Messagebox.show(uri);
-            Document resultDoc = builder.parse(uri);
-
-            //Get a list of names,descriptions,states and links from the xml
-            XPathFactory factory = XPathFactory.newInstance();
-            XPath xpath = factory.newXPath();
-            XPathExpression namesExpr = xpath.compile("//search/results/result/name/text()");
-            XPathExpression descriptionsExpr = xpath.compile("//search/results/result/description/text()");
-            // XPathExpression statesExpr = xpath.compile("//search/results/result/state/text()");
-            XPathExpression linksExpr = xpath.compile("//search/results/result/@*");
-
-            NodeList names = (NodeList) namesExpr.evaluate(resultDoc, XPathConstants.NODESET);
-            NodeList descriptions = (NodeList) descriptionsExpr.evaluate(resultDoc, XPathConstants.NODESET);
-            //  NodeList states = (NodeList) statesExpr.evaluate(resultDoc, XPathConstants.NODESET);
-            NodeList links = (NodeList) linksExpr.evaluate(resultDoc, XPathConstants.NODESET);
-
-            for (int i = 0; i < names.getLength(); i++) {
-                String name = (String) names.item(i).getNodeValue();
-                String description = (String) descriptions.item(i).getNodeValue();
-                //  String state = (String) states.item(i).getNodeValue();
-                String link = (String) links.item(i).getNodeValue();
-
-                Listitem li = new Listitem();
-                Listcell lc = new Listcell();
-
-                //Add hyperlink to the geojson feature resource
-                Toolbarbutton tbFull = new Toolbarbutton();
-                tbFull.setLabel(name);
-                tbFull.setSclass("z-label");
-                tbFull.setHref(link);
-                tbFull.setTarget("_blank");
-
-                lc.appendChild(tbFull);
-                li.appendChild(lc);
-
-
-                lc = new Listcell();
-                Label lb = new Label();
-                lb.setValue(description);
-                lc.appendChild(lb);
-                li.appendChild(lc);
-
-                //Add State
-                lc = new Listcell();
-                lb = new Label();
-                //   lb.setValue(state);
-                lc.appendChild(lb);
-                li.appendChild(lc);
-
-
-                //Add to  map button
-                lc = new Listcell();
-                Button btn = new Button();
-                btn.setLabel("Add to map");
-                btn.addEventListener("onClick", new myOnClickEventListener());
-                btn.setId(name);
-                Label ln = new Label();
-                ln.setValue(link);
-                ln.setVisible(false);
-                ln.setId("ln" + name);
-                lc.appendChild(btn);
-                lc.appendChild(ln);
-                li.appendChild(lc);
-
-                // add the row to the listbox
-                gazetteerResults.appendChild(li);
-
-
-            }
-
-            gazetteerResults.setVisible(true);
-        } catch (Exception e) {
-        }
-
-    }
+//    public void renderGazetteerResults() {
+//
+//        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+//        domFactory.setNamespaceAware(true);
+//        try {
+//            Read in the xml response
+//            DocumentBuilder builder = domFactory.newDocumentBuilder();
+//            String uri = getURI();
+//            Messagebox.show(uri);
+//            Document resultDoc = builder.parse(uri);
+//
+//            Get a list of names,descriptions,states and links from the xml
+//            XPathFactory factory = XPathFactory.newInstance();
+//            XPath xpath = factory.newXPath();
+//            XPathExpression namesExpr = xpath.compile("//search/results/result/name/text()");
+//            XPathExpression descriptionsExpr = xpath.compile("//search/results/result/description/text()");
+//             XPathExpression statesExpr = xpath.compile("//search/results/result/state/text()");
+//            XPathExpression linksExpr = xpath.compile("//search/results/result/@*");
+//
+//            NodeList names = (NodeList) namesExpr.evaluate(resultDoc, XPathConstants.NODESET);
+//            NodeList descriptions = (NodeList) descriptionsExpr.evaluate(resultDoc, XPathConstants.NODESET);
+//              NodeList states = (NodeList) statesExpr.evaluate(resultDoc, XPathConstants.NODESET);
+//            NodeList links = (NodeList) linksExpr.evaluate(resultDoc, XPathConstants.NODESET);
+//
+//            for (int i = 0; i < names.getLength(); i++) {
+//                String name = (String) names.item(i).getNodeValue();
+//                String description = (String) descriptions.item(i).getNodeValue();
+//                  String state = (String) states.item(i).getNodeValue();
+//                String link = (String) links.item(i).getNodeValue();
+//
+//                Listitem li = new Listitem();
+//                Listcell lc = new Listcell();
+//
+//                Add hyperlink to the geojson feature resource
+//                Toolbarbutton tbFull = new Toolbarbutton();
+//                tbFull.setLabel(name);
+//                tbFull.setSclass("z-label");
+//                tbFull.setHref(link);
+//                tbFull.setTarget("_blank");
+//
+//                lc.appendChild(tbFull);
+//                li.appendChild(lc);
+//
+//
+//                lc = new Listcell();
+//                Label lb = new Label();
+//                lb.setValue(description);
+//                lc.appendChild(lb);
+//                li.appendChild(lc);
+//
+//                Add State
+//                lc = new Listcell();
+//                lb = new Label();
+//                   lb.setValue(state);
+//                lc.appendChild(lb);
+//                li.appendChild(lc);
+//
+//
+//                Add to  map button
+//                lc = new Listcell();
+//                Button btn = new Button();
+//                btn.setLabel("Add to map");
+//                btn.addEventListener("onClick", new myOnClickEventListener());
+//                btn.setId(name);
+//                Label ln = new Label();
+//                ln.setValue(link);
+//                ln.setVisible(false);
+//                ln.setId("ln" + name);
+//                lc.appendChild(btn);
+//                lc.appendChild(ln);
+//                li.appendChild(lc);
+//
+//                 add the row to the listbox
+//                gazetteerResults.appendChild(li);
+//
+//
+//            }
+//
+//            gazetteerResults.setVisible(true);
+//        } catch (Exception e) {
+//        }
+//
+//    }
 
     /**
      * Gets the main pages controller so we can add a

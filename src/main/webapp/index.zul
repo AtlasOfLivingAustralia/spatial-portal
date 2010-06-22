@@ -420,7 +420,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 <label value="Enter place name" />
                                                 <hbox>
                                                     <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
-                                                    <button id="gazSearch" label="Add to Map" />
+                                                   <!-- <button id="gazSearch" label="Add to Map" /> -->
                                                     <label id="resultGaz" />
                                                 </hbox>
                                                 <listbox id="gazetteerResults" fixedLayout="true" visible="false">
