@@ -1,5 +1,7 @@
 package org.ala.spatial.gazetteer;
 
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.composer.MapComposer;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zk.ui.event.InputEvent;
 import java.util.Iterator;
@@ -15,9 +17,17 @@ import org.apache.http.HttpHost;
 import org.apache.http.protocol.BasicHttpContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+
 import org.zkoss.zhtml.Messagebox;
+import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Label;
+import org.zkoss.zul.Listcell;
+import org.zkoss.zul.Listitem;
 
 public class AutoComplete extends Combobox {
+
+    private String gazServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
 
     public AutoComplete() {
         refresh(""); //init the child comboitems
@@ -27,10 +37,50 @@ public class AutoComplete extends Combobox {
         super(value); //it invokes setValue(), which inits the child comboitems
     }
 
+
+
     @Override
     public void setValue(String value) {
         super.setValue(value);
         refresh(value); //refresh the child comboitems
+    }
+
+    public void onSelect(Event event) {
+          String label = null;
+            String entity = null;
+            MapLayer mapLayer = null;
+
+            //get the entity value from the button id
+          //  entity = event.getData().toString(); // getTarget().getId();
+            Comboitem item = this.getSelectedItem();
+           //Listcell lc  = (Listcell)(item.getFirstChild());
+          label = item.getValue().toString(); //lc.getLabel();
+//         try {
+//          Messagebox.show(label);
+//         }
+//         catch (Exception e) {}
+//            Label ln = (Label) event.getTarget().getFellow("ln" + entity);
+//            label = ln.getValue();
+
+            //get the current MapComposer instance
+            MapComposer mc = getThisMapComposer();
+
+            //add feature to the map as a new layer
+            mapLayer = mc.addGeoJSON(item.getLabel(), gazServer + label);
+    }
+    
+     /**
+     * Gets the main pages controller so we can add a
+     * layer to the map
+     * @return MapComposer = map controller class
+     */
+    private MapComposer getThisMapComposer() {
+
+        MapComposer mapComposer = null;
+        Page page = this.getPage();
+        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
+
+        return mapComposer;
     }
 
     /** Listens for what a user is entering.
