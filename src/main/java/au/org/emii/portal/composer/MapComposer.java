@@ -322,9 +322,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
-    public void onClick$zoomExtent() {
-        // change opacity for the current selected and displayed layer
-        MapLayer selectedLayer = this.getActiveLayersSelection(true);
+    public void zoomToExtent(MapLayer selectedLayer) {
+       
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("zooming to extent " + selectedLayer.getId());
             if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
@@ -1716,16 +1715,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onSelect$activeLayersList(ForwardEvent event) {
-        updateLayerControls();
+       // updateLayerControls();
     }
-
-    /**
-     * Enable or disable layer controls depending on the current selection.
-     *
-     * At the moment this shows/hides the opacity controls
-     */
-    public void updateLayerControls() {
-        MapLayer currentSelection = getActiveLayersSelection(false);
+    
+    
+    public void setupLayerControls(MapLayer m) {
+        
+        MapLayer currentSelection = m;
+        
         /* only show /or attempt to update the controls when:
          * 	1	there are some active layers
          * 	2	a layer is selected (not safe without (1) because the selected item
@@ -1856,7 +1853,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             layerControls.setVisible(true);
         }
+    }
 
+
+
+    /**
+     * Enable or disable layer controls depending on the current selection.
+     *
+     * At the moment this shows/hides the opacity controls
+     */
+    public void updateLayerControls() {
+        
+        MapLayer currentSelection = getActiveLayersSelection(false);
+        setupLayerControls(currentSelection);
     }
 
     public void mapLoaded(String text) {
