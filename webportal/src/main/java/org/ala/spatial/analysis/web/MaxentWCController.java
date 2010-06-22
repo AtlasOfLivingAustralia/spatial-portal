@@ -80,7 +80,7 @@ public class MaxentWCController extends UtilityComposer {
     private Window maxentInfoWindow;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
     private MapComposer mc;
-    private String geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";  // http://localhost:8080
+    private String geoServer = "http://spatial.ala.org.au";  // http://localhost:8080
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;

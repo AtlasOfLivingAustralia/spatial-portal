@@ -27,7 +27,7 @@ import org.zkoss.zul.Listitem;
 
 public class AutoComplete extends Combobox {
 
-    private String gazServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
+    private String gazServer = "http://spatial.ala.org.au";
 
     public AutoComplete() {
         refresh(""); //init the child comboitems

@@ -49,11 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.FilteringWCController;
 import org.ala.spatial.analysis.web.AnalysisController;
+import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -191,6 +193,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Label createSavedMapError;
     private Toolbarbutton loginButton;
     private Toolbarbutton logoutButton;
+    private LayersAutoComplete lac;
     /**
      * Logout service spring bean - autowired
      */
@@ -470,18 +473,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
-        if (searchSpeciesAuto.getSelectedItem() == null) return;
+        if (searchSpeciesAuto.getSelectedItem() == null) {
+            return;
+        }
 
         //btnSearchSpecies.setVisible(true);
         String taxon = searchSpeciesAuto.getValue();
+        String rank = "";
 
         String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
-        if (spVal.trim().startsWith("Scientific")) {
+        if (spVal.trim().startsWith("Scientific name")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
             mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
+            rank = "common name";
         } else {
-            mapSpeciesByName(taxon);
+            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+            System.out.println("mapping rank and species: " + rank + " - " + taxon);
+            mapSpeciesByNameRank(taxon, rank, null);
         }
 
 
@@ -493,6 +502,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //}
         //taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
         //mapSpeciesByName(taxon);
+
+    }
+
+    public void onChange$lac() {
+
+        if (lac.getItemCount() > 0) {
+            JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
+            addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75);
+            lac.setValue("");
+        }
 
     }
 
@@ -2642,29 +2661,33 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void mapSpeciesByName(String speciesName, String commonName) {
+        mapSpeciesByNameRank(speciesName, "scientificname", commonName); 
+    }
+
+    public void mapSpeciesByNameRank(String speciesName, String speciesRank, String commonName) {
         String filter;
         String uri;
-        String layerName = "ALA:occurrencesv1";
+        String layerName = "ALA:occurrences";
         String sld = "species_point";
 
         if (settingsSupplementary != null) {
             geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
         }
 
-        geoServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com";
-        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
+        geoServer = "http://spatial.ala.org.au";
+        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
 
 
         //contruct the filter in cql
         //have to check the Genus name is in Capitals
-        filter = "species eq '" + capitalise(speciesName.trim()) + "'";
+        filter = speciesRank + " eq '" + capitalise(speciesName.trim()) + "'";
 
         String label = speciesName;
         if (StringUtils.isNotBlank(commonName)) {
             label += " (" + commonName + ")";
         }
 
-        System.out.println("Mapping: " + label); 
+        System.out.println("Mapping: " + label);
 
         try {
             addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));

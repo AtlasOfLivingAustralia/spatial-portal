@@ -123,6 +123,24 @@
                         <listheader label="Select layers" />
                     </listhead>
                 </listbox>
+
+                <label value="Enter a layer name or a keyword" />
+                <checkbox id="chkAutoPreview" label="Automatically preview layer" />
+                <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
+                    <comboitem label=""/>
+                </combobox>
+                <listbox id="lbLayers">
+                    <listhead>
+                        <listheader label="Name" />
+                        <listheader label="Type" />
+                        <!-- <listheader label="Scale" /> -->
+                    </listhead>
+                </listbox>
+                <div id="actionLinksContainer">
+                    <button id="alMap" label="Map" />
+                    <button id="alInfo" label="Info" />
+                    <button id="alDelete" label="Delete" />
+                </div>
             </vbox>
         </div>
         <div sclass="highlighted" >

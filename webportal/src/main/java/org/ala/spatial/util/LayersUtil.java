@@ -307,4 +307,31 @@ public class LayersUtil {
 
         return aslist;
     }
+
+    /**
+     * Return a list of all layers available
+     *
+     * @return String list of layers
+     */
+    public String getLayerList() {
+        try {
+
+            String envurl = satServer + "/alaspatial/ws/layers/list";
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(envurl);
+            //get.addRequestHeader("Content-type", "application/json");
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println("got:\n" + slist);
+
+        } catch (Exception e) {
+            System.out.println("error setting up ctx list");
+            e.printStackTrace(System.out);
+        }
+        return null;
+    }
 }

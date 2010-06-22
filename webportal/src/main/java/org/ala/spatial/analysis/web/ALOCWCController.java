@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -23,6 +24,7 @@ import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
@@ -31,6 +33,8 @@ import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Popup;
+import org.zkoss.zul.Toolbarbutton;
 
 /**
  *
@@ -55,6 +59,10 @@ public class ALOCWCController extends UtilityComposer {
     String legendPath;
     LayersUtil layersUtil;
     String previousArea = "";
+    private LayersAutoComplete lac;
+    private Listbox lbLayers;
+    private Checkbox chkAutoPreview; 
+    private List<JSONObject> selectedLayers2;
 
     @Override
     public void afterCompose() {
@@ -70,6 +78,7 @@ public class ALOCWCController extends UtilityComposer {
         setupEnvironmentalLayers();
 
         selectedLayers = new Vector<String>();
+        selectedLayers2 = new Vector<JSONObject>();
     }
 
     /**
@@ -116,6 +125,113 @@ public class ALOCWCController extends UtilityComposer {
         } else {
             System.out.println("is new");
             selectedLayers.add(new_value);
+        }
+    }
+
+    public void onChange$lac(Event event) {
+
+        JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
+
+        selectedLayers2.add(jo);
+
+        //System.out.println("Adding: " + (String)lac.getSelectedItem().getLabel() + " - " + (String)lac.getSelectedItem().getDescription() + " - " + lac.getValue());
+
+        /* apply something to line onclick in lb */
+        lbLayers.setItemRenderer(new ListitemRenderer() {
+
+            @Override
+            public void render(Listitem li, Object data) {
+                JSONObject jo = (JSONObject) data;
+
+                // Col 1: Add the layer name
+                Listcell lname = new Listcell(jo.getString("displayname"));
+                lname.setStyle("white-space: normal;");
+                lname.setParent(li);
+
+                // Col 2: Add the layer type
+                Listcell ltype = new Listcell(jo.getString("type"));
+                ltype.setStyle("white-space: normal;");
+                ltype.setParent(li);
+
+                // Col 3: Add the scale
+                //Listcell lscale = new Listcell(jo.getString("scale"));
+                //lscale.setStyle("white-space: normal;");
+                //lscale.setParent(li);
+
+            }
+        });
+
+        lbLayers.setModel(new SimpleListModel(selectedLayers2));
+        lbLayers.setSelectedIndex(selectedLayers2.size() - 1);
+
+        lac.setValue("");
+
+        // check if we need to automatically load the layer
+        if (chkAutoPreview.isChecked()) {
+            mc.addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75);
+        }
+    }
+
+    public void onClick$alMap(Event event) {
+        try {
+
+            JSONObject jo = (JSONObject) lbLayers.getModel().getElementAt(lbLayers.getSelectedIndex());
+
+            if (jo == null) {
+                Messagebox.show("Unable to display map for the selected layer");
+            } else {
+                mc.addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error clicking button alInfo");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void onClick$alInfo(Event event) {
+        try {
+
+            JSONObject jo = (JSONObject) lbLayers.getModel().getElementAt(lbLayers.getSelectedIndex());
+
+            if (jo == null) {
+                Messagebox.show("Unable to display information for the selected layer");
+            } else {
+                String info = "";
+                info += "Name: " + "\n";
+                info += jo.getString("displayname") + "\n";
+                info += "Description: " + "\n";
+                info += jo.getString("description") + "\n";
+                info += "Scale: " + "\n";
+                info += jo.getString("scale");
+
+                info += "test1\ntest2<br />test3"; 
+
+                Messagebox.show(info);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error clicking button alInfo");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void onClick$alDelete(Event event) {
+        try {
+
+            JSONObject jo = (JSONObject) lbLayers.getModel().getElementAt(lbLayers.getSelectedIndex());
+
+            if (jo == null) {
+                Messagebox.show("Unable to delete the selected layer");
+            } else {
+                selectedLayers2.remove(lbLayers.getSelectedIndex());
+                lbLayers.setModel(new SimpleListModel(selectedLayers2));
+                lbLayers.setSelectedIndex(selectedLayers2.size() - 1);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error clicking button alInfo");
+            e.printStackTrace(System.out);
         }
     }
 

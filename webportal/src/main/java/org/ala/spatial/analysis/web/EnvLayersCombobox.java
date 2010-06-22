@@ -24,7 +24,7 @@ public class EnvLayersCombobox extends Combobox {
 
     private String[] envLayers;
     private SettingsSupplementary settingsSupplementary = null;
-    private String satServer = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"; // http://localhost:8080
+    private String satServer = "http://spatial.ala.org.au"; // http://localhost:8080
 
     public EnvLayersCombobox(String value) throws WrongValueException {
         super(value);

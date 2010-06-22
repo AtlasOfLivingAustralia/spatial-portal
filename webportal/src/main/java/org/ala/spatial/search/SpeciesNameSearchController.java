@@ -478,10 +478,10 @@ public class SpeciesNameSearchController extends UtilityComposer {
            
 
             //TODO these paramaters need to read from the config
-            String layerName = "ALA:occurrencesv1";
+            String layerName = "ALA:occurrences";
             String sld = "species_point";
 
-            uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencesv1&&outputFormat=json&CQL_FILTER=";
+            uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrencess&outputFormat=json&CQL_FILTER=";
 
             //get the entity value from the button id
             entity = event.getTarget().getId();
@@ -493,7 +493,7 @@ public class SpeciesNameSearchController extends UtilityComposer {
             MapComposer mc = getThisMapComposer();
 
             //contruct the filter in cql
-            filter = "species eq '" + label + "'";
+            filter = "scientificname eq '" + label + "'";
 
             mc.addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
         }
