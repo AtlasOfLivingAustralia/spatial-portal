@@ -17,6 +17,7 @@ public class ActiveLayersLegendEventListener extends PortalEvent implements Even
 			Component target = event.getTarget();
 			Listitem listItem = (Listitem) target.getParent().getParent();
 			MapLayer activeLayer = (MapLayer) listItem.getValue();
+                        listItem.setSelected(true);
 
 			if (activeLayer != null) {
 				mapComposer.setupLayerControls(activeLayer);

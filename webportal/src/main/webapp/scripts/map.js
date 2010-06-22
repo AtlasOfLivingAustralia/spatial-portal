@@ -801,7 +801,7 @@ function addJsonFeatureToMap(feature, name, hexColour) {
     return vector_layer;
 }
 
-function redrawFeatures(feature, name, hexColour) {
+function redrawFeatures(feature, name, hexColour, opacity) {
     var gjLayers = map.getLayersByName(name);
     var geojson_format = new OpenLayers.Format.GeoJSON();
     features = geojson_format.read(feature);
@@ -809,15 +809,8 @@ function redrawFeatures(feature, name, hexColour) {
     var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = hexColour;
     layer_style.strokeColor = hexColour;
-
-    var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
-    {
-        fillColor: hexColour,
-        fillOpacity: 1,
-        strokeColor: hexColour
-    },
-    OpenLayers.Feature.Vector.style["new"]));
-
+    layer_style.fillOpacity = opacity;
+    
     for (key in gjLayers) {
 
         if (gjLayers[key] != undefined) {
@@ -828,15 +821,6 @@ function redrawFeatures(feature, name, hexColour) {
 
                 layer.destroyFeatures();
                 layer.style = layer_style;
-
-                /*for(var i=0; i<features.length; ++i) {
-                    layer.drawFeature(features[i]);
-                }
-
-                layer.events.register("featureselected", layer, selected);
-                selectControl = new OpenLayers.Control.SelectFeature(layer);
-                map.addControl(selectControl);
-                selectControl.activate();*/
                 layer.addFeatures(features);
 
 
