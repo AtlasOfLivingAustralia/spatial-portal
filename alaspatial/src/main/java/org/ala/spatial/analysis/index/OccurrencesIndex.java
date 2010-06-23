@@ -701,7 +701,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         for (j = 0; j < line.length; j++) {
             for (i = 0; i < columns.length; i++) {
-                if (columns[i].equals(line[j])) {
+                if (columns[i].equalsIgnoreCase(line[j])) {
                     column_positions[i] = j;
                 }
             }

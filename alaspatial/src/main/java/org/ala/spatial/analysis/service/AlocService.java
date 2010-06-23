@@ -204,11 +204,18 @@ public class AlocService {
              */
             int[] groups = Aloc.runGowerMetric(data_clean, numberofgroups);
 
-
+            /* recalculate group counts */
+            numberofgroups = 0;
+            for (i=0;i<groups.length;i++){
+                if(groups[i] > numberofgroups){
+                    numberofgroups = groups[i];
+                }
+            }
+            numberofgroups++; //group number is 0..n-1
 
             /* calculate group means */
-            double[][] group_means = new double[groups.length][data_clean[0].length];
-            int[] group_counts = new int[groups.length];
+            double[][] group_means = new double[numberofgroups][data_clean[0].length];
+            int[] group_counts = new int[numberofgroups];
 
             /* TODO: handle numerical overflow when calculating means */
             for (i = 0; i < groups.length; i++) {
