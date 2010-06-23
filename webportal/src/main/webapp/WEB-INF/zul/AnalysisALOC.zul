@@ -4,8 +4,12 @@
 
     <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" >
 
-        <panel id="help" title="Click for Classification Tool Help" border="normal"  open="false"
-               onClick="if(help.isOpen())help.open=false; else help.open=true;" style="padding: 5px">
+        <div align="right">
+            <button label="?" sclass="helpButton"
+                    onClick="help.open=(help.open) ? false:true;" />
+        </div>
+        <separator/>
+        <panel id="help" border="normal" open="false" style="padding: 5px">
             <panelchildren>
                 <html style="white-space: normal;"><![CDATA[
             <p>
@@ -107,8 +111,8 @@
 
         <div sclass="highlighted" >
             <vbox>
-            <label value="Step 1: Restrict area" />
-            <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
+                <label value="Step 1: Restrict area" />
+                <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
             </vbox>
         </div>
         <div sclass="highlighted" >
@@ -124,22 +128,24 @@
                     </listhead>
                 </listbox>
 
-                <label value="Enter a layer name or a keyword" />
-                <checkbox id="chkAutoPreview" label="Automatically preview layer" />
-                <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
-                    <comboitem label=""/>
-                </combobox>
-                <listbox id="lbLayers">
-                    <listhead>
-                        <listheader label="Name" />
-                        <listheader label="Type" />
-                        <!-- <listheader label="Scale" /> -->
-                    </listhead>
-                </listbox>
-                <div id="actionLinksContainer">
-                    <button id="alMap" label="Map" />
-                    <button id="alInfo" label="Info" />
-                    <button id="alDelete" label="Delete" />
+                <div visible="false">
+                    <label value="Enter a layer name or a keyword" />
+                    <checkbox id="chkAutoPreview" label="Automatically preview layer" />
+                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
+                        <comboitem label=""/>
+                    </combobox>
+                    <listbox id="lbLayers">
+                        <listhead>
+                            <listheader label="Name" />
+                            <listheader label="Type" />
+                            <!-- <listheader label="Scale" /> -->
+                        </listhead>
+                    </listbox>
+                    <div id="actionLinksContainer">
+                        <button id="alMap" label="Map" />
+                        <button id="alInfo" label="Info" />
+                        <button id="alDelete" label="Delete" />
+                    </div>
                 </div>
             </vbox>
         </div>

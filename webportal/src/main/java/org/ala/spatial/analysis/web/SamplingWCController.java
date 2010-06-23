@@ -551,13 +551,17 @@ public class SamplingWCController extends UtilityComposer {
         }
 
         String taxon = sac.getValue();
+        String rank = "";
         String spVal = sac.getSelectedItem().getDescription();
-        if (spVal.trim().startsWith("Scientific")) {
+        if (spVal.trim().startsWith("Scientific name")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            rank = "common name";
             mc.mapSpeciesByName(taxon, sac.getValue());
         } else {
-            mc.mapSpeciesByName(taxon);
+            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+            //mc.mapSpeciesByName(taxon);
+            mc.mapSpeciesByNameRank(taxon, rank, null);
         }
         //taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
         //mc.mapSpeciesByName(taxon);

@@ -1,22 +1,52 @@
 <!-- <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?> -->
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk>
-    <panel id="help" title="Click for environmental envelope Help"
-           style="padding: 5px" border="normal"  open="false"
-           onClick="if(help.isOpen())help.open=false; else help.open=true;">
-        <panelchildren><html style="white-space: normal;"><![CDATA[
-With this option, area is defined by upper and lower values of a combination of environmental layers. For example, the selection of values of 10c and 12c of annual mean temperature will create a set of areas (polygons) on the map that conform to those limits: Areas within those polygons will have an annual mean temperature between 10-12c. The number of species in this area will be reported once 'Apply Filter' is pressed. Additional environmental layers can be added that will further restrict the environmental envelope and the number of species it contains.
-<br><br>
-Step 1. Select an environmental layer to be used as a filter. This layer will be added to the table. Clicking on the layer will link to metadata describing this layer.
-<br><br>
-   Step 2. Select the lower and upper values for the selected layer using the slider bars or entering the values directly into the upper and lower values boxes.
-<br><br>
-   Step 3. The map will update to show what geographic areas conform to this environmental envelope (filter).
-<br><br>
-   Step 4. The number of species in the environmental envelope will be displayed. Clicking on this number will display the list of species that are within this environmental envelope.
-<br><br>
-   Step 5. The list of species or the individual observations of the listed species can be exported (CSV format) by clicking on the appropriate button.
-        ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
+    <div align="right">
+        <button label="?" sclass="helpButton"
+            onClick="help.open=(help.open) ? false:true;" />
+    </div>
+    <separator/>
+    <panel id="help" style="padding: 5px;" border="normal" open="false">
+        <panelchildren>
+            <html style="white-space: normal; padding: 5px"><![CDATA[
+                    With this option, area is defined by upper and lower values
+                    of a combination of environmental layers. For example, the
+                    selection of values of 10c and 12c of annual mean temperature
+                    will create a set of areas (polygons) on the map that conform
+                    to those limits: Areas within those polygons will have an annual
+                    mean temperature between 10-12c. The number of species in
+                    this area will be reported once 'Apply Filter' is pressed.
+                    Additional environmental layers can be added that will further
+                    restrict the environmental envelope and the number of species
+                    it contains.
+
+                    <br /><br />
+                    <strong>Step 1</strong>. Select an environmental layer to be used as a filter.
+                    This layer will be added to the table. Clicking on the layer
+                    will link to metadata describing this layer.
+
+                    <br /><br />
+                    <strong>Step 2</strong>. Select the lower and upper values for the selected
+                    layer using the slider bars or entering the values directly
+                    into the upper and lower values boxes.
+
+                    <br /><br />
+                    <strong>Step 3</strong>. The map will update to show what geographic areas
+                    conform to this environmental envelope (filter).
+
+                    <br /><br />
+                    <strong>Step 4</strong>. The number of species in the environmental envelope
+                    will be displayed. Clicking on this number will display the
+                    list of species that are within this environmental envelope.
+
+                    <br /><br />
+                    <strong>Step 5</strong>. The list of species or the individual observations
+                    of the listed species can be exported (CSV format) by clicking
+                    on the appropriate button.
+            ]]></html>
+            <separator/>
+            <div align="right"><button label="hide help" onClick="help.open=false;" /></div>
+        </panelchildren>
     </panel>
 
     <window id="filteringwindow" apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController">
@@ -61,9 +91,9 @@ Step 1. Select an environmental layer to be used as a filter. This layer will be
                         <div id="popup_continous" visible="false" width="90%" sclass="highlighted">
 
                             <label sclass="word-wrap"
-                            style="white-space: normal; font-weight:bold"
-                            value="edit filter for this layer" id="label_continous"
-                            multiline="true"/>
+                                   style="white-space: normal; font-weight:bold"
+                                   value="edit filter for this layer" id="label_continous"
+                                   multiline="true"/>
 
                             <separator sclass="hr" height="2px" />
                             <vbox><label value="full range"/><label id="popup_range"/>
