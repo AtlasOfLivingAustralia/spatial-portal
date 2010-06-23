@@ -1,31 +1,62 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
 <zk>
-    <panel id="help" title="Click for Sampling Tool Help" border="normal"  open="false"
-           onClick="if(help.isOpen())help.open=false; else help.open=true;" style="padding: 5px" >
-        <panelchildren><html style="white-space: normal;"><![CDATA[
-This tool samples environmental and contextual data layers at locations defined by species observations. Think of this tool as driving a sample tool through a user-selected set of layers at the locations of all user-selected species and reading off the values at that point." The output is a CSV-formatted file of the locations and environmental/contextual values."
-<br><br>
-
-<b>Process</b>
-
-<br><br>&nbsp;&nbsp;&nbsp;1.  Select a species of interest. This will immediately identify the geographic locations where this species has been observed or sampled.
-
-<br><br>&nbsp;&nbsp;&nbsp;2.  Select the environmental and contextual layers you want sampled at the geographic locations. Environmental data will return a numeric value, for example a value of mean annual temperature at each of the locations defined by the species. Sampling contextual layers will return a category/class, for example, a land-use category. Clicking on the layer name will link to metadata describing that layer.
-
-<br><br>&nbsp;&nbsp;&nbsp;3.  When all layers have been selected, click run and when the sampling is completed, a window will display the samples.
-
-<br><br>&nbsp;&nbsp;&nbsp;4.  Click download to download the CSV-format file to your system.
-        ]]></html><separator/><div align="right"><button label="hide help" onClick="help.open=false;" /></div></panelchildren>
-    </panel>
-
     <window id="samplingwindow" use="org.ala.spatial.analysis.web.SamplingWCController"
             apply="org.ala.spatial.analysis.web.SamplingWCController">
 
+        <div align="right">
+            <button label="?" sclass="helpButton"
+                    onClick="help.open=(help.open) ? false:true;" />
+        </div>
+        <separator/>
+        <panel id="help" border="normal" open="false" style="padding: 5px" >
+            <panelchildren><html style="white-space: normal;"><![CDATA[
+                This tool samples environmental and contextual data layers at
+                locations defined by species observations. Think of this tool as
+                driving a sample tool through a user-selected set of layers at
+                the locations of all user-selected species and reading off the
+                values at that point. "The output is a CSV-formatted file of the
+                locations and environmental/contextual values."
+
+                <br /><br />
+
+                <strong>Process</strong>
+                <ol>
+                    <li>
+                        Select a species of interest. This will immediately
+                        identify the geographic locations where this species has
+                        been observed or sampled.
+                    </li>
+                    <li>
+                        Select the environmental and contextual layers you want
+                        sampled at the geographic locations. Environmental data
+                        will return a numeric value, for example a value of mean
+                        annual temperature at each of the locations defined by
+                        the species. Sampling contextual layers will return a
+                        category/class, for example, a land-use category.
+                        Clicking on the layer name will link to metadata describing
+                        that layer.
+                    </li>
+                    <li>
+                        When all layers have been selected, click run and when
+                        the sampling is completed, a window will display the samples.
+                    </li>
+                    <li>
+                        Click download to download the CSV-format file to your system.
+                    </li>
+                </ol>
+                ]]></html>
+                <separator/>
+                <div align="right">
+                    <button label="hide help" onClick="help.open=false;" />
+                </div>
+            </panelchildren>
+        </panel>
+
         <div sclass="highlighted" >
             <vbox>
-            <label value="Step 1: Restrict area" />
-            <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
+                <label value="Step 1: Restrict area" />
+                <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
             </vbox>
         </div>
 
@@ -41,7 +72,7 @@ This tool samples environmental and contextual data layers at locations defined 
 
         <div sclass="highlighted" >
             <label multiline="true" sclass="word-wrap" style="white-space: normal;"
-            value="Step 3: Select the environmental and contextual layers that are to be sampled at species locations" />
+                   value="Step 3: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />

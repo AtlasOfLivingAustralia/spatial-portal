@@ -485,8 +485,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (spVal.trim().startsWith("Scientific name")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
-            mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
             rank = "common name";
+            mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
