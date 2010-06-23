@@ -293,7 +293,7 @@ public class MaxentWCController extends UtilityComposer {
             String area;
             if (user_polygon.length() > 0) {
                 //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
-                area = URLEncoder.encode(user_polygon,"UTF-8");
+                area = user_polygon;//URLEncoder.encode(user_polygon,"UTF-8");
             } else {
                 //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
                 area = "none";
@@ -304,7 +304,8 @@ public class MaxentWCController extends UtilityComposer {
             //GetMethod get = new GetMethod(sbProcessUrl.toString());
             PostMethod get = new PostMethod(sbProcessUrl.toString());
             get.addParameter("area",area);
-            get.addRequestHeader("Content-type", "application/json");
+          //  get.addRequestHeader("Content-type", "application/json");
+            get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
