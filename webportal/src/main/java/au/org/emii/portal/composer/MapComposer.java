@@ -361,7 +361,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
                     System.out.println("redraw geojson");
                     openLayersJavascript.redrawFeatures(selectedLayer);
-                } else {
+                }
+                else if(selectedLayer.getType() == LayerUtilities.WKT) {
+                    openLayersJavascript.redrawWKTFeatures(selectedLayer);
+                }
+                else {
                     System.out.println("nothing:" + selectedLayer.getType());
                     selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
                 }

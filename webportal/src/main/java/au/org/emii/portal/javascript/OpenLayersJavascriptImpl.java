@@ -547,6 +547,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      }
 
      @Override
+     public void redrawWKTFeatures(MapLayer selectedLayer) {
+        String script = "window.mapFrame.redrawWKTFeatures('" + selectedLayer.getWKT() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() +"', " + selectedLayer.getOpacity() + ")";
+         execute(script);
+     }
+
+     @Override
      public String defineWKTMapLayer(MapLayer layer) {
           String script =""
                         + "var vector_layer = window.mapFrame.addWKTFeatureToMap('" + layer.getWKT() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "');"

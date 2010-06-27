@@ -839,6 +839,36 @@ function addJsonFeatureToMap(feature, name, hexColour) {
     return vector_layer;
 }
 
+function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
+    var layers = map.getLayersByName(name);
+    
+    var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = hexColour;
+    layer_style.strokeColor = hexColour;
+    layer_style.fillOpacity = opacity;
+    
+    for (key in layers) {
+
+        if (layers[key] != undefined) {
+
+            var layer = map.getLayer(layers[key].id);
+
+            if (layer.name == name) {
+
+
+                layer.destroyFeatures();
+                layer.style = layer_style;
+                var geom = new OpenLayers.Geometry.fromWKT(featureWKT);
+                layer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
+               
+               // layer.addFeatures(features);
+
+
+            }
+        }
+    }
+}
+
 function redrawFeatures(feature, name, hexColour, opacity) {
     var gjLayers = map.getLayersByName(name);
     var geojson_format = new OpenLayers.Format.GeoJSON();

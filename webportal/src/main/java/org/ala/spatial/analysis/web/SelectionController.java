@@ -130,7 +130,6 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoPolygonSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area. On the last vertex, double click to finalise the polygon. ");
         showPolygonInfo();
-        
         MapComposer mc = getThisMapComposer();
         removeCurrentSelection();
         mc.getOpenLayersJavascript().addPolygonDrawingTool();
@@ -152,9 +151,8 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoPointRadiusSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
         showPolygonInfo();
-        
-        MapComposer mc = getThisMapComposer();
         removeCurrentSelection();
+        MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addRadiusDrawingTool();
     }
 
@@ -222,7 +220,7 @@ public class SelectionController extends UtilityComposer {
 
             //add feature to the map as a new layer
 //            mc.removeLayer("Area Selection");
-          
+         MapLayer mapLayer = mc.addWKTLayer(selectionGeom.getValue(),"Area Selection");
          
             instructions.setValue("");
             //wfsQueryBBox(selectionGeom.getValue());
@@ -242,8 +240,8 @@ public class SelectionController extends UtilityComposer {
             MapComposer mc = getThisMapComposer();
 
             //add feature to the map as a new layer
-            mc.removeLayer("Area Selection");
-             mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
+            //mc.removeLayer("Area Selection");
+            //mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
             MapLayer mapLayer = mc.addWKTLayer(boxGeom.getValue(),"Area Selection");
 
             instructions.setValue("");

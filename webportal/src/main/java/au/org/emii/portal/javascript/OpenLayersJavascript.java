@@ -61,6 +61,8 @@ public interface OpenLayersJavascript {
 
     public void redrawFeatures(MapLayer selectedLayer);
 
+    public void redrawWKTFeatures(MapLayer selectedLayer);
+
     /**
      * Animate the layer - display a big ass animated
      * GIF
