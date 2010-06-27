@@ -61,6 +61,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		// simple description for tooltip
 		label.setTooltiptext(layerUtilities.getTooltip(layer.getName(),layer.getDescription()));
 		
+                label.addEventListener("onClick", new ActiveLayersInfoEventListener());
 		label.setStyle("float:left;");
 		checkbox.setStyle("float:left;");
 		
@@ -122,21 +123,23 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 			legend.setStyle("float:right;");
 			
 			legend.setParent(listcell);
-
-
 			
+
+
 			// hover a tooltip image over the icon
 			Popup popup = (Popup) Executions.createComponents("/WEB-INF/zul/LegendPopup.zul", legend.getRoot(), null);	
 			popup.addEventListener("onOpen", new LegendTooltipOpenEventListener(layer));
 			legend.setTooltip(popup);
-			legend.addEventListener("onClick", new LegendClickEventListener(layer));
+			//legend.addEventListener("onClick", new LegendClickEventListener(layer));
+                        legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
+                        legend.setTooltiptext("View/edit the legend");
 
 		} else {
                     Image legend;
                     legend = new Image(languagePack.getLang("layer_legend_icon"));
                     legend.setStyle("float:right;");
 		    legend.setParent(listcell);
-                    legend.setTooltip("View/edit the legend");
+                    legend.setTooltiptext("View/edit the legend");
                     legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
                 }
 

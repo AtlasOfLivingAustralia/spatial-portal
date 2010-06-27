@@ -9,8 +9,10 @@ import au.org.emii.portal.config.xmlbeans.Discovery;
 import au.org.emii.portal.config.xmlbeans.Service;
 import au.org.emii.portal.factory.DiscoveryProcessorFactory;
 import au.org.emii.portal.lang.LanguagePack;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.util.GeoJSONUtilities;
+import java.util.List;
 import java.util.Random;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,6 +377,14 @@ public class RemoteMapImpl implements RemoteMap {
         mapLayer.setLayer(layerUtilities.getLayers(uri));
         mapLayer.setOpacity(opacity);
         mapLayer.setImageFormat(layerUtilities.getImageFormat(uri));
+
+        /* attempt to retrieve bounding box */
+        List<Double> bbox = layerUtilities.getBBox(uri);
+        if (bbox != null) {
+            MapLayerMetadata md = new MapLayerMetadata();
+            md.setBbox(bbox);
+            mapLayer.setMapLayerMetadata(md);
+        }
 
         /* we don't want our user to have to type loads
          * when adding a new layer so we just assume/generate

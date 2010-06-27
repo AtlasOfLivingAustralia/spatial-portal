@@ -332,7 +332,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
                 openLayersJavascript.zoomGeoJsonExtent(selectedLayer);
             } else {
-                //openLayersJavascript.zoomLayerExtent(selectedLayer);
+                openLayersJavascript.zoomLayerExtent(selectedLayer);
             }
         }
     }
@@ -340,26 +340,59 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$applyChange() {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
-            selectedLayer.setRedVal(redSlider.getCurpos());
-            selectedLayer.setGreenVal(greenSlider.getCurpos());
-            selectedLayer.setBlueVal(blueSlider.getCurpos());
-
-            //Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
-            String rgbColour = "rgb(" + String.valueOf(redSlider.getCurpos()) + "," + greenSlider.getCurpos() + "," + blueSlider.getCurpos() + ")";
-            selectedLayer.setEnvColour(rgbColour);
             float opacity = ((float) opacitySlider.getCurpos()) / 100;
             selectedLayer.setOpacity(opacity);
 
-            if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
-                openLayersJavascript.redrawFeatures(selectedLayer);
-            } else {
-                selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
-            }
+            /* different path for each type layer
+             * 1. symbol
+             * 2. classification legend
+             * 3. prediction legend
+             * 4. other (wms)
+             */
+            if (selectedLayer.isDynamicStyle()) {
+                selectedLayer.setRedVal(redSlider.getCurpos());
+                selectedLayer.setGreenVal(greenSlider.getCurpos());
+                selectedLayer.setBlueVal(blueSlider.getCurpos());
 
+                //Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
+                String rgbColour = "rgb(" + String.valueOf(redSlider.getCurpos()) + "," + greenSlider.getCurpos() + "," + blueSlider.getCurpos() + ")";
+                selectedLayer.setEnvColour(rgbColour);
+
+                if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
+                    System.out.println("redraw geojson");
+                    openLayersJavascript.redrawFeatures(selectedLayer);
+                } else {
+                    System.out.println("nothing:" + selectedLayer.getType());
+                    selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
+                }
+            } else if (selectedLayer.getSelectedStyle() != null) {
+                /* 1. classification legend has uri with ".zul" content
+                 * 2. prediction legend works here                 *
+                 */
+                selectedLayer.setOpacity(opacity);
+                String legendUri = selectedLayer.getSelectedStyle().getLegendUri();
+                if (legendUri.indexOf(".zul") >= 0) {
+                    addImageLayer(selectedLayer.getId(),
+                            selectedLayer.getName(),
+                            selectedLayer.getUri(),
+                            opacity,
+                            null);  //bbox is null, not required for redraw
+                } else {
+                    //redraw
+                    if (safeToPerformMapAction()) {
+                        openLayersJavascript.reloadMapLayerNow(selectedLayer);
+                    }
+                }
+            } else if (selectedLayer.getCurrentLegendUri() != null) {
+                //redraw wms layer if opacity changed
+                if (safeToPerformMapAction()) {
+                    openLayersJavascript.reloadMapLayerNow(selectedLayer);
+                }
+            }
         }
     }
 
-    public void onClick$legendImg() {
+       public void onClick$legendImg() {
         //toggle the colourChooser div
         if (colourChooser.isVisible()) {
             colourChooser.setVisible(false);
@@ -539,6 +572,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // tell openLayers to change zIndexs
         openLayersJavascript.updateMapLayerIndexesNow(activeLayers);
 
+        // hide legend controls
+        hideLayerControls(null);
     }
 
     /**
@@ -771,6 +806,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
             }
         }
+
+        // hide layer controls
+        hideLayerControls(null);
     }
 
     /**
@@ -1442,6 +1480,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else {
                 System.out.println("refreshing exisiting layer");
                 imageLayer.setUri(uri); // + "&_lt=" + System.currentTimeMillis());
+                imageLayer.setOpacity(opacity); // (float) 0.75
 
                 // layer already exists, so lets just update that.
                 //refreshActiveLayer(imageLayer);
@@ -1737,6 +1776,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onSelect$activeLayersList(ForwardEvent event) {
        // updateLayerControls();
+
+        // hide layer controls
+        hideLayerControls(null);
     }
     
     
@@ -1811,8 +1853,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 legendLabel.setVisible(true);
                 legendImgUri.setVisible(false);
                 legendHtml.setVisible(false);
+                colourChooser.setVisible(true);
             } else if (currentSelection.getSelectedStyle() != null) {
-                /* 1. classification legend has uri without ".png" content
+                /* 1. classification legend has uri with ".zul" content
                  * 2. prediction legend works here
                  * TODO: do this nicely when implementing editable prediction layers
                  */
@@ -1864,15 +1907,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 legendImg.setVisible(false);
                 colourChooser.setVisible(false);
             } else {
-                // hide everything
-                legendHtml.setVisible(false);
-                legendImg.setVisible(false);
-                legendImgUri.setVisible(false);
-                legendLabel.setVisible(false);
-                colourChooser.setVisible(false);
-                legendHtml.setVisible(false);
+                hideLayerControls(null);
             }
             layerControls.setVisible(true);
+        } else {
+            hideLayerControls(null);
+        }
+    }
+
+    /**
+     * hides layer controls.
+     *
+     * @param layer layer as MapLayer whose controls need to be hidden
+     * if visible. null to hide without testing against active layer.
+     */
+    public void hideLayerControls(MapLayer layer) {
+        if (layer == null ||
+                layer == getActiveLayersSelection(false)) {
+            layerControls.setVisible(false);
+            legendImg.setVisible(false);
+            legendImgUri.setVisible(false);
+            legendLabel.setVisible(false);
+            colourChooser.setVisible(false);
+            legendHtml.setVisible(false);
         }
     }
 
@@ -2082,11 +2139,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         opacitySlider.setCurpos(percentage);
         opacityLabel.setValue(percentage + "%");
 
+        /** display colourChooser on edit action only
         if (colourChooser.isVisible()) {
             //colourChooser.setVisible(false);
         } else {
             colourChooser.setVisible(true);
-        }
+        }*/
 
         /** change opacity for the current selected and displayed layer
         MapLayer selectedLayer = this.getActiveLayersSelection(true);

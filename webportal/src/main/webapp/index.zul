@@ -645,13 +645,14 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <div align="right" style="padding-top:4px">
                                         <label id="blueLabel" />
                                     </div>
-                                    <separator sclass="hr" height="2px" />
+                                   
+                                </div>
 
-                                    <div align="right" width="90%">
+                                 <separator sclass="hr" height="2px" />
+
+                                 <div align="right" width="90%">
                                         <button id="applyChange" label="Apply" />
                                     </div>
-
-                                </div>
 
                                 <separator sclass="hr" height="2px" />
 

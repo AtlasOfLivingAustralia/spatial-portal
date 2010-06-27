@@ -7,6 +7,7 @@ package au.org.emii.portal.util;
 
 import au.org.emii.portal.menu.MapLayer;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -286,4 +287,6 @@ public interface LayerUtilities {
     public String coerceLegendUri(MapLayer mapLayer);
 
     public String getWmsVersion(MapLayer mapLayer);
+
+    public List<Double> getBBox(String uri);
 }
