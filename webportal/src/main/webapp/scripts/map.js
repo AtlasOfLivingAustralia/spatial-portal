@@ -596,7 +596,7 @@ function featureSelected(feature) {
  //   alert("win!");
     parent.setPolygonGeometry(feature.geometry);
 
-   featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
+  // featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
   //  polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
     areaSelectOn = false;
   //  areaSelectControl.deactivate();
@@ -605,6 +605,8 @@ function featureSelected(feature) {
 
 function radiusAdded(feature) {
     parent.setPolygonGeometry(feature.geometry);
+    removeAreaSelection();
+   // addWKTFeatureToMap(feature.geometry,"Test",'blue');
     radiusControl.deactivate();
 }
 
@@ -618,15 +620,15 @@ function regionAdded(feature) {
     geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
 
     removeAreaSelection();
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-    layer_style.fillColor = "red";
-    layer_style.strokeColor = "red";	
-    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
-        style : layer_style
-    });
-    boxLayer.setVisibility(true);
-    map.addLayer(boxLayer);
-    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
+//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+//    layer_style.fillColor = "red";
+//    layer_style.strokeColor = "red";
+//    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+//        style : layer_style
+//    });
+//    boxLayer.setVisibility(true);
+//    map.addLayer(boxLayer);
+//    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
 
     parent.setRegionGeometry(geoBounds.toGeometry());
     boxControl.deactivate();
@@ -673,7 +675,9 @@ function regionAdded(feature) {
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
-    parent.setPolygonGeometry(feature.geometry);
+    removeAreaSelection();
+   parent.setPolygonGeometry(feature.geometry);
+   
     polyControl.deactivate();
   
 }
@@ -770,9 +774,38 @@ function onPopupClose(evt) {
 }
 
 
+function addWKTFeatureToMap(featureWKT,name,hexColour) {
+    alert(name);
+    var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
+    {
+        fillColor: hexColour,
+        fillOpacity: 0.6,
+        strokeOpacity: 1,
+        strokeWidth: 2,
+        strokeColor: hexColour
+    },
+    OpenLayers.Feature.Vector.style["new"]));
 
+    var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = hexColour;
+    layer_style.strokeColor = hexColour;
+
+    var wktLayer = new OpenLayers.Layer.Vector(name, {
+        style : layer_style
+    });
+    map.addLayer(wktLayer);
+    
+    var geom = new OpenLayers.Geometry.fromWKT(featureWKT);
+    wktLayer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
+
+    wktLayer.isFixed = false;
+    selectionLayers[selectionLayers.length] = wktLayer;
+
+    return wktLayer;
+}
 
 function addJsonFeatureToMap(feature, name, hexColour) {
+    alert(name);
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,

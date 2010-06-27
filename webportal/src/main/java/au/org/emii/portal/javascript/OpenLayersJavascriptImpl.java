@@ -448,7 +448,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                                 script.append(defineGeoJSONMapLayer(mapLayer));
                                 okToAddLayer = true;
                                 break;
-
+                        case LayerUtilitiesImpl.WKT:
+                                script.append(defineWKTMapLayer(mapLayer));
+                                okToAddLayer = true;
+                                break;
                         case LayerUtilitiesImpl.IMAGELAYER:
                                 script.append(defineImageMapLayer(mapLayer));
                                 okToAddLayer = true;
@@ -541,6 +544,17 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
          execute(script);
 
 
+     }
+
+     @Override
+     public String defineWKTMapLayer(MapLayer layer) {
+          String script =""
+                        + "var vector_layer = window.mapFrame.addWKTFeatureToMap('" + layer.getWKT() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "');"
+                        + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
+                        +
+                        "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+               
+          return wrapWithSafeToProceed(script);
      }
 
      @Override

@@ -59,6 +59,7 @@ import org.xml.sax.SAXException;
  *      "THREDDS"
  *      "GEORSS"
  *      "KML"
+ *      "WKT"
  *      "AUTO"  NOTE: Auto discover WMS server - only has meaning during discovery process
  * @author geoff
  *
@@ -91,6 +92,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         versions.add(GEORSS, "GEORSS");
         versions.add(KML, "KML");
         versions.add(GEOJSON, "GEOJSON");
+      
     }
 
     /**
@@ -747,6 +749,11 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     @Override
     public int getGeojson() {
         return GEOJSON;
+    }
+
+    @Override
+    public int getWkt() {
+        return WKT;
     }
 
     @Override

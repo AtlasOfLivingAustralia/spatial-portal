@@ -21,6 +21,7 @@ public interface LayerUtilities {
     public int GEORSS = 6;
     public int KML = 7;
     public int GEOJSON = 8;
+    public int WKT = 11;
     public int IMAGELAYER = 9;
     public int NCWMS = 4;
     public int THREDDS = 5;
@@ -200,6 +201,8 @@ public interface LayerUtilities {
     public int getWms130();
     
     public int getGeojson();
+
+    public int getWkt();
 
     /**
      * Convert a string WMS version eg (1.3.0) to its integer

@@ -295,8 +295,31 @@ public class RemoteMapImpl implements RemoteMap {
         return lastWMSVersionAttempted;
     }
 
+    public MapLayer createWKTLayer(String wkt, String label) {
+        MapLayer wktLayer = new MapLayer();
 
 
+        logger.debug("adding WKT feature layer " + label);
+        wktLayer.setName(label);
+        wktLayer.setLayer(label);
+        wktLayer.setId(label);
+
+        wktLayer.setEnvColour("red");
+
+        int r = 255;
+        int g = 0;
+        int b = 0;
+
+        wktLayer.setBlueVal(b);
+        wktLayer.setGreenVal(g);
+        wktLayer.setRedVal(r);
+
+        wktLayer.setType(layerUtilities.WKT);
+        wktLayer.setWKT(wkt);
+
+        return wktLayer;
+
+    }
     public MapLayer createGeoJSONLayer(String label, String uri) {
         MapLayer geoJSON = new MapLayer();
         
