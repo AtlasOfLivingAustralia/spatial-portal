@@ -479,7 +479,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         
                         //add all the vector layers to be the selectable list
 
-                        script.append("window.mapFrame.setVectorLayersSelectable();");
+                        //script.append("window.mapFrame.setVectorLayersSelectable();");
                         mapLayer.setDisplayed(true);
                 }
 
