@@ -2221,6 +2221,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     mapLayer.setDisplayable(true);
                     mapLayer.setOpacity((float) 0.4);
                     mapLayer.setQueryable(true);
+                    mapLayer.setDynamicStyle(true);
 
 
                     activateLayer(mapLayer, true, true);

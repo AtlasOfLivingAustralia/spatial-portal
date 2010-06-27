@@ -798,6 +798,10 @@ function addJsonFeatureToMap(feature, name, hexColour) {
 
     selectionLayers[selectionLayers.length] = vector_layer;
     vector_layer.events.register("featureselected", vector_layer, selected);
+    selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
+    map.addControl(selectControl);
+    selectControl.activate();
+
     return vector_layer;
 }
 
