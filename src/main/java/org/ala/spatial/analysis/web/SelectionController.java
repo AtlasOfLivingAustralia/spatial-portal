@@ -144,6 +144,7 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoBoxSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size. Release the mouse button. ");
         showPolygonInfo();
+        removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addBoxDrawingTool();
     }
@@ -160,6 +161,7 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoExistingFeatureSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. Identify the polygon of interest by a (left) mouse click within that polygon. (The area will be reported in the Area box). ");
         showPolygonInfo();
+        removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().addFeatureSelectionTool();      
     }
@@ -189,10 +191,13 @@ public class SelectionController extends UtilityComposer {
 
     private void removeCurrentSelection() {
         MapComposer mc = getThisMapComposer();
-          MapLayer test = mc.getMapLayer("Area Selection");
+          MapLayer selectionLayer = mc.getMapLayer("Area Selection");
    
-            if((mc.safeToPerformMapAction())&&(test!=null)) {
-                mc.deactiveLayer(test, true,false);
+            if((mc.safeToPerformMapAction())&&(selectionLayer!=null)) {
+             //  selectionLayer.setDisplayed(false);
+              //selectionLayer.
+               mc.deactiveLayer(selectionLayer, true,false);
+               
             }
 
     }
@@ -218,9 +223,7 @@ public class SelectionController extends UtilityComposer {
             //add feature to the map as a new layer
 //            mc.removeLayer("Area Selection");
           
-            if( mc.safeToPerformMapAction() ) {
-            MapLayer mapLayer = mc.addWKTLayer(selectionGeom.getValue(),"Area Selection");
-            }
+         
             instructions.setValue("");
             //wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME

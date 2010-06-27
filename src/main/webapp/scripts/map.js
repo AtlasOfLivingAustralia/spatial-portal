@@ -417,7 +417,8 @@ function addFeatureSelectionTool() {
 //    });
 //    clickEventHandler.activate();
 //    clickEventHandler.fallThrough = false;
-    selectControl.activate();
+    if (selectControl!=null)
+        selectControl.activate();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";
@@ -775,7 +776,7 @@ function onPopupClose(evt) {
 
 
 function addWKTFeatureToMap(featureWKT,name,hexColour) {
-    alert(name);
+//    alert(name);
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -805,7 +806,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
 }
 
 function addJsonFeatureToMap(feature, name, hexColour) {
-    alert(name);
+//    alert(name);
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
