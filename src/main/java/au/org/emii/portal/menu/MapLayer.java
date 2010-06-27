@@ -141,6 +141,15 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         this.geoJSON = geoJSON;
     }
 
+    protected String geometryWKT = null;
+
+    public String getWKT() {
+        return geometryWKT;
+    }
+
+    public void setWKT(String wkt) {
+        this.geometryWKT = wkt;
+    }
 	/**
      * Supported rendering styles as advertised by the server
      * are stored in this list (WMS only)

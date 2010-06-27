@@ -369,7 +369,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         <panel id="help" border="normal" open="false" style="padding: 5px" >
                             <panelchildren><html style="white-space: normal;"><![CDATA[
                                 <p>
-                                This tab enables spatial features known to the Atas
+                                This tab enables spatial features known to the Atlas
                                 to be mapped. The location of species (or genus, family, order or class)
                                 occurences can be mapped as point features. Clicking on the species
                                 location on the map will pop-up information about that occurence and
@@ -384,7 +384,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 The Atlas also has a library of environmental (gridded data with
                                 continuous values) and 'contextual' layers (polygonal data with class
                                 values) that can be mapped and used in analysis. The Atlas also
-                                supports a TREDDS catalogue and a user-defined WMS service.
+                                supports a THREDDS catalogue and a user-defined WMS service.
                                 </p>
                                 ]]></html>
                                 <separator/>

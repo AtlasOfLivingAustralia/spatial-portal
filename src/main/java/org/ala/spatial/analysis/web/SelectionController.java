@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -129,7 +130,9 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoPolygonSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area. On the last vertex, double click to finalise the polygon. ");
         showPolygonInfo();
+        
         MapComposer mc = getThisMapComposer();
+        removeCurrentSelection();
         mc.getOpenLayersJavascript().addPolygonDrawingTool();
 
     }
@@ -148,7 +151,9 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoPointRadiusSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
         showPolygonInfo();
+        
         MapComposer mc = getThisMapComposer();
+        removeCurrentSelection();
         mc.getOpenLayersJavascript().addRadiusDrawingTool();
     }
 
@@ -182,6 +187,16 @@ public class SelectionController extends UtilityComposer {
         polygonInfo.setVisible(false);
     }
 
+    private void removeCurrentSelection() {
+        MapComposer mc = getThisMapComposer();
+          MapLayer test = mc.getMapLayer("Area Selection");
+   
+            if((mc.safeToPerformMapAction())&&(test!=null)) {
+                mc.deactiveLayer(test, true,false);
+            }
+
+    }
+
     /**
      * 
      * @param event
@@ -197,6 +212,15 @@ public class SelectionController extends UtilityComposer {
 
             displayGeom.setValue(selectionGeom.getValue());
 
+            //get the current MapComposer instance
+            MapComposer mc = getThisMapComposer();
+
+            //add feature to the map as a new layer
+//            mc.removeLayer("Area Selection");
+          
+            if( mc.safeToPerformMapAction() ) {
+            MapLayer mapLayer = mc.addWKTLayer(selectionGeom.getValue(),"Area Selection");
+            }
             instructions.setValue("");
             //wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
@@ -210,6 +234,14 @@ public class SelectionController extends UtilityComposer {
 //            Events.echoEvent("onDoInit", this, boxGeom.getValue());
             
             displayGeom.setValue(boxGeom.getValue());
+
+            //get the current MapComposer instance
+            MapComposer mc = getThisMapComposer();
+
+            //add feature to the map as a new layer
+            mc.removeLayer("Area Selection");
+             mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
+            MapLayer mapLayer = mc.addWKTLayer(boxGeom.getValue(),"Area Selection");
 
             instructions.setValue("");
             //wfsQueryBBox(boxGeom.getValue());

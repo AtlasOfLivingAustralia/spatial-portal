@@ -51,6 +51,8 @@ public interface RemoteMap {
 
     MapLayer createGeoJSONLayer(String label, String uri);
 
+    MapLayer createWKTLayer(String wkt, String label);
+
     /**
      * Discovery of nested services
      * @param discovery

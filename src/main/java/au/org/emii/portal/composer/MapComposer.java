@@ -2265,6 +2265,42 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     }
 
+    public MapLayer addWKTLayer(String wkt, String label) {
+        MapLayer mapLayer = null;
+
+        if (safeToPerformMapAction()) {
+            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), label) == null) {
+                mapLayer = remoteMap.createWKTLayer(wkt,label);
+                if (mapLayer == null) {
+                    // fail
+                    showMessage("No mappable features available");
+                    logger.info("adding WKT layer failed ");
+                } else {
+                    mapLayer.setDisplayable(true);
+                    mapLayer.setOpacity((float) 0.4);
+                    mapLayer.setQueryable(true);
+                    mapLayer.setDynamicStyle(true);
+
+                    activateLayer(mapLayer, true, true);
+
+                    // we must tell any future tree menus that the map layer is already
+                    // displayed as we didn't use changeSelection()
+                    mapLayer.setListedInActiveLayers(true);
+
+
+                }
+            } else {
+                // fail
+                showMessage("WKT layer already exists");
+                logger.info(
+                        "refusing to add a new layer with name " + label
+                        + " because it already exists in the menu");
+            }
+        }
+
+        return mapLayer;
+    }
+
     public MapLayer addGeoJSONLayer(String label, String uri) {
         MapLayer mapLayer = null;
 
@@ -2298,9 +2334,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         + " because it already exists in the menu");
             }
         }
-
-
-
 
         return mapLayer;
     }
