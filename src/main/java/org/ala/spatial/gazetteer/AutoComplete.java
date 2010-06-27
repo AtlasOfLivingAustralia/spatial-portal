@@ -54,6 +54,11 @@ public class AutoComplete extends Combobox {
           //  entity = event.getData().toString(); // getTarget().getId();
             Comboitem item = this.getSelectedItem();
            //Listcell lc  = (Listcell)(item.getFirstChild());
+            
+            //avoid error seen when occasionally changing tabs
+            if(item == null || item.getValue() == null){
+                return;
+            }
           label = item.getValue().toString(); //lc.getLabel();
 //         try {
 //          Messagebox.show(label);

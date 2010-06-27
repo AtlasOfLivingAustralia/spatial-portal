@@ -158,7 +158,14 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void zoomLayerExtent (MapLayer ml) {
-        String script = "window.mapFrame.zoomBoundsLayer('" + ml.getName() + "')";
+        String script;
+        /* if map boundingbox is defined use it to zoom */
+        if (ml.getMapLayerMetadata() != null) {
+            script = "map.zoomToExtent(new OpenLayers.Bounds(" +
+                ml.getMapLayerMetadata().getBboxString() + "));";
+        } else {
+            script = "window.mapFrame.zoomBoundsLayer('" + ml.getName() + "')";
+        }
         execute(script);
     }
 
@@ -547,7 +554,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
                         +
                         "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
-               
+
                 return wrapWithSafeToProceed(script);
         }
 

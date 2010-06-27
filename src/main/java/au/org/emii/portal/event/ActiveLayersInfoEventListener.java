@@ -20,6 +20,7 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
 
 			if (activeLayer != null) {
 				//mapComposer.deactiveLayer(activeLayer, true, false);
+                            mapComposer.showMessage("not yet implemented");
 			}
 			else {
 				//logger.debug("nothing selected in active layers list will do nothing");

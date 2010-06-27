@@ -19,6 +19,7 @@ import net.opengis.wms.WMSCapabilitiesDocument.WMSCapabilities;
 import org.apache.xmlbeans.XmlException;
 
 import au.org.emii.portal.config.xmlbeans.Discovery;
+import au.org.emii.portal.menu.MapLayerMetadata;
 
 public abstract class WMSSupportXmlbeans extends WMSSupport {
 
@@ -180,6 +181,19 @@ public abstract class WMSSupportXmlbeans extends WMSSupport {
 					(! queryableDisabled) &&  
 					layer.isSetQueryable()
 			);
+
+                        //attempt to add boundingbox, TODO: test & fix
+                        try {
+                            List<Double> bbox = new ArrayList<Double>();
+                            bbox.add(new Double(layer.getBoundingBoxArray(0).getMinx()));
+                            bbox.add(new Double(layer.getBoundingBoxArray(0).getMiny()));
+                            bbox.add(new Double(layer.getBoundingBoxArray(0).getMaxx()));
+                            bbox.add(new Double(layer.getBoundingBoxArray(0).getMaxy()));
+                            MapLayerMetadata md = new MapLayerMetadata();
+                            md.setBbox(bbox);
+                            mapLayer.setMapLayerMetadata(md);
+                        } catch (Exception e) {
+                        }
 
 			/* sometimes people don't setup servers right and leave off the label
 			 * names - if this is the case, substitute the layer name instead

@@ -7,10 +7,13 @@ import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.composer.MapComposer;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Image;
+import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 
 /**
@@ -27,8 +30,9 @@ public class VisibilityToggleEventListener implements EventListener {
 		logger.debug("VisibilityToggleEventListener.onEvent() fired ");
 		Checkbox checkbox = (Checkbox) event.getTarget();
 		MapComposer mapComposer = (MapComposer) event.getPage().getFellow("mapPortalPage");
-		if (mapComposer.safeToPerformMapAction()) {	
-			MapLayer layer = (MapLayer)((Listitem) checkbox.getParent().getParent()).getValue();
+		if (mapComposer.safeToPerformMapAction()) {
+                        Listitem listitem = (Listitem) checkbox.getParent().getParent();
+			MapLayer layer = (MapLayer) listitem.getValue();
 			boolean checked = checkbox.isChecked();
 	
 			/* checkbox state will be saved automatically in MapLayer instances
@@ -51,14 +55,33 @@ public class VisibilityToggleEventListener implements EventListener {
 				);
 				
 				checkbox.setTooltiptext("Hide");
+
+                                /* Enable child elements.
+                                 * - lastchild of listcell is layerController
+                                 * img, see ActiveLayerRenderer
+                                 */
+                                listitem.setDisabled(false);
+                                Image image =
+                                        (Image) ((Listcell) listitem.getFirstChild()).getLastChild();
+                                image.setVisible(true);
+                                
 			}
 			else {
 				openLayersJavascript.removeMapLayerNow(layer);
 				checkbox.setTooltiptext("Show");
-			}	
+
+            			mapComposer.hideLayerControls(layer);
+
+                                /* Disable child elements.
+                                 * - lastchild of listcell is layerController
+                                 * img, see ActiveLayerRenderer
+                                 */
+                                listitem.setDisabled(true);
+                                Image image =
+                                        (Image) ((Listcell) listitem.getFirstChild()).getLastChild();
+                                image.setVisible(false);
+			}
 			
-			// hide the layer controls if we need to 
-			mapComposer.updateLayerControls();
 		}
 		else {
 			/* there was a problem performing the action - 'undo' 

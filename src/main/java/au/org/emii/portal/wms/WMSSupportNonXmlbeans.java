@@ -22,6 +22,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import au.org.emii.portal.config.xmlbeans.Discovery;
+import au.org.emii.portal.menu.MapLayerMetadata;
 
 public abstract class WMSSupportNonXmlbeans extends WMSSupport {
 	protected String baseUriXpath = null;
@@ -318,7 +319,26 @@ public abstract class WMSSupportNonXmlbeans extends WMSSupport {
 		 */
 		expr = xpath.compile(layerLayersXpath);
 		mapLayer.setLayer(expr.evaluate(layer));
-		
+
+                // attempt to find LatLonBoundingBox under layer Node
+                Node n = layer.getFirstChild();
+                while (n != layer.getLastChild()) {
+                    if (n.getNodeName().equalsIgnoreCase("LatLonBoundingBox")) {
+                        ArrayList<Double> bbox = new ArrayList<Double>(4);
+                        bbox.add(Double.parseDouble(n.getAttributes().getNamedItem("minx").getNodeValue()));
+                        bbox.add(Double.parseDouble(n.getAttributes().getNamedItem("miny").getNodeValue()));
+                        bbox.add(Double.parseDouble(n.getAttributes().getNamedItem("maxx").getNodeValue()));
+                        bbox.add(Double.parseDouble(n.getAttributes().getNamedItem("maxy").getNodeValue()));      
+
+                        //add bbox to layer
+                        MapLayerMetadata md = new MapLayerMetadata();
+                        md.setBbox(bbox);
+                        mapLayer.setMapLayerMetadata(md);
+                        break;
+                    }
+                    n = n.getNextSibling();
+                }
+
 		/* sometimes people don't setup servers right and leave off the label
 		 * names - if this is the case, substitute the layer name instead
 		 */
