@@ -296,6 +296,7 @@ public class FilteringWCController extends UtilityComposer {
         getInfo(sbProcessUrl.toString());
 
         mc.removeLayer(label);
+        //mc.getOpenLayersJavascript().removeMapLayerNow(mc.getMapLayer(label));
 
         selectedLayers.remove(label);
 

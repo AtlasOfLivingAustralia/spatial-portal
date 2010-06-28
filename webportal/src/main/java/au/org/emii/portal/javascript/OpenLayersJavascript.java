@@ -204,17 +204,17 @@ public interface OpenLayersJavascript {
     /**
      * Adds the openlayers polygon drawing tool to the map
      */
-    public void addPolygonDrawingTool();
+    public String addPolygonDrawingTool();
     
     /**
      * Adds the radius drawing tool to the map
      */
-    public void addRadiusDrawingTool();
+    public String addRadiusDrawingTool();
 
     /**
      * Adds the feature selection tool (for area) to the map
      */
-    public void addFeatureSelectionTool();
+    public String addFeatureSelectionTool();
 
     /**
      * Copy for Sampling, ALOC, Filtering, Adds the openlayers polygon drawing tool to the map
@@ -231,7 +231,7 @@ public interface OpenLayersJavascript {
     /**
      * Adds the openlayers box drawing tool to the map
      */
-    public void addBoxDrawingTool();
+    public String addBoxDrawingTool();
 
     /**
      * Adds a geojson layer

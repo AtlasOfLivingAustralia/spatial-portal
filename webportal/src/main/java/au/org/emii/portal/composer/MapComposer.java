@@ -816,6 +816,66 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
+     * Remove an item from the list of active layers and put it back in the
+     * tree menu of available layers
+     * @param itemToRemove
+     */
+    public void removeFromList(MapLayer itemToRemove) {
+        if (itemToRemove != null) {
+            boolean deListedInActiveLayers = false;
+
+            /* redraw the current menu tree if contains
+             * the item we are removing, otherwise just
+             * leave deListedInActiveLayers flag as it
+             * is which marks the layer as not being
+             * in active layers anymore so the tree
+             * renderer will pick this up next time a
+             * redraw of the menu is requested
+             */
+            Tree menuTree = getMenuTree();
+            if (menuTree != null) {
+                MapLayerModel treemodel = (MapLayerModel) menuTree.getModel();
+                if (treemodel != null && treemodel.isHoldingMapLayer(itemToRemove)) {
+                    treemodel.changeSelection(itemToRemove, false);
+                    deListedInActiveLayers = true;
+                }
+            }
+
+            // update the active layers list
+            List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
+            if (activeLayers != null) {
+                logger.debug("obtained activelayers arraylist from session, count: " + activeLayers.size());
+                if (activeLayers.size() > 0) {
+                    ListModelList listmodel = (ListModelList) activeLayersList.getModel();
+                    if (listmodel != null) {
+                        listmodel.remove(itemToRemove);
+
+                        if (activeLayers.size() == 0) {
+                            displayEmptyActiveLayers(activeLayersList);
+                        }
+                    }
+                } else {
+                    logger.debug("active layers list is empty, so not updating it");
+                }
+            }
+
+            /* only the items in the active menu will have been marked
+             * as being displayed (gets done by the changeSelection()
+             * method), so we must set the listedInActiveLayers flag
+             * ourself if we skipped this stage because the item is
+             * in a menu that's not being displayed
+             */
+            if (!deListedInActiveLayers) {
+                itemToRemove.setListedInActiveLayers(false);
+            }
+
+        }
+
+        // hide layer controls
+        hideLayerControls(null);
+    }
+
+    /**
      * Removes a MapLayer instance from the user defined menu in
      * portal session and then updates the relevant tree menu
      * @param itemToRemove
@@ -1408,7 +1468,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         System.out.println("session active layers: " + udl.size());
         while (iudl.hasNext()) {
             MapLayer ml = (MapLayer) iudl.next();
-            //System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
+            System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
             if (ml.getName().equals(label)) {
                 return ml;
             }

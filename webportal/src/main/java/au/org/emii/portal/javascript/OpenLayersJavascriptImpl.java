@@ -72,21 +72,21 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
-    public void addPolygonDrawingTool() {
+    public String addPolygonDrawingTool() {
         String script = "window.mapFrame.addPolygonDrawingTool()";
-        execute(script);
+        return script;
     }
 
     @Override
-    public void addRadiusDrawingTool() {
+    public String addRadiusDrawingTool() {
         String script = "window.mapFrame.addRadiusDrawingTool()";
-        execute(script);
+        return script;
     }
 
     @Override
-    public void addFeatureSelectionTool() {
+    public String addFeatureSelectionTool() {
         String script = "window.mapFrame.addFeatureSelectionTool()";
-        execute(script);
+        return script;
     }
 
     @Override
@@ -132,9 +132,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
-    public void addBoxDrawingTool() {
+    public String addBoxDrawingTool() {
         String script = "window.mapFrame.addBoxDrawingTool()";
-        execute(script);
+        return script;
     }
 
     @Override
