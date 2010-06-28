@@ -53,6 +53,7 @@ public class LayersAutoComplete extends Combobox {
             //System.out.println(layersUtil.getLayerList());
 
             Iterator it = getItems().iterator();
+            /*
             if (val.length() == 0) {
                 Comboitem myci = null;
                 if (it != null && it.hasNext()) {
@@ -66,7 +67,14 @@ public class LayersAutoComplete extends Combobox {
                 myci.setDescription("");
                 myci.setDisabled(true);
             } else {
-                String lsurl = baseUrl + "search/" + URLEncoder.encode(val, "UTF-8");
+             *
+             */
+                String lsurl = baseUrl;
+                if (val.length() == 0) {
+                    lsurl += "list";
+                } else {
+                    lsurl += "search/" + URLEncoder.encode(val, "UTF-8");
+                }
 
                 System.out.println("nsurl: " + lsurl);
 
@@ -87,10 +95,12 @@ public class LayersAutoComplete extends Combobox {
                 if (results.size() > 0) {
 
                     for (int i = 0; i < results.size(); i++) {
-                        
+
                         JSONObject jo = results.getJSONObject(i);
 
-                        if (!jo.getBoolean("enabled")) continue; 
+                        if (!jo.getBoolean("enabled")) {
+                            continue;
+                        }
 
                         String displayName = jo.getString("displayname");
                         String type = jo.getString("type");
@@ -119,7 +129,7 @@ public class LayersAutoComplete extends Combobox {
 
                 }*/
 
-            }
+            ///}
             while (it != null && it.hasNext()) {
                 it.next();
                 it.remove();
