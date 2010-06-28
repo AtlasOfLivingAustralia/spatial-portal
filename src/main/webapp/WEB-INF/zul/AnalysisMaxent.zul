@@ -13,7 +13,7 @@
         </style>
 
         <div align="right">
-            <button label="?" sclass="helpButton"
+            <button image="/img/help.png" sclass="helpButton"
                     onClick="help.open=(help.open) ? false:true;" />
         </div>
         <separator/>

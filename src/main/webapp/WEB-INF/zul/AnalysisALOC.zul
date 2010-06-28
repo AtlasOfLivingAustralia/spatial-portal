@@ -5,7 +5,7 @@
     <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" >
 
         <div align="right">
-            <button label="?" sclass="helpButton"
+            <button image="/img/help.png" sclass="helpButton"
                     onClick="help.open=(help.open) ? false:true;" />
         </div>
         <separator/>

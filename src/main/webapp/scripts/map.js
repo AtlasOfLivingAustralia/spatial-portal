@@ -64,11 +64,13 @@ var libraryCheckIntervalMs=100;
 var secondsToWaitForLibrary=30;
 var maxAttempts = (secondsToWaitForLibrary * 1000) / libraryCheckIntervalMs;
 
-var gazetteerURL = "http"
+var gazetteerURL = "http";
+/*
 var overCallback = {
     over: featureOver,
     out: hideTooltip
 };
+*/
 
 var selecteFeature;
 

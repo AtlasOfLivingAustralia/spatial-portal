@@ -2,7 +2,7 @@
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk>
     <div align="right">
-        <button label="?" sclass="helpButton"
+        <button image="/img/help.png" sclass="helpButton"
             onClick="help.open=(help.open) ? false:true;" />
     </div>
     <separator/>

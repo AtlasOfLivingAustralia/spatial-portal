@@ -58,6 +58,7 @@ import org.zkoss.zul.Listbox;
 
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.Radio;
+import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
@@ -84,6 +85,7 @@ public class SelectionController extends UtilityComposer {
     public Label results_label;
     public Label popup_label;
     public Radio rdoEnvironmentalEnvelope;
+    private Radiogroup rgAreaSelection;
     HtmlMacroComponent envelopeWindow;
     private SettingsSupplementary settingsSupplementary = null;
     private String geoServer;// = "http://spatial.ala.org.au"; // http://localhost:8080
@@ -118,6 +120,7 @@ public class SelectionController extends UtilityComposer {
 
     public void onClick$btnClearSelection(Event event) {
         hideAllInfo();
+        //rgAreaSelection.getSelectedItem().setSelected(false);
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().removeAreaSelection();
         displayGeom.setValue("");
@@ -131,8 +134,11 @@ public class SelectionController extends UtilityComposer {
         instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area. On the last vertex, double click to finalise the polygon. ");
         showPolygonInfo();
         MapComposer mc = getThisMapComposer();
-        removeCurrentSelection();
-        mc.getOpenLayersJavascript().addPolygonDrawingTool();
+        String script = removeCurrentSelection();
+        script += mc.getOpenLayersJavascript().addPolygonDrawingTool();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+
+        mc.removeFromList(mc.getMapLayer("Area Selection"));
 
     }
 
@@ -143,30 +149,46 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoBoxSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size. Release the mouse button. ");
         showPolygonInfo();
-        removeCurrentSelection();
+        String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
-        mc.getOpenLayersJavascript().addBoxDrawingTool();
+        //mc.getOpenLayersJavascript().addBoxDrawingTool();
+        script += mc.getOpenLayersJavascript().addBoxDrawingTool();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        mc.removeFromList(mc.getMapLayer("Area Selection"));
     }
 
     public void onCheck$rdoPointRadiusSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
         showPolygonInfo();
-        removeCurrentSelection();
+        String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
-        mc.getOpenLayersJavascript().addRadiusDrawingTool();
+        script += mc.getOpenLayersJavascript().addRadiusDrawingTool();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        mc.removeFromList(mc.getMapLayer("Area Selection"));
     }
 
     public void onCheck$rdoExistingFeatureSelection(Event event) {
         instructions.setValue("Zoom and pan to the area of interest. Identify the polygon of interest by a (left) mouse click within that polygon. (The area will be reported in the Area box). ");
         showPolygonInfo();
-        removeCurrentSelection();
+        String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
-        mc.getOpenLayersJavascript().addFeatureSelectionTool();      
+        script += mc.getOpenLayersJavascript().addFeatureSelectionTool();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        mc.removeFromList(mc.getMapLayer("Area Selection"));
     }
 
     public void onCheck$rdoEnvironmentalEnvelope(Event event) {
         instructions.setValue("");
        showEnvelopeInfo();
+    }
+
+    public void onClick$rgAreaSelection(Event event) {
+        try {
+            Messagebox.show(rgAreaSelection.getSelectedItem().getLabel() + " selected");
+        } catch (Exception e) {
+            System.out.println("Error onClick$rgAreaSelection");
+            e.printStackTrace(System.out);
+        }
     }
 
     void showEnvelopeInfo(){
@@ -183,21 +205,25 @@ public class SelectionController extends UtilityComposer {
 
     void hideAllInfo() {
         //called by onClick$btnClearSelection();
+        //rgAreaSelection.getSelectedItem().setChecked(false);
         envelopeInfo.setVisible(false);
         polygonInfo.setVisible(false);
     }
 
-    private void removeCurrentSelection() {
+    private String removeCurrentSelection() {
         MapComposer mc = getThisMapComposer();
           MapLayer selectionLayer = mc.getMapLayer("Area Selection");
    
             if((mc.safeToPerformMapAction())&&(selectionLayer!=null)) {
              //  selectionLayer.setDisplayed(false);
               //selectionLayer.
-               mc.deactiveLayer(selectionLayer, true,false);
-               
+                System.out.println("removing Area selection layer");
+               //mc.deactiveLayer(selectionLayer, true,false);
+               return mc.getOpenLayersJavascript().removeMapLayer(selectionLayer);
+               //mc.getOpenLayersJavascript().execute(script);
+               //mc.removeLayer("Area Selection");
             }
-
+          return "";
     }
 
     /**
