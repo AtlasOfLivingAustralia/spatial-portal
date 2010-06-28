@@ -719,13 +719,13 @@ function selected (evt) {
    }
    else {
     //test to see if its occurrence data
-    if (attrs["occurrenceId"] != null) {
+    if (attrs["occurrenceid"] != null) {
         popup = new OpenLayers.Popup.FramedCloud("featurePopup",
             feature.geometry.getBounds().getCenterLonLat(),
             new OpenLayers.Size(100,100),
-            "<h2>Occurrence for " + attrs["species"] + "</h2>" +
+            "<h2>Occurrence for " + attrs["scientificname"] + "</h2>" +
             " Longitude: "+attrs['latitude'] + " , Longitude: " + attrs['longitude'] + "<br>" +
-            "Species Occurence <a href='http://data.ala.org.au/occurrences/" + attrs["occurrenceId"] + "' target='_blank'>View details</a>"
+            "Species Occurence <a href='http://data.ala.org.au/occurrences/" + attrs["occurrenceid"] + "' target='_blank'>View details</a>"
             ,
             null, true, onPopupClose);
 

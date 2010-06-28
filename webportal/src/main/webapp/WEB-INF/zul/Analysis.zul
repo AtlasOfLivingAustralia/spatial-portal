@@ -20,13 +20,13 @@
     <tabbox zindex="600" style="border:0px!important;" mold="accordion-lite"> <!-- zclass="menuswitch"  -->
         <tabs>
             <!--  sampling  -->
-            <tab id="samplingTab" label="Sampling" />
+            <tab id="samplingTab" label="Sampling" selected="true" />
 
             <!--  maxent -->
             <tab id="maxentTab" label="Prediction"  />
 
             <!--  aloc -->
-            <tab id="alocTab" label="Classification" selected="true"  />
+            <tab id="alocTab" label="Classification"  />
 
         </tabs>
         <tabpanels>
