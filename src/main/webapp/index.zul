@@ -398,7 +398,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <tab label="Map species occurrences" />
                                 <tab label="Map locations" />
                                 <tab id="realtimeTab" label="Map environment or context" if="${! settings.disableRealtime}"/>
-                                <tab label="Map WMS layer" />
+                                <tab label="Map WMS layer" visible="false" />
                             </tabs>
                             <tabpanels>
                                 <tabpanel>
@@ -473,7 +473,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
                                                 <comboitem label=""/>
                                             </combobox>
-                                            <label sclass="exampleText">e.g. Mean Annual Temperature</label>
+                                            <label sclass="exampleText">e.g. Annual Mean Temperature</label>
                                         </vbox>
                                     </div>
                                     <!--
@@ -492,7 +492,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         -->
                                 </tabpanel>
 
-                                <tabpanel  id="userTabPanel" >
+                                <tabpanel  id="userTabPanel" visible="false" >
                                     <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">
                                             <button id="addExtLayersButton" label="Add Layers from a WMS server" />
                                         </div>-->
