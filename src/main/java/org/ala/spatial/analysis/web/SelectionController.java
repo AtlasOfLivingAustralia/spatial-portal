@@ -124,8 +124,13 @@ public class SelectionController extends UtilityComposer {
         hideAllInfo();
         //rgAreaSelection.getSelectedItem().setSelected(false);
         MapComposer mc = getThisMapComposer();
-        mc.getOpenLayersJavascript().removeAreaSelection();
+      //  mc.getOpenLayersJavascript().removeAreaSelection();
         displayGeom.setValue("");
+
+        String script = removeCurrentSelection();
+        
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        mc.removeFromList(mc.getMapLayer("Area Selection"));
     }
 
     /**
