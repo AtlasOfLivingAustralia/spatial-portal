@@ -242,7 +242,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                 //write top records & increment
                 for(i=0;i<numberOfParts;i++){
-                    if(lines[i] != null && topline.equals(lines[i])){
+                    if(lines[i] != null && topline.equalsIgnoreCase(lines[i])){
                         fw.append(lines[i]);
                         fw.append("\n");
                         lines[i] = reader[i].readLine();
@@ -766,7 +766,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 if (sa.length >= countOfIndexed) {
 
                     for (i = 0; i < countOfIndexed; i++) {
-                        if (recordpos != 0 && !last_value[i].equals(sa[i])) {
+                        if (recordpos != 0 && !last_value[i].equalsIgnoreCase(sa[i])) {
                             fw_maps[i].put(last_value[i],
                                     new IndexedRecord(last_value[i].toLowerCase(),
                                     //lastfilepos,
@@ -969,7 +969,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             int i = 0;
             for (IndexedRecord[] ir : all_indexes) {
                 for (IndexedRecord r : ir) {
-                    if (r.name.equals(filter)) {
+                    if (r.name.equalsIgnoreCase(filter)) {
                         matches.add(r);
                     }
                 }
@@ -1008,7 +1008,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         int countOfIndexed = 0;
         int i;
         for(i=0;i<columnsSettings.length;i++){
-            if(columnsSettings[i].equals("2")){
+            if(columnsSettings[i].equalsIgnoreCase("2")){
                 countOfIndexed++;
             }
         }
@@ -1016,7 +1016,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             int indexesLoaded = 0;
             if (all_indexes.size() == 0) {
                 for (i = 0; i < columns.length; i++) {
-                    if (columnsSettings[i].equals("2")){
+                    if (columnsSettings[i].equalsIgnoreCase("2")){
 
                         String filename = TabulationSettings.index_path
                                 + OTHER_IDX_PREFIX + columns[i] + OTHER_IDX_POSTFIX;
