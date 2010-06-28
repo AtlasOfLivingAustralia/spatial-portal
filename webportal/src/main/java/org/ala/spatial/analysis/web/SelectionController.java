@@ -103,9 +103,11 @@ public class SelectionController extends UtilityComposer {
             } else {
                 return "";
             }
-        } else {
+        //work around for null polygons to be reported as absence of polygon
+        } else if (!displayGeom.getText().contains("NaN NaN")){
             return displayGeom.getText();
         }
+        return "";
     }
 
     @Override
@@ -279,11 +281,13 @@ public class SelectionController extends UtilityComposer {
     }
 
     public void onClick$btnShowSpecies() {
-        if (selectionGeom.getValue() != "") {
+        if (selectionGeom.getValue() != ""
+                && !selectionGeom.getValue().contains("NaN NaN")) {
             Clients.showBusy("Filtering species, please wait...", true);
             Events.echoEvent("showSpeciesPoly", this, displayGeom.getValue());
         }
-        else if(boxGeom.getValue() != "") {
+        else if(boxGeom.getValue() != ""
+                && !boxGeom.getValue().contains("NaN NaN")) {
             Clients.showBusy("Filtering species, please wait...", true);
             Events.echoEvent("showSpecies", this, displayGeom.getValue());
         }

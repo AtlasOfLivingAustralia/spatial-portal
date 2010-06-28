@@ -329,12 +329,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
        
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("zooming to extent " + selectedLayer.getId());
-            if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
+            if (selectedLayer.getType() == LayerUtilities.GEOJSON
+                    || selectedLayer.getType() == LayerUtilities.WKT) {
                 openLayersJavascript.zoomGeoJsonExtent(selectedLayer);
             } else {
                 openLayersJavascript.zoomLayerExtent(selectedLayer);
             }
         }
+    }
+
+    public void onScroll$opacitySlider(Event e) {
+        onClick$applyChange();
     }
 
     public void onClick$applyChange() {
@@ -387,12 +392,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         openLayersJavascript.reloadMapLayerNow(selectedLayer);
                     }
                 }
-            } else if (selectedLayer.getCurrentLegendUri() != null) {
+            } else {// if (selectedLayer.getCurrentLegendUri() != null) {
                 //redraw wms layer if opacity changed
                 if (safeToPerformMapAction()) {
                     openLayersJavascript.reloadMapLayerNow(selectedLayer);
                 }
-            }
+            }             
         }
     }
 
@@ -544,7 +549,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onChange$lac() {
 
-        if (lac.getItemCount() > 0) {
+        if (lac.getItemCount() > 0 && lac.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
             addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75);
             lac.setValue("");
