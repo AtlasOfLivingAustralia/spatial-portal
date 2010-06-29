@@ -388,16 +388,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             null);  //bbox is null, not required for redraw
                 } else {
                     //redraw
-                    if (safeToPerformMapAction()) {
-                        openLayersJavascript.reloadMapLayerNow(selectedLayer);
-                    }
+                    reloadMapLayerNowAndIndexes(selectedLayer);
                 }
             } else {// if (selectedLayer.getCurrentLegendUri() != null) {
                 //redraw wms layer if opacity changed
-                if (safeToPerformMapAction()) {
-                    openLayersJavascript.reloadMapLayerNow(selectedLayer);
-                }
+                reloadMapLayerNowAndIndexes(selectedLayer);
+                
             }             
+        }
+    }
+
+    void reloadMapLayerNowAndIndexes(MapLayer selectedLayer) {
+        if (safeToPerformMapAction()) {
+            PortalSession portalSession = (PortalSession)
+                    Executions.getCurrent()
+                        .getDesktop()
+                            .getSession()
+                                .getAttribute("portalSession");
+
+            openLayersJavascript.execute(
+                    openLayersJavascript.iFrameReferences
+                    + openLayersJavascript.reloadMapLayer(selectedLayer)
+                    + openLayersJavascript.updateMapLayerIndexes(
+                    portalSession.getActiveLayers()));
         }
     }
 
