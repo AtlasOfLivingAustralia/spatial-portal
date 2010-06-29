@@ -205,7 +205,7 @@ public class SelectionController extends UtilityComposer {
     }
 
     void showPolygonInfo(){
-        onClick$btnClearSelection(null);
+        //onClick$btnClearSelection(null);
         envelopeInfo.setVisible(false);
         polygonInfo.setVisible(true);
     }
@@ -217,20 +217,34 @@ public class SelectionController extends UtilityComposer {
         polygonInfo.setVisible(false);
     }
 
+
+
     private String removeCurrentSelection() {
         MapComposer mc = getThisMapComposer();
-          MapLayer selectionLayer = mc.getMapLayer("Area Selection");
-   
-            if((mc.safeToPerformMapAction())&&(selectionLayer!=null)) {
-             //  selectionLayer.setDisplayed(false);
-              //selectionLayer.
+        MapLayer selectionLayer = mc.getMapLayer("Area Selection");
+
+        if (mc.safeToPerformMapAction()) {
+            if ((selectionLayer != null)) {
+                //  selectionLayer.setDisplayed(false);
+                //selectionLayer.
                 System.out.println("removing Area selection layer");
-               //mc.deactiveLayer(selectionLayer, true,false);
-               return mc.getOpenLayersJavascript().removeMapLayer(selectionLayer);
-               //mc.getOpenLayersJavascript().execute(script);
-               //mc.removeLayer("Area Selection");
+                //mc.deactiveLayer(selectionLayer, true,false);
+                return mc.getOpenLayersJavascript().removeMapLayer(selectionLayer);
+                //mc.getOpenLayersJavascript().execute(script);
+                //mc.removeLayer("Area Selection");
             }
-          return "";
+            else {
+                return "";
+            }
+        }
+        else {
+            try{
+                Messagebox.show("Not Safe?");
+            }
+            catch (Exception e) {}
+            return "Failed";
+        }
+        
     }
 
     /**
@@ -254,7 +268,7 @@ public class SelectionController extends UtilityComposer {
             //add feature to the map as a new layer
 //            mc.removeLayer("Area Selection");
          MapLayer mapLayer = mc.addWKTLayer(selectionGeom.getValue(),"Area Selection");
-         
+            rgAreaSelection.getSelectedItem().setChecked(false);
             instructions.setValue("");
             //wfsQueryBBox(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
@@ -277,7 +291,9 @@ public class SelectionController extends UtilityComposer {
             //mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
             MapLayer mapLayer = mc.addWKTLayer(boxGeom.getValue(),"Area Selection");
 
+            rgAreaSelection.getSelectedItem().setChecked(false);
             instructions.setValue("");
+
             //wfsQueryBBox(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
