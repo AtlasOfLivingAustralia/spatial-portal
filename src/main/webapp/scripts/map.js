@@ -313,6 +313,7 @@ function buildMapReal() {
     jQuery("#navtoolbar div.olControlNavigationItemActive ").click(function(){
         map.div.style.cursor="pointer";
         clickEventHandler.activate();
+        setVectorLayersSelectable();
     });
 
     map.events.register("moveend" , map, function (e) {
@@ -419,8 +420,7 @@ function addFeatureSelectionTool() {
 //    });
 //    clickEventHandler.activate();
 //    clickEventHandler.fallThrough = false;
-    if (selectControl!=null)
-        selectControl.activate();
+  //  setVectorLayersSelectable();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";
@@ -596,26 +596,32 @@ function addBoxDrawingTool() {
 }
 
 function featureSelected(feature) {
- //   alert("win!");
+   // alert("win!");
+   
+    areaSelectOn = false;
+    setVectorLayersSelectable();
     parent.setPolygonGeometry(feature.geometry);
 
   // featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
   //  polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
-    areaSelectOn = false;
+   
+    
   //  areaSelectControl.deactivate();
   //  clickEventHandler.activate();
 }
 
 function radiusAdded(feature) {
-    parent.setPolygonGeometry(feature.geometry);
+    
     removeAreaSelection();
    // addWKTFeatureToMap(feature.geometry,"Test",'blue');
     radiusControl.deactivate();
+    setVectorLayersSelectable();
+    parent.setPolygonGeometry(feature.geometry);
 }
 
 // This function passes the region geometry up to javascript in index.zul which can then send it to the server.
 function regionAdded(feature) {
-    //alert(feature.geometry.toGeometry());
+    
 
     //converting bounds from pixel value to lonlat - annoying!
     var geoBounds = new OpenLayers.Bounds();
@@ -632,49 +638,13 @@ function regionAdded(feature) {
 //    boxLayer.setVisibility(true);
 //    map.addLayer(boxLayer);
 //    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
-
-    parent.setRegionGeometry(geoBounds.toGeometry());
     boxControl.deactivate();
+    setVectorLayersSelectable();
+    parent.setRegionGeometry(geoBounds.toGeometry());
+
+
+  
 }
-
-//function regionAddedGlobal(feature) {
-//    //alert(feature.geometry.toGeometry());
-//
-//    //converting bounds from pixel value to lonlat - annoying!
-//    var geoBounds = new OpenLayers.Bounds();
-//    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.left,feature.geometry.bottom)));
-//    geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
-//
-//    //removeSpeciesSelection();
-//    boxLayer.removeFeatures(boxLayer.features);
-//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-//    layer_style.fillColor = "red";
-//    layer_style.strokeColor = "red";
-//    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
-//        style : layer_style
-//    });
-//    boxLayer.setVisibility(true);
-//    map.addLayer(boxLayer);
-//    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
-//
-//// parent.setRegionGeometry(geoBounds.toGeometry());
-//    boxControl.deactivate();
-//}
-
-//function polygonAddedGlobal(feature) {
-//   // polygonLayer.removeFeatures(polygonLayer.features);
-//    polygonLayer.destroyFeatures();
-//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-//    layer_style.fillColor = "red";
-//    layer_style.strokeColor = "red";
-//    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
-//        style : layer_style
-//    });
-//    polygonLayer.setVisibility(true);
-//    map.addLayer(polygonLayer);
-//    //alert(feature.geometry.toGeometry());
-//    polygonLayer.addFeatures([feature]);
-//}
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
@@ -682,6 +652,7 @@ function polygonAdded(feature) {
    parent.setPolygonGeometry(feature.geometry);
    
     polyControl.deactivate();
+    setVectorLayersSelectable();
   
 }
 //// Copy for Sampling, ALOC, Filtering, This function passes the geometry up to javascript in index.zul which can then send it to the server.
