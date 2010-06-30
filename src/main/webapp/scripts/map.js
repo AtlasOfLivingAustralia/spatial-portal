@@ -391,36 +391,36 @@ function navigateToAreaTab() {
 }
 
 function addFeatureSelectionTool() {
-//    areaSelectControl = new OpenLayers.Control.SelectFeature(
-//        selectionLayers,
-//        {
-//            //            clickout: true,
-//            //            toggle: false,
-//            //            multiple: false,
-//            //            hover: false,
-//            //            toggleKey: "ctrlKey", // ctrl key removes from selection
-//            //            multipleKey: "shiftKey" // shift key adds to selection
-//            'onSelect': featureSelected
-//        }
-//        );
-//
-//    map.addControl(areaSelectControl);
-//    selectControl.deactivate();
-//    clickEventHandler.deactivate();
-//    areaSelectControl.activate();
+    //    areaSelectControl = new OpenLayers.Control.SelectFeature(
+    //        selectionLayers,
+    //        {
+    //            //            clickout: true,
+    //            //            toggle: false,
+    //            //            multiple: false,
+    //            //            hover: false,
+    //            //            toggleKey: "ctrlKey", // ctrl key removes from selection
+    //            //            multipleKey: "shiftKey" // shift key adds to selection
+    //            'onSelect': featureSelected
+    //        }
+    //        );
+    //
+    //    map.addControl(areaSelectControl);
+    //    selectControl.deactivate();
+    //    clickEventHandler.deactivate();
+    //    areaSelectControl.activate();
     removeAreaSelection();
     areaSelectOn = true;
-//    clickEventHandler = new OpenLayers.Handler.Click({
-//        'map': map
-//    }, {
-//        'click': function(e) {
-//            getpointInfo(e);
-//            mkpopup(e);
-//        }
-//    });
-//    clickEventHandler.activate();
-//    clickEventHandler.fallThrough = false;
-  //  setVectorLayersSelectable();
+    //    clickEventHandler = new OpenLayers.Handler.Click({
+    //        'map': map
+    //    }, {
+    //        'click': function(e) {
+    //            getpointInfo(e);
+    //            mkpopup(e);
+    //        }
+    //    });
+    //    clickEventHandler.activate();
+    //    clickEventHandler.fallThrough = false;
+    //  setVectorLayersSelectable();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";
@@ -596,24 +596,24 @@ function addBoxDrawingTool() {
 }
 
 function featureSelected(feature) {
-   // alert("win!");
+    // alert("win!");
    
     areaSelectOn = false;
     setVectorLayersSelectable();
     parent.setPolygonGeometry(feature.geometry);
 
-  // featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
-  //  polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
+// featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
+//  polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
    
     
-  //  areaSelectControl.deactivate();
-  //  clickEventHandler.activate();
+//  areaSelectControl.deactivate();
+//  clickEventHandler.activate();
 }
 
 function radiusAdded(feature) {
     
     removeAreaSelection();
-   // addWKTFeatureToMap(feature.geometry,"Test",'blue');
+    // addWKTFeatureToMap(feature.geometry,"Test",'blue');
     radiusControl.deactivate();
     setVectorLayersSelectable();
     parent.setPolygonGeometry(feature.geometry);
@@ -629,15 +629,15 @@ function regionAdded(feature) {
     geoBounds.extend(map.getLonLatFromPixel(new OpenLayers.Pixel(feature.geometry.right,feature.geometry.top)));
 
     removeAreaSelection();
-//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-//    layer_style.fillColor = "red";
-//    layer_style.strokeColor = "red";
-//    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
-//        style : layer_style
-//    });
-//    boxLayer.setVisibility(true);
-//    map.addLayer(boxLayer);
-//    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
+    //    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    //    layer_style.fillColor = "red";
+    //    layer_style.strokeColor = "red";
+    //    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
+    //        style : layer_style
+    //    });
+    //    boxLayer.setVisibility(true);
+    //    map.addLayer(boxLayer);
+    //    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
     boxControl.deactivate();
     setVectorLayersSelectable();
     parent.setRegionGeometry(geoBounds.toGeometry());
@@ -649,7 +649,7 @@ function regionAdded(feature) {
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
     removeAreaSelection();
-   parent.setPolygonGeometry(feature.geometry);
+    parent.setPolygonGeometry(feature.geometry);
    
     polyControl.deactivate();
     setVectorLayersSelectable();
@@ -682,51 +682,56 @@ function setVectorLayersSelectable() {
 
 function selected (evt) {
 
-    var feature = evt.feature;
-    var attrs = evt.feature.attributes;
+    var feature = (evt.feature==null)?evt:evt.feature;
+    var attrs = feature.attributes;
     
-   if (areaSelectOn) {
-       featureSelected(feature);
-   }
-   else {
-    //test to see if its occurrence data
-    if (attrs["occurrenceid"] != null) {
-        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-            feature.geometry.getBounds().getCenterLonLat(),
-            new OpenLayers.Size(100,100),
-            "<h2>Occurrence for " + attrs["scientificname"] + "</h2>" +
-            " Longitude: "+attrs['latitude'] + " , Longitude: " + attrs['longitude'] + "<br>" +
-            "Species Occurence <a href='http://data.ala.org.au/occurrences/" + attrs["occurrenceid"] + "' target='_blank'>View details</a>"
-            ,
-            null, true, onPopupClose);
-
-    } else {
-
-
-        var html = "<h2>Feature Details</h2>";
-
-
-        for (key in attrs) {
-            html = html + "<br>" +  key + " : "  + attrs[key];
-        }
-
-        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-            feature.geometry.getBounds().getCenterLonLat(),
-            new OpenLayers.Size(100,100),
-            html
-            ,
-            null, true, onPopupClose);
-
+    if (areaSelectOn) {
+        featureSelected(feature);
     }
-    feature.popup = popup;
-    popup.feature = feature;
-    map.addPopup(popup, true);
-   }
+    else {
+        //test to see if its occurrence data
+        if (attrs["occurrenceid"] != null) {
+            var occurrencedate = attrs["occurrencedate"];
+            if (!occurrencedate) occurrencedate="";
+            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(100,100),
+                "<h2>Occurrence information</h2>" +
+                " Scientific name: <a href='http://data.ala.org.au/species/" + attrs["taxonconceptid"] + "' target='_blank'>" + attrs["scientificname"] + "</a> <br />" +
+                " Family: <a href='http://data.ala.org.au/species/" + attrs["familyconceptid"] + "' target='_blank'>" + attrs["family"] + "</a> <br />" +
+                " Longitude: "+attrs['longitude'] + " , Latitude: " + attrs['latitude'] + " <br/>" +
+                " Occurrence date: " + occurrencedate + " <br />" +
+                "Species Occurence <a href='http://data.ala.org.au/occurrences/" + attrs["occurrenceid"] + "' target='_blank'>View details</a>"
+                ,
+                null, true, onPopupClose);
+
+        } else {
+
+
+            var html = "<h2>Feature Details</h2>";
+
+
+            for (key in attrs) {
+                html = html + "<br>" +  key + " : "  + attrs[key];
+            }
+
+            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(100,100),
+                html
+                ,
+                null, true, onPopupClose);
+
+        }
+        feature.popup = popup;
+        popup.feature = feature;
+        map.addPopup(popup, true);
+    }
    
 }
 
 function onFeatureUnselect(feature) {
-    alert("try");
+    //alert("try");
     map.removePopup(feature.popup);
     feature.popup.destroy();
     feature.popup = null;
@@ -749,7 +754,7 @@ function onPopupClose(evt) {
 
 
 function addWKTFeatureToMap(featureWKT,name,hexColour) {
-//    alert(name);
+    //    alert(name);
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -779,7 +784,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
 }
 
 function addJsonFeatureToMap(feature, name, hexColour) {
-//    alert(name);
+    //    alert(name);
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -804,12 +809,46 @@ function addJsonFeatureToMap(feature, name, hexColour) {
     vector_layer.addFeatures(features);
 
     selectionLayers[selectionLayers.length] = vector_layer;
-    vector_layer.events.register("featureselected", vector_layer, selected);
-    selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
-    map.addControl(selectControl);
-    selectControl.activate();
+    //vector_layer.events.register("featureselected", vector_layer, selected);
+    //selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
+    //map.addControl(selectControl);
+    //selectControl.activate();
 
+    //setTimeout('setVectorLayersSelectable()',2000);
+
+    //addToSelectControl(vector_layer);
+
+    // need to do it this way due to passing an object.. closures :)
+    window.setTimeout(function(){
+        addToSelectControl(vector_layer);
+    }, 2000);
+        
     return vector_layer;
+}
+function addToSelectControl(newlyr) {
+    if (selectControl==null) {
+        selectControl = new OpenLayers.Control.SelectFeature([newlyr],
+        {
+            onSelect: selected,
+            onUnselect: onFeatureUnselect
+        });
+        map.addControl(selectControl);
+        selectControl.activate();
+    } else {
+        var currentLayers = selectControl.layers;
+        currentLayers.push(newlyr);
+        selectControl.setLayer(currentLayers);
+    }
+}
+function removeFromSelectControl(lyrname) {
+    var currentLayers = selectControl.layers;
+    for (var li=0; li<currentLayers.length; li++) {
+        if (currentLayers[li].name==lyrname) {
+            currentLayers.splice(li,1);
+            break;
+        }
+    }
+    selectControl.setLayer(currentLayers);
 }
 
 function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
@@ -834,7 +873,7 @@ function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
                 var geom = new OpenLayers.Geometry.fromWKT(featureWKT);
                 layer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
                
-               // layer.addFeatures(features);
+            // layer.addFeatures(features);
 
 
             }
