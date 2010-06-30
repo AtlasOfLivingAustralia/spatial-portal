@@ -309,6 +309,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 if (layer.isDisplayed()) {
                         script.append(
                                 "if (mapLayers['" + layer.getUniqueIdJS() + "'] != null) { "
+                                + "	window.mapFrame.removeFromSelectControl('"+layer.getNameJS()+"'); "
                                 + "	map.removeLayer(mapLayers['" + layer.getUniqueIdJS() + "']); "
                                 + "	mapLayers['" + layer.getUniqueIdJS() + "'] = null; "
                                 + "} ");
