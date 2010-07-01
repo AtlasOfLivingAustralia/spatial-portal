@@ -637,8 +637,7 @@ public class SimpleRegion extends Object implements Serializable {
                     shapeinside = false;
                 }
 
-                /* any lines cross */
-                cross = false;
+                /* any lines cross */                
                 double q;
                 int k = 0;
                 if (!shapeinside) {
@@ -646,38 +645,92 @@ public class SimpleRegion extends Object implements Serializable {
                         if (lines_long[k][0] <= long2 && lines_long[k][1] >= long1
                                 && lines_lat[k][0] <= lat2 && lines_lat[k][1] >= lat1) {
                             // is any gridcell line crossed by this polygon border?
-                            q = lines[k][0] * long1 + lines[k][1];
-                            if (lines_lat[k][0] <= q && q <= lines_lat[k][1]
-                                    && lat1 <= q && q <= lat2) {
-                                cross = true;
-                                break;
-                            }
-                            q = lines[k][0] * long2 + lines[k][1];
-                            if (lines_lat[k][0] <= q && q <= lines_lat[k][1]
-                                    && lat1 <= q && q <= lat2) {
-                                cross = true;
-                                break;
-                            }
-                            if (lines[k][0] != 0) {
-                                q = (lat1 - lines[k][1]) / lines[k][0];
-                                if (lines_long[k][0] <= q && q <= lines_long[k][1]
-                                        && long1 <= q && q <= long2) {
+
+                            //vertical polygon line k cross test
+                            if (Double.isInfinite(lines[k][0])) {
+                                /* grid top line or grid bottom line pass across
+                                 * (long1->long2 cross lines_long[k][0&1])
+                                 * and between ends of
+                                 * (lines_lat[k][0&1])
+                                 */
+                                if (long1 <= lines_long[k][1]
+                                        && long2 >= lines_long[k][0]
+                                        && ((lat1 <= lines_lat[k][1]
+                                        && lat1 >= lines_lat[k][0])
+                                        || (lat1 <= lines_lat[k][1]
+                                        && lat1 >= lines_lat[k][0]))) {
                                     cross = true;
                                     break;
                                 }
-                                q = (lat2 - lines[k][1]) / lines[k][0];
-                                if (lines_long[k][0] <= q && q <= lines_long[k][1]
-                                        && long1 <= q && q <= long2) {
+                            } else {
+                            //non-vertical polygonline k cross test
+
+                                /* q is y-intercept of grid LHS edge with
+                                 * polygon line k.  Cross=true if q is between
+                                 * ends of polylinek lat and grid (lat1&2)
+                                 */
+                                q = lines[k][0] * long1 + lines[k][1];
+                                if (lines_lat[k][0] <= q && q <= lines_lat[k][1]
+                                        && lat1 <= q && q <= lat2) {
                                     cross = true;
                                     break;
+                                }
+                                /* q is y-intercept of grid RHS edge with
+                                 * polygon line k.  Cross=true if q is between
+                                 * ends of polylinek lat and grid (lat1&2)
+                                 */
+                                q = lines[k][0] * long2 + lines[k][1];
+                                if (lines_lat[k][0] <= q && q <= lines_lat[k][1]
+                                        && lat1 <= q && q <= lat2) {
+                                    cross = true;
+                                    break;
+                                }
+
+                                /* different test if polygon line horizontal,
+                                 * i.e. slope == 0
+                                 */
+                                if (lines[k][0] == 0) {
+                                    /* cross=true when lat==lat && long's
+                                     * overlap
+                                     */
+                                    if ((lines_lat[k][0] == lat1
+                                            || lines_lat[k][0] == lat1)
+                                            &&
+                                            (lines_long[k][0] <= long2
+                                            && lines_long[k][1] >= long1)){
+                                        cross = true;
+                                        break;
+                                    }
+                                } else {
+                                    /* q is x-intercept of grid BOTTOM edge with
+                                     * polygon line k.  Cross=true if q is between
+                                     * ends of polylinek longs and grid (long1&2)
+                                     */
+                                    q = (lat1 - lines[k][1]) / lines[k][0];
+                                    if (lines_long[k][0] <= q && q <= lines_long[k][1]
+                                            && long1 <= q && q <= long2) {
+                                        cross = true;
+                                        break;
+                                    }
+                                    /* q is x-intercept of grid TOP edge with
+                                     * polygon line k.  Cross=true if q is between
+                                     * ends of polylinek longs and grid (long1&2)
+                                     */
+                                    q = (lat2 - lines[k][1]) / lines[k][0];
+                                    if (lines_long[k][0] <= q && q <= lines_long[k][1]
+                                            && long1 <= q && q <= long2) {
+                                        cross = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
-
                     }
 
                     if (!cross) {
-                        /* first point inside, for zero cross & therefore box contained within shape*/
+                        /* first point inside, for zero cross & therefore 
+                         * box contained within shape
+                         */
                         if (isWithinPolygon(long1, lat1)) {
                             inside = true;
                         } else {
@@ -687,14 +740,15 @@ public class SimpleRegion extends Object implements Serializable {
                 }
                 if (three_state_map != null) {
                     if (cross) {
-                        three_state_map[j][i] = 1; //partially inside
+                        three_state_map[j][i] = SimpleRegion.GI_PARTIALLY_PRESENT;
                     } else if (inside) {
-                        three_state_map[j][i] = 2; //completely inside
+                        three_state_map[j][i] = SimpleRegion.GI_FULLY_PRESENT;
                     } else {
-                        three_state_map[j][i] = 0; //completely outside
+                        three_state_map[j][i] = SimpleRegion.GI_ABSENCE;
                     }
                 }
 
+                //record if intersecting
                 if (cross || inside) {
                     data[p][0] = i;
                     data[p][1] = j;
@@ -702,7 +756,7 @@ public class SimpleRegion extends Object implements Serializable {
                 }
             }
         }
-
+       
         //output only required range
         return java.util.Arrays.copyOfRange(data, 0, p);
     }

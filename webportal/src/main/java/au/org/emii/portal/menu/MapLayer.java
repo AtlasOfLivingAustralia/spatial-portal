@@ -203,6 +203,8 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     private int blueVal;
     private int greenVal;
 
+    private int sizeVal;
+
     public int getBlueVal() {
         return blueVal;
     }
@@ -226,6 +228,16 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     public void setRedVal(int redVal) {
         this.redVal = redVal;
     }
+    
+    public int getSizeVal() {
+        return sizeVal;
+    }
+
+    public void setSizeVal(int sizeVal) {
+        this.sizeVal = sizeVal;
+    }
+
+
 
     private String envColour;
     private String envName;

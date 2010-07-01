@@ -150,9 +150,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Slider redSlider;
     private Slider greenSlider;
     private Slider blueSlider;
+    private Slider sizeSlider;
     private Label redLabel;
     private Label greenLabel;
     private Label blueLabel;
+    private Label sizeLabel;
     private Listbox activeLayersList;
     private Div layerControls;
     private Listbox baseLayerList;
@@ -225,6 +227,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private AutoComplete gazetteerAuto;
     private SpeciesAutoComplete searchSpeciesAuto;
     private Div colourChooser;
+    private Div sizeChooser;
     private Image legendImg;
     private Image legendImgUri;
     private Div legendHtml;
@@ -358,13 +361,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 selectedLayer.setRedVal(redSlider.getCurpos());
                 selectedLayer.setGreenVal(greenSlider.getCurpos());
                 selectedLayer.setBlueVal(blueSlider.getCurpos());
+                selectedLayer.setSizeVal(sizeSlider.getCurpos());
 
                 //Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
                 String rgbColour = "rgb(" + String.valueOf(redSlider.getCurpos()) + "," + greenSlider.getCurpos() + "," + blueSlider.getCurpos() + ")";
                 selectedLayer.setEnvColour(rgbColour);
 
                 if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
-                    System.out.println("redraw geojson");
                     openLayersJavascript.redrawFeatures(selectedLayer);
                 }
                 else if(selectedLayer.getType() == LayerUtilities.WKT) {
@@ -414,14 +417,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-       public void onClick$legendImg() {
+       /*public void onClick$legendImg() {
         //toggle the colourChooser div
         if (colourChooser.isVisible()) {
             colourChooser.setVisible(false);
         } else {
             colourChooser.setVisible(true);
         }
-    }
+    }*/
 
     public void onClick$btnSearchSpecies() {
         //get the selected species and see if we can map it
@@ -1915,21 +1918,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 int red = currentSelection.getRedVal();
                 int blue = currentSelection.getBlueVal();
                 int green = currentSelection.getGreenVal();
+                int size = currentSelection.getSizeVal();
 
                 Color c = new Color(red, green, blue);
 
                 redSlider.setCurpos(red);
                 greenSlider.setCurpos(green);
                 blueSlider.setCurpos(blue);
+                sizeSlider.setCurpos(size); //size scale
 
                 blueLabel.setValue(String.valueOf(blue));
                 redLabel.setValue(String.valueOf(red));
                 greenLabel.setValue(String.valueOf(green));
+                sizeLabel.setValue(String.valueOf(size));
 
                 if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
                     legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+                    sizeChooser.setVisible(false);
                 } else {
                     legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
+                    sizeChooser.setVisible(true);
                 }
                 legendImg.setVisible(true);
                 legendLabel.setVisible(true);
@@ -1980,6 +1988,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
                 legendImg.setVisible(false);
                 colourChooser.setVisible(false);
+                sizeChooser.setVisible(false);
             } else if (currentSelection.getCurrentLegendUri() != null) {
                 // works for normal wms layers
                 legendImgUri.setSrc(currentSelection.getCurrentLegendUri());
@@ -1988,6 +1997,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 legendLabel.setVisible(false);
                 legendImg.setVisible(false);
                 colourChooser.setVisible(false);
+                sizeChooser.setVisible(false);
             } else {
                 hideLayerControls(null);
             }
@@ -2010,6 +2020,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             legendImg.setVisible(false);
             legendImgUri.setVisible(false);
             legendLabel.setVisible(false);
+            sizeChooser.setVisible(false);
             colourChooser.setVisible(false);
             legendHtml.setVisible(false);
         }
@@ -2256,22 +2267,33 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
+    public void onScroll$sizeSlider() {
+        int size = sizeSlider.getCurpos();
+        sizeLabel.setValue(String.valueOf(size));
+        updateLegendImage();
+        onClick$applyChange();
+    }
+
     public void onScroll$blueSlider() {
         int blue = blueSlider.getCurpos();
         blueLabel.setValue(String.valueOf(blue));
         updateLegendImage();
+        onClick$applyChange();
     }
 
     public void onScroll$redSlider() {
         int red = redSlider.getCurpos();
         redLabel.setValue(String.valueOf(red));
         updateLegendImage();
+        onClick$applyChange();
+
     }
 
     public void onScroll$greenSlider() {
         int green = greenSlider.getCurpos();
         greenLabel.setValue(String.valueOf(green));
         updateLegendImage();
+        onClick$applyChange();
     }
 
     /*

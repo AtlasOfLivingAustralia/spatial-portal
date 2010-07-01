@@ -91,7 +91,7 @@ public class SpeciesController {
     public
     @ResponseBody
     String getTaxonNames(@PathVariable("name") String name) {
-        String slist = "";
+        StringBuffer slist = new StringBuffer();
         try {
 
             System.out.println("Looking up names for: " + name);
@@ -106,26 +106,27 @@ public class SpeciesController {
                 aslist[0] = "";
             }
 
-            for (String s : aslist) {
-                slist += s + "\n";
+            for (String s : aslist) {                
+                slist.append(s).append("\n");
             }
 
-            System.out.println(">>>>> dumping out s.names <<<<<<<<<<");
-            System.out.println(slist);
-            System.out.println(">>>>> dumping out c.names <<<<<<<<<<");
+            //System.out.println(">>>>> dumping out s.names <<<<<<<<<<");
+            //System.out.println(slist);
+            //System.out.println(">>>>> dumping out c.names <<<<<<<<<<");
             List<CommonName> clist = speciesDao.getCommonNames(name);
             Iterator<CommonName> it = clist.iterator();
             while (it.hasNext()) {
                 CommonName cn = it.next();
                 //System.out.println("> " + cn.getCommonname() + " -- " + cn.getScientificname());
-                slist += cn.getCommonname() + " / Scientific name: " + cn.getScientificname() + " / found *\n";
+                int records = OccurrencesService.getSpeciesCount(cn.getScientificname());
+                slist.append(cn.getCommonname()).append(" / Scientific name: ").append(cn.getScientificname()).append(" / found ").append(records).append("\n");
             }
             System.out.println(">>>>> done <<<<<<<<<<");
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
 
-        return slist;
+        return slist.toString();
 
     }
 }
