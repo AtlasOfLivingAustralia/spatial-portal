@@ -50,7 +50,6 @@ public class SamplingWCController extends UtilityComposer {
     private Html h;
     private List layers;
     private Checkbox useArea;
-
     private Map layerdata;
     private String selectedLayer;
     private MapComposer mc;
@@ -58,7 +57,6 @@ public class SamplingWCController extends UtilityComposer {
     private SettingsSupplementary settingsSupplementary = null;
     private String user_polygon = "";
     private String[] groupLabels = null;
-    
     String previousArea = "";
     LayersUtil layersUtil;
 
@@ -286,7 +284,7 @@ public class SamplingWCController extends UtilityComposer {
 
         try {
 
-            String taxon = sac.getValue();
+            String taxon = cleanTaxon(sac.getValue());
             // check if its a common name, if so, grab the scientific name
             //if (rdoCommonSearch.isChecked()) {
             //    taxon = getScientificName();
@@ -345,7 +343,7 @@ public class SamplingWCController extends UtilityComposer {
             HttpClient client = new HttpClient();
 //            GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
             PostMethod get = new PostMethod(sbProcessUrl.toString());
-            get.addParameter("area",area);
+            get.addParameter("area", area);
             //get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             get.addRequestHeader("Accept", "text/plain");
 
@@ -500,7 +498,7 @@ public class SamplingWCController extends UtilityComposer {
             HttpClient client = new HttpClient();
             //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
             PostMethod get = new PostMethod(sbProcessUrl.toString());
-            get.addParameter("area",area);
+            get.addParameter("area", area);
 
             get.addRequestHeader("Accept", "text/plain");
 
@@ -569,6 +567,14 @@ public class SamplingWCController extends UtilityComposer {
 
     /**
      * get rid of the common name if present
+     * 2 conditions here
+     *  1. either species is automatically filled in from the Layer selector
+     *     and is a common name and is in format Scientific name (Common name)
+     *
+     *  2. or user has searched for a common name from the analysis tab itself
+     *     in which case we need to grab the scientific name for analysis
+     *
+     *  * condition 1 should also parse the proper taxon if its a genus, for eg
      *
      * @param taxon
      * @return
@@ -576,9 +582,22 @@ public class SamplingWCController extends UtilityComposer {
     private String cleanTaxon(String taxon) {
         if (StringUtils.isNotBlank(taxon)) {
 
+            // check for condition 1
+            System.out.println("Checking for cond.1: " + taxon);
             if (taxon.contains(" (")) {
                 taxon = StringUtils.substringBefore(taxon, " (");
             }
+            System.out.println("After checking for cond.1: " + taxon);
+            
+            // check for condition 2
+            String spVal = sac.getSelectedItem().getDescription();
+            System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
+            if (spVal.trim().startsWith("Scientific name")) {
+                //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+                taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            }
+            System.out.println("After checking for cond.2: " + taxon);
+
         }
 
         return taxon;
