@@ -673,7 +673,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + "			queryable: " + layer.isQueryable() + ", "
                         + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
                         + "			gutter: " + gutter + ", "
-                        + "			wrapDateLine: true, "
+                        + "			wrapDateLine: true"
                         + "		}  "
                         + "	); "
                         + // decorate with getFeatureInfoBuffer field - do not set buffer
