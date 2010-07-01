@@ -940,7 +940,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
     /**
      * returns a list of (species names / type / count) for valid 
-     * .beginsWith matches
+     * .equalsIgnoreCase matches
      * 
      * if input is like "species_name / type" match lookup column name
      * with 'type', e.g. "genus" or "family" or "species". 
@@ -965,14 +965,24 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         loadIndexes();
 
         if (all_indexes.size() > 0) {
-            ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>();
+            ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>(all_indexes.size());
             int i = 0;
             for (IndexedRecord[] ir : all_indexes) {
-                for (IndexedRecord r : ir) {
-                    if (r.name.equalsIgnoreCase(filter)) {
-                        matches.add(r);
-                    }
+                /* binary search */
+                IndexedRecord searchfor = new IndexedRecord(filter,0,0,0,0,(byte)0);
+
+                int pos = java.util.Arrays.binarySearch(ir, searchfor,
+                        new Comparator<IndexedRecord>() {
+
+                        public int compare(IndexedRecord r1, IndexedRecord r2) {
+                            return r1.name.compareTo(r2.name);
+                        }
+                    });
+
+                if (pos >= 0 && pos < ir.length) {
+                    matches.add(ir[pos]);
                 }
+
                 i++;
             }
 

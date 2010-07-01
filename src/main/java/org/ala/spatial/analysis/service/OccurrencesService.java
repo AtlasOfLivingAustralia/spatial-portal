@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.service;
 
+import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 
 /**
@@ -10,8 +11,9 @@ import org.ala.spatial.analysis.index.OccurrencesIndex;
  * @author adam
  *
  */
-public class OccurrencesService {	
-	/**
+public class OccurrencesService {
+
+    /**
      * returns a list of (species names / type / count) for valid 
      * .beginsWith matches
      * 
@@ -19,7 +21,24 @@ public class OccurrencesService {
      * @param limit limit on output
      * @return formatted species matches as String[]
      */
-	static public String [] filterSpecies(String filter,int limit) {
-		return OccurrencesIndex.filterIndex(filter,limit);
-	}
+    static public String[] filterSpecies(String filter, int limit) {
+        return OccurrencesIndex.filterIndex(filter, limit);
+    }
+
+    /**
+     * gets the number of records for an exact match species (genus, etc) name
+     * @param scientificname
+     * @return number of records as int
+     */
+    public static int getSpeciesCount(String scientificname) {
+        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(scientificname);
+
+        int count = 0;
+        if (ir != null) {
+            for (int i = 0; i < ir.length; i++) {
+                count += ir[i].record_end - ir[i].record_start + 1;
+            }
+        }
+        return count;
+    }
 }
