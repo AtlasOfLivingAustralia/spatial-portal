@@ -26,6 +26,7 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkmax.zul.Filedownload;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
@@ -352,6 +353,12 @@ public class SamplingWCController extends UtilityComposer {
 
             System.out.println("Got response from SamplingWSController: " + result + "\n" + slist);
 
+            //error condition, for example, when no combobox item is selected
+            if (result != 200) {
+                mc.showMessage("no records available");
+                window.detach();
+                return;
+            }
 
             String[] aslist = slist.split(";");
             System.out.println("Result count: " + aslist.length);
@@ -580,6 +587,20 @@ public class SamplingWCController extends UtilityComposer {
      * @return
      */
     private String cleanTaxon(String taxon) {
+        //make the sac.getValue() a selected value if it appears in the list
+        // - fix for common names entered but not selected
+        if (sac.getSelectedItem() == null) {
+            List list = sac.getItems();
+            for (int i=0;i<list.size();i++) {
+                Comboitem ci = (Comboitem) list.get(i);
+                if (ci.getLabel().equalsIgnoreCase(taxon)) {
+                    System.out.println("cleanTaxon: set selected item");
+                    sac.setSelectedItem(ci);
+                    break;
+                }
+            }
+        }
+
         if (StringUtils.isNotBlank(taxon)) {
 
             // check for condition 1
@@ -590,13 +611,15 @@ public class SamplingWCController extends UtilityComposer {
             System.out.println("After checking for cond.1: " + taxon);
             
             // check for condition 2
-            String spVal = sac.getSelectedItem().getDescription();
-            System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
-            if (spVal.trim().startsWith("Scientific name")) {
-                //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
-                taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            if (sac.getSelectedItem() != null) {
+                String spVal = sac.getSelectedItem().getDescription();
+                System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
+                if (spVal.trim().startsWith("Scientific name")) {
+                    //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+                    taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+                }
+                System.out.println("After checking for cond.2: " + taxon);
             }
-            System.out.println("After checking for cond.2: " + taxon);
 
         }
 

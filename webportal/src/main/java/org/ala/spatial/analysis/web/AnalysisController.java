@@ -32,9 +32,9 @@ public class AnalysisController extends UtilityComposer {
     private HtmlMacroComponent mf;
     private HtmlMacroComponent af;
     
-    boolean samplingTabActive = false;	
+    boolean samplingTabActive = true;
 	boolean maxentTabActive = false;
-	boolean alocTabActive = true;		//default
+	boolean alocTabActive = false;		//default
 
 
     @Override
