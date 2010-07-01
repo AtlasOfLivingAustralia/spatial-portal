@@ -45,6 +45,7 @@ import org.zkoss.zul.Window;
 import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
+import org.zkoss.zul.Comboitem;
 
 /**
  *
@@ -490,6 +491,20 @@ public class MaxentWCController extends UtilityComposer {
      * @return
      */
     private String cleanTaxon(String taxon) {
+        // make the sac.getValue() a selected value if it appears in the list
+        // - fix for common names entered but not selected
+        if (sac.getSelectedItem() == null) {
+            List list = sac.getItems();
+            for (int i=0;i<list.size();i++) {
+                Comboitem ci = (Comboitem) list.get(i);
+                if (ci.getLabel().equalsIgnoreCase(taxon)) {
+                    System.out.println("cleanTaxon: set selected item");
+                    sac.setSelectedItem(ci);
+                    break;
+                }
+            }
+        }
+        
         if (StringUtils.isNotBlank(taxon)) {
 
             // check for condition 1
@@ -500,13 +515,15 @@ public class MaxentWCController extends UtilityComposer {
             System.out.println("After checking for cond.1: " + taxon);
 
             // check for condition 2
-            String spVal = sac.getSelectedItem().getDescription();
-            System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
-            if (spVal.trim().startsWith("Scientific name")) {
-                //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
-                taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            if (sac.getSelectedItem() != null) {
+                String spVal = sac.getSelectedItem().getDescription();
+                System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
+                if (spVal.trim().startsWith("Scientific name")) {
+                    //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+                    taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+                }
+                System.out.println("After checking for cond.2: " + taxon);
             }
-            System.out.println("After checking for cond.2: " + taxon);
 
         }
 
