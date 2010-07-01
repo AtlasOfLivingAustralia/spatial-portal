@@ -477,6 +477,14 @@ public class MaxentWCController extends UtilityComposer {
 
     /**
      * get rid of the common name if present
+     * 2 conditions here
+     *  1. either species is automatically filled in from the Layer selector
+     *     and is a common name and is in format Scientific name (Common name)
+     *
+     *  2. or user has searched for a common name from the analysis tab itself
+     *     in which case we need to grab the scientific name for analysis
+     *
+     *  * condition 1 should also parse the proper taxon if its a genus, for eg
      *
      * @param taxon
      * @return
@@ -484,9 +492,22 @@ public class MaxentWCController extends UtilityComposer {
     private String cleanTaxon(String taxon) {
         if (StringUtils.isNotBlank(taxon)) {
 
+            // check for condition 1
+            System.out.println("Checking for cond.1: " + taxon);
             if (taxon.contains(" (")) {
                 taxon = StringUtils.substringBefore(taxon, " (");
             }
+            System.out.println("After checking for cond.1: " + taxon);
+
+            // check for condition 2
+            String spVal = sac.getSelectedItem().getDescription();
+            System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
+            if (spVal.trim().startsWith("Scientific name")) {
+                //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+                taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+            }
+            System.out.println("After checking for cond.2: " + taxon);
+
         }
 
         return taxon;
