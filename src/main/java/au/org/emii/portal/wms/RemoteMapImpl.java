@@ -341,6 +341,8 @@ public class RemoteMapImpl implements RemoteMap {
         geoJSON.setGreenVal(g);
         geoJSON.setRedVal(r);
 
+        geoJSON.setSizeVal(8); //default point size
+
         //Color c =new Color(r,g,b);
         //String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
 

@@ -783,7 +783,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
     return wktLayer;
 }
 
-function addJsonFeatureToMap(feature, name, hexColour) {
+function addJsonFeatureToMap(feature, name, hexColour, radius) {
     //    alert(name);
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
@@ -798,6 +798,7 @@ function addJsonFeatureToMap(feature, name, hexColour) {
     var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = hexColour;
     layer_style.strokeColor = hexColour;
+    layer_style.pointRadius = radius;
 
 
     var geojson_format = new OpenLayers.Format.GeoJSON();
@@ -841,6 +842,9 @@ function addToSelectControl(newlyr) {
     }
 }
 function removeFromSelectControl(lyrname) {
+    if (selectControl==undefined || selectControl==null) {
+        return;
+    }
     var currentLayers = selectControl.layers;
     for (var li=0; li<currentLayers.length; li++) {
         if (currentLayers[li].name==lyrname) {
@@ -881,7 +885,7 @@ function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
     }
 }
 
-function redrawFeatures(feature, name, hexColour, opacity) {
+function redrawFeatures(feature, name, hexColour, opacity, radius) {
     var gjLayers = map.getLayersByName(name);
     var geojson_format = new OpenLayers.Format.GeoJSON();
     features = geojson_format.read(feature);
@@ -890,6 +894,7 @@ function redrawFeatures(feature, name, hexColour, opacity) {
     layer_style.fillColor = hexColour;
     layer_style.strokeColor = hexColour;
     layer_style.fillOpacity = opacity;
+    layer_style.pointRadius = radius;
     
     for (key in gjLayers) {
 

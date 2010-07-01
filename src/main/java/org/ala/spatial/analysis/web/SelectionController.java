@@ -302,6 +302,8 @@ public class SelectionController extends UtilityComposer {
     }
 
     public void onClick$btnShowSpecies() {
+        openResults();
+        /*
         if (selectionGeom.getValue() != ""
                 && !selectionGeom.getValue().contains("NaN NaN")) {
             Clients.showBusy("Filtering species, please wait...", true);
@@ -311,7 +313,7 @@ public class SelectionController extends UtilityComposer {
                 && !boxGeom.getValue().contains("NaN NaN")) {
             Clients.showBusy("Filtering species, please wait...", true);
             Events.echoEvent("showSpecies", this, displayGeom.getValue());
-        }
+        }*/
     }
 
     public void showSpecies(Event event) throws Exception {
@@ -509,15 +511,15 @@ public class SelectionController extends UtilityComposer {
         java.util.Map args = new java.util.HashMap();
         args.put("pid", "none");
         args.put("shape", getGeom());
-        args.put("manual","true");
+        //args.put("manual","true");
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
                 "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
         try {
             /* TODO: fix species listing for polygons service so this
              * is not required
              */
-            win.results = results;
-            win.populateList();
+            //win.results = results;
+            //win.populateList();
             win.doModal();
         } catch (Exception e){
             e.printStackTrace();
