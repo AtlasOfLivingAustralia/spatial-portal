@@ -809,8 +809,8 @@ function addJsonFeatureToMap(feature, name, hexColour, radius) {
     features = geojson_format.read(feature);
     vector_layer.addFeatures(features);
 
-    selectionLayers[selectionLayers.length] = vector_layer;
-    //vector_layer.events.register("featureselected", vector_layer, selected);
+    ////selectionLayers[selectionLayers.length] = vector_layer;
+    vector_layer.events.register("featureselected", vector_layer, selected);
     //selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
     //map.addControl(selectControl);
     //selectControl.activate();
@@ -821,11 +821,14 @@ function addJsonFeatureToMap(feature, name, hexColour, radius) {
 
     // need to do it this way due to passing an object.. closures :)
     window.setTimeout(function(){
-        addToSelectControl(vector_layer);
+        //addToSelectControl(vector_layer);
+        setVectorLayersSelectable(); 
     }, 2000);
         
     return vector_layer;
 }
+/*
+// this commented block is for OpenLayers 2.9.1 
 function addToSelectControl(newlyr) {
     if (selectControl==null) {
         selectControl = new OpenLayers.Control.SelectFeature([newlyr],
@@ -853,6 +856,47 @@ function removeFromSelectControl(lyrname) {
         }
     }
     selectControl.setLayer(currentLayers);
+}
+*/
+function removeFromSelectControl(lyrname) {
+    if (selectControl==undefined || selectControl==null) {
+        return;
+    }
+    var currentLayers = selectControl.layers;
+    for (var li=0; li<currentLayers.length; li++) {
+        if (currentLayers[li].name==lyrname) {
+            currentLayers.splice(li,1);
+            break;
+        }
+    }
+
+
+    var isActive = selectControl.active;
+    selectControl.unselectAll();
+    selectControl.deactivate();
+    if(selectControl.layers) {
+        selectControl.layer.destroy();
+        selectControl.layers = null;
+    }
+    initSelectControlLayers(currentLayers);
+    selectControl.handlers.feature.layer = selectControl.layer;
+    if (isActive) {
+        selectControl.activate();
+    }
+///selectControl.setLayer(currentLayers);
+}
+
+function initSelectControlLayers(layers) {
+    if(layers instanceof Array) {
+        selectControl.layers = layers;
+        selectControl.layer = new OpenLayers.Layer.Vector.RootContainer(
+            selectControl.id + "_container", {
+                layers: layers
+            }
+            );
+    } else {
+        selectControl.layer = layers;
+    }
 }
 
 function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
