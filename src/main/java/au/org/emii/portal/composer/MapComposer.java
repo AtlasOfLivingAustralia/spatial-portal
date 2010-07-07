@@ -37,6 +37,10 @@ import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -79,6 +83,7 @@ import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
@@ -124,10 +129,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Div rawMessageHackHolder;
     private Tabbox mainTab;
     private Tabbox accordionMenu;
-    private Tab layerNavigationTab;
+   // private Tab layerNavigationTab;
     private Tab searchNavigationTab;
     private Tab linkNavigationTab;
-    private Tab areaNavigationTab;
+    //private Tab areaNavigationTab;
     private Tab startNavigationTab;
     private Tab mapNavigationTab;
     private Tab facilitiesTab;
@@ -135,11 +140,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Tab userTab;
     private Tab realtimeTab;
     private Combobox styleList;
-    private Component layerNavigationTabContent;
+    //private Component layerNavigationTabContent;
     private Component searchNavigationTabContent;
     private Component linkNavigationTabContent;
     private Component mapNavigationTabContent;
-    private Component areaNavigationTabContent;
+    //private Component areaNavigationTabContent;
     private Component startNavigationTabContent;
     private Tabpanel facilitiesTabPanel;
     private Tabpanel regionsTabPanel;
@@ -195,6 +200,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Label createSavedMapError;
     private Toolbarbutton loginButton;
     private Toolbarbutton logoutButton;
+    private Button printButton;
     private LayersAutoComplete lac;
     /**
      * Logout service spring bean - autowired
@@ -237,8 +243,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Tab selectionTab;
     private Textbox tbxArea;
     private HtmlMacroComponent leftMenuAnalysis;
-    private HtmlMacroComponent ff;
-    private HtmlMacroComponent sf;
+    //private HtmlMacroComponent ff;
+    //private HtmlMacroComponent sf;
+    private Textbox tbxPrintHack;
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -342,6 +349,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onScroll$opacitySlider(Event e) {
+        float opacity = ((float) opacitySlider.getCurpos()) / 100;
+        int percentage = (int) (opacity * 100);
+        opacitySlider.setCurpos(percentage);
+        opacityLabel.setValue(percentage + "%");
+
         onClick$applyChange();
     }
 
@@ -463,15 +475,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             selectionTab.setSelected(true);
         }
     }
-
-    public void onClick$filteringTab() {
-        if (!filteringTab.isSelected()) {
-            filteringTab.setSelected(true);
-            ((FilteringWCController) ff.getFellow("filteringwindow")).callPullFromActiveLayers();
-        }
-    }
+   
 
     public String getSelectionArea() {
+        HtmlMacroComponent sf = (HtmlMacroComponent)((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).getSelectionHtmlMacroComponent();
         return ((SelectionController) sf.getFellow("selectionwindow")).getGeom();
     }
 
@@ -1738,18 +1745,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Tab component = null;
 
         switch (tab) {
-            case PortalSession.LAYER_TAB:
+            /*case PortalSession.LAYER_TAB:
                 component = layerNavigationTab;
-                break;
+                break;*/
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTab;
                 break;
             case PortalSession.LINK_TAB:
                 component = linkNavigationTab;
                 break;
-            case PortalSession.AREA_TAB:
+            /*case PortalSession.AREA_TAB:
                 component = areaNavigationTab;
-                break;
+                break;*/
             case PortalSession.MAP_TAB:
                 component = mapNavigationTab;
                 break;
@@ -1767,18 +1774,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Component component = null;
 
         switch (tab) {
-            case PortalSession.LAYER_TAB:
+            /*case PortalSession.LAYER_TAB:
                 component = layerNavigationTabContent;
-                break;
+                break;*/
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTabContent;
                 break;
             case PortalSession.LINK_TAB:
                 component = linkNavigationTabContent;
                 break;
-            case PortalSession.AREA_TAB:
+            /*case PortalSession.AREA_TAB:
                 component = areaNavigationTabContent;
-                break;
+                break;*/
             case PortalSession.MAP_TAB:
                 component = mapNavigationTabContent;
                 break;
@@ -1919,7 +1926,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 int blue = currentSelection.getBlueVal();
                 int green = currentSelection.getGreenVal();
                 int size = currentSelection.getSizeVal();
-
+System.out.println("r:" + red + " g:" + green + " b:" + blue);
                 Color c = new Color(red, green, blue);
 
                 redSlider.setCurpos(red);
@@ -2221,35 +2228,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             menu = getMenuTree(portalSession.getSelectedMenuId());
         }
         return menu;
-    }
-
-    /**
-     * executed when the opacity slider is dragged
-     */
-    public void onScroll$opacitySlider() {
-        float opacity = ((float) opacitySlider.getCurpos()) / 100;
-        int percentage = (int) (opacity * 100);
-        opacitySlider.setCurpos(percentage);
-        opacityLabel.setValue(percentage + "%");
-
-        /** display colourChooser on edit action only
-        if (colourChooser.isVisible()) {
-            //colourChooser.setVisible(false);
-        } else {
-            colourChooser.setVisible(true);
-        }*/
-
-        /** change opacity for the current selected and displayed layer
-        MapLayer selectedLayer = this.getActiveLayersSelection(true);
-        if (selectedLayer.isDynamicStyle()) {
-            //change via button
-        } else {
-        if (selectedLayer != null && selectedLayer.isDisplayed()) {
-            logger.debug("opacity change: " + selectedLayer.getId() + " "
-                    + opacity + "%");
-            this.changeOpacity(selectedLayer, opacity);
-        }
-        }*/
     }
 
     public void updateLegendImage() {
@@ -2609,11 +2587,100 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * Use the onChange for tbxTabSelection to decide selected tab
      * tbxTabSelection change event can be triggered via javascript
      */
-    public void onChange$tbxTabSelection() {
-        areaNavigationTab.setSelected(_visible);
-        onClick$areaNavigationTab();
+   // public void onChange$tbxTabSelection() {
+    //    areaNavigationTab.setSelected(_visible);
+    //    onClick$areaNavigationTab();
 
-    }
+   // }
+
+    /**
+     * generate pdf for from innerHTML of printHack txtbox
+     *
+     * dependant on whatever the ends up being on the map tab
+     */
+    public void onChange$tbxPrintHack() {
+        String innerHTML = tbxPrintHack.getValue();
+
+        String server = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/webportal/";
+        String header = "<?xml version=\"1.0\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><link rel=\"stylesheet\" type=\"text/css\" href=\"" + server + "css/map.css?\" media=\"screen\" /><body>";
+        String footer = "</body></html>";
+
+        /* format for reading locally */
+
+        //insert into <svg ...,  xmlns="http://www.w3.org/2000/svg"
+        innerHTML = innerHTML.replace("<svg ", "<svg  xmlns=\"http://www.w3.org/2000/svg\" ");
+
+        //insert 'server' into each src="img/"
+        innerHTML = innerHTML.replace("src=\"img/\"","src=\"" + server + "img/\"");
+
+        //put /> on all img, input, br tags
+        String [] openTags = {"<img","<input","<br"};
+        int pos,j;
+        for (j=0;j<openTags.length;j++){
+            pos = 0;
+            //find next start of tag
+            while ((pos = innerHTML.indexOf(openTags[j],pos)) > 0) {
+                //find next end of tag and insert " /"
+                pos = innerHTML.indexOf(">",pos);
+                innerHTML = innerHTML.substring(0,pos) + " /" + innerHTML.substring(pos);
+            }
+        }
+
+        //write to temp file
+        String filePath = "/mnt/ala/test.xml";
+        try {
+            FileWriter fw = new FileWriter(filePath);
+            fw.append(header).append(innerHTML).append(footer);
+            fw.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        //output image
+        String outputImage = "/mnt/ala/map.jpg";
+        String outputPDF = "/mnt/ala/map.pdf";
+
+        //process to pdf
+        String cmdXmlToJpg = "/mnt/ala/printing/wkhtmltoimage --load-error-handling ignore " + filePath + " " + outputImage;
+        String cmdJpgToPdf =  "convert " + outputImage + " " + outputPDF;
+
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            /* Xml to Jpg */
+            Process proc = runtime.exec(cmdXmlToJpg);
+            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
+            BufferedReader br = new BufferedReader(isr);
+            String line;
+            System.out.printf("Output of running %s is:", cmdXmlToJpg);
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+            int exitVal = proc.waitFor();
+            System.out.println("exitVal: " + exitVal);
+
+            /* Jpg to Pdf */
+            proc = runtime.exec(cmdJpgToPdf);
+            isr = new InputStreamReader(proc.getInputStream());
+            br = new BufferedReader(isr);
+            System.out.printf("Output of running %s is:", cmdJpgToPdf);
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+             exitVal = proc.waitFor();
+            System.out.println("exitVal: " + exitVal);
+
+            
+            Filedownload.save(new File(outputPDF), "application/pdf");
+            return;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        showMessage("error generating PDF");
+
+    }  
 
     public void updateUserMapList() {
 

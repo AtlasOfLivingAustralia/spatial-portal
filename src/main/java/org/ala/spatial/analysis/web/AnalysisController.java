@@ -28,9 +28,11 @@ public class AnalysisController extends UtilityComposer {
 
     private Session sess = (Session) Sessions.getCurrent();
     
-    private HtmlMacroComponent sf;
+    private HtmlMacroComponent asf;
     private HtmlMacroComponent mf;
     private HtmlMacroComponent af;
+    
+    private HtmlMacroComponent sf;
     
     boolean samplingTabActive = true;
 	boolean maxentTabActive = false;
@@ -61,7 +63,7 @@ public class AnalysisController extends UtilityComposer {
     	samplingTabActive = true;
     	maxentTabActive = false;
     	alocTabActive = false;
-    	((SamplingWCController)sf.getFellow("samplingwindow")).callPullFromActiveLayers();
+    	((SamplingWCController)asf.getFellow("samplingwindow")).callPullFromActiveLayers();
     }
 
     public void onSelect$maxentTab() {
@@ -102,11 +104,15 @@ public class AnalysisController extends UtilityComposer {
 
     public void callPullFromActiveLayers() {
     	if (samplingTabActive) {
-    		((SamplingWCController)sf.getFellow("samplingwindow")).callPullFromActiveLayers();
+    		((SamplingWCController)asf.getFellow("samplingwindow")).callPullFromActiveLayers();
     	} else if(maxentTabActive) {
     		((MaxentWCController)mf.getFellow("maxentwindow")).callPullFromActiveLayers();
     	} else if(alocTabActive) {
     		((ALOCWCController)af.getFellow("alocwindow")).callPullFromActiveLayers();
     	}
+    }
+
+    public HtmlMacroComponent getSelectionHtmlMacroComponent() {
+        return sf;
     }
 }
