@@ -17,6 +17,7 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.ListModelArray;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -29,6 +30,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     public Button download;
     public Button downloadsamples;
     public Listbox popup_listbox_results;
+    public Textbox popup_textbox_results;
     public Popup popup_results;
     public Label results_label;
 
@@ -108,13 +110,20 @@ public class FilteringResultsWCController extends UtilityComposer {
                 }
                 long t3 = System.currentTimeMillis();
 
-                popup_listbox_results.setModel(new ListModelArray(tmp, false));
+                //remove in place to popup_textbox_results; popup_listbox_results.setModel(new ListModelArray(tmp, false));
                 if (length < 200) {
                     results_label.setValue("species found: " + length);
                 } else {
                     results_label.setValue("species found: " + length + " (first 200 in this list)");
                 }
                 long t4 = System.currentTimeMillis();
+
+                //populate textbox
+                StringBuffer results_string = new StringBuffer();
+                for (int i = 0; i < results.length; i++) {
+                    results_string.append(results[i]).append("\n");
+                }
+                popup_textbox_results.setValue(results_string.toString());
 
                 System.out.println("predisplay filtering result timings: sz=" + results.length + " timing: " + (t2 - t1) + " " + (t3 - t1) + " " + (t4 - t1));
             } else {

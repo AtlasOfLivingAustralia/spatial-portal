@@ -7,13 +7,13 @@
             apply="org.ala.spatial.analysis.web.SelectionController">
 
 
-        <html style="white-space: normal;"><![CDATA[
+        <html visible="false" style="white-space: normal;"><![CDATA[
 An area can be defined by any of the options below. Once defined, the area can be used to identify what species or observation records occur there, or be used within the Analysis tab functions. These areas will also be displayed in the Layers tab and can be deselected or deleted.
         ]]></html>
         <div sclass="highlighted">
-            <html><![CDATA[Define <b>Area</b> by...]]></html>
+            <html><![CDATA[Defined <b>Area</b>]]></html>
             <vbox>
-                <radiogroup id="rgAreaSelection">
+                <radiogroup id="rgAreaSelection" visible="false">
                     <vbox>
                         <hbox><radio label="User-defined &lt;b&gt;box&lt;/b&gt;" id="rdoBoxSelection"/>
                             <!--<html><![CDATA[User-defined <b>box</b>]]></html>-->
@@ -39,6 +39,17 @@ An area can be defined by any of the options below. Once defined, the area can b
 
         <button label="Clear Selection" id="btnClearSelection"/> -->
                 </radiogroup>
+                <combobox width="90%" id="cbAreaSelection" >
+                    <comboitem label="Draw bounding box..." id="ciBoundingBox"/>
+                    <comboitem label="Draw polygon..." id="ciPolygon" />
+                    <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
+                    <comboitem label="Select prefined (displayed) map polygon..." id="ciMapPolygon" />
+                    <comboitem label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
+
+                    <comboitem label="Box - Australia" id="ciBoxAustralia" />
+                    <comboitem label="Box - World" id="ciBoxWorld" />
+                    <comboitem label="Box - Current View" id="ciBoxCurrentView" />
+                </combobox>
             </vbox>
         </div>
         <div sclass="highlighted" >
@@ -50,7 +61,7 @@ An area can be defined by any of the options below. Once defined, the area can b
             <vbox>
 
 
-                <textbox id="displayGeom" readonly="true" visible="true" width="95%" height="100px" multiline="true"/>
+                <textbox id="displayGeom" readonly="false" visible="true" width="95%" height="100px" multiline="true"/>
 
                 <button label="Show Species" id="btnShowSpecies"/>
                 <button label="Clear Selection" id="btnClearSelection"/>

@@ -332,16 +332,23 @@ public class RemoteMapImpl implements RemoteMap {
         logger.debug(uri);
 
         //get a random colour
-        Random rand = new java.util.Random();
-        int r = rand.nextInt(255);
-        int g = rand.nextInt(255);
-        int b = rand.nextInt(255);
+        //Random rand = new java.util.Random();
+        //int r = rand.nextInt(255);
+        //int g = rand.nextInt(255);
+        //int b = rand.nextInt(255);
+
+        //get colour as label hash
+        //TODO: when SPECIES use hash of ID instead of name
+        int hash = Math.abs(label.hashCode());
+        int r = (hash >> 16) % 255;
+        int g = (hash >> 8) % 255;
+        int b = (hash) % 255;
 
         geoJSON.setBlueVal(b);
         geoJSON.setGreenVal(g);
         geoJSON.setRedVal(r);
 
-        geoJSON.setSizeVal(8); //default point size
+        geoJSON.setSizeVal(4); //TODO: default point size
 
         //Color c =new Color(r,g,b);
         //String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );

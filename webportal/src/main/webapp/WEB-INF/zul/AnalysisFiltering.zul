@@ -1,11 +1,12 @@
 <!-- <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?> -->
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk>
-    <div align="right">
+    <div align="right" visible="false">
         <button image="/img/help.png" sclass="helpButton"
             onClick="help.open=(help.open) ? false:true;" />
-    </div>
+
     <separator/>
+    </div>
     <panel id="help" style="padding: 5px;" border="normal" open="false">
         <panelchildren>
             <html style="white-space: normal; padding: 5px"><![CDATA[

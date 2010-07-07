@@ -4,11 +4,12 @@
     <window id="samplingwindow" use="org.ala.spatial.analysis.web.SamplingWCController"
             apply="org.ala.spatial.analysis.web.SamplingWCController">
 
-        <div align="right">
+        <div align="right" visible="false">
             <button image="/img/help.png" sclass="helpButton"
                     onClick="help.open=(help.open) ? false:true;" />
-        </div>
+
         <separator/>
+        </div>
         <panel id="help" border="normal" open="false" style="padding: 5px" >
             <panelchildren><html style="white-space: normal;"><![CDATA[
                 This tool samples environmental and contextual data layers at

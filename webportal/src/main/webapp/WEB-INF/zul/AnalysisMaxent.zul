@@ -12,11 +12,12 @@
             }
         </style>
 
-        <div align="right">
+        <div align="right" visible="false">
             <button image="/img/help.png" sclass="helpButton"
                     onClick="help.open=(help.open) ? false:true;" />
+                    <separator/>
         </div>
-        <separator/>
+        
         <panel id="help" border="normal" open="false" style="padding: 5px" >
             <panelchildren><html style="white-space: normal;"><![CDATA[
                 This tool uses Maxent to produce predictive analysis models

@@ -4,6 +4,8 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.PortalSessionUtilities;
+import au.org.emii.portal.value.BoundingBox;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
@@ -50,6 +52,8 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Combobox;
+import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Label;
 
@@ -94,6 +98,16 @@ public class SelectionController extends UtilityComposer {
     int results_pos;
     SortedSet speciesSet;
 
+    Combobox cbAreaSelection;
+    Comboitem ciBoundingBox;
+    Comboitem ciPolygon;
+    Comboitem ciMapPolygon;
+    Comboitem ciEnvironmentalEnvelope;
+    Comboitem ciBoxAustralia;
+    Comboitem ciBoxWorld;
+    Comboitem ciBoxCurrentView;
+    private Comboitem ciPointAndRadius;
+
     public String getGeom() {
         if (rdoEnvironmentalEnvelope.isChecked()) {
             //get PID and return as ENVELOPE(PID)
@@ -103,6 +117,19 @@ public class SelectionController extends UtilityComposer {
             } else {
                 return "";
             }
+            
+        //work around for current view to be dynamically returned on usage
+        } else if (displayGeom.getText().contains("CURRENTVIEW()")) {
+            BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
+
+            String wkt = "POLYGON(("
+                    + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
+                    + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
+                    + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
+                    + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
+                    + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
+            return wkt;
+            
         //work around for null polygons to be reported as absence of polygon
         } else if (!displayGeom.getText().contains("NaN NaN")){
             return displayGeom.getText();
@@ -185,7 +212,7 @@ public class SelectionController extends UtilityComposer {
     }
 
     public void onCheck$rdoEnvironmentalEnvelope(Event event) {
-        instructions.setValue("");
+       instructions.setValue("");
        showEnvelopeInfo();
     }
 
@@ -196,6 +223,90 @@ public class SelectionController extends UtilityComposer {
             System.out.println("Error onClick$rgAreaSelection");
             e.printStackTrace(System.out);
         }
+    }
+
+    public void onOpen$cbAreaSelection() {
+        instructions.setValue("");
+        hideAllInfo();
+        String script = removeCurrentSelection();
+        MapComposer mc = getThisMapComposer();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        mc.removeFromList(mc.getMapLayer("Area Selection"));
+    }
+
+    public void onChange$cbAreaSelection() {
+        System.out.println("cbAreaSelection: " + cbAreaSelection.getSelectedItem().getLabel());
+        String wkt;
+
+        if(cbAreaSelection.getSelectedItem() == ciBoundingBox) {
+            instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size. Release the mouse button. ");
+            showPolygonInfo();
+            String script = removeCurrentSelection();
+            MapComposer mc = getThisMapComposer();
+            //mc.getOpenLayersJavascript().addBoxDrawingTool();
+            script += mc.getOpenLayersJavascript().addBoxDrawingTool();
+            mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+            mc.removeFromList(mc.getMapLayer("Area Selection"));
+        } else if (cbAreaSelection.getSelectedItem() == ciPolygon) {
+            instructions.setValue("Zoom and pan to the area of interest. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area. On the last vertex, double click to finalise the polygon. ");
+            showPolygonInfo();
+            MapComposer mc = getThisMapComposer();
+            String script = removeCurrentSelection();
+            script += mc.getOpenLayersJavascript().addPolygonDrawingTool();
+            mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+
+            mc.removeFromList(mc.getMapLayer("Area Selection"));
+        } else if (cbAreaSelection.getSelectedItem() == ciPointAndRadius) {
+            instructions.setValue("Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
+            showPolygonInfo();
+            String script = removeCurrentSelection();
+            MapComposer mc = getThisMapComposer();
+            script += mc.getOpenLayersJavascript().addRadiusDrawingTool();
+            mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+            mc.removeFromList(mc.getMapLayer("Area Selection"));
+        } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
+            instructions.setValue("Zoom and pan to the area of interest. Identify the polygon of interest by a (left) mouse click within that polygon. (The area will be reported in the Area box). ");
+            showPolygonInfo();
+            String script = removeCurrentSelection();
+            MapComposer mc = getThisMapComposer();
+            script += mc.getOpenLayersJavascript().addFeatureSelectionTool();
+            mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+            mc.removeFromList(mc.getMapLayer("Area Selection"));
+        } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
+            instructions.setValue("");
+            showEnvelopeInfo();
+        } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
+            instructions.setValue("");
+            showPolygonInfo();
+            wkt = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+            displayGeom.setValue(wkt);
+            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt,"Area Selection");
+        } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
+            instructions.setValue("");
+            showPolygonInfo();
+            wkt = "POLYGON((-180 -180,-180 180.0,180.0 180.0,180.0 -180.0,-180.0 -180.0))";
+            displayGeom.setValue(wkt);
+
+            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt,"Area Selection");
+        } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {            
+            instructions.setValue("");
+            showPolygonInfo();
+            
+            /* current view to be re-calculated on use
+            BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
+
+            wkt = "POLYGON(("
+                    + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
+                    + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
+                    + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
+                    + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
+                    + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
+            
+            displayGeom.setValue(wkt);
+            MapLayer mapLayer = getMapComposer().addWKTLayer(displayGeom.getValue(),"Area Selection"); */
+            wkt = "CURRENTVIEW()";
+            displayGeom.setValue(wkt);
+        }       
     }
 
     void showEnvelopeInfo(){

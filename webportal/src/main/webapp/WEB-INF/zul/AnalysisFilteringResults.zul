@@ -9,10 +9,13 @@
         <vbox>
             <label id="results_label" />
 
-            <listbox id="popup_listbox_results" width="290px" rows="15" >
+            <listbox id="popup_listbox_results" width="290px" rows="15" visible="false">
+            </listbox>
 
-            </listbox>           
-        
+            <textbox sclass="word-wrap"
+                   style="white-space: normal; padding: 5px"
+                   multiline="true"
+                   id="popup_textbox_results" width="290px" height="200px" readonly="true" />
         <separator/>
 
             <button label="download species list" id="download" />
