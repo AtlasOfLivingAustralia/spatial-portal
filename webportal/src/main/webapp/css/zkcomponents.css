@@ -366,11 +366,18 @@ a[rel="external"], a.external {
 }
 
 .z-tabs-scroll .z-tabs-cnt {
-    background:#EBEBEB url(../img/base-shadow.png) repeat-x scroll left bottom;
+    background:#FFFFFF url(../img/base-shadow.png) repeat-x scroll left bottom;
     border:0 none !important;
     padding-top:5px;
 }
 
+.z-tabs-scroll {
+    border:0;
+}
+
+.z-tabpanel {
+    border: 0;
+}
 
 
 .loginBoxCnt{

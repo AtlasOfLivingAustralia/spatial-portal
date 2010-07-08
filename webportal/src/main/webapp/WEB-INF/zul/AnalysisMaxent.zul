@@ -70,6 +70,15 @@
         </div>
 
 
+<tabbox>
+    <tabs>
+        <tab label="1" />
+        <tab label="2" />
+        <tab label="3" />
+        <tab label="4" />
+    </tabs>
+    <tabpanels>
+        <tabpanel>
         <!-- <label value="Step 1: Select your species " /> -->
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px"> 
             <caption label="Step 1: Select your species" /> -->
@@ -93,9 +102,9 @@
             </vbox>
        <!--  </groupbox> -->
        </div>
+       </tabpanel>
 
-
-
+       <tabpanel>
         <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px"> 
             <caption label="Step 2: Select your environmental layers" />-->
@@ -115,9 +124,9 @@
             </vbox>
         <!-- </groupbox> -->
         </div>
+        </tabpanel>
 
-
-
+        <tabpanel>
         <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
 
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
@@ -135,7 +144,8 @@
         <!-- </groupbox> -->
         </div>
 
-
+        </tabpanel>
+        <tabpanel>
 
         <textbox id="trun" value="${msets}" visible="false" />
 
@@ -181,7 +191,9 @@
             </tabpanels>
         </tabbox>
 
-
+        </tabpanel>
+        </tabpanels>
+        </tabbox>
 
 
     </window>

@@ -8,9 +8,9 @@
             <button image="/img/help.png" sclass="helpButton"
                     onClick="help.open=(help.open) ? false:true;" />
 
-        <separator/>
+            <separator/>
         </div>
-        <panel id="help" border="normal" open="false" style="padding: 5px" >
+        <panel id="help" border="normal" open="false" style="padding: 1px" >
             <panelchildren><html style="white-space: normal;"><![CDATA[
                 This tool samples environmental and contextual data layers at
                 locations defined by species observations. Think of this tool as
@@ -61,7 +61,14 @@
             </vbox>
         </div>
 
-        <div sclass="highlighted" >
+        <tabbox>
+            <tabs>
+                <tab label="1" />
+                <tab label="2" />
+                <tab label="3" />
+            </tabs>
+            <tabpanels>
+                <tabpanel>
             <label value="Step 1: Select your species" />
             <vbox>
                 <label>Enter a scientific or common name</label>
@@ -69,9 +76,9 @@
                     <comboitem label=""/>
                 </combobox>
             </vbox>
-        </div>
-
-        <div sclass="highlighted" >
+            </tabpanel>
+        <tabpanel>
+       
             <label multiline="true" sclass="word-wrap" style="white-space: normal;"
                    value="Step 2: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
@@ -86,9 +93,12 @@
 
                 </listbox>
             </vbox>
-        </div>
-
-        <button label="Preview sampling" id="btnPreview" sclass="goButton" />
+        </tabpanel>
+        <tabpanel>
+            <button label="Preview sampling" id="btnPreview" sclass="goButton" />
+        </tabpanel>
+        </tabpanels>
+     </tabbox>
 
         <popup id="results" width="640px" >
             <separator />
@@ -100,7 +110,6 @@
             </grid>
 
             <hbox>
-
                 <hbox>
                     <separator/>
                     <separator/>
