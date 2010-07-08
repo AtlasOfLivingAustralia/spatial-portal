@@ -50,7 +50,7 @@ public class SamplingWCController extends UtilityComposer {
     private Popup p;
     private Html h;
     private List layers;
-    private Checkbox useArea;
+    //private Checkbox useArea;
     private Map layerdata;
     private String selectedLayer;
     private MapComposer mc;
@@ -58,7 +58,7 @@ public class SamplingWCController extends UtilityComposer {
     private SettingsSupplementary settingsSupplementary = null;
     private String user_polygon = "";
     private String[] groupLabels = null;
-    String previousArea = "";
+    //String previousArea = "";
     LayersUtil layersUtil;
 
     @Override
@@ -325,7 +325,7 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if (useArea.isChecked()) {
+            if (true) { //an area always exists; useArea.isChecked()) {
                 user_polygon = mc.getSelectionArea();
             } else {
                 user_polygon = "";
@@ -485,7 +485,7 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if (useArea.isChecked()) {
+            if (true) { //an area always exists; useArea.isChecked()) {
                 user_polygon = mc.getSelectionArea();
             } else {
                 user_polygon = "";
@@ -653,7 +653,7 @@ public class SamplingWCController extends UtilityComposer {
             }
         }
 
-        /* validate the area box presence, check if area updated */
+        /*//an area always exists;  validate the area box presence, check if area updated
         String currentArea = mc.getSelectionArea();
         if (currentArea.length() > 0) {
             useArea.setDisabled(false);
@@ -664,6 +664,6 @@ public class SamplingWCController extends UtilityComposer {
             useArea.setDisabled(true);
             useArea.setChecked(false);
         }
-        previousArea = currentArea;
+        previousArea = currentArea;*/
     }
 }

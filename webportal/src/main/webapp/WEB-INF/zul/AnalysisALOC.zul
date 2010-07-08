@@ -111,14 +111,14 @@
             }
         </style>
 
-        <div sclass="highlighted" >
+        <div sclass="highlighted" visible="false">
             <vbox>
                 <label value="Step 1: Restrict area" />
                 <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
             </vbox>
         </div>
         <div sclass="highlighted" >
-            <label value="Step 2: Select two or more environmental layers" />
+            <label value="Step 1: Select two or more environmental layers" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
@@ -153,7 +153,7 @@
         </div>
         <div sclass="highlighted" >
             <vbox>
-                <label value="Step 3: Enter number of groups to generate" />
+                <label value="Step 2: Enter number of groups to generate" />
                 <textbox id="groupCount" value="20"/>
             </vbox>
         </div>

@@ -39,8 +39,8 @@ An area can be defined by any of the options below. Once defined, the area can b
 
         <button label="Clear Selection" id="btnClearSelection"/> -->
                 </radiogroup>
-                <combobox width="90%" id="cbAreaSelection" >
-                    <comboitem label="Draw bounding box..." id="ciBoundingBox"/>
+                <combobox width="90%" id="cbAreaSelection" autodrop="true">
+                    <comboitem label="Draw bounding box..." id="ciBoundingBox" />
                     <comboitem label="Draw polygon..." id="ciPolygon" />
                     <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
                     <comboitem label="Select prefined (displayed) map polygon..." id="ciMapPolygon" />
@@ -52,19 +52,21 @@ An area can be defined by any of the options below. Once defined, the area can b
                 </combobox>
             </vbox>
         </div>
-        <div sclass="highlighted" >
+        <div sclass="highlighted" visible="false" >
             <label sclass="word-wrap"
                    style="white-space: normal; padding: 5px"
-                   multiline="true" id="instructions" value="" visible="true"/>
+                   multiline="true" id="instructions" value="" visible="true" />
         </div>
-        <div id="polygonInfo" sclass="highlighted" visible="false" width="90%" >
+        <div id="polygonInfo" sclass="highlighted" visible="true" width="90%" >
             <vbox>
-
-
-                <textbox id="displayGeom" readonly="false" visible="true" width="95%" height="100px" multiline="true"/>
-
+                <hbox>
+                    <label value="Active Area" style="color: red; font-weight: bold" />
+                <textbox id="displayGeom" readonly="false" visible="true" width="200px" multiline="false" style="color: red" />
+                </hbox>
+                <hbox>
                 <button label="Show Species" id="btnShowSpecies"/>
                 <button label="Clear Selection" id="btnClearSelection"/>
+                </hbox>
             </vbox>
         </div>
         <div id="envelopeInfo" sclass="highlighted" visible="false">

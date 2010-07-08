@@ -62,7 +62,7 @@
             </panelchildren>
         </panel>
 
-        <div sclass="highlighted" >
+        <div sclass="highlighted" visible="false" >
             <vbox>
             <label value="Step 1: Restrict area" />
             <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
@@ -74,7 +74,7 @@
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px"> 
             <caption label="Step 1: Select your species" /> -->
         <div sclass="highlighted">
-            <label value="Step 2: Select your species" />
+            <label value="Step 1: Select your species" />
             <vbox>
                 <label>Enter a scientific or common name</label>
                 <!--
@@ -100,7 +100,7 @@
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px"> 
             <caption label="Step 2: Select your environmental layers" />-->
         <div sclass="highlighted">
-            <label value="Step 3: Select your environmental layers" />
+            <label value="Step 2: Select your environmental layers" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
@@ -123,7 +123,7 @@
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 3: Select your optional parameters" /> -->
         <div sclass="highlighted">
-            <label value="Step 4: Select your optional parameters" />
+            <label value="Step 3: Select your optional parameters" />
             <vbox>
                 <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" visible="false" />
                 <checkbox id="chkRCurves" label="Create response curves" />
