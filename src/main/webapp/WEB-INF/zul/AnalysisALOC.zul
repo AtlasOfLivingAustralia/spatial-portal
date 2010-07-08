@@ -117,7 +117,15 @@
                 <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
             </vbox>
         </div>
-        <div sclass="highlighted" >
+        <tabbox>
+            <tabs>
+                <tab label="1" />
+                <tab label="2" />
+                <tab label="3" />
+            </tabs>
+            <tabpanels>
+                <tabpanel>
+        
             <label value="Step 1: Select two or more environmental layers" />
             <vbox>
                 <hbox>
@@ -150,15 +158,20 @@
                     </div>
                 </div>
             </vbox>
-        </div>
-        <div sclass="highlighted" >
+
+        </tabpanel>
+        <tabpanel>
+        
             <vbox>
                 <label value="Step 2: Enter number of groups to generate" />
                 <textbox id="groupCount" value="20"/>
             </vbox>
-        </div>
 
+        </tabpanel>
+        <tabpanel>
         <button id="btnGenerate" label="Generate classification" sclass="goButton" />
-
+        </tabpanel>
+        </tabpanels>
+        </tabbox>
     </window>
 </zk>

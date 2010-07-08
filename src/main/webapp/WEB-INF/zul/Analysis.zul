@@ -19,8 +19,10 @@
   <!--  <label value="Analysis Tools"  sclass="h2 title"/> -->
   <selectionForm id="sf" />
   <separator />
+  <separator />
+  <separator />
 
-    <tabbox zindex="600" style="border:0px!important;" > <!-- mold="accordion-lite"  zclass="menuswitch"  -->
+    <tabbox zindex="600" style="border:0px!important; border: solid 0px white;" > <!-- mold="accordion-lite"  zclass="menuswitch"  -->
         <tabs>
             <!--  sampling  -->
             <tab id="samplingTab" label="Sampling" selected="true" image="/img/help.png" />
