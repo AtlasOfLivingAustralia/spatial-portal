@@ -146,6 +146,13 @@ function buildMap() {
     checkLibraryLoadedTimeout = setInterval('checkLibraryLoaded()', libraryCheckIntervalMs);
 }
 
+var yahooLayer; 
+function loadYahooMaps() {
+
+    //map.setCenter(new OpenLayers.LonLat(134, -25), 2);
+    //map.setBaseLayer(yahooLayer);
+}
+
 function buildMapReal() {
 
 
@@ -229,6 +236,12 @@ function buildMapReal() {
             separator: ' <BR><b>Lat:</b> '
         })
         ],
+        //projection: new OpenLayers.Projection("EPSG:900913"),
+        //displayProjection: new OpenLayers.Projection("EPSG:4326"),
+        ////maxExtent: new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508.34),
+        ////maxResolution: 156543.0339,
+        ////numZoomLevels: 18,
+        //units: "m",
         theme: null,
         restrictedExtent: new OpenLayers.Bounds.fromString("-10000,-90,10000,90"),
 
@@ -249,6 +262,14 @@ function buildMapReal() {
         this.src="img/blank.png";
     }
 
+    /*
+    yahooLayer = new OpenLayers.Layer.Yahoo( "Yahoo", {
+        'sphericalMercator': true,
+        maxExtent: new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508.34),
+        maxResolution: 156543.0339 
+    });
+    //map.addLayer(yahooLayer);
+    */
 
 
     var container = document.getElementById("navtoolbar");
@@ -278,8 +299,8 @@ function buildMapReal() {
         div:areaToolContainer
     });
 
-    areaToolPanel.addControls( [areaToolsButton] );
-    map.addControl(areaToolPanel); 
+    //areaToolPanel.addControls( [areaToolsButton] );
+    //map.addControl(areaToolPanel);
 
     //createAreaToolsButton();
     
