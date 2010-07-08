@@ -3121,4 +3121,8 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
     public void setSettings(Settings settings) {
         this.settings = settings;
     }
+
+    public boolean isLayerControlVisible() {
+        return layerControls.isVisible();
+    }
 }

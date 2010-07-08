@@ -10,9 +10,9 @@
         <html visible="false" style="white-space: normal;"><![CDATA[
 An area can be defined by any of the options below. Once defined, the area can be used to identify what species or observation records occur there, or be used within the Analysis tab functions. These areas will also be displayed in the Layers tab and can be deselected or deleted.
         ]]></html>
-        <div sclass="highlighted">
-            <html><![CDATA[Defined <b>Area</b>]]></html>
-            <vbox>
+        <div >
+            <html><![CDATA[<b>Active Area</b>]]></html>
+           
                 <radiogroup id="rgAreaSelection" visible="false">
                     <vbox>
                         <hbox><radio label="User-defined &lt;b&gt;box&lt;/b&gt;" id="rdoBoxSelection"/>
@@ -39,7 +39,7 @@ An area can be defined by any of the options below. Once defined, the area can b
 
         <button label="Clear Selection" id="btnClearSelection"/> -->
                 </radiogroup>
-                <combobox width="90%" id="cbAreaSelection" autodrop="true">
+                <combobox width="60%" id="cbAreaSelection" autodrop="true">
                     <comboitem label="Draw bounding box..." id="ciBoundingBox" />
                     <comboitem label="Draw polygon..." id="ciPolygon" />
                     <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
@@ -50,50 +50,34 @@ An area can be defined by any of the options below. Once defined, the area can b
                     <comboitem label="Box - World" id="ciBoxWorld" />
                     <comboitem label="Box - Current View" id="ciBoxCurrentView" />
                 </combobox>
-            </vbox>
+
+                <button image="/img/information.png" 
+                                    onClick="areaInfo.setVisible(!areaInfo.isVisible());" />
+            
         </div>
-        <div sclass="highlighted" visible="false" >
-            <label sclass="word-wrap"
-                   style="white-space: normal; padding: 5px"
-                   multiline="true" id="instructions" value="" visible="true" />
+        <div visible="false" id="areaInfo">
+            <div sclass="highlighted" visible="false" >
+                <label sclass="word-wrap"
+                       style="white-space: normal; padding: 5px"
+                       multiline="true" id="instructions" value="" visible="true" />
+            </div>
+            <div id="polygonInfo" sclass="highlighted" visible="true" width="90%" >
+                <vbox>
+                    <hbox>
+                        <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
+                    <textbox id="displayGeom" readonly="false" visible="true" width="250px" multiline="true" height="200px" style="color: red" />
+                    </hbox>
+                    <hbox>
+                    <button label="Show Species" id="btnShowSpecies" />
+                    <button label="Clear Selection" id="btnClearSelection" visible="false" />
+                    </hbox>
+                </vbox>
+            </div>
+            <div id="envelopeInfo" sclass="highlighted" visible="false">
+                <envelopeForm id="envelopeWindow" />
+            </div>
         </div>
-        <div id="polygonInfo" sclass="highlighted" visible="true" width="90%" >
-            <vbox>
-                <hbox>
-                    <label value="Active Area" style="color: red; font-weight: bold" />
-                <textbox id="displayGeom" readonly="false" visible="true" width="200px" multiline="false" style="color: red" />
-                </hbox>
-                <hbox>
-                <button label="Show Species" id="btnShowSpecies"/>
-                <button label="Clear Selection" id="btnClearSelection"/>
-                </hbox>
-            </vbox>
-        </div>
-        <div id="envelopeInfo" sclass="highlighted" visible="false">
-            <envelopeForm id="envelopeWindow" />
-        </div>
 
-        <popup id="popup_results" width="330px">
-            <vbox>
-
-                <!--<textbox id="popup_results_seek" width="200px"></textbox> -->
-                <label id="popup_label" value="" />
-                <listbox id="popup_listbox_results" width="290px" rows="15" >
-
-                </listbox>
-
-
-                <label id="results_label" />
-                <hbox>
-                    <!--<button id="results_prev" label="previous"/>
-                    <button id="results_next" label="next"/> -->
-                </hbox>
-                <separator/>
-                <separator/>
-
-                <button label="download" id="download" /><div align="right">	<button label="close" onClick="popup_results.close()" /></div>
-            </vbox>
-        </popup>
         <textbox id="selectionGeom" visible="false"/>
         <textbox id="boxGeom" visible="false"/>
         <script type="text/javascript">

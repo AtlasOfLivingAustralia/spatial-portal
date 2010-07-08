@@ -213,25 +213,25 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <textbox id="tbxPrintHack" visible="false"/>
         <script type="text/JavaScript">
             function printHack() {
-                var tbx = $e('${tbxPrintHack.uuid}');
-                var mapHTML = window.frames["mapFrame"].document.getElementById("mapbody").innerHTML;
-            
-                tbx.value = mapHTML;
+            var tbx = $e('${tbxPrintHack.uuid}');
+            var mapHTML = window.frames["mapFrame"].document.getElementById("mapbody").innerHTML;
 
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbx.dispatchEvent(evt);
+            tbx.value = mapHTML;
 
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbx.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbx.fireEvent('onblur');
-                    tbx.fireEvent('onchange');
-                }
+            if (document.createEvent) {
+            var evt = document.createEvent('HTMLEvents');
+            evt.initEvent( 'blur', false, false);
+            tbx.dispatchEvent(evt);
+
+            var evt2 = document.createEvent('HTMLEvents');
+            evt2.initEvent( 'change', false, false);
+            tbx.dispatchEvent(evt2);
+            } else if (document.createEventObject) {
+            tbx.fireEvent('onblur');
+            tbx.fireEvent('onchange');
             }
-       </script>
+            }
+        </script>
 
 
         <!-- external content (Links) popup -->
@@ -258,7 +258,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                            id="logoutButton" visible="${session.attributes.portalSession.portalUser.loggedIn}" />
                             <toolbarbutton label="Login"
                                            tooltiptext="Login and view your stored searches and maps" zclass="leftmenu_ahref"
-                                           id="loginButton"  visible="${! session.attributes.portalSession.portalUser.loggedIn}" />                        
+                                           id="loginButton"  visible="${! session.attributes.portalSession.portalUser.loggedIn}" />
 
                         </zk>
 
@@ -383,8 +383,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         <leftMenuLinks id="leftMenuLinks" />
                     </div>
                     <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
-                        
-                       <div align="right" visible="false">
+
+                        <div align="right" visible="false">
                             <button image="/img/help.png" sclass="helpButton"
                                     onClick="help.open=(help.open) ? false:true;" />
                         </div>
@@ -416,206 +416,217 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 </div>
                             </panelchildren>
                         </panel>
-                         <div id="layerNavigationTabContent" visible="true"> <!-- visible=${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}" -->
+                        <div id="layerNavigationTabContent" visible="true"> <!-- visible=${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}" -->
 
 
-                        <label style="font-weight: bold" value="Layer Selector"  />                       
-               
-                        <separator/>
+                            <label style="font-weight: bold" value="Layer Selector"  />
 
-                        <!--  baselayer selection -->
-                        <div sclass="highlighted" visible="false">
-                            <label value="Base Layer" sclass="h3" />
-                            <listbox id="baseLayerList" mold="select" />
-                        </div>
+                            <separator/>
+
+                            <!--  baselayer selection -->
+                            <div sclass="highlighted" visible="false">
+                                <label value="Base Layer" sclass="h3" />
+                                <listbox id="baseLayerList" mold="select" />
+                            </div>
 
 
-                        <!-- active layers -->
-                        <div id="activeLayersHolder">
-                            <listbox id="activeLayersList" />
-                        </div>
+                            <!-- active layers -->
+                            <div id="activeLayersHolder">
+                                <listbox id="activeLayersList" />
+                            </div>
 
-                        <div id="layerControls" sclass="highlighted" visible="false">
-                            <hbox  width="100%">
-                                <!--<hbox  align="left" style="float:left">
+                            <div id="layerControls" sclass="highlighted" visible="false">
+                                <hbox  width="100%">
+                                    <!--<hbox  align="left" style="float:left">
                                         <button id="zoomExtent" label="Zoom to layer extent" />
                                     </hbox>-->
 
-                                <hbox  align="right" style="float:right" >
-                                    <button id="closeLayerControls" label="Close Legend" />
+                                    <hbox  align="right" visible="false" >
+                                        <button id="closeLayerControls" label="Close Legend" />
+                                    </hbox>
                                 </hbox>
-                            </hbox>
-                            <!-- opacity-->
-                            <div id="opacityControls" >
-                                <div style="float:left;padding-top:4px" width="60px">
-                                    <label value="Opacity: " sclass="h3" />
-                                </div>
-                                <div style="float:left;" width="60%">
-                                    <slider id="opacitySlider" width="95%" />
-                                </div>
-                                <div align="right" style="padding-top:4px">
-                                    <label id="opacityLabel" />
-                                </div>
+                                <!-- opacity-->
+                                <div id="opacityControls" >
+                                    <vbox>
+                                        <hbox>
+                                            <div style="padding-top:0px" width="60px">
+                                                <label value="Opacity: " sclass="h3" />
+                                            </div>
+                                            <div  width="250px">
+                                                <slider id="opacitySlider" width="95%" />
+                                            </div>
+                                            <div align="right" style="padding-top:0px">
+                                                <label id="opacityLabel" />
+                                            </div>
 
-                                <separator />
+                                        </hbox>
+                                        <hbox>
 
-                                <div id="styleControls" style="margin-top:10px" visible="false">
-                                    <label value="Style:" sclass="h3 inputlabel" />
-                                    <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
-                                </div>
-                            </div>
-
-                            <separator sclass="hr" height="10px" />
-
-                            <div style="float:left;padding-top:4px" width="60px">
-                                <label value="Legend : " sclass="h3" />
-                            </div>
-                            <div style="float:left;" width="60%">
-                                <image id="legendImg" width="50px" height="50px" />
-                            </div>
-                            <div align="right" style="padding-top:4px" visible="false">
-                                <label id="legendLabel" value="Click symbol to edit" />
-                            </div>
-                            <div style="float:left;" width="60%">
-                                <image id="legendImgUri" visible="false"/>
-                            </div>
-                            <div style="float:left;" width="100%">
-                                <div id="legendHtml" visible="true"/>
+                                            <div id="styleControls" style="margin-top:0px" visible="false">
+                                                <label value="Style:" sclass="h3 inputlabel" />
+                                                <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
+                                            </div>
+                                        </hbox>
+                                    </vbox>
                                 </div>
 
-                                <div id="sizeChooser" visible="false">
-                                    <separator sclass="hr" height="10px" />
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Size: " sclass="h3" />
+
+
+
+                                <div  width="100%">
+
+
+                                    <div id="sizeChooser" visible="false">
+                                        
+                                        <div style="padding-top:0px" width="60px">
+                                            <label value="Size: " sclass="h3" />
+                                        </div>
+                                        <div width="250px">
+                                            <slider id="sizeSlider" maxpos="30" width="95%" />
+                                        </div>
+                                        <div align="right" style="padding-top:0px">
+                                            <label id="sizeLabel" />
+                                        </div>
                                     </div>
-                                    <div style="float:left;" width="60%">
-                                        <slider id="sizeSlider" maxpos="30" width="95%" />
+                                    <div id="colourChooser" visible="false">
+
+                                        <vbox>
+                                            <hbox>
+
+                                                <div style="padding-top:0px" width="60px">
+                                                    <label value="Red: " sclass="h3" />
+                                                </div>
+
+                                                <div width="250px">
+                                                    <slider id="redSlider" maxpos="255" width="95%" />
+                                                </div>
+
+                                                <div align="right" style="padding-top:0px">
+                                                    <label id="redLabel" />
+                                                </div>
+                                            </hbox>
+                                            <hbox>
+
+
+
+                                                <div style="padding-top:0px" width="60px">
+                                                    <label value="Green: " sclass="h3" />
+                                                </div>
+
+                                                <div  width="250px">
+                                                    <slider id="greenSlider" maxpos="255" width="95%" />
+                                                </div>
+
+                                                <div align="right" style="padding-top:0px">
+                                                    <label id="greenLabel" />
+                                                </div>
+                                            </hbox>
+                                            <hbox>
+
+
+                                                <div style="padding-top:0px" width="60px">
+                                                    <label value="Blue: " sclass="h3" />
+                                                </div>
+
+                                                <div  width="250px">
+                                                    <slider id="blueSlider" maxpos="255" width="95%" />
+                                                </div>
+
+                                                <div align="right" style="padding-top:0px">
+                                                    <label id="blueLabel" />
+                                                </div>
+                                            </hbox>
+                                        </vbox>
+
                                     </div>
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="sizeLabel" />
+
+                                    <div style="padding-top:0px" width="60px">
+                                        <label value="Legend : " sclass="h3" />
                                     </div>
-                                </div>
-                                <div id="colourChooser" visible="false">
-
-                                    <separator sclass="hr" height="10px" />
-
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Red: " sclass="h3" />
+                                    <div  width="60%">
+                                        <image id="legendImg" width="50px" height="50px" />
                                     </div>
-
-                                    <div style="float:left;" width="60%">
-                                        <slider id="redSlider" maxpos="255" width="95%" />
+                                    <div align="right" style="padding-top:0px" visible="false">
+                                        <label id="legendLabel" value="Click symbol to edit" />
                                     </div>
-
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="redLabel" />
+                                    <div  width="60%">
+                                        <image id="legendImgUri" visible="false"/>
+                                    </div>
+                                    <div id="legendHtml" visible="true"/>
                                     </div>
 
-                                    <separator sclass="hr" height="2px" />
-
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Green: " sclass="h3" />
-                                    </div>
-
-                                    <div style="float:left;" width="60%">
-                                        <slider id="greenSlider" maxpos="255" width="95%" />
-                                    </div>
-
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="greenLabel" />
-                                    </div>
-
-                                    <separator sclass="hr" height="2px" />
-
-                                    <div style="float:left;padding-top:4px" width="60px">
-                                        <label value="Blue: " sclass="h3" />
-                                    </div>
-
-                                    <div style="float:left;" width="60%">
-                                        <slider id="blueSlider" maxpos="255" width="95%" />
-                                    </div>
-
-                                    <div align="right" style="padding-top:4px">
-                                        <label id="blueLabel" />
-                                    </div>
-
-                                </div>
-
-                                 <!--<separator sclass="hr" height="2px" />
+                                    <!--<separator sclass="hr" height="2px" />
 
                                  <div align="right" width="90%">
                                         <button id="applyChange" label="Apply" />
                                     </div>
                                 -->
-                                <separator sclass="hr" height="2px" />
 
-                                <div id="transectControl" visible="false" >
-                                    <separator sclass="hr" height="10px" />
-                                    <label value="Turn on transect graphing for this layer" />
-                                    <image id="turnonTransectDrawing" src="img/draw.png" style="width:16px" />
+                                    <div id="transectControl" visible="false" >
+                                        <separator sclass="hr" height="10px" />
+                                        <label value="Turn on transect graphing for this layer" />
+                                        <image id="turnonTransectDrawing" src="img/draw.png" style="width:16px" />
+                                    </div>
+                                    <!--  animation  -->
+                                    <animationControlsComposer id="animationControlsComposer" />
                                 </div>
-                                <!--  animation  -->
-                                <animationControlsComposer id="animationControlsComposer" />
-                            </div>
 
-
-
-                            <!--  reset / save map buttons -->
-                            <div align="right" style="margin-right:5px;" sclass="resetdiv" >
-                                <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
-                                <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
-                                <button id="removeAllLayers" label="Clear Layers" sclass="h3" />
-                                <button id="reloadPortal" label="Reset Map" sclass="h3" />
-                            </div>
-
-                            <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">
-                                <!--Dialog to save map as.. -->
-                                <div  id="createMapcont" visible="false" >
-                                    <label sclass="h4" value="Map Name:" />
-                                    <textbox id="createSavedMap" sclass="inputspace" constraint="no empty" maxlength="28"  width="150px" />
-                                    <button id="mapSave" label="Save"  />
-
+                                <!--  reset / save map buttons -->
+                                <div align="right" style="margin-right:5px;" sclass="resetdiv" >
+                                    <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
+                                    <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
+                                    <button id="removeAllLayers" label="Clear Layers" sclass="h3" />
+                                    <button id="reloadPortal" label="Reset Map" sclass="h3" />
                                 </div>
-                                <label id="createSavedMapError" sclass="h3 error"  visible="false" value="Please give your map a name" />
-                                <label id="createSavedMapAdvice" sclass="h4 "  visible="false" value="You have no Saved Maps yet!" />
+
+                                <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">
+                                    <!--Dialog to save map as.. -->
+                                    <div  id="createMapcont" visible="false" >
+                                        <label sclass="h4" value="Map Name:" />
+                                        <textbox id="createSavedMap" sclass="inputspace" constraint="no empty" maxlength="28"  width="150px" />
+                                        <button id="mapSave" label="Save"  />
+
+                                    </div>
+                                    <label id="createSavedMapError" sclass="h3 error"  visible="false" value="Please give your map a name" />
+                                    <label id="createSavedMapAdvice" sclass="h4 "  visible="false" value="You have no Saved Maps yet!" />
 
 
-                                <!--Dialog to load maps-->
-                                <div  id="loadMapcont" visible="true" >
-                                    <listbox id="savedMaps" sclass="inputspace" mold="select" width="200px"></listbox>
-                                    <button label="Load" id="loadSavedMapButton" />
-                                    <button label="Delete" id="mapDel" />
+                                    <!--Dialog to load maps-->
+                                    <div  id="loadMapcont" visible="true" >
+                                        <listbox id="savedMaps" sclass="inputspace" mold="select" width="200px"></listbox>
+                                        <button label="Load" id="loadSavedMapButton" />
+                                        <button label="Delete" id="mapDel" />
+                                    </div>
                                 </div>
-                            </div>
 
 
-                            <!--separator height="20px" /-->
+                                <!--separator height="20px" /-->
 
                                         <!--  save Map dialog box -->
-                            <tree id="saveMaps">
-                                <treecols>
-                                    <treecol width="90%" />
-                                    <treecol width="10%" />
-                                </treecols>
-                            </tree>
+                                <tree id="saveMaps">
+                                    <treecols>
+                                        <treecol width="90%" />
+                                        <treecol width="10%" />
+                                    </treecols>
+                                </tree>
 
 
-                        </div>
+                            </div>
 
-                        <separator/>
-                        <label style="font-weight: bold" value="Add to map..."  />
-                        <separator/>
-                        <tabbox  height="300px" width="95%"><!-- mold="accordion-lite" -->
-                            <tabs>
-                                <tab label="Species" image="/img/help.png" />
-                                <tab label="Locations" image="/img/help.png" />
-                                <tab id="realtimeTab" label="Layers" if="${! settings.disableRealtime}" image="/img/help.png"/>
-                                <tab label="Map WMS layer" visible="false" />
-                            </tabs>
-                            <tabpanels>
-                                <tabpanel>
-                                    <div>
-                                        <!--
+                            <separator/>
+                            
+                            <separator/>
+                            <tabbox  height="300px" width="95%"><!-- mold="accordion-lite" -->
+                                <tabs>
+                                    <tab label="Species" image="/img/help.png" />
+                                    <tab label="Locations" image="/img/help.png" />
+                                    <tab id="realtimeTab" label="Layers" if="${! settings.disableRealtime}" image="/img/help.png"/>
+                                    <tab label="Map WMS layer" visible="false" />
+                                </tabs>
+                                <tabpanels>
+                                    <tabpanel>
+                                        <div>
+                                            <!--
                                             <radiogroup id="rdgNameSearchType" >
                                                 <hbox>
                                                     <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
@@ -623,72 +634,72 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </hbox>
                                             </radiogroup>
                                             -->
-                                        <vbox>                                             
-                                            <label>Enter a scientific or common name</label>
+                                            <vbox>
+                                                <label>Enter a scientific or common name</label>
 
-                                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
-                                                <comboitem label=""/>
-                                            </combobox>
+                                                <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                                                    <comboitem label=""/>
+                                                </combobox>
 
-                                            <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
-                                            <label sclass="exampleText">e.g. Macropus rufus</label>
-                                        </vbox>
+                                                <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
+                                                <label sclass="exampleText">e.g. Macropus rufus</label>
+                                            </vbox>
 
-                                        <html>
-                                            <![CDATA[ <br> ]]>
-                                        </html>
-                                        <html>
-                                            <![CDATA[ <br> ]]>
-                                        </html>
-                                    </div>
+                                            <html>
+                                                <![CDATA[ <br> ]]>
+                                            </html>
+                                            <html>
+                                                <![CDATA[ <br> ]]>
+                                            </html>
+                                        </div>
 
-                                    <div id="facilityControls">
-                                        <zk forEach="${session.attributes.portalSession.facilities}">
-                                            <div visible="false">
-                                                <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                       tooltiptext="${each.value.description}" sclass="tabheader"
-                                                       forward="onCheck=onSelectFacility()">
+                                        <div id="facilityControls">
+                                            <zk forEach="${session.attributes.portalSession.facilities}">
+                                                <div visible="false">
+                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
+                                                           tooltiptext="${each.value.description}" sclass="tabheader"
+                                                           forward="onCheck=onSelectFacility()">
 
-                                                    <custom-attributes systemId="${each.value.id}" />
-                                                </radio>
-                                                <tree id="tree_${each.value.id}" />
-                                            </div>
-                                        </zk>
+                                                        <custom-attributes systemId="${each.value.id}" />
+                                                    </radio>
+                                                    <tree id="tree_${each.value.id}" />
+                                                </div>
+                                            </zk>
 
-                                    </div>
+                                        </div>
 
 
-                                </tabpanel>
-                                <tabpanel>
-                                    <div>
-                                        <vbox width="95%">
-                                            <label value="Enter place name" />
-                                            <hbox>
-                                                <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
-                                                <!-- <button id="gazSearch" label="Add to Map" /> -->
-                                                <label id="resultGaz" />
-                                            </hbox>
-                                            <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                <listhead>
-                                                    <listheader label="Name"/>
-                                                    <listheader label="View" />
-                                                </listhead>
-                                            </listbox>
-                                            <label sclass="exampleText">e.g. Australian Capital Territory</label>
-                                        </vbox>
-                                    </div>
-                                </tabpanel>
-                                <tabpanel>
-                                    <div>
-                                        <vbox>
-                                            <label value="Enter a layer name or a keyword" />
-                                            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
-                                                <comboitem label=""/>
-                                            </combobox>
-                                            <label sclass="exampleText">e.g. Annual Mean Temperature</label>
-                                        </vbox>
-                                    </div>
-                                    <!--
+                                    </tabpanel>
+                                    <tabpanel>
+                                        <div>
+                                            <vbox width="95%">
+                                                <label value="Enter place name" />
+                                                <hbox>
+                                                    <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                    <!-- <button id="gazSearch" label="Add to Map" /> -->
+                                                    <label id="resultGaz" />
+                                                </hbox>
+                                                <listbox id="gazetteerResults" fixedLayout="true" visible="false">
+                                                    <listhead>
+                                                        <listheader label="Name"/>
+                                                        <listheader label="View" />
+                                                    </listhead>
+                                                </listbox>
+                                                <label sclass="exampleText">e.g. Australian Capital Territory</label>
+                                            </vbox>
+                                        </div>
+                                    </tabpanel>
+                                    <tabpanel>
+                                        <div>
+                                            <vbox>
+                                                <label value="Enter a layer name or a keyword" />
+                                                <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
+                                                    <comboitem label=""/>
+                                                </combobox>
+                                                <label sclass="exampleText">e.g. Annual Mean Temperature</label>
+                                            </vbox>
+                                        </div>
+                                        <!--
                                         <div id="realtimeControls">
                                             <zk forEach="${session.attributes.portalSession.realtimes}">
                                                 <div>
@@ -702,38 +713,38 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </zk>
                                         </div>
                                         -->
-                                </tabpanel>
+                                    </tabpanel>
 
-                                <tabpanel  id="userTabPanel" visible="false" >
-                                    <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">
+                                    <tabpanel  id="userTabPanel" visible="false" >
+                                        <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">
                                             <button id="addExtLayersButton" label="Add Layers from a WMS server" />
                                         </div>-->
-                                    <div zclass="tabpanel_cnt" id="addLayer" visible="true">
-                                        <addLayer id="addLayerMacro" />
-                                    </div>
-                                    <tree id="tree_user">
-                                        <treecols>
-                                            <treecol width="90%" />
-                                            <treecol width="10%" />
-                                        </treecols>
-                                    </tree>
-                                </tabpanel>
-                            </tabpanels>
+                                        <div zclass="tabpanel_cnt" id="addLayer" visible="true">
+                                            <addLayer id="addLayerMacro" />
+                                        </div>
+                                        <tree id="tree_user">
+                                            <treecols>
+                                                <treecol width="90%" />
+                                                <treecol width="10%" />
+                                            </treecols>
+                                        </tree>
+                                    </tabpanel>
+                                </tabpanels>
 
 
 
-                        </tabbox>
+                            </tabbox>
 
-<separator />
- <button label="save map as PDF" action="onclick: printHack();"  visible="false"/>
-                        
-
+                            <separator />
+                            <button label="save map as PDF" action="onclick: printHack();"  visible="false"/>
 
 
 
 
-                    </div>
-                    <!--  <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
+
+
+                        </div>
+                        <!--  <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
                         <label sclass="h2 title" value="Define your area of interest" /> -->
 
                         <!-- <tabbox > mold="accordion-lite"
@@ -753,9 +764,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                     </div> -->
-                        
 
-                     <div id="linkNavigationTabContent"
+
+                        <div id="linkNavigationTabContent"
                              visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
                             <leftMenuAnalysis id="leftMenuAnalysis" />
                         </div>
