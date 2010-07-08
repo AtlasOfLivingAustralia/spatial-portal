@@ -54,7 +54,7 @@
             </panelchildren>
         </panel>
 
-        <div sclass="highlighted" >
+        <div sclass="highlighted" visible="false" >
             <vbox>
                 <label value="Step 1: Restrict area" />
                 <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
@@ -62,7 +62,7 @@
         </div>
 
         <div sclass="highlighted" >
-            <label value="Step 2: Select your species" />
+            <label value="Step 1: Select your species" />
             <vbox>
                 <label>Enter a scientific or common name</label>
                 <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="90%" >
@@ -73,7 +73,7 @@
 
         <div sclass="highlighted" >
             <label multiline="true" sclass="word-wrap" style="white-space: normal;"
-                   value="Step 3: Select the environmental and contextual layers that are to be sampled at species locations" />
+                   value="Step 2: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />

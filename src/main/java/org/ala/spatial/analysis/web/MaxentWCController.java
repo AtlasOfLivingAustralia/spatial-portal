@@ -85,8 +85,8 @@ public class MaxentWCController extends UtilityComposer {
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
-    Checkbox useArea;
-    String previousArea = "";
+    //Checkbox useArea;
+    //String previousArea = "";
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
@@ -285,7 +285,7 @@ public class MaxentWCController extends UtilityComposer {
 
             /* user selected region support */
             String user_polygon;
-            if (useArea.isChecked()) {
+            if (true) { //an area always exists; useArea.isChecked()) {
                 user_polygon = mc.getSelectionArea();
             } else {
                 user_polygon = "";
@@ -558,7 +558,7 @@ public class MaxentWCController extends UtilityComposer {
             }
         }
 
-        /* validate the area box presence, check if area updated */
+        /*//an area always exists;  validate the area box presence, check if area updated
         String currentArea = mc.getSelectionArea();
         if (currentArea.length() > 0) {
             useArea.setDisabled(false);
@@ -569,6 +569,6 @@ public class MaxentWCController extends UtilityComposer {
             useArea.setDisabled(true);
             useArea.setChecked(false);
         }
-        previousArea = currentArea;
+        previousArea = currentArea;*/
     }
 }

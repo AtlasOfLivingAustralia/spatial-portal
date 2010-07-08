@@ -46,7 +46,7 @@ public class ALOCWCController extends UtilityComposer {
     private Listbox lbenvlayers;
     private Combobox cbEnvLayers;
     private Textbox groupCount;
-    Checkbox useArea;
+    //Checkbox useArea;
     private List<String> selectedLayers;
     private MapComposer mc;
     private String satServer = "";
@@ -58,7 +58,7 @@ public class ALOCWCController extends UtilityComposer {
     String layerLabel;
     String legendPath;
     LayersUtil layersUtil;
-    String previousArea = "";
+    //String previousArea = "";
     private LayersAutoComplete lac;
     private Listbox lbLayers;
     private Checkbox chkAutoPreview; 
@@ -269,7 +269,7 @@ public class ALOCWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeo?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(groupCount.getValue(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if (useArea.isChecked()) {
+            if (true) { //an area always exists; useArea.isChecked()) {
                 user_polygon = mc.getSelectionArea();
             } else {
                 user_polygon = "";
@@ -343,7 +343,7 @@ public class ALOCWCController extends UtilityComposer {
             }
         }
 
-        /* validate the area box presence, check if area updated */
+        /* an area is always present; validate the area box presence, check if area updated
         String currentArea = mc.getSelectionArea();
         if (currentArea.length() > 0) {
             useArea.setDisabled(false);
@@ -354,7 +354,7 @@ public class ALOCWCController extends UtilityComposer {
             useArea.setDisabled(true);
             useArea.setChecked(false);
         }
-        previousArea = currentArea;
+        previousArea = currentArea;*/
     }
 
     private void loadMap() {
