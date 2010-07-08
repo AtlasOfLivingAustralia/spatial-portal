@@ -217,6 +217,11 @@
 				<environmental_data_file_display_name>Precipitation of Coldest Quarter</environmental_data_file_display_name>
 				<environmental_data_file_description>Current</environmental_data_file_description>
 			</environmental_data_file>
+                        <environmental_data_file>
+				<environmental_data_file_name>erosivity</environmental_data_file_name>
+				<environmental_data_file_display_name>erosivity</environmental_data_file_display_name>
+				<environmental_data_file_description>erosivity</environmental_data_file_description>
+			</environmental_data_file>                   
 		</environmental_data_files>
 	</environmental_data>
 
