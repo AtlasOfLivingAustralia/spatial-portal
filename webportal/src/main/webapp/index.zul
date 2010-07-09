@@ -620,15 +620,40 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <separator/>
                             
                             <separator bar="true"/>
-                            <tabbox  height="300px" width="95%"><!-- mold="accordion-lite" -->
+                            <tabbox id="mapOptsTabbox" height="300px" width="95%"><!-- mold="accordion-lite" -->
                                 <tabs>
-                                    <tab label="Species" image="/img/help.png" />
-                                    <tab label="Locations" image="/img/help.png" />
-                                    <tab id="realtimeTab" label="Layers" if="${! settings.disableRealtime}" image="/img/help.png"/>
+                                    <tab label="Species" />
+                                    <tab label="Locations" />
+                                    <tab id="realtimeTab" label="Layers" if="${! settings.disableRealtime}" />
                                     <tab label="Map WMS layer" visible="false" />
                                 </tabs>
+                                <toolbar>
+                                    <toolbarbutton image="/img/help.png">
+                                        <attribute name="onClick">{
+                                            if (mapOptsTabbox.getSelectedTab().getIndex() == 0) {
+                                                helpSpecies.open=(helpSpecies.open) ? false:true;
+                                            } else if (mapOptsTabbox.getSelectedTab().getIndex() == 1) {
+                                                helpLocation.open=(helpLocation.open) ? false:true;
+                                            } else if (mapOptsTabbox.getSelectedTab().getIndex() == 2) {
+                                                helpLayers.open=(helpLayers.open) ? false:true;
+                                            }
+                                        }</attribute>
+                                    </toolbarbutton>
+                                </toolbar>
                                 <tabpanels>
                                     <tabpanel>
+                                        <panel id="helpSpecies" border="normal" open="false" style="padding: 5px" >
+                                            <panelchildren>
+                                                <div align="right">
+                                                    <button label="X" onClick="helpSpecies.open=false;" />
+                                                </div>
+                                                <html style="white-space: normal;"><![CDATA[
+                                                    <p>
+                                                        Help for Species
+                                                    </p>
+                                                ]]></html>
+                                            </panelchildren>
+                                        </panel>
                                         <div>
                                             <!--
                                             <radiogroup id="rdgNameSearchType" >
@@ -675,6 +700,18 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                     </tabpanel>
                                     <tabpanel>
+                                        <panel id="helpLocation" border="normal" open="false" style="padding: 5px" >
+                                            <panelchildren>
+                                                <div align="right">
+                                                    <button label="x" onClick="helpLocation.open=false;" />
+                                                </div>
+                                                <html style="white-space: normal;"><![CDATA[
+                                                    <p>
+                                                        Help for Location
+                                                    </p>
+                                                ]]></html>
+                                            </panelchildren>
+                                        </panel>
                                         <div>
                                             <vbox width="95%">
                                                 <label value="Enter place name" />
@@ -694,6 +731,18 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         </div>
                                     </tabpanel>
                                     <tabpanel>
+                                        <panel id="helpLayers" border="normal" open="false" style="padding: 5px" >
+                                            <panelchildren>
+                                                <div align="right">
+                                                    <button label="x" onClick="helpLayers.open=false;" />
+                                                </div>
+                                                <html style="white-space: normal;"><![CDATA[
+                                                    <p>
+                                                        Help for Layers
+                                                    </p>
+                                                ]]></html>
+                                            </panelchildren>
+                                        </panel>
                                         <div>
                                             <vbox>
                                                 <label value="Enter a layer name or a keyword" />
