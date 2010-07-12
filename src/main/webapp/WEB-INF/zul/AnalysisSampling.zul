@@ -45,7 +45,7 @@
             </vbox>
         </tabpanel>
         <tabpanel>
-            <button label="Preview sampling" id="btnPreview" sclass="goButton" />
+            <button label="Produce sample" id="btnPreview" sclass="goButton" />
         </tabpanel>
         </tabpanels>
      </tabbox>

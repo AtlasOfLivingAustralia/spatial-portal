@@ -2,20 +2,30 @@
 <zk> 
     <window
         title="Filtering Results Preview" border="normal"
-        id="popup_results" width="330px"
+        id="popup_results" width="530px"
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        closable="true" mode="embedded">
+        closable="true" 
+        >
         <vbox>
+           
+            <button label="refresh list" id="refreshButton" visible="false"/>
+            <separator />
+
             <label id="results_label" />
 
-            <listbox id="popup_listbox_results" width="290px" rows="15" visible="false">
+            <listbox id="popup_listbox_results" width="500px" rows="15" visible="true">
+              <listhead>
+<listheader label="family" ></listheader>
+<listheader label="species" ></listheader>
+<listheader label="common name" ></listheader>
+</listhead>
             </listbox>
 
-            <textbox sclass="word-wrap"
-                   style="white-space: normal; padding: 5px"
+            <textbox                    
                    multiline="true"
-                   id="popup_textbox_results" width="290px" height="200px" readonly="true" />
+                   id="popup_textbox_results" width="500px" height="200px" readonly="true" visible="false"/>
+
         <separator/>
 
             <button label="download species list" id="download" />
