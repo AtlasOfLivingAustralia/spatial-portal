@@ -213,9 +213,8 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoBoxSelection(Event event) {
         setInstructions("Draw bounding box...","Zoom and pan to the area of interest. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size. Release the mouse button. ");
         showPolygonInfo();
-        String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
-        //mc.getOpenLayersJavascript().addBoxDrawingTool();
+        String script = removeCurrentSelection();
         script += mc.getOpenLayersJavascript().addBoxDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         mc.removeFromList(mc.getMapLayer("Area Selection"));
@@ -224,8 +223,8 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoPointRadiusSelection(Event event) {
         setInstructions("Draw point and radius...","Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
         showPolygonInfo();
-        String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
+        String script = removeCurrentSelection();
         script += mc.getOpenLayersJavascript().addRadiusDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         mc.removeFromList(mc.getMapLayer("Area Selection"));
@@ -234,8 +233,8 @@ public class SelectionController extends UtilityComposer {
     public void onCheck$rdoExistingFeatureSelection(Event event) {
         setInstructions("Select predefined (displayed) map polygon...","Zoom and pan to the area of interest. Identify the polygon of interest by a (left) mouse click within that polygon. (The area will be reported in the Area box). ");
         showPolygonInfo();
-        String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
+        String script = removeCurrentSelection();
         script += mc.getOpenLayersJavascript().addFeatureSelectionTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         mc.removeFromList(mc.getMapLayer("Area Selection"));

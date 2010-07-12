@@ -45,15 +45,15 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
@@ -62,9 +62,10 @@ import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.util.LegendMaker;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
@@ -202,6 +203,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Toolbarbutton logoutButton;
     private Button printButton;
     private LayersAutoComplete lac;
+    private Textbox speciesLsid;
+    private Textbox userparams;
     /**
      * Logout service spring bean - autowired
      */
@@ -336,7 +339,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void zoomToExtent(MapLayer selectedLayer) {
-       
+
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("zooming to extent " + selectedLayer.getId());
             if (selectedLayer.getType() == LayerUtilities.GEOJSON
@@ -381,11 +384,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
                     openLayersJavascript.redrawFeatures(selectedLayer);
-                }
-                else if(selectedLayer.getType() == LayerUtilities.WKT) {
+                } else if (selectedLayer.getType() == LayerUtilities.WKT) {
                     openLayersJavascript.redrawWKTFeatures(selectedLayer);
-                }
-                else {
+                } else {
                     System.out.println("nothing:" + selectedLayer.getType());
                     selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
                 }
@@ -408,18 +409,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else {// if (selectedLayer.getCurrentLegendUri() != null) {
                 //redraw wms layer if opacity changed
                 reloadMapLayerNowAndIndexes(selectedLayer);
-                
-            }             
+
+            }
         }
     }
 
     void reloadMapLayerNowAndIndexes(MapLayer selectedLayer) {
         if (safeToPerformMapAction()) {
-            PortalSession portalSession = (PortalSession)
-                    Executions.getCurrent()
-                        .getDesktop()
-                            .getSession()
-                                .getAttribute("portalSession");
+            PortalSession portalSession = (PortalSession) Executions.getCurrent().getDesktop().getSession().getAttribute("portalSession");
 
             openLayersJavascript.execute(
                     openLayersJavascript.iFrameReferences
@@ -429,15 +426,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-       /*public void onClick$legendImg() {
-        //toggle the colourChooser div
-        if (colourChooser.isVisible()) {
-            colourChooser.setVisible(false);
-        } else {
-            colourChooser.setVisible(true);
-        }
+    /*public void onClick$legendImg() {
+    //toggle the colourChooser div
+    if (colourChooser.isVisible()) {
+    colourChooser.setVisible(false);
+    } else {
+    colourChooser.setVisible(true);
+    }
     }*/
-
     public void onClick$btnSearchSpecies() {
         //get the selected species and see if we can map it
         //get the params from the controls
@@ -1867,17 +1863,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onSelect$activeLayersList(ForwardEvent event) {
-       // updateLayerControls();
+        // updateLayerControls();
 
         // hide layer controls
         hideLayerControls(null);
     }
-    
-    
+
     public void setupLayerControls(MapLayer m) {
-        
+
         MapLayer currentSelection = m;
-        
+
         /* only show /or attempt to update the controls when:
          * 	1	there are some active layers
          * 	2	a layer is selected (not safe without (1) because the selected item
@@ -2021,8 +2016,8 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
      * if visible. null to hide without testing against active layer.
      */
     public void hideLayerControls(MapLayer layer) {
-        if (layer == null ||
-                layer == getActiveLayersSelection(false)) {
+        if (layer == null
+                || layer == getActiveLayersSelection(false)) {
             layerControls.setVisible(false);
             legendImg.setVisible(false);
             legendImgUri.setVisible(false);
@@ -2033,15 +2028,13 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         }
     }
 
-
-
     /**
      * Enable or disable layer controls depending on the current selection.
      *
      * At the moment this shows/hides the opacity controls
      */
     public void updateLayerControls() {
-        
+
         MapLayer currentSelection = getActiveLayersSelection(false);
         setupLayerControls(currentSelection);
     }
@@ -2049,6 +2042,16 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
     public void mapLoaded(String text) {
         boolean loaded = Boolean.parseBoolean(text);
         getPortalSession().setMapLoaded(loaded);
+
+        if (loaded) {
+            openLayersJavascript.execute("window.mapFrame.loadYahooMaps();");
+            System.out.println("---------------------------------------------");
+            System.out.println("---------------------------------------------");
+            System.out.println("map is now loaded. let's try mapping.");
+            loadUrlParameters();
+            System.out.println("---------------------------------------------");
+            System.out.println("---------------------------------------------");
+        }
     }
 
     /**
@@ -2299,6 +2302,70 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         load();
     }
 
+    private Map getUserParameters(String userParams) {
+        if (StringUtils.isBlank(userParams) || userParams.equals("{}")) {
+            return null;
+        }
+
+        Map<String, String> uparams = new HashMap();
+
+        // check if the string is a proper params
+        if (userParams.startsWith("{") && userParams.endsWith("}")) {
+            userParams = userParams.substring(1, userParams.lastIndexOf("}"));
+        }
+
+        String[] auparams = userParams.split(",");
+        System.out.println("Got " + auparams.length + " parameters");
+        for (int ip = 0; ip < auparams.length; ip++) {
+            String[] uparam = auparams[ip].split("=");
+            uparams.put(uparam[0].trim(), uparam[1].trim());
+        }
+
+        return uparams;
+    }
+
+    private void loadUrlParameters() {
+        try {
+
+            boolean showLayerTab = false;
+
+            System.out.println("User params: " + userparams.getValue());
+
+            Map<String, String> userParams = getUserParameters(userparams.getValue());
+            if (userParams != null) {
+
+                if (userParams.containsKey("species_lsid")) {
+                    mapSpeciesByLsid(userParams.get("species_lsid"));
+                    showLayerTab = true;
+                } else {
+                    Iterator<String> itParams = userParams.keySet().iterator();
+                    String label = "";
+                    String filter = "";
+                    while (itParams.hasNext()) {
+                        String key = itParams.next();
+                        label += key;
+                        filter += key += " eq '" + userParams.get(key) + "'";
+                        if (itParams.hasNext()) {
+                            label += " - ";
+                            filter += " AND ";
+                        }
+                    }
+                    System.out.println("filter: " + filter);
+                    mapSpeciesByFilter(filter, filter);
+                    showLayerTab = true;
+                }
+            }
+
+            if (showLayerTab) {
+                activateNavigationTab(PortalSession.LAYER_TAB);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Opps error loading url parameters");
+            e.printStackTrace(System.out);
+        }
+    }
+
     public void onActivateLink(ForwardEvent event) {
         Component component = event.getOrigin().getTarget();
         Link link = (Link) component.getAttribute("link");
@@ -2352,7 +2419,7 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
 
         if (safeToPerformMapAction()) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), label) == null) {
-                mapLayer = remoteMap.createWKTLayer(wkt,label);
+                mapLayer = remoteMap.createWKTLayer(wkt, label);
                 if (mapLayer == null) {
                     // fail
                     showMessage("No mappable features available");
@@ -2368,8 +2435,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
                     // we must tell any future tree menus that the map layer is already
                     // displayed as we didn't use changeSelection()
                     mapLayer.setListedInActiveLayers(true);
-
-
                 }
             } else {
                 // fail
@@ -2387,7 +2452,8 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         MapLayer mapLayer = null;
 
         if (safeToPerformMapAction()) {
-            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+            //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+            if (getMapLayer(label) == null) {
                 mapLayer = remoteMap.createGeoJSONLayer(label, uri);
                 if (mapLayer == null) {
                     // fail
@@ -2399,18 +2465,15 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
                     mapLayer.setQueryable(true);
                     mapLayer.setDynamicStyle(true);
 
-
                     activateLayer(mapLayer, true, true);
 
                     // we must tell any future tree menus that the map layer is already
                     // displayed as we didn't use changeSelection()
                     mapLayer.setListedInActiveLayers(true);
-
-
                 }
             } else {
                 // fail
-                showMessage("GeoJSON layer already exists");
+                //showMessage("GeoJSON layer already exists");
                 logger.info(
                         "refusing to add a new layer with URI " + uri
                         + " because it already exists in the menu");
@@ -2434,9 +2497,8 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             sessionInit.init(Sessions.getCurrent(), null);
         } catch (Exception ex) {
             logger.error("Error creating replacement session information after user clicked reload portal", ex);
-        }
 
-        // check PortalSession is not null - if it is, something is badly wrong
+        } // check PortalSession is not null - if it is, something is badly wrong
         // so redirect to error page
         portalSession = getPortalSession();
         if (portalSession == null) {
@@ -2545,10 +2607,8 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             UserMap uMap = getUserDataManager().fetchUserMapByName(mapName);
             portalSessionUtilities.updatePortalSession(newPortalSession, uMap);
 
-
             // put user back
             newPortalSession.setPortalUser(portalSession.getPortalUser());
-
 
             // replace session
             setPortalSession(newPortalSession);
@@ -2578,7 +2638,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             } else {
                 createSavedMapError.setValue("Map name already exists");
                 createSavedMapError.setVisible(true);
-
             }
         }
     }
@@ -2590,7 +2649,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
    // public void onChange$tbxTabSelection() {
     //    areaNavigationTab.setSelected(_visible);
     //    onClick$areaNavigationTab();
-
    // }
 
     /**
@@ -2689,13 +2747,9 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         //clear the list so we don't get multiples
         savedMaps.getItems().clear();
 
-
-
         for (UserMap um : getUserDataManager().getUserMaps()) {
             savedMaps.appendItem(um.getMapname(), um.getMapname());
             entries = true;
-
-
         }
         // dont show the list if its empty
         if (!entries) {
@@ -2705,14 +2759,7 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             loadMapcont.setVisible(true);
             createSavedMapAdvice.setVisible(false);
             savedMaps.setSelectedIndex(0);
-
-
-
         }
-
-
-
-
     }
 
     public void logoutActions() {
@@ -2722,10 +2769,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         logoutButton.setVisible(false);
         loginButton.setVisible(true);
         getLeftmenuSearchComposer().logoutActions();
-
-
-
-
     }
 
     public void loginActions() {
@@ -2739,9 +2782,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         getUserDataManager().fetchUser(getPortalSession().getPortalUser().getUsername());
         updateUserMapList();
         getLeftmenuSearchComposer().loginActions();
-
-
-
     }
 
     public void setWestWidth(String width) {
@@ -2755,40 +2795,22 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
     private void maximise() {
         boolean maximise = getPortalSession().isMaximised();
 
-
-
-
         if (maximise) {
             //westContent.setParent(leftMenuHolder);
             menus.setWidth(settingsSupplementary.getValue(MENU_MINIMISED_WIDTH));
             menus.setBorder("none");
-
-
-
-
         } else {
             //westContent.setParent(menus);
             menus.setWidth(settingsSupplementary.getValue(MENU_DEFAULT_WIDTH));
             menus.setBorder("normal");
 
             // must also hide the switcher...
-            toggleLayerSwitcher(
-                    false);
-
-
-
-
+            toggleLayerSwitcher(false);
         }
         westContent.setVisible(!maximise);
         westMinimised.setVisible(maximise);
         menus.setSplittable(!maximise);
         layerSwitcherContainer.setVisible(maximise);
-
-
-
-
-
-
     }
 
     public void onCheck$rdoCommonSearch() {
@@ -2796,7 +2818,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         searchSpeciesAuto.getItems().clear();
         btnSearchSpecies.setLabel("Search");
         btnSearchSpecies.setVisible(true);
-
     }
 
     public void onCheck$rdoScientificSearch() {
@@ -2816,8 +2837,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         Window win = new Window();
         win.detach();
 
-
-
         win = (Window) Path.getComponent("/searchResults");
 
         if (win == null) {
@@ -2829,14 +2848,12 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
                     "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
         }
 
-
         win.setTitle("Search Results for " + searchTerm);
         win.setMaximizable(true);
         win.setClosable(true);
         win.setSizable(true);
         win.setPosition("center");
         win.doOverlapped();
-
     }
 
     public void onSearchSpecies(ForwardEvent event) {
@@ -2860,8 +2877,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         Window win = new Window();
         win.detach();
 
-
-
         win = (Window) Path.getComponent("/searchResults");
 
         if (win == null) {
@@ -2872,7 +2887,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             win = (Window) Executions.createComponents(
                     "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
         }
-
 
         win.setTitle("Search Results for " + sSearchTerm);
         win.setMaximizable(true);
@@ -2886,9 +2900,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         layerSwitcherHide.setVisible(show);
         layerSwitcherShow.setVisible(!show);
 
-
-
-
         if (show) {
             layerSwitcherContainer.setWidth(settingsSupplementary.getValue(MENU_DEFAULT_WIDTH));
             layerSwitcherContainer.setClass("layerSwitcherContainer");
@@ -2900,23 +2911,51 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             // width (90% of 20px == 2px)
             logger.debug("old width:" + activeLayersList.getWidth());
             activeLayersList.setWidth(settingsSupplementary.getValue(MENU_DEFAULT_WIDTH));
-
-
-
-
         } else {
             activeLayersList.setWidth(null);
             activeLayersList.setHeight(null);
             activeLayersList.setParent(activeLayersHolder);
             layerSwitcherContainer.setWidth(null);
             layerSwitcherContainer.setClass("layerSwitcherContainer_min");
-
-
-
-
         }
+    }
 
+    public void mapSpeciesByLsid(String lsid) {
+        try {
+            String satServer = "http://spatial.ala.org.au";
+            //if (settingsSupplementary != null) {
+            //    geoServer = settingsSupplementary.getValue("sat_url");
+            //}
 
+            lsid = StringUtils.replace(lsid, ".", "__");
+            lsid = URLEncoder.encode(lsid, "UTF-8");
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/alaspatial/species/lsid/" + lsid); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println(slist);
+
+            JSONArray ja = JSONArray.fromObject(slist);
+
+            JSONObject jo = ja.getJSONObject(0);
+            System.out.println(jo.size());
+            String sn = (String) jo.get("scientificname");
+            String tr = (String) jo.get("rankstring");
+
+            if (tr.equalsIgnoreCase("species")) {
+                tr = "scientificname";
+            }
+            System.out.println("sending to map: " + tr + " = " + sn);
+            mapSpeciesByNameRank(sn, tr, null);
+        } catch (Exception ex) {
+            //logger.debug(ex.getMessage());
+            System.out.println("Opps error in mapsSpeciesByLsid");
+            ex.printStackTrace(System.out);
+        }
     }
 
     public void mapSpeciesByName(String speciesName) {
@@ -2924,7 +2963,40 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
     }
 
     public void mapSpeciesByName(String speciesName, String commonName) {
-        mapSpeciesByNameRank(speciesName, "scientificname", commonName); 
+        mapSpeciesByNameRank(speciesName, "scientificname", commonName);
+    }
+
+    public void mapSpeciesByNameRankOld(String speciesName, String speciesRank, String commonName) {
+        String filter;
+        String uri;
+        String layerName = "ALA:occurrences";
+        String sld = "species_point";
+
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+        }
+
+        geoServer = "http://spatial.ala.org.au";
+        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
+
+        //contruct the filter in cql
+        //have to check the Genus name is in Capitals
+        filter = speciesRank + " eq '" + StringUtils.capitalize(speciesName.trim()) + "'";
+
+        String label = speciesName;
+        if (StringUtils.isNotBlank(commonName)) {
+            label += " (" + commonName + ")";
+        }
+
+        System.out.println("Mapping: " + label);
+
+        try {
+            addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            //logger.debug(ex.getMessage());
+            System.out.println("error mapSpeciesByNameRank:");
+            ex.printStackTrace(System.out);
+        }
     }
 
     public void mapSpeciesByNameRank(String speciesName, String speciesRank, String commonName) {
@@ -2940,31 +3012,42 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         geoServer = "http://spatial.ala.org.au";
         uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
 
-
         //contruct the filter in cql
         //have to check the Genus name is in Capitals
-        filter = speciesRank + " eq '" + capitalise(speciesName.trim()) + "'";
+        filter = speciesRank + " eq '" + StringUtils.capitalize(speciesName.trim()) + "'";
 
         String label = speciesName;
+
         if (StringUtils.isNotBlank(commonName)) {
             label += " (" + commonName + ")";
         }
 
-        System.out.println("Mapping: " + label);
-
-        try {
-            addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            logger.debug(ex.getMessage());
-        }
-
+        mapSpeciesByFilter(label, filter);
     }
 
-    public static String capitalise(String s) {
-        if (s.length() == 0) {
-            return s;
+    public void mapSpeciesByFilter(String label, String filter) {
+        String uri;
+        String layerName = "ALA:occurrences";
+        String sld = "species_point";
+
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
         }
-        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+
+        geoServer = "http://spatial.ala.org.au";
+        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
+
+        System.out.println("Mapping: " + label + " with " + uri);
+
+        try {
+            if (safeToPerformMapAction()) {
+                addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException ex) {
+            //logger.debug(ex.getMessage());
+            System.out.println("error mapSpeciesByNameRank:");
+            ex.printStackTrace(System.out);
+        }
     }
 
     /**
@@ -2978,18 +3061,10 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
      */
     public AnimationControlsComposer getAnimationControlsComposer() {
         return (AnimationControlsComposer) animationControlsComposer.getFellow("animationControls");
-
-
-
-
     }
 
     public LeftMenuSearchComposer getLeftmenuSearchComposer() {
         return (LeftMenuSearchComposer) getFellow("leftMenuSearch").getFellow("leftSearch");
-
-
-
-
     }
 
     /**
@@ -3079,7 +3154,6 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
 
     public void setRemoteMap(RemoteMap remoteMap) {
         this.remoteMap = remoteMap;
-
     }
 
     public ImageTester getImageTester() {
