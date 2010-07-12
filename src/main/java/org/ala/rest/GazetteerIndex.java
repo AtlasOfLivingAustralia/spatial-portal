@@ -105,7 +105,7 @@ public class GazetteerIndex implements InitializingBean {
                             String geomName = feature.getDefaultGeometryProperty().getName().toString();
                            // String idString = "";
                             for (Property property : feature.getProperties()) {
-                                System.out.println(property.getName().toString());
+                               // System.out.println(property.getName().toString());
                                 if ((descriptionAttributes.contains(property.getName().toString())) && (property.getValue() != null)) { //&& (!(property.getName().toString().contentEquals(geomName)))) {
                                     doc.add(new Field(property.getName().toString(), property.getValue().toString(), Store.YES, Index.NO));
 
