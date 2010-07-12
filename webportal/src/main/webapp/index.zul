@@ -614,6 +614,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     </treecols>
                                 </tree>
 
+                            <!-- contains the user parameters -->
+                            <textbox id="userparams" visible="false" multiline="true" value="${param}" />
 
                             </div>
 
