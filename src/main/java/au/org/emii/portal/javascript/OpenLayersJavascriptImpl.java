@@ -238,6 +238,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + "			isBaseLayer : false, "
                         + "			maxResolution: map.baseLayer.maxResolution, "
                         + "           minResolution: map.baseLayer.minResolution, "
+                        + "           projection: new OpenLayers.Projection('EPSG:4326'), "
                         + "			resolutions: map.baseLayer.resolutions "
                         + "		} "
                         + "	); "
