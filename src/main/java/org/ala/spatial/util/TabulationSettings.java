@@ -114,6 +114,15 @@ public class TabulationSettings {
 	 */
 	public static String [] occurances_csv_field_settings;
 
+        /**
+         * path for common names file;
+         * - CSV format
+         * - no header
+         * - first column is ID
+         * - second column is COMMONNAME
+         */
+        public static String common_names_csv;
+
 	/**
 	 * directory for indexes
 	 */
@@ -270,7 +279,11 @@ public class TabulationSettings {
                 occurances_csv_field_settings = xr.getValue("occurances_csv_field_settings").split(",");
 		for(String ocf : occurances_csv_field_settings){
 			System.out.println(ocf);
-		}                
+		}
+
+                common_names_csv = xr.getValue("common_names_csv");
+                System.out.println(common_names_csv);
+                
 		index_path = xr.getValue("index_path");
 		System.out.println(index_path);
 		
