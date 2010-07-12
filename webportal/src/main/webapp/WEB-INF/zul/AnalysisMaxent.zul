@@ -112,7 +112,7 @@
 
                     <progressmeter id="progress" value="42" visible="false" />
 
-                    <button id="startmaxent" label="Start Maxent" sclass="goButton">
+                    <button id="startmaxent" label="Produce model" sclass="goButton">
                         <!--
             <attribute name="onClick">{
                 final Window win = (Window) Executions.createComponents(

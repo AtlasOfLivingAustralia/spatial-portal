@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
@@ -31,7 +32,7 @@ import org.ala.spatial.util.Tile;
  * operates on ShapeFiles
  *
  * TODO: incremental and partial update mechanism
- * 
+ *
  * @author adam
  *
  */
@@ -67,12 +68,52 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      */
     @Override
     public void occurancesUpdate() {
-        makeSPL_GRID();
+           // makeSPL_GRID(null);
 
-            makeSPL_CATAGORIES();
+          //  makeSPL_CATAGORIES(null);
 
         /* for onscreen filtering server or client side */
-            makeAllScaledShortImages();
+         //   makeAllScaledShortImages(null);
+
+         /* threaded building, needs more ram than one at a time */
+        int threadcount = Runtime.getRuntime().availableProcessors();
+        ArrayList<String> layers = new ArrayList();
+        int i;
+        for(i=0;i<TabulationSettings.geo_tables.length;i++){
+            layers.add(TabulationSettings.geo_tables[i].name);
+        }
+        for(i=0;i<TabulationSettings.environmental_data_files.length;i++){
+            layers.add(TabulationSettings.environmental_data_files[i].name);
+        }
+
+        LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue(layers);
+
+        FilteringIndexThread[] it = new FilteringIndexThread[threadcount];
+
+        for (i = 0; i < threadcount; i++) {
+            it[i] = new FilteringIndexThread(lbq);
+        }
+
+        System.out.println("Start FilteringIndex.build_all (" + threadcount + " threads): " + System.currentTimeMillis());
+
+        //wait until all done
+        try {
+            boolean alive = true;
+            while (alive) {
+                Thread.sleep(2000);
+                alive = false;
+                for (i = 0; i < threadcount; i++) {
+                    if (it[i].isAlive()) {
+                        alive = true;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("End FilteringIndex.build_all: " + System.currentTimeMillis());
     }
 
     /**
@@ -84,6 +125,12 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
     @Override
     public void layersUpdate(String layername) {
         /* placeholder for patial update mechanism */
+        makeSPL_GRID(layername);
+
+        makeSPL_CATAGORIES(layername);
+
+    /* for onscreen filtering server or client side */
+        makeAllScaledShortImages(layername);
     }
 
     /**
@@ -99,19 +146,26 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
     /**
      * make species list index for environmental files
-     * 
+     *
      * for each grid file intersect and export in points order
-     * 
+     *
      * uses OccurrencesIndex generated SAM_D_ files
      */
-    void makeSPL_GRID() {
+    void makeSPL_GRID(String layername) {
 
         Layer layer;
         int i;
         /* iterate for each environmental file */
         for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
             layer = TabulationSettings.environmental_data_files[i];
-            System.out.println("makeSPL_GRID: " + layer.display_name);
+            
+            if (layername != null
+                    && !layername.equalsIgnoreCase(TabulationSettings.environmental_data_files[i].name)) {
+                continue;
+            }
+
+            System.out.println("makeSPL_GRID: " + layer.display_name + " target?: " + layername);
+
             try {
 
                 /* open input file for this layer's values in order of records*/
@@ -124,12 +178,12 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 ArrayList<SPLGridRecord> records = new ArrayList<SPLGridRecord>();
 
-                int p = 0;			/* maintain original record index number 
+                int p = 0;			/* maintain original record index number
                  * for unqiueness
                  */
 
 
-                /* load all valid values and add to records with species number and 
+                /* load all valid values and add to records with species number and
                  * original record index*/
                 while (sam_d_gridfile.getFilePointer() < sam_d_gridfile.length()) {
 
@@ -168,14 +222,24 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                 RandomAccessFile outputvalues = new RandomAccessFile(
                         TabulationSettings.index_path
                         + "SPL_V_" + layer.name + ".dat", "rw");
+
                 RandomAccessFile outputrecords = new RandomAccessFile(
                         TabulationSettings.index_path
                         + "SPL_R_" + layer.name + ".dat", "rw");
 
+                byte[] b1 = new byte[records.size()*4]; //for float
+                ByteBuffer bb1 = ByteBuffer.wrap(b1);
+                byte[] b2 = new byte[records.size()*8]; //for int
+                ByteBuffer bb2 = ByteBuffer.wrap(b2);
+
                 for (SPLGridRecord r : records) {
-                    outputvalues.writeFloat((float) r.value);
-                    outputrecords.writeInt(r.record_number);
+                    bb1.putFloat((float)r.value);
+                    bb2.putInt(r.record_number);
+                    //outputvalues.writeFloat((float) r.value);
+                    //outputrecords.writeInt(r.record_number);
                 }
+                outputvalues.write(b1);
+                outputrecords.write(b2);
 
                 outputvalues.close();
                 outputrecords.close();
@@ -192,15 +256,21 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
     /**
      * make species list index for catagorical files
-     * 
-     * for each catagory file, split by field index value      
-     * 
+     *
+     * for each catagory file, split by field index value
+     *
      */
-    void makeSPL_CATAGORIES() {
+    void makeSPL_CATAGORIES(String layername) {
         Layer layer;
         int i;
         /* iterate for each shape file */
         for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
+            if (layername != null
+                    && !layername.equalsIgnoreCase(TabulationSettings.geo_tables[i].name)) {
+                continue;
+
+            }
+
             layer = TabulationSettings.geo_tables[i];
             try {
                 /* open catagorical value file */
@@ -213,7 +283,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                 int value;
                 ArrayList<SPLGridRecord> records = new ArrayList<SPLGridRecord>();
 
-                int p = 0;			/* maintain original record index number 
+                int p = 0;			/* maintain original record index number
                  * for unqiueness
                  */
 
@@ -255,9 +325,9 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 /* iterate across records, exporting each group of records
                  * with the same value into a separate file with serialization
-                 * 
+                 *
                  * exports as species_number and original_sorted_index (key)
-                 * 
+                 *
                  * usage is whole of file
                  */
                 int len = records.size();
@@ -305,8 +375,8 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
     }
 
     /**
-     * gets a default LayerFilter for a layer by layer name 
-     * @param layer name of layer 
+     * gets a default LayerFilter for a layer by layer name
+     * @param layer name of layer
      * @return new default LayerFilter or null if does not exist
      */
     public static LayerFilter getLayerFilter(String layer) {
@@ -328,10 +398,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
     /**
      * gets a default LayerFilter for a layer by layer object
-     * 
+     *
      * note: use getLayerFilter(String) for public function
-     * 
-     * @param layer as Layer 
+     *
+     * @param layer as Layer
      * @return new default LayerFilter
      */
     private static LayerFilter getLayerFilter(Layer layer) {
@@ -410,11 +480,11 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
     /**
      * gets layer extents for a layer
-     * 
+     *
      * TODO: improve this function, move to LayerService.java
-     * 
+     *
      * @param layer_name layer name as String
-     * @return formatted layer extents as String, 
+     * @return formatted layer extents as String,
      * - min and max for grid
      * - list of values for shape
      */
@@ -607,7 +677,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
             //float longitude, latitude;
             int record;
             int j;
-            for (j = 0; j < len; j++) {               
+            for (j = 0; j < len; j++) {
                 record = bb.getInt();
                 set.add(new Integer(record));
             }
@@ -678,10 +748,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
     /**
      * makes indexed tiles for filtering by a region
-     * 
+     *
      * TODO: dynamic
      */
-    public void makeAllScaledShortImages() {
+    public void makeAllScaledShortImages(String layername) {
         /* ?? default long lat & dist */
         double longitude_start = 112;
         double longitude_end = 154;
@@ -693,25 +763,36 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         int i, j;
 
         /* get all layers */
+        int size = 0;
         Layer[] all_layers = new Layer[TabulationSettings.environmental_data_files.length
                 + TabulationSettings.geo_tables.length];
         j = TabulationSettings.environmental_data_files.length;
         for (i = 0; i < j; i++) {
-            all_layers[i] = TabulationSettings.environmental_data_files[i];
+            if (layername != null
+                    && !layername.equalsIgnoreCase(TabulationSettings.environmental_data_files[i].name)) {
+                continue;
+
+            }
+            all_layers[size++] = TabulationSettings.environmental_data_files[i];
         }
         for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
-            all_layers[i + j] = TabulationSettings.geo_tables[i];
+            if (layername != null
+                    && !layername.equalsIgnoreCase(TabulationSettings.geo_tables[i].name)) {
+                continue;
+            }
+            all_layers[size++] = TabulationSettings.geo_tables[i];
         }
 
         /* process all layers */
-        for (Layer l : all_layers) {
-            makeScaledShortImageFromGrid(l, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+        for (i = 0; i < size; i++) {
+            makeScaledShortImageFromGrid(all_layers[i], longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+            i++;
         }
     }
 
     /**
      * filter tile creation...
-     * 
+     *
      * more in docs now
      *
      * @param l	layer as Layer
@@ -720,7 +801,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      * @param latitude_start latitude extent as double
      * @param latitude_end other latitude extent as double
      * @param width width resoluion as int
-     * @param height height resolution as in 
+     * @param height height resolution as in
      */
     public void makeScaledShortImageFromGrid(Layer l, double longitude_start, double longitude_end,
             double latitude_start, double latitude_end, int width, int height) {
@@ -793,7 +874,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
     /**
      * gets Tile data from a grid file onto specified extents
-     * 
+     *
      * @param layer_name
      * @param longitude_start
      * @param longitude_end
@@ -856,7 +937,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
     /**
      * get Tiles from shape file layer
-     * 
+     *
      * @param l layer as Layer
      * @param longitude_start
      * @param longitude_end
@@ -885,7 +966,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
 /**
  * grid data object; value, record number
- * 
+ *
  * @author adam
  *
  */
@@ -915,7 +996,7 @@ class SPLGridRecord extends Object {
 
 /**
  * species record, name and ranking number
- * 
+ *
  * @author adam
  *
  */
@@ -943,3 +1024,62 @@ class SPLSpeciesRecord implements Serializable {
 }
 
 
+
+class FilteringIndexThread implements Runnable {
+
+    Thread t;
+    LinkedBlockingQueue<String> lbq;
+    int step;
+    int[] target;
+
+    public FilteringIndexThread(LinkedBlockingQueue<String> lbq_) {
+        t = new Thread(this);
+        lbq = lbq_;
+        t.start();
+    }
+
+    public void run() {
+
+        int i, idx;
+        int hits = 0;
+
+        /* get next batch */
+        String next;
+        try {
+            synchronized (lbq) {
+                if (lbq.size() > 0) {
+                    next = lbq.take();
+                } else {
+                    next = null;
+                }
+            }
+
+            System.out.println("A*: " + next);
+
+            FilteringIndex fi = new FilteringIndex();
+
+            while (next != null) {
+                /* update for this layer */
+                fi.layersUpdate(next);
+
+                /* report */
+                System.out.println("D*: " + next);
+
+                /* get next available */
+                synchronized (lbq) {
+                    if (lbq.size() > 0) {
+                        next = lbq.take();
+                    } else {
+                        next = null;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isAlive() {
+        return t.isAlive();
+    }
+}

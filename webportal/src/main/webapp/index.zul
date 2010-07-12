@@ -481,7 +481,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                                     <div id="sizeChooser" visible="false">
-                                        
+                                         <hbox>
                                         <div style="padding-top:0px" width="60px">
                                             <label value="Size: " sclass="h3" />
                                         </div>
@@ -490,7 +490,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         </div>
                                         <div align="right" style="padding-top:0px">
                                             <label id="sizeLabel" />
-                                        </div>
+                                        </div></hbox>
                                     </div>
                                     <div id="colourChooser" visible="false">
 

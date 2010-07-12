@@ -113,7 +113,7 @@
 	-->
  	<environmental_data>
 		<!-- absolute path for all .gri/.grd files -->
-		<environmental_data_path>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/</environmental_data_path>
+		<environmental_data_path>d:\mnt\ala\data\envlayers\WorldClimCurrent\10minutes\</environmental_data_path>
 
 		<environmental_data_files>
 			<environmental_data_file>
@@ -221,7 +221,7 @@
 				<environmental_data_file_name>erosivity</environmental_data_file_name>
 				<environmental_data_file_display_name>erosivity</environmental_data_file_display_name>
 				<environmental_data_file_description>erosivity</environmental_data_file_description>
-			</environmental_data_file>                   
+			</environmental_data_file>
 		</environmental_data_files>
 	</environmental_data>
 
@@ -231,8 +231,8 @@
 
 		field list is comma separated, hierarchy fields
 	-->
-	<occurances_csv>/mnt/ala/data/occurances/occurrences.csv</occurances_csv>
-<occurances_csv_fields>occurrenceId,dataResourceId,institutionCode,collectionCode,catalogueNumber,taxonConceptId,scientificName,taxonRank,kingdom,kingdomConceptId,phylum,phylumConceptId,class,classConceptId,order,orderConceptId,family,familyConceptId,genus,genusConceptId,species,speciesConceptId,isoCountryCode,latitude,longitude,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
+	<occurances_csv>d:\mnt\ala\data\occurrences\occurrences.csv</occurances_csv>
+<occurances_csv_fields>occurrenceId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataResourceId,institutionCode,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
     <!--
         field settings for occurances_csv_fields:
         0 is output only
@@ -243,12 +243,18 @@
         5 is unique id, same as (0)
         6 is unique id, same as (2)
     -->
-    <occurances_csv_field_settings>0,0,0,0,0,0,0,0,1,0,1,0,2,0,2,0,2,0,2,0,2,0,0,4,3,0,0,0,0,0,0,0</occurances_csv_field_settings>
+    <occurances_csv_field_settings>0,1,1,2,2,2,2,0,2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
 
-	<index_path>/mnt/ala/data/index/tabulation/</index_path>
+<!--
+common names file as csv, no header, first 2 columns:
+lsid, common name
+-->
+    <common_names_csv>d:\mnt\ala\data\commonnames\output4.csv</common_names_csv>
+
+	<index_path>d:\mnt\ala\data\index\tabulation\</index_path>
 
         <maxent>
-            <cmdpath>java -mx900m -jar /mnt/ala/modelling/maxent/maxent.jar </cmdpath>
+            <cmdpath>java -mx900m -jar d:\mnt\ala\modelling\maxent\maxent.jar </cmdpath>
         </maxent>
 
         <geoserver>
@@ -262,6 +268,6 @@
         <geoserver_password>at1as0f0z</geoserver_password>
 
 
-<alaspatial_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/alaspatial/</alaspatial_url>
+<alaspatial_url>http://localhost:8084/alaspatial/</alaspatial_url>
 
 </tabulation>

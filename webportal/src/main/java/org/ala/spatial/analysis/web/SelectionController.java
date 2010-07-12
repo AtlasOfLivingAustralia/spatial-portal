@@ -4,9 +4,7 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
-import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.value.BoundingBox;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
@@ -24,8 +22,6 @@ import java.net.URLConnection;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,9 +42,8 @@ import org.zkoss.zk.ui.HtmlMacroComponent;
 
 
 import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.util.Clients;
 
 import org.zkoss.zul.Button;
@@ -63,8 +58,10 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
+import org.zkoss.zul.Separator;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 
 /**
@@ -98,7 +95,6 @@ public class SelectionController extends UtilityComposer {
     String[] results = null;
     int results_pos;
     SortedSet speciesSet;
-
     Combobox cbAreaSelection;
     Comboitem ciBoundingBox;
     Comboitem ciPolygon;
@@ -108,23 +104,22 @@ public class SelectionController extends UtilityComposer {
     Comboitem ciBoxWorld;
     Comboitem ciBoxCurrentView;
     private Comboitem ciPointAndRadius;
-
     Window wInstructions = null;
 
     public String getGeom() {
-        if (rdoEnvironmentalEnvelope.isChecked()) {
+        if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
             //get PID and return as ENVELOPE(PID)
-            String envPid = ((FilteringWCController)envelopeWindow.getFellow("filteringwindow")).getPid();
+            String envPid = ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).getPid();
             if (envPid.length() > 0) {
                 return "ENVELOPE(" + envPid + ")";
             } /* continue & return default, Currentview extents; else {
-                return "";
+            return "";
             }*/
-            
-        //work around for null polygons to be reported as absence of polygon
-        } else if (!displayGeom.getText().contains("CURRENTVIEW()") 
+
+            //work around for null polygons to be reported as absence of polygon
+        } else if (!displayGeom.getText().contains("CURRENTVIEW()")
                 && !displayGeom.getText().contains("NaN NaN")
-                && displayGeom.getText().length() > 0){
+                && displayGeom.getText().length() > 0) {
             return displayGeom.getText();
         }
 
@@ -154,26 +149,42 @@ public class SelectionController extends UtilityComposer {
         displayGeom.setValue(DEFAULT_AREA);
     }
 
-    void setInstructions(String toolname, String text) {
+    void setInstructions(String toolname, String [] text) {
         if (wInstructions != null) {
-            wInstructions.detach();
+            wInstructions.detach();            
         }
 
-        if (text != null && text.length() > 0) {
-               wInstructions =  new Window(toolname, "normal", false);
-               wInstructions.setWidth("230px");
-               
-               Label l = new Label(text);
-               l.setParent(wInstructions);
-               l.setMultiline(true);
-               l.setSclass("word-wrap");
-               l.setStyle("white-space: normal; padding: 5px");
-               l.setWidth("200px");
+        if (text != null && text.length > 0) {
+            wInstructions = new Window(toolname, "normal", false);
+            wInstructions.setWidth("500px");
+            wInstructions.setClosable(false);
 
-               wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
-               wInstructions.setClosable(true);
-               wInstructions.doOverlapped();
-               wInstructions.setPosition("top,center");
+            Vbox vbox = new Vbox();
+            vbox.setParent(wInstructions);
+            for(int i=0;i<text.length;i++){
+                Label l = new Label((i+1) + ". " + text[i]);
+                l.setParent(vbox);
+                l.setMultiline(true);
+                l.setSclass("word-wrap");
+                l.setStyle("white-space: normal; padding: 5px");
+            }
+
+            (new Separator()).setParent(vbox);
+
+            Button b = new Button("Cancel Map Tool");
+            b.setParent(vbox);
+            b.addEventListener("onClick", new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnClearSelection(null);
+                    wInstructions.detach();
+                }
+            });
+
+            wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
+            wInstructions.setClosable(true);
+            wInstructions.doOverlapped();
+            wInstructions.setPosition("top,center");
         }
     }
 
@@ -181,81 +192,19 @@ public class SelectionController extends UtilityComposer {
         hideAllInfo();
         //rgAreaSelection.getSelectedItem().setSelected(false);
         MapComposer mc = getThisMapComposer();
-      //  mc.getOpenLayersJavascript().removeAreaSelection();
+        //  mc.getOpenLayersJavascript().removeAreaSelection();
         displayGeom.setValue(DEFAULT_AREA);
 
         String script = removeCurrentSelection();
-        
+
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         mc.removeFromList(mc.getMapLayer("Area Selection"));
-    }
 
-    /**
-     * Activate the polygon selection tool on the map
-     * @param event
-     */
-    public void onCheck$rdoPolygonSelection(Event event) {
-        setInstructions("Draw polygon...","Zoom and pan to the area of interest. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area. On the last vertex, double click to finalise the polygon. ");
-        showPolygonInfo();
-        MapComposer mc = getThisMapComposer();
-        String script = removeCurrentSelection();
-        script += mc.getOpenLayersJavascript().addPolygonDrawingTool();
-        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-
-        mc.removeFromList(mc.getMapLayer("Area Selection"));
-
-    }
-
-    /**
-     * Activate the box selection tool on the map
-     * @param event
-     */
-    public void onCheck$rdoBoxSelection(Event event) {
-        setInstructions("Draw bounding box...","Zoom and pan to the area of interest. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size. Release the mouse button. ");
-        showPolygonInfo();
-        MapComposer mc = getThisMapComposer();
-        String script = removeCurrentSelection();
-        script += mc.getOpenLayersJavascript().addBoxDrawingTool();
-        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        mc.removeFromList(mc.getMapLayer("Area Selection"));
-    }
-
-    public void onCheck$rdoPointRadiusSelection(Event event) {
-        setInstructions("Draw point and radius...","Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
-        showPolygonInfo();
-        MapComposer mc = getThisMapComposer();
-        String script = removeCurrentSelection();
-        script += mc.getOpenLayersJavascript().addRadiusDrawingTool();
-        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        mc.removeFromList(mc.getMapLayer("Area Selection"));
-    }
-
-    public void onCheck$rdoExistingFeatureSelection(Event event) {
-        setInstructions("Select predefined (displayed) map polygon...","Zoom and pan to the area of interest. Identify the polygon of interest by a (left) mouse click within that polygon. (The area will be reported in the Area box). ");
-        showPolygonInfo();
-        MapComposer mc = getThisMapComposer();
-        String script = removeCurrentSelection();
-        script += mc.getOpenLayersJavascript().addFeatureSelectionTool();
-        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        mc.removeFromList(mc.getMapLayer("Area Selection"));
-    }
-
-    public void onCheck$rdoEnvironmentalEnvelope(Event event) {
-       setInstructions(null,null);
-       showEnvelopeInfo();
-    }
-
-    public void onClick$rgAreaSelection(Event event) {
-        try {
-            Messagebox.show(rgAreaSelection.getSelectedItem().getLabel() + " selected");
-        } catch (Exception e) {
-            System.out.println("Error onClick$rgAreaSelection");
-            e.printStackTrace(System.out);
-        }
+        cbAreaSelection.setText("Box - Current View");
     }
 
     public void onOpen$cbAreaSelection() {
-        setInstructions(null,null);
+        setInstructions(null, null);
         hideAllInfo();
         String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
@@ -267,8 +216,14 @@ public class SelectionController extends UtilityComposer {
         System.out.println("cbAreaSelection: " + cbAreaSelection.getSelectedItem().getLabel());
         String wkt;
 
-        if(cbAreaSelection.getSelectedItem() == ciBoundingBox) {
-            setInstructions("Draw bounding box...","Zoom and pan to the area of interest. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size. Release the mouse button. ");
+        if (cbAreaSelection.getSelectedItem() == ciBoundingBox) {
+            cbAreaSelection.setText("Drawing bounding box");
+            String [] text = {
+                 "Zoom and pan to the area of interest.",
+                 "Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size.",
+                 "Release the mouse button."
+                };
+            setInstructions("Active Map Tool: Draw bounding box...",text);
             showPolygonInfo();
             String script = removeCurrentSelection();
             MapComposer mc = getThisMapComposer();
@@ -277,7 +232,13 @@ public class SelectionController extends UtilityComposer {
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
             mc.removeFromList(mc.getMapLayer("Area Selection"));
         } else if (cbAreaSelection.getSelectedItem() == ciPolygon) {
-            setInstructions("Draw polygon...","Zoom and pan to the area of interest. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area. On the last vertex, double click to finalise the polygon. ");
+            cbAreaSelection.setText("Drawing polygon");
+            String [] text = { "Zoom and pan to the area of interest",
+                   "Using the mouse, position the cursor at the first point to be digitized and click the left mouse button.",
+                   "Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area.",
+                   "On the last vertex, double click to finalise the polygon."
+                };
+            setInstructions("Active Map Tool: Draw polygon", text);
             showPolygonInfo();
             MapComposer mc = getThisMapComposer();
             String script = removeCurrentSelection();
@@ -286,7 +247,15 @@ public class SelectionController extends UtilityComposer {
 
             mc.removeFromList(mc.getMapLayer("Area Selection"));
         } else if (cbAreaSelection.getSelectedItem() == ciPointAndRadius) {
-            setInstructions("Draw point and radius...","Zoom and pan to the area of interest. With the mouse, place the cursor over the centre point of the area of interest. Hold down the (left) mouse button and drag the radius to define the area of interest. Release the mouse button. ");
+            String [] text = {
+                "Zoom and pan to the area of interest.",
+                "With the mouse, place the cursor over the centre point of the area of interest.",
+                "Hold down the (left) mouse button and drag the radius to define the area of interest.",
+                "Release the mouse button."
+                };
+            cbAreaSelection.setText("Drawing point and radius");
+            setInstructions("Active Map Tool: Draw point and radius...", text);
+
             showPolygonInfo();
             String script = removeCurrentSelection();
             MapComposer mc = getThisMapComposer();
@@ -294,58 +263,67 @@ public class SelectionController extends UtilityComposer {
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
             mc.removeFromList(mc.getMapLayer("Area Selection"));
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
-            setInstructions("Select predefined (displayed) map polygon...","Zoom and pan to the area of interest. Identify the polygon of interest by a (left) mouse click within that polygon. (The area will be reported in the Area box). ");
+            cbAreaSelection.setText("Selecting map polygon");
+            String [] text = {
+                ";Zoom and pan to the area of interest.",
+                "Identify the polygon of interest by a (left) mouse click within that polygon.",
+                "The area selected will be highlighted red."
+            };
+            setInstructions("Active Map Tool: Select predefined (displayed) map polygon...", text);
             showPolygonInfo();
             String script = removeCurrentSelection();
             MapComposer mc = getThisMapComposer();
             script += mc.getOpenLayersJavascript().addFeatureSelectionTool();
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
             mc.removeFromList(mc.getMapLayer("Area Selection"));
-        } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
-            setInstructions(null,null);
+        } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {            
+            setInstructions(null, null);
+            cbAreaSelection.setText("Defining environmental envelope");
             showEnvelopeInfo();
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
-            setInstructions(null,null);
+            setInstructions(null, null);
             showPolygonInfo();
             wkt = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
             displayGeom.setValue(wkt);
 
-            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt,"Area Selection");
+            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Area Selection");
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
-            setInstructions(null,null);
+            setInstructions(null, null);
             showPolygonInfo();
             wkt = "POLYGON((-180 -180,-180 180.0,180.0 180.0,180.0 -180.0,-180.0 -180.0))";
             displayGeom.setValue(wkt);
 
-            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt,"Area Selection");
+            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Area Selection");
         } else { //if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
-            setInstructions(null,null);
+            cbAreaSelection.setText("Box - Current View");
+
+            setInstructions(null, null);
             showPolygonInfo();
-            
+
             /* current view to be re-calculated on use
             BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
 
             wkt = "POLYGON(("
-                    + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
-                    + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
-                    + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
-                    + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
-                    + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
+            + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
+            + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
+            + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
+            + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
+            + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
             
             displayGeom.setValue(wkt);
             MapLayer mapLayer = getMapComposer().addWKTLayer(displayGeom.getValue(),"Area Selection"); */
             wkt = "CURRENTVIEW()";
             displayGeom.setValue(wkt);
-        }       
+        }
     }
 
-    void showEnvelopeInfo(){
+    void showEnvelopeInfo() {
         onClick$btnClearSelection(null);
         envelopeInfo.setVisible(true);
         polygonInfo.setVisible(false);
     }
 
-    void showPolygonInfo(){
+    void showPolygonInfo() {
         //onClick$btnClearSelection(null);
         envelopeInfo.setVisible(false);
         polygonInfo.setVisible(true);
@@ -362,8 +340,6 @@ public class SelectionController extends UtilityComposer {
         displayGeom.setValue(DEFAULT_AREA);
     }
 
-
-
     private String removeCurrentSelection() {
         MapComposer mc = getThisMapComposer();
         MapLayer selectionLayer = mc.getMapLayer("Area Selection");
@@ -377,19 +353,17 @@ public class SelectionController extends UtilityComposer {
                 return mc.getOpenLayersJavascript().removeMapLayer(selectionLayer);
                 //mc.getOpenLayersJavascript().execute(script);
                 //mc.removeLayer("Area Selection");
-            }
-            else {
+            } else {
                 return "";
             }
-        }
-        else {
-            try{
+        } else {
+            try {
                 Messagebox.show("Not Safe?");
+            } catch (Exception e) {
             }
-            catch (Exception e) {}
             return "Failed";
         }
-        
+
     }
 
     /**
@@ -397,38 +371,46 @@ public class SelectionController extends UtilityComposer {
      * @param event
      */
     public void onChange$selectionGeom(Event event) {
-        setInstructions(null,null);
+        setInstructions(null, null);
         try {
 
-//            displayGeom.setValue(selectionGeom.getValue());
-//            wfsQueryPolygon(selectionGeom.getValue());
-//            Clients.showBusy("Filtering species, please wait...", true);
-//            Events.echoEvent("onDoInit", this, selectionGeom.getValue());
-
-
-            displayGeom.setValue(selectionGeom.getValue()); if (displayGeom.getText().contains("NaN NaN")) displayGeom.setValue(DEFAULT_AREA);
+            
+            if (selectionGeom.getValue().contains("NaN NaN")) {
+                displayGeom.setValue(DEFAULT_AREA);
+            } else {
+                displayGeom.setValue(selectionGeom.getValue());
+            }
 
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
 
             //add feature to the map as a new layer
-//            mc.removeLayer("Area Selection");
-         MapLayer mapLayer = mc.addWKTLayer(selectionGeom.getValue(),"Area Selection");
+            MapLayer mapLayer = mc.addWKTLayer(selectionGeom.getValue(), "Area Selection");
             rgAreaSelection.getSelectedItem().setChecked(false);
-            
-            //wfsQueryBBox(selectionGeom.getValue());
+
+            updateComboBoxText(selectionGeom.getValue());
         } catch (Exception e) {//FIXME
         }
 
     }
 
+    void updateComboBoxText(String text) {
+        System.out.println("updateComboBoxText()");
+        cbAreaSelection.setText(selectionGeom.getValue().substring(0, 11));
+    }
+
     public void onChange$boxGeom(Event event) {
-        setInstructions(null,null);
+        setInstructions(null, null);
         try {
 //            Clients.showBusy("Filtering species, please wait...", true);
 //            Events.echoEvent("onDoInit", this, boxGeom.getValue());
-            
-            displayGeom.setValue(boxGeom.getValue()); if (displayGeom.getText().contains("NaN NaN")) displayGeom.setValue(DEFAULT_AREA);
+
+            if (boxGeom.getValue().contains("NaN NaN")) {
+                displayGeom.setValue(DEFAULT_AREA);
+            } else {
+                displayGeom.setValue(boxGeom.getValue());
+            }
+
 
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
@@ -436,12 +418,14 @@ public class SelectionController extends UtilityComposer {
             //add feature to the map as a new layer
             //mc.removeLayer("Area Selection");
             //mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
-            MapLayer mapLayer = mc.addWKTLayer(boxGeom.getValue(),"Area Selection");
+            MapLayer mapLayer = mc.addWKTLayer(boxGeom.getValue(), "Area Selection");
 
             rgAreaSelection.getSelectedItem().setChecked(false);
-            setInstructions(null,null);
+            setInstructions(null, null);
 
             //wfsQueryBBox(boxGeom.getValue());
+
+            updateComboBoxText(boxGeom.getValue());
 
         } catch (Exception e) {//FIXME
         }
@@ -452,14 +436,14 @@ public class SelectionController extends UtilityComposer {
         openResults();
         /*
         if (selectionGeom.getValue() != ""
-                && !selectionGeom.getValue().contains("NaN NaN")) {
-            Clients.showBusy("Filtering species, please wait...", true);
-            Events.echoEvent("showSpeciesPoly", this, displayGeom.getValue());
+        && !selectionGeom.getValue().contains("NaN NaN")) {
+        Clients.showBusy("Filtering species, please wait...", true);
+        Events.echoEvent("showSpeciesPoly", this, displayGeom.getValue());
         }
         else if(boxGeom.getValue() != ""
-                && !boxGeom.getValue().contains("NaN NaN")) {
-            Clients.showBusy("Filtering species, please wait...", true);
-            Events.echoEvent("showSpecies", this, displayGeom.getValue());
+        && !boxGeom.getValue().contains("NaN NaN")) {
+        Clients.showBusy("Filtering species, please wait...", true);
+        Events.echoEvent("showSpecies", this, displayGeom.getValue());
         }*/
     }
 
@@ -469,7 +453,7 @@ public class SelectionController extends UtilityComposer {
         Clients.showBusy("", false);
     }
 
-     public void showSpeciesPoly(Event event) throws Exception {
+    public void showSpeciesPoly(Event event) throws Exception {
         String geomData = (String) event.getData();
         wfsQueryPolygon(geomData);
         Clients.showBusy("", false);
@@ -483,13 +467,13 @@ public class SelectionController extends UtilityComposer {
         WKTReader wkt_reader = new WKTReader();
         GMLWriter gml_writer = new GMLWriter();
         WKTWriter wkt_writer = new WKTWriter();
-         String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrences\"> <wfs:PropertyName>ALA:scientificname</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
-       if (selectionWKT.contains("MULTIPOLYGON")) {
-           selectionWKT.replace("MULTI","");
-           selectionWKT.replace("(((","((");
-           selectionWKT.replace(")))","))");
-       }
-       try {
+        String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrences\"> <wfs:PropertyName>ALA:scientificname</wfs:PropertyName><ogc:Filter><ogc:BBOX><ogc:PropertyName>the_geom</ogc:PropertyName><gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#4326\"><gml:lowerCorner>LOWERCORNER</gml:lowerCorner><gml:upperCorner>UPPERCORNER</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:Filter></wfs:Query></wfs:GetFeature>";
+        if (selectionWKT.contains("MULTIPOLYGON")) {
+            selectionWKT.replace("MULTI", "");
+            selectionWKT.replace("(((", "((");
+            selectionWKT.replace(")))", "))");
+        }
+        try {
             Geometry selection = wkt_reader.read(selectionWKT);
             //Envelope selectionBounds = selection.getEnvelope().getEnvelopeInternal();
             Geometry selectionBounds = selection.getEnvelope();
@@ -501,13 +485,13 @@ public class SelectionController extends UtilityComposer {
             baseQueryXML = baseQueryXML.replace("UPPERCORNER", upperCorner);
             baseQueryXML = baseQueryXML.replace("LOWERCORNER", lowerCorner);
             //String selectionBoundsGML = gml_writer.toString(selectionBounds.)
-           // Messagebox.show(baseQueryXML);
+            // Messagebox.show(baseQueryXML);
             String response = POSTRequest(baseQueryXML);
-            String speciesList = parseIntersection(response,selection);
+            String speciesList = parseIntersection(response, selection);
 //            baseQueryXML = baseQueryXML.replace("ENVELOPE",selectionBoundsGML);
 //            String response = POSTRequest(baseQueryXML);
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
 //        String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrences\"> <wfs:PropertyName>ALA:scientificname</wfs:PropertyName>";
 //        String filterPart = "<ogc:Filter><Intersects><PropertyName>the_geom</PropertyName><gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:coordinates cs=\" \" decimal=\".\" ts=\",\">COORDINATES</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></Intersects></ogc:Filter></wfs:Query></wfs:GetFeature>";
 //        String coordinateString = selectionGeom.replace("POLYGON", "").replace(")", "").replace("(", "");
@@ -536,7 +520,7 @@ public class SelectionController extends UtilityComposer {
 
         //       String completeQuery = baseQuery + selection + ")";
         try {
-            
+
             String response = POSTRequest(baseQueryXML);
             String speciesList = parse(response);
             //Messagebox.show(response);
@@ -574,8 +558,8 @@ public class SelectionController extends UtilityComposer {
                 response += line;
             }
             //Parse the response
-         //   Messagebox.show(response);
-           // String speciesList = parse(response);
+            //   Messagebox.show(response);
+            // String speciesList = parse(response);
             wr.close();
             // rd.close();
             return response;
@@ -607,7 +591,7 @@ public class SelectionController extends UtilityComposer {
         for (int i = 0; i < species.getLength(); i++) {
             speciesSet.add((String) species.item(i).getNodeValue());
         }
-  
+
 
         results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
@@ -617,7 +601,7 @@ public class SelectionController extends UtilityComposer {
 
         //popup_results.open(40, 150);
         openResults();
-        
+
         return String.valueOf(speciesSet.size());
     }
 
@@ -643,7 +627,7 @@ public class SelectionController extends UtilityComposer {
         }
 
 
-       results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
+        results = (String[]) speciesSet.toArray(new String[speciesSet.size()]);
         popup_listbox_results.setModel(new SimpleListModel(speciesSet.toArray()));
 
 
@@ -654,6 +638,7 @@ public class SelectionController extends UtilityComposer {
 
         return String.valueOf(speciesSet.size());
     }
+
     void openResults() {
         java.util.Map args = new java.util.HashMap();
         args.put("pid", "none");
@@ -668,7 +653,7 @@ public class SelectionController extends UtilityComposer {
             //win.results = results;
             //win.populateList();
             win.doModal();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -687,18 +672,8 @@ public class SelectionController extends UtilityComposer {
         return mapComposer;
     }
 
-    public void onClick$download() {
-        StringBuffer sb = new StringBuffer();
-        for (String s : results) {
-            sb.append(s);
-            sb.append("\r\n");
-        }
-        org.zkoss.zhtml.Filedownload.save(sb.toString(), "text/plain", "species.csv");
-//		}else{
-
-    }
-
-     private String getInfo(String urlPart) {
+    
+    private String getInfo(String urlPart) {
         try {
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(satServer + "/alaspatial/ws" + urlPart); // testurl

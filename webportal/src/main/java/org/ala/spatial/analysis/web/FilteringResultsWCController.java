@@ -17,6 +17,7 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.ListModelArray;
+import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Textbox;
 
 /**
@@ -29,6 +30,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public Button download;
     public Button downloadsamples;
+    public Button refreshButton;
     public Listbox popup_listbox_results;
     public Textbox popup_textbox_results;
     public Popup popup_results;
@@ -55,6 +57,9 @@ public class FilteringResultsWCController extends UtilityComposer {
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
 
+        onClick$refreshButton();
+        /*
+
         pid = (String) (Executions.getCurrent().getArg().get("pid"));
         shape = (String) (Executions.getCurrent().getArg().get("shape"));
         String manual = (String) (Executions.getCurrent().getArg().get("manual"));
@@ -63,19 +68,18 @@ public class FilteringResultsWCController extends UtilityComposer {
          *
          * in case of a service update, do not set both to null or everything
          * will be returned.
-         */
+         *
         if (pid == null) {
             pid = "none";
         } else if (shape == null) {
             shape = "none";
         }
         if (pid.equals("none") && shape.equals("none")) {
-            return;
-        }
-
-        if (manual == null) {
+            pid="123";
             populateList();
-        }
+        } else if (manual == null) {
+            populateList();
+        }*/
     }
 
     public void populateList() {
@@ -95,6 +99,8 @@ public class FilteringResultsWCController extends UtilityComposer {
                     out = out.substring(0, out.length() - 1);
                 }
                 results = out.split(",");
+                java.util.Arrays.sort(results);
+                
                 long t2 = System.currentTimeMillis();
 
                 if (results.length == 0) {
@@ -110,7 +116,28 @@ public class FilteringResultsWCController extends UtilityComposer {
                 }
                 long t3 = System.currentTimeMillis();
 
-                //remove in place to popup_textbox_results; popup_listbox_results.setModel(new ListModelArray(tmp, false));
+                popup_listbox_results.setModel(new ListModelArray(tmp, false));
+                popup_listbox_results.setItemRenderer(
+                    new ListitemRenderer() {
+                        public void render(Listitem li, Object data) {
+                            String s = (String) data;
+                            String[] ss = s.split("[*]");
+
+
+                            Listcell lc = new Listcell(ss[0]);
+                            lc.setParent(li);
+
+                            if( ss.length > 1) {
+                                lc = new Listcell(ss[1]);
+                                lc.setParent(li);
+                            }
+
+                            if (ss.length > 2) {
+                                lc = new Listcell(ss[2]);
+                                lc.setParent(li);
+                            }
+                        }
+                    });
                 if (length < 200) {
                     results_label.setValue("species found: " + length);
                 } else {
@@ -123,7 +150,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 for (int i = 0; i < results.length; i++) {
                     results_string.append(results[i]).append("\n");
                 }
-                popup_textbox_results.setValue(results_string.toString());
+                //popup_textbox_results.setValue(results_string.toString());
 
                 System.out.println("predisplay filtering result timings: sz=" + results.length + " timing: " + (t2 - t1) + " " + (t3 - t1) + " " + (t4 - t1));
             } else {
@@ -141,8 +168,9 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onClick$download() {
         StringBuffer sb = new StringBuffer();
+        sb.append("family name,species name,common name\r\n");
         for (String s : results) {
-            sb.append(s);
+            sb.append(s.replace('*',','));
             sb.append("\r\n");
         }
         Filedownload.save(sb.toString(), "text/plain", "filter.csv");
@@ -207,5 +235,29 @@ public class FilteringResultsWCController extends UtilityComposer {
             ex.printStackTrace(System.out);
         }
         return null;
+    }
+
+    public void onClick$refreshButton() {
+        //extract 'shape' and 'pid' from composer
+        String area = getMapComposer().getSelectionArea();
+        if (area.contains("ENVELOPE(")) {
+            shape = "none";
+            pid = area.substring(9,area.length()-2);
+        } else {
+            shape = area;
+            pid = "none";
+        }
+
+        populateList();
+     }
+
+    static public void open() {        
+        FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
+                "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);
+        try {
+            win.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

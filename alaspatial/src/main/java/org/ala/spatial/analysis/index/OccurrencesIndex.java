@@ -25,6 +25,7 @@ import java.util.Vector;
 import java.util.BitSet;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
 import org.springframework.util.StringUtils;
@@ -93,13 +94,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
     static final String POINTS_FILENAME_05GRID_IDX = "OCC_POINTS_05GRID_IDX.dat";
     /**
      * world grid of 05grid point index entry points
-     * 
-     * for retrieving record numbers, and point longitude and latitudes, 
+     *
+     * for retrieving record numbers, and point longitude and latitudes,
      * from 05grid index
      */
     static final String POINTS_FILENAME_05GRID_KEY = "OCC_POINTS_05GRID_KEY.dat";
     /**
-     * species index file, contains IndexRecord for each species 
+     * species index file, contains IndexRecord for each species
      */
     static final String SPECIES_IDX_FILENAME = "OCC_IDX_SPECIES.dat";
     /**
@@ -111,6 +112,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     static final String OTHER_IDX_POSTFIX = ".dat";
     /**
+     * map of id's to record numbers
+     */
+    static final String ID_LOOKUP = "ID_LOOKUP.dat";
+    /**
      * static instance of all indexed data for filtering
      */
     static ArrayList<IndexedRecord[]> all_indexes = new ArrayList<IndexedRecord[]>();
@@ -119,15 +124,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     static IndexedRecord[] single_index = null;
     /**
-     * static instance of all points records 
-     * 
+     * static instance of all points records
+     *
      * for frequent use
      */
     static double[][] all_points = null;
     /**
      * all occurrences data
      */
-    HashMap<Integer,Object> occurrences;
+    HashMap<Integer, Object> occurrences;
     /**
      * object to perform sorting on occurances_csv
      */
@@ -158,9 +163,17 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     static double[][] grid_points = null;
     /**
-     * grid 360degree/0.5degree square, for entry position into grid_points 
+     * grid 360degree/0.5degree square, for entry position into grid_points
      */
     static int[][] grid_key = null;
+    /**
+     * occurrence id to record mapping
+     */
+    static HashMap<String,Integer> id_lookup = null;
+    /**
+     * list of common names against species names
+     */
+    static String [] common_names;
 
     /**
      * default constructor
@@ -179,51 +192,50 @@ public class OccurrencesIndex implements AnalysisIndexService {
         occurrencesParts();
         mergeParts();
         exportSortedGEOPoints();
-       exportSortedGridPoints();
+        exportSortedGridPoints();
         exportFieldIndexes();
     }
+    TreeMap<String, Integer>[] columnKeys;
+    int[] columnKeysToOccurrencesOrder;
 
-    TreeMap<String, Integer> [] columnKeys;
-    int [] columnKeysToOccurrencesOrder;
-
-    void mergeParts(){
+    void mergeParts() {
         //count # of parts
         int numberOfParts = 0;
         while ((new File(
                 TabulationSettings.index_path
-                + POINTS_FILENAME + "_" + numberOfParts)).exists()){
+                + SORTED_FILENAME + "_" + numberOfParts)).exists()) {
             numberOfParts++;
         }
 
         //TODO: move existing joined output to *_(numberOfParts+1) for inclusion
 
-        String [] lines = new String[numberOfParts];
-        BufferedReader [] reader = new BufferedReader[numberOfParts];
-        int [] positions = new int[numberOfParts];
+        String[] lines = new String[numberOfParts];
+        BufferedReader[] reader = new BufferedReader[numberOfParts];
+        int[] positions = new int[numberOfParts];
         ArrayList<double[][]> points = new ArrayList<double[][]>(numberOfParts);
         int pointsCount = 0;
 
-        try{
+        try {
             //open output streams (points + sorted data)
             int i;
-            for(i=0;i<numberOfParts;i++){
+            for (i = 0; i < numberOfParts; i++) {
                 reader[i] = new BufferedReader(new FileReader(
                         TabulationSettings.index_path + SORTED_FILENAME
                         + "_" + i));
                 lines[i] = reader[i].readLine();
-                if(lines[i] != null){
+                if (lines[i] != null) {
                     lines[i] = lines[i].trim();
                 }
                 //open points
-                double [][] tmp = getPointsPairs(i);
+                double[][] tmp = getPointsPairs(i);
                 points.add(tmp);
                 positions[i] = 0;
-                pointsCount += tmp.length*2;
+                pointsCount += tmp.length * 2;
             }
 
             FileWriter fw = new FileWriter(TabulationSettings.index_path
                     + SORTED_FILENAME);
-            double [] aPoints = new double[pointsCount];
+            double[] aPoints = new double[pointsCount];
             int pointsPos = 0;
 
             //write to file
@@ -232,29 +244,32 @@ public class OccurrencesIndex implements AnalysisIndexService {
             while (finishedParts < numberOfParts) {
                 //get top record
                 topline = null;
-                for(i=0;i<numberOfParts;i++){
-                    if((topline == null && lines[i] != null)
+                for (i = 0; i < numberOfParts; i++) {
+                    if ((topline == null && lines[i] != null)
                             || (topline != null && lines[i] != null
-                                && topline.compareTo(lines[i]) > 0)){
+                            && topline.compareTo(lines[i]) > 0)) {
                         topline = lines[i];
                     }
                 }
 
                 //write top records & increment
-                for(i=0;i<numberOfParts;i++){
-                    if(lines[i] != null && topline.equalsIgnoreCase(lines[i])){
+                for (i = 0; i < numberOfParts; i++) {
+                    if (lines[i] != null &&  topline.equalsIgnoreCase(lines[i])) {
                         fw.append(lines[i]);
                         fw.append("\n");
+
+                        //read up next line
                         lines[i] = reader[i].readLine();
-                        if(lines[i] == null){
-                            finishedParts++;
+                        if (lines[i] == null) {
+                            finishedParts++;    //flag that one more is finsihed
                         } else {
                             lines[i] = lines[i].trim();
                         }
+
                         aPoints[pointsPos] = points.get(i)[positions[i]][0];
-                        aPoints[pointsPos+1] = points.get(i)[positions[i]][1];
+                        aPoints[pointsPos + 1] = points.get(i)[positions[i]][1];
                         positions[i]++;
-                        pointsPos+=2;
+                        pointsPos += 2;
                     }
                 }
             }
@@ -265,33 +280,35 @@ public class OccurrencesIndex implements AnalysisIndexService {
             RandomAccessFile pointsfile = new RandomAccessFile(
                     TabulationSettings.index_path + POINTS_FILENAME,
                     "rw");
-            byte[] b = new byte[aPoints.length * 8];
+            byte[] b = new byte[pointsPos * 8];
             ByteBuffer bb = ByteBuffer.wrap(b);
-            for (double d : aPoints) {
-                bb.putDouble(d);
+
+            for (i=0;i<pointsPos;i++){
+                bb.putDouble(aPoints[i]);
             }
+
             pointsfile.write(b);
             pointsfile.close();
 
             //delete parts
-            for(i=0;i<numberOfParts;i++){
-                (new File(TabulationSettings.index_path
-                        + SORTED_FILENAME + "_" + i)).delete();
-            }
-        }catch(Exception e){
+            //for (i = 0; i < numberOfParts; i++) {
+            //    (new File(TabulationSettings.index_path
+            //            + SORTED_FILENAME + "_" + i)).delete();
+           // }
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         System.gc();
     }
 
-    void occurrencesParts(){
+    void occurrencesParts() {
         String[] columns = TabulationSettings.occurances_csv_fields;
         String[] columnsSettings =
                 TabulationSettings.occurances_csv_field_settings;
         int i;
         columnKeys = new TreeMap[columns.length];
-        for(i=0;i<columnKeys.length;i++){
+        for (i = 0; i < columnKeys.length; i++) {
             columnKeys[i] = new TreeMap<String, Integer>();
         }
 
@@ -299,14 +316,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
         occurrences = new HashMap<Integer, Object>();
 
         /* read occurances_csv */
-        
+
         try {
             BufferedReader br = new BufferedReader(
                     new FileReader(TabulationSettings.occurances_csv));
 
             String s;
             String[] sa;
-            int [] il;
+            int[] il;
             Integer iv;
 
             /* lines read */
@@ -317,22 +334,22 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
 
-            String [] colnames = ofu.getOutputColumnNames();
+            String[] colnames = ofu.getOutputColumnNames();
 
 
 
             columnKeysToOccurrencesOrder = new int[columnsSettings.length];
             int p = 0;
-            for(i=0;i<ofu.onetwoCount;i++){
+            for (i = 0; i < ofu.onetwoCount; i++) {
                 columnKeysToOccurrencesOrder[p++] = ofu.onestwos[i];
-            System.out.print("[" + ofu.onestwos[i] + " " + colnames[p-1]);
+                System.out.print("[" + ofu.onestwos[i] + " " + colnames[p - 1]);
             }
-            for(i=0;i<ofu.zeroCount;i++){
+            for (i = 0; i < ofu.zeroCount; i++) {
                 columnKeysToOccurrencesOrder[p++] = ofu.zeros[i];
-                System.out.print("[" + ofu.zeros[i] + " " + colnames[p-1]);
+                System.out.print("[" + ofu.zeros[i] + " " + colnames[p - 1]);
             }
             columnKeysToOccurrencesOrder[p++] = ofu.longitudeColumn;
-            System.out.print("[" + ofu.longitudeColumn + " " + colnames[p-1]);
+            System.out.print("[" + ofu.longitudeColumn + " " + colnames[p - 1]);
             columnKeysToOccurrencesOrder[p] = ofu.latitudeColumn;
             System.out.print("[" + ofu.latitudeColumn + " " + colnames[p]);
 
@@ -340,13 +357,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             int cc = 0;
             while ((s = br.readLine()) != null) {
-                if((cc % 500000 == 0) && cc > 0){
+                if ((cc % 500000 == 0) && cc > 0) {
                     //export sorted part
                     exportSortedPart(partNumber);
 
                     //reset
-                     occurrences = new HashMap<Integer, Object>();
-                    for(i=0;i<columnKeys.length;i++){
+                    occurrences = new HashMap<Integer, Object>();
+                    for (i = 0; i < columnKeys.length; i++) {
                         columnKeys[i] = new TreeMap<String, Integer>();
                     }
                     System.gc();
@@ -362,14 +379,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     max_columns = sa.length;
                 }
                 if (sa != null && sa.length > max_columns) {
-                    sa = split(s);
+                    sa = OccurrencesIndex.split(s);
                 }
 
                 /* remove quotes and commas form terms */
                 for (i = 0; i < sa.length; i++) {
                     if (sa[i].length() > 0) {
                         sa[i] = sa[i].replace("\"", "");
-                        sa[i] = sa[i].replace(","," ");
+                        sa[i] = sa[i].replace(",", " ");
                     }
                 }
 
@@ -384,18 +401,18 @@ public class OccurrencesIndex implements AnalysisIndexService {
                             && sa[column_positions[ofu.speciesColumn]].length() > 0
                             && sa[column_positions[ofu.longitudeColumn]].length() > 0
                             && sa[column_positions[ofu.latitudeColumn]].length() > 0) {
-                        try{
+                        try {
                             //parse long & lat, failure makes record skipped
                             double longitude = Double.parseDouble(sa[column_positions[ofu.longitudeColumn]]);
                             double latitude = Double.parseDouble(sa[column_positions[ofu.latitudeColumn]]);
 
                             /* get int vs unique key for every column */
                             il = new int[columnsSettings.length];
-                            for(i=0;i<columnsSettings.length;i++){
+                            for (i = 0; i < columnsSettings.length; i++) {
                                 iv = columnKeys[i].get(sa[column_positions[i]]);
                                 if (iv == null) {
                                     il[i] = columnKeys[i].size();
-                                    columnKeys[i].put(sa[column_positions[i]],columnKeys[i].size());
+                                    columnKeys[i].put(sa[column_positions[i]], columnKeys[i].size());
                                 } else {
                                     il[i] = iv.intValue();
                                 }
@@ -404,17 +421,18 @@ public class OccurrencesIndex implements AnalysisIndexService {
                             /* put into tree */
                             HashMap<Integer, Object> obj = occurrences;
                             HashMap<Integer, Object> objtmp;
-                            for(i=0;i<ofu.onetwoCount;i++){
-                                objtmp = (HashMap<Integer,Object>)obj.get(Integer.valueOf(il[ofu.onestwos[i]]));
-                                if(objtmp == null){
-                                    objtmp = new HashMap<Integer,Object>();
+                            for (i = 0; i < ofu.onetwoCount; i++) {
+                                objtmp = (HashMap<Integer, Object>) obj.get(Integer.valueOf(il[ofu.onestwos[i]]));
+                                if (objtmp == null) {
+                                    objtmp = new HashMap<Integer, Object>();
                                     obj.put(Integer.valueOf(il[ofu.onestwos[i]]), objtmp);
                                 }
                                 obj = objtmp;
                             }
+
                             /* create int[] to add, longitude + latitude + zeros */
-                            int [] it = new int[ofu.zeroCount + 2];
-                            for(i=0;i<ofu.zeroCount;i++){
+                            int[] it = new int[ofu.zeroCount + 2];
+                            for (i = 0; i < ofu.zeroCount; i++) {
                                 it[i] = il[ofu.zeros[i]];
                             }
                             it[i++] = il[ofu.longitudeColumn];
@@ -423,18 +441,18 @@ public class OccurrencesIndex implements AnalysisIndexService {
                             ArrayList<int[]> al;
 
                             //add
-                            if(obj.size() == 0){
+                            if (obj.size() == 0) {
                                 al = new ArrayList<int[]>();
                                 al.add(it);
                                 obj.put(Integer.valueOf(0), al);
                             } else {
-                                al = (ArrayList<int[]>)obj.get(Integer.valueOf(0));
+                                al = (ArrayList<int[]>) obj.get(Integer.valueOf(0));
                                 al.add(it);
                             }
-                        }catch (Exception e){
-                           //don't cate
+                        } catch (Exception e) {
+                            //don't cate
                         }
-                    } 
+                    }
                 }
             }
 
@@ -442,21 +460,20 @@ public class OccurrencesIndex implements AnalysisIndexService {
             exportSortedPart(partNumber);
             //reset
             occurrences = new HashMap<Integer, Object>();
-            for(i=0;i<columnKeys.length;i++){
+            for (i = 0; i < columnKeys.length; i++) {
                 columnKeys[i] = new TreeMap<String, Integer>();
             }
             System.gc();
 
 
             br.close();
-            
+
             (new SpatialLogger()).log("loadOccurances done");
         } catch (Exception e) {
             (new SpatialLogger()).log("loadoccurances", e.toString());
             e.printStackTrace();
         }
-}
-
+    }
 
     void exportSortedPart(int partNumber) {
         System.out.println("exporting part: " + partNumber);
@@ -468,19 +485,19 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         try {
             /* sorting & exporting of keys */
-            ArrayList<int []> columnKeysOrder = new ArrayList<int []>(columnKeys.length);
-            ArrayList<String []> columnKeysReverseOrderStrings = new ArrayList<String []>(columnKeys.length);
+            ArrayList<int[]> columnKeysOrder = new ArrayList<int[]>(columnKeys.length);
+            ArrayList<String[]> columnKeysReverseOrderStrings = new ArrayList<String[]>(columnKeys.length);
             int j;
-            for(i=0;i<columnKeys.length;i++){
-                int [] il = new int[columnKeys[columnKeysToOccurrencesOrder[i]].size()];
-                String [] ilStringsReverseOrder = new String[columnKeys[columnKeysToOccurrencesOrder[i]].size()];
+            for (i = 0; i < columnKeys.length; i++) {
+                int[] il = new int[columnKeys[columnKeysToOccurrencesOrder[i]].size()];
+                String[] ilStringsReverseOrder = new String[columnKeys[columnKeysToOccurrencesOrder[i]].size()];
                 Set<Map.Entry<String, Integer>> mes = columnKeys[columnKeysToOccurrencesOrder[i]].entrySet();
                 Iterator<Map.Entry<String, Integer>> mei = mes.iterator();
-                Map.Entry<String,Integer> me;
+                Map.Entry<String, Integer> me;
 
                 /* make key to order mapping */
                 j = 0;
-                while (mei.hasNext()){
+                while (mei.hasNext()) {
                     me = mei.next();
                     il[me.getValue().intValue()] = j;
                     ilStringsReverseOrder[j] = me.getKey();
@@ -501,8 +518,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             //write to file
             StringBuffer s = new StringBuffer();
-            writeMap(sorted, aPoints, occurrences,columnKeysOrder, columnKeysReverseOrderStrings, 0, ofu.onetwoCount, s);
-                     
+            writeMap(sorted, aPoints, occurrences, columnKeysOrder, columnKeysReverseOrderStrings, 0, ofu.onetwoCount, s);
+
             /* export points */
             RandomAccessFile points = new RandomAccessFile(
                     TabulationSettings.index_path + POINTS_FILENAME + "_" + partNumber,
@@ -514,7 +531,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
             points.write(b);
             points.close();
-            
+
             (new SpatialLogger()).log("exportSortedPoints done");
         } catch (Exception e) {
             (new SpatialLogger()).log("exportSortedPoints", e.toString());
@@ -523,28 +540,28 @@ public class OccurrencesIndex implements AnalysisIndexService {
     }
 
     void writeMap(FileWriter sorted, ArrayList<Double> aPoints, HashMap<Integer, Object> map,
-            ArrayList<int []> columnKeysOrder,
-            ArrayList<String []> columnKeysReverseOrderStrings,
+            ArrayList<int[]> columnKeysOrder,
+            ArrayList<String[]> columnKeysReverseOrderStrings,
             int depth, int maxDepth, StringBuffer line) {
-        /* two cases; last record (one object, is arraylist of String []), 
+        /* two cases; last record (one object, is arraylist of String []),
          * not last record (object is another hash map)
          */
-        if(depth == maxDepth){
-           ArrayList<int[]> ai =
-                    (ArrayList<int[]>)map.get(Integer.valueOf(0));
-            int i,j;
-            try{
+        if (depth == maxDepth) {
+            ArrayList<int[]> ai =
+                    (ArrayList<int[]>) map.get(Integer.valueOf(0));
+            int i, j;
+            try {
                 String linec = new String(line.toString().getBytes("US-ASCII"));
-                for(i=0;i<ai.size();i++){                    
+                for (i = 0; i < ai.size(); i++) {
                     sorted.append(linec);
-                    int [] sl = ai.get(i);
-                    for(j=0;j<sl.length;j++){
-                        int [] keysOrder = columnKeysOrder.get(depth + j);
-                        String [] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j);
+                    int[] sl = ai.get(i);
+                    for (j = 0; j < sl.length; j++) {
+                        int[] keysOrder = columnKeysOrder.get(depth + j);
+                        String[] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j);
                         String s = new String(keysReverseOrderStrings[keysOrder[sl[j]]].getBytes("US-ASCII"));
                         sorted.append(s);
 
-                        if(j < sl.length-1){
+                        if (j < sl.length - 1) {
                             sorted.append(",");
                         }
                     }
@@ -552,30 +569,29 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     //parse longlat
                     double longitude = 0;
                     double latitude = 0;
-                    try{
-                        int [] keysOrder = columnKeysOrder.get(depth + j - 2);
-                        String [] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j - 2);
-                        longitude = Double.parseDouble(keysReverseOrderStrings[keysOrder[sl[j-2]]]);
+                    try {
+                        int[] keysOrder = columnKeysOrder.get(depth + j - 2);
+                        String[] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j - 2);
+                        longitude = Double.parseDouble(keysReverseOrderStrings[keysOrder[sl[j - 2]]]);
 
                         keysOrder = columnKeysOrder.get(depth + j - 1);
                         keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j - 1);
 
-                        latitude = Double.parseDouble(keysReverseOrderStrings[keysOrder[sl[j-1]]]);
-                    }catch (Exception e){
-
+                        latitude = Double.parseDouble(keysReverseOrderStrings[keysOrder[sl[j - 1]]]);
+                    } catch (Exception e) {
                     }
                     aPoints.add(longitude);
                     aPoints.add(latitude);
 
                     sorted.append("\n");
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else{
+        } else {
             //sort this hash map as in a tree map
             TreeMap<Integer, Object> sortedMap = new TreeMap<Integer, Object>();
-            int [] keysOrder = columnKeysOrder.get(depth);
+            int[] keysOrder = columnKeysOrder.get(depth);
             Iterator<Map.Entry<Integer, Object>> it = map.entrySet().iterator();
             Map.Entry<Integer, Object> me;
             while (it.hasNext()) {
@@ -585,9 +601,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
 
             //iterate over & write
-            String [] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth);
+            String[] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth);
             it = sortedMap.entrySet().iterator();
-            while (it.hasNext()){
+            while (it.hasNext()) {
                 me = it.next();
 
                 StringBuffer sb = new StringBuffer(line.toString());
@@ -596,7 +612,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                 //drill down
                 writeMap(sorted, aPoints, (HashMap<Integer, Object>) me.getValue(), columnKeysOrder,
-                        columnKeysReverseOrderStrings, depth+1, maxDepth, sb);
+                        columnKeysReverseOrderStrings, depth + 1, maxDepth, sb);
             }
 
         }
@@ -641,7 +657,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * 	in term: qualified and "" then "*
      *
      */
-    String[] split(String line) {
+    static String[] split(String line) {
         ArrayList<String> al = new ArrayList<String>();
         int i;
 
@@ -713,7 +729,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      *
      * generates an index for each occurances field (minus longitude
      * and latitude)
-     */  
+     */
     void exportFieldIndexes() {
         System.gc();
 
@@ -727,6 +743,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         /* first n columns are indexed, n=countOfIndexed */
         TreeMap<String, IndexedRecord>[] fw_maps = new TreeMap[countOfIndexed];
+
+        /* build up id lookup as well (first column) */
+        id_lookup = new HashMap<String,Integer>();
 
         int i;
         try {
@@ -742,7 +761,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             for (i = 0; i < countOfIndexed; i++) {
                 fw_maps[i] = new TreeMap<String, IndexedRecord>();
             }
-System.out.println("\r\nsorted columns: " + countOfIndexed);
+            System.out.println("\r\nsorted columns: " + countOfIndexed);
 
             String[] last_value = new String[countOfIndexed];
             int[] last_position = new int[countOfIndexed];
@@ -757,6 +776,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             int filepos = 0;
             int recordpos = 0;
 
+            int idColumn = (new OccurrencesFieldsUtil()).onetwoCount;
+
             while ((s = br.readLine()) != null) {
                 sa = s.split(",");
 
@@ -764,6 +785,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
                 //updated = false;
                 if (sa.length >= countOfIndexed) {
+
+                    //push id
+                    id_lookup.put(sa[idColumn], new Integer(recordpos));                   
 
                     for (i = 0; i < countOfIndexed; i++) {
                         if (recordpos != 0 && !last_value[i].equalsIgnoreCase(sa[i])) {
@@ -791,7 +815,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 filepos += s.length() + 1; 	//+1 for '\n'
             }
 
-            for (i = 0; i <countOfIndexed; i++) {
+            for (i = 0; i < countOfIndexed; i++) {
                 fw_maps[i].put(last_value[i],
                         new IndexedRecord(last_value[i].toLowerCase(),
                         last_position[i],
@@ -806,6 +830,21 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         }
 
         System.out.println("done read of indexes");
+
+        /* write out id lookup */
+        try{
+            FileOutputStream fos = new FileOutputStream(
+                    TabulationSettings.index_path
+                    + ID_LOOKUP);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(id_lookup);
+            System.out.println("id_lookup size:" + id_lookup.size());
+            oos.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
         /* write as array objects for faster reads later*/
         try {
             for (i = 0; i < fw_maps.length; i++) {
@@ -824,7 +863,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                         + OTHER_IDX_PREFIX + columns[ofu.onestwos[i]] + OTHER_IDX_POSTFIX;
 
                 /* rename the species file, (last indexed column = species column) */
-                if (i == countOfIndexed-1) {
+                if (i == countOfIndexed - 1) {
                     filename = TabulationSettings.index_path
                             + SPECIES_IDX_FILENAME;
                 }
@@ -855,22 +894,26 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         } catch (Exception e) {
             (new SpatialLogger()).log("exportFieldIndexes, write", e.toString());
         }
-        
+
         fw_maps = null;
         System.gc();
     }
 
     /**
-     * returns a list of (species names / type / count) for valid 
+     * returns a list of (species names / type / count) for valid
      * .beginsWith matches
-     * 
+     *
      * @param filter begins with text to search for
      * @param limit limit on output
      * @return formatted species matches as String[]
      */
-    static public String[] filterIndex(String filter, int limit) {
+    static public String[] filterIndex(String filter, int limit) {        
         loadIndexes();
         OccurrencesFieldsUtil.load();
+
+        if (filter == null || filter.length() == 0){
+            return new String[0];
+        }
 
         filter = filter.toLowerCase();
 
@@ -939,12 +982,12 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     }
 
     /**
-     * returns a list of (species names / type / count) for valid 
+     * returns a list of (species names / type / count) for valid
      * .equalsIgnoreCase matches
-     * 
+     *
      * if input is like "species_name / type" match lookup column name
-     * with 'type', e.g. "genus" or "family" or "species". 
-     * 
+     * with 'type', e.g. "genus" or "family" or "species".
+     *
      * @param filter begins with text to search for
      * @return species matches as IndexedRecord[]
      */
@@ -969,15 +1012,15 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             int i = 0;
             for (IndexedRecord[] ir : all_indexes) {
                 /* binary search */
-                IndexedRecord searchfor = new IndexedRecord(filter,0,0,0,0,(byte)0);
+                IndexedRecord searchfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) 0);
 
                 int pos = java.util.Arrays.binarySearch(ir, searchfor,
                         new Comparator<IndexedRecord>() {
 
-                        public int compare(IndexedRecord r1, IndexedRecord r2) {
-                            return r1.name.compareTo(r2.name);
-                        }
-                    });
+                            public int compare(IndexedRecord r1, IndexedRecord r2) {
+                                return r1.name.compareTo(r2.name);
+                            }
+                        });
 
                 if (pos >= 0 && pos < ir.length) {
                     matches.add(ir[pos]);
@@ -996,20 +1039,27 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
         return null;
     }
+    static int[] speciesNumberInRecordsOrder = null;
+    static int[] species_to_family = null;
 
-    static int [] speciesNumberInRecordsOrder = null;
     /**
      * loads all OccurrencesIndex files for quicker response times
-     * 
+     *
      * excludes points indexes
      */
     static void loadIndexes() {
+       // System.gc();
+        TabulationSettings.load();
+
         if (single_index != null) {
             return;
         }
 
+
+        loadIdLookup();
+     
         OccurrencesFieldsUtil.load();
-        
+      
         String[] columns = TabulationSettings.occurances_csv_fields;
         String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
 
@@ -1017,8 +1067,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         int count = 0;
         int countOfIndexed = 0;
         int i;
-        for(i=0;i<columnsSettings.length;i++){
-            if(columnsSettings[i].equalsIgnoreCase("2")){
+        for (i = 0; i < columnsSettings.length; i++) {
+            if (columnsSettings[i].equalsIgnoreCase("2")) {
                 countOfIndexed++;
             }
         }
@@ -1026,13 +1076,13 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             int indexesLoaded = 0;
             if (all_indexes.size() == 0) {
                 for (i = 0; i < columns.length; i++) {
-                    if (columnsSettings[i].equalsIgnoreCase("2")){
+                    if (columnsSettings[i].equalsIgnoreCase("2")) {
 
                         String filename = TabulationSettings.index_path
                                 + OTHER_IDX_PREFIX + columns[i] + OTHER_IDX_POSTFIX;
 
                         /* rename the species file */
-                        if (indexesLoaded == countOfIndexed-1) {
+                        if (indexesLoaded == countOfIndexed - 1) {
                             filename = TabulationSettings.index_path
                                     + SPECIES_IDX_FILENAME;
                         }
@@ -1048,8 +1098,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                             count += all_indexes.get(all_indexes.size() - 1).length;
                         }
                         //print something to double check columns
-                        System.out.println("index:" + i + " " + columns[i] + ", " + OccurrencesFieldsUtil.columnNames[i] + " == " +
-                                OccurrencesFieldsUtil.columnNames[all_indexes.get(all_indexes.size()-1)[0].type]);
+                        System.out.println("index:" + i + " " + columns[i] + ", " + OccurrencesFieldsUtil.columnNames[i] + " == "
+                                + OccurrencesFieldsUtil.columnNames[all_indexes.get(all_indexes.size() - 1)[0].type]);
 
                         indexesLoaded++;
                     }
@@ -1077,20 +1127,140 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                         return r1.name.compareTo(r2.name);
                     }
                 });
+              
+        //build speciesNumberInRecordsOrder
+        getPointsPairsGrid(); //load up gridded points
+        IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
+        speciesNumberInRecordsOrder = new int[grid_points_idx.length];
+        for (i=0;i<grid_points_idx.length;i++){
+            speciesNumberInRecordsOrder[i] = -1;
+        }
+        for (i = 0; i < species.length; i++) {
+            for (int j = species[i].record_start; j <= species[i].record_end; j++) {
+                speciesNumberInRecordsOrder[j] = i;
+            }
+        }
+        //error checking, likely hierarchy problems
+        int countmissing = 0;
+        for (i=0;i<grid_points_idx.length;i++){
+            if(speciesNumberInRecordsOrder[i] == -1){
+                countmissing++;
+            }
+        }
+        System.out.println("******* missing: " + countmissing);
 
-       //build speciesNumberInRecordsOrder
-       getPointsPairsGrid(); //load up gridded points
-       IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
-       speciesNumberInRecordsOrder = new int[grid_points_idx.length];
-       for (i = 0; i < species.length; i++) {
-           for (int j = species[i].record_start; j <= species[i].record_end; j++) {
-               speciesNumberInRecordsOrder[j] = i;
-           }
-       }
+    
+        loadCommonNames();  //done last since dependant on indexed records
+
+        /* setup species_to_family idx */
+        //TODO: speedup by pregenerating
+        IndexedRecord [] speciesIdx = all_indexes.get(all_indexes.size()-1);
+        IndexedRecord [] familyIdx = all_indexes.get(all_indexes.size()-3);
+        species_to_family = new int[speciesIdx.length];
+        for(i=0;i<species_to_family.length;i++){
+            species_to_family[i] = -1;
+        }
+        for(i=0;i<species_to_family.length;i++){
+            for(int j=0;j<familyIdx.length;j++){
+                if(speciesIdx[i].record_start <= familyIdx[j].record_end
+                        && speciesIdx[i].record_start >= familyIdx[j].record_start) {
+                    species_to_family[i] = j;
+                    break;
+                }
+            }
+        }
+
+      }
+
+    /**
+     * loads id lookup
+     */
+    static void loadIdLookup() {
+        try {
+            FileInputStream fis = new FileInputStream(
+                TabulationSettings.index_path
+                + ID_LOOKUP);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            id_lookup = (HashMap<String,Integer>)ois.readObject();
+
+            ois.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
-     * gets species IndexedRecords only 
+     * loads common names lookup (species records only, one match only)
+     */
+    static void loadCommonNames() {
+        try {
+            IndexedRecord [] ir = all_indexes.get(all_indexes.size()-1);
+            common_names = new String[ir.length];
+
+            //load the common names file (csv), populate common_names as it goes
+            BufferedReader br = new BufferedReader(
+                    new FileReader(TabulationSettings.common_names_csv));
+
+            String s;
+            String [] sa;
+            int i;
+            int max_columns = 0;
+
+            int count= 0;
+            while ((s = br.readLine()) != null) {
+                sa = s.split(",");
+
+                /* handlers for the text qualifiers and ',' in the middle */
+                if (sa != null && max_columns == 0) {
+                    max_columns = sa.length;
+                }
+                if (sa != null && sa.length > max_columns) {
+                    sa = split(s);
+                }
+
+                /* remove quotes and commas form terms */
+                for (i = 0; i < sa.length; i++) {
+                    if (sa[i].length() > 0) {
+                        sa[i] = sa[i].replace("\"", "");
+                        sa[i] = sa[i].replace(",", " ");
+                    }
+                }
+
+                //find scientific name pos
+                IndexedRecord lookfor = new IndexedRecord(sa[0].toLowerCase(), 0, 0, 0, 0, (byte) -1);
+
+                int pos = java.util.Arrays.binarySearch(ir,
+                    lookfor,
+                    new Comparator<IndexedRecord>() {
+                        public int compare(IndexedRecord r1, IndexedRecord r2) {
+                            return r1.name.toLowerCase().compareTo(r2.name);
+                        }
+                    });
+
+                if (pos >= 0 && pos < ir.length) {                    
+                    common_names[pos] = sa[1].replace(',', ';');
+                }
+            }
+            
+            // report finds & set to empty string
+            for (i=0;i<common_names.length;i++) {
+                if(common_names[i] != null){
+                    count++;
+                } else {
+                    common_names[i] = "";
+                }
+            }
+            System.out.println("common name finds: " + count);
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+
+    /**
+     * gets species IndexedRecords only
      * @return species IndexedRecords as []
      */
     static public IndexedRecord[] getSpeciesIndex() {
@@ -1100,7 +1270,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     }
 
     /**
-     * gets all available IndexedRecords 
+     * gets all available IndexedRecords
      * @return all IndexedRecords in one index
      */
     static public IndexedRecord[] getIndex() {
@@ -1163,9 +1333,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
     /**
      * gets sorted records between two file character positions
-     * 
+     *
      * characters returned are in: file_start <= character position < file_end
-     * 
+     *
      * @param file_start first character to return
      * @param file_end  one more than last character to return
      * @return each record between first and end character positions, split by new line as String[]
@@ -1190,9 +1360,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
     /**
      * gets sorted records between two file character positions
-     * 
+     *
      * characters returned are in: file_start <= character position < file_end
-     * 
+     *
      * @param file_start first character to return
      * @param file_end one more than last character to return
      * @return each record between first and end character positions, as String
@@ -1217,9 +1387,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
     /**
      * gets points corresponding to sorted records between two record positions
-     * 
+     *
      * points returned are in: record start <= record position <= record end
-     * 
+     *
      * @param file_start first character to return
      * @param file_end one more than last character to return
      * @return each record between first and end character positions, split by new line as String[]
@@ -1251,10 +1421,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         return d;
     }
 
-    
     /**
      * gets all points corresponding to sorted records
-     * 
+     *
      * @return all points as double[n][2]
      * where
      *  n is number of points
@@ -1410,7 +1579,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     /**
      * gets all points corresponding to sorted records
      * using latitude then longitude sort order
-     * 
+     *
      * @return all points as double[n][2]
      * where
      *  n is number of points
@@ -1433,7 +1602,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
             int i;
 
-            // read out doubles 
+            // read out doubles
             d = new double[number_of_records][2];
             for (i = 0; i < number_of_records; i++) {
                 d[i][0] = bb.getDouble();
@@ -1450,8 +1619,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     /**
      * gets index for all points corresponding to sorted records
      * using latitude then longitude sort order
-     * 
-     * @return records index of latitude then longitude sorted points 
+     *
+     * @return records index of latitude then longitude sorted points
      * as records index positions against this method sorted points
      */
     public static int[] getPointsPairsGEOidx() {
@@ -1486,7 +1655,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     /**
      * operates on previously OCC_POINTS.dat
      *
-     * exports points in sorted on latitude then longitude 
+     * exports points in sorted on latitude then longitude
      * of 0.5 degree grid cells
      *
      * exports as POINTS_FILENAME_GEO for points data
@@ -1506,11 +1675,19 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             latitude = points[i][1];
 
             //assume -360 to +360, adjust
-            while(longitude < -180) longitude += 360;
-            while(longitude >= 180) longitude -= 360;
-            while(latitude < -180) longitude += 360;
-            while(latitude >= 180) longitude -= 360;
-            pa[i] = new Point(longitude, latitude,i);
+            while (longitude < -180) {
+                longitude += 360;
+            }
+            while (longitude >= 180) {
+                longitude -= 360;
+            }
+            while (latitude < -180) {
+                longitude += 360;
+            }
+            while (latitude >= 180) {
+                longitude -= 360;
+            }
+            pa[i] = new Point(longitude, latitude, i);
         }
 
         /* sort on 0.5degree grid by latitude then longitude */
@@ -1518,9 +1695,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 new Comparator<Point>() {
 
                     public int compare(Point r1, Point r2) {
-                        double result = (int)(2 * r1.latitude + 360) - (int)(2 * r2.latitude + 360);
+                        double result = (int) (2 * r1.latitude + 360) - (int) (2 * r2.latitude + 360);
                         if (result == 0) {
-                            result = (int)(2*r1.longitude + 360) - (int)(2*r2.longitude + 360);
+                            result = (int) (2 * r1.longitude + 360) - (int) (2 * r2.longitude + 360);
                         }
                         return (int) result;
                     }
@@ -1599,13 +1776,13 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             for (i = 0; i < pa.length; i++) {
                 int x = (int) (pa[i].longitude * 2 + 360);          //longitude is -180 to 179.999...
                 int y = (int) (pa[i].latitude * 2 + 360);		//latitude is -180 to 179.999...
-                
+
                 if (list[y][x] == -1
                         || list[y][x] > i) {
                     list[y][x] = i;
                 }
 
-                if(y < lasty || (y == lasty &&  x < lastx)){
+                if (y < lasty || (y == lasty && x < lastx)) {
                     System.out.print("," + x + " " + y);
 
                 }
@@ -1646,7 +1823,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     /**
      * gets all points corresponding to sorted records
      * on 0.5 grid using latitude then longitude sort order
-     * 
+     *
      * @return all points as double[n][2]
      * where
      *  n is number of points
@@ -1697,8 +1874,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     /**
      * gets index for all points corresponding to sorted records
      * on 0.5 grid using latitude then longitude sort order
-     * 
-     * @return records index of latitude then longitude sorted points 
+     *
+     * @return records index of latitude then longitude sorted points
      * as method sorted points index against original sorted records order
      */
     public static int[] getPointsPairsGrididxRev() {
@@ -1711,8 +1888,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     /**
      * gets index for all points corresponding to sorted records
      * on 0.5 grid using latitude then longitude sort order
-     * 
-     * @return records index of latitude then longitude sorted points 
+     *
+     * @return records index of latitude then longitude sorted points
      * as records index positions against this method sorted points
      */
     public static int[] getPointsPairsGrididx() {
@@ -1736,17 +1913,17 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             /* read reverse order idx as int */
             points.read(b);
             ByteBuffer bb = ByteBuffer.wrap(b);
-            d1 = new int[number_of_records/2];
-            for (i = 0; i < number_of_records/2; i++) {
+            d1 = new int[number_of_records / 2];
+            for (i = 0; i < number_of_records / 2; i++) {
                 d1[i] = bb.getInt();
             }
 
             /* read forward order idx as int */
-           // points.read(b);
-         //   bb = ByteBuffer.wrap(b);
-            d2 = new int[number_of_records/2];
+            // points.read(b);
+            //   bb = ByteBuffer.wrap(b);
+            d2 = new int[number_of_records / 2];
             for (; i < number_of_records; i++) {
-                d2[i-number_of_records/2] = bb.getInt();
+                d2[i - number_of_records / 2] = bb.getInt();
             }
 
             System.out.println("num records in key:" + number_of_records);
@@ -1764,8 +1941,8 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
     /**
      * gets key of all points corresponding to sorted records
      * on 0.5 grid using latitude then longitude sort order
-     * 
-     * @return records key grid of latitude then longitude sorted order 
+     *
+     * @return records key grid of latitude then longitude sorted order
      * as method sorted points index for each cell
      */
     public static int[][] getPointsPairsGridKey() {
@@ -1792,7 +1969,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             int j;
             for (i = 0; i < 720; i++) {
                 for (j = 0; j < 720; j++) {
-                    d[i][j] = bb.getInt();                    
+                    d[i][j] = bb.getInt();
                 }
             }
             points.close();
@@ -1807,7 +1984,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
     /**
      * test for one record to determin if inside of one SimpleRegion
-     * 
+     *
      * @param record sorted record index number for testing as int
      * @param r region as SimpleRegion
      * @return true iff record is in region
@@ -1826,9 +2003,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
     /**
      * return all records indexes for matches within a SimpleRegion
-     * 
-     * TODO: only test GI_PARTIALLY... 
-     * 
+     *
+     * TODO: only test GI_PARTIALLY...
+     *
      * @param r region for test as SimpleRegion
      * @return records indexes as int []
      */
@@ -1842,7 +2019,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         long starttime = System.currentTimeMillis();
 
         /* make overlay grid from this region */
-        byte [][] mask = new byte[720][720];
+        byte[][] mask = new byte[720][720];
         int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
 
         System.out.println("poly:" + r.toString());
@@ -1870,12 +2047,12 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             }
 
             //test each potential match
-            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
+            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
                 for (j = start; j < end; j++) {
                     records.add(new Integer(grid_points_idx[j]));
                 }
             } else {
-                for (j = start; j < end; j++) { 
+                for (j = start; j < end; j++) {
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                         records.add(new Integer(grid_points_idx[j]));
                     }
@@ -1893,7 +2070,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             }
 
             long endtime = System.currentTimeMillis();
-            System.out.println("getRecordsInside(): len=" + data.length + " time=" + (endtime-starttime) + "ms");
+            System.out.println("getRecordsInside(): len=" + data.length + " time=" + (endtime - starttime) + "ms");
             return data;
         }
         return null;
@@ -1906,11 +2083,13 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
      * @return list of species delimited by "," as String
      */
     static public String getSpeciesInside(SimpleRegion r) {
+        long t1 = System.currentTimeMillis();
+
         /* init */
         loadIndexes();
 
         /* make overlay grid from this region */
-        byte [][] mask = new byte[720][720];
+        byte[][] mask = new byte[720][720];
         int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
 
         int i, j;
@@ -1918,9 +2097,11 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         /* for matching cells, test each record within  */
         StringBuffer sb = new StringBuffer();
 
-        IndexedRecord [] species = all_indexes.get(all_indexes.size()-1);
+        IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
 
         BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+
+        long t2 = System.currentTimeMillis();
 
         for (i = 0; i < cells.length; i++) {
             int start = grid_key[cells[i][1]][cells[i][0]];
@@ -1937,29 +2118,78 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
                 // must be at end of grid_key file, use all
                 end = grid_points.length;
             }
-            
+
             //test each potential match, otherwise add
-            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
+            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
                 for (j = start; j < end; j++) {
-                    bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                    if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
+                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                    }
                 }
             } else {
                 for (j = start; j < end; j++) {
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
-                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                        if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
+                            bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                        }
                     }
                 }
             }
         }
 
+        long t3 = System.currentTimeMillis();
+
+        IndexedRecord [] familyIdx = all_indexes.get(all_indexes.size()-3); //TODO: dynamic
+        
         for (i = 0; i < bitset.size(); i++) {
             if (bitset.get(i)) {
+                if(species_to_family[i] >= 0) {
+                    sb.append(StringUtils.capitalize(familyIdx[species_to_family[i]].name));   //TODO: update when subspecies added
+                } else {
+                    sb.append("undefined");
+                }
+                sb.append("*");
                 sb.append(StringUtils.capitalize(species[i].name));
+                if (common_names[i].length() > 0) {
+                    sb.append("*");
+                    sb.append(common_names[i]);
+                }
+
                 sb.append(",");
             }
         }
 
+        long t4 = System.currentTimeMillis();
+
+        System.out.println("getSpeciesInside(): t2-t1=" + (t2-t1) + " t3-t2=" + (t3-t2) + " t4-t3=" + (t4-t3));
+
         return sb.toString();
+    }
+
+    static String getIndexedValue(int index, int record) {
+        IndexedRecord [] irs = all_indexes.get(index);
+
+        IndexedRecord ir = new IndexedRecord("",0,0,record,0,(byte)0);
+
+        int pos = java.util.Arrays.binarySearch(irs,ir,
+                new Comparator<IndexedRecord>(){
+                    public int compare(IndexedRecord r1, IndexedRecord r2) {
+                        return r1.record_start - r2.record_start;
+                    }
+        });
+
+        if (pos >= 0 && pos < irs.length
+                && irs[pos].record_end >= record) {
+           return irs[pos].name;
+        }
+
+        return "";
+    }
+
+    public static void main(String[] args) {
+        SimpleRegion sr = SimpleShapeFile.parseWKT("POLYGON((116.0 -44.0,116.0 -9.0,117.0 -9.0,117.0 -44.0,116.0 -44.0))");
+        getSpeciesInside(sr);
+        System.out.println("done");
     }
 
     /**
@@ -1973,7 +2203,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         loadIndexes();
 
         /* make overlay grid from this region */
-        byte [][] mask = new byte[720][720];
+        byte[][] mask = new byte[720][720];
         int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
 
         int i, j;
@@ -1998,14 +2228,18 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             }
 
             //test each potential match, otherwise add
-            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT){
+            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
                 for (j = start; j < end; j++) {
+                    if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
                     bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                    }
                 }
             } else {
                 for (j = start; j < end; j++) {
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                        if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
                         bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                        }
                     }
                 }
             }
@@ -2020,35 +2254,35 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
         return speciesCount;
     }
-
     static IndexedRecord[] speciesSortByRecordNumber = null;
-    static int [] speciesSortByRecordNumberOrder = null;
+    static int[] speciesSortByRecordNumberOrder = null;
 
-    static void makeSpeciesSortByRecordNumber(){
-        if(speciesSortByRecordNumber == null){
+    static void makeSpeciesSortByRecordNumber() {
+        if (speciesSortByRecordNumber == null) {
             loadIndexes();
 
-            speciesSortByRecordNumber = all_indexes.get(all_indexes.size()-1).clone();
+            speciesSortByRecordNumber = all_indexes.get(all_indexes.size() - 1).clone();
 
             //preserve original order in a secondary list, to be returned
-            int [] tmp = new int[speciesSortByRecordNumber.length];
+            int[] tmp = new int[speciesSortByRecordNumber.length];
             int i;
-            for(i=0;i<speciesSortByRecordNumber.length;i++){
+            for (i = 0; i < speciesSortByRecordNumber.length; i++) {
                 tmp[i] = speciesSortByRecordNumber[i].file_end;
                 speciesSortByRecordNumber[i].file_end = i;
             }
 
             java.util.Arrays.sort(speciesSortByRecordNumber,
                     new Comparator<IndexedRecord>() {
+
                         public int compare(IndexedRecord r1, IndexedRecord r2) {
                             return r1.record_start - r2.record_start;
                         }
                     });
-                    
+
             //return value to borrowed variable
             int t;
             speciesSortByRecordNumberOrder = new int[speciesSortByRecordNumber.length];
-            for(i=0;i<speciesSortByRecordNumber.length;i++){
+            for (i = 0; i < speciesSortByRecordNumber.length; i++) {
                 t = speciesSortByRecordNumber[i].file_end;
                 speciesSortByRecordNumber[i].file_end = tmp[t];
 
@@ -2057,7 +2291,7 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         }
     }
 
-    static public BitSet getSpeciesBitset(ArrayList<Integer> records, SimpleRegion region){
+    static public BitSet getSpeciesBitset(ArrayList<Integer> records, SimpleRegion region) {
         makeSpeciesSortByRecordNumber();
 
         int i;
@@ -2065,43 +2299,43 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
         BitSet species = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
 
         //assume records sorted
-        for (i = 1;i < records.size(); i++){
-            if (records.get(i-1).intValue() > records.get(i).intValue()) {
+        for (i = 1; i < records.size(); i++) {
+            if (records.get(i - 1).intValue() > records.get(i).intValue()) {
                 System.out.println("records not sorted");
                 java.util.Collections.sort(records);
                 break;
             }
         }
-        
-        
+
+
         if (region == null) {
             //no region, use all
             spos = 0;
             i = 0;
-            while(i < records.size()) {
-                //TODO: work out when best to use binary searching instead of seeking 
+            while (i < records.size()) {
+                //TODO: work out when best to use binary searching instead of seeking
                 int r = records.get(i);
-                
+
                 while (spos < speciesSortByRecordNumber.length
-                        && r > speciesSortByRecordNumber[spos].record_end){   //seek to next species
+                        && r > speciesSortByRecordNumber[spos].record_end) {   //seek to next species
                     spos++;
                 }
 
 
-                if(spos == speciesSortByRecordNumber.length){
+                if (spos == speciesSortByRecordNumber.length) {
                     spos--; //TODO: is this correct?
-               }else{
-               }
-                
+                } else {
+                }
+
                 species.set(speciesSortByRecordNumberOrder[spos]);
                 spos++;
                 i++;
-                if(spos < speciesSortByRecordNumber.length){
-                    while(i < records.size()
-                            && records.get(i) < speciesSortByRecordNumber[spos].record_start){
+                if (spos < speciesSortByRecordNumber.length) {
+                    while (i < records.size()
+                            && records.get(i) < speciesSortByRecordNumber[spos].record_start) {
                         i++;
                     }
-                }else{
+                } else {
                     break;
                 }
             }
@@ -2109,25 +2343,25 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
             /* not used */
             spos = 0;
             i = 0;
-            while(i < records.size()) {
+            while (i < records.size()) {
                 //TODO: work out when best to use binary searching instead of seeking
                 int r = records.get(i);
                 while (spos < speciesSortByRecordNumber.length
-                        && r > speciesSortByRecordNumber[spos].record_end){   //seek to next species+1
+                        && r > speciesSortByRecordNumber[spos].record_end) {   //seek to next species+1
                     spos++;
-                }             
+                }
                 i++; //next record
-                if (spos < speciesSortByRecordNumber.length 
+                if (spos < speciesSortByRecordNumber.length
                         && OccurrencesIndex.inRegion(spos, region)) {
-                    
+
                     species.set(speciesSortByRecordNumberOrder[spos]);
 
                     spos++; //inc
 
                     //seek to next
-                    if(spos < speciesSortByRecordNumber.length){
-                        while(i < records.size()
-                                && records.get(i) < speciesSortByRecordNumber[spos].record_start){
+                    if (spos < speciesSortByRecordNumber.length) {
+                        while (i < records.size()
+                                && records.get(i) < speciesSortByRecordNumber[spos].record_start) {
                             i++;
                         }
                     }
@@ -2142,9 +2376,9 @@ System.out.println("\r\nsorted columns: " + countOfIndexed);
 
 /**
  * points object for housing longitude, latitude and a sorted records index
- * 
+ *
  * not required for use elsewhere
- * 
+ *
  * @author adam
  *
  */
@@ -2174,6 +2408,5 @@ class Point extends Object {
         latitude = latitude_;
         idx = idx_;
     }
-
 }
 

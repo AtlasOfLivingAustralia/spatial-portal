@@ -52,7 +52,10 @@ An area can be defined by any of the options below. Once defined, the area can b
                 </combobox>
 
                 <button image="/img/information.png" 
-                                    onClick="areaInfo.setVisible(!areaInfo.isVisible());" />
+                                    onClick="areaInfo.setVisible(!areaInfo.isVisible());"
+                                    tooltiptext="more information"/>
+
+                <button label="reset" id="btnClearSelection" visible="true" />
             
         </div>
         <div visible="false" id="areaInfo">
@@ -65,11 +68,11 @@ An area can be defined by any of the options below. Once defined, the area can b
                 <vbox>
                     <hbox>
                         <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
-                    <textbox id="displayGeom" readonly="false" visible="true" width="250px" multiline="true" height="200px" style="color: red" />
+                    <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
                     </hbox>
                     <hbox>
-                    <button label="Show Species" id="btnShowSpecies" />
-                    <button label="Clear Selection" id="btnClearSelection" visible="false" />
+                    <button label="Show Species" id="btnShowSpecies" visible="false" />
+                    
                     </hbox>
                 </vbox>
             </div>

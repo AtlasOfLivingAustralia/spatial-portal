@@ -14,48 +14,56 @@
 </listhead>
 </listbox>
 <div id="colourChooser" visible="false">
-    <separator sclass="hr" height="10px" />
+    <vbox>
+                                            <hbox>
 
-    <div style="float:left;padding-top:4px" width="60px">
-        <label value="Red: " sclass="h3" />
-    </div>
+                                                <div style="padding-top:0px" width="60px">
+                                                    <label value="Red: " sclass="h3" />
+                                                </div>
 
-    <div style="float:left;" width="60%">
-        <slider id="redSlider" maxpos="255" width="95%" />
-    </div>
+                                                <div width="250px">
+                                                    <slider id="redSlider" maxpos="255" width="95%" />
+                                                </div>
 
-    <div align="right" style="padding-top:4px">
-        <label id="redLabel" />
-    </div>
+                                                <div align="right" style="padding-top:0px">
+                                                    <label id="redLabel" />
+                                                </div>
+                                            </hbox>
+                                            <hbox>
 
-    <separator sclass="hr" height="2px" />
 
-    <div style="float:left;padding-top:4px" width="60px">
-        <label value="Green: " sclass="h3" />
-    </div>
 
-    <div style="float:left;" width="60%">
-        <slider id="greenSlider" maxpos="255" width="95%" />
-    </div>
+                                                <div style="padding-top:0px" width="60px">
+                                                    <label value="Green: " sclass="h3" />
+                                                </div>
 
-    <div align="right" style="padding-top:4px">
-        <label id="greenLabel" />
-    </div>
+                                                <div  width="250px">
+                                                    <slider id="greenSlider" maxpos="255" width="95%" />
+                                                </div>
 
-    <separator sclass="hr" height="2px" />
+                                                <div align="right" style="padding-top:0px">
+                                                    <label id="greenLabel" />
+                                                </div>
+                                            </hbox>
+                                            <hbox>
 
-    <div style="float:left;padding-top:4px" width="60px">
-        <label value="Blue: " sclass="h3" />
-    </div>
 
-    <div style="float:left;" width="60%">
-        <slider id="blueSlider" maxpos="255" width="95%" />
-    </div>
+                                                <div style="padding-top:0px" width="60px">
+                                                    <label value="Blue: " sclass="h3" />
+                                                </div>
 
-    <div align="right" style="padding-top:4px">
-        <label id="blueLabel" />
-    </div>
+                                                <div  width="250px">
+                                                    <slider id="blueSlider" maxpos="255" width="95%" />
+                                                </div>
+
+                                                <div align="right" style="padding-top:0px">
+                                                    <label id="blueLabel" />
+                                                </div>
+                                            </hbox>
+
     <image id="sampleColour" style="padding-top:4px" width="90%" height="20px" />
+
+    </vbox>
     <separator sclass="hr" height="2px" />
 
     <div align="right" width="90%">

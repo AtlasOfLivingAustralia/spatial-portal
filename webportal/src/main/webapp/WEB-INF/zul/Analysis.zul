@@ -28,6 +28,9 @@
 
         <tabbox id="analysisOptsTabbox" zindex="600" style="border:0px!important; border: solid 0px white;" > <!-- mold="accordion-lite"  zclass="menuswitch"  -->
             <tabs>
+                <!-- species list -->
+                <tab id="speciesListTab" label="Species in Area" />
+
                 <!--  sampling  -->
                 <tab id="samplingTab" label="Sampling" selected="true" />
 
@@ -41,16 +44,32 @@
                 <toolbarbutton image="/img/help.png">
                     <attribute name="onClick">{
                         if (analysisOptsTabbox.getSelectedTab().getIndex() == 0) {
-                        helpSampling.open=(helpSampling.open) ? false:true;
+                        helpSpeciesList.open=(helpSpeciesList.open) ? false:true;
                         } else if (analysisOptsTabbox.getSelectedTab().getIndex() == 1) {
-                        helpPrediction.open=(helpPrediction.open) ? false:true;
+                        helpSampling.open=(helpSampling.open) ? false:true;
                         } else if (analysisOptsTabbox.getSelectedTab().getIndex() == 2) {
+                        helpPrediction.open=(helpPrediction.open) ? false:true;
+                        } else if (analysisOptsTabbox.getSelectedTab().getIndex() == 3) {
                         helpAloc.open=(helpAloc.open) ? false:true;
                         }
                     }</attribute>
                 </toolbarbutton>
             </toolbar>
             <tabpanels>
+                <tabpanel>
+                    <panel id="helpSpeciesList" border="normal" open="false" style="padding: 1px" >
+                        <panelchildren sclass="overflowContent">
+                            <div align="right">
+                                <button label="x" onClick="helpSampling.open=false;" />
+                            </div>
+                            <html style="white-space: normal;"><![CDATA[
+                This tool lists the species in the active area.
+                            ]]></html>
+                        </panelchildren>
+                    </panel>
+                    <button label="Produce species list"
+                    onClick="org.ala.spatial.analysis.web.FilteringResultsWCController.open();"/>
+                </tabpanel>
                 <tabpanel>
                     <panel id="helpSampling" border="normal" open="false" style="padding: 1px" >
                         <panelchildren sclass="overflowContent">
