@@ -7,8 +7,15 @@
 </layer> -->
 <layer>
     <name>NamedPlaces</name>
-    <idAttribute>NAME</idAttribute>
+   <!-- <idAttributes> -->
+	<idAttribute>NAME</idAttribute>
+   <!--	<idAttribute>FID</idAttribute> 
+    </idAttributes> -->
     <nameAttribute>NAME</nameAttribute>
+    <descriptionAttributes>
+    <!--   <descriptionAttribute>NAME</descriptionAttribute> -->
+	<descriptionAttribute>FID</descriptionAttribute>
+    </descriptionAttributes>
 </layer>
 <!--<layer>
     <name>aus0</name>

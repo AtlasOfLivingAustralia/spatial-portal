@@ -34,8 +34,15 @@ import org.springframework.beans.factory.InitializingBean;
 import org.vfny.geoserver.global.GeoserverDataDirectory;
 import org.vfny.geoserver.util.DataStoreUtils;
 
+/***
+ * Builds the Gazetter index based on the gazetter config and layers/features in Geoserver
+ * @author Angus
+ */
 public class GazetteerIndex implements InitializingBean {
 
+    /***
+     * The Gazetteer index is built here if one does not exist already
+     */
     @Override
     public void afterPropertiesSet() {
         //Get geoserver catalog from Geoserver config
@@ -78,10 +85,13 @@ public class GazetteerIndex implements InitializingBean {
                     } else {
                         FeatureSource layer = dataStore.getFeatureSource(layerName);
                         features = layer.getFeatures().features();
+                        List<String> descriptionAttributes = gc.getDescriptionAttributes(layerName);
+                        String idAttribute = gc.getIdAttributeName(layerName);
                         while (features.hasNext()) {
                             Feature feature = features.next();
                             Document doc = new Document();
                             //Add name and type to the index for searching
+
                             if (feature.getProperty(gc.getIdAttributeName(layerName)).getValue() != null) {
                                 doc.add(new Field("id", feature.getProperty(gc.getIdAttributeName(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
                             }
@@ -93,11 +103,21 @@ public class GazetteerIndex implements InitializingBean {
 
                             //Add all the other feature properties to the index as well but not for searching
                             String geomName = feature.getDefaultGeometryProperty().getName().toString();
+                           // String idString = "";
                             for (Property property : feature.getProperties()) {
-                                if ((property.getName() != null) && (property.getValue() != null) && (!(property.getName().toString().contentEquals(geomName)))) {
+                                System.out.println(property.getName().toString());
+                                if ((descriptionAttributes.contains(property.getName().toString())) && (property.getValue() != null)) { //&& (!(property.getName().toString().contentEquals(geomName)))) {
                                     doc.add(new Field(property.getName().toString(), property.getValue().toString(), Store.YES, Index.NO));
+
                                 }
+//                                // where there is more than one id attribute - the id becomes a concatenation
+//                                if ((idAttributes.contains(property.getName().toString()))) {
+//                                    idString += property.getValue().toString();
+//                                }
                             }
+                            
+//                            doc.add(new Field("id", idString, Store.YES, Index.ANALYZED));
+
                             iw.addDocument(doc);
                             System.out.print(".");
                         }

@@ -42,7 +42,7 @@ public class SearchResultItem {
             else
                 this.description+=field.stringValue() + ",";
         }
-        this.description.trim();
+        description  = description.substring(0,description.length()-1);
         if (includeLink == true) {
             this.link = "/geoserver/rest/gazetteer/";
             this.link += this.type + '/' + id.replace(" ", "_") + ".json";
