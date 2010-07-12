@@ -11,8 +11,13 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import org.vfny.geoserver.global.GeoserverDataDirectory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/***
+ * Configuration class for Gazetteer.  Reads the gazetteer.xml to get Geoserver layer names and fields for use in the Gazetteer.
+ * @author Angus
+ */
 public class GazetteerConfig {
     Document configDoc;
     public GazetteerConfig() {
@@ -37,6 +42,10 @@ public class GazetteerConfig {
        
     }
 
+    /**
+     * Gets a list of geoserver layer names used by the gazetteer
+     * @return a List of the geoserver layer names
+     */
     public List<String> getLayerNames()
     {
         List<String> layerNames = new ArrayList();
@@ -60,8 +69,41 @@ public class GazetteerConfig {
         return layerNames;
     }
 
+    /***
+     * Get a list of attributes to use in the feature description for the given layer
+     * @param layerName 
+     * @return
+     */
+    public List<String> getDescriptionAttributes(String layerName) {
+        //using xpath to query
+        List<String> descriptionAttributes = new ArrayList<String>();
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr
+             = xpath.compile("//layer[name='" + layerName + "']/descriptionAttributes/descriptionAttribute/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+     
+            for(int i=0;i<nodes.getLength();i++) {
+                descriptionAttributes.add(nodes.item(i).getNodeValue());
+            }
+
+        }
+        catch(Exception e)
+        {
+            //FIXME
+        }
+        return descriptionAttributes;
+    }
+
+    /***
+     * Gets the gazetteer identifier for the layer
+     * @param layerName
+     * @return the name of the id attribute
+     */
     public String getIdAttributeName(String layerName) {
-        //returns the gazetteer identifier for the layer
         //using xpath to query
         String idAttribute = "none";
         try {
@@ -82,9 +124,12 @@ public class GazetteerConfig {
         return idAttribute;
     }
 
-
+    /***
+     * Gets the gazetteer display name for the layer
+     * @param layerName
+     * @return the name of the features name attribute
+     */
     public String getNameAttributeName(String layerName) {
-        //returns the gazetteer display name for the layer
         //using xpath to query
         String idAttribute = "none";
         try {

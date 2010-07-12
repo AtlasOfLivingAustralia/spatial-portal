@@ -15,7 +15,10 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 
-
+/**
+ * Search resource used for querying the gazetteer.
+ * @author Angus
+ */
 public class SearchResource extends AbstractResource {//ReflectiveResource {
 
     @Override
@@ -27,6 +30,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         return formats;
     }
 
+    /***
+     * Handles the get request for a gazetteer search. Responds with a list of search results
+     */
     @Override
     public void handleGet() {
         XStream xstream = new XStream();
