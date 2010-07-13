@@ -397,6 +397,11 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 } else {
                     /*ignore records with no species or longitude or
                      * latitude */
+
+                    //TODO: filter data so this line is not required
+                    if (!s.contains(",\"species\",")) {
+                        continue;
+                    }
                     if (sa.length >= columnsSettings.length
                             && sa[column_positions[ofu.speciesColumn]].length() > 0
                             && sa[column_positions[ofu.longitudeColumn]].length() > 0
@@ -784,7 +789,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 progress++;
 
                 //updated = false;
-                if (sa.length >= countOfIndexed) {
+                if (sa.length >= countOfIndexed && sa.length > idColumn) {
 
                     //push id
                     id_lookup.put(sa[idColumn], new Integer(recordpos));                   
