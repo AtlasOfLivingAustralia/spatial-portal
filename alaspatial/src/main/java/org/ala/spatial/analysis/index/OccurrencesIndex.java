@@ -401,7 +401,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     //TODO: filter data so this line is not required
                     if (!s.contains(",\"species\",")) {
                         continue;
-                    }
+                    }                   
                     if (sa.length >= columnsSettings.length
                             && sa[column_positions[ofu.speciesColumn]].length() > 0
                             && sa[column_positions[ofu.longitudeColumn]].length() > 0
@@ -455,7 +455,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                                 al.add(it);
                             }
                         } catch (Exception e) {
-                            //don't cate
+                            //don't cate                           
                         }
                     }
                 }
@@ -524,6 +524,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             //write to file
             StringBuffer s = new StringBuffer();
             writeMap(sorted, aPoints, occurrences, columnKeysOrder, columnKeysReverseOrderStrings, 0, ofu.onetwoCount, s);
+            sorted.close();
 
             /* export points */
             RandomAccessFile points = new RandomAccessFile(
@@ -686,8 +687,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 word += line.charAt(i + 1);
             } else if (qualified
                     && line.charAt(i) == '"'
-                    && line.length() > i + 1
-                    && line.charAt(i + 1) == ',') {//end term
+                    && ((line.length() > i + 1
+                        && line.charAt(i + 1) == ',')
+                        || line.length() == i+1)) {//end term
                 end_term = true;
                 qualified = false;
                 i++;
