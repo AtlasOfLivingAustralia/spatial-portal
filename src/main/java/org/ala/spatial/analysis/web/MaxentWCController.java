@@ -61,6 +61,7 @@ public class MaxentWCController extends UtilityComposer {
     private Radio rdoCommonSearch;
     private SpeciesAutoComplete sac;
     private Button btnMapSpecies;
+    Tabbox tabboxmaxent;
     private Label status;
     private Label infourl;
     private Button btnInfo;
@@ -224,18 +225,32 @@ public class MaxentWCController extends UtilityComposer {
         Clients.showBusy("", false);
     }
 
+    public void produce() {
+        onClick$startmaxent(null);
+    }
+
     public void onClick$startmaxent(Event event) {
         Clients.showBusy("Maxent running...", true);
-        Events.echoEvent("onDoInit", this, event.toString());
+        Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
     }
 
     public void runmaxent() {
         try {
             String taxon = cleanTaxon(sac.getValue());
-            // check if its a common name, if so, grab the scientific name
-            // if (rdoCommonSearch.isChecked()) {
-            //    taxon = getScientificName();
-            // }
+            
+            if (taxon == null || taxon.equals("")) {
+                Messagebox.show("Please select a species in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                //highlight step 1
+                tabboxmaxent.setSelectedIndex(0);
+                return;
+            }
+
+            if (lbenvlayers.getSelectedCount() <= 0) {
+                Messagebox.show("Please select one or more layers in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                //highlight step 2
+                tabboxmaxent.setSelectedIndex(1);
+                return;
+            }
 
             String msg = "";
             String[] envsel = null;

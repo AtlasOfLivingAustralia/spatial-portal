@@ -33,7 +33,9 @@ import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Intbox;
 import org.zkoss.zul.Popup;
+import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Toolbarbutton;
 
 /**
@@ -45,7 +47,8 @@ public class ALOCWCController extends UtilityComposer {
     private static final String SAT_URL = "sat_url";
     private Listbox lbenvlayers;
     private Combobox cbEnvLayers;
-    private Textbox groupCount;
+    private Intbox groupCount;
+    Tabbox tabboxclassification;
     //Checkbox useArea;
     private List<String> selectedLayers;
     private MapComposer mc;
@@ -240,9 +243,13 @@ public class ALOCWCController extends UtilityComposer {
         Clients.showBusy("", false);
     }
 
+    public void produce() {
+        onClick$btnGenerate(null);
+    }
+
     public void onClick$btnGenerate(Event event) {
         Clients.showBusy("Classification running...", true);
-        Events.echoEvent("onDoInit", this, event.toString());
+        Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
     }
 
     public void runclassification() {
@@ -261,13 +268,22 @@ public class ALOCWCController extends UtilityComposer {
                     }
                 }
             } else {
-                Messagebox.show("Please select two or more environmental layers", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                Messagebox.show("Please select two or more environmental layers in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                //highlight step 1
+                tabboxclassification.setSelectedIndex(0);
+                return;
+            }
+
+            if (groupCount.getValue() <= 1) {
+                Messagebox.show("Please enter the number of groups to generate (2 or more) in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                //highlight step 2
+                tabboxclassification.setSelectedIndex(1);
                 return;
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeo?");
-            sbProcessUrl.append("gc=" + URLEncoder.encode(groupCount.getValue(), "UTF-8"));
+            sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (true) { //an area always exists; useArea.isChecked()) {
                 user_polygon = mc.getSelectionArea();
@@ -292,6 +308,7 @@ public class ALOCWCController extends UtilityComposer {
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
+
             String slist = get.getResponseBodyAsString();
 
             layerLabel = "Classification #" + generation_count + " - " + groupCount.getValue() + " groups";

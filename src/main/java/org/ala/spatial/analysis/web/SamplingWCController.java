@@ -37,6 +37,7 @@ import org.zkoss.zul.Popup;
 import org.zkoss.zul.Listgroup;
 import org.zkoss.zul.Row;
 import org.zkoss.zul.SimpleGroupsModel;
+import org.zkoss.zul.Tabbox;
 
 /**
  *
@@ -46,6 +47,7 @@ public class SamplingWCController extends UtilityComposer {
 
     private static final String SAT_URL = "sat_url";
     private SpeciesAutoComplete sac;
+    Tabbox tabboxsampling;
     private Listbox lbenvlayers;
     private Popup p;
     private Html h;
@@ -220,9 +222,13 @@ public class SamplingWCController extends UtilityComposer {
         Clients.showBusy("", false);
     }
 
+    public void produce() {
+        onClick$btnPreview(null);
+    }
+
     public void onClick$btnPreview(Event event) {
         Clients.showBusy("Sampling...", true);
-        Events.echoEvent("onDoInit", this, event.toString());
+        Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
     }
 
     /**
@@ -280,8 +286,7 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     public void runsampling() {
-        SamplingResultsWCController window = (SamplingResultsWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingResults.zul", this, null);
-        window.parent = this;
+        
 
         try {
 
@@ -290,6 +295,16 @@ public class SamplingWCController extends UtilityComposer {
             //if (rdoCommonSearch.isChecked()) {
             //    taxon = getScientificName();
             //}
+
+            if (taxon == null || taxon.equals("")) {
+                Messagebox.show("Please select a species in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                //highlight step 1                
+                tabboxsampling.setSelectedIndex(0);
+                return;
+            }
+
+            SamplingResultsWCController window = (SamplingResultsWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingResults.zul", this, null);
+            window.parent = this;
 
             StringBuffer sbenvsel = new StringBuffer();
 
@@ -355,7 +370,7 @@ public class SamplingWCController extends UtilityComposer {
 
             //error condition, for example, when no combobox item is selected
             if (result != 200) {
-                mc.showMessage("no records available");
+                mc.showMessage("no records available for: " + taxon);
                 window.detach();
                 return;
             }
@@ -436,7 +451,6 @@ public class SamplingWCController extends UtilityComposer {
                     boolean iscontextual = isContextual(top_row[k]);
                     boolean isenvironmental = isEnvironmental(top_row[k]);
 
-                    System.out.println("label=" + top_row[k] + " iscontextual=" + iscontextual + " isenvironmental=" + isenvironmental);
                     if (iscontextual || isenvironmental) {
                         if (i == 0) {
                             label.addEventListener("onClick", new EventListener() {

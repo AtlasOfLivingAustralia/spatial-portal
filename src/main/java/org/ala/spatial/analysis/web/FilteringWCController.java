@@ -16,6 +16,7 @@ import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
@@ -25,6 +26,7 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Doublebox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
@@ -43,21 +45,19 @@ public class FilteringWCController extends UtilityComposer {
 
     private static final long serialVersionUID = -26560838825366347L;
     private static final String SAT_URL = "sat_url";
-
     private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
     public Div popup_continous;
     public Slider popup_slider_min;
     public Slider popup_slider_max;
     public Label popup_range;
-    public Textbox popup_minimum;
-    public Textbox popup_maximum;
+    public Doublebox popup_minimum;
+    public Doublebox popup_maximum;
     public Textbox popup_idx;
     public Button remove_continous;
     public Button preview_continous;
     public Label label_continous;
     public Button apply_continous;
-
     String[] results = null;
     private List<String> selectedLayers;
     private Map<String, SPLFilter> selectedSPLFilterLayers;
@@ -107,6 +107,15 @@ public class FilteringWCController extends UtilityComposer {
         applyFilter(true);
     }
 
+    public void onChange$popup_minimum(Event event) {
+        System.out.println("popup_minimum=" + popup_minimum.getValue() + " " + event.getData());
+        serverFilter(false);
+
+    }
+    public void onChange$popup_maximum(Event event) {
+        serverFilter(false);
+    }
+
     public void doAdd(String new_value) {
 
         try {
@@ -147,23 +156,24 @@ public class FilteringWCController extends UtilityComposer {
                     Listcell count = new Listcell(String.valueOf(f.count));
                     count.setStyle("text-decoration: underline; text-align: right; ");
                     count.setParent(li);
+                    /* species list tab exists
                     count.addEventListener("onClick", new EventListener() {
 
-                        public void onEvent(Event event) throws Exception {
-                            if (!((Listcell) event.getTarget()).getLabel().equals("0")
-                                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
+                    public void onEvent(Event event) throws Exception {
+                    if (!((Listcell) event.getTarget()).getLabel().equals("0")
+                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
 
-                                if (lbSelLayers.getItemCount() > 0) {
-                                    applyFilterEvented();
-                                    java.util.Map args = new java.util.HashMap();
-                                    args.put("pid", pid);
-                                    Window win = (Window) Executions.createComponents(
-                                            "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
-                                    win.doModal();
-                                }
-                            }
-                        }
-                    });
+                    if (lbSelLayers.getItemCount() > 0) {
+                    applyFilterEvented();
+                    java.util.Map args = new java.util.HashMap();
+                    args.put("pid", pid);
+                    Window win = (Window) Executions.createComponents(
+                    "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
+                    win.doModal();
+                    }
+                    }
+                    }
+                    });*/
                 }
             });
 
@@ -328,9 +338,9 @@ public class FilteringWCController extends UtilityComposer {
 
             double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
 
-            popup_minimum.setValue(String.format("%.4f", ((float) (curpos / 100.0 * range + popup_filter.minimum_initial))));
+            popup_minimum.setValue(((float) (curpos / 100.0 * range + popup_filter.minimum_initial)));
 
-            popup_filter.minimum_value = Double.parseDouble(popup_minimum.getValue());
+            popup_filter.minimum_value = popup_minimum.getValue();
 
             ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
@@ -351,9 +361,9 @@ public class FilteringWCController extends UtilityComposer {
 
             double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
 
-            popup_maximum.setValue(String.format("%.4f", ((float) (curpos / 100.0 * range + popup_filter.minimum_initial))));
+            popup_maximum.setValue(((float) (curpos / 100.0 * range + popup_filter.minimum_initial)));
 
-            popup_filter.maximum_value = Double.parseDouble(popup_maximum.getValue());
+            popup_filter.maximum_value = popup_maximum.getValue();
 
             ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
@@ -398,8 +408,8 @@ public class FilteringWCController extends UtilityComposer {
         String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
         popup_range.setValue(csv);
 
-        popup_minimum.setValue(String.format("%.4f", (float) (popup_filter.minimum_value)));
-        popup_maximum.setValue(String.format("%.4f", (float) (popup_filter.maximum_value)));
+        popup_minimum.setValue((float) (popup_filter.minimum_value));
+        popup_maximum.setValue((float) (popup_filter.maximum_value));
 
         double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
         int maxcursor = (int) ((popup_filter.maximum_value - popup_filter.minimum_initial)
@@ -432,8 +442,8 @@ public class FilteringWCController extends UtilityComposer {
         String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
         popup_range.setValue(csv);
 
-        popup_minimum.setValue(String.format("%.4f", (float) (popup_filter.minimum_value)));
-        popup_maximum.setValue(String.format("%.4f", (float) (popup_filter.maximum_value)));
+        popup_minimum.setValue(((float) (popup_filter.minimum_value)));
+        popup_maximum.setValue(((float) (popup_filter.maximum_value)));
 
         double range = popup_filter.maximum_initial - popup_filter.minimum_initial;
         int maxcursor = (int) ((popup_filter.maximum_value - popup_filter.minimum_initial)
@@ -540,21 +550,65 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     private void applyFilterEvented() {
-        try {
-            popup_filter.minimum_value = Double.parseDouble(popup_minimum.getValue());
-            popup_filter.maximum_value = Double.parseDouble(popup_maximum.getValue());
-        } catch (Exception e) {
-            //TODO: error message
-            System.out.println("value conversion error");
-        }
-
+        popup_filter.minimum_value = (popup_minimum.getValue());
+        popup_filter.maximum_value = (popup_maximum.getValue());
+        
         ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
         serverFilter(true);
 
-        String strCount = getInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
+        String strCount = postInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
+
+        //TODO: handle invalid counts/errors
+
         popup_filter.count = Integer.parseInt(strCount);
         ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount);
+
+        //update Species List analysis tab
+        updateSpeciesList(popup_filter.count);
+    }
+
+     /**
+     * updates species list analysis tab with refreshCount
+     *
+      * similar function in SelectionController.java
+     */
+    void updateSpeciesList(int newCount) {
+        try {
+            FilteringResultsWCController win =
+                    (FilteringResultsWCController) getMapComposer()
+                        .getFellow("leftMenuAnalysis")
+                            .getFellow("analysiswindow")
+                                .getFellow("speciesListForm")
+                                    .getFellow("popup_results");
+            win.refreshCount(newCount);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private String postInfo(String urlPart) {
+        try {
+            HttpClient client = new HttpClient();
+
+            PostMethod get = new PostMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            //get.addParameter("area", URLEncoder.encode("none", "UTF-8"));
+
+            int result = client.executeMethod(get);
+
+            //TODO: confirm result
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception ex) {
+            //TODO: error message
+            System.out.println("getInfo.error:");
+            ex.printStackTrace(System.out);
+        }
+        return null;
     }
 
     private void loadMap(String filename) {

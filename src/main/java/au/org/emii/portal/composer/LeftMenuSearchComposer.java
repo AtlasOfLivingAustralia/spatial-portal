@@ -10,12 +10,15 @@ import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.value.SearchCatalogue;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
@@ -57,6 +60,9 @@ public class LeftMenuSearchComposer extends UtilityComposer {
     private SearchQuery sq = new SearchQuery();
     private PortalSessionUtilities portalSessionUtilities = null;
     private Settings settings = null;
+
+    //map of event listeners for viewport changes (west Doublebox onchange)
+    HashMap<String, EventListener> viewportChangeEvents = new HashMap<String,EventListener>();
 
     public void onCreate() {
        if (!settings.isDisablePortalUsers() && getPortalSession().isLoggedIn()) {
@@ -340,4 +346,25 @@ public class LeftMenuSearchComposer extends UtilityComposer {
         }
     }
 
+    public void onChange$west(Event e) {
+        Events.echoEvent("triggerViewportChange", this, null);
+    }
+
+    public void triggerViewportChange(Event e) throws Exception {
+        for (EventListener el : viewportChangeEvents.values()) {
+            try {
+                el.onEvent(null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void addViewportEventListener(String eventName, EventListener eventListener) {
+        viewportChangeEvents.put(eventName, eventListener);
+    }
+
+    public void removeViewportEventListener(String eventName) {
+        viewportChangeEvents.remove(eventName);
+    }
 }

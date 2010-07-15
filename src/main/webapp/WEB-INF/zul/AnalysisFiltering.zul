@@ -72,7 +72,7 @@
         </div>
 
         <div sclass="highlighted">
-            <label value="filter" />
+            <label value="Active filter" />
             <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" vflex="true">
                 <listhead sizable="true">
                     <listheader label="Layer" width="40%" ></listheader>
@@ -95,25 +95,25 @@
                                    style="white-space: normal; font-weight:bold"
                                    value="edit filter for this layer" id="label_continous"
                                    multiline="true"/>
+                            <button label="remove this layer" id="remove_continous"/> 
 
                             <separator sclass="hr" height="2px" />
                             <vbox><label value="full range"/><label id="popup_range"/>
                                 <hbox>
                                     <slider id="popup_slider_min" slidingtext="">
                                     </slider>
-                                    <textbox id="popup_minimum" width="60px"></textbox>
+                                    <doublebox id="popup_minimum" width="60px"></doublebox>
                                 </hbox>
 
                                 <hbox>
                                     <slider id="popup_slider_max" slidingtext="">
                                     </slider>
-                                    <textbox id="popup_maximum" width="60px"></textbox>
+                                    <doublebox id="popup_maximum" width="60px"></doublebox>
                                     <textbox id="popup_idx" width="1px" visible="false"></textbox>
                                 </hbox>
                                 <hbox>
-                                    <button label="apply filter" id="apply_continous"/>
-                                    <button label="preview results" id="preview_continous"/>
-                                    <div align="right"> <button label="remove" id="remove_continous"/>  </div>
+                                    <button label="Apply filter" id="apply_continous"/>
+                                    <button label="preview results" id="preview_continous" visible="false"/>
                                 </hbox>
                             </vbox>
                         </div>

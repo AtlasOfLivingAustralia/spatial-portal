@@ -73,6 +73,7 @@ import org.zkoss.zk.ui.Path;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.util.Clients;
@@ -92,6 +93,7 @@ import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
@@ -2485,8 +2487,40 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
 
     /**
      * Destroy session and reload page
+     *
+     * - added confirmation message, needs to be event driven since
+     * message box always returning '1' with current zk settings.
      */
     public void onClick$reloadPortal() {
+        // user confirmation for whole map reset
+        try {
+            Messagebox.show("Reset map to initial empty state, with no layers and default settings?", "Reset Map",
+                    Messagebox.YES | Messagebox.NO, Messagebox.QUESTION, new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    if (((Integer) event.getData()).intValue() != Messagebox.YES) {
+                        //no selected
+                        return;
+                    } else {
+                        //reset map
+                        reloadPortal();
+                        return;
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * split from button for yes/no event processing
+     *
+     * see onClick$reloadPortal()
+     */
+    void reloadPortal(){
         // grab the portaluser instance so that logged in users stay logged in...
         PortalSession portalSession = getPortalSession();
         PortalUser portalUser = portalSession.getPortalUser();

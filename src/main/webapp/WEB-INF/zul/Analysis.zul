@@ -3,6 +3,7 @@
 <?component name="samplingForm" macro-uri="/WEB-INF/zul/AnalysisSampling.zul"?>
 <?component name="alocForm" macro-uri="/WEB-INF/zul/AnalysisALOC.zul"?>
 <?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
+<?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?>
 
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
 <zk>
@@ -29,7 +30,7 @@
         <tabbox id="analysisOptsTabbox" zindex="600" style="border:0px!important; border: solid 0px white;" > <!-- mold="accordion-lite"  zclass="menuswitch"  -->
             <tabs>
                 <!-- species list -->
-                <tab id="speciesListTab" label="Species in Area" />
+                <tab id="speciesListTab" label="Species List" />
 
                 <!--  sampling  -->
                 <tab id="samplingTab" label="Sampling" selected="true" />
@@ -60,15 +61,23 @@
                     <panel id="helpSpeciesList" border="normal" open="false" style="padding: 1px" >
                         <panelchildren sclass="overflowContent">
                             <div align="right">
-                                <button label="x" onClick="helpSampling.open=false;" />
+                                <button label="x" onClick="helpSpeciesList.open=false;" />
                             </div>
                             <html style="white-space: normal;"><![CDATA[
-                This tool lists the species in the active area.
-                            ]]></html>
+                Generates a list all species (Family, scientific name and common name where present) within the Active Area. Two options are available-
+<br /><br />
+<ol>
+<li>
+The species list can be downloaded as a CSV file. This is basically what is known as a checklist.
+</li><li>
+The individual observations of those species can also be downloaded as a zipped (compressed) CSV file. The observations records contain all the public information known to the Atlas of Living Australia.
+</li></ol>                            ]]></html>
                         </panelchildren>
                     </panel>
                     <button label="Produce species list"
-                    onClick="org.ala.spatial.analysis.web.FilteringResultsWCController.open();"/>
+                    onClick="org.ala.spatial.analysis.web.FilteringResultsWCController.open();" visible="false"/>
+
+                    <speciesListForm id="speciesListForm" />
                 </tabpanel>
                 <tabpanel>
                     <panel id="helpSampling" border="normal" open="false" style="padding: 1px" >

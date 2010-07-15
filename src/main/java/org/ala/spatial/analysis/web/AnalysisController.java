@@ -27,16 +27,18 @@ public class AnalysisController extends UtilityComposer {
     private static final String MENU_MAX_WIDTH = "100%";
 
     private Session sess = (Session) Sessions.getCurrent();
-    
+
+    private HtmlMacroComponent speciesListForm;
     private HtmlMacroComponent asf;
     private HtmlMacroComponent mf;
     private HtmlMacroComponent af;
     
     private HtmlMacroComponent sf;
-    
-    boolean samplingTabActive = true;
+
+    boolean speciesListTabActive = false;
+    boolean samplingTabActive = true;   //TODO: tie to default in .zul
 	boolean maxentTabActive = false;
-	boolean alocTabActive = false;		//default
+	boolean alocTabActive = false;		
 
 
     @Override
@@ -49,6 +51,11 @@ public class AnalysisController extends UtilityComposer {
         }
     }
 
+    public void onSelect$speciesListTab() {
+        MapComposer mc = getThisMapComposer();
+        mc.setWestWidth(MENU_HALF_WIDTH);
+    }
+
     public void onSelect$filteringTab() {
         MapComposer mc = getThisMapComposer();
         mc.setWestWidth(MENU_HALF_WIDTH);
@@ -58,8 +65,17 @@ public class AnalysisController extends UtilityComposer {
         MapComposer mc = getThisMapComposer();
         mc.setWestWidth(MENU_HALF_WIDTH);
     }
+
+    public void onClick$speciesListTab() {
+        speciesListTabActive = true;
+    	samplingTabActive = false;
+    	maxentTabActive = false;
+    	alocTabActive = false;
+    	((FilteringResultsWCController)speciesListForm.getFellow("popup_results")).refreshCount();
+    }
     
     public void onClick$samplingTab() {
+        speciesListTabActive = false;
     	samplingTabActive = true;
     	maxentTabActive = false;
     	alocTabActive = false;
@@ -71,7 +87,8 @@ public class AnalysisController extends UtilityComposer {
         mc.setWestWidth(MENU_HALF_WIDTH);
     }
     
-    public void onClick$maxentTab() {    
+    public void onClick$maxentTab() {
+        speciesListTabActive = false;
     	samplingTabActive = false;
     	maxentTabActive = true;
     	alocTabActive = false;
@@ -79,6 +96,7 @@ public class AnalysisController extends UtilityComposer {
     }
 
     public void onSelect$alocTab() {
+        speciesListTabActive = false;
     	samplingTabActive = false;
     	maxentTabActive = false;
     	alocTabActive = true;

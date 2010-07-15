@@ -12,19 +12,22 @@
             vertical-align: middle;
             }
         </style>
-
+<!--
         <div sclass="highlighted" visible="false">
             <vbox>
                 <label value="Step 1: Restrict area" />
-                <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
+                <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="onClick$btnGenerate();" />
             </vbox>
-        </div>
-        <tabbox>
+        </div> -->
+        <tabbox id="tabboxclassification">
             <tabs>
-                <tab label="1" />
+                <tab label="1*" />
                 <tab label="2" />
-                <tab label="3" />
+                <tab label="Produce classification" onClick="alocwindow.produce()" visible="false"/>
             </tabs>
+            <toolbar>
+                <button  label="Produce classification" onClick="alocwindow.produce()"></button>
+                </toolbar>
             <tabpanels>
                 <tabpanel>
         
@@ -66,12 +69,12 @@
         
             <vbox>
                 <label value="Step 2: Enter number of groups to generate" />
-                <textbox id="groupCount" value="20"/>
+                <intbox id="groupCount" value="20"/>
             </vbox>
 
         </tabpanel>
         <tabpanel>
-        <button id="btnGenerate" label="Generate classification" sclass="goButton" />
+        <button id="btnGenerate" label="Generate classification" sclass="goButton" visible="false" />
         </tabpanel>
         </tabpanels>
         </tabbox>
