@@ -7,11 +7,27 @@
             apply="org.ala.spatial.analysis.web.SelectionController">
 
 
+<style>
+            .z-loading {
+            top: 50% !important;
+            left: 45% !important;
+            align: center;
+            vertical-align: middle;
+            }
+        </style>
+
         <html visible="false" style="white-space: normal;"><![CDATA[
 An area can be defined by any of the options below. Once defined, the area can be used to identify what species or observation records occur there, or be used within the Analysis tab functions. These areas will also be displayed in the Layers tab and can be deselected or deleted.
         ]]></html>
-        <div >
-            <html><![CDATA[<b>Active Area</b>]]></html>
+
+
+        <vbox>
+            <separator/>
+            <hbox width="95%">
+                <div style="float: left; ">
+            <html><![CDATA[<b>Active Area</b>]]></html></div>
+            <div style="float: right; "><button label="reset active area" id="btnClearSelection" visible="true" /></div></hbox>
+            <separator/>
            
                 <radiogroup id="rgAreaSelection" visible="false">
                     <vbox>
@@ -39,7 +55,8 @@ An area can be defined by any of the options below. Once defined, the area can b
 
         <button label="Clear Selection" id="btnClearSelection"/> -->
                 </radiogroup>
-                <combobox width="60%" id="cbAreaSelection" autodrop="true">
+                <hbox width="95%">
+                <combobox width="100%" id="cbAreaSelection" autodrop="true">
                     <comboitem label="Draw bounding box..." id="ciBoundingBox" />
                     <comboitem label="Draw polygon..." id="ciPolygon" />
                     <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
@@ -51,13 +68,15 @@ An area can be defined by any of the options below. Once defined, the area can b
                     <comboitem label="Box - Current View" id="ciBoxCurrentView" />
                 </combobox>
 
-                <button image="/img/information.png" 
+                <div style="float: right"><button image="/img/information.png"
                                     onClick="areaInfo.setVisible(!areaInfo.isVisible());"
                                     tooltiptext="more information"/>
+                <button id="zoomtoextent" image="/img/zoom_in.png"
+                                    tooltiptext="zoom to extent"/></div>
 
-                <button label="reset" id="btnClearSelection" visible="true" />
-            
-        </div>
+                </hbox>
+            </vbox>
+       
         <div visible="false" id="areaInfo">
             <div sclass="highlighted" visible="false" >
                 <label sclass="word-wrap"

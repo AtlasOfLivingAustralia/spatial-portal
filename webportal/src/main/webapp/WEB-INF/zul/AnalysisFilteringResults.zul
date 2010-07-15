@@ -1,20 +1,33 @@
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk> 
     <window
-        title="Filtering Results Preview" border="normal"
-        id="popup_results" width="530px"
+   
+        id="popup_results" 
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        closable="true" 
         >
+
+            <tabbox>
+            <tabs>
+                <tab label="1*" /></tabs>
+                <toolbar>
+                   
+            <button label="Produce species list" id="download" />
+            <button label="Produce sample" id="downloadsamples" />
+
+
+                </toolbar>
+            <tabpanels>
+                <tabpanel>
+
+
         <vbox>
-           
-            <button label="refresh list" id="refreshButton" visible="false"/>
             <separator />
-
-            <label id="results_label" />
-
-            <listbox id="popup_listbox_results" width="500px" rows="15" visible="true">
+            
+            <label style="font-weight: bold" id="results_label" />
+<separator />      
+            <button label="Show species list preview" id="refreshButton2" visible="true"/>
+            <listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
               <listhead>
 <listheader label="family" ></listheader>
 <listheader label="species" ></listheader>
@@ -22,17 +35,19 @@
 </listhead>
             </listbox>
 
-            <textbox                    
+        <!--    <textbox
                    multiline="true"
                    id="popup_textbox_results" width="500px" height="200px" readonly="true" visible="false"/>
-
+                   -->
         <separator/>
 
-            <button label="download species list" id="download" />
-            <button label="download samples" id="downloadsamples" />
-            <div align="right">
+            
+        <!--    <div align="right">
                 <button label="close" onClick="popup_results.detach();" />
-            </div>
+            </div> -->
         </vbox>
+        </tabpanel>
+        </tabpanels>
+        </tabbox>
     </window>
 </zk>

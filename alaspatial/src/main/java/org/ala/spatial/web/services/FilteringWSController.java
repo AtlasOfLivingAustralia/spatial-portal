@@ -255,7 +255,7 @@ public class FilteringWSController {
         return "";
     }
 
-    @RequestMapping(value = "/apply/pid/{pid}/species/count", method = RequestMethod.GET)
+    @RequestMapping(value = "/apply/pid/{pid}/species/count", method = RequestMethod.POST)
     public
     @ResponseBody
     String getSpeciesCount(@PathVariable String pid, HttpServletRequest req) {

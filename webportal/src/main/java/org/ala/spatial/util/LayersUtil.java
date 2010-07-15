@@ -87,10 +87,8 @@ public class LayersUtil {
         List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
         ArrayList<String> layers = new ArrayList<String>();
         for (MapLayer ml : activeLayers) {
-            System.out.println("active layer: " + ml.getName());
             if (isEnvCtxLayer(ml.getName())) {
                 layers.add(ml.getName());
-                System.out.println("match");
             }
         }
         if (layers.size() == 0) {
@@ -149,7 +147,6 @@ public class LayersUtil {
             String slist = get.getResponseBodyAsString();
 
             System.out.println("Response status code: " + result);
-            System.out.println("Response: \n" + slist);
 
             String[] aslist = slist.split("\n");
 
@@ -325,8 +322,6 @@ public class LayersUtil {
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
-
-            System.out.println("got:\n" + slist);
 
         } catch (Exception e) {
             System.out.println("error setting up ctx list");

@@ -20,13 +20,16 @@
         </div>
 
 
-        <tabbox>
+        <tabbox id="tabboxmaxent">
             <tabs>
-                <tab label="1" />
-                <tab label="2" />
+                <tab label="1*" />
+                <tab label="2*" />
                 <tab label="3" />
-                <tab label="4" />
+                <tab label="Produce model" onClick="maxentwindow.produce();" visible="false"/>
             </tabs>
+             <toolbar>
+                <button  label="Produce model" onClick="maxentwindow.produce();"></button>
+                </toolbar>
             <tabpanels>
                 <tabpanel>
                     <!-- <label value="Step 1: Select your species " /> -->
@@ -112,7 +115,7 @@
 
                     <progressmeter id="progress" value="42" visible="false" />
 
-                    <button id="startmaxent" label="Produce model" sclass="goButton">
+                    <button id="startmaxent" label="Produce model" sclass="goButton" visible="false">
                         <!--
             <attribute name="onClick">{
                 final Window win = (Window) Executions.createComponents(

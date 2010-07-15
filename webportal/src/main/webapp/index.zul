@@ -7,8 +7,6 @@
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
 <?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"?>
 
-
-
 <?page id="MapZul" title="${portalNaming.portalName}" cacheable="false"
 language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
 <?link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"?>
@@ -370,7 +368,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                         <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
                             <tabs>
-                                <tab id="startNavigationTab" label="Intro" />
+                                <tab id="startNavigationTab" label="Start" />
                                 <tab id="mapNavigationTab" label="Map" />
                                 <!--<tab id="areaNavigationTab" label="Area" />-->
                                 <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
@@ -419,8 +417,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         <div id="layerNavigationTabContent" visible="true"> <!-- visible=${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}" -->
 
 <hbox width="95%">
-                            <div style="float: left; align: left"><label style="font-weight: bold" value="Active Layers"  /> </div>
-    <div style="float:right"><button id="removeAllLayers" label="Remove All Layers" sclass="h3" /></div>
+                            <div style="float: left" ><label style="font-weight: bold" value="Active Layers"  /> </div>
+    <div style="float:right"><button id="reloadPortal" label="Reset Map" sclass="h3" /></div>
                             
                             
                             </hbox>
@@ -580,7 +578,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
                                     <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
                                     
-                                    <button id="reloadPortal" label="Reset Map" sclass="h3" />
+                                    <button id="removeAllLayers" label="Remove All Layers" sclass="h3" />
                                 </div>
 
                                 <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">
@@ -626,7 +624,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <tabs>
                                     <tab label="Species" />
                                     <tab label="Locations" />
-                                    <tab id="realtimeTab" label="Layers" if="${! settings.disableRealtime}" />
+                                    <tab id="realtimeTab" label="Environmental Layers" if="${! settings.disableRealtime}" />
                                     <tab label="Map WMS layer" visible="false" />
                                 </tabs>
                                 <toolbar>

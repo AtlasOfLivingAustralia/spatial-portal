@@ -11,12 +11,15 @@
             </vbox>
         </div>
 
-        <tabbox>
+        <tabbox id="tabboxsampling">
             <tabs>
-                <tab label="1" />
+                <tab label="1*" />
                 <tab label="2" />
-                <tab label="3" />
+                <tab label="Produce sample" onClick="samplingwindow.produce();" visible="false"/>
             </tabs>
+            <toolbar>
+                <button  label="Produce sample" onClick="samplingwindow.produce();"></button>
+                </toolbar>
             <tabpanels>
                 <tabpanel>
             <label value="Step 1: Select your species" />
@@ -45,7 +48,7 @@
             </vbox>
         </tabpanel>
         <tabpanel>
-            <button label="Produce sample" id="btnPreview" sclass="goButton" />
+            <button label="Produce sample" id="btnPreview" sclass="goButton" visible="false"/>
         </tabpanel>
         </tabpanels>
      </tabbox>
