@@ -115,11 +115,17 @@ public class SpeciesController {
             //System.out.println(">>>>> dumping out c.names <<<<<<<<<<");
             List<CommonName> clist = speciesDao.getCommonNames(name);
             Iterator<CommonName> it = clist.iterator();
+            String previousScientificName = "";
             while (it.hasNext()) {
                 CommonName cn = it.next();
                 //System.out.println("> " + cn.getCommonname() + " -- " + cn.getScientificname());
-                int records = OccurrencesService.getSpeciesCount(cn.getScientificname());
-                slist.append(cn.getCommonname()).append(" / Scientific name: ").append(cn.getScientificname()).append(" / found ").append(records).append("\n");
+                
+                //only add if different from previous (query is sorted by scientificName)
+                if (!previousScientificName.equals(cn.getScientificname())) {
+                    int records = OccurrencesService.getSpeciesCount(cn.getScientificname());
+                    slist.append(cn.getCommonname()).append(" / Scientific name: ").append(cn.getScientificname()).append(" / found ").append(records).append("\n");
+                    previousScientificName = cn.getScientificname();
+                }
             }
             System.out.println(">>>>> done <<<<<<<<<<");
         } catch (Exception e) {

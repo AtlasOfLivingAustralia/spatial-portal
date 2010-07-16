@@ -95,8 +95,9 @@ An area can be defined by any of the options below. Once defined, the area can b
                     </hbox>
                 </vbox>
             </div>
-            <div id="envelopeInfo" sclass="highlighted" visible="false">
+            <div id="envelopeInfo" visible="false">
                 <envelopeForm id="envelopeWindow" />
+                <textbox id="envelopeChanged" visible="false" />
             </div>
         </div>
 

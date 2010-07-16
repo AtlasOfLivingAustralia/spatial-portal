@@ -15,6 +15,7 @@ import java.util.BitSet;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.index.FilteringIndex;
+import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
@@ -338,20 +339,14 @@ public class FilteringService implements Serializable {
         }
 
         /* make into string of species names */
-        StringBuffer sb = new StringBuffer();
-        for (i = 0; i < species.size(); i++) {
-            if (species.get(i)) {
-                sb.append(OccurrencesIndex.getSpeciesIndex()[i].name);
-                sb.append(",");
-            }
-        }
+        String output = OccurrencesIndex.getSpeciesListRecords(species);
 
         long end = System.currentTimeMillis();
 
         System.out.println("getspecieslist: " + (end-start) + "ms");
 
 
-        return sb.toString();
+        return output;
     }
 
     /**

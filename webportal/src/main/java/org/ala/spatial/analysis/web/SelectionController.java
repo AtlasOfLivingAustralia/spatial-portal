@@ -80,6 +80,7 @@ public class SelectionController extends UtilityComposer {
     private Div polygonInfo;
     private Div envelopeInfo;
     //private Label instructions;
+    public Div areaInfo;
     public Button download;
     public Button zoomtoextent;
     public Listbox popup_listbox_results;
@@ -110,15 +111,13 @@ public class SelectionController extends UtilityComposer {
     Window wInstructions = null;
 
     public String getGeom() {
-        if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
+        if (displayGeom.getText().contains("ENVELOPE(")) {
             //get PID and return as ENVELOPE(PID)
             String envPid = ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).getPid();
             if (envPid.length() > 0) {
                 return "ENVELOPE(" + envPid + ")";
-            } /* continue & return default, Currentview extents; else {
-            return "";
-            }*/
-
+            }
+            
             //work around for null polygons to be reported as absence of polygon
         } else if (!displayGeom.getText().contains("CURRENTVIEW()")
                 && !displayGeom.getText().contains("NaN NaN")
@@ -200,6 +199,7 @@ public class SelectionController extends UtilityComposer {
 
     public void onClick$btnClearSelection(Event event) {
         hideAllInfo();
+        displayGeom.setValue(DEFAULT_AREA);
         //rgAreaSelection.getSelectedItem().setSelected(false);
         MapComposer mc = getThisMapComposer();
         //  mc.getOpenLayersJavascript().removeAreaSelection();
@@ -212,21 +212,25 @@ public class SelectionController extends UtilityComposer {
 
         cbAreaSelection.setText("Box - Current View");
         updateSpeciesList(false);
+
+        lastTool = null;
     }
 
     public void onOpen$cbAreaSelection() {
         setInstructions(null, null);
         hideAllInfo();
+        displayGeom.setValue(DEFAULT_AREA);
         String script = removeCurrentSelection();
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         mc.removeFromList(mc.getMapLayer("Active Area"));
+        lastTool = null;
     }
 
     public void onChange$cbAreaSelection() {
         lastTool = cbAreaSelection.getSelectedItem();
         System.out.println("cbAreaSelection: " + cbAreaSelection.getSelectedItem().getLabel());
-        System.out.println(cbAreaSelection.getSelectedItem() + " == " + ciEnvironmentalEnvelope + " = " + (cbAreaSelection.getSelectedItem()==ciEnvironmentalEnvelope));
+        
         String wkt;
 
         if (cbAreaSelection.getSelectedItem() == ciBoundingBox) {
@@ -289,10 +293,10 @@ public class SelectionController extends UtilityComposer {
             script += mc.getOpenLayersJavascript().addFeatureSelectionTool();
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
             mc.removeFromList(mc.getMapLayer("Active Area"));
-        } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {            
+        } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
             setInstructions(null, null);
             cbAreaSelection.setText("Defining environmental envelope");
-            Events.postEvent("showEnvelopeInfoEvent", this, null);
+            Events.echoEvent("showEnvelopeInfoEvent", this, null);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
             setInstructions(null, null);
             showPolygonInfo();
@@ -338,26 +342,20 @@ public class SelectionController extends UtilityComposer {
         showEnvelopeInfo();
     }
 
-    void showEnvelopeInfo() {        
+    void showEnvelopeInfo() {
+        areaInfo.setVisible(true);
         envelopeInfo.setVisible(true);
         polygonInfo.setVisible(false);
     }
 
     void showPolygonInfo() {
-        //onClick$btnClearSelection(null);
+        areaInfo.setVisible(true);
         envelopeInfo.setVisible(false);
         polygonInfo.setVisible(true);
     }
 
     void hideAllInfo() {
-
-        //called by onClick$btnClearSelection();
-        //rgAreaSelection.getSelectedItem().setChecked(false);
-        //envelopeInfo.setVisible(false);
-        //polygonInfo.setVisible(false);
-
-        //set default
-        displayGeom.setValue(DEFAULT_AREA);
+        areaInfo.setVisible(false);
     }
 
     private String removeCurrentSelection() {
@@ -396,10 +394,11 @@ public class SelectionController extends UtilityComposer {
         try {
             if (selectionGeom.getValue().contains("NaN NaN")) {
                 displayGeom.setValue(DEFAULT_AREA);
+                lastTool = null;
             } else {
                 displayGeom.setValue(selectionGeom.getValue());
             }
-            updateComboBoxText(selectionGeom.getValue());
+            updateComboBoxText();
             updateSpeciesList(true);
 
             //get the current MapComposer instance
@@ -414,7 +413,7 @@ public class SelectionController extends UtilityComposer {
 
     }
 
-    void updateComboBoxText(String text) {
+    void updateComboBoxText() {
         String txt = "";
         if (lastTool == ciBoundingBox) {
             txt = "Got user drawn box";
@@ -442,10 +441,11 @@ public class SelectionController extends UtilityComposer {
 
             if (boxGeom.getValue().contains("NaN NaN")) {
                 displayGeom.setValue(DEFAULT_AREA);
+                lastTool = null;
             } else {
                 displayGeom.setValue(boxGeom.getValue());                
             }
-            updateComboBoxText(boxGeom.getValue());
+            updateComboBoxText();
             updateSpeciesList(true);
 
 
@@ -744,5 +744,29 @@ public class SelectionController extends UtilityComposer {
             e.printStackTrace();
         }
 
+    }
+
+    void onEnvelopeDone(boolean hide) {
+        try {
+            String envPid = ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).getPid();
+            
+            if (envPid.length() > 0) {
+                displayGeom.setText("ENVELOPE(" + envPid + ")");
+                updateComboBoxText();
+            } else if(hide) {
+                onClick$btnClearSelection(null);                
+                return;
+            }
+
+            if (hide) {
+                hideAllInfo();
+            }
+            updateSpeciesList(true);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        setInstructions(null, null);
     }
 }

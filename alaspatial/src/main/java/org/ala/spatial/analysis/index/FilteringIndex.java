@@ -786,6 +786,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         /* process all layers */
         for (i = 0; i < size; i++) {
             makeScaledShortImageFromGrid(all_layers[i], longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+            //makeScaledShortImageFromGridToMetresGrid(all_layers[i], longitude_start, longitude_end, latitude_start, latitude_end, width, height);
             i++;
         }
     }
@@ -812,6 +813,90 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         /* load raw */
         if (l.type.equals("environmental")) {
             data = getTileFromGrid(l.name, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+        } else {
+            data = getTileFromShape(l, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+        }
+
+        /* sort */
+        java.util.Arrays.sort(data,
+                new Comparator<Tile>() {
+
+                    public int compare(Tile i1, Tile i2) {
+                        if (i1.value_ < i2.value_) {
+                            return -1;
+                        } else if (i1.value_ > i2.value_) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+                });
+
+        /* index, only used for non-enviornmental layers */
+        boolean has_index = true;
+        if (l.type.equals("environmental")) {
+            has_index = false;
+        }
+        int[] index = null;
+        if (has_index) {
+            int i, j;
+            int max = (int) data[data.length - 1].value_;
+
+            index = new int[max + 2];
+            int last_idx = 1;
+            for (i = 1; i < data.length; i++) {
+                if (data[i].value_ != data[i - 1].value_) {
+                    for (j = last_idx; j <= data[i].value_; j++) {
+                        index[j] = i;
+                    }
+                    last_idx = (int) data[i].value_ + 1;
+                }
+            }
+            index[max + 1] = data.length;
+        }
+
+        /* write as object*/
+        try {
+            FileOutputStream fos = new FileOutputStream(
+                    TabulationSettings.index_path
+                    + "SPL_IMG_T_" + l.name + ".dat");
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(data);
+            oos.writeObject(new Boolean(has_index));
+            if (has_index) {
+                oos.writeObject(index);
+            }
+            oos.close();
+
+        } catch (Exception e) {
+            /* TODO: log error */
+        }
+    }
+
+    /**
+     * filter tile creation...
+     *
+     * more in docs now, meters grid from provided grid,
+     *
+     * TODO: better solution for projection change
+     *
+     * @param l	layer as Layer
+     * @param longitude_start longitude extent as double
+     * @param longitude_end other longitude extent as double
+     * @param latitude_start latitude extent as double
+     * @param latitude_end other latitude extent as double
+     * @param width width resoluion as int
+     * @param height height resolution as in
+     */
+    public void makeScaledShortImageFromGridToMetresGrid(Layer l, double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end, int width, int height) {
+
+        /* output data */
+        Tile[] data;
+
+        /* load raw */
+        if (l.type.equals("environmental")) {
+            data = getTileFromGridToMetresGrid(l.name, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
         } else {
             data = getTileFromShape(l, longitude_start, longitude_end, latitude_start, latitude_end, width, height);
         }
@@ -902,6 +987,90 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                         + i / (double) (longitude_steps - 1) * (longitude_end - longitude_start);
                 points[j * longitude_steps + i][1] = latitude_end
                         - j / (double) (latitude_steps - 1) * (latitude_end - latitude_start);
+            }
+        }
+
+        /* get layer data */
+        double[] values = grid.getValues(points);
+
+        if (values != null && values.length > 0) {
+            int i;
+
+            /* copy values back to byte data */
+            int countvalues = 0;
+            for (i = 0; i < values.length; i++) {
+                if (!Double.isNaN(values[i])) {
+                    countvalues++;
+                }
+            }
+
+            Tile[] data = new Tile[countvalues];
+
+            int p = 0;
+            for (i = 0; i < values.length; i++) {
+                if (!Double.isNaN(values[i])) {
+                    data[p++] = new Tile((float) values[i], i);
+                }
+            }
+
+            /* return data */
+            return data;
+        }
+
+        return null;
+    }
+
+    /**
+     * gets Tile data from a grid file onto specified extents
+     *
+     * @param layer_name
+     * @param longitude_start
+     * @param longitude_end
+     * @param latitude_start
+     * @param latitude_end
+     * @param longitude_steps
+     * @param latitude_steps
+     * @return Tile[]
+     */
+    public Tile[] getTileFromGridToMetresGrid(String layer_name,
+            double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end,
+            int longitude_steps, int latitude_steps) {
+
+        Grid grid = new Grid(
+                TabulationSettings.environmental_data_path
+                + layer_name);
+
+        /* make points to interrogate */
+        double[][] points = new double[longitude_steps * latitude_steps][2];
+
+        //TODO: fix projection test
+        double [] latproj = {-9, -13.75, -18.56, -23.505, -28.45, -32.595, -36.74, -40.64, -44};
+
+        int [] pixel_proj = {0
+                ,latitude_steps*1/8
+                ,latitude_steps*2/8
+                ,latitude_steps*3/8
+                ,latitude_steps*4/8
+                ,latitude_steps*5/8
+                ,latitude_steps*6/8
+                ,latitude_steps*7/8
+                ,latitude_steps};
+
+        int latidx = 0;
+
+        for (int j = 0; j < latitude_steps; j++) {
+            for (int i = 0; i < longitude_steps; i++) {
+                points[j * longitude_steps + i][0] = longitude_start
+                        + i / (double) (longitude_steps - 1) * (longitude_end - longitude_start);
+
+                //project latitude
+                if (latidx <7 && j >= pixel_proj[latidx]){
+                    latidx++;
+                }
+                points[j * longitude_steps + i][1] = latproj[latidx]
+                        - (pixel_proj[latidx]-j) / (double) (latitude_steps/8 - 1)
+                        * (latproj[latidx+1] - latproj[latidx]);
             }
         }
 

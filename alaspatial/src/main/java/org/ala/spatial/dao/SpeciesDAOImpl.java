@@ -222,6 +222,9 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
 
     @Override
     public List<CommonName> getCommonNames(String name) {
-        return hibernateTemplate.find("from CommonName where lower(commonname) like ? ", "%" + (name.toLowerCase() + "%"));
+        //return hibernateTemplate.find("from CommonName where lower(commonname) like ? ", "%" + (name.toLowerCase() + "%"));
+        
+        //to allow easy removal of scientific name duplicates
+        return hibernateTemplate.find("from CommonName where lower(commonname) like ? order by scientificname", "%" + (name.toLowerCase() + "%"));
     }
 }

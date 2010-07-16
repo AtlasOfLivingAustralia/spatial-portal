@@ -114,6 +114,7 @@
  	<environmental_data>
 		<!-- absolute path for all .gri/.grd files -->
 		<environmental_data_path>d:\mnt\ala\data\envlayers\WorldClimCurrent\10minutes\</environmental_data_path>
+                <!--environmental_data_path>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/</environmental_data_path-->
 
 		<environmental_data_files>
 			<environmental_data_file>
@@ -232,7 +233,8 @@
 		field list is comma separated, hierarchy fields
 	-->
 	<occurances_csv>d:\mnt\ala\data\occurrences\occurrences.csv</occurances_csv>
-<occurances_csv_fields>occurrenceId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataResourceId,institutionCode,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
+        <!-- occurances_csv>/mnt/ala/data/occurrences/occurrences.csv</occurances_csv -->
+
     <!--
         field settings for occurances_csv_fields:
         0 is output only
@@ -243,18 +245,24 @@
         5 is unique id, same as (0)
         6 is unique id, same as (2)
     -->
-    <occurances_csv_field_settings>0,1,1,2,2,2,2,0,2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
+    <occurances_csv_fields>occurrenceId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataProviderId,dataResourceId,institutionCode,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
+    <occurances_csv_field_settings>0,1,1,2,2,2,2,0,2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
+    <occurances_csv_fields_lookups>dataProviderId,dataResourceId,institutionCode,collectionCode</occurances_csv_fields_lookups>
 
 <!--
 common names file as csv, no header, first 2 columns:
-lsid, common name
+species name, common name
 -->
     <common_names_csv>d:\mnt\ala\data\commonnames\output4.csv</common_names_csv>
+    <!-- common_names_csv>/mnt/ala/data/commonnames/output4.csv</common_names_csv -->
+
 
 	<index_path>d:\mnt\ala\data\index\tabulation\</index_path>
+        <!-- index_path>/mnt/ala/data/index/tabulation/</index_path-->
 
         <maxent>
             <cmdpath>java -mx900m -jar d:\mnt\ala\modelling\maxent\maxent.jar </cmdpath>
+            <!--cmdpath>java -mx900m -jar /mnt/ala/modelling/maxent/maxent.jar </cmdpath-->
         </maxent>
 
         <geoserver>

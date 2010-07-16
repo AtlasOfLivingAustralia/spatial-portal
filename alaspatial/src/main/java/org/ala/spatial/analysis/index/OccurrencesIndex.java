@@ -23,6 +23,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.BitSet;
+import java.util.Map.Entry;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -167,9 +168,12 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     static int[][] grid_key = null;
     /**
-     * occurrence id to record mapping
+     * extra_indexes to record number mappings
+     *
+     * key: String
+     * object: ArrayList<Integer> when building, int [] when built.
      */
-    static HashMap<String,Integer> id_lookup = null;
+    static HashMap<String,Object> [] extra_indexes = null;
     /**
      * list of common names against species names
      */
@@ -745,16 +749,22 @@ public class OccurrencesIndex implements AnalysisIndexService {
         String[] columns = TabulationSettings.occurances_csv_fields;
 
         OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+        ofu.load();
 
         int countOfIndexed = ofu.onetwoCount;
 
         /* first n columns are indexed, n=countOfIndexed */
         TreeMap<String, IndexedRecord>[] fw_maps = new TreeMap[countOfIndexed];
 
-        /* build up id lookup as well (first column) */
-        id_lookup = new HashMap<String,Integer>();
+        /* build up id lookup for additional columns */
+        extra_indexes = new HashMap[ofu.extraIndexes.length];
 
         int i;
+
+        for (i=0;i<extra_indexes.length;i++) {
+            extra_indexes[i] = new HashMap<String, Object>();
+        }
+
         try {
             BufferedReader br = new BufferedReader(
                     new FileReader(
@@ -785,7 +795,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             int idColumn = (new OccurrencesFieldsUtil()).onetwoCount;
 
+            ArrayList<Integer> [] obj = new ArrayList[extra_indexes.length];
+            String [] prev_key = new String[extra_indexes.length];
+            String [] current_key = new String[extra_indexes.length];
+
             while ((s = br.readLine()) != null) {
+                if (progress % 100000 == 0) {
+                    System.out.print("\rlines read: " + progress);
+                }
                 sa = s.split(",");
 
                 progress++;
@@ -793,8 +810,23 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 //updated = false;
                 if (sa.length >= countOfIndexed && sa.length > idColumn) {
 
-                    //push id
-                    id_lookup.put(sa[idColumn], new Integer(recordpos));                   
+                    //add current record to extra_indexes
+                    for(i=0;i<extra_indexes.length;i++){
+                        current_key[i] = sa[ofu.extraIndexes[i]];
+                        if (current_key[i].equals(prev_key[i]) && obj[i] != null) {
+                            obj[i].add(new Integer(recordpos));
+                        } else {
+                            prev_key[i] = current_key[i];
+
+                            obj[i] = (ArrayList<Integer>) extra_indexes[i].get(current_key[i]);
+
+                            if (obj[i] == null) {
+                                obj[i] = new ArrayList<Integer>();
+                                extra_indexes[i].put(current_key[i],obj[i]);
+                            }
+                            obj[i].add(new Integer(recordpos));
+                        }
+                    }
 
                     for (i = 0; i < countOfIndexed; i++) {
                         if (recordpos != 0 && !last_value[i].equalsIgnoreCase(sa[i])) {
@@ -834,19 +866,40 @@ public class OccurrencesIndex implements AnalysisIndexService {
             br.close();
         } catch (Exception e) {
             (new SpatialLogger()).log("exportFieldIndexes, read", e.toString());
+            e.printStackTrace();
         }
 
         System.out.println("done read of indexes");
 
-        /* write out id lookup */
+        /* write out extra_indexes */
+        //transform ArrayList<Integer> to int[]
+        for (i=0;i<extra_indexes.length;i++) {
+            int sz = 0;
+            System.out.println("lookup name: " + TabulationSettings.occurances_csv_fields_lookups[i]);
+            
+            for(Entry<String,Object> e : extra_indexes[i].entrySet()) {
+                ArrayList<Integer> al = (ArrayList<Integer>) e.getValue();
+                int [] new_obj = new int[al.size()];
+                int z = 0;
+                for(Integer q : al) {
+                    new_obj[z++] = q.intValue();
+                }
+                if(sz < 10){
+                    System.out.println(e.getKey() + " > " + al.size());
+                    
+                }
+                sz++;
+                e.setValue(new_obj);
+            }
+            System.out.println("total: " + sz);
+        }
         try{
             FileOutputStream fos = new FileOutputStream(
                     TabulationSettings.index_path
                     + ID_LOOKUP);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(id_lookup);
-            System.out.println("id_lookup size:" + id_lookup.size());
+            oos.writeObject(extra_indexes);
             oos.close();
         } catch (Exception e){
             e.printStackTrace();
@@ -1189,14 +1242,91 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 + ID_LOOKUP);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
-            id_lookup = (HashMap<String,Integer>)ois.readObject();
-
+            extra_indexes = (HashMap<String,Object> [])ois.readObject();
             ois.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * list available extra_indexes
+     */
+    static String [] listLookups() {
+        OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+        ofu.load();
+
+        String [] list = new String[TabulationSettings.occurances_csv_fields_lookups.length +
+                ofu.twoCount];
+
+        int pos = 0;
+        int i;
+
+        for(i=0;i<TabulationSettings.occurances_csv_fields_lookups.length;i++){
+            list[pos++] = TabulationSettings.occurances_csv_fields_lookups[i];
+        }
+
+        for(i=0;i<ofu.twoCount;i++){
+            list[pos++] = ofu.columnNames[ofu.twos[i]];
+        }
+
+        return list;
+    }
+
+    /**
+     * return int[] of records for listLookup match
+     *
+     * @param lookup_idx index to lookup as int
+     * @param key index value to lookup as String
+     * @return records found as int [] or null for none
+     */
+    static int [] lookup(int lookup_idx, String key) {
+        loadIndexes();
+        if (lookup_idx < extra_indexes.length) {
+            return (int[])extra_indexes[lookup_idx].get(key);
+        } else {
+            return lookupRegular(key);
+        }
+    }
+
+    /**
+     * return int[] of records for listLookup match
+     *
+     * @param lookupName name of index to lookup as string
+     * @param key index value to lookup as String
+     * @return records found as int [] or null for none
+     */
+    static int [] lookup(String lookupName, String key) {
+        loadIndexes();
+        String [] lookups = listLookups();
+        for (int i=0;i<lookups.length;i++){
+            if(lookupName.equalsIgnoreCase(lookups[i])) {
+                return (int[])extra_indexes[i].get(key);
+            }
+        }
+
+        return lookupRegular(key);
+    }
+
+    /**
+     * return int [] of records for indexed match on key
+     * @param key lookup value as String, e.g. species name
+     * @return records found as int [] or null for none
+     */
+    static int [] lookupRegular(String key) {
+         //check against regular index
+        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(key);
+        if (ir != null && ir.length > 0) {
+            int [] output = new int[ir[0].record_end - ir[0].record_start + 1];
+            for(int i=0;i<output.length;i++){
+                output[i] = i + ir[0].record_start;
+            }
+            return output;
+        }
+
+        return null;
+    }
+    
     /**
      * loads common names lookup (species records only, one match only)
      */
@@ -2105,6 +2235,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         StringBuffer sb = new StringBuffer();
 
         IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
+        IndexedRecord [] familyIdx = all_indexes.get(all_indexes.size()-3); //TODO: dynamic
 
         BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
 
@@ -2145,26 +2276,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
 
         long t3 = System.currentTimeMillis();
-
-        IndexedRecord [] familyIdx = all_indexes.get(all_indexes.size()-3); //TODO: dynamic
-        
-        for (i = 0; i < bitset.size(); i++) {
-            if (bitset.get(i)) {
-                if(species_to_family[i] >= 0) {
-                    sb.append(StringUtils.capitalize(familyIdx[species_to_family[i]].name));   //TODO: update when subspecies added
-                } else {
-                    sb.append("undefined");
-                }
-                sb.append("*");
-                sb.append(StringUtils.capitalize(species[i].name));
-                if (common_names[i].length() > 0) {
-                    sb.append("*");
-                    sb.append(common_names[i]);
-                }
-
-                sb.append(",");
-            }
-        }
+    
+        String output = getSpeciesListRecords(bitset);
 
         long t4 = System.currentTimeMillis();
 
@@ -2194,8 +2307,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
     }
 
     public static void main(String[] args) {
-        SimpleRegion sr = SimpleShapeFile.parseWKT("POLYGON((116.0 -44.0,116.0 -9.0,117.0 -9.0,117.0 -44.0,116.0 -44.0))");
-        getSpeciesInside(sr);
+        //OccurrencesIndex oi = new OccurrencesIndex();
+        //oi.occurancesUpdate();
+        //SimpleRegion sr = SimpleShapeFile.parseWKT("POLYGON((116.0 -44.0,116.0 -9.0,117.0 -9.0,117.0 -44.0,116.0 -44.0))");
+        //getSpeciesInside(sr);
+
+        int [] list = OccurrencesIndex.lookup(0, "143");
+        System.out.println("list:" + list);
+        System.out.println("list len:" + list.length);
         System.out.println("done");
     }
 
@@ -2378,6 +2497,33 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         return species;
 
+    }
+
+    static public String getSpeciesListRecords(BitSet bitset) {
+        IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
+        IndexedRecord [] familyIdx = all_indexes.get(all_indexes.size()-3); //TODO: dynamic
+
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < bitset.size(); i++) {
+            if (bitset.get(i)) {
+                if(species_to_family[i] >= 0) {
+                    sb.append(StringUtils.capitalize(familyIdx[species_to_family[i]].name));   //TODO: update when subspecies added
+                } else {
+                    sb.append("undefined");
+                }
+                sb.append("*");
+                sb.append(StringUtils.capitalize(species[i].name));
+                if (common_names[i].length() > 0) {
+                    sb.append("*");
+                    sb.append(common_names[i]);
+                }
+
+                sb.append(",");
+            }
+        }
+
+        return sb.toString();
     }
 }
 
