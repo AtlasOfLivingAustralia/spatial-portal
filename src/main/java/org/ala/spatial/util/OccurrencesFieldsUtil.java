@@ -11,6 +11,7 @@ package org.ala.spatial.util;
  */
 public class OccurrencesFieldsUtil {
     public static String[] columnNames;
+    public static int[] extraIndexes;
     public int longitudeColumn;
     public int latitudeColumn;
     public int speciesColumn;
@@ -25,6 +26,7 @@ public class OccurrencesFieldsUtil {
 
     static public void load() {
         columnNames = (new OccurrencesFieldsUtil()).getOutputColumnNames();
+        extraIndexes = (new OccurrencesFieldsUtil()).getExtraIndexesPos();
     }
 
     public OccurrencesFieldsUtil(){
@@ -110,6 +112,24 @@ public class OccurrencesFieldsUtil {
         }
         System.out.println("\r\n");
 
+        return output;
+    }
+
+    public int[] getExtraIndexesPos(){
+        String[] columns = getOutputColumnNames();
+        String[] lookups = TabulationSettings.occurances_csv_fields_lookups;
+
+        int [] output = new int[lookups.length];
+
+        for (int i=0;i<lookups.length;i++) {
+            for(int j=0;j<columns.length;j++) {
+                if (columns[j].equalsIgnoreCase(lookups[i])) {
+                    System.out.println("extra index: " + columns[j] + " (" + j + ")");
+                   output[i] = j;
+                   break;
+                }
+            }
+        }
         return output;
     }
 

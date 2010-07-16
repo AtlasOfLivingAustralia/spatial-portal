@@ -132,6 +132,7 @@ public class TabulationSettings {
      * alaspatial url for services call
      */
     public static String alaspatial_path;
+    public static String[] occurances_csv_fields_lookups;
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -280,6 +281,12 @@ public class TabulationSettings {
 		for(String ocf : occurances_csv_field_settings){
 			System.out.println(ocf);
 		}
+
+                occurances_csv_fields_lookups = xr.getValue("occurances_csv_fields_lookups").split(",");
+		for(String ocf : occurances_csv_fields_lookups){
+			System.out.println(ocf);
+		}
+
 
                 common_names_csv = xr.getValue("common_names_csv");
                 System.out.println(common_names_csv);
