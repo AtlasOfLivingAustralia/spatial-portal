@@ -19,11 +19,11 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 				text = f.read()
 				text = text.replace("MIN",min)
 				text = text.replace("MAX",max)
-				fout = open("out.sld", 'w')
-				fout.write(text)		
+#				fout = open("out.sld", 'w')
+#				fout.write(text)		
 			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPOST -H 'Content-type: text/xml' -d '<style><name>"+layername+"_style</name><filename>"+layername+".sld</filename></style>' " + edlconfig.geoserver_url + "/geoserver/rest/styles/"
 			print(curlstring)
-		#	os.system(curlstring)
+#			os.system(curlstring)
 			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: application/vnd.ogc.sld+xml' -d @out.sld " + edlconfig.geoserver_url + "/geoserver/rest/styles/"+layername+"_style"
 			print(curlstring)
 			os.system(curlstring)

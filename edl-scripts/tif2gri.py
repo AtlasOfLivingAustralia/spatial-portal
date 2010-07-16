@@ -5,7 +5,7 @@ import shutil
 #for root, dirs, files in os.walk("/mnt/transfer/MCAS_1k_Datapack/Climate/erosivity.tif"):
 for root, dirs, files in os.walk("/mnt/edl-scripts"):
 	for name in files:
-		if "y.tif" in name:
+		if ".tif" in name:
 			layername = name.replace(".tif","")
 			os.system("gdal_translate -of EHdr " + os.path.join(root,name) + " " + layername + ".bil")
 			shutil.move(layername+".bil",layername+".gri")
@@ -31,11 +31,11 @@ for root, dirs, files in os.walk("/mnt/edl-scripts"):
 					datatype = line.split('Type=')[1].split(',')[0]
 					text = text.replace("DATATYPE",datatype)
 				if "Lower Left" in line:
-					minx,miny = line.replace(')','').split('( ')[1].replace(' ','').split(',')
+					minx,miny = line.replace(')','').split('(')[1].replace(' ','').split(',')
 					text = text.replace("MINX",minx)
 					text = text.replace("MINY",miny)
 				if "Upper Right" in line:
-                                        maxx,maxy = line.replace(')','').split('( ')[1].replace(' ','').split(',')
+                                        maxx,maxy = line.replace(')','').split('(')[1].replace(' ','').split(',')
                                         text = text.replace("MAXX",maxx)
                                         text = text.replace("MAXY",maxy)
 
