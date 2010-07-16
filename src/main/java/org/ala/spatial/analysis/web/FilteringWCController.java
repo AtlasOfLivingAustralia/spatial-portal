@@ -18,6 +18,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -154,7 +155,7 @@ public class FilteringWCController extends UtilityComposer {
 
                     // Col 3: Add the species count and set the onClick event
                     Listcell count = new Listcell(String.valueOf(f.count));
-                    count.setStyle("text-decoration: underline; text-align: right; ");
+                    count.setStyle("text-align: right; ");
                     count.setParent(li);
                     /* species list tab exists
                     count.addEventListener("onClick", new EventListener() {
@@ -486,6 +487,28 @@ public class FilteringWCController extends UtilityComposer {
         }
     }
 
+    public void onClick$filter_done(Event event) {
+        applyFilterEvented();
+
+        //hide this window
+        //getParent() //htmlmacrocomponent
+        //       .getParent() //div to hide
+        //            .setVisible(false);
+
+        updateActiveArea(true);
+    }
+
+    void updateActiveArea(boolean hide) {
+    //trigger update to 'active area'
+        Component c = getParent().getParent();
+        while (c != null && !c.getId().equals("selectionwindow")) {
+            c = c.getParent();
+        }
+        if (c != null) {
+            ((SelectionController) c).onEnvelopeDone(hide);
+        }
+    }
+
     public void onClick$apply_continous(Event event) {
         applyFilter();
     }
@@ -513,6 +536,7 @@ public class FilteringWCController extends UtilityComposer {
     public void onLater(Event event) throws Exception {
         applyFilterEvented();
         Clients.showBusy("", false);
+        updateActiveArea(false);
     }
 
     public void onLateron(Event event) throws Exception {

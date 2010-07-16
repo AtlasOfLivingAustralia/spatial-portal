@@ -93,6 +93,9 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             if (results.length == 0 || results[0].trim().length() == 0) {
                 results_label.setValue("no species in area");
+                results = null;
+                popup_listbox_results.setVisible(false);
+                refreshButton2.setVisible(true);
                 return;
             }
 
@@ -170,6 +173,10 @@ public class FilteringResultsWCController extends UtilityComposer {
             results_count = Integer.parseInt(out);
             if (results_count == 0) {
                 results_label.setValue("no species in active area");
+                results = null;
+                popup_listbox_results.setVisible(false);
+                refreshButton2.setVisible(true);
+                return;
             }
 
             results_label.setValue("species in active area: " + results_count);
@@ -183,6 +190,12 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$download() {
+        //update 'results'
+        if (updateParameters()
+                || !popup_listbox_results.isVisible()) {
+            populateList();
+        }
+
         StringBuffer sb = new StringBuffer();
         sb.append("family name,species name,common name\r\n");
         for (String s : results) {
@@ -285,7 +298,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         if (area.contains("ENVELOPE(")) {
             shape = "none";
-            pid = area.substring(9, area.length() - 2);
+            pid = area.substring(9, area.length() - 1);
             return true;
         } else {
             pid = "none";
@@ -312,6 +325,9 @@ public class FilteringResultsWCController extends UtilityComposer {
         results_count = newCount;
         if (results_count == 0) {
             results_label.setValue("no species in active area");
+            results = null;
+            popup_listbox_results.setVisible(false);
+            refreshButton2.setVisible(true);
         }
 
         results_label.setValue("species in active area: " + results_count);

@@ -95,7 +95,7 @@
                                    style="white-space: normal; font-weight:bold"
                                    value="edit filter for this layer" id="label_continous"
                                    multiline="true"/>
-                            <button label="remove this layer" id="remove_continous"/> 
+                            <div style="float: right"><button label="remove this layer" id="remove_continous"/> </div>
 
                             <separator sclass="hr" height="2px" />
                             <vbox><label value="full range"/><label id="popup_range"/>
@@ -112,7 +112,7 @@
                                     <textbox id="popup_idx" width="1px" visible="false"></textbox>
                                 </hbox>
                                 <hbox>
-                                    <button label="Apply filter" id="apply_continous"/>
+                                    <div style="float: right"><button label="Apply filter" id="apply_continous"/></div>
                                     <button label="preview results" id="preview_continous" visible="false"/>
                                 </hbox>
                             </vbox>
@@ -122,5 +122,6 @@
                 </listfoot>
             </listbox>
         </div>
+        <div style="float: right" width="95%"><button label="Done" id="filter_done"/></div>
     </window>
 </zk>
