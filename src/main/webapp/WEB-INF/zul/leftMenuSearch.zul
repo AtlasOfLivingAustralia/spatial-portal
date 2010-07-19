@@ -71,7 +71,10 @@
                                         }
                                         
                                         function getGeographicExtentControls() {
-                                            var extent = window.frames.mapFrame.map.getExtent();
+                                            //var extent = window.frames.mapFrame.map.getExtent();
+                                            // transform the extents from Google Projection to EPSG:4326
+                                            var mapObj = window.frames.mapFrame.map;
+                                            var extent = mapObj.getExtent().transform(mapObj.projection, mapObj.displayProjection);
                                             extent = extent.toArray()
                                             document.getElementById('${north.uuid}').value = roundNumber(extent[3],3);
                                             document.getElementById('${east.uuid}').value = roundNumber(extent[2],3);

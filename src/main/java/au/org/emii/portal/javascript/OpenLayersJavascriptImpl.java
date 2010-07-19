@@ -228,7 +228,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + bbox.get(1) + ","
                         + bbox.get(2) + ","
                         + bbox.get(3)
-                        + "		), "
+                        + "		).transform(map.displayProjection, map.projection), "
+                        //+ "             map.baseLayer.getExtent(),       "
                         + " 		new OpenLayers.Size(" +
                                         settingsSupplementary.getValue("animation_width") + "," +
                                         settingsSupplementary.getValue("animation_height") + "), "
@@ -238,7 +239,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + "			isBaseLayer : false, "
                         + "			maxResolution: map.baseLayer.maxResolution, "
                         + "           minResolution: map.baseLayer.minResolution, "
-                        + "           projection: new OpenLayers.Projection('EPSG:4326'), "
+                        + "           projection: new OpenLayers.Projection('EPSG:900913'), "
                         + "			resolutions: map.baseLayer.resolutions "
                         + "		} "
                         + "	); "
@@ -420,7 +421,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
                 StringBuffer script = new StringBuffer(
                         "if (" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "'] == null) { ");
-
+                 
 
                 switch (mapLayer.getType()) {
                         case LayerUtilitiesImpl.WMS_1_0_0:
@@ -576,6 +577,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
                         +
                         "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+
+                System.out.println("defineGeoJSONMapLayer: " + script); 
 
                 return wrapWithSafeToProceed(script);
         }
@@ -776,7 +779,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                  * the user can't control the base layer (?)
                  */
                 String script =
-                        "mapLayers['" + mapLayer.getUniqueIdJS() + "'].setOpacity(" + percentage + ") ";
+                        "mapLayers['" + mapLayer.getUniqueIdJS() + "'].setOpacity(" + percentage + "); mapLayers['" + mapLayer.getUniqueIdJS() + "'].redraw(); ";
 
                 return wrapWithSafeToProceed(script);
         }

@@ -841,7 +841,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     </div>
                     <script type="text/javascript">
                         window.frames["mapFrame"].location.href = "";
-                        window.frames["mapFrame"].location.href = "./map.html?";
+                        window.frames["mapFrame"].location.href = "./map2.html?";
                     </script>
                     <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="true" >
                         <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"

@@ -70,7 +70,7 @@ var overCallback = {
     over: featureOver,
     out: hideTooltip
 };
-*/
+ */
 
 var selecteFeature;
 
@@ -142,15 +142,20 @@ function checkLibraryLoaded() {
 
 }
 
-function buildMap() {
-    checkLibraryLoadedTimeout = setInterval('checkLibraryLoaded()', libraryCheckIntervalMs);
+var bLayer;
+function loadBaseMap() {
+
+    // Google.v3 uses EPSG:900913 as projection, so we have to
+    // transform our coordinates
+    map.setCenter(
+        new OpenLayers.LonLat(134, -25).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject()),
+        4);
 }
 
-var yahooLayer; 
-function loadYahooMaps() {
-
-    //map.setCenter(new OpenLayers.LonLat(134, -25), 2);
-    //map.setBaseLayer(yahooLayer);
+function buildMap() {
+    checkLibraryLoadedTimeout = setInterval('checkLibraryLoaded()', libraryCheckIntervalMs);
 }
 
 function buildMapReal() {
@@ -209,8 +214,7 @@ function buildMapReal() {
 
     // ---------- map setup --------------- //
 
-    map = new OpenLayers.Map('mapdiv', {
-        controls: [
+    var mapControls = [
         new OpenLayers.Control.PanZoomBar({
             div: document.getElementById('controlPanZoom')
         }),
@@ -218,41 +222,37 @@ function buildMapReal() {
         new OpenLayers.Control.ScaleLine({
             div: document.getElementById('mapscale')
         }),
-        //new OpenLayers.Control.Permalink('Map by IMOS Australia'),
         new OpenLayers.Control.OverviewMap({
             autoPan: true,
             minRectSize: 30,
             mapOptions:{
                 resolutions: [  0.3515625, 0.17578125, 0.087890625, 0.0439453125, 0.02197265625, 0.010986328125, 0.0054931640625
                 , 0.00274658203125, 0.001373291015625, 0.0006866455078125, 0.00034332275390625,  0.000171661376953125
-                ]
+                ],
+                projection: "EPSG:900913",
+                units: 'm'
             }
         }),
-        //new OpenLayers.Control.KeyboardDefaults(),
         new OpenLayers.Control.Attribution(),
         new OpenLayers.Control.MousePosition({
             div: document.getElementById('mapcoords'),
             prefix: '<b>Lon:</b> ',
             separator: ' <BR><b>Lat:</b> '
-        })
-        ],
-        //projection: new OpenLayers.Projection("EPSG:900913"),
-        //displayProjection: new OpenLayers.Projection("EPSG:4326"),
-        ////maxExtent: new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508.34),
-        ////maxResolution: 156543.0339,
-        ////numZoomLevels: 18,
-        //units: "m",
-        theme: null,
-        restrictedExtent: new OpenLayers.Bounds.fromString("-10000,-90,10000,90"),
+        }),
+        new OpenLayers.Control.Navigation()
+    ];
+    var mapOptions = {
+        projection: new OpenLayers.Projection("EPSG:900913"),
+        displayProjection: new OpenLayers.Projection("EPSG:4326"),
+        units: "m",
+        numZoomLevels: 18,
+        maxResolution: 156543.0339,
+        maxExtent: new OpenLayers.Bounds(-20037508, -20037508,
+            20037508, 20037508.34),
+        controls: mapControls
+    };
+    map = new OpenLayers.Map('mapdiv', mapOptions);
 
-        //	   These are the resolutions we support: [ 0.3515625, 0.17578125, 0.087890625, 0.0439453125, 0.02197265625, 0.010986328125, 0.0054931640625
-        //	     		         , 0.00274658203125, 0.001373291015625, 0.0006866455078125, 0.00034332275390625, 0.000171661376953125
-        //	     		         , 8.58306884765625e-05, 4.291534423828125e-05, 2.1457672119140625e-05, 1.0728836059570312e-05, 5.3644180297851562e-06
-        //	     		         , 2.6822090148925781e-06, 1.3411045074462891e-06];
-        resolutions: [ 0.3515625, 0.17578125, 0.087890625, 0.0439453125, 0.02197265625, 0.010986328125, 0.0054931640625
-        , 0.00274658203125, 0.001373291015625, 0.0006866455078125, 0.00034332275390625,  0.000171661376953125
-        ]
-    });
 
     // make OL compute scale according to WMS spec
     OpenLayers.DOTS_PER_INCH = 25.4 / 0.28;
@@ -269,49 +269,27 @@ function buildMapReal() {
         maxResolution: 156543.0339 
     });
     //map.addLayer(yahooLayer);
-    */
-
-
-    var container = document.getElementById("navtoolbar");
-    pan = new OpenLayers.Control.Navigation({
-        id: 'navpan',
-        title: 'Pan Control'
-    } );
-    zoom = new OpenLayers.Control.ZoomBox({
-        title: "Zoom and centre [shift + mouse drag]"
+     */
+    bLayer = new OpenLayers.Layer.Google("Google Hybrid",
+    {
+        type: G_HYBRID_MAP,
+        'sphericalMercator': true
     });
-    toolPanel = new OpenLayers.Control.Panel({
-        defaultControl: pan,
-        div: container
-    });
+    map.addLayer(bLayer);
 
-    toolPanel.addControls( [ zoom,pan] );
+    var dem = new OpenLayers.Layer.WMS( "ALA - dem9s",
+        "http://spatial.ala.org.au/geoserver/wms", {
+            layers: 'ALA:dem-9s',
+            transparent:true
+        }, {
+            'opacity': 0.4,
+            visibility: true,
+            'isBaseLayer': false,
+            'wrapDateLine': true
+        } );
 
-    map.addControl(toolPanel);
-    
-    areaToolsButton = new OpenLayers.Control.Button({
-        trigger: navigateToAreaTab
-    });
-
-    var areaToolContainer = document.getElementById("areaTool");
-    var areaToolPanel = new OpenLayers.Control.Panel({
-        //defaultControl:areaToolsButton,
-        div:areaToolContainer
-    });
-
-    //areaToolPanel.addControls( [areaToolsButton] );
-    //map.addControl(areaToolPanel);
-
-    //createAreaToolsButton();
-    
-  
-    drawinglayer = new OpenLayers.Layer.Vector( "Drawing"); // utilised in 'addLineDrawingLayer'
-    drawingLayerControl = new OpenLayers.Control.DrawFeature(drawinglayer, OpenLayers.Handler.Path, {
-        title:'Draw a transect line'
-    });
-    toolPanel.addControls( [ drawingLayerControl ] );
-    // This will be replaced by ZK call
-    //addLine DrawingLayer("ocean_east_aus_temp/temp","http://emii3.its.utas.edu.au/ncWMS/wms");
+    //map.addLayer(dem);
+    loadBaseMap(); 
 
     // create a new event handler for single click query
     clickEventHandler = new OpenLayers.Handler.Click({
@@ -344,40 +322,14 @@ function buildMapReal() {
 
 }
 
-//function addEditingTools() {
-//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-//    layer_style.fillColor = "red";
-//    layer_style.strokeColor = "red";
-//
-//    boxLayer = new OpenLayers.Layer.Vector("Box Layer", {
-//        style : layer_style
-//    });
-//    polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
-//        style: layer_style
-//    });
-//    var panelControls = [
-//    new OpenLayers.Control.Navigation(),
-//    new OpenLayers.Control.DrawFeature(boxLayer,
-//        OpenLayers.Handler.Box,
-//        {
-//            'displayClass': 'olControlDrawFeatureBox',
-//            'featureAdded':regionAddedGlobal
-//        }),
-//    new OpenLayers.Control.DrawFeature(polygonLayer,
-//        OpenLayers.Handler.Polygon,
-//        {
-//            'displayClass': 'olControlDrawFeaturePolygon',
-//            'featureAdded':polygonAddedGlobal
-//        })
-//    ];
-//    var toolbar = new OpenLayers.Control.Panel({
-//        displayClass: 'olControlEditingToolbar',
-//        defaultControl: panelControls[0]
-//    });
-//    toolbar.addControls(panelControls);
-//    map.addControl(toolbar);
-//
-//}
+
+
+
+
+
+
+
+
 
 function createBoxDrawingTool() {
     //removeSpeciesSelection();
@@ -411,6 +363,7 @@ function navigateToAreaTab() {
     parent.setAreaTabSelected();
 }
 
+var defaultSelectFeatureStyle = null;
 function addFeatureSelectionTool() {
     //    areaSelectControl = new OpenLayers.Control.SelectFeature(
     //        selectionLayers,
@@ -692,11 +645,25 @@ function polygonAdded(feature) {
 
 function setVectorLayersSelectable() {
     try {
-        console.log("setting up vector layers");
         var layersV = map.getLayersByClass('OpenLayers.Layer.Vector');
         selectControl = new OpenLayers.Control.SelectFeature(layersV);
         map.addControl(selectControl);
         selectControl.activate();
+    } catch (err) {
+
+    }
+}
+function forceRedrawVectorLayers() {
+    try {
+        var layersV = map.getLayersByClass('OpenLayers.Layer.Vector');
+        for (var i = 0; i < layersV.length; i++) {
+            console.log("redrawing: " + layersV[i].name);
+            //layersV[i].display(false);
+            //layersV[i].display(true);
+            //layersV[i].display(true);
+            var l = layersV[i];
+            redrawFeatures(l.features, l.name, l.style.fillColor, l.style.fillOpacity, l.style.pointRadius)();
+        }
     } catch (err) {
 
     }
@@ -719,11 +686,11 @@ function selected (evt) {
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100,100),
                 "<h2>Occurrence information</h2>" +
-                " Scientific name: <a href='http://test.ala.org.au/species/" + attrs["taxonconceptid"] + "' target='_blank'>" + attrs["scientificname"] + "</a> <br />" +
-                " Family: <a href='http://test.ala.org.au/species/" + attrs["familyconceptid"] + "' target='_blank'>" + attrs["family"] + "</a> <br />" +
+                " Scientific name: <a href='http://bie.ala.org.au/species/" + attrs["taxonconceptid"] + "' target='_blank'>" + attrs["scientificname"] + "</a> <br />" +
+                " Family: <a href='http://bie.ala.org.au/species/" + attrs["familyconceptid"] + "' target='_blank'>" + attrs["family"] + "</a> <br />" +
                 " Longitude: "+attrs['longitude'] + " , Latitude: " + attrs['latitude'] + " <br/>" +
                 " Occurrence date: " + occurrencedate + " <br />" +
-                "Species Occurence <a href='http://test.ala.org.au/occurrences/" + attrs["occurrenceid"] + "' target='_blank'>View details</a>"
+                "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + attrs["occurrenceid"] + "' target='_blank'>View details</a>"
                 ,
                 null, true, onPopupClose);
 
@@ -774,9 +741,12 @@ function onPopupClose(evt) {
     }
 }
 
-
 function addWKTFeatureToMap(featureWKT,name,hexColour) {
     //    alert(name);
+    var in_options = {
+        'internalProjection': map.baseLayer.projection,
+        'externalProjection': new OpenLayers.Projection("EPSG:4326")
+    };
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -797,6 +767,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
     map.addLayer(wktLayer);
     
     var geom = new OpenLayers.Geometry.fromWKT(featureWKT);
+    geom = geom.transform(map.displayProjection, map.projection);
     wktLayer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
 
     wktLayer.isFixed = false;
@@ -807,6 +778,12 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
 
 function addJsonFeatureToMap(feature, name, hexColour, radius) {
     //    alert(name);
+    var in_options = {
+        'internalProjection': map.baseLayer.projection,
+        'externalProjection': new OpenLayers.Projection("EPSG:4326")
+    };
+
+
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -823,7 +800,7 @@ function addJsonFeatureToMap(feature, name, hexColour, radius) {
     layer_style.pointRadius = radius;
 
 
-    var geojson_format = new OpenLayers.Format.GeoJSON();
+    var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
     var vector_layer = new OpenLayers.Layer.Vector(name);
 
     vector_layer.style = layer_style;
@@ -844,13 +821,14 @@ function addJsonFeatureToMap(feature, name, hexColour, radius) {
     // need to do it this way due to passing an object.. closures :)
     window.setTimeout(function(){
         //addToSelectControl(vector_layer);
-        setVectorLayersSelectable(); 
+        setVectorLayersSelectable();
     }, 2000);
         
     return vector_layer;
 }
 /*
-// this commented block is for OpenLayers 2.9.1 
+// this commented block is for OpenLayers 2.9.1
+// but doesn't seem to completely work
 function addToSelectControl(newlyr) {
     if (selectControl==null) {
         selectControl = new OpenLayers.Control.SelectFeature([newlyr],
@@ -952,8 +930,12 @@ function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
 }
 
 function redrawFeatures(feature, name, hexColour, opacity, radius) {
+    var in_options = {
+        'internalProjection': map.baseLayer.projection,
+        'externalProjection': new OpenLayers.Projection("EPSG:4326")
+    };
     var gjLayers = map.getLayersByName(name);
-    var geojson_format = new OpenLayers.Format.GeoJSON();
+    var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
     features = geojson_format.read(feature);
 
     var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
@@ -1025,65 +1007,13 @@ function removeItFromTheList(layername) {
     
     for (key in gjLayers) {        
         if (gjLayers[key] != undefined) {
-            var layer = map.getLayer(gjLayers[key].id);            
-            if (layer.name == layername) {                
+            var layer = map.getLayer(gjLayers[key].id);
+            if (layer.name == layername) {
                 map.removeLayer(layer);               
             }
         }
     }
 
-}
-
-// Create a layer on which users can draw transects for single w (i.e. lines on the map)
-// handles query
-// The supplied layer is queried and the results into the popup
-// TODO: zk to call this function add ELEVATION and TIME parameters.
-//       set map back to pan control after query
-//       Use css to hide unused drawing icon
-function addLineDrawingLayer (label,layerName,serverUrl) {
-    
-    
-    drawingLayerControl.activate();
-    pan.deactivate();
-    zoom.deactivate();
-
-    
-    drawinglayer.events.register('featureadded', drawinglayer, function(e) {
-        // Destroy previously-added line string
-        if (drawinglayer.features.length > 1) {
-            drawinglayer.destroyFeatures(drawinglayer.features[0]);
-        }
-        // Get the linestring specification
-        var line = e.feature.geometry.toString();
-        // we strip off the "LINESTRING(" and the trailing ")"
-        line = line.substring(11, line.length - 1);
-
-        // Load an image of the transect
-        var transectUrl =   serverUrl +
-        '?REQUEST=GetTransect' +
-        '&LAYER=' + URLEncode(layerName) +
-        '&CRS=' + map.baseLayer.projection.toString() +
-        //'&ELEVATION=-5'  +
-        //'&TIME=' + isoTValue +
-        '&LINESTRING=' + URLEncode(line) +
-        '&FORMAT=image/png';
-        var inf = new Object();
-        inf.transectUrl = transectUrl;
-        inf.line = dressUpMyLine(line);
-        inf.label = label;
-        inf.layerName = layerName;
-        mkTransectPopup(inf);
-
-        drawingLayerControl.deactivate();
-        
-        // place click handler back fudge
-        zoom.activate();
-        zoom.deactivate(); 
-        clickEventHandler.deactivate();
-        clickEventHandler.activate();
-        pan.activate();
-    });
-    drawinglayer.events.fallThrough = false;
 }
 
 function removeDeselectedLayers(layerIds) {
@@ -1569,7 +1499,7 @@ function mkTransectPopup(inf) {
 
     popup2 = new OpenLayers.Popup.AnchoredBubble( "transectfeaturepopup",
         posi,
-        new OpenLayers.Size(popupWidth,60), 
+        new OpenLayers.Size(popupWidth,60),
         html,
         null, true, null);
 
@@ -1636,7 +1566,7 @@ function mkpopup(e) {
         /* shrink back down while searching.
          * popup will always pan into view with previous size.
          * close image always therefore visible
-        */
+         */
         map.popup.setSize(new OpenLayers.Size(popupWidth,60));
 
     }

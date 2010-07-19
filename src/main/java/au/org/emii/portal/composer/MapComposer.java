@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -132,7 +133,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Div rawMessageHackHolder;
     private Tabbox mainTab;
     private Tabbox accordionMenu;
-   // private Tab layerNavigationTab;
+    // private Tab layerNavigationTab;
     private Tab searchNavigationTab;
     private Tab linkNavigationTab;
     //private Tab areaNavigationTab;
@@ -473,10 +474,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             selectionTab.setSelected(true);
         }
     }
-   
 
     public String getSelectionArea() {
-        HtmlMacroComponent sf = (HtmlMacroComponent)((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).getSelectionHtmlMacroComponent();
+        HtmlMacroComponent sf = (HtmlMacroComponent) ((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).getSelectionHtmlMacroComponent();
         return ((SelectionController) sf.getFellow("selectionwindow")).getGeom();
     }
 
@@ -1744,8 +1744,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         switch (tab) {
             /*case PortalSession.LAYER_TAB:
-                component = layerNavigationTab;
-                break;*/
+            component = layerNavigationTab;
+            break;*/
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTab;
                 break;
@@ -1753,8 +1753,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 component = linkNavigationTab;
                 break;
             /*case PortalSession.AREA_TAB:
-                component = areaNavigationTab;
-                break;*/
+            component = areaNavigationTab;
+            break;*/
             case PortalSession.MAP_TAB:
                 component = mapNavigationTab;
                 break;
@@ -1773,8 +1773,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         switch (tab) {
             /*case PortalSession.LAYER_TAB:
-                component = layerNavigationTabContent;
-                break;*/
+            component = layerNavigationTabContent;
+            break;*/
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTabContent;
                 break;
@@ -1782,8 +1782,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 component = linkNavigationTabContent;
                 break;
             /*case PortalSession.AREA_TAB:
-                component = areaNavigationTabContent;
-                break;*/
+            component = areaNavigationTabContent;
+            break;*/
             case PortalSession.MAP_TAB:
                 component = mapNavigationTabContent;
                 break;
@@ -1851,7 +1851,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         // redraw current menu if change was to layers tab
-        if (tab == PortalSession.LAYER_TAB) {
+        // ajay: updated to add MAP_TAB as the UI has changed. 
+        if (tab == PortalSession.LAYER_TAB || tab == PortalSession.MAP_TAB) {
             // fix for #90
             logger.debug("forced redraw of current tree menu");
             Tree menu = getMenuTree();
@@ -1923,7 +1924,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 int blue = currentSelection.getBlueVal();
                 int green = currentSelection.getGreenVal();
                 int size = currentSelection.getSizeVal();
-System.out.println("r:" + red + " g:" + green + " b:" + blue);
+                System.out.println("r:" + red + " g:" + green + " b:" + blue);
                 Color c = new Color(red, green, blue);
 
                 redSlider.setCurpos(red);
@@ -2046,7 +2047,7 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         getPortalSession().setMapLoaded(loaded);
 
         if (loaded) {
-            openLayersJavascript.execute("window.mapFrame.loadYahooMaps();");
+            openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
             System.out.println("---------------------------------------------");
             System.out.println("---------------------------------------------");
             System.out.println("map is now loaded. let's try mapping.");
@@ -2359,7 +2360,7 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             }
 
             if (showLayerTab) {
-                activateNavigationTab(PortalSession.LAYER_TAB);
+                activateNavigationTab(PortalSession.MAP_TAB);
             }
 
         } catch (Exception e) {
@@ -2680,11 +2681,10 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
      * Use the onChange for tbxTabSelection to decide selected tab
      * tbxTabSelection change event can be triggered via javascript
      */
-   // public void onChange$tbxTabSelection() {
+    // public void onChange$tbxTabSelection() {
     //    areaNavigationTab.setSelected(_visible);
     //    onClick$areaNavigationTab();
-   // }
-
+    // }
     /**
      * generate pdf for from innerHTML of printHack txtbox
      *
@@ -2703,18 +2703,18 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
         innerHTML = innerHTML.replace("<svg ", "<svg  xmlns=\"http://www.w3.org/2000/svg\" ");
 
         //insert 'server' into each src="img/"
-        innerHTML = innerHTML.replace("src=\"img/\"","src=\"" + server + "img/\"");
+        innerHTML = innerHTML.replace("src=\"img/\"", "src=\"" + server + "img/\"");
 
         //put /> on all img, input, br tags
-        String [] openTags = {"<img","<input","<br"};
-        int pos,j;
-        for (j=0;j<openTags.length;j++){
+        String[] openTags = {"<img", "<input", "<br"};
+        int pos, j;
+        for (j = 0; j < openTags.length; j++) {
             pos = 0;
             //find next start of tag
-            while ((pos = innerHTML.indexOf(openTags[j],pos)) > 0) {
+            while ((pos = innerHTML.indexOf(openTags[j], pos)) > 0) {
                 //find next end of tag and insert " /"
-                pos = innerHTML.indexOf(">",pos);
-                innerHTML = innerHTML.substring(0,pos) + " /" + innerHTML.substring(pos);
+                pos = innerHTML.indexOf(">", pos);
+                innerHTML = innerHTML.substring(0, pos) + " /" + innerHTML.substring(pos);
             }
         }
 
@@ -2724,7 +2724,7 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             FileWriter fw = new FileWriter(filePath);
             fw.append(header).append(innerHTML).append(footer);
             fw.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -2735,7 +2735,7 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
 
         //process to pdf
         String cmdXmlToJpg = "/mnt/ala/printing/wkhtmltoimage --load-error-handling ignore " + filePath + " " + outputImage;
-        String cmdJpgToPdf =  "convert " + outputImage + " " + outputPDF;
+        String cmdJpgToPdf = "convert " + outputImage + " " + outputPDF;
 
         Runtime runtime = Runtime.getRuntime();
         try {
@@ -2759,20 +2759,20 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
             while ((line = br.readLine()) != null) {
                 System.out.println(line);
             }
-             exitVal = proc.waitFor();
+            exitVal = proc.waitFor();
             System.out.println("exitVal: " + exitVal);
 
-            
+
             Filedownload.save(new File(outputPDF), "application/pdf");
             return;
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
 
         showMessage("error generating PDF");
 
-    }  
+    }
 
     public void updateUserMapList() {
 
@@ -2973,18 +2973,23 @@ System.out.println("r:" + red + " g:" + green + " b:" + blue);
 
             System.out.println(slist);
 
-            JSONArray ja = JSONArray.fromObject(slist);
+            if (StringUtils.isNotBlank(slist) && !slist.equalsIgnoreCase("[]")) {
+                JSONArray ja = JSONArray.fromObject(slist);
 
-            JSONObject jo = ja.getJSONObject(0);
-            System.out.println(jo.size());
-            String sn = (String) jo.get("scientificname");
-            String tr = (String) jo.get("rankstring");
+                JSONObject jo = ja.getJSONObject(0);
+                System.out.println(jo.size());
+                String sn = (String) jo.get("scientificname");
+                String tr = (String) jo.get("rankstring");
 
-            if (tr.equalsIgnoreCase("species")) {
-                tr = "scientificname";
+                if (tr.equalsIgnoreCase("species")) {
+                    tr = "scientificname";
+                }
+                System.out.println("sending to map: " + tr + " = " + sn);
+                mapSpeciesByNameRank(sn, tr, null);
+            } else {
+                Messagebox.show("No occurrence data found for LSID: " + URLDecoder.decode(StringUtils.replace(lsid, "__", "."), "UTF-8"));
             }
-            System.out.println("sending to map: " + tr + " = " + sn);
-            mapSpeciesByNameRank(sn, tr, null);
+
         } catch (Exception ex) {
             //logger.debug(ex.getMessage());
             System.out.println("Opps error in mapsSpeciesByLsid");
