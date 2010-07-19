@@ -16,12 +16,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
 
     <html><![CDATA[
-            <link rel="stylesheet" href="css/style_portal" type="text/css" media="screen" />
-
             <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
             <link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
-
-            <link rel="stylesheet" href="css/style_portal" type="text/css" media="screen" />
         ]]>
     </html>
 
@@ -361,10 +357,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 </div>
 
                 <div id="westContent" class="westContent" visible="true">
-
-
-
-
 
                     <div sclass="leftmenutabs">
                         <!--  hide the left menu (west element) -->

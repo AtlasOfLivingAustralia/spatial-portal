@@ -156,12 +156,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         return false;
     }
     public void refreshCount() {
-        //check if tab is open
-        
+        populateList();
+
+        /*
+        //check if tab is open        
         if (!isTabOpen() || !updateParameters()) {
             return;
         }
-
 
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
@@ -186,7 +187,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             refreshButton2.setVisible(true);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void onClick$download() {
