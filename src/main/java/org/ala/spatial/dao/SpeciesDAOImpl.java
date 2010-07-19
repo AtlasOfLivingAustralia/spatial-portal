@@ -7,6 +7,7 @@ import java.util.Vector;
 import org.ala.spatial.model.CommonName;
 import org.ala.spatial.model.Species;
 import org.ala.spatial.model.TaxonNames;
+import org.ala.spatial.model.ValidTaxonName;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -226,5 +227,13 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
         
         //to allow easy removal of scientific name duplicates
         return hibernateTemplate.find("from CommonName where lower(commonname) like ? order by scientificname", "%" + (name.toLowerCase() + "%"));
+    }
+
+    @Override
+    public List<ValidTaxonName> findById(String lsid) {
+        System.out.println("findById: " + lsid.toLowerCase());
+        List l = hibernateTemplate.find("from ValidTaxonName where lower(guid) = ? ", (lsid.toLowerCase()));
+        System.out.println("returning " + l.size() + " items.");
+        return l;
     }
 }

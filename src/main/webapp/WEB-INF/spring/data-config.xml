@@ -48,6 +48,7 @@
                 <value>org.ala.spatial.model.TaxonNames</value>
                 <value>org.ala.spatial.model.LayerInfo</value>
                 <value>org.ala.spatial.model.CommonName</value>
+                <value>org.ala.spatial.model.ValidTaxonName</value>
             </list>
         </property>
         <property name="hibernateProperties" ref="hibernateProperties" />

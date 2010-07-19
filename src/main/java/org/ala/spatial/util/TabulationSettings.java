@@ -133,6 +133,11 @@ public class TabulationSettings {
      */
     public static String alaspatial_path;
     public static String[] occurances_csv_fields_lookups;
+
+    /**
+     * gdal apps path
+     */
+    public static String gdal_apps_dir; 
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -295,6 +300,8 @@ public class TabulationSettings {
 		System.out.println(index_path);
 		
 		alaspatial_path = xr.getValue("alaspatial_url");
+
+                gdal_apps_dir = xr.getValue("gdal_apps_dir");
 	}
 
 

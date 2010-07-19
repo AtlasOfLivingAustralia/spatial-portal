@@ -10,6 +10,7 @@ import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.service.AlocService;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.LayerImgService;
+import org.ala.spatial.util.CoordinateTransformer;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -108,6 +109,8 @@ public class ALOCWSController {
             }
 
             AlocService.run(outputfile, envList, Integer.parseInt(groupCount), region, filter, Long.toString(currTime));
+            CoordinateTransformer.generateWorldFiles(outputpath, "aloc");
+            outputfile=CoordinateTransformer.transformToGoogleMercator(outputfile);
             
             /* register with LayerImgService */
 

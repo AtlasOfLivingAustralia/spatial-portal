@@ -91,7 +91,8 @@ public class Zipper {
          */
 
         
-        Grid g = new Grid("/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/world_10_bio01");
+        //Grid g = new Grid("/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/world_10_bio01");
+        Grid g = new Grid("/Users/ajay/projects/data/modelling/erosivity");
         System.out.println("rows: " + g.nrows);
         System.out.println("cols: " + g.ncols);
         System.out.println("v: " + g.minval);
