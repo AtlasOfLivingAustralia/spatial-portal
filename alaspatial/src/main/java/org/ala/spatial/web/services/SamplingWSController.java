@@ -75,12 +75,12 @@ public class SamplingWSController {
                 System.out.println("Adding to download: " + it.next());
             }
 
-            String currentPath = req.getSession().getServletContext().getRealPath("/");
+            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             long currTime = System.currentTimeMillis();
-            String outputpath = currentPath + "/output/sampling/";
+            String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
-            String outfile = fDir.getAbsolutePath() + "/" + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
+            String outfile = fDir.getAbsolutePath() + File.separator + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
             Zipper.zipFiles(files, outfile);
 
             return "/output/sampling/" + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";

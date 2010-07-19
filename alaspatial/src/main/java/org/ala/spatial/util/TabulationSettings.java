@@ -137,7 +137,12 @@ public class TabulationSettings {
     /**
      * gdal apps path
      */
-    public static String gdal_apps_dir; 
+    public static String gdal_apps_dir;
+
+    /**
+     * maxent path
+     */
+    public static String maxent_cmdpth;
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -300,8 +305,13 @@ public class TabulationSettings {
 		System.out.println(index_path);
 		
 		alaspatial_path = xr.getValue("alaspatial_url");
+                System.out.println("alaspatial_path");
 
                 gdal_apps_dir = xr.getValue("gdal_apps_dir");
+                System.out.println("gdal_apps_dir");
+
+                maxent_cmdpth = xr.getValue("cmdpth");
+                System.out.println("maxent_cmdpth");
 	}
 
 

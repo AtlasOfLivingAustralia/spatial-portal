@@ -41,8 +41,8 @@ public class ALOCWSController {
 
             long currTime = System.currentTimeMillis();
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath("/");
-            String outputpath = currentPath + "output/aloc/" + currTime + "/";
+            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            String outputpath = currentPath + "output" + File.separator + "aloc" + File.separator + currTime + File.separator;
             String outputfile = outputpath + "aloc.png";
             File fDir = new File(outputpath);
             fDir.mkdir();
@@ -87,8 +87,8 @@ public class ALOCWSController {
 
             long currTime = System.currentTimeMillis();
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath("/");
-            String outputpath = currentPath + "output/aloc/" + currTime + "/";
+            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            String outputpath = currentPath + "output" + File.separator + "aloc" + File.separator + currTime + File.separator;
             String outputfile = outputpath + "aloc.png";
             File fDir = new File(outputpath);
             fDir.mkdir();
@@ -110,7 +110,9 @@ public class ALOCWSController {
 
             AlocService.run(outputfile, envList, Integer.parseInt(groupCount), region, filter, Long.toString(currTime));
             CoordinateTransformer.generateWorldFiles(outputpath, "aloc");
+            System.out.println("OUT1: " + outputfile);
             outputfile=CoordinateTransformer.transformToGoogleMercator(outputfile);
+            System.out.println("OUT2: " + outputfile);
             
             /* register with LayerImgService */
 

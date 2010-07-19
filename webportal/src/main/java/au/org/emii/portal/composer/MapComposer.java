@@ -34,14 +34,21 @@ import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.PortalSessionUtilities;
+import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,6 +58,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -1743,9 +1753,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Tab component = null;
 
         switch (tab) {
-            /*case PortalSession.LAYER_TAB:
-            component = layerNavigationTab;
-            break;*/
+            case PortalSession.LAYER_TAB:
+            component = startNavigationTab;
+            break;
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTab;
                 break;
@@ -1772,9 +1782,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Component component = null;
 
         switch (tab) {
-            /*case PortalSession.LAYER_TAB:
-            component = layerNavigationTabContent;
-            break;*/
+            case PortalSession.LAYER_TAB:
+            component = startNavigationTabContent;
+            break;
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTabContent;
                 break;
@@ -1797,13 +1807,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return component;
     }
 
-    public void onClick$layerNavigationTab() {
+    /*public void onClick$layerNavigationTab() {
         activateNavigationTab(PortalSession.LAYER_TAB);
     }
 
     public void onClick$areaNavigationTab() {
         activateNavigationTab(PortalSession.AREA_TAB);
-    }
+    }*/
 
     public void onClick$mapNavigationTab() {
         activateNavigationTab(PortalSession.MAP_TAB);
@@ -1813,9 +1823,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activateNavigationTab(PortalSession.START_TAB);
     }
 
-    public void onClick$searchNavigationTab() {
+    /*public void onClick$searchNavigationTab() {
         activateNavigationTab(PortalSession.SEARCH_TAB);
-    }
+    }*/
 
     public void onClick$linkNavigationTab() {
         ((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).callPullFromActiveLayers();
@@ -2301,8 +2311,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void afterCompose() {
         super.afterCompose();
 
+        //window settings, for printing
+        applyWindowParams();
+
         // showtime!
         load();
+    }
+
+    /**
+     * apply window parameters
+     *
+     * p = height in pixels,width in pixels,longitude1,latitude1,longitude2,latitude2
+     */
+    void applyWindowParams() {
+        String s = (String) Executions.getCurrent().getParameter("p");
+
+        //TODO: validate params
+        if (s != null) {
+            String [] pa = s.split(",");
+            setHeight(pa[0] + "px");
+
+            if(pa.length > 1){
+                setWidth(pa[1] + "px");
+            }
+        }
     }
 
     private Map getUserParameters(String userParams) {
@@ -2354,7 +2386,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         }
                     }
                     System.out.println("filter: " + filter);
-                    mapSpeciesByFilter(filter, filter);
+                    try {
+                        mapSpeciesByFilter(filter, filter);
+                    }catch(Exception e){}
                     showLayerTab = true;
                 }
             }
@@ -2691,67 +2725,89 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * dependant on whatever the ends up being on the map tab
      */
     public void onChange$tbxPrintHack() {
-        String innerHTML = tbxPrintHack.getValue();
+
+        //p == "s=height,width&e=long1,lat1,long2,lat2
+        String p = tbxPrintHack.getValue();
+        System.out.println("tbxPrintHack:" + p);
 
         String server = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/webportal/";
-        String header = "<?xml version=\"1.0\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><link rel=\"stylesheet\" type=\"text/css\" href=\"" + server + "css/map.css?\" media=\"screen\" /><body>";
-        String footer = "</body></html>";
+        server = "http://localhost:8085/webportal/";
 
-        /* format for reading locally */
+        this.getDesktop().getSession().getAttribute("");
 
-        //insert into <svg ...,  xmlns="http://www.w3.org/2000/svg"
-        innerHTML = innerHTML.replace("<svg ", "<svg  xmlns=\"http://www.w3.org/2000/svg\" ");
-
-        //insert 'server' into each src="img/"
-        innerHTML = innerHTML.replace("src=\"img/\"", "src=\"" + server + "img/\"");
-
-        //put /> on all img, input, br tags
-        String[] openTags = {"<img", "<input", "<br"};
-        int pos, j;
-        for (j = 0; j < openTags.length; j++) {
-            pos = 0;
-            //find next start of tag
-            while ((pos = innerHTML.indexOf(openTags[j], pos)) > 0) {
-                //find next end of tag and insert " /"
-                pos = innerHTML.indexOf(">", pos);
-                innerHTML = innerHTML.substring(0, pos) + " /" + innerHTML.substring(pos);
-            }
-        }
-
-        //write to temp file
-        String filePath = "/mnt/ala/test.xml";
+        //?JSESSIONID=?
+        String jsessionid = "";
         try {
-            FileWriter fw = new FileWriter(filePath);
-            fw.append(header).append(innerHTML).append(footer);
-            fw.close();
+            //get cookie
+
+                for(Cookie c : ((HttpServletRequest)Executions.getCurrent().getNativeRequest()).getCookies()) {
+                    if( c.getName().equalsIgnoreCase("JSESSIONID")){
+                        jsessionid = c.getValue();
+                    }
+                }
+
         } catch (Exception e) {
-            e.printStackTrace();
+                e.printStackTrace();
         }
 
+        String outputid = String.valueOf(System.currentTimeMillis());
 
+        System.out.println("Printing session:" + jsessionid + " outputid:" + outputid);
+        
         //output image
-        String outputImage = "/mnt/ala/map.jpg";
-        String outputPDF = "/mnt/ala/map.pdf";
+        String outputImage = "d:\\mnt\\ala\\printing\\output\\map" + outputid + ".jpg";
+        String outputPDF = "d:\\mnt\\ala\\printing\\output\\map" + outputid + ".pdf";
 
         //process to pdf
-        String cmdXmlToJpg = "/mnt/ala/printing/wkhtmltoimage --load-error-handling ignore " + filePath + " " + outputImage;
+        String cmdXmlToPng = "d:\\mnt\\ala\\printing\\wkhtmltoimage"
+                + " --cookie JSESSIONID " + jsessionid
+                + " --load-error-handling ignore"
+                + " --javascript-delay 45000"   //delay 45s for tiles to load                
+                + " " + server + "?" + p + " " + outputImage;
+
         String cmdJpgToPdf = "convert " + outputImage + " " + outputPDF;
 
         Runtime runtime = Runtime.getRuntime();
         try {
-            /* Xml to Jpg */
-            Process proc = runtime.exec(cmdXmlToJpg);
+            /* Xml to Jpg 
+            Process proc = runtime.exec(cmdXmlToPng);
             InputStreamReader isr = new InputStreamReader(proc.getInputStream());
             BufferedReader br = new BufferedReader(isr);
             String line;
-            System.out.printf("Output of running %s is:", cmdXmlToJpg);
+            System.out.printf("Output of running %s is:", cmdXmlToPng);
             while ((line = br.readLine()) != null) {
                 System.out.println(line);
             }
             int exitVal = proc.waitFor();
-            System.out.println("exitVal: " + exitVal);
+            System.out.println("exitVal: " + exitVal);*/
 
-            /* Jpg to Pdf */
+             Process proc = runtime.exec(cmdXmlToPng);
+
+            System.out.println("Setting up output stream readers");
+            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
+            InputStreamReader eisr = new InputStreamReader(proc.getErrorStream());
+            BufferedReader br = new BufferedReader(isr);
+            BufferedReader ebr = new BufferedReader(eisr);
+            String line;
+
+            System.out.printf("Output of running %s is:", cmdXmlToPng);
+
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            while ((line = ebr.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            int exitVal = proc.waitFor();
+
+            // any error???
+            //return exitVal;
+
+            System.out.println(exitVal);
+
+            /* Jpg to Pdf 
             proc = runtime.exec(cmdJpgToPdf);
             isr = new InputStreamReader(proc.getInputStream());
             br = new BufferedReader(isr);
@@ -2761,9 +2817,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             exitVal = proc.waitFor();
             System.out.println("exitVal: " + exitVal);
+            
+            Filedownload.save(new File(outputPDF), "application/pdf");*/
 
+            Filedownload.save(new File(outputImage), "image/png");
 
-            Filedownload.save(new File(outputPDF), "application/pdf");
             return;
         } catch (Exception e) {
             e.printStackTrace();

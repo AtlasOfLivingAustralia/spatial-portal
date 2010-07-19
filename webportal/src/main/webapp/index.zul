@@ -16,8 +16,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
 
     <html><![CDATA[
+            <link rel="stylesheet" href="css/style_portal" type="text/css" media="screen" />
+
             <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
             <link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
+
+            <link rel="stylesheet" href="css/style_portal" type="text/css" media="screen" />
         ]]>
     </html>
 
@@ -209,10 +213,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         </script>
 
         <textbox id="tbxPrintHack" visible="false"/>
-        <script type="text/JavaScript">
-            function printHack() {
+        <script type="text/JavaScript"><![CDATA[
+            function printHack(o) {
             var tbx = $e('${tbxPrintHack.uuid}');
-            var mapHTML = window.frames["mapFrame"].document.getElementById("mapbody").innerHTML;
+            
+            //var mapHTML = window.frames["mapFrame"].document.getElementById("mapbody").innerHTML;
+
+            var size = "p=" + document.body.clientHeight + "," + document.body.clientWidth;
+            var extent = map.getExtent().toBBOX();
+            var mapHTML = size + "," + extent;
 
             tbx.value = mapHTML;
 
@@ -229,6 +238,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             tbx.fireEvent('onchange');
             }
             }
+            ]]>
         </script>
 
 
@@ -378,7 +388,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     </div>
 
                     <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
-                        <leftMenuLinks id="leftMenuLinks" />
+                        <leftMenuLinks id="leftMenuLinks" />                        
                     </div>
                     <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
 
@@ -789,13 +799,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </tabbox>
 
                             <separator />
-                            <button label="save map as PDF" action="onclick: printHack();"  visible="false"/>
-
-
-
-
-
-
+                            <button label="save map as PDF" action="onclick: printHack('');"  visible="false"/>
+                          
                         </div>
                         <!--  <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
                         <label sclass="h2 title" value="Define your area of interest" /> -->
@@ -859,12 +864,34 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </south>
         </borderlayout>
 
-        <script type="text/javascript">
+        <script type="text/javascript"><![CDATA[
+            var donemapload = false;
             var onIframeMapFullyLoaded = function() {
             ${session.attributes.portalSession.onIframeMapFullyLoaded}
+
+                //look for extents in href
+                var h0 = window.location.href.split('?');
+                
+                if(h0.length > 1){
+                    var h1 = h0[1].split("&");
+                    var i;
+                    for(i=0;i<h1.length;i++){
+                        if(h1[i].substring(0,2) == "p="){
+                            h1[i] = h1[i].substring(2,h1[i].length);
+                            var h2 = h1[i].split(",");
+                            if(h2.length > 5){
+                                map.zoomToExtent(new OpenLayers.Bounds(h2[2],h2[3],h2[4],h2[5]));
+                            }
+                        }
+                    }
+                }
+
+                donemapload = true;
             };
 
             jQuery('.hidden_image :hidden').show();
+
+            ]]>
         </script>
 
 

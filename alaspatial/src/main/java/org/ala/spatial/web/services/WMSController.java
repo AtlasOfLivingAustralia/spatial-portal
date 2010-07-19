@@ -81,10 +81,10 @@ public class WMSController {
                 lsid = subspecies_lsid;
             }
 
-            String currentPath = session.getServletContext().getRealPath("/");
-            File baseDir = new File(currentPath + "output/sampling/");
+            String currentPath = session.getServletContext().getRealPath(File.separator);
+            File baseDir = new File(currentPath + "output" + File.separator + "sampling" + File.separator);
             if (!lsid.equalsIgnoreCase("")) {
-                String outputfile = baseDir + "/" + lsid + ".png";
+                String outputfile = baseDir + File.separator + lsid + ".png";
                 System.out.println("Checking if already present: " + outputfile);
                 File imgFile = new File(outputfile);
                 if (imgFile.exists()) {

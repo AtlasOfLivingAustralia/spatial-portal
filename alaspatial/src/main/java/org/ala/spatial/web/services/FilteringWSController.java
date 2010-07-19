@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class FilteringWSController {
 
     int[] colours = {0xFFFF99FF, 0XFF99FFFF, 0XFF9999FF, 0XFF4444FF, 0XFF44FFFF, 0XFFFF44FF};
-    private String outputpath = "/output/filtering/";
+    private String outputpath = File.separator + "output" + File.separator + "filtering" + File.separator;
 
     @RequestMapping(value = "/init", method = RequestMethod.GET)
     public
@@ -46,7 +46,7 @@ public class FilteringWSController {
 
             HttpSession session = req.getSession(true);
 
-            File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + "/"));
+            File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + File.separator));
             workingDir.mkdirs();
 
             return pid;
@@ -122,7 +122,7 @@ public class FilteringWSController {
 
                     HttpSession session = req.getSession(true);
 
-                    File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + pid + "/"));
+                    File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
 
                     File file = File.createTempFile("spl", ".png", workingDir);
                     //File file = new File(workingDir + "/filtering.png");
@@ -227,7 +227,7 @@ public class FilteringWSController {
 
                     HttpSession session = req.getSession(true);
 
-                    File workingDir = new File(session.getServletContext().getRealPath("/output/filtering/" + pid + "/"));
+                    File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
 
                     File file = File.createTempFile("spl", ".png", workingDir);
                     //File file = new File(workingDir + "/filtering.png");
@@ -376,12 +376,12 @@ public class FilteringWSController {
             String[] files = new String[1];
             files[0] = filepath;
 
-            String currentPath = req.getSession().getServletContext().getRealPath("/");
+            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             long currTime = System.currentTimeMillis();
-            String outputpath = currentPath + "/output/filtering/";
+            String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
-            String outfile = fDir.getAbsolutePath() + "/filter_samples_" + currTime + ".zip";
+            String outfile = fDir.getAbsolutePath() + File.separator + "filter_samples_" + currTime + ".zip";
             Zipper.zipFiles(files, outfile);
 
             return "output/filtering/filter_samples_" + currTime + ".zip";

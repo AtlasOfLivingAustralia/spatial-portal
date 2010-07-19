@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.maxent;
 
 import java.util.Iterator;
 import java.util.List;
+import org.ala.spatial.util.TabulationSettings;
 
 /**
  * Settings for the MaxEnt process. Sets up the basic/default settings
