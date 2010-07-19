@@ -7,7 +7,7 @@
             apply="org.ala.spatial.analysis.web.SelectionController">
 
 
-<style>
+        <style>
             .z-loading {
             top: 50% !important;
             left: 45% !important;
@@ -25,37 +25,37 @@ An area can be defined by any of the options below. Once defined, the area can b
             <separator/>
             <hbox width="95%">
                 <div style="float: left; ">
-            <html><![CDATA[<b>Active Area</b>]]></html></div>
+                <html><![CDATA[<b>Active Area</b>]]></html></div>
             <div style="float: right; "><button label="reset active area" id="btnClearSelection" visible="true" /></div></hbox>
             <separator/>
-           
-                <radiogroup id="rgAreaSelection" visible="false">
-                    <vbox>
-                        <hbox><radio label="User-defined &lt;b&gt;box&lt;/b&gt;" id="rdoBoxSelection"/>
-                            <!--<html><![CDATA[User-defined <b>box</b>]]></html>-->
-                        </hbox>
-                        <!--<radio label="From current view" id="rdoExtentsSelection"/> -->
-                        <hbox><radio label="User-defined &lt;b&gt;polygon&lt;/b&gt;" id="rdoPolygonSelection"/>
-                            <!--<html><![CDATA[User-defined <b>polygon</b>]]></html>-->
-                        </hbox>
-                        <hbox><radio label="User-defined &lt;b&gt;point&lt;/b&gt; and &lt;b&gt;radius&lt;/b&gt;" id="rdoPointRadiusSelection"/>
-                            <!--<html><![CDATA[User-defined <b>point</b> and <b>radius</b>]]></html>-->
-                        </hbox>
-                        <hbox><radio label="Predefined (displayed) &lt;b&gt;map polygon&lt;/b&gt;" id="rdoExistingFeatureSelection"/>
-                            <!--<html><![CDATA[Predefined (displayed) <b>map polygon</b>]]></html>-->
-                        </hbox>
-                        <!--<radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
-                        <hbox><radio label="User-defined &lt;b&gt;environmental envelope&lt;/b&gt;" id="rdoEnvironmentalEnvelope"/>
-                            <!-- <html><![CDATA[User-defined <b>environmental envelope</b>]]></html>-->
-                        </hbox>
-                    </vbox>
-                    <!--<button label="Polygon Selection" id="btnPolygonSelection"/>
+
+            <radiogroup id="rgAreaSelection" visible="false">
+                <vbox>
+                    <hbox><radio label="User-defined &lt;b&gt;box&lt;/b&gt;" id="rdoBoxSelection"/>
+                        <!--<html><![CDATA[User-defined <b>box</b>]]></html>-->
+                    </hbox>
+                    <!--<radio label="From current view" id="rdoExtentsSelection"/> -->
+                    <hbox><radio label="User-defined &lt;b&gt;polygon&lt;/b&gt;" id="rdoPolygonSelection"/>
+                        <!--<html><![CDATA[User-defined <b>polygon</b>]]></html>-->
+                    </hbox>
+                    <hbox><radio label="User-defined &lt;b&gt;point&lt;/b&gt; and &lt;b&gt;radius&lt;/b&gt;" id="rdoPointRadiusSelection"/>
+                        <!--<html><![CDATA[User-defined <b>point</b> and <b>radius</b>]]></html>-->
+                    </hbox>
+                    <hbox><radio label="Predefined (displayed) &lt;b&gt;map polygon&lt;/b&gt;" id="rdoExistingFeatureSelection"/>
+                        <!--<html><![CDATA[Predefined (displayed) <b>map polygon</b>]]></html>-->
+                    </hbox>
+                    <!--<radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
+                    <hbox><radio label="User-defined &lt;b&gt;environmental envelope&lt;/b&gt;" id="rdoEnvironmentalEnvelope"/>
+                        <!-- <html><![CDATA[User-defined <b>environmental envelope</b>]]></html>-->
+                    </hbox>
+                </vbox>
+                <!--<button label="Polygon Selection" id="btnPolygonSelection"/>
 
         <button label="Box Selection" id="btnBoxSelection"/>
 
         <button label="Clear Selection" id="btnClearSelection"/> -->
-                </radiogroup>
-                <hbox width="95%">
+            </radiogroup>
+            <hbox width="95%">
                 <combobox width="100%" id="cbAreaSelection" autodrop="true">
                     <comboitem label="Draw bounding box..." id="ciBoundingBox" />
                     <comboitem label="Draw polygon..." id="ciPolygon" />
@@ -69,14 +69,14 @@ An area can be defined by any of the options below. Once defined, the area can b
                 </combobox>
 
                 <div style="float: right"><button image="/img/information.png"
-                                    onClick="areaInfo.setVisible(!areaInfo.isVisible());"
-                                    tooltiptext="more information"/>
-                <button id="zoomtoextent" image="/img/zoom_in.png"
-                                    tooltiptext="zoom to extent"/></div>
+                                                      onClick="areaInfo.setVisible(!areaInfo.isVisible());"
+                                                      tooltiptext="more information"/>
+                    <button id="zoomtoextent" image="/img/zoom_in.png"
+                        tooltiptext="zoom to extent"/></div>
 
-                </hbox>
-            </vbox>
-       
+            </hbox>
+        </vbox>
+
         <div visible="false" id="areaInfo">
             <div sclass="highlighted" visible="false" >
                 <label sclass="word-wrap"
@@ -87,11 +87,11 @@ An area can be defined by any of the options below. Once defined, the area can b
                 <vbox>
                     <hbox>
                         <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
-                    <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
+                        <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
                     </hbox>
                     <hbox>
-                    <button label="Show Species" id="btnShowSpecies" visible="false" />
-                    
+                        <button label="Show Species" id="btnShowSpecies" visible="false" />
+
                     </hbox>
                 </vbox>
             </div>
@@ -105,40 +105,45 @@ An area can be defined by any of the options below. Once defined, the area can b
         <textbox id="boxGeom" visible="false"/>
         <script type="text/javascript">
             function setSelectionGeometry(geometry) {
-            var tbxSelectionGeom = $e('${selectionGeom.uuid}');
-            tbxSelectionGeom.value = geometry;
+                // transform the geometry from Google Projection to EPSG:4326
+                var mapObj = window.frames.mapFrame.map;
+                geometry.transform(mapObj.projection, mapObj.displayProjection);
+                var tbxSelectionGeom = $e('${selectionGeom.uuid}');
+                tbxSelectionGeom.value = geometry;
 
-            if (document.createEvent) {
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent( 'blur', false, false);
-            tbxSelectionGeom.dispatchEvent(evt);
+                if (document.createEvent) {
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent( 'blur', false, false);
+                    tbxSelectionGeom.dispatchEvent(evt);
 
-            var evt2 = document.createEvent('HTMLEvents');
-            evt2.initEvent( 'change', false, false);
-            tbxSelectionGeom.dispatchEvent(evt2);
+                    var evt2 = document.createEvent('HTMLEvents');
+                    evt2.initEvent( 'change', false, false);
+                    tbxSelectionGeom.dispatchEvent(evt2);
+                } else if (document.createEventObject) {
+                    tbxSelectionGeom.fireEvent('onblur');
+                    tbxSelectionGeom.fireEvent('onchange');
+                }
             }
-            else if (document.createEventObject) {
-            tbxSelectionGeom.fireEvent('onblur');
-            tbxSelectionGeom.fireEvent('onchange');
-            }
-            }
+
             function setBoxGeometry(geometry) {
-            var tbxBoxGeom = $e('${boxGeom.uuid}');
-            tbxBoxGeom.value = geometry;
+                // transform the geometry from Google Projection to EPSG:4326
+                var mapObj = window.frames.mapFrame.map;
+                geometry.transform(mapObj.projection, mapObj.displayProjection);
+                var tbxBoxGeom = $e('${boxGeom.uuid}');
+                tbxBoxGeom.value = geometry;
 
-            if (document.createEvent) {
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent( 'blur', false, false);
-            tbxBoxGeom.dispatchEvent(evt);
+                if (document.createEvent) {
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent( 'blur', false, false);
+                    tbxBoxGeom.dispatchEvent(evt);
 
-            var evt2 = document.createEvent('HTMLEvents');
-            evt2.initEvent( 'change', false, false);
-            tbxBoxGeom.dispatchEvent(evt2);
-            }
-            else if (document.createEventObject) {
-            tbxBoxGeom.fireEvent('onblur');
-            tbxBoxGeom.fireEvent('onchange');
-            }
+                    var evt2 = document.createEvent('HTMLEvents');
+                    evt2.initEvent( 'change', false, false);
+                    tbxBoxGeom.dispatchEvent(evt2);
+                } else if (document.createEventObject) {
+                    tbxBoxGeom.fireEvent('onblur');
+                    tbxBoxGeom.fireEvent('onchange');
+                }
             }
         </script>
     </window>

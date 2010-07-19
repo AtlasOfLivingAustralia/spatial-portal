@@ -646,6 +646,10 @@ public class FilteringWCController extends UtilityComposer {
         bbox.add(-44.0000000007);
         bbox.add(154.00000000084);
         bbox.add(-9.0);
+        //bbox.add(12467782.96884664);
+        //bbox.add(-5465442.183322753);
+        //bbox.add(17143201.58216413);
+        //bbox.add(-1006021.0627551343);
 
         mc.addImageLayer(pid, label, uri, opacity, bbox);
 

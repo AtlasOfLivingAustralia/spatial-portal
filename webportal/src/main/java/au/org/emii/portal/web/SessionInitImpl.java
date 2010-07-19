@@ -142,7 +142,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
             String script =
                     openLayersJavascript.initialiseMap()
                     + openLayersJavascript.iFrameReferences
-                    + openLayersJavascript.activateMapLayer(portalSession.getCurrentBaseLayer())
+                    //+ openLayersJavascript.activateMapLayer(portalSession.getCurrentBaseLayer())
                     + openLayersJavascript.activateMapLayers(portalSession.getActiveLayers())
                     + openLayersJavascript.zoomToBoundingBox(portalSessionUtilities.getCurrentBoundingBox(portalSession));
 

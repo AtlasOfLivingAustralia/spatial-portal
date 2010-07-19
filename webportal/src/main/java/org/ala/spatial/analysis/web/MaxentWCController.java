@@ -335,7 +335,7 @@ public class MaxentWCController extends UtilityComposer {
 
             this.status.setValue("Status: " + status[1]);
             if (status[1].equalsIgnoreCase("success")) {
-                String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid[1] + "&styles=alastyles&srs=EPSG:4326&TRANSPARENT=true&FORMAT=image%2Fpng";
+                String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid[1] + "&styles=alastyles&FORMAT=image%2Fpng";
 
                 String legendurl = geoServer
                         + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"

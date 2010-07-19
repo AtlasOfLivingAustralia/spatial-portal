@@ -430,7 +430,7 @@ float: left;
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_panright img,
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomin img,
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomout img,
-#controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_Map_8 img
+#controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_Map_9 img
 {
    display: none; 
 }
@@ -458,12 +458,12 @@ float: left;
 {
     background-position: -2200px 0;
 }
-#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_8 img
+#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_9 img
 {
     display: none;
 }
 
-#controlPanZoom #OpenLayers_Control_PanZoomBar_ZoombarOpenLayers\002E Map_8
+#controlPanZoom #OpenLayers_Control_PanZoomBar_ZoombarOpenLayers\002E Map_9
 {
     top: 99px! important;
     left: 11px! important;
@@ -474,7 +474,7 @@ float: left;
 
 
 
-#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_8 
+#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_9
 {
     left: 0px;
     z-index: 99;
@@ -487,7 +487,7 @@ float: left;
     padding: 3px;
 }
 
-#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_8:hover 
+#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_9:hover
 {
     background-position: -2400px 0;
 }
