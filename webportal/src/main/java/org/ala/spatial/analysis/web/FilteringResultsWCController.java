@@ -156,9 +156,6 @@ public class FilteringResultsWCController extends UtilityComposer {
         return false;
     }
     public void refreshCount() {
-        populateList();
-
-        /*
         //check if tab is open        
         if (!isTabOpen() || !updateParameters()) {
             return;
@@ -187,7 +184,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             refreshButton2.setVisible(true);
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
     public void onClick$download() {
