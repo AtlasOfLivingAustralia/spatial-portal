@@ -10,6 +10,7 @@ import org.ala.spatial.analysis.service.FilteringImage;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.FilteringIndex;
+import org.ala.spatial.util.CoordinateTransformer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -145,7 +146,13 @@ public class FilteringWSController {
 
                     filteringImage2.writeImage();
 
-                    return file.getName();
+                    //return file.getName();
+
+                    String filenamepart = file.getName();
+                    filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf("."));
+                    CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart);
+                    String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
+                    return outputfile.substring(outputfile.lastIndexOf("/")+1);
                 }
             }
 
@@ -244,7 +251,13 @@ public class FilteringWSController {
 
                     filteringImage2.writeImage();
 
-                    return file.getName();
+                    //return file.getName();
+
+                    String filenamepart = file.getName();
+                    filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf(".")); 
+                    CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart);
+                    String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
+                    return outputfile.substring(outputfile.lastIndexOf("/")+1);
                 }
             }
 
@@ -267,12 +280,12 @@ public class FilteringWSController {
             if (shape == null) {
                 shape = "none";
             } else {
-                shape = URLDecoder.decode(shape,"UTF-8");
+                shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
                 return "";  //error
             }
-            
+
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String count = String.valueOf(FilteringService.getSpeciesCount(pid, region));
@@ -307,7 +320,7 @@ public class FilteringWSController {
             if (shape == null) {
                 shape = "none";
             } else {
-                shape = URLDecoder.decode(shape,"UTF-8");
+                shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
                 return "";  //error
@@ -347,14 +360,14 @@ public class FilteringWSController {
             if (shape == null) {
                 shape = "none";
             } else {
-                shape = URLDecoder.decode(shape,"UTF-8");                
+                shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
                 return "";  //error
             }
 
             System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
-            
+
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String filepath = FilteringService.getSamplesList(pid, region);

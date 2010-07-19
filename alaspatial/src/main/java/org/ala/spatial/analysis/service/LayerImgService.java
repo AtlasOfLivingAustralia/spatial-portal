@@ -18,7 +18,7 @@ import org.ala.spatial.util.TabulationSettings;
 import org.apache.commons.io.FileUtils;
 
 /**
-* service seting up layer image for webservice
+* service setting up layer image for webservice
 *  
 * path from pid exists in output/layer 
 * 

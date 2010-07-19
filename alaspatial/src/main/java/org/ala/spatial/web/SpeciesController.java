@@ -1,14 +1,19 @@
 package org.ala.spatial.web;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpSession;
+import org.ala.spatial.analysis.index.OccurrencesIndex;
 
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.CommonName;
+import org.ala.spatial.model.ValidTaxonName;
 import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -96,7 +101,7 @@ public class SpeciesController {
 
             System.out.println("Looking up names for: " + name);
 
-            TabulationSettings.load(); 
+            TabulationSettings.load();
 
             name = URLDecoder.decode(name, "UTF-8");
 
@@ -134,5 +139,42 @@ public class SpeciesController {
 
         return slist.toString();
 
+    }
+
+    @RequestMapping(value = "/lsid/{lsid}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    List<ValidTaxonName> getTaxonByLsid(@PathVariable("lsid") String lsid) {
+        try {
+            lsid = URLDecoder.decode(lsid, "UTF-8");
+            lsid=lsid.replaceAll("__",".");
+            System.out.println("Starting out search for: " + lsid); 
+            List l = speciesDao.findById(lsid);
+            System.out.println("re-returning " + l.size() + " records");
+
+            /*
+            int[] recs = OccurrencesIndex.lookup("institutionCode","WAM");
+            int[] recs2 = OccurrencesIndex.lookup("collectionCode","MAMM");
+            int[] recs3 = OccurrencesIndex.lookup("collectionCode","ARACH");
+
+            int[] recs23 = recs2+recs3;
+            sort(recs);
+            sort(recs23);
+            int[] finalRecs = removeNotInList(recs,recs23);
+
+            double[][] pts = OccurrencesIndex.getPointsPairs();
+            for (i=0;i<finalRecs.length;i++) {
+                pts[finalRecs[i]][0];
+                pts[finalRecs[i]][1];
+            }
+             */
+
+
+            return l;
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(SpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
     }
 }

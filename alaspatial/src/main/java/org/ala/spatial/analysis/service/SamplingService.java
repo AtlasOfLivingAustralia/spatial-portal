@@ -27,6 +27,7 @@ public class SamplingService {
         TabulationSettings.load();
     }
 
+
     /**
      * gets samples; occurrences records + optional intersecting layer values,
      * as csv
@@ -36,6 +37,20 @@ public class SamplingService {
      * @return samples as csv, String
      */
     public String sampleSpecies(String filter, String[] layers) {
+        return sampleSpecies(filter, layers, null);
+    }
+
+
+    /**
+     * gets samples; occurrences records + optional intersecting layer values,
+     * as csv
+     *
+     * @param filter species name as String
+     * @param layers list of layer names of additional data to include as String []
+     * @param baseDir base directory where the file should be written to
+     * @return samples as csv, String
+     */
+    public String sampleSpecies(String filter, String[] layers, File baseDir) {
         StringBuffer output = new StringBuffer();
 
         /* output header */
@@ -63,7 +78,12 @@ public class SamplingService {
             ArrayList<String[]> columns = new ArrayList<String[]>(layers.length + 1);
 
             try {
-                File temporary_file = java.io.File.createTempFile("sample", ".csv");
+                File temporary_file = null;
+                if (baseDir == null) {
+                    temporary_file = File.createTempFile("sample", ".csv");
+                } else {
+                    temporary_file = File.createTempFile("sample", ".csv", baseDir);
+                }
                 FileWriter fw = new FileWriter(temporary_file);
 
                 fw.append(output.toString());
