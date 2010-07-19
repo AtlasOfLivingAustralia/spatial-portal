@@ -2231,8 +2231,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         int i, j;
 
-        /* for matching cells, test each record within  */
-        StringBuffer sb = new StringBuffer();
+        /* for matching cells, test each record within  */       
 
         IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
         IndexedRecord [] familyIdx = all_indexes.get(all_indexes.size()-3); //TODO: dynamic
@@ -2283,7 +2282,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         System.out.println("getSpeciesInside(): t2-t1=" + (t2-t1) + " t3-t2=" + (t3-t2) + " t4-t3=" + (t4-t3));
 
-        return sb.toString();
+        return output;
     }
 
     static String getIndexedValue(int index, int record) {
@@ -2432,7 +2431,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 break;
             }
         }
-
 
         if (region == null) {
             //no region, use all
