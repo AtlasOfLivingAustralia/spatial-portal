@@ -26,7 +26,7 @@
     <ColorMap extended="true">
    
 
-     	<ColorMapEntry color="#ffffff" quantity="-9999.0"/>
+     	<ColorMapEntry color="#ffffff" quantity="-9999"/>
      	
  	<!--<ColorMapEntry color="#0000FF" quantity="0.0"/>
  	<ColorMapEntry color="#00CCFF" quantity="2500.0"/>

@@ -1,17 +1,18 @@
 #!/usr/bin/python26
 import os
 import shutil
+import edlconfig
 
 #for root, dirs, files in os.walk("/mnt/transfer/MCAS_1k_Datapack/Climate/erosivity.tif"):
-for root, dirs, files in os.walk("/mnt/edl-scripts"):
+for root, dirs, files in os.walk(edlconfig.dataset):
 	for name in files:
 		if ".tif" in name:
 			layername = name.replace(".tif","")
 			os.system("gdal_translate -of EHdr " + os.path.join(root,name) + " " + layername + ".bil")
-			shutil.move(layername+".bil",layername+".gri")
+			shutil.move(layername+".bil",os.path.join(edlconfig.dataset,"Diva",layername+".gri"))
 			os.system("gdalinfo -mm " + os.path.join(root,name))
 			p = os.popen("gdalinfo -mm " + os.path.join(root,name),"r")
-                      	fout = open(layername + ".grd",'w')
+                      	fout = open(os.path.join(edlconfig.dataset,"Diva",layername + ".grd"),'w')
 			text = open("GRDTEMPLATE",'r').read() 
 			while 1:
                                 line = p.readline()
@@ -42,7 +43,6 @@ for root, dirs, files in os.walk("/mnt/edl-scripts"):
 				text = text.replace("RESOLUTIONX","1")
 				text = text.replace("RESOLUTIONY","1")
 				text = text.replace("TITLE",layername)
-		# ... replace other thinggss 
                         fout.write(text)
 
 
