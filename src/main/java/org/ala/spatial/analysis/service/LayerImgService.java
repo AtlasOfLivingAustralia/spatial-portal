@@ -45,10 +45,11 @@ import org.apache.commons.io.FileUtils;
 public class LayerImgService {	
 	public static boolean registerLayerImage(String outputlayerdir, String pid, String srcimagepath, String extents, String legend){
 		/* check directory exists at outputlayerdir */
-		String path = outputlayerdir + "output/layers/" + pid + "/";
-		System.out.println("about to create directory: " + outputlayerdir + "output/layers/" + pid);
+		String path = outputlayerdir + "output" + File.separator + "layers" + File.separator + pid + File.separator;
+		System.out.println("about to create directory: " + outputlayerdir + "output" + File.separator + "layers" + File.separator + pid + " : "
+                        + " :FOR IMG>" + srcimagepath);
 		try {
-			File workingDir = new File(outputlayerdir + "output/layers/" + pid);
+			File workingDir = new File(outputlayerdir + "output" + File.separator + "layers" + File.separator + pid);
 			System.out.println("createdir=" + workingDir.mkdir());
 		} catch (Exception e) {
 			e.printStackTrace();

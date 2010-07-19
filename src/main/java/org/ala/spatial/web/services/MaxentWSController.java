@@ -115,8 +115,8 @@ public class MaxentWSController {
             msets.setRandomTestPercentage(Integer.parseInt(req.getParameter("txtTestPercentage")));
             msets.setEnvPath(ssets.getEnvDataPath());
             msets.setEnvVarToggler("world");
-            msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output/maxent/" + currTime + "/"));
-            msets.setOutputPath(currentPath + "output/maxent/" + currTime + "/");
+            msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator));
+            msets.setOutputPath(currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator);
             if (req.getParameter("chkJackknife") != null) {
                 msets.setDoJackknife(true);
             }
@@ -141,7 +141,7 @@ public class MaxentWSController {
 
                 // rename the env filenames to their display names
                 for (int ei = 0; ei < envnameslist.length; ei++) {
-                    readReplace(currentPath + "output/maxent/" + currTime + "/species.html", envpathlist[ei], envnameslist[ei]);
+                    readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator + "species.html", envpathlist[ei], envnameslist[ei]);
                 }                
 
                 Hashtable htGeoserver = ssets.getGeoserverSettings();
@@ -281,8 +281,8 @@ public class MaxentWSController {
             msets.setRandomTestPercentage(Integer.parseInt(req.getParameter("txtTestPercentage")));
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
             msets.setEnvVarToggler("world");
-            msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output/maxent/" + currTime + "/"));
-            msets.setOutputPath(currentPath + "output/maxent/" + currTime + "/");
+            msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator));
+            msets.setOutputPath(currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator);
             if (req.getParameter("chkJackknife") != null) {
                 msets.setDoJackknife(true);
             }
@@ -307,7 +307,7 @@ public class MaxentWSController {
 
                 // rename the env filenames to their display names
                 for (int ei = 0; ei < envnameslist.length; ei++) {
-                    readReplace(currentPath + "output/maxent/" + currTime + "/species.html", envpathlist[ei], envnameslist[ei]);
+                    readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator + "species.html", envpathlist[ei], envnameslist[ei]);
                 }
 
                 Hashtable htGeoserver = ssets.getGeoserverSettings();

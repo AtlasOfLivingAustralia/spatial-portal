@@ -64,8 +64,8 @@ public class LayerImgWSController {
         try {
             pid = req.getParameter("pid");
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath("/");
-            String outputpath = /* currentPath + */ "output/layers/" + pid + "/";
+            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            String outputpath = /* currentPath + */ "output" + File.separator + "layers" + File.separator + pid + File.separator;
             String layerimage = outputpath + "img.png";            
             String layerlegend = outputpath + "legend.txt";
             String layerextents = outputpath + "extents.txt";
@@ -89,8 +89,8 @@ public class LayerImgWSController {
             String green = req.getParameter("green");	// 0-255
             String blue = req.getParameter("blue");		// 0-255
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath("/");
-            String outputpath = currentPath + "output/layers/" + pid + "/";
+            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            String outputpath = currentPath + "output" + File.separator + "layers" + File.separator + pid + File.separator;
             String layerimage = outputpath + "img.png";
             
             LayerImgService.changeColour(outputpath,Integer.parseInt(idx),Integer.parseInt(red),Integer.parseInt(green),Integer.parseInt(blue));

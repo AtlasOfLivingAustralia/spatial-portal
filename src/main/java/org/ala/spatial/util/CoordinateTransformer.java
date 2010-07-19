@@ -22,7 +22,7 @@ public class CoordinateTransformer {
         try {
 
             String gdal_path = TabulationSettings.gdal_apps_dir;
-            if (!gdal_path.endsWith("/")) gdal_path += "/";
+            //if (!gdal_path.endsWith("/")) gdal_path += "/";
             
             System.out.println("Got gdal_path: " + gdal_path);
 
@@ -32,7 +32,7 @@ public class CoordinateTransformer {
             File oImg = new File(imgfilepath);
 
 
-            String command = base_command + imgfilepath + " " + oImg.getParent() + "/t_" + oImg.getName();
+            String command = base_command + imgfilepath + " " + oImg.getParent() + File.separator + "t_" + oImg.getName();
 
             System.out.println("Exec'ing " + command);
             Process proc = runtime.exec(command);
@@ -67,7 +67,7 @@ public class CoordinateTransformer {
                 //oImg.delete();
                 //File tImg = new File (oImg.getAbsolutePath() + "/t_" + oImg.getName());
                 //tImg.renameTo(oImg);
-                return oImg.getParent() + "/t_" + oImg.getName();
+                return oImg.getParent() + File.separator + "t_" + oImg.getName();
             }
         } catch (Exception e) {
             System.out.println("OOOOPPPSSS: " + e.toString());
@@ -81,7 +81,7 @@ public class CoordinateTransformer {
     public static void generateWorldFiles(String outputpath, String baseFilename) {
         try {
 
-            if (!outputpath.endsWith("/")) outputpath += "/"; 
+            if (!outputpath.endsWith(File.separator)) outputpath += File.separator;
 
             System.out.println("Generating world files for " + baseFilename + " under " + outputpath); 
 
