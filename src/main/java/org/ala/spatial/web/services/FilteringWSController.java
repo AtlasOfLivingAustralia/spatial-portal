@@ -47,6 +47,7 @@ public class FilteringWSController {
             HttpSession session = req.getSession(true);
 
             File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + File.separator));
+            //File workingDir = new File(TabulationSettings.base_output_dir + outputpath);
             workingDir.mkdirs();
 
             return pid;
@@ -123,6 +124,7 @@ public class FilteringWSController {
                     HttpSession session = req.getSession(true);
 
                     File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
+                    //File workingDir = new File(TabulationSettings.base_output_dir + outputpath);
 
                     File file = File.createTempFile("spl", ".png", workingDir);
                     //File file = new File(workingDir + "/filtering.png");
@@ -228,6 +230,7 @@ public class FilteringWSController {
                     HttpSession session = req.getSession(true);
 
                     File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
+                    //File workingDir = new File(TabulationSettings.base_output_dir + outputpath);
 
                     File file = File.createTempFile("spl", ".png", workingDir);
                     //File file = new File(workingDir + "/filtering.png");
@@ -377,6 +380,7 @@ public class FilteringWSController {
             files[0] = filepath;
 
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //String currentPath = TabulationSettings.base_output_dir;
             long currTime = System.currentTimeMillis();
             String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);

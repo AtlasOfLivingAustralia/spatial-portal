@@ -17,6 +17,7 @@ import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.Species;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SpatialSettings;
+import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,6 +232,7 @@ public class Maxent21Controller extends GenericForwardComposer {
         }
 
         String currentPath = Sessions.getCurrent().getWebApp().getRealPath("/");
+        //String currentPath = TabulationSettings.base_output_dir;
 
 
         // dump the species data to a file

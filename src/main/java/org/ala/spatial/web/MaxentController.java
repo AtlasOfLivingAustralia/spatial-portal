@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.dao.SpeciesDAO;
+import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ public class MaxentController {
         HttpSession session = req.getSession(false);
 
         String currentPath = session.getServletContext().getRealPath("/");
+        //String currentPath = TabulationSettings.base_output_dir;
         String sessionPath = currentPath + "sessiondata/" + session.getId() + "/";
 
         String query = (String) req.getParameter("spdata");

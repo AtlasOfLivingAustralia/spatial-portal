@@ -140,6 +140,12 @@ public class TabulationSettings {
     public static String gdal_apps_dir;
 
     /**
+     * base output directory where all the generated files go into
+     */
+    public static String base_output_dir;
+    public static String base_output_url;
+
+    /**
      * maxent path
      */
     public static String maxent_cmdpth;
@@ -309,6 +315,10 @@ public class TabulationSettings {
 
                 gdal_apps_dir = xr.getValue("gdal_apps_dir");
                 System.out.println("gdal_apps_dir");
+
+                base_output_dir = xr.getValue("base_output_dir");
+                base_output_url = xr.getValue("base_output_url");
+                System.out.println("base_output_dir: " + base_output_dir + " at " + base_output_url);
 
                 maxent_cmdpth = xr.getValue("cmdpth");
                 System.out.println("maxent_cmdpth");

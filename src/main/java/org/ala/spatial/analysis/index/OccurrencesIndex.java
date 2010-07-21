@@ -1280,7 +1280,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param key index value to lookup as String
      * @return records found as int [] or null for none
      */
-    static int [] lookup(int lookup_idx, String key) {
+    public static int [] lookup(int lookup_idx, String key) {
         loadIndexes();
         if (lookup_idx < extra_indexes.length) {
             return (int[])extra_indexes[lookup_idx].get(key);
@@ -1296,7 +1296,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param key index value to lookup as String
      * @return records found as int [] or null for none
      */
-    static int [] lookup(String lookupName, String key) {
+    public static int [] lookup(String lookupName, String key) {
         loadIndexes();
         String [] lookups = listLookups();
         for (int i=0;i<lookups.length;i++){

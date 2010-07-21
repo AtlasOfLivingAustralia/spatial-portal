@@ -276,13 +276,13 @@
 common names file as csv, no header, first 2 columns:
 species name, common name
 -->
-    <common_names_csv>d:\mnt\ala\data\commonnames\output4.csv</common_names_csv>
-    <!-- common_names_csv>/mnt/ala/data/commonnames/output4.csv</common_names_csv -->
+    <!-- <common_names_csv>d:\mnt\ala\data\commonnames\output4.csv</common_names_csv> -->
+    <common_names_csv>/Users/ajay/projects/ala/data/archive-ala/occurrences/output4.csv</common_names_csv>
 
 
     <!--<index_path>d:\mnt\ala\data\index\tabulation\</index_path>-->
     <!-- index_path>/mnt/ala/data/index/tabulation/</index_path-->
-    <index_path>/Users/ajay/projects/ala/data/archive-ala/occurences/tabulation_20100615/</index_path>
+    <index_path>/Users/ajay/projects/ala/data/archive-ala/occurrences/tabulation_20100714/</index_path>
 
     <maxent>
         <!--<cmdpath>java -mx900m -jar d:\mnt\ala\modelling\maxent\maxent.jar </cmdpath>-->
@@ -301,6 +301,21 @@ species name, common name
     <geoserver_password>at1as0f0z</geoserver_password>
 
     <gdal_apps_dir>/Library/Frameworks/GDAL.framework/Programs/</gdal_apps_dir>
+
+    <!-- 
+        'base_output_dir' should be the base directory where the 'output' folder sits
+        the 'output' folder inturn should contain the necessary folders:
+        e.g: 
+            sampling
+            filtering
+            layers
+            aloc
+            maxent
+
+        'base_output_url' should be the base path where the output directory can be reached
+    -->
+    <base_output_dir>/Users/ajay/Sites/ala/</base_output_dir>
+    <base_output_url>http://localhost/~ajay/ala/</base_output_url>
 
 
     <alaspatial_url>http://localhost:8080/alaspatial/</alaspatial_url>

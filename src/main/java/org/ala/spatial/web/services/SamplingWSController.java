@@ -19,6 +19,7 @@ import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
+import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Zipper;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,6 +77,8 @@ public class SamplingWSController {
             }
 
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //TabulationSettings.load();
+            //String currentPath = TabulationSettings.base_output_dir;
             long currTime = System.currentTimeMillis();
             String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);
