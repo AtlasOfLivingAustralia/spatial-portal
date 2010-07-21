@@ -17,6 +17,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
     <html><![CDATA[
             <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
+            <link rel="stylesheet" href="css/alastyles.css" type="text/css" media="screen" />
             <link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
         ]]>
     </html>
@@ -284,6 +285,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
 
+                    <label sclass="tmpHeader" value="Explore the Spatial Portal" />
+
+
                     <div sclass="highlighted spaced" visible="false" >
                         This form should be hidden
                         <textbox id="extUrl"/>
@@ -418,11 +422,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         </panel>
                         <div id="layerNavigationTabContent" visible="true"> <!-- visible=${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}" -->
 
-<hbox width="95%">
-                            <div style="float: left" ><label style="font-weight: bold" value="Active Layers"  /> </div>
-    <div style="float:right"><button id="reloadPortal" label="Reset Map" sclass="h3" /></div>
-                            
-                            
+                            <hbox width="95%">
+                                <div style="float: left" ><label style="font-weight: bold" value="Active Layers"  /> </div>
+                                <div style="float:right"><button id="reloadPortal" label="Reset Map" sclass="h3" /></div>
+
+
                             </hbox>
 
                             <separator/>
@@ -481,15 +485,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                                     <div id="sizeChooser" visible="false">
-                                         <hbox>
-                                        <div style="padding-top:0px" width="60px">
-                                            <label value="Size: " sclass="h3" />
-                                        </div>
-                                        <div width="250px">
-                                            <slider id="sizeSlider" maxpos="30" width="95%" />
-                                        </div>
-                                        <div align="right" style="padding-top:0px">
-                                            <label id="sizeLabel" />
+                                        <hbox>
+                                            <div style="padding-top:0px" width="60px">
+                                                <label value="Size: " sclass="h3" />
+                                            </div>
+                                            <div width="250px">
+                                                <slider id="sizeSlider" maxpos="30" width="95%" />
+                                            </div>
+                                            <div align="right" style="padding-top:0px">
+                                                <label id="sizeLabel" />
                                         </div></hbox>
                                     </div>
                                     <div id="colourChooser" visible="false">
@@ -579,7 +583,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <div align="right" style="margin-right:5px;" sclass="resetdiv" >
                                     <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
                                     <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
-                                    
+
                                     <button id="removeAllLayers" label="Remove All Layers" sclass="h3" />
                                 </div>
 
@@ -614,13 +618,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     </treecols>
                                 </tree>
 
-                            <!-- contains the user parameters -->
-                            <textbox id="userparams" visible="false" multiline="true" value="${param}" />
+                                <!-- contains the user parameters -->
+                                <textbox id="userparams" visible="false" multiline="true" value="${param}" />
 
                             </div>
 
                             <separator/>
-                            
+
                             <separator bar="true"/>
                             <tabbox id="mapOptsTabbox" height="300px" width="95%"><!-- mold="accordion-lite" -->
                                 <tabs>
@@ -633,11 +637,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <toolbarbutton image="/img/help.png">
                                         <attribute name="onClick">{
                                             if (mapOptsTabbox.getSelectedTab().getIndex() == 0) {
-                                                helpSpecies.open=(helpSpecies.open) ? false:true;
+                                            helpSpecies.open=(helpSpecies.open) ? false:true;
                                             } else if (mapOptsTabbox.getSelectedTab().getIndex() == 1) {
-                                                helpLocation.open=(helpLocation.open) ? false:true;
+                                            helpLocation.open=(helpLocation.open) ? false:true;
                                             } else if (mapOptsTabbox.getSelectedTab().getIndex() == 2) {
-                                                helpLayers.open=(helpLayers.open) ? false:true;
+                                            helpLayers.open=(helpLayers.open) ? false:true;
                                             }
                                         }</attribute>
                                     </toolbarbutton>

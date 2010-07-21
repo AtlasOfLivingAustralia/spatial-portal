@@ -130,8 +130,8 @@ hr {
 
 #mapinfo {
 	bottom: 0em;
-	left: 0px;
-	padding: 10px 15px ;
+	right: 0px; /* changing to right as it is over the google logo we can have anything over it */
+	padding: 10px 2px 10px 10px ;
 	display: block;
 	position: absolute;
 	width: 220px;
@@ -430,7 +430,7 @@ float: left;
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_panright img,
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomin img,
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomout img,
-#controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_Map_9 img
+#controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_Map_8 img
 {
    display: none; 
 }
@@ -449,7 +449,8 @@ float: left;
 
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomout
 {
-    top: 219px! important;
+    /*top: 219px! important;*/
+    top: 299px! important;
     left: 11px! important;
     background-position: -2100px 0;
 }
@@ -458,23 +459,24 @@ float: left;
 {
     background-position: -2200px 0;
 }
-#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_9 img
+#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_8 img
 {
     display: none;
 }
 
-#controlPanZoom #OpenLayers_Control_PanZoomBar_ZoombarOpenLayers\002E Map_9
+#controlPanZoom #OpenLayers_Control_PanZoomBar_ZoombarOpenLayers\002E Map_8
 {
     top: 99px! important;
     left: 11px! important;
     background: url('../img/panelPanZoom.gif') no-repeat 0 0! important;
     width: 21px! important;
-    height: 120px! important;	
+    /*height: 120px! important;*/
+    height: 200px! important;
 }
 
 
 
-#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_9
+#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_8
 {
     left: 0px;
     z-index: 99;
@@ -487,7 +489,7 @@ float: left;
     padding: 3px;
 }
 
-#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_9:hover
+#controlPanZoom  #OpenLayers\002E Control\002E PanZoomBar_2_OpenLayers\002E Map_8:hover
 {
     background-position: -2400px 0;
 }

@@ -222,6 +222,7 @@ function buildMapReal() {
         new OpenLayers.Control.ScaleLine({
             div: document.getElementById('mapscale')
         }),
+        /*
         new OpenLayers.Control.OverviewMap({
             autoPan: true,
             minRectSize: 30,
@@ -233,6 +234,7 @@ function buildMapReal() {
                 units: 'm'
             }
         }),
+        */
         new OpenLayers.Control.Attribution(),
         new OpenLayers.Control.MousePosition({
             div: document.getElementById('mapcoords'),
@@ -680,13 +682,17 @@ function selected (evt) {
     else {
         //test to see if its occurrence data
         if (attrs["occurrenceid"] != null) {
+            var species = "<a href='http://bie.ala.org.au/species/" + attrs["taxonconceptid"] + "' target='_blank'>" + attrs["scientificname"] + "</a>";
+            if (!attrs["taxonconceptid"]) {
+                species = attrs["scientificname"];
+            }
             var occurrencedate = attrs["occurrencedate"];
             if (!occurrencedate) occurrencedate="";
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100,100),
                 "<h2>Occurrence information</h2>" +
-                " Scientific name: <a href='http://bie.ala.org.au/species/" + attrs["taxonconceptid"] + "' target='_blank'>" + attrs["scientificname"] + "</a> <br />" +
+                " Scientific name: " + species + "</a> <br />" +
                 " Family: <a href='http://bie.ala.org.au/species/" + attrs["familyconceptid"] + "' target='_blank'>" + attrs["family"] + "</a> <br />" +
                 " Longitude: "+attrs['longitude'] + " , Latitude: " + attrs['latitude'] + " <br/>" +
                 " Occurrence date: " + occurrencedate + " <br />" +
