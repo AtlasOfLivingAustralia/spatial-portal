@@ -2,7 +2,6 @@
 
 #from geoserver.catalog import Catalog
 
-#cat = Catalog("http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver/rest", "admin", "at1as0f0z")
 
 #tiffdata = {'tiff':'/mnt/transfer/MCAS_1k_Datapack/Climate/erosivity.tif'}
 
