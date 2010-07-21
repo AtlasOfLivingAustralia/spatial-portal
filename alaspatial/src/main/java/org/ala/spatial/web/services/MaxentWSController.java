@@ -62,6 +62,7 @@ public class MaxentWSController {
             long currTime = System.currentTimeMillis();
 
             String currentPath = session.getServletContext().getRealPath("/");
+            //String currentPath = TabulationSettings.base_output_dir;
 
             String taxon = req.getParameter("taxonid");
 
@@ -223,6 +224,7 @@ public class MaxentWSController {
             long currTime = System.currentTimeMillis();
 
             String currentPath = session.getServletContext().getRealPath("/");
+            //String currentPath = TabulationSettings.base_output_dir;
 
             String taxon = req.getParameter("taxonid");
 

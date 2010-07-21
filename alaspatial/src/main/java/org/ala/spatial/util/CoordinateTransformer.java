@@ -32,7 +32,8 @@ public class CoordinateTransformer {
             File oImg = new File(imgfilepath);
 
 
-            String command = base_command + imgfilepath + " " + oImg.getParent() + File.separator + "t_" + oImg.getName();
+            String filenamepart = oImg.getName().substring(0,oImg.getName().lastIndexOf("."));
+            String command = base_command + imgfilepath + " " + oImg.getParent() + "/t_" + filenamepart + ".tif";
 
             System.out.println("Exec'ing " + command);
             Process proc = runtime.exec(command);
@@ -67,7 +68,13 @@ public class CoordinateTransformer {
                 //oImg.delete();
                 //File tImg = new File (oImg.getAbsolutePath() + "/t_" + oImg.getName());
                 //tImg.renameTo(oImg);
-                return oImg.getParent() + File.separator + "t_" + oImg.getName();
+
+                // now let's convert the image
+                int cExitVal = convertImageType(oImg.getParent() + "/t_" + filenamepart + ".tif", oImg.getParent() + "/t_" + oImg.getName());
+
+                System.out.println("Convert Image Type: " + cExitVal); 
+
+                return oImg.getParent() + "/t_" + oImg.getName();
             }
         } catch (Exception e) {
             System.out.println("OOOOPPPSSS: " + e.toString());
@@ -76,6 +83,49 @@ public class CoordinateTransformer {
         }
 
         return null;
+    }
+
+    private static int convertImageType(String srcImgPath, String destImgPath) {
+        try {
+
+            Runtime runtime = Runtime.getRuntime();
+
+            String command = "convert " + srcImgPath + " " + destImgPath;
+            System.out.println("Exec'ing " + command);
+            Process proc = runtime.exec(command);
+
+            System.out.println("Setting up output stream readers");
+            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
+            InputStreamReader eisr = new InputStreamReader(proc.getErrorStream());
+            BufferedReader br = new BufferedReader(isr);
+            BufferedReader ebr = new BufferedReader(eisr);
+            String line;
+
+            System.out.printf("Output of running %s is:", command);
+
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            while ((line = ebr.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            int exitVal = proc.waitFor();
+
+            // any error???
+            //return exitVal;
+
+            System.out.println(exitVal);
+
+            return exitVal; 
+
+        } catch (Exception e) {
+            System.out.println("Unable to convert image: ");
+            e.printStackTrace(System.out);
+        }
+
+        return -1;
     }
 
     public static void generateWorldFiles(String outputpath, String baseFilename) {
