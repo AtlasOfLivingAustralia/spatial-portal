@@ -2058,6 +2058,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (loaded) {
             openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
+            openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");
             System.out.println("---------------------------------------------");
             System.out.println("---------------------------------------------");
             System.out.println("map is now loaded. let's try mapping.");
@@ -2372,6 +2373,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (userParams.containsKey("species_lsid")) {
                     mapSpeciesByLsid(userParams.get("species_lsid"));
                     showLayerTab = true;
+                } else if (userParams.containsKey("layer")) {
+                    // TODO: eventually add env/ctx layer loading code here
                 } else {
                     Iterator<String> itParams = userParams.keySet().iterator();
                     String label = "";

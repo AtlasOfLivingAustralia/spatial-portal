@@ -27,6 +27,15 @@ public interface OpenLayersJavascript {
     public static final String safeToProceedClose = "} ";
     public static final String safeToProceedOpen = "if (safeToProceed) { ";
 
+    /**
+     * appends any additional scripts to the execute function
+     * 
+     * @param additionalScript
+     * @return
+     */
+    public void setAdditionalScript(String additionalScript);
+    public String getAdditionalScript();
+
     public String activateMapLayer(MapLayer mapLayer);
 
     /**
