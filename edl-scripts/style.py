@@ -8,28 +8,43 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 		if ".tif" in name:
 			layername = name.replace(".tif","")
 			print(layername)	
-			p = os.popen(edlconfig.gdalapps+"/gdalinfo -mm " + os.path.join(root,name) + " | grep Computed","r")
+			p = os.popen(edlconfig.gdalapps+"/gdalinfo -mm " + os.path.join(root,name),"r")
 			sld = layername+".sld"
+			f = open("template.sld", 'r')
+                        text = f.read()
+			nodata = None
 			while 1:
   	 	 		line = p.readline()
     				if not line: break
-	    			min,max = line.strip().split('=')[1].split(',')
-				f = open("template.sld", 'r')
-				text = f.read()
-				text = text.replace("MIN",min)
-				text = text.replace("MAX",max)
-#				text = text.replace("NODATA",nodata)
-#				fout = open(sld, 'w')
-#				fout.write(text)		
-				curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPOST -H 'Content-type: text/xml' -d '<style><name>"+layername+"_style</name><filename>"+layername+".sld</filename></style>' " + edlconfig.geoserver_url + "/geoserver/rest/styles/"
-#				print(curlstring)
-#				os.system(curlstring)
-				curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: application/vnd.ogc.sld+xml' -d @"+sld+" " + edlconfig.geoserver_url + "/geoserver/rest/styles/"+layername+"_style"
-#				print(curlstring)
-				os.system(curlstring)
+				if "Computed" in line:
+		    			print line
+					min,max = line.strip().split('Min/Max=')[1].split(',')
+					text = text.replace("MIN",min)
+					text = text.replace("MAX",max)
+				if "NoData" in line:
+					print line
+					nodata = line.strip().split('Value=')[1]
+			if (nodata is None):
+				nodata=min
+			#Getting round an sld parsing bug in geoserver
+			if float(nodata) >= float(max):
+				text = text.replace("<!--Higher-->",'<ColorMapEntry color="#ffffff" quantity="NODATA" opacity="0"/>')
+			else:	
+				text = text.replace("<!--Lower-->",'<ColorMapEntry color="#ffffff" quantity="NODATA" opacity="0"/>')
+			text = text.replace("NODATA",nodata)
+			fout = open(sld, 'w')
+                        fout.write(text)
+			fout.close()
+
+			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPOST -H 'Content-type: text/xml' -d '<style><name>"+layername+"_style</name><filename>"+layername+".sld</filename></style>' " + edlconfig.geoserver_url + "/geoserver/rest/styles/"
+#			print(curlstring)
+#			os.system(curlstring)
+			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: application/vnd.ogc.sld+xml' -d @"+sld+" " + edlconfig.geoserver_url + "/geoserver/rest/styles/"+layername+"_style"
+			print(curlstring)
+			os.system(curlstring)
 	
-				curlstring="curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: text/xml' -d '<layer><defaultStyle><name>"+layername+"_style</name></defaultStyle><enabled>true</enabled></layer>' " + edlconfig.geoserver_url + "/geoserver/rest/layers/ALA:"+layername
-#				print(curlstring)
-				os.system(curlstring)
+			curlstring="curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: text/xml' -d '<layer><defaultStyle><name>"+layername+"_style</name></defaultStyle><enabled>true</enabled></layer>' " + edlconfig.geoserver_url + "/geoserver/rest/layers/ALA:"+layername
+#			print(curlstring)
+#			os.system(curlstring)
 					
 						

@@ -24,17 +24,10 @@
         </GrayChannel>
     </ChannelSelection>
     <ColorMap extended="true">
-   
-
-     	<ColorMapEntry color="#ffffff" quantity="-9999"/>
-     	
- 	<!--<ColorMapEntry color="#0000FF" quantity="0.0"/>
- 	<ColorMapEntry color="#00CCFF" quantity="2500.0"/>
- 	<ColorMapEntry color="#CC66CC" quantity="5000.0"/>
- 	<ColorMapEntry color="#FF6600" quantity="30000.0"/>-->
- 	<ColorMapEntry color="#99FF66" quantity="MIN"/>
+ 	<!--Lower-->
+	<ColorMapEntry color="#99FF66" quantity="MIN"/>
         <ColorMapEntry color="#FF0000" quantity="MAX"/> 
-
+	<!--Higher-->
     </ColorMap>
 </RasterSymbolizer>
 
