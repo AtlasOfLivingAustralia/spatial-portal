@@ -335,7 +335,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         public void removeMapLayerNow(MapLayer mapLayer) {
                 execute(
                         iFrameReferences
-                        + removeMapLayer(mapLayer));
+                        + removeMapLayer(mapLayer)
+                        + getAdditionalScript());
         }
 
         /**
@@ -504,7 +505,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
 
 
-                return wrapWithSafeToProceed(script.toString());
+                return wrapWithSafeToProceed(script.toString() + getAdditionalScript());
         }
 
     @Override
@@ -884,6 +885,21 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         this.settingsSupplementary = settingsSupplementary;
     }
 
+    private String additionalScript = "";
+    @Override
+    public void setAdditionalScript(String additionalScript) {
+        if (additionalScript != null) {
+            this.additionalScript = additionalScript;
+        } else {
+            this.additionalScript = "";
+        }
+    }
 
-        
+    @Override
+    public String getAdditionalScript() {
+        return additionalScript;
+    }
+
+
+
 }
