@@ -4,6 +4,7 @@ import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.menu.TreeMenuValue;
 import au.org.emii.portal.menu.TreeMenuItem;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import org.apache.log4j.Logger;
  *
  */
 public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, Cloneable, Serializable {
+
+    private SettingsSupplementary settingsSupplementary = null;
 
     private static final long serialVersionUID = 1L;
     /**
@@ -435,8 +438,12 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
             /* if no styles are defined, there is likely no legend
              * available, so dont attempt to retrieve one
              */
-            uri = null;
+           uri = null;
         }
+        }
+        if (uri == null) {
+            String geoserver = "http://spatial.ala.org.au";
+            uri = geoserver + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=" + this.layer;
         }
 
         logger.debug("8888888888888888888888888888888888888888888888");
