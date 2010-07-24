@@ -35,6 +35,7 @@ public interface OpenLayersJavascript {
      */
     public void setAdditionalScript(String additionalScript);
     public String getAdditionalScript();
+    public void useAdditionalScript();
 
     public String activateMapLayer(MapLayer mapLayer);
 

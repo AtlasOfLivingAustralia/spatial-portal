@@ -13,7 +13,7 @@
 		apply="au.org.emii.portal.composer.ZkErrorComposer" position="center,center">
     <vbox>    
    
-		The IMOS Ocean Portal encountered a serious error.  It is recommended
+		The ALA Spatial Portal encountered a serious error.  It is recommended
 		to reload the portal but it may be possible to continue.  We have recorded
 		the error and will investigate a fix.
         <hbox style="margin-left:auto; margin-right:auto">          

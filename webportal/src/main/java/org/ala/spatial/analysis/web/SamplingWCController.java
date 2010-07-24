@@ -107,7 +107,9 @@ public class SamplingWCController extends UtilityComposer {
             }
         });
         groupLabels = new String[]{"Environmental", "Contextual"};
-        lbenvlayers.setModel(new SimpleGroupsModel(datas, groupLabels));
+        if (datas != null) {
+            lbenvlayers.setModel(new SimpleGroupsModel(datas, groupLabels));
+        }
 
         // need to renderAll() as being a group list
         // items hidden initially weren't being selected
@@ -119,7 +121,7 @@ public class SamplingWCController extends UtilityComposer {
         Iterator<Listgroup> itGroups = groups.iterator();
         while (itGroups.hasNext()) {
             Listgroup lg = itGroups.next();
-            System.out.println("ListGroup: " + lg.getLabel() + " - " + lg.isListenerAvailable("select", true));
+            //System.out.println("ListGroup: " + lg.getLabel() + " - " + lg.isListenerAvailable("select", true));
             lg.setCheckable(false);
         }
     }
@@ -244,11 +246,6 @@ public class SamplingWCController extends UtilityComposer {
             if (aslist.length > 0) {
                 layers.addAll(Arrays.asList(aslist));
                 layerdata.put("Environmental", aslist);
-
-                System.out.println("env:");
-                for (int k = 0; k < aslist.length; k++) {
-                    System.out.println(aslist[k] + ", ");
-                }
             }
 
         } catch (Exception e) {

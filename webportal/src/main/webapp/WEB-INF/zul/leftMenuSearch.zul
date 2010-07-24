@@ -156,7 +156,7 @@
 
 		<separator />
 
-		<div sclass="highlighted">
+		<div sclass="highlighted" visible="false">
 
 			For 'advanced' search facilities please use the
 			<separator />

@@ -7,7 +7,7 @@ page manually by SessionInit.init()
 <head>
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="-1" />
-<title>IMOS Ocean Portal DEVELOPMENT - Session timed out</title>
+<title>ALA Spatial Portal DEVELOPMENT - Session timed out</title>
 
 
 
@@ -74,18 +74,13 @@ zk.eru={};zk.erusp={};
 <td class="z-button-cr"><div></div></td></tr>
 <tr><td class="z-button-bl"></td><td class="z-button-bm"></td><td class="z-button-br"></td></tr>
 </table></span></div></div></div></div></div><div id="z_5a_g" z.type="zkex.zul.borderlayout.LayoutRegion2"><div id="z_5a_g!real" class="z-south " z.zcls="z-south" z.cid="z_5a_h" z.pos="south" z.flex="false" z.mars="0,0,0,0" z.cmars="5,5,5,5" z.colps="false" z.open="true" z.splt="false" z.maxs="2000" z.mins="0" z.autoscl="false"><div id="z_5a_g!cave" class="z-south-body"><span id="z_5a_h"><span id="ft">
-	<p><a href="http://www.imos.org.au">IMOS</a> is supported by the Australian Government through the
+
+        <p><a href="http://www.ala.org.au" title="Atlas of Living Australia">ALA</a> is supported by the Australian Government through the
 	<a href="http://www.innovation.gov.au/Section/AboutDIISR/FactSheets/Pages/NationalCollaborativeResearchInfrastructureStrategy(NCRIS)FactSheet.aspx">
 	National Collaborative Research Infrastructure Strategy</a>
-
 	and the Super Science Initiative.<BR />
-	You accept all risks and responsibility for losses, damages, costs and other consequences resulting directly or indirectly from
-	using this site and any information or material available from it. <br />Please read our policy regarding the
-	'Acknowledgement of Use of IMOS Data' at <a href="http://imos.org.au/datadocpol.html" target="_blank" >http://imos.org.au/datadocpol.html</a><br />
-	<a href="http://imos.org.au/emii.html">Created by eMII</a> &nbsp;
-	<a href="http://www.imos.org.au">&copy; IMOS Australia</a>  &nbsp;
-
-	Comments on this site? Contact us at <a href="mailto:info@emii.org.au">info@emii.org.au</a></p></span></span></div></div><div id="z_5a_g!split" class="z-south-splt""></div></div></div></div></div>
+	</p>
+	</span></span></div></div><div id="z_5a_g!split" class="z-south-splt""></div></div></div></div></div>
 <style type="text/css" id="z_5a_i">
 .z-center-body {
 			background-color: #375b7b;

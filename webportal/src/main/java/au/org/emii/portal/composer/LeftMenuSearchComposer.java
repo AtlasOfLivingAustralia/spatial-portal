@@ -1,5 +1,6 @@
 package au.org.emii.portal.composer;
 
+import au.org.emii.portal.menu.Region;
 import au.org.emii.portal.mest.SearchQuery;
 import au.org.emii.portal.userdata.UserSearch;
 import au.org.emii.portal.session.PortalSession;
@@ -347,10 +348,19 @@ public class LeftMenuSearchComposer extends UtilityComposer {
     }
 
     public void onChange$west(Event e) {
+        //echo to give time for all doubleboxes to be updated
         Events.echoEvent("triggerViewportChange", this, null);
     }
 
     public void triggerViewportChange(Event e) throws Exception {
+        //update bounding box for this session
+        BoundingBox bb = new BoundingBox();
+        bb.setMinLatitude(south.getValue().floatValue());
+        bb.setMaxLatitude(north.getValue().floatValue());
+        bb.setMinLongitude(west.getValue().floatValue());
+        bb.setMaxLongitude(east.getValue().floatValue());
+        getMapComposer().getPortalSession().setDefaultBoundingbox(bb);
+        
         for (EventListener el : viewportChangeEvents.values()) {
             try {
                 el.onEvent(null);

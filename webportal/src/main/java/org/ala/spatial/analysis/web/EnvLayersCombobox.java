@@ -74,7 +74,7 @@ public class EnvLayersCombobox extends Combobox {
 
             aslist = slist.split("\n");
 
-            System.out.println("Loading " + aslist.length + " env.layers for ALOC... ");
+            //System.out.println("Loading " + aslist.length + " env.layers for ALOC... ");
 
             Iterator it = getItems().iterator();
             for (int i = 0; i < aslist.length; i++) {

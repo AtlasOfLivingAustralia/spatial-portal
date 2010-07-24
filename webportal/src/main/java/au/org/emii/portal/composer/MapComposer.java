@@ -34,6 +34,7 @@ import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.PortalSessionUtilities;
+import au.org.emii.portal.util.SessionPrint;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
@@ -2057,7 +2058,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         getPortalSession().setMapLoaded(loaded);
 
         if (loaded) {
-            openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
+            //openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
             openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");
             System.out.println("---------------------------------------------");
             System.out.println("---------------------------------------------");
@@ -2065,6 +2066,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             loadUrlParameters();
             System.out.println("---------------------------------------------");
             System.out.println("---------------------------------------------");
+            openLayersJavascript.setAdditionalScript("");
         }
     }
 
@@ -2322,7 +2324,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * apply window parameters
      *
-     * p = height in pixels,width in pixels,longitude1,latitude1,longitude2,latitude2
+     * p = width in pixels,height in pixels,longitude1,latitude1,longitude2,latitude2
      */
     void applyWindowParams() {
         String s = (String) Executions.getCurrent().getParameter("p");
@@ -2330,10 +2332,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //TODO: validate params
         if (s != null) {
             String [] pa = s.split(",");
-            setHeight(pa[0] + "px");
+            setWidth(pa[0] + "px");
 
             if(pa.length > 1){
-                setWidth(pa[1] + "px");
+                setHeight(pa[1] + "px");
             }
         }
     }
@@ -2390,7 +2392,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     System.out.println("filter: " + filter);
                     try {
-                        mapSpeciesByFilter(filter, filter);
+                        mapSpeciesByFilter(filter, filter);                       
                     }catch(Exception e){}
                     showLayerTab = true;
                 }
@@ -2512,6 +2514,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     mapLayer.setListedInActiveLayers(true);
                 }
             } else {
+                //need to cleanup any additional scripts outstanding
+                openLayersJavascript.useAdditionalScript();
+
                 // fail
                 //showMessage("GeoJSON layer already exists");
                 logger.info(
@@ -2726,104 +2731,66 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * generate pdf for from innerHTML of printHack txtbox
      *
      * dependant on whatever the ends up being on the map tab
+     *
+     * uses wkhtmltoimage (wkhtmltopdf not working?)
+     *
+     *
      */
     public void onChange$tbxPrintHack() {
-
-        //p == "s=height,width&e=long1,lat1,long2,lat2
+        //tbxPrintHack is 'screen width, screen height, map extents'
         String p = tbxPrintHack.getValue();
         System.out.println("tbxPrintHack:" + p);
+        String [] ps = p.split(",");
 
-        String server = "http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/webportal/";
-        server = "http://localhost:8085/webportal/";
+        String server;
+        server = "http://spatial.ala.org.au/webportal/";
+        //server = "http://localhost:8085/webportal/";
 
-        this.getDesktop().getSession().getAttribute("");
-
-        //?JSESSIONID=?
+        //session id/cookie JSESSIONID=
         String jsessionid = "";
         try {
             //get cookie
-
                 for(Cookie c : ((HttpServletRequest)Executions.getCurrent().getNativeRequest()).getCookies()) {
                     if( c.getName().equalsIgnoreCase("JSESSIONID")){
                         jsessionid = c.getValue();
                     }
                 }
-
         } catch (Exception e) {
                 e.printStackTrace();
         }
 
-        String outputid = String.valueOf(System.currentTimeMillis());
+        //width
+        String width = "1024"; //default
+        if (ps.length > 1) width = ps[0];
 
-        System.out.println("Printing session:" + jsessionid + " outputid:" + outputid);
-        
-        //output image
-        String outputImage = "d:\\mnt\\ala\\printing\\output\\map" + outputid + ".jpg";
-        String outputPDF = "d:\\mnt\\ala\\printing\\output\\map" + outputid + ".pdf";
+        //height
+        String height = "800"; //default
+        if (ps.length > 2) height = ps[1];
 
-        //process to pdf
-        String cmdXmlToPng = "d:\\mnt\\ala\\printing\\wkhtmltoimage"
-                + " --cookie JSESSIONID " + jsessionid
-                + " --load-error-handling ignore"
-                + " --javascript-delay 45000"   //delay 45s for tiles to load                
-                + " " + server + "?" + p + " " + outputImage;
+        //zoom (minlong, minlat, maxlong, maxlat)
+        String zoom = "112,-44,154,-9"; //default
+        if (ps.length > 5) zoom = ps[2] + "," + ps[3] + "," + ps[4] + "," + ps[5];
 
-        String cmdJpgToPdf = "convert " + outputImage + " " + outputPDF;
+        //lhs panel width
+        //append to zoom for now > String lhsWidth = "0"; //default
+        if (ps.length > 6) zoom += "," + ps[6]; //lhsWidth = ps[6];
 
-        Runtime runtime = Runtime.getRuntime();
+
+        //unique id
+        String uid = String.valueOf(System.currentTimeMillis());
+
+        String pth = "/usr/local/tomcat/instance_03_webportal/webapps/webportal/print/";
+        String htmlpth = pth;
+        String htmlurl = server + "print/";
+     
         try {
-            /* Xml to Jpg 
-            Process proc = runtime.exec(cmdXmlToPng);
-            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-            System.out.printf("Output of running %s is:", cmdXmlToPng);
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-            int exitVal = proc.waitFor();
-            System.out.println("exitVal: " + exitVal);*/
+            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid,zoom);
+            pp.print();
 
-             Process proc = runtime.exec(cmdXmlToPng);
+            File f = new File(pp.getImageFilename());
+            System.out.println("img (" + pp.getImageFilename() + ") exists: " + f.exists());
 
-            System.out.println("Setting up output stream readers");
-            InputStreamReader isr = new InputStreamReader(proc.getInputStream());
-            InputStreamReader eisr = new InputStreamReader(proc.getErrorStream());
-            BufferedReader br = new BufferedReader(isr);
-            BufferedReader ebr = new BufferedReader(eisr);
-            String line;
-
-            System.out.printf("Output of running %s is:", cmdXmlToPng);
-
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            while ((line = ebr.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            int exitVal = proc.waitFor();
-
-            // any error???
-            //return exitVal;
-
-            System.out.println(exitVal);
-
-            /* Jpg to Pdf 
-            proc = runtime.exec(cmdJpgToPdf);
-            isr = new InputStreamReader(proc.getInputStream());
-            br = new BufferedReader(isr);
-            System.out.printf("Output of running %s is:", cmdJpgToPdf);
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-            exitVal = proc.waitFor();
-            System.out.println("exitVal: " + exitVal);
-            
-            Filedownload.save(new File(outputPDF), "application/pdf");*/
-
-            Filedownload.save(new File(outputImage), "image/png");
+            Filedownload.save(new File(pp.getImageFilename()), "image/jpeg");
 
             return;
         } catch (Exception e) {
@@ -2831,7 +2798,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
 
-        showMessage("error generating PDF");
+        showMessage("Error generating image");
 
     }
 

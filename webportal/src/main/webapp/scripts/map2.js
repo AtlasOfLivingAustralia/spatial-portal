@@ -125,7 +125,7 @@ function checkLibraryLoaded() {
             alert(
                 "Map not loaded after waiting " + secondsToWaitForLibrary + " seconds.  " +
                 "Please wait a moment and then reload the page.  If this does not fix your " +
-                "problem, please contact IMOS for assistance"
+                "problem, please contact ALA for assistance"
                 );
         }
     }
@@ -291,7 +291,7 @@ function buildMapReal() {
         } );
 
     //map.addLayer(dem);
-    loadBaseMap(); 
+    //loadBaseMap();
 
     // create a new event handler for single click query
     clickEventHandler = new OpenLayers.Handler.Click({
@@ -747,7 +747,7 @@ function onPopupClose(evt) {
     }
 }
 
-function addWKTFeatureToMap(featureWKT,name,hexColour) {
+function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
     //    alert(name);
     var in_options = {
         'internalProjection': map.baseLayer.projection,
@@ -756,7 +756,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
-        fillOpacity: 0.6,
+        fillOpacity: opacity,
         strokeOpacity: 1,
         strokeWidth: 2,
         strokeColor: hexColour
@@ -766,6 +766,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
     var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = hexColour;
     layer_style.strokeColor = hexColour;
+    layer_style.fillOpacity = opacity;
 
     var wktLayer = new OpenLayers.Layer.Vector(name, {
         style : layer_style
@@ -782,7 +783,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour) {
     return wktLayer;
 }
 
-function addJsonFeatureToMap(feature, name, hexColour, radius) {
+function addJsonFeatureToMap(feature, name, hexColour, radius, opacity) {
     //    alert(name);
     var in_options = {
         'internalProjection': map.baseLayer.projection,
@@ -793,7 +794,7 @@ function addJsonFeatureToMap(feature, name, hexColour, radius) {
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
-        fillOpacity: 0.6,
+        fillOpacity: opacity,
         strokeOpacity: 1,
         strokeWidth: 2,
         strokeColor: hexColour
@@ -804,6 +805,7 @@ function addJsonFeatureToMap(feature, name, hexColour, radius) {
     layer_style.fillColor = hexColour;
     layer_style.strokeColor = hexColour;
     layer_style.pointRadius = radius;
+    layer_style.fillOpacity = opacity;
 
 
     var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
@@ -912,7 +914,7 @@ function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
     layer_style.fillColor = hexColour;
     layer_style.strokeColor = hexColour;
     layer_style.fillOpacity = opacity;
-    
+
     for (key in layers) {
 
         if (layers[key] != undefined) {
@@ -921,12 +923,15 @@ function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
 
             if (layer.name == name) {
 
-
                 layer.destroyFeatures();
                 layer.style = layer_style;
                 var geom = new OpenLayers.Geometry.fromWKT(featureWKT);
+
+                geom = geom.transform(map.displayProjection, map.projection);
                 layer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
-               
+                layer.isFixed = false;
+                layer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
+                
             // layer.addFeatures(features);
 
 
