@@ -387,13 +387,14 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
         public String zoomToBoundingBox(BoundingBox boundingBox) {
                 String script =
-                        "map.zoomToExtent("
-                        + "	new OpenLayers.Bounds("
+                        "var mapObj = window.frames.mapFrame.map;"
+                        + "map.zoomToExtent("
+                        + "	(new OpenLayers.Bounds("
                         + boundingBox.getMinLongitude() + ", "
                         + boundingBox.getMinLatitude() + ", "
                         + boundingBox.getMaxLongitude() + ", "
                         + boundingBox.getMaxLatitude()
-                        + ") "
+                        + ")).transform(mapObj.displayProjection, mapObj.projection) "
                         + "); ";
                 return wrapWithSafeToProceed(script);
         }
@@ -559,7 +560,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      @Override
      public String defineWKTMapLayer(MapLayer layer) {
           String script =""
-                        + "var vector_layer = window.mapFrame.addWKTFeatureToMap('" + layer.getWKT() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "');"
+                        + "var vector_layer = window.mapFrame.addWKTFeatureToMap('" + layer.getWKT() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "', " + layer.getOpacity() + ");"
                         + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
                         +
                         "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
@@ -574,7 +575,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                  */
 
                 String script =""
-                        + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ");"
+                        + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + ");"
                         + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
                         +
                         "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
@@ -897,9 +898,15 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String getAdditionalScript() {
-        return additionalScript;
+        String aS = additionalScript;
+        additionalScript = "";  //reset after use
+        return aS;
     }
 
-
-
+    @Override
+    public void useAdditionalScript() {
+        if(additionalScript != null && additionalScript.length() > 0) {
+            this.execute(getAdditionalScript());
+        }
+    }
 }

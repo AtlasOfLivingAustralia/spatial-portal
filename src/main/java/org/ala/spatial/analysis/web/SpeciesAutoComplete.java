@@ -49,17 +49,17 @@ public class SpeciesAutoComplete extends Combobox {
     public SpeciesAutoComplete() {
         refresh(""); //init the child comboitems
         //refreshJSON("");
-        System.out.println("setting cnurl in sac()");
+        //System.out.println("setting cnurl in sac()");
         //cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
-        System.out.println("setting satserver in sac()");
+        //System.out.println("setting satserver in sac()");
         //satServer = settingsSupplementary.getValue(SAT_URL);
     }
 
     public SpeciesAutoComplete(String value) {
         super(value); //it invokes setValue(), which inits the child comboitems
-        System.out.println("setting cnurl in sac(val)");
+        //System.out.println("setting cnurl in sac(val)");
         //cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
-        System.out.println("setting satserver in sac(val)");
+        //System.out.println("setting satserver in sac(val)");
         //satServer = settingsSupplementary.getValue(SAT_URL);
     }
 
@@ -84,26 +84,26 @@ public class SpeciesAutoComplete extends Combobox {
         try {
             //TODO get this from the config file
             if (settingsSupplementary != null) {
-                System.out.println("setting ss.bie.val");
+                //System.out.println("setting ss.bie.val");
                 cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
             } else {
-                System.out.println("NOT setting ss.bie.val");
+                //System.out.println("NOT setting ss.bie.val");
             }
 
             String nsurl = cnUrl.replaceAll("_query_", URLEncoder.encode(val, "UTF-8"));
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(nsurl);
 
-            System.out.println(nsurl);
+            //System.out.println(nsurl);
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-            System.out.println("Response status code: " + result);
-            System.out.println("Response: \n" + slist);
+            //System.out.println("Response status code: " + result);
+            //System.out.println("Response: \n" + slist);
 
             String[] aslist = slist.split("\n");
-            System.out.println("Got " + aslist.length + " records.");
+            //System.out.println("Got " + aslist.length + " records.");
 
             Iterator it = getItems().iterator();
             if (aslist.length > 0) {
@@ -158,10 +158,10 @@ public class SpeciesAutoComplete extends Combobox {
 
         //TODO get this from the config file
         if (settingsSupplementary != null) {
-            System.out.println("setting ss.val");
+            //System.out.println("setting ss.val");
             satServer = settingsSupplementary.getValue(SAT_URL);
         } else {
-            System.out.println("NOT setting ss.val");
+            //System.out.println("NOT setting ss.val");
         }
 
         String snUrl = satServer + "/alaspatial/species/taxon/";
@@ -198,7 +198,7 @@ public class SpeciesAutoComplete extends Combobox {
              */
 
 
-            System.out.println("Looking up scientific name for '" + val + "' at " + snUrl);
+            //System.out.println("Looking up scientific name for '" + val + "' at " + snUrl);
 
             Iterator it = getItems().iterator();
             if (val.length() == 0) {
@@ -223,14 +223,14 @@ public class SpeciesAutoComplete extends Combobox {
                 int result = client.executeMethod(get);
                 String slist = get.getResponseBodyAsString();
 
-                System.out.println("Response status code: " + result);
-                System.out.println("Response: \n" + slist);
+                //System.out.println("Response status code: " + result);
+                //System.out.println("Response: \n" + slist);
 
                 //System.out.println("adding common names to this");
                 //slist += refreshCommonNames(val);
 
                 String[] aslist = slist.split("\n");
-                System.out.println("Got " + aslist.length + " records.");
+                //System.out.println("Got " + aslist.length + " records.");
 
                 if (aslist.length > 0) {
 
@@ -317,7 +317,7 @@ public class SpeciesAutoComplete extends Combobox {
 
         try {
 
-            System.out.println("Looking for common name: " + val);
+            //System.out.println("Looking for common name: " + val);
 
             String searchValue = val.replaceAll(" ", " AND ");
             callUrl = callUrl.replaceAll("_val_", URLEncoder.encode(searchValue, "UTF-8"));
@@ -373,10 +373,10 @@ public class SpeciesAutoComplete extends Combobox {
 
         //TODO get this from the config file
         if (settingsSupplementary != null) {
-            System.out.println("setting ss.val");
+            //System.out.println("setting ss.val");
             satServer = settingsSupplementary.getValue(SAT_URL);
         } else {
-            System.out.println("NOT setting ss.val");
+            //System.out.println("NOT setting ss.val");
         }
 
         //String snUrl = satServer + "/alaspatial/species/taxon/";
@@ -385,7 +385,7 @@ public class SpeciesAutoComplete extends Combobox {
 
         try {
 
-            System.out.println("Looking for common name: " + isSearchCommon());
+            //System.out.println("Looking for common name: " + isSearchCommon());
 
             if (isSearchCommon()) {
                 callUrl += cnUrl;

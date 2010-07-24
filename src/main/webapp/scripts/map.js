@@ -125,7 +125,7 @@ function checkLibraryLoaded() {
             alert(
                 "Map not loaded after waiting " + secondsToWaitForLibrary + " seconds.  " +
                 "Please wait a moment and then reload the page.  If this does not fix your " +
-                "problem, please contact IMOS for assistance"
+                "problem, please contact ALA for assistance"
                 );
         }
     }
