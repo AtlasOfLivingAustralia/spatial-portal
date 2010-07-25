@@ -143,7 +143,9 @@ public class MaxentWSController {
                 // rename the env filenames to their display names
                 for (int ei = 0; ei < envnameslist.length; ei++) {
                     readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator + "species.html", envpathlist[ei], envnameslist[ei]);
-                }                
+                }
+
+                writeProjectionFile(msets.getOutputPath());
 
                 Hashtable htGeoserver = ssets.getGeoserverSettings();
 
@@ -154,7 +156,10 @@ public class MaxentWSController {
                 String password = (String) htGeoserver.get("geoserver_password");
 
                 // first zip up the file as it's going to be sent as binary
-                String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+                //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+                String[] infiles = {msets.getOutputPath() + "species.asc", msets.getOutputPath() + "species.prj"};
+                String ascZipFile = msets.getOutputPath() + "species.zip";
+                Zipper.zipFiles(infiles, ascZipFile);
 
                 // Upload the file to GeoServer using REST calls
                 System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
@@ -312,6 +317,8 @@ public class MaxentWSController {
                     readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator + "species.html", envpathlist[ei], envnameslist[ei]);
                 }
 
+                writeProjectionFile(msets.getOutputPath());
+
                 Hashtable htGeoserver = ssets.getGeoserverSettings();
 
                 // if generated successfully, then add it to geoserver
@@ -321,7 +328,10 @@ public class MaxentWSController {
                 String password = (String) htGeoserver.get("geoserver_password");
 
                 // first zip up the file as it's going to be sent as binary
-                String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+                //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+                String[] infiles = {msets.getOutputPath() + "species.asc", msets.getOutputPath() + "species.prj"};
+                String ascZipFile = msets.getOutputPath() + "species.zip";
+                Zipper.zipFiles(infiles, ascZipFile);
 
                 // Upload the file to GeoServer using REST calls
                 System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
@@ -414,6 +424,36 @@ public class MaxentWSController {
         out.close();
 
         return spFile.getAbsolutePath();
+    }
+
+    private void writeProjectionFile(String outputpath) {
+        try {
+            File fDir = new File(outputpath);
+            fDir.mkdir();
+
+            PrintWriter spWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputpath + "species.prj")));
+
+            StringBuffer sbProjection = new StringBuffer();
+            sbProjection.append("GEOGCS[\"WGS 84\", ").append("\n");
+            sbProjection.append("    DATUM[\"WGS_1984\", ").append("\n");
+            sbProjection.append("        SPHEROID[\"WGS 84\",6378137,298.257223563, ").append("\n");
+            sbProjection.append("            AUTHORITY[\"EPSG\",\"7030\"]], ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"6326\"]], ").append("\n");
+            sbProjection.append("    PRIMEM[\"Greenwich\",0, ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"8901\"]], ").append("\n");
+            sbProjection.append("    UNIT[\"degree\",0.01745329251994328, ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"9122\"]], ").append("\n");
+            sbProjection.append("    AUTHORITY[\"EPSG\",\"4326\"]] ").append("\n");
+
+            //spWriter.write("spname, longitude, latitude \n");
+            spWriter.write(sbProjection.toString());
+            spWriter.close();
+
+        } catch (IOException ex) {
+            //Logger.getLogger(MaxentServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("error writing species file:");
+            ex.printStackTrace(System.out);
+        }
     }
 
     private String setupSpecies(String speciesList, String outputpath) {
