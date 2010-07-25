@@ -1,10 +1,10 @@
 html, body {
-	
-	font-family: arial, Helvetica, Arial, sans-serif;
-	font-size: 0.85em;
-	margin: 0px;
-	background-color: #7391ad;
-	height:100%;		
+
+    font-family: arial, Helvetica, Arial, sans-serif;
+    font-size: 0.85em;
+    margin: 0px;
+    background-color: #7391ad;
+    height:100%;
 }
 h2 { color:#3B6E8F; font-size: 16px; font-weight: bold;}
 h3 { color:#3B6E8F; font-size: 14px; font-weight: bold; margin-bottom:2px;margin-top:0px;}
@@ -14,145 +14,172 @@ h6 { color:#3B6E8F; font-size: 11px;  margin: 0px 2px; display:inline;	}
 
 
 a {
-	color: black;
+    color: black;
 }
 a img{
-	border: none;
+    border: none;
 }
 
 a:hover{
-	color: grey;
+    color: grey;
 }
 a[rel="external"], a.external {
-white-space: nowrap;
-padding-right: 15px;
-background: url(../img/extlink.gif) no-repeat 100% 50%;
-zoom: 1;
+    white-space: nowrap;
+    padding-right: 15px;
+    background: url(../img/extlink.gif) no-repeat 100% 50%;
+    zoom: 1;
 }
 
 table.featureInfo, table.featureInfo td, table.featureInfo th {
-		border:1px solid #ddd;
-		border-collapse:collapse;
-		margin:0;
-		padding:0;
-		font-size: 90%;
-		padding:.2em .1em;
-	}
-	table.featureInfo th {
-	    padding:.2em .2em;
-		font-weight:bold;
-		background:#eee;
-	}
-	table.featureInfo td{
-		background:#fff;
-	}
-	table.featureInfo tr.odd td{
-		background:#eee;
-	}
-	table.featureInfo caption{
-		text-align:left;
-		font-size:100%;
-		font-weight:bold;
-		text-transform:uppercase;
-		padding:.2em .2em;
-	}
+    border:1px solid #ddd;
+    border-collapse:collapse;
+    margin:0;
+    padding:0;
+    font-size: 90%;
+    padding:.2em .1em;
+}
+table.featureInfo th {
+    padding:.2em .2em;
+    font-weight:bold;
+    background:#eee;
+}
+table.featureInfo td{
+    background:#fff;
+}
+table.featureInfo tr.odd td{
+    background:#eee;
+}
+table.featureInfo caption{
+    text-align:left;
+    font-size:100%;
+    font-weight:bold;
+    text-transform:uppercase;
+    padding:.2em .2em;
+}
 
 
 .extlink {
-	margin-left: 2px;	
+    margin-left: 2px;
 }
 hr {
-	width: 80%;		
-	color:#7391ad;
-	background: #fff url(../img/borderLine.gif) no-repeat center bottom;
-	margin: 8px auto;
-	height: 1px;
-	border: 0 none;	
+    width: 80%;
+    color:#7391ad;
+    background: #fff url(../img/borderLine.gif) no-repeat center bottom;
+    margin: 8px auto;
+    height: 1px;
+    border: 0 none;
 }
 .error {
-	
-	color: #f71bbc;
-	font-weight: bold;
+
+    color: #f71bbc;
+    font-weight: bold;
 }
 
 
 
 #mapdiv {
-	position: absolute;	
-	z-index: 1;
-	height: 100%;
-	width:100%;
+    position: absolute;
+    z-index: 1;
+    height: 100%;
+    width:100%;
 }
 
 
 .topdrop  {
-  background-image:url(../img/mapshadow.png);
-  background-position:left top;
-  background-repeat:repeat-x;  
-	z-index: 100;
-	width: 100%;
-  height:10px;
-	position: absolute;
+    background-image:url(../img/mapshadow.png);
+    background-position:left top;
+    background-repeat:repeat-x;
+    z-index: 100;
+    width: 100%;
+    height:10px;
+    position: absolute;
 }
 
 
 
 .leftdrop  {
-  background-image:url(../img/leftshadow.png);
-  background-position:left top;
-  background-repeat:repeat-y;
-	z-index: 101;
-	width:10px ;
-  height:100%;
-	position: absolute;
+    background-image:url(../img/leftshadow.png);
+    background-position:left top;
+    background-repeat:repeat-y;
+    z-index: 101;
+    width:10px ;
+    height:100%;
+    position: absolute;
 }
 
 
 
 #mapscale {
-	width: 90px;
-	z-index: 3;
-  position: relative;
-  float: left;	
-	color: white;
+    width: 90px;
+    z-index: 3;
+    position: relative;
+    float: left;
+    color: white;
 }
 #mapcoords {
-	width: 90px;
-	z-index: 4;
-  position: relative;
-  float: right;
-	color: white;
-	background: inherit;
+    width: 90px;
+    z-index: 4;
+    position: relative;
+    float: right;
+    color: white;
+    background: inherit;
 }
 #mapcoords b{
-	background: none;
+    background: none;
 }
 
 #mapinfo {
-	bottom: 0em;
-	right: 0px; /* changing to right as it is over the google logo we can have anything over it */
-	padding: 10px 2px 10px 10px ;
-	display: block;
-	position: absolute;
-	width: 220px;
-	z-index: 3;
-	font-family: Arial;
-	font-size: smaller;
+    bottom: 0em;
+    right: 0px; /* changing to right as it is over the google logo we can have anything over it */
+    padding: 10px 2px 10px 10px ;
+    display: block;
+    position: absolute;
+    width: 220px;
+    z-index: 3;
+    font-family: Arial;
+    font-size: smaller;
     -moz-border-radius: 5! important;
     border: 1px 1px 0 0;
     background-color:#3c668d;
     opacity: 0.0;
 }
+#gmaplyrswtch {
+    top: 20px;
+    right: 0px;
+    padding: 10px 2px 10px 10px ;
+    display: none;
+    position: absolute;
+    width: 200px;
+    z-index: 3;
+    font-family: Arial;
+    font-size: smaller;
+    -moz-border-radius: 5! important;
+    border: 1px 1px 0 0;
+    background-color: transparent;
+    opacity: 1.0;
+}
+#gmaplyrswtch div {
+    background-color: white;
+    float: right;
+    margin-right: 10px;
+    padding: 5px;
+    font-size: 10px;
+    font-weight: bold;
+    color: teal; 
+    border: 2px solid black;
+    text-decoration: none;
+}
+
 #tmpres {
-	bottom: 0em;
-	left: 400px;
-	padding: 10px 15px ;
-	display: block;
-	position: absolute;
-	width: 100px;
-	z-index: 8;
-	font-family: Arial;
-	font-size: smaller;
+    bottom: 0em;
+    left: 400px;
+    padding: 10px 15px ;
+    display: block;
+    position: absolute;
+    width: 100px;
+    z-index: 8;
+    font-family: Arial;
+    font-size: smaller;
 }
 
 /*	getfeatureinfo results 
@@ -160,13 +187,13 @@ hr {
 
 
 .getfeaturepopup_contentDiv, .olPopupContent {	
-	overflow: hidden! important;
-	cursor: default;
-        margin-top: 5px;
-        margin-left: 7px;
+    overflow: hidden! important;
+    cursor: default;
+    margin-top: 5px;
+    margin-left: 7px;
 }
 .olPopup {
-	height: 100%;	
+    height: 100%;
 }
 
 
@@ -181,8 +208,8 @@ hr {
     margin:5px 3px;
 }
 #featureinfodepth {
-    	float: left;
-        clear:left;
+    float: left;
+    clear:left;
 }
 #featureinfoGeneral {
     padding: 0px 5px 5px 5px ;
@@ -197,23 +224,23 @@ hr {
     width:100%;
     background-color: #fafafa;
     background-image:url(../img/mapshadow.png);
-background-position:left top;
-background-repeat:repeat-x;
-border: 1px solid #ddd;
+    background-position:left top;
+    background-repeat:repeat-x;
+    border: 1px solid #ddd;
 }
 .nofeature {
-	margin: 2px 0px 5px 0px;
-	padding: 5px;
-	width:100%;
-	background-color: #fafafa;
+    margin: 2px 0px 5px 0px;
+    padding: 5px;
+    width:100%;
+    background-color: #fafafa;
 }
 
 
 .feature ul li{
-	margin-left: 1em;
+    margin-left: 1em;
 }
 
-                  
+
 
 #featureinfocontent {
     padding: 3px;
@@ -239,38 +266,38 @@ border: 1px solid #ddd;
 
 
 #featureinfocontent .feature {
-	width: 93%;
-	
+    width: 93%;
+
 }
 #featureinfocontent img {
-	padding: 10px 5px;
+    padding: 10px 5px;
 }
 #featureinfocontent b { 
-	color:#3B6E8F; 
-	font-weight: bold;
+    color:#3B6E8F;
+    font-weight: bold;
 }
 #featureinfocontent ul { 
-	margin: 5px 0px;
-	padding-left: 2px; 
-	list-style-type: circle;
+    margin: 5px 0px;
+    padding-left: 2px;
+    list-style-type: circle;
 }
 #featureinfocontent li { 
-	margin-left: 2px; 
-	padding-left: 2px; 
-	list-style-position: inside;
+    margin-left: 2px;
+    padding-left: 2px;
+    list-style-position: inside;
 }
 
 
 .block h3 {
-	border: solid 1px #cccccc;
-	background-color: #efefef;
-	padding-left: 3px;
-	width: 100%;
+    border: solid 1px #cccccc;
+    background-color: #efefef;
+    padding-left: 3px;
+    width: 100%;
 }
 
 p.important {
-	color:#3c668d;
-	font-weight: bold;
+    color:#3c668d;
+    font-weight: bold;
 }
 
 .argodates {
@@ -285,30 +312,30 @@ p.important {
 
 /* Overview Map wigit */
 .olControlOverviewMapElement {
-	background-color: #3c668d;
+    background-color: #3c668d;
 }
 
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover, .ygtvfocus{
-	background-color: transparent;
+    background-color: transparent;
 }
 a.ygtvlabel:hover {
-	text-decoration:underline;
+    text-decoration:underline;
 }
 
- 
+
 div.olControlScaleLineBottom {
-	margin-top: -1;
+    margin-top: -1;
 }
 div.olControlScaleLineTop, div.olControlScaleLineBottom {
-	border-color: white;
+    border-color: white;
 }
 
 
 .olControlEditingToolbar, .olControlEditingToolbarItemInactive {
-width: 50px;
+    width: 50px;
 }
 .olControlEditingToolbar div {
-float: left;
+    float: left;
 }
 
 
@@ -319,7 +346,7 @@ float: left;
     z-index: 1001;
     margin-top: 250px;
     margin-left: 9px;
-	
+
 }
 #navtoolbar .olControlNavigationItemActive, 
 #navtoolbar .olControlNavigationItemInactive, 
@@ -342,11 +369,11 @@ float: left;
     z-index: 1001;
     margin-top: 300px;
     margin-left: 9px;
-	
+
 }
 
 #areaTool .olControlButtonItemActive {
-  
+
     height: 222px;
     background-image: url("../img/draw_polygon_on.png?");
     background-position:12px 1px;
@@ -354,7 +381,7 @@ float: left;
     display: block;
 }
 #areaTool .olControlButtonItemInactive {
-  height: 222px;
+    height: 222px;
     background-image: url("../img/draw_polygon_off.png?");
     background-position:12px 1px;
     background-repeat: no-repeat;
@@ -362,7 +389,7 @@ float: left;
 }
 
 #navtoolbar .olControlDrawFeatureItemActive {
-  
+
     height: 22px;
     background-image: url("../img/draw.png?");
     background-position:12px 1px;
@@ -370,7 +397,7 @@ float: left;
     display: block;
 }
 #navtoolbar .olControlDrawFeatureItemInactive {
-  display: none;
+    display: none;
 }
 .olPopupCloseBox {
     background:transparent url(../img/close.png?) no-repeat scroll 0 0 !important;
@@ -378,32 +405,32 @@ float: left;
 }
 
 .olControlZoomBoxItemActive {
-	background-position: -600px 0pt;
+    background-position: -600px 0pt;
 }
 .olControlZoomBoxItemInactive {
-	background-position: -500px 0pt;
+    background-position: -500px 0pt;
 }
 .olControlZoomBoxItemInactive:hover {
-	background-position: -600px 0pt;
+    background-position: -600px 0pt;
 }
 
 .olControlNavigationItemActive {
-	background-position: -800px 0pt;
+    background-position: -800px 0pt;
 }
 .olControlNavigationItemInactive {
-	background-position: -700px 0pt;
+    background-position: -700px 0pt;
 }
 .olControlNavigationItemInactive:hover {
-	background-position: -800px 0pt;
+    background-position: -800px 0pt;
 }
 
 
 
 #controlPanZoom {
-	position: absolute;	
-	margin-left: 5px;
-	width: 42px;
-	z-index: 1000;
+    position: absolute;
+    margin-left: 5px;
+    width: 42px;
+    z-index: 1000;
 }
 
 
@@ -432,7 +459,7 @@ float: left;
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomout img,
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_Map_8 img
 {
-   display: none; 
+    display: none;
 }
 
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomin
@@ -568,11 +595,11 @@ float: left;
 }
 
 #layerswitch {
-	position: static;
-	clear: both;
+    position: static;
+    clear: both;
 }
 .olControlLayerSwitcher {	
-	display: none;
+    display: none;
 }
 
 /* hide it till positioned in style.css */

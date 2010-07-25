@@ -142,7 +142,7 @@ function checkLibraryLoaded() {
 
 }
 
-var bLayer;
+var bLayer,bLayer2;
 function loadBaseMap() {
 
     // Google.v3 uses EPSG:900913 as projection, so we have to
@@ -152,6 +152,14 @@ function loadBaseMap() {
             new OpenLayers.Projection("EPSG:4326"),
             map.getProjectionObject()),
         4);
+}
+
+function changeBaseLayer(type) {
+    if (type == 'normal') {
+        map.setBaseLayer(window.mapFrame.bLayer2);
+    } else {
+        map.setBaseLayer(window.mapFrame.bLayer);
+    }
 }
 
 function buildMap() {
@@ -277,7 +285,14 @@ function buildMapReal() {
         type: G_HYBRID_MAP,
         'sphericalMercator': true
     });
-    map.addLayer(bLayer);
+    bLayer2 = new OpenLayers.Layer.Google("Google Streets",
+    {
+        type: G_PHYSICAL_MAP,
+        'sphericalMercator': true
+    });
+    map.addLayers([bLayer2,bLayer]);
+    parent.bLayer = bLayer;
+    parent.bLayer2 = bLayer2;
 
     var dem = new OpenLayers.Layer.WMS( "ALA - dem9s",
         "http://spatial.ala.org.au/geoserver/wms", {
@@ -291,7 +306,7 @@ function buildMapReal() {
         } );
 
     //map.addLayer(dem);
-    //loadBaseMap();
+    loadBaseMap();
 
     // create a new event handler for single click query
     clickEventHandler = new OpenLayers.Handler.Click({
