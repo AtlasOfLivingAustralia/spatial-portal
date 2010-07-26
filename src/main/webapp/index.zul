@@ -913,7 +913,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             jQuery('.hidden_image :hidden').show();
 
-            if (location.indexOf("spatial.ala.org.au) > -1) {
+            if (location.href.indexOf("spatial.ala.org.au") > -1 || location.href.indexOf("localhost") > -1) {
                 jQuery('.z-north').show();
                 jQuery('.z-south').show();
             }
