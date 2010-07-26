@@ -617,6 +617,16 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             } else if (mapOptsTabbox.getSelectedTab().getIndex() == 2) {
                                             helpLayers.open=(helpLayers.open) ? false:true;
                                             }
+/*
+                                            function loadHelpLink(theUrl) {
+                                                // iframe in another id-space so can't be auto wired
+            Iframe iframe = getExternalContentIframe();
+            iframe.setSrc(theUrl);
+
+            externalContentWindow.setPosition("center");
+            externalContentWindow.doOverlapped();
+                                            }
+*/
                                         }</attribute>
                                     </toolbarbutton>
                                 </toolbar>
@@ -897,9 +907,16 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     }
                 }
 
+                window.mapFrame.loadBaseMap();
+
             };
 
             jQuery('.hidden_image :hidden').show();
+
+            if (location.indexOf("spatial.ala.org.au) > -1) {
+                jQuery('.z-north').show();
+                jQuery('.z-south').show();
+            }
     
             ]]>
         </script>
