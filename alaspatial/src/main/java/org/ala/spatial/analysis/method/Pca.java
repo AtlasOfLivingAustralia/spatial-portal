@@ -27,20 +27,20 @@ public class Pca {
                 //scale data
                 double min;
                 double max;
-                for(i=0;i<data.length;i++){
+                for(i=0;i<data[0].length;i++){
                     //get min/max
-                    min = data[i][0];
-                    max = data[i][0];
-                    for(j=1;j<data[i].length;j++){
-                        if(data[i][j] < min) min = data[i][j];
-                        if(data[i][j] > max) max = data[i][j];
+                    min = data[0][i];
+                    max = data[0][i];
+                    for(j=1;j<data.length;j++){
+                        if(data[j][i] < min) min = data[j][i];
+                        if(data[j][i] > max) max = data[j][i];
                     }
 
                     //scale to 0-1
                     double range = max-min;
                     if(range > 0){
-                        for(j=0;j<data[i].length;j++){
-                            data[i][j] = (data[i][j]-min)/range;
+                        for(j=0;j<data.length;j++){
+                            data[j][i] = (data[j][i]-min)/range;
                         }
                     }
                 }
