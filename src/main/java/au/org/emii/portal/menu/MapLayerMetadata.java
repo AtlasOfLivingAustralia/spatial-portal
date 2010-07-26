@@ -153,6 +153,12 @@ public class MapLayerMetadata implements Serializable {
     }
 
     public String getBboxString() {
+        if (bbox == null) {
+            return null;
+        }
+        if (bbox.size() == 0) {
+            return null; 
+        }
         return bbox.get(0) + ","
                 + bbox.get(1) + ","
                 + bbox.get(2) + ","
