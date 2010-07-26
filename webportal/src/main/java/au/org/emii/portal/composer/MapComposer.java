@@ -59,6 +59,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,6 +86,7 @@ import org.zkoss.zk.ui.HtmlMacroComponent;
 import org.zkoss.zk.ui.Path;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -262,7 +265,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private HtmlMacroComponent leftMenuAnalysis;
     //private HtmlMacroComponent ff;
     //private HtmlMacroComponent sf;
-    private Textbox tbxPrintHack;
+    public Textbox tbxPrintHack;
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -2356,7 +2359,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         System.out.println("Got " + auparams.length + " parameters");
         for (int ip = 0; ip < auparams.length; ip++) {
             String[] uparam = auparams[ip].split("=");
-            uparams.put(uparam[0].trim(), uparam[1].trim());
+            if(uparam.length > 1) {
+                uparams.put(uparam[0].trim(), uparam[1].trim());
+            }
         }
 
         return uparams;
@@ -2737,69 +2742,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      *
      */
     public void onChange$tbxPrintHack() {
-        //tbxPrintHack is 'screen width, screen height, map extents'
-        String p = tbxPrintHack.getValue();
-        System.out.println("tbxPrintHack:" + p);
-        String [] ps = p.split(",");
-
-        String server;
-        server = "http://spatial.ala.org.au/webportal/";
-        //server = "http://localhost:8085/webportal/";
-
-        //session id/cookie JSESSIONID=
-        String jsessionid = "";
+        PrintingComposer composer = (PrintingComposer) Executions.createComponents("/WEB-INF/zul/Printing.zul", this, null);
         try {
-            //get cookie
-                for(Cookie c : ((HttpServletRequest)Executions.getCurrent().getNativeRequest()).getCookies()) {
-                    if( c.getName().equalsIgnoreCase("JSESSIONID")){
-                        jsessionid = c.getValue();
-                    }
-                }
-        } catch (Exception e) {
-                e.printStackTrace();
+            composer.doModal();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SuspendNotAllowedException ex) {
+            Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        //width
-        String width = "1024"; //default
-        if (ps.length > 1) width = ps[0];
-
-        //height
-        String height = "800"; //default
-        if (ps.length > 2) height = ps[1];
-
-        //zoom (minlong, minlat, maxlong, maxlat)
-        String zoom = "112,-44,154,-9"; //default
-        if (ps.length > 5) zoom = ps[2] + "," + ps[3] + "," + ps[4] + "," + ps[5];
-
-        //lhs panel width
-        //append to zoom for now > String lhsWidth = "0"; //default
-        if (ps.length > 6) zoom += "," + ps[6]; //lhsWidth = ps[6];
-
-
-        //unique id
-        String uid = String.valueOf(System.currentTimeMillis());
-
-        String pth = "/usr/local/tomcat/instance_03_webportal/webapps/webportal/print/";
-        String htmlpth = pth;
-        String htmlurl = server + "print/";
-     
-        try {
-            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid,zoom);
-            pp.print();
-
-            File f = new File(pp.getImageFilename());
-            System.out.println("img (" + pp.getImageFilename() + ") exists: " + f.exists());
-
-            Filedownload.save(new File(pp.getImageFilename()), "image/jpeg");
-
-            return;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        showMessage("Error generating image");
-
     }
 
     public void updateUserMapList() {
@@ -3265,5 +3215,87 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public boolean isLayerControlVisible() {
         return layerControls.isVisible();
+    }
+
+    SessionPrint print(String header, double grid, String format, int resolution, boolean preview) {
+        //tbxPrintHack is 'screen width, screen height, map extents'
+        String p = tbxPrintHack.getValue();
+        System.out.println("tbxPrintHack:" + p);
+        String [] ps = p.split(",");
+
+        String server;
+        server = "http://spatial.ala.org.au/webportal/";
+        
+
+        //session id/cookie JSESSIONID=
+        String jsessionid = "";
+        try {
+            //get cookie
+                for(Cookie c : ((HttpServletRequest)Executions.getCurrent().getNativeRequest()).getCookies()) {
+                    if( c.getName().equalsIgnoreCase("JSESSIONID")){
+                        System.out.println("printcookie:" + c.getValue());
+                        jsessionid = c.getValue();
+                    }
+                }
+        } catch (Exception e) {
+                e.printStackTrace();
+        }
+
+        //width
+        String width = "1024"; //default
+        if (ps.length > 1) width = ps[0];
+
+        //height
+        String height = "800"; //default
+        if (ps.length > 2) height = ps[1];
+
+        //zoom (minlong, minlat, maxlong, maxlat)
+        String zoom = "112,-44,154,-9"; //default
+        if (ps.length > 5) zoom = ps[2] + "," + ps[3] + "," + ps[4] + "," + ps[5];
+
+        //lhs panel width
+        //append to zoom for now > String lhsWidth = "0"; //default
+        if (ps.length > 6) zoom += "," + ps[6]; //lhsWidth = ps[6];
+        else zoom += ",350"; //default
+
+        //base map type
+        if (ps.length > 7) zoom += "," + ps[7];
+        else zoom += ",normal";
+
+
+        //unique id
+        String uid = String.valueOf(System.currentTimeMillis());
+
+        String pth = "/usr/local/tomcat/instance_03_webportal/webapps/webportal/print/";
+        
+        String htmlpth = pth;
+        String htmlurl = server + "print/";
+
+        try {
+            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid,zoom
+                    ,header,grid,format,resolution);
+
+            if(!preview) {
+                pp.print();
+
+                File f = new File(pp.getImageFilename());
+                System.out.println("img (" + pp.getImageFilename() + ") exists: " + f.exists());
+
+                if (format.equalsIgnoreCase("png")) {
+                    Filedownload.save(new File(pp.getImageFilename()), "image/png");
+                } else if(format.equalsIgnoreCase("pdf")) {
+                    Filedownload.save(new File(pp.getImageFilename()), "application/pdf");
+                } else {
+                    Filedownload.save(new File(pp.getImageFilename()), "image/jpeg");
+                }
+            }
+            return pp;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        showMessage("Error generating export");
+
+        return null;
     }
 }

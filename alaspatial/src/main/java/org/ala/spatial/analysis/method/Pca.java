@@ -11,15 +11,39 @@ public class Pca {
 	 * @param data
 	 * @return	for each data record, one r, one g and one b component as 0-255 integer
 	 */
-	public static int [][] getColours(double [][] data){
-		if(data == null || data.length == 0){
+	public static int [][] getColours(double [][] cdata){
+		if(cdata == null || cdata.length == 0){
 			return null;
 		}
-		
-		int [][] output = new int[data.length][3];
-		int nvars = data[0].length;
-		
+
 		int i,j,k;
+
+                //clone data
+                double [][] data = cdata.clone();
+                int [][] output = new int[data.length][3];
+		int nvars = data[0].length;
+
+
+                //scale data
+                double min;
+                double max;
+                for(i=0;i<data.length;i++){
+                    //get min/max
+                    min = data[i][0];
+                    max = data[i][0];
+                    for(j=1;j<data[i].length;j++){
+                        if(data[i][j] < min) min = data[i][j];
+                        if(data[i][j] > max) max = data[i][j];
+                    }
+
+                    //scale to 0-1
+                    double range = max-min;
+                    if(range > 0){
+                        for(j=0;j<data[i].length;j++){
+                            data[i][j] = (data[i][j]-min)/range;
+                        }
+                    }
+                }
 
                 /* to bring more colour variation,
                  * when 2 columns, double columns (add small randomness)

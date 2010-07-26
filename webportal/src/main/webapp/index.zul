@@ -33,6 +33,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         var bLayer2 = null;
         var OpenLayers = null;
         var baseLayers = null;
+        var currentbaselayertxt = "normal";
         var currentBaseLayer = null;
         var safeToLoadMapId = null;
         var registerLayer = null;
@@ -821,7 +822,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
-                    <div style="position:absolute;float:right;right:10px;">
+                    <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
                     <button id="switchNormal" label="Normal" action="onclick: changeBaseLayer('normal');" sclass="h3"/>
                     <button id="switchSatellite" label="Satellite" action="onclick: changeBaseLayer('hybrid');" sclass="h3"/>
                     <separator orient="vertical" spacing="20px" />
@@ -853,7 +854,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
         <script type="text/javascript"><![CDATA[
             var onIframeMapFullyLoaded = function() {
-                //update screen widths before map is loaded
+                //update screen widths before map is loaded (hide header)
                 var h0 = window.location.href.split('?');
                 if(h0.length > 1){
                     var h1 = h0[1].split("&");
@@ -863,6 +864,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             h1[i] = h1[i].substring(2,h1[i].length);
                             var h2 = h1[i].split(",");
                             if(h2.length > 6) {
+                                //hide map buttons
+                                var q = $e('${mapbuttons.uuid}');
+                                q.style.display="none";
+                                
+                                //hide north
+                                q = $e('${header.uuid}' + '!real');
+                                q.style.height="0px";
+
+                                //set west
                                 var m = $e('${menus.uuid}' + '!real');
                                 var w = m.style.width;
                                 var diff = (w.substring(0,w.length-2))*1 - h2[6]*1;
@@ -870,11 +880,17 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                 var p = $e('${menus.uuid}' + '!split');
                                 p.style.width = h2[6] + "px";
+                                p.style.left = h2[6] + "px";
 
                                 var n = $e('${center.uuid}' + '!real');
                                 w = n.style.width;
                                 var val = diff + w.substring(0,w.length-2)*1;
                                 n.style.width = val + "px";
+
+                                n.style.top = "0px";
+                                w = n.style.height;
+                                val2 = w.substring(0,w.length-2)*1 + 68;
+                                n.style.height = val2 + "px";
                                 
                                 w = n.style.left;
                                 val = w.substring(0,w.length-2)*1 - diff;
@@ -884,6 +900,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 w = n.style.width;
                                 var val = diff + w.substring(0,w.length-2)*1;
                                 n.style.width = val + "px";
+                                n.style.left =  val + "px";
+                                n.style.top = "0px";
+                                n.style.height = val2 + "px";
                             }
                         }
                     }
@@ -892,22 +911,77 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 ${session.attributes.portalSession.onIframeMapFullyLoaded}
 
                 //update map extents
+                var printing = false;
                 var h0 = window.location.href.split('?');
                 if(h0.length > 1){
                     var h1 = h0[1].split("&");
                     var i;
                     for(i=0;i<h1.length;i++){
                         if(h1[i].substring(0,2) == "p="){
+                            printing = true;
                             h1[i] = h1[i].substring(2,h1[i].length);
                             var h2 = h1[i].split(",");
                             if(h2.length > 5){                           
                                 map.zoomToExtent(new OpenLayers.Bounds(h2[2],h2[3],h2[4],h2[5]),true);
+
+                                while(map.controls.length > 0){
+                                    map.controls[0].deactivate();
+                                    map.removeControl(map.controls[0]);
+                                }
+
+                                window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
                             }
+
+                            if(h2.length > 7 && currentbaselayertxt != h2[7]) {                                
+                                changeBaseLayer(h2[7]);
+                            }
+
+                            //draw grid
+                            if(h2.length > 8){
+                                if (h2[8] != '0' && h2[8] != '0.0') {
+                                    var ctrl = new OpenLayers.Control.Graticule({
+                                          numPoints: 2,
+                                          labelled: true,
+                                          visible: true
+                                      });
+                                    ctrl.labelSymbolizer.fontColor = "white";
+                                    ctrl.lineSymbolizer.strokeColor = "white";
+                                    ctrl.lineSymbolizer.strokeWidth = 1;
+                                    ctrl.lineSymbolizer.strokeOpacity = 0.6;
+                                    map.addControl(ctrl);
+                                }
+                            }
+
+                            //scale circles
+                            if(h2.length > 9){
+                                var scaleby = 1.0*(h2[9]);
+                                var vl = map.getLayersByClass("OpenLayers.Layer.Vector");
+                                for (var i = 0; i < vl.length; i++) {
+                                    var f = vl[i].features;
+                                    if(vl[i].style.pointRadius != undefined) {
+                                        vl[i].style.pointRadius *= scaleby;
+                                    }
+                                    for(var j=0;j<f.length;j++){
+                                        if(f[j].geometry.toString().indexOf('POINT') == 0) {
+                                            if(f[j].style.pointRadius != undefined) {
+                                                f[j].style.pointRadius *= scaleby;
+                                            }
+                                        }
+                                    }
+                                    vl[i].redraw(true);
+                                }                                
+                            }
+
+                            //scale text?
+                            //...
                         }
                     }
                 }
 
-                window.mapFrame.loadBaseMap();
+                //use session state extents for printing
+                if (!printing) {
+                    window.mapFrame.loadBaseMap();
+                }
 
             };
 
@@ -925,12 +999,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             function printHack(o) {
             var tbx = $e('${tbxPrintHack.uuid}');
 
-            //var mapHTML = window.frames["mapFrame"].document.getElementById("mapbody").innerHTML;
-
-            var size = document.body.clientWidth + "," + document.body.clientHeight;
+            //session variables not in session
+            var size = map.getSize().w + "," + (document.body.clientHeight-68); //document.body.clientWidth + "," + document.body.clientHeight;
             var extent = map.getExtent().toBBOX();
-            var lhsWidth = $e('${menus.uuid}' + '!real').style.width;
-            var mapHTML = size + "," + extent;
+            var lhsWidth = 0;//$e('${menus.uuid}' + '!real').style.width;
+            var basemap = currentbaselayertxt
+            var mapHTML = size + "," + extent + "," + lhsWidth + "," + currentbaselayertxt;
 
             tbx.value = mapHTML;
 
@@ -948,6 +1022,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             }
             }
 function changeBaseLayer(type) {
+    currentbaselayertxt = type;
     if (type == 'normal') {
         map.setBaseLayer(bLayer2);
     } else {
