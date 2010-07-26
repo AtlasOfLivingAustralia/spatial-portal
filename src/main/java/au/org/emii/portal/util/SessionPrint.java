@@ -7,6 +7,7 @@ package au.org.emii.portal.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.apache.commons.io.FileUtils;
 
@@ -21,45 +22,113 @@ public class SessionPrint {
     String width;
     String htmlpthfilename;
     String htmlurlfilename;
+    String htmlpth;
     String uid;
     String imgFilename;
     String pdfFilename;
+    String jpgFilename;
     String sessionid;
     String zoom;
 
-    public SessionPrint(String server, String height, String width, String htmlpth, String htmlurl, String uid, String sessionid, String zoom) {
+    String header;
+    int resolution;
+    String format;
+    double grid;
+    double scaleBy;
+
+    public SessionPrint(String server, String height, String width, String htmlpth, String htmlurl, String uid, String jsessionid, String zoom, String header, double grid, String format, int resolution) {
         this.server = server;
         this.height = height;
         this.width = width;
+        this.htmlpth = htmlpth;
         this.htmlpthfilename = htmlpth + uid + ".html";
         this.htmlurlfilename = htmlurl + uid + ".html";
-        this.imgFilename = htmlpth + uid + ".jpg";
-        this.pdfFilename = htmlpth + uid + ".jpg";
+        this.imgFilename = htmlpth + uid + ".png";
+        this.pdfFilename = htmlpth + uid + ".pdf";
+        this.jpgFilename = htmlpth + uid + ".jpg";
         this.uid = uid;
-        this.sessionid = sessionid;
+        this.sessionid = jsessionid;
         this.zoom = zoom;
+        this.header = header;
+        this.resolution = resolution;
+        this.format = format;
+        this.grid = grid;
+
+        //resolution == 0 (current)
+        //resolution == 1 (print: width up to 4800px, height up to 7200px)
+        if(resolution == 1) {
+            int maxW = 4800, maxH = 7200;
+            double w = Double.parseDouble(width);
+            double h = Double.parseDouble(height);
+            if (w/h > maxW/maxH) {
+                //limit by w
+                scaleBy = maxW/w;
+                h = h * maxW/w;
+                w = maxW;
+            } else {
+                //limit by h
+                scaleBy = maxH/h;
+                w = w * maxH/h;
+                h = maxH;
+            }
+            this.width = String.valueOf((int)w);
+            this.height = String.valueOf((int)h);
+            
+        } else {
+            scaleBy = 1.0;
+        }
+    }
+
+    public String getWidth(){
+        return width;
+    }
+
+    public String getHeight() {
+        return height;
     }
 
     public String getImageFilename() {
-       return imgFilename;
+       if(format.equalsIgnoreCase("png")){
+            return imgFilename;
+        } else if(format.equalsIgnoreCase("pdf")){
+            return pdfFilename;
+       } else {
+           return jpgFilename;
+       }
     }
 
     public void print() {
         makeHtmlFile();
 
         makeImageOfHtmlFile();
+
+        makeConversionsOfImage();
     }
 
-    String getHtmlContent() {
+    String getHtmlContent(boolean setCookie) {
         //html wrapper
         StringBuffer html = new StringBuffer();
-        html.append("<html><script>cookie='");
-        html.append(sessionid);
-        html.append("';d = new Date(); d.setTime(d.getTime()+(1000000));");
-        html.append("document.cookie = 'JSESSIONID=' + cookie + '; expires=' + d.toGMTString() + '; path=/';");
+        html.append("<html><script>");
+        if (setCookie) {
+            html.append("cookie='");
+            html.append(sessionid);
+            html.append("';");
+            html.append("d = new Date(); d.setTime(d.getTime()+(1000000));");
+            html.append("document.cookie = 'JSESSIONID=' + cookie + '; expires=' + d.toGMTString() + '; path=/';");
+        }
         html.append("</script><body style='margin:0px'>");
+        if (header.length() > 0) {
+            html.append("<div style='padding:5px;text-align:center'>");
+            html.append(header);    //TODO: formatting, cleaning
+            html.append("</div><br>");
+        }
         html.append("<iframe style='border:none' src='");
-        html.append(server + "?p=" + width + "," + height + "," + zoom);
+        html.append(server + "?p=" + width + "," + height + "," + zoom + "," + grid);
+        
+        //if printing put out scale factor
+        if (resolution > 0) {
+            html.append("," + scaleBy);
+        }
         html.append("' width='");
         html.append(width);
         html.append("px' height='");
@@ -69,11 +138,22 @@ public class SessionPrint {
         return html.toString();
     }
 
-    void makeHtmlFile() {
+    private void makeHtmlFile() {
         //write html to load to a file
         try {
             FileWriter fw = new FileWriter(htmlpthfilename);
-            fw.append(getHtmlContent());
+            fw.append(getHtmlContent(true));
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void makeHtmlPreviewFile() {
+        //write html to load to a file
+        try {
+            FileWriter fw = new FileWriter(htmlpthfilename);
+            fw.append(getHtmlContent(false));
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,16 +161,20 @@ public class SessionPrint {
     }
 
     private void makeImageOfHtmlFile() {
+        int delay = 15000;
+        if (resolution == 1) { //print resolution
+            delay += 25000;
+        }
         //TODO: dynamic path and settings
-        String cmd = "/mnt/ala/printing/wkhtmltoimage"
+        String cmd = "/mnt/ala/printing/wkhtmltoimage"        
                 + " --debug-javascript"
                 + " --load-error-handling ignore"
-                + " --javascript-delay 15000" //delay 15s for tiles to load
-                + " " + htmlurlfilename + "?p=" + width + "," + height + "," + zoom + " " + imgFilename;
+                + " --javascript-delay " + delay //delay 15s for tiles to load
+                + " " + htmlurlfilename + " " + imgFilename;
 
         try {
-            /* Xml to Jpg */
-            System.out.println("Setting up output stream readers: " + cmd);
+            /* webpage to PNG */
+            System.out.println("Running cmd: " + cmd);
 
             //delete any existing output files
             File img = new File(imgFilename);
@@ -105,11 +189,19 @@ public class SessionPrint {
             long now;
             while(!img.exists() && retry < 3){
                 Process proc = runtime.exec(cmd);
+                //StreamReaderThread srtError = new StreamReaderThread(proc.getErrorStream());
+                //StreamReaderThread srtInput = new StreamReaderThread(proc.getInputStream());
 
                 now = System.currentTimeMillis() + 45000;
+                if (resolution == 1) { //print resolution
+                    now += 25000;
+                }
                 while (now > System.currentTimeMillis() && !img.exists());
 
+                //int exitVal = proc.waitFor(); //should work here but does not
+
                 if (img.exists()) {
+                    System.out.println("success (" + retry + ") cmd: " + cmd);
                     break;
                 } else {
                     System.out.println("failed (" + retry + ") cmd: " + cmd);
@@ -120,6 +212,9 @@ public class SessionPrint {
 
             //wait 5 seconds to render (hope it is enough!)
             now = System.currentTimeMillis() + 5000;
+            if (resolution == 1) { //print resolution
+                now += 15000;
+            }
             while(now > System.currentTimeMillis());
 
             return;
@@ -127,4 +222,75 @@ public class SessionPrint {
             e.printStackTrace();
         }
     }
+
+    private void makeConversionsOfImage() {
+        File img = new File(imgFilename);
+        if (!img.exists()) {
+            return;
+        }
+
+
+        //TODO: dynamic path and settings
+        //String cmd = "/mnt/ala/printing/wkhtmltoimage"
+        String [][] cmds = {
+            {"/usr/bin/convert",imgFilename,imgFilename},
+            {"/usr/bin/convert",imgFilename,jpgFilename},
+            {"/usr/bin/convert",imgFilename,pdfFilename}};
+
+        try {
+            for (String [] cmd : cmds) {
+                System.out.println("running cmd: " + cmd[0] + " " + cmd[1] + " " + cmd[2]);
+
+                Runtime runtime = Runtime.getRuntime();
+
+                Process proc = runtime.exec(cmd, null, new File(this.htmlpth));
+                StreamReaderThread srtInput = new StreamReaderThread(proc.getInputStream());
+                StreamReaderThread srtError = new StreamReaderThread(proc.getErrorStream());
+
+                //int exitVal = proc.waitFor(); //should work here
+
+                long now = System.currentTimeMillis() + 1000;
+                if (resolution == 1) { //print resolution
+                    now += 2000;
+                }
+                while(now > System.currentTimeMillis());
+            }
+
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getPreviewUrl() {
+        makeHtmlPreviewFile();
+        return htmlurlfilename;
+    }
+}
+
+class StreamReaderThread implements Runnable {
+    Thread t;
+    InputStream inputStream;
+
+    public StreamReaderThread(InputStream is){
+        t = new Thread(this);
+        inputStream = is;
+        t.run();
+    }
+
+    @Override
+    public void run() {
+        try {
+                InputStreamReader isr = new InputStreamReader(inputStream);
+                BufferedReader br = new BufferedReader(isr);
+                String line;
+                while ((line = br.readLine()) != null) {
+                    System.out.println(line);
+                }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
 }
