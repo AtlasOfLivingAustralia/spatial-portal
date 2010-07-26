@@ -35,7 +35,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayers() {
-        return hibernateTemplate.find("from LayerInfo ");
+        return hibernateTemplate.find("from LayerInfo order by displayname ");
     }
 
     /**
@@ -62,7 +62,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByName(String name) {
-        return hibernateTemplate.find("from LayerInfo where lower(displayname) like ? ", ("%" + name.toLowerCase() + "%"));
+        return hibernateTemplate.find("from LayerInfo where lower(displayname) like ? order by displayname ", ("%" + name.toLowerCase() + "%"));
     }
 
     /**
@@ -73,7 +73,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByType(String type) {
-        return hibernateTemplate.find("from LayerInfo where lower(type) = ? ", type.toLowerCase());
+        return hibernateTemplate.find("from LayerInfo where lower(type) = ? order by displayname ", type.toLowerCase());
     }
 
     /**
@@ -84,7 +84,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersBySource(String source) {
-        return hibernateTemplate.find("from LayerInfo where lower(source) = ? ", source.toLowerCase());
+        return hibernateTemplate.find("from LayerInfo where lower(source) = ? order by displayname ", source.toLowerCase());
     }
 
     /**
@@ -106,7 +106,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByEnabled(boolean enabled) {
-        return hibernateTemplate.find("from LayerInfo where enabled = ? ", enabled);
+        return hibernateTemplate.find("from LayerInfo where enabled = ? order by displayname ", enabled);
     }
 
     /**
@@ -117,7 +117,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByNotes(String notes) {
-        return hibernateTemplate.find("from LayerInfo where lower(notes) like ? ", ("%" + notes.toLowerCase() + "%"));
+        return hibernateTemplate.find("from LayerInfo where lower(notes) like ? order by displayname ", ("%" + notes.toLowerCase() + "%"));
         // AND enabled=true 
     }
 
@@ -134,7 +134,8 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
         sql += " or lower(displayname) like ? ";
         //sql += " or lower(type) like ? ";
         sql += " or lower(name) like ? ";
-        //sql += "  AND enabled=true ";
+        sql += "  AND enabled=true ";
+        sql += " order by displayname ";
 
         keywords = "%" + keywords.toLowerCase() + "%";
 
