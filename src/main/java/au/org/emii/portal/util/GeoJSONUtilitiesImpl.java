@@ -91,7 +91,7 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
                         JSONObject og = o.getJSONObject("geometry");
                         if (og.isNullObject()) {
                             vBadFeatures.add(o);
-                        } 
+                        }
                     }
 
                     // now remove the bad features
@@ -157,6 +157,59 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
         }
 
         return objType;
+    }
+
+    @Override
+    public String getFirstFeatureValue(JSONObject obj, String key) {
+        JSONObject prototype = null;
+        int objType = type(obj.getString("type"));
+        String value = "";
+
+        switch (objType) {
+            case FEATURE:
+                prototype = obj;
+                JSONObject objProps = prototype.getJSONObject("properties");
+                if (objProps.containsKey(key)) {
+                    value = objProps.getString(key);
+                }
+
+                break;
+
+            case FEATURECOLLECTION:
+
+                if (!obj.containsKey("features")) {
+                    logger.debug("no features in this geoJSON object");
+                }
+
+                try {
+                    int countFeatures = obj.getJSONArray("features").size();
+                    logger.debug("Iterating thru' " + countFeatures + " features");
+                    for (int i = 0; i < countFeatures; i++) {
+                        JSONObject o = obj.getJSONArray("features").getJSONObject(i);
+                        JSONObject oprop = o.getJSONObject("properties");
+                        System.out.println("key value: " + oprop.getString(key)); 
+                        if (oprop.containsKey(key)) {
+                            value = oprop.getString(key);
+                            if (!value.trim().equalsIgnoreCase("")) {
+                                break;
+                            }
+                        }
+                    }
+
+                } catch (IndexOutOfBoundsException ioex) {
+                    //no mappable features found
+                    value = "";
+                }
+
+                break;
+
+            default:
+                logger.debug("Object must be feature or feature collection");
+        }
+
+        System.out.println("geojson.value: " + value); 
+
+        return value;
     }
 
     private int type(String type) {

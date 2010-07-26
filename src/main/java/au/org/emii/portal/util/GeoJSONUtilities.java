@@ -33,5 +33,7 @@ public interface GeoJSONUtilities {
 
     public int getFirstFeatureType(JSONObject obj);
 
+    public String getFirstFeatureValue(JSONObject obj, String key);
+
     public String getJson(String url);
 }
