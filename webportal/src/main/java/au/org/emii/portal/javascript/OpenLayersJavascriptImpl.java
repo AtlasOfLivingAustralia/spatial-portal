@@ -161,7 +161,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         if (ml.getMapLayerMetadata() != null) {
             if (ml.getMapLayerMetadata().getBboxString() != null) {
                 script = "map.zoomToExtent(new OpenLayers.Bounds("
-                        + ml.getMapLayerMetadata().getBboxString() + "));";
+                        + ml.getMapLayerMetadata().getBboxString() + ")"
+                        + ".transform("
+                        + "  new OpenLayers.Projection('EPSG:4326'),"
+                        + "  map.getProjectionObject()));";
             } else {
                 script = "window.mapFrame.loadBaseMap();";
             }
