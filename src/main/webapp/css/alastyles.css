@@ -29,7 +29,7 @@ html {
     height:100%;
 }
 body {
-    background:transparent url(http://test.ala.org.au/wp-content/themes/ala/images/bg.jpg) center 0 repeat-x;
+    /*background:transparent url(http://test.ala.org.au/wp-content/themes/ala/images/bg.jpg) center 0 repeat-x;*/
     text-align: center;
     font-family: Arial, Helvetica, sans-serif;
     width:100%;
@@ -209,4 +209,12 @@ remove.z-tab-hr, remove.z-tab-hl, remove.z-tab-hm, remove.z-tab, remove.z-tab-se
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8eace', EndColorStr='#fafbf5')"; /* IE8 */
     text-shadow: 1px 1px 0px #fff;
     outline:none;
+}
+
+/*
+* hide the north and south panels as the site will now be wrapped
+* within an iframe via the test.ala.org.au
+*/
+.z-north, .z-south {
+  display: none;
 }
