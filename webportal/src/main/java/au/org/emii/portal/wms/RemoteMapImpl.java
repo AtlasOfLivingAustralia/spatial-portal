@@ -24,12 +24,10 @@ public class RemoteMapImpl implements RemoteMap {
     /**
      * Language pack - spring injected
      */
-
     protected LanguagePack languagePack = null;
     protected UriResolver uriResolver = null;
     protected LayerUtilities layerUtilities = null;
     protected GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
-
     /**
      * When using autodiscovery, will be populated with the uri
      * last accessed
@@ -53,25 +51,18 @@ public class RemoteMapImpl implements RemoteMap {
         LayerUtilities.WMS_1_1_0,
         LayerUtilities.WMS_1_0_0
     };
-
     private DiscoveryProcessorFactory discoveryProcessorFactory = null;
     private HttpConnection httpConnection = null;
-
     private GeoJSONUtilities geoJSONUtilities = null;
 
     public GeoJSONUtilities getGeoJSONUtilities() {
         return geoJSONUtilities;
     }
 
-
     @Autowired
     public void setGeoJSONUtilities(GeoJSONUtilities geoJSONUtilities) {
         this.geoJSONUtilities = geoJSONUtilities;
     }
-
-
-
-
 
     public HttpConnection getHttpConnection() {
         return httpConnection;
@@ -81,7 +72,6 @@ public class RemoteMapImpl implements RemoteMap {
     public void setHttpConnection(HttpConnection httpConnection) {
         this.httpConnection = httpConnection;
     }
-
 
     @Override
     public MapLayer autoDiscover(String name, float opacity, String uri, String version) {
@@ -218,10 +208,10 @@ public class RemoteMapImpl implements RemoteMap {
             discoveryProcessor = discoveryProcessorFactory.getDiscoveryProcessorForWMSVersion(
                     lastWMSVersionAttempted);
 
-            if (discoveryProcessor == null)  {
+            if (discoveryProcessor == null) {
                 logger.warn(String.format(
-                        "No discovery processor found for supported type '%s' " +
-                        "(config) '%s' (internal) for discovery id '%s'",
+                        "No discovery processor found for supported type '%s' "
+                        + "(config) '%s' (internal) for discovery id '%s'",
                         requestedType, lastWMSVersionAttempted, discovery.getId()));
             } else {
 
@@ -320,9 +310,10 @@ public class RemoteMapImpl implements RemoteMap {
         return wktLayer;
 
     }
+
     public MapLayer createGeoJSONLayer(String label, String uri) {
         MapLayer geoJSON = new MapLayer();
-        
+
         geoJSON.setName(label);
 
         geoJSON.setUri(uri);
@@ -364,6 +355,29 @@ public class RemoteMapImpl implements RemoteMap {
         JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
         int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
 
+        // set the metadata
+        // first check if its a species by looking for
+        // 'taxonconceptid'
+        /*
+        if (jo.containsKey("taxonconceptid")) {
+        System.out.println("species.metadata");
+        jo.
+        }
+        geoJSON.getMapLayerMetadata().setMoreInfo("");
+         *
+         */
+        if (geoJSON.getMapLayerMetadata() == null) {
+            geoJSON.setMapLayerMetadata(new MapLayerMetadata());
+        }
+        String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "taxonconceptid");
+        if (!taxonconceptid.equals("")) {
+            System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
+            geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid);
+        } else {
+            System.out.println("not species");
+            geoJSON.getMapLayerMetadata().setMoreInfo("");
+        }
+
         if (geomTypeCheck >= 0) {
 
             geoJSON.setGeometryType(geoJSONUtilities.getFirstFeatureType(jo));
@@ -372,13 +386,9 @@ public class RemoteMapImpl implements RemoteMap {
         } else {
             geoJSON = null;
         }
-        
+
         return geoJSON;
     }
-
-
-
-
 
     /**
      * Create a MapLayer instance and test that an image can be read from
@@ -438,8 +448,7 @@ public class RemoteMapImpl implements RemoteMap {
         return testedMapLayer;
     }
 
-
-     @Override
+    @Override
     public MapLayer createAndTestWMSLayer(String label, String uri, float opacity, boolean queryable) {
         /* it is not necessary to construct and parse a service instance for adding
          * a WMS layer since we already know its a WMS layer, so all we have to do
@@ -477,8 +486,6 @@ public class RemoteMapImpl implements RemoteMap {
         }
         return testedMapLayer;
     }
-
-
 
     public LanguagePack getLanguagePack() {
         return languagePack;
@@ -532,7 +539,4 @@ public class RemoteMapImpl implements RemoteMap {
     public void setDiscoveryProcessorFactory(DiscoveryProcessorFactory discoveryProcessorFactory) {
         this.discoveryProcessorFactory = discoveryProcessorFactory;
     }
-
-
 }
-
