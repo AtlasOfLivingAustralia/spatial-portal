@@ -218,3 +218,8 @@ remove.z-tab-hr, remove.z-tab-hl, remove.z-tab-hm, remove.z-tab, remove.z-tab-se
 .z-north, .z-south {
   display: none;
 }
+.z-combobox-pp .z-combo-item-text, .z-combobox-pp .z-combo-item-img {
+   border: 1px solid #eee;
+   line-height: 18px;
+   text-align: left;
+}
