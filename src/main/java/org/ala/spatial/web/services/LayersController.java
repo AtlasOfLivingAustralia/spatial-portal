@@ -1,5 +1,6 @@
 package org.ala.spatial.web.services;
 
+import java.net.URLDecoder;
 import java.util.List;
 import org.ala.spatial.dao.LayersDAO;
 import org.ala.spatial.model.LayerInfo;
@@ -47,6 +48,7 @@ public class LayersController {
         String msg = "";
 
         if (q != null) {
+            System.out.print("retriving layer list by criteria.q: " + q);
             l = layersDao.getLayersByCriteria(q);
             int count = 0;
             if (l != null) {
@@ -145,6 +147,12 @@ public class LayersController {
     public 
     @ResponseBody
     List<LayerInfo> searchLayersByCriteria(@PathVariable String keywords) {
+        try {
+            keywords = URLDecoder.decode(keywords, "UTF-8");
+        } catch (Exception e) {
+            System.out.println("Error in searchLayersByCriteria: " + keywords);
+            e.printStackTrace(System.out);
+        }
         System.out.print("retriving layer list by criteria: " + keywords);
         return layersDao.getLayersByCriteria(keywords);
     }
