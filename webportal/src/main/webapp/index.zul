@@ -340,6 +340,14 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     <div sclass="leftmenutabs">
                         <!--  hide the left menu (west element) -->
                         <div zclass="closebox" zindex="500" width="22px" top="5px">
+                            <toolbarbutton label="Help"
+                                           sclass="helpButtonMain"
+                                           tooltiptext="ALA Spatial Portal Help" 
+                                           forward="onClick=onActivateLink()" >
+                                <!--<custom-attributes link="http://emii1.its.utas.edu.au/drupal/" />-->
+                                <custom-attributes link="help.html" />
+                                <custom-attributes label="Help" />
+                            </toolbarbutton>
                             <toolbarbutton
                                 id="hideLeftMenu"
                                 label=""
