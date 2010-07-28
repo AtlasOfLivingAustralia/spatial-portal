@@ -148,9 +148,15 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     }
 
     @Override
-    public void zoomGeoJsonExtent(MapLayer ml) {
-        String script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName() + "')";
-        execute(script);
+    public void zoomGeoJsonExtentNow(MapLayer ml) {
+        execute(zoomGeoJsonExtent(ml));
+
+    }
+
+    @Override
+    public String zoomGeoJsonExtent(MapLayer ml) {
+        String script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName().replaceAll("'", "\\'") + "')";
+        return script;
 
     }
 

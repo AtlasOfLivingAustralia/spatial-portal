@@ -361,7 +361,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             logger.debug("zooming to extent " + selectedLayer.getId());
             if (selectedLayer.getType() == LayerUtilities.GEOJSON
                     || selectedLayer.getType() == LayerUtilities.WKT) {
-                openLayersJavascript.zoomGeoJsonExtent(selectedLayer);
+                openLayersJavascript.zoomGeoJsonExtentNow(selectedLayer);
             } else {
                 openLayersJavascript.zoomLayerExtent(selectedLayer);
             }
@@ -586,7 +586,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (lac.getItemCount() > 0 && lac.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
-            addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75);
+            String metadata = "";
+            if (jo.getString("metadatapath") != null && !jo.getString("metadatapath").trim().equals("")) {
+                metadata = jo.getString("metadatapath");
+            } else {
+                metadata += "Name: " + jo.getString("displayname") + "\n";
+                metadata += "Source: " + jo.getString("source") + "\n";
+                metadata += "Classification1: " + jo.getString("classification1") + "\n";
+            }
+            addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75, metadata);
             lac.setValue("");
         }
 
@@ -1360,6 +1368,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param opacity 0 for invisible, 1 for solid
      */
     public boolean addWMSLayer(String label, String uri, float opacity) {
+        return addWMSLayer(label, uri, opacity, "");
+    }
+
+    /**
+     * Add a WMS layer identified by the given parameters to the menu system
+     * and activate it
+     * @param label Name of map layer
+     * @param uri URI for the WMS service
+     * @param layers layers to ask the WMS for
+     * @param imageFormat MIME type of the image we will get back
+     * @param opacity 0 for invisible, 1 for solid
+     * @param metadata either a url or text 
+     */
+    public boolean addWMSLayer(String label, String uri, float opacity, String metadata) {
         boolean addedOk = false;
         if (safeToPerformMapAction()) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
@@ -1370,6 +1392,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
+                    if (mapLayer.getMapLayerMetadata() == null) {
+                        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
+                    }
+                    mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
                     addUserDefinedLayerToMenu(mapLayer, true);
                     addedOk = true;
                 }
@@ -1439,6 +1465,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param imageFormat MIME type of the image we will get back
      * @param opacity 0 for invisible, 1 for solid
      */
+    /*
     public boolean addWMSLayer(String label, String uri, float opacity, String filter) {
         boolean addedOk = false;
         if (safeToPerformMapAction()) {
@@ -1464,6 +1491,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         return addedOk;
     }
+     * 
+     */
 
     /**
      * Overridden to allow for the adding servers from known Servers ie can be queried
@@ -1758,8 +1787,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         switch (tab) {
             case PortalSession.LAYER_TAB:
-            component = startNavigationTab;
-            break;
+                component = startNavigationTab;
+                break;
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTab;
                 break;
@@ -1787,8 +1816,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         switch (tab) {
             case PortalSession.LAYER_TAB:
-            component = startNavigationTabContent;
-            break;
+                component = startNavigationTabContent;
+                break;
             case PortalSession.SEARCH_TAB:
                 component = searchNavigationTabContent;
                 break;
@@ -1812,13 +1841,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /*public void onClick$layerNavigationTab() {
-        activateNavigationTab(PortalSession.LAYER_TAB);
+    activateNavigationTab(PortalSession.LAYER_TAB);
     }
 
     public void onClick$areaNavigationTab() {
-        activateNavigationTab(PortalSession.AREA_TAB);
+    activateNavigationTab(PortalSession.AREA_TAB);
     }*/
-
     public void onClick$mapNavigationTab() {
         activateNavigationTab(PortalSession.MAP_TAB);
     }
@@ -1828,9 +1856,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /*public void onClick$searchNavigationTab() {
-        activateNavigationTab(PortalSession.SEARCH_TAB);
+    activateNavigationTab(PortalSession.SEARCH_TAB);
     }*/
-
     public void onClick$linkNavigationTab() {
         ((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).callPullFromActiveLayers();
         activateNavigationTab(PortalSession.LINK_TAB);
@@ -2066,10 +2093,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("---------------------------------------------");
             System.out.println("---------------------------------------------");
             System.out.println("map is now loaded. let's try mapping.");
-            loadUrlParameters();
+            MapLayer ml = loadUrlParameters();
             System.out.println("---------------------------------------------");
             System.out.println("---------------------------------------------");
+//            if (ml != null) {
+//                openLayersJavascript.setAdditionalScript(openLayersJavascript.zoomGeoJsonExtent(ml));
+//            } else {
+//                openLayersJavascript.setAdditionalScript("");
+//            }
             openLayersJavascript.setAdditionalScript("");
+            
         }
     }
 
@@ -2334,10 +2367,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //TODO: validate params
         if (s != null) {
-            String [] pa = s.split(",");
+            String[] pa = s.split(",");
             setWidth(pa[0] + "px");
 
-            if(pa.length > 1){
+            if (pa.length > 1) {
                 setHeight(pa[1] + "px");
             }
         }
@@ -2359,7 +2392,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         System.out.println("Got " + auparams.length + " parameters");
         for (int ip = 0; ip < auparams.length; ip++) {
             String[] uparam = auparams[ip].split("=");
-            if(uparam.length > 1) {
+            if (uparam.length > 1) {
                 uparams.put(uparam[0].trim(), uparam[1].trim());
             }
         }
@@ -2367,7 +2400,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return uparams;
     }
 
-    private void loadUrlParameters() {
+    private MapLayer loadUrlParameters() {
+        MapLayer ml = null;
         try {
 
             boolean showLayerTab = false;
@@ -2378,7 +2412,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (userParams != null) {
 
                 if (userParams.containsKey("species_lsid")) {
-                    mapSpeciesByLsid(userParams.get("species_lsid"));
+                    ml = mapSpeciesByLsid(userParams.get("species_lsid"));
                     showLayerTab = true;
                 } else if (userParams.containsKey("layer")) {
                     // TODO: eventually add env/ctx layer loading code here
@@ -2397,8 +2431,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     System.out.println("filter: " + filter);
                     try {
-                        mapSpeciesByFilter(filter, filter);                       
-                    }catch(Exception e){}
+                        ml = mapSpeciesByFilter(filter, filter);
+                    } catch (Exception e) {
+                    }
                     showLayerTab = true;
                 }
             }
@@ -2411,6 +2446,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("Opps error loading url parameters");
             e.printStackTrace(System.out);
         }
+
+        return ml;
     }
 
     public void onActivateLink(ForwardEvent event) {
@@ -2568,7 +2605,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      *
      * see onClick$reloadPortal()
      */
-    void reloadPortal(){
+    void reloadPortal() {
         // grab the portaluser instance so that logged in users stay logged in...
         PortalSession portalSession = getPortalSession();
         PortalUser portalUser = portalSession.getPortalUser();
@@ -2932,7 +2969,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void mapSpeciesByLsid(String lsid) {
+    public MapLayer mapSpeciesByLsid(String lsid) {
         try {
             String satServer = "http://spatial.ala.org.au";
             //if (settingsSupplementary != null) {
@@ -2963,7 +3000,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     tr = "scientificname";
                 }
                 System.out.println("sending to map: " + tr + " = " + sn);
-                mapSpeciesByNameRank(sn, tr, null);
+                openLayersJavascript.setAdditionalScript(
+                        "window.mapFrame.zoomBoundsGeoJSON('"+sn.replaceAll("'", "\\'")+"');"
+                        + openLayersJavascript.getAdditionalScript()
+                        );
+                return mapSpeciesByNameRank(sn, tr, null);
             } else {
                 Messagebox.show("No occurrence data found for LSID: " + URLDecoder.decode(StringUtils.replace(lsid, "__", "."), "UTF-8"));
             }
@@ -2973,17 +3014,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("Opps error in mapsSpeciesByLsid");
             ex.printStackTrace(System.out);
         }
+        return null;
     }
 
-    public void mapSpeciesByName(String speciesName) {
-        mapSpeciesByName(speciesName, null);
+    public MapLayer mapSpeciesByName(String speciesName) {
+        return mapSpeciesByName(speciesName, null);
     }
 
-    public void mapSpeciesByName(String speciesName, String commonName) {
-        mapSpeciesByNameRank(speciesName, "scientificname", commonName);
+    public MapLayer mapSpeciesByName(String speciesName, String commonName) {
+        return mapSpeciesByNameRank(speciesName, "scientificname", commonName);
     }
 
-    public void mapSpeciesByNameRankOld(String speciesName, String speciesRank, String commonName) {
+    public MapLayer mapSpeciesByNameRankOld(String speciesName, String speciesRank, String commonName) {
         String filter;
         String uri;
         String layerName = "ALA:occurrences";
@@ -3008,15 +3050,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         System.out.println("Mapping: " + label);
 
         try {
-            addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
+            return addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
         } catch (UnsupportedEncodingException ex) {
             //logger.debug(ex.getMessage());
             System.out.println("error mapSpeciesByNameRank:");
             ex.printStackTrace(System.out);
         }
+        return null;
     }
 
-    public void mapSpeciesByNameRank(String speciesName, String speciesRank, String commonName) {
+    public MapLayer mapSpeciesByNameRank(String speciesName, String speciesRank, String commonName) {
         String filter;
         String uri;
         String layerName = "ALA:occurrences";
@@ -3039,10 +3082,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             label += " (" + commonName + ")";
         }
 
-        mapSpeciesByFilter(label, filter);
+        return mapSpeciesByFilter(label, filter);
     }
 
-    public void mapSpeciesByFilter(String label, String filter) {
+    public MapLayer mapSpeciesByFilter(String label, String filter) {
         String uri;
         String layerName = "ALA:occurrences";
         String sld = "species_point";
@@ -3058,13 +3101,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         try {
             if (safeToPerformMapAction()) {
-                addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
+                return addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
             }
         } catch (UnsupportedEncodingException ex) {
             //logger.debug(ex.getMessage());
             System.out.println("error mapSpeciesByNameRank:");
             ex.printStackTrace(System.out);
         }
+        return null;
     }
 
     /**
@@ -3221,61 +3265,71 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //tbxPrintHack is 'screen width, screen height, map extents'
         String p = tbxPrintHack.getValue();
         System.out.println("tbxPrintHack:" + p);
-        String [] ps = p.split(",");
+        String[] ps = p.split(",");
 
         String server;
         server = "http://spatial.ala.org.au/webportal/";
-        
+
 
         //session id/cookie JSESSIONID=
         String jsessionid = "";
         try {
             //get cookie
-                for(Cookie c : ((HttpServletRequest)Executions.getCurrent().getNativeRequest()).getCookies()) {
-                    if( c.getName().equalsIgnoreCase("JSESSIONID")){
-                        System.out.println("printcookie:" + c.getValue());
-                        jsessionid = c.getValue();
-                    }
+            for (Cookie c : ((HttpServletRequest) Executions.getCurrent().getNativeRequest()).getCookies()) {
+                if (c.getName().equalsIgnoreCase("JSESSIONID")) {
+                    System.out.println("printcookie:" + c.getValue());
+                    jsessionid = c.getValue();
                 }
+            }
         } catch (Exception e) {
-                e.printStackTrace();
+            e.printStackTrace();
         }
 
         //width
         String width = "1024"; //default
-        if (ps.length > 1) width = ps[0];
+        if (ps.length > 1) {
+            width = ps[0];
+        }
 
         //height
         String height = "800"; //default
-        if (ps.length > 2) height = ps[1];
+        if (ps.length > 2) {
+            height = ps[1];
+        }
 
         //zoom (minlong, minlat, maxlong, maxlat)
         String zoom = "112,-44,154,-9"; //default
-        if (ps.length > 5) zoom = ps[2] + "," + ps[3] + "," + ps[4] + "," + ps[5];
+        if (ps.length > 5) {
+            zoom = ps[2] + "," + ps[3] + "," + ps[4] + "," + ps[5];
+        }
 
         //lhs panel width
         //append to zoom for now > String lhsWidth = "0"; //default
-        if (ps.length > 6) zoom += "," + ps[6]; //lhsWidth = ps[6];
-        else zoom += ",350"; //default
-
+        if (ps.length > 6) {
+            zoom += "," + ps[6]; //lhsWidth = ps[6];
+        } else {
+            zoom += ",350"; //default
+        }
         //base map type
-        if (ps.length > 7) zoom += "," + ps[7];
-        else zoom += ",normal";
+        if (ps.length > 7) {
+            zoom += "," + ps[7];
+        } else {
+            zoom += ",normal";
+        }
 
 
         //unique id
         String uid = String.valueOf(System.currentTimeMillis());
 
         String pth = "/usr/local/tomcat/instance_03_webportal/webapps/webportal/print/";
-        
+
         String htmlpth = pth;
         String htmlurl = server + "print/";
 
         try {
-            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid,zoom
-                    ,header,grid,format,resolution);
+            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid, zoom, header, grid, format, resolution);
 
-            if(!preview) {
+            if (!preview) {
                 pp.print();
 
                 File f = new File(pp.getImageFilename());
@@ -3283,7 +3337,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 if (format.equalsIgnoreCase("png")) {
                     Filedownload.save(new File(pp.getImageFilename()), "image/png");
-                } else if(format.equalsIgnoreCase("pdf")) {
+                } else if (format.equalsIgnoreCase("pdf")) {
                     Filedownload.save(new File(pp.getImageFilename()), "application/pdf");
                 } else {
                     Filedownload.save(new File(pp.getImageFilename()), "image/jpeg");
