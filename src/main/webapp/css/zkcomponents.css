@@ -654,6 +654,25 @@ tr.z-list-item-over{background:#dae7f6;}tr.z-list-item-over-seld{background:#6ea
     padding: 2px; 
 }
 
+.helpButtonMain {
+    position: absolute;
+    right: 30px;
+    padding: 3px 10px;
+    border: 1px solid #7EAAC6;
+    background-color: #B4E7FF;
+    
+}
+closebox a.helpButtonMain {
+    text-decoration: none;
+    color: teal;
+}
+.helpButtonMain:hover {
+    background-color: #DEF4FF; /*#EFFBFF;*/
+}
+closebox a.helpButtonMain:hover {
+    font-weight: bold; 
+}
+
 .exampleText {
     color: #AAA;
 }

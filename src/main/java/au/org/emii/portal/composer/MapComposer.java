@@ -689,27 +689,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void activateLink(Link link) {
-        logger.debug("activate Link " + link.getId());
-
-        if (link.isExternal()) {
+    public void activateLink(String uri, String label, boolean isExternal) {
+        if (isExternal) {
             // change browsers current location
             Clients.evalJavaScript(
-                    "window.location.href ='" + link.getUri() + "';");
+                    "window.location.href ='" + uri + "';");
         } else {
 
             // iframe in another id-space so can't be auto wired
             Iframe iframe = getExternalContentIframe();
-            iframe.setSrc(link.getUri());
+            iframe.setSrc(uri);
 
             // use the link description as the popup caption
             ((Caption) externalContentWindow.getFellow("caption")).setLabel(
-                    link.getDescription());
+                    label);
             externalContentWindow.setPosition("center");
             externalContentWindow.doOverlapped();
 
         }
+    }
 
+    public void activateLink(Link link) {
+        logger.debug("activate Link " + link.getId());
+
+        activateLink(link.getUri(), link.getDescription(), link.isExternal()); 
 
     }
 
@@ -1467,33 +1470,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     /*
     public boolean addWMSLayer(String label, String uri, float opacity, String filter) {
-        boolean addedOk = false;
-        if (safeToPerformMapAction()) {
-            //if (getPortalSession().getUserDefinedById(uri) == null) {
-            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-                MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
-                if (mapLayer == null) {
-                    // fail
-                    errorMessageBrokenWMSLayer(imageTester);
-                    logger.info("adding WMS layer failed ");
-                } else {
-                    // ok
-                    addUserDefinedLayerToMenu(mapLayer, true);
-                    addedOk = true;
-                }
-            } else {
-                // fail
-                showMessage(languagePack.getLang("wms_layer_already_exists"));
-                logger.info(
-                        "refusing to add a new layer with URI " + uri
-                        + " because it already exists in the menu");
-            }
-        }
-        return addedOk;
+    boolean addedOk = false;
+    if (safeToPerformMapAction()) {
+    //if (getPortalSession().getUserDefinedById(uri) == null) {
+    if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+    MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+    if (mapLayer == null) {
+    // fail
+    errorMessageBrokenWMSLayer(imageTester);
+    logger.info("adding WMS layer failed ");
+    } else {
+    // ok
+    addUserDefinedLayerToMenu(mapLayer, true);
+    addedOk = true;
+    }
+    } else {
+    // fail
+    showMessage(languagePack.getLang("wms_layer_already_exists"));
+    logger.info(
+    "refusing to add a new layer with URI " + uri
+    + " because it already exists in the menu");
+    }
+    }
+    return addedOk;
     }
      * 
      */
-
     /**
      * Overridden to allow for the adding servers from known Servers ie can be queried
      * Add a WMS layer identified by the given parameters to the menu system
@@ -2102,7 +2104,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //                openLayersJavascript.setAdditionalScript("");
 //            }
             openLayersJavascript.setAdditionalScript("");
-            
+
         }
     }
 
@@ -2452,9 +2454,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onActivateLink(ForwardEvent event) {
         Component component = event.getOrigin().getTarget();
-        Link link = (Link) component.getAttribute("link");
-        logger.debug("activate link: " + link.getId());
-        this.activateLink(link);
+        Object oLink = component.getAttribute("link");
+        if (oLink.getClass().getName().equals("java.lang.String")) {
+            String uri = (String) oLink;
+            String label = (String)component.getAttribute("label");
+            this.activateLink(uri, label, false); 
+        } else {
+            Link link = (Link) oLink;
+            logger.debug("activate link: " + link.getId());
+            this.activateLink(link);
+        }
     }
 
     public void onClick$loginButton() {
@@ -3001,9 +3010,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
                 System.out.println("sending to map: " + tr + " = " + sn);
                 openLayersJavascript.setAdditionalScript(
-                        "window.mapFrame.zoomBoundsGeoJSON('"+sn.replaceAll("'", "\\'")+"');"
-                        + openLayersJavascript.getAdditionalScript()
-                        );
+                        "window.mapFrame.zoomBoundsGeoJSON('" + sn.replaceAll("'", "\\'") + "');"
+                        + openLayersJavascript.getAdditionalScript());
                 return mapSpeciesByNameRank(sn, tr, null);
             } else {
                 Messagebox.show("No occurrence data found for LSID: " + URLDecoder.decode(StringUtils.replace(lsid, "__", "."), "UTF-8"));
