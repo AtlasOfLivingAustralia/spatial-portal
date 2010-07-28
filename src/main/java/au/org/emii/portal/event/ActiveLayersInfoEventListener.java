@@ -28,6 +28,9 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
                     Clients.evalJavaScript("window.open('"
                             + activeLayer.getMapLayerMetadata().getMoreInfo()
                             + "', 'speciesWindow');");
+                } else if (activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
+                    //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
+                    mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
                 } else {
                     mapComposer.showMessage("Metadata currently unavailable");
                 }

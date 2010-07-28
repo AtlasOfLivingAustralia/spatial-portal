@@ -93,7 +93,9 @@ public interface OpenLayersJavascript {
 
     public String defineWKTMapLayer(MapLayer layer);
 
-    public void zoomGeoJsonExtent (MapLayer layer);
+    public void zoomGeoJsonExtentNow (MapLayer layer);
+
+    public String zoomGeoJsonExtent (MapLayer layer);
 
     public void addFeatureSelection();
 
