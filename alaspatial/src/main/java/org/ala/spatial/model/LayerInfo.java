@@ -69,6 +69,27 @@ public class LayerInfo {
     @Column(name="enabled")
     private boolean enabled;
 
+    @Column(name="environmentalvaluemin")
+    private String environmentalvaluemin;
+
+    @Column(name="environmentalvaluemax")
+    private String environmentalvaluemax;
+
+    @Column(name="environmentalvalueunits")
+    private String environmentalvalueunits;
+
+    @Column(name="lookuptablepath")
+    private String lookuptablepath;
+
+    @Column(name="metadatapath")
+    private String metadatapath;
+
+    @Column(name="classification1")
+    private String classification1;
+
+    @Column(name="classification2")
+    private String classification2;
+
     public LayerInfo() {
     }
 
@@ -203,6 +224,62 @@ public class LayerInfo {
 
     public void setScale(String scale) {
         this.scale = scale;
+    }
+
+    public String getClassification1() {
+        return classification1;
+    }
+
+    public void setClassification1(String classification1) {
+        this.classification1 = classification1;
+    }
+
+    public String getClassification2() {
+        return classification2;
+    }
+
+    public void setClassification2(String classification2) {
+        this.classification2 = classification2;
+    }
+
+    public String getEnvironmentalvaluemax() {
+        return environmentalvaluemax;
+    }
+
+    public void setEnvironmentalvaluemax(String environmentalvaluemax) {
+        this.environmentalvaluemax = environmentalvaluemax;
+    }
+
+    public String getEnvironmentalvaluemin() {
+        return environmentalvaluemin;
+    }
+
+    public void setEnvironmentalvaluemin(String environmentalvaluemin) {
+        this.environmentalvaluemin = environmentalvaluemin;
+    }
+
+    public String getEnvironmentalvalueunits() {
+        return environmentalvalueunits;
+    }
+
+    public void setEnvironmentalvalueunits(String environmentalvalueunits) {
+        this.environmentalvalueunits = environmentalvalueunits;
+    }
+
+    public String getLookuptablepath() {
+        return lookuptablepath;
+    }
+
+    public void setLookuptablepath(String lookuptablepath) {
+        this.lookuptablepath = lookuptablepath;
+    }
+
+    public String getMetadatapath() {
+        return metadatapath;
+    }
+
+    public void setMetadatapath(String metadatapath) {
+        this.metadatapath = metadatapath;
     }
 
 }
