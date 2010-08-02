@@ -25,8 +25,17 @@
     </ChannelSelection>
     <ColorMap extended="true">
  	<!--Lower-->
-	<ColorMapEntry color="#99FF66" quantity="MIN"/>
-        <ColorMapEntry color="#FF0000" quantity="MAX"/> 
+	<!--<ColorMapEntry color="#CCCCFF" quantity="MIN"/>-->
+        <ColorMapEntry color="#009999" quantity="TEN"/>
+        <ColorMapEntry color="#99FF66" quantity="TWENTY"/>
+        <ColorMapEntry color="#FFFF66" quantity="THIRTY"/>
+        <ColorMapEntry color="#FFFF00" quantity="FOURTY"/>
+        <ColorMapEntry color="#FF9900" quantity="FIFTY"/>
+        <ColorMapEntry color="#FF6600" quantity="SIXTY"/>
+        <ColorMapEntry color="#FF6666" quantity="SEVENTY"/>
+        <ColorMapEntry color="#FF3300" quantity="EIGHTY"/>
+        <ColorMapEntry color="#CC33FF" quantity="NINETY"/>
+        <ColorMapEntry color="#FF33FF" quantity="MAX"/>
 	<!--Higher-->
     </ColorMap>
 </RasterSymbolizer>

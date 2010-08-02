@@ -6,7 +6,7 @@ import edlconfig
 for root, dirs, files in os.walk(edlconfig.dataset):
 	for name in files:
 		if ".tif" in name:
-			layername = name.replace(".tif","")
+			layername = edlconfig.source + "_" + name.replace(".tif","")
 #			print(os.path.join(root,name));
 			p = os.popen("gdalinfo -mm " + os.path.join(root,name),"r")
 			while 1:
