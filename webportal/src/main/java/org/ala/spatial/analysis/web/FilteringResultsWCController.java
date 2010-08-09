@@ -34,6 +34,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     public Button download;
     public Button downloadsamples;
     public Button refreshButton2;
+    public Button mapspecies;
     public Listbox popup_listbox_results;
     public Label results_label;
     public int results_pos;
@@ -182,6 +183,13 @@ public class FilteringResultsWCController extends UtilityComposer {
             //hide results list, show 'preview list' button
             popup_listbox_results.setVisible(false);
             refreshButton2.setVisible(true);
+
+            // toggle the map button
+            if (results_count > 0 && results_count < 1001) {
+                mapspecies.setVisible(true);
+            } else {
+                mapspecies.setVisible(false);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -218,6 +226,26 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             URL u = new URL(satServer + "/alaspatial/" + samplesfile);
             Filedownload.save(u.openStream(), "application/zip", "filter_samples_" + pid + ".zip");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClick$mapspecies() {
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(SAT_URL);
+        }
+
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("/filtering/apply");
+            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+            sbProcessUrl.append("/samples/geojson");
+
+            String geojsonfile = postInfo(sbProcessUrl.toString());
+
+            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

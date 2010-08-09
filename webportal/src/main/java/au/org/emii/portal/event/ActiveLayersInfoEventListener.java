@@ -27,7 +27,7 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
                     // send the user to the BIE page for the species
                     Clients.evalJavaScript("window.open('"
                             + activeLayer.getMapLayerMetadata().getMoreInfo()
-                            + "', 'speciesWindow');");
+                            + "', 'metadataWindow');");
                 } else if (activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                     //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
                     mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());

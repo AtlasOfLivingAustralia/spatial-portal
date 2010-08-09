@@ -7,47 +7,51 @@
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
         >
 
-            <tabbox>
+        <tabbox>
             <tabs>
-                <tab label="1*" /></tabs>
-                <toolbar>
+                <tab label="1*" />
+            </tabs>
+            <toolbar>
                    
-            <button label="Produce species list" id="download" />
-            <button label="Produce sample" id="downloadsamples" />
+                <button label="Produce species list" id="download" />
+                <button label="Produce sample" id="downloadsamples" />
 
 
-                </toolbar>
+            </toolbar>
             <tabpanels>
                 <tabpanel>
 
 
-        <vbox>
-            <separator />
+                    <vbox>
+                        <separator />
             
-            <label style="font-weight: bold" id="results_label" />
-<separator />      
-            <button label="Show species list preview" id="refreshButton2" visible="true"/>
-            <listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
-              <listhead>
-<listheader label="family" ></listheader>
-<listheader label="species" ></listheader>
-<listheader label="common name" ></listheader>
-</listhead>
-            </listbox>
+                        <label style="font-weight: bold" id="results_label" />
+                        <separator />
+                        <hbox>
+                            <button label="Show species list preview" id="refreshButton2" visible="true"/>
+                            <button label="Map all species in active area" id="mapspecies" visible="false"/>
+                        </hbox>
+                        <listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
+                            <listhead>
+                                <listheader label="family" ></listheader>
+                                <listheader label="species" ></listheader>
+                                <listheader label="common name" ></listheader>
+                            </listhead>
+                        </listbox>
 
         <!--    <textbox
                    multiline="true"
                    id="popup_textbox_results" width="500px" height="200px" readonly="true" visible="false"/>
                    -->
-        <separator/>
+                        <separator/>
 
             
         <!--    <div align="right">
                 <button label="close" onClick="popup_results.detach();" />
             </div> -->
-        </vbox>
-        </tabpanel>
-        </tabpanels>
+                    </vbox>
+                </tabpanel>
+            </tabpanels>
         </tabbox>
     </window>
 </zk>
