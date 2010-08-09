@@ -35,27 +35,20 @@ import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.util.SessionPrint;
-import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,15 +56,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
-import org.ala.spatial.analysis.web.FilteringWCController;
 import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
@@ -111,13 +100,18 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
+import org.zkoss.zul.SimpleTreeModel;
+import org.zkoss.zul.SimpleTreeNode;
 import org.zkoss.zul.Slider;
 import org.zkoss.zul.Tab;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Tabpanel;
 import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Tree;
+import org.zkoss.zul.Treecell;
+import org.zkoss.zul.Treeitem;
 import org.zkoss.zul.TreeitemRenderer;
+import org.zkoss.zul.Treerow;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.api.Textbox;
 
@@ -222,6 +216,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private LayersAutoComplete lac;
     private Textbox speciesLsid;
     private Textbox userparams;
+    private Tree tree;
     /**
      * Logout service spring bean - autowired
      */
@@ -712,7 +707,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void activateLink(Link link) {
         logger.debug("activate Link " + link.getId());
 
-        activateLink(link.getUri(), link.getDescription(), link.isExternal()); 
+        activateLink(link.getUri(), link.getDescription(), link.isExternal());
 
     }
 
@@ -2357,6 +2352,200 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // showtime!
         load();
+
+        //loadLayerTree();
+    }
+
+    private void loadLayerTree() {
+        //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
+        Object llist = Sessions.getCurrent().getAttribute("layerlist");
+
+        ArrayList top = new ArrayList();
+        ArrayList cat1 = new ArrayList();
+        ArrayList cat2 = new ArrayList();
+
+        Hashtable htCat1 = new Hashtable();
+        Hashtable htCat2 = new Hashtable();
+
+        JSONArray layerlist = JSONArray.fromObject(llist);
+        for (int i = 0; i < layerlist.size(); i++) {
+            JSONObject jo = layerlist.getJSONObject(i);
+
+            if (!jo.getBoolean("enabled")) {
+                continue;
+            }
+
+            SimpleTreeNode stn = new SimpleTreeNode(jo, new ArrayList());
+            addToMap(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
+
+        }
+
+        System.out.println("ht1.size: " + htCat1.size());
+
+        Enumeration it2 = htCat2.keys();
+        while (it2.hasMoreElements()) {
+            String catKey = (String) it2.nextElement();
+            JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
+            SimpleTreeNode cat = new SimpleTreeNode(joCat, (ArrayList) htCat2.get(catKey));
+            //cat2.add(cat);
+            top.add(cat);
+        }
+
+//        Enumeration it1 = htCat1.keys();
+//        while(it1.hasMoreElements()) {
+//            String catKey = (String) it1.nextElement();
+//            JSONObject joCat = JSONObject.fromObject("{displayname:'"+catKey+"'}");
+//            SimpleTreeNode cat = new SimpleTreeNode(joCat,(ArrayList) htCat1.get(catKey));
+//            top.add(cat);
+//        }
+        SimpleTreeNode root = new SimpleTreeNode("ROOT", top);
+        SimpleTreeModel stm = new SimpleTreeModel(root);
+        tree.setModel(stm);
+
+        tree.setTreeitemRenderer(new TreeitemRenderer() {
+
+            @Override
+            public void render(Treeitem item, Object data) throws Exception {
+
+                SimpleTreeNode t = (SimpleTreeNode) data;
+
+                JSONObject joLayer = JSONObject.fromObject(t.getData());
+
+                Treerow tr = null;
+                /*
+                 * Since only one treerow is allowed, if treerow is not null,
+                 * append treecells to it. If treerow is null, construct a new
+                 * treerow and attach it to item.
+                 */
+                if (item.getTreerow() == null) {
+                    tr = new Treerow();
+                    tr.setParent(item);
+                } else {
+                    tr = item.getTreerow();
+                    tr.getChildren().clear();
+                }
+
+                Treecell tcAdd = new Treecell();
+                Treecell tcInfo = new Treecell();
+
+                if (!joLayer.getString("type").equals("node")) {
+
+                    // add the "add" button
+                    //tcAdd = new Treecell();
+                    tcAdd.setImage("/img/add.png");
+
+                    // add the "info" button
+                    //tcInfo = new Treecell();
+                    tcInfo.setImage("/img/information.png");
+
+                    // set the layer data for the row
+                    tr.setAttribute("lyr", joLayer);
+                } else {
+
+                }
+
+                Treecell tcName = new Treecell(joLayer.getString("displayname"));
+                //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
+
+
+                // Attach onclick events:
+                if (!joLayer.getString("type").equals("node")) {
+
+                    tcAdd.addEventListener("onClick", new EventListener() {
+
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            Object o = event.getTarget().getId();
+                            Treecell tc = (Treecell) event.getTarget();
+                            JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
+                            System.out.println("Loading layer: " + joLayer.getString("displayname") + " from " + joLayer.getString("displaypath"));
+
+                            String metadata = joLayer.getString("metadatapath");
+                            if (metadata.equals("")) {
+                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
+                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
+                                metadata += "Source: " + joLayer.getString("source") + "\n";
+                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
+                            }
+
+                            addWMSLayer(joLayer.getString("displayname"),
+                                    joLayer.getString("displaypath"),
+                                    (float) 0.75, metadata);
+                        }
+                    });
+
+                    
+                    tcInfo.addEventListener("onClick", new EventListener() {
+
+                        @Override
+                        public void onEvent(Event event) throws Exception {
+                            Object o = event.getTarget().getId();
+                            Treecell tc = (Treecell) event.getTarget();
+                            JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
+                            String metadata = joLayer.getString("metadatapath");
+                            if (metadata.equals("")) {
+                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
+                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
+                                metadata += "Source: " + joLayer.getString("source") + "\n";
+                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
+                            }
+
+                            System.out.println("Loading layer info: " + joLayer.getString("displayname") + " from " + metadata);
+                            if (metadata.startsWith("http://")) {
+                                // send the user to the BIE page for the species
+                                Clients.evalJavaScript("window.open('"
+                                        + metadata
+                                        + "', 'metadataWindow');");
+                            } else if (metadata.length() > 0) {
+                                //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
+                                showMessage(metadata);
+                            } else {
+                                showMessage("Metadata currently unavailable");
+                            }
+                        }
+                    });
+                }
+
+                //Attach treecells to treerow
+                //if (tcAdd != null) {
+                    tcAdd.setParent(tr);
+                //}
+                //if (tcInfo != null) {
+                    tcInfo.setParent(tr);
+                //}
+                tcName.setParent(tr);
+                item.setOpen(false);
+            }
+        });
+
+
+    }
+
+    private void addToMap(Hashtable htCat1, Hashtable htCat2, String cat1, String cat2, SimpleTreeNode stn) {
+
+        if (cat1.trim().equals("")) {
+            cat1 = "Other";
+        }
+        if (cat2.trim().equals("")) {
+            cat2 = "Other";
+        }
+
+        ArrayList alCat2 = (ArrayList) htCat2.get(cat2);
+        if (alCat2 == null) {
+            alCat2 = new ArrayList();
+        }
+        alCat2.add(stn);
+        htCat2.put(cat2, alCat2);
+
+        ArrayList alCat1 = (ArrayList) htCat1.get(cat1);
+        if (alCat1 == null) {
+            alCat1 = new ArrayList();
+        }
+        JSONObject joCat = JSONObject.fromObject("{displayname:'" + cat2 + "',type:'node'}");
+        SimpleTreeNode cat = new SimpleTreeNode(joCat, alCat2);
+        alCat1.add(cat);
+        htCat1.put(cat1, alCat1);
+
     }
 
     /**
@@ -2457,8 +2646,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Object oLink = component.getAttribute("link");
         if (oLink.getClass().getName().equals("java.lang.String")) {
             String uri = (String) oLink;
-            String label = (String)component.getAttribute("label");
-            this.activateLink(uri, label, false); 
+            String label = (String) component.getAttribute("label");
+            this.activateLink(uri, label, false);
         } else {
             Link link = (Link) oLink;
             logger.debug("activate link: " + link.getId());
@@ -2541,7 +2730,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return mapLayer;
     }
 
-    public MapLayer addGeoJSONLayer(String label, String uri) {
+    public MapLayer addGeoJSONLayerOld(String label, String uri) {
         MapLayer mapLayer = null;
 
         if (safeToPerformMapAction()) {
@@ -2573,6 +2762,70 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 logger.info(
                         "refusing to add a new layer with URI " + uri
                         + " because it already exists in the menu");
+            }
+        }
+
+        return mapLayer;
+    }
+
+    public MapLayer addGeoJSONLayer(String label, String uri) {
+        MapLayer mapLayer = null;
+
+        if (safeToPerformMapAction()) {
+            MapLayer gjLayer = getMapLayer(label);
+            if (label.equalsIgnoreCase("Species in Active area")) {
+                if (gjLayer != null) {
+                    openLayersJavascript.setAdditionalScript(
+                            openLayersJavascript.removeMapLayer(gjLayer));
+                } //else {
+                    mapLayer = remoteMap.createGeoJSONLayer(label, uri);
+                    if (mapLayer == null) {
+                        // fail
+                        showMessage("No mappable features available");
+                        logger.info("adding GEOJSON layer failed ");
+                    } else {
+                        mapLayer.setDisplayable(true);
+                        mapLayer.setOpacity((float) 0.4);
+                        mapLayer.setQueryable(true);
+                        mapLayer.setDynamicStyle(true);
+
+                        activateLayer(mapLayer, true, true);
+
+                        // we must tell any future tree menus that the map layer is already
+                        // displayed as we didn't use changeSelection()
+                        mapLayer.setListedInActiveLayers(true);
+                    }
+                //}
+            } else {
+                //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+                if (getMapLayer(label) == null) {
+                    mapLayer = remoteMap.createGeoJSONLayer(label, uri);
+                    if (mapLayer == null) {
+                        // fail
+                        showMessage("No mappable features available");
+                        logger.info("adding GEOJSON layer failed ");
+                    } else {
+                        mapLayer.setDisplayable(true);
+                        mapLayer.setOpacity((float) 0.4);
+                        mapLayer.setQueryable(true);
+                        mapLayer.setDynamicStyle(true);
+
+                        activateLayer(mapLayer, true, true);
+
+                        // we must tell any future tree menus that the map layer is already
+                        // displayed as we didn't use changeSelection()
+                        mapLayer.setListedInActiveLayers(true);
+                    }
+                } else {
+                    //need to cleanup any additional scripts outstanding
+                    openLayersJavascript.useAdditionalScript();
+
+                    // fail
+                    //showMessage("GeoJSON layer already exists");
+                    logger.info(
+                            "refusing to add a new layer with URI " + uri
+                            + " because it already exists in the menu");
+                }
             }
         }
 

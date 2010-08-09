@@ -676,3 +676,7 @@ closebox a.helpButtonMain:hover {
 .exampleText {
     color: #AAA;
 }
+
+.z-tree-body {
+    text-align: left; 
+}
