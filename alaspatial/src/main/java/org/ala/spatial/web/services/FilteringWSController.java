@@ -395,4 +395,50 @@ public class FilteringWSController {
         }
         return "";
     }
+
+    /**
+     * Returns a relative path to a zip file of the filtered georeferenced data
+     *
+     * @param pid
+     * @param shape
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/apply/pid/{pid}/samples/geojson", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String getSamplesListAsGeoJSON(@PathVariable String pid, HttpServletRequest req) {
+        TabulationSettings.load();
+
+        try {
+            String shape = req.getParameter("area");
+            if (shape == null) {
+                shape = "none";
+            } else {
+                shape = URLDecoder.decode(shape, "UTF-8");
+            }
+            if (shape.equals("none") && pid.equals("none")) {
+                return "";  //error
+            }
+
+            System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
+
+            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
+
+            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //String currentPath = TabulationSettings.base_output_dir;
+            long currTime = System.currentTimeMillis();
+            String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator + currTime + File.separator;
+            File fDir = new File(outputpath);
+            fDir.mkdir();
+            
+            String gjsonFile = FilteringService.getSamplesListAsGeoJSON(pid, region, fDir);
+
+            return "output/filtering/" + currTime + "/" + gjsonFile;
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return "";
+    }
+
 }
