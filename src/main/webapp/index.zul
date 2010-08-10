@@ -1021,7 +1021,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             jQuery('.hidden_image :hidden').show();
 
-            if (location.href.indexOf("spatial.ala.org.au") > -1 || location.href.indexOf("localhost") > -1) {
+            if (parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
                 jQuery('.z-north').show();
                 jQuery('.z-south').show();
             }
