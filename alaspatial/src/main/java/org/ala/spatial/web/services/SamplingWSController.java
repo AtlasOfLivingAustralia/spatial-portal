@@ -63,7 +63,7 @@ public class SamplingWSController {
             }
 
             SamplingService ss = new SamplingService();
-            String datafile = ss.sampleSpecies(species, layers, region, records);
+            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"));
 
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);

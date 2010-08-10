@@ -431,6 +431,9 @@ public class FilteringService implements Serializable {
             for (i = 0; i < samples.length; i++) {
                 fw.append(samples[i]);
                 fw.append("\r\n");
+                
+                // exit if MAX_RECORD_COUNT reached
+                if (i==TabulationSettings.MAX_RECORD_COUNT-1) break;
             }
 
             fw.close();

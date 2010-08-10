@@ -149,6 +149,12 @@ public class TabulationSettings {
      * maxent path
      */
     public static String maxent_cmdpth;
+
+    /**
+     * Maximum number of records to dump
+     */
+    public static int MAX_RECORD_COUNT;
+
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -319,6 +325,15 @@ public class TabulationSettings {
                 base_output_dir = xr.getValue("base_output_dir");
                 base_output_url = xr.getValue("base_output_url");
                 System.out.println("base_output_dir: " + base_output_dir + " at " + base_output_url);
+
+                try {
+                    MAX_RECORD_COUNT = Integer.parseInt(xr.getValue("max_record_count"));
+                } catch (NumberFormatException nfe) {
+                    MAX_RECORD_COUNT = 100000; 
+                } catch (Exception e) {
+                    MAX_RECORD_COUNT = 100000; 
+                }
+
 
                 maxent_cmdpth = xr.getValue("cmdpth");
                 System.out.println("maxent_cmdpth");
