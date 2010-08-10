@@ -27,7 +27,6 @@ public class SamplingService {
         TabulationSettings.load();
     }
 
-
     /**
      * gets samples; occurrences records + optional intersecting layer values,
      * as csv
@@ -39,7 +38,6 @@ public class SamplingService {
     public String sampleSpecies(String filter, String[] layers) {
         return sampleSpecies(filter, layers, null);
     }
-
 
     /**
      * gets samples; occurrences records + optional intersecting layer values,
@@ -201,6 +199,56 @@ public class SamplingService {
         }
 
         return null;
+    }
+
+    /**
+     * gets samples; occurrences records + optional intersecting layer values,
+     *
+     *
+     * limit output
+     *
+     * @param filter species name as String
+     * @param layers list of layer names of additional data to include as String []
+     * @param region region to restrict results as SimpleRegion
+     * @param records sorted pool of records to intersect with as ArrayList<Integer>
+     * @param max_rows upper limit of records to return as int
+     * @return samples as grid, String [][]
+     */
+    public String sampleSpeciesAsCSV(String filter, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows) {
+        try {
+
+            System.out.println("Limiting sampling to : " + max_rows); 
+
+            String[][] results = sampleSpecies(filter, layers, region, null, max_rows);
+            StringBuilder sbResults = new StringBuilder();
+
+            for (int i = 0; i < results.length; i++) {
+                for (int j = 0; j < results[i].length; j++) {
+                    if (results[i][j] != null) {
+                        sbResults.append(results[i][j]);
+                    }
+                    if (j < results[i].length - 1) {
+                        sbResults.append(",");
+                    }
+                }
+                sbResults.append("\r\n");
+            }
+
+            /* open output file */
+            File temporary_file = java.io.File.createTempFile("sample", ".csv");
+            FileWriter fw = new FileWriter(temporary_file);
+
+            fw.append(sbResults.toString());
+            fw.close();
+            return temporary_file.getPath();
+
+
+        } catch (Exception e) {
+            System.out.println("error with samplesSpeciesAsCSV:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
     }
 
     /**

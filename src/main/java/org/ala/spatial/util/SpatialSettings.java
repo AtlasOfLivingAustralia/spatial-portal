@@ -61,6 +61,21 @@ public class SpatialSettings {
         return xr.getValue(key);
     }
 
+    public String getString(String key) {
+        return xr.getValue(key);
+    }
+
+    public int getInt(String key) {
+        try {
+            return Integer.parseInt(xr.getValue(key));
+        } catch (Exception e) {
+            System.out.println("Unable to convert to int: " + key + " -> " + xr.getValue(key));
+        }
+
+        return -1; 
+
+    }
+
     public Layer[] getEnvironmentalLayers() {
         String s1, s2, s3, s4, s5, s6;
         List<Layer> layerlist = new ArrayList<Layer>();

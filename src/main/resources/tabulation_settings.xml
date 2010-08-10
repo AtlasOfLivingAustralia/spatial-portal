@@ -298,7 +298,7 @@ species name, common name
 
     <geoserver_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver</geoserver_url>
     <geoserver_username>admin</geoserver_username>
-    <geoserver_password>at1as0f0z</geoserver_password>
+    <geoserver_password>geoserver</geoserver_password>
 
     <gdal_apps_dir>/Library/Frameworks/GDAL.framework/Programs/</gdal_apps_dir>
 
@@ -316,6 +316,8 @@ species name, common name
     -->
     <base_output_dir>/Users/ajay/Sites/ala/</base_output_dir>
     <base_output_url>http://localhost/~ajay/ala/</base_output_url>
+
+    <max_record_count>10</max_record_count>
 
 
     <alaspatial_url>http://localhost:8080/alaspatial/</alaspatial_url>
