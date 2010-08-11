@@ -270,9 +270,9 @@ public class SpeciesAutoComplete extends Combobox {
                         // the common names ('contains') might be on the top
                         // of the scientific names ('starts with'), so we
                         // want to select the first 'starts with' option
-                        if (taxon.startsWith(val)) {
-                            this.setSelectedItem(myci);
-                        }
+                        //if (taxon.startsWith(val)) {
+                        //    this.setSelectedItem(myci);
+                        //}
                     }
                 }
                 /*else {
