@@ -399,7 +399,7 @@ public class SelectionController extends UtilityComposer {
                 displayGeom.setValue(selectionGeom.getValue());
             }
             updateComboBoxText();
-            updateSpeciesList(true);
+            updateSpeciesList(false); // true
 
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
@@ -446,7 +446,7 @@ public class SelectionController extends UtilityComposer {
                 displayGeom.setValue(boxGeom.getValue());                
             }
             updateComboBoxText();
-            updateSpeciesList(true);
+            updateSpeciesList(false); // true
 
 
             //get the current MapComposer instance
@@ -761,7 +761,7 @@ public class SelectionController extends UtilityComposer {
             if (hide) {
                 hideAllInfo();
             }
-            updateSpeciesList(true);
+            updateSpeciesList(false); // true
             
         } catch (Exception e) {
             e.printStackTrace();
