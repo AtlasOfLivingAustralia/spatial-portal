@@ -156,6 +156,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
         return false;
     }
+
     public void refreshCount() {
         //check if tab is open        
         if (!isTabOpen() || !updateParameters()) {
@@ -185,7 +186,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             refreshButton2.setVisible(true);
 
             // toggle the map button
-            if (results_count > 0 && results_count < 1001) {
+            if (results_count > 0 && results_count < 5001) {
                 mapspecies.setVisible(true);
             } else {
                 mapspecies.setVisible(false);
@@ -361,5 +362,12 @@ public class FilteringResultsWCController extends UtilityComposer {
         //hide results list, show 'preview list' button
         popup_listbox_results.setVisible(false);
         refreshButton2.setVisible(true);
+        
+        // toggle the map button
+        if (results_count > 0 && results_count < 5001) {
+            mapspecies.setVisible(true);
+        } else {
+            mapspecies.setVisible(false);
+        }
     }
 }
