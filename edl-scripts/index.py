@@ -19,7 +19,8 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 			 	if "Computed Min/Max" in line:
                                         min,max = line.strip().split('Min/Max=')[1].split(',')
 
-
 			sql = "INSERT INTO layers (name,type,source,path,enabled,displayname,displaypath,minlatitude,minlongitude,maxlatitude,maxlongitude,EnvironmentalValueMin,EnvironmentalValueMax) values('" + layername +"','Environmental','"+edlconfig.source+"','"+os.path.join(root,name)+"',true,'"+layername+"','http://spatial.ala.org.au/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+layername+"&format=image/png&styles=','"+miny+"','"+minx+"','"+maxy+"','"+maxx+"','"+min+"','"+max+"');"
+#			sql = " UPDATE layers SET name='"+ layername + "', source='" + edlconfig.source + "', path='" + os.path.join(root,name) + "', displaypath='http://spatial.ala.org.au/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:"+layername+"&format=image/png&styles=',  minlatitude='" + miny + "', minlongitude ='" + minx + "', maxlatitude ='" + maxy + "', maxlongitude='" + maxx + "', EnvironmentalValueMin ='" + min +"', EnvironmentalValueMax ='" + max + "', WHERE name='" + layername + "';"
 			print(sql)
+
 

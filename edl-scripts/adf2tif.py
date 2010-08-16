@@ -13,5 +13,5 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 				layername = dir
 				print(layername)		
 #				os.system(edlconfig.gdalapps+"/gdal_translate -of GTiff " + os.path.join(root,dir,name) + " "  + os.path.join(root,layername) + ".tif")
-				os.system(edlconfig.gdalapps+"/gdalwarp -s_srs '" + edlconfig.s_srs + "' -t_srs '" + edlconfig.t_srs + "' -of GTiff " + os.path.join(root,dir,name) + " "  + os.path.join(root,layername) + ".tif")
+				os.system(edlconfig.gdalapps+"/gdalwarp -s_srs '" + edlconfig.s_srs + "' -t_srs '" + edlconfig.t_srs + "' -srcnodata \"-32768\" -dstnodata \"-32768\" -of GTiff " + os.path.join(root,dir,name) + " "  + os.path.join(root,layername) + ".tif")
 
