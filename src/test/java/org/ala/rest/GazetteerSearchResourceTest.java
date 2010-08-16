@@ -142,6 +142,12 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
         
     }
 
+     public void testMultiFieldID() throws Exception {
+//      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
+        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton/117.json");
+        print(json);
+    }
+
     public void testFeatureServiceJSON() throws Exception {
 //      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
         JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton.json");

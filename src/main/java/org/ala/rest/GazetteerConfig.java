@@ -99,18 +99,42 @@ public class GazetteerConfig {
     }
 
     /***
-     * Gets the gazetteer identifier for the layer
+     * Gets the first gazetteer identifier for the layer
      * @param layerName
      * @return the name of the id attribute
      */
-    public String getIdAttributeName(String layerName) {
+    public String getIdAttribute1Name(String layerName) {
         //using xpath to query
         String idAttribute = "none";
         try {
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();
-            XPathExpression expr
-             = xpath.compile("//layer[name='" + layerName + "']/idAttribute/text()");
+            XPathExpression expr = xpath.compile("//layer[name='" + layerName + "']/idAttribute1/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            idAttribute = nodes.item(0).getNodeValue();
+
+        }
+        catch(Exception e)
+        {
+            //FIXME
+        }
+        return idAttribute;
+    }
+
+     /***
+     * Gets the second gazetteer identifier for the layer
+     * @param layerName
+     * @return the name of the id attribute
+     */
+    public String getIdAttribute2Name(String layerName) {
+        //using xpath to query
+        String idAttribute = "none";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//layer[name='" + layerName + "']/idAttribute2/text()");
 
             Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
             NodeList nodes = (NodeList) result;
