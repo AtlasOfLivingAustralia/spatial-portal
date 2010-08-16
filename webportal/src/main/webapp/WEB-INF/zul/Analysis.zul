@@ -30,10 +30,10 @@
         <tabbox id="analysisOptsTabbox" zindex="600" style="border:0px!important; border: solid 0px white;" > <!-- mold="accordion-lite"  zclass="menuswitch"  -->
             <tabs>
                 <!-- species list -->
-                <tab id="speciesListTab" label="Species List" />
+                <tab id="speciesListTab" label="Species List" selected="true" />
 
                 <!--  sampling  -->
-                <tab id="samplingTab" label="Sampling" selected="true" />
+                <tab id="samplingTab" label="Sampling" />
 
                 <!--  maxent -->
                 <tab id="maxentTab" label="Prediction" />
