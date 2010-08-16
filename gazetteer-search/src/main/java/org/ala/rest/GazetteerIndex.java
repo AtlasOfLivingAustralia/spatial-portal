@@ -86,14 +86,14 @@ public class GazetteerIndex implements InitializingBean {
                         FeatureSource layer = dataStore.getFeatureSource(layerName);
                         features = layer.getFeatures().features();
                         List<String> descriptionAttributes = gc.getDescriptionAttributes(layerName);
-                        String idAttribute = gc.getIdAttributeName(layerName);
+                        String idAttribute = gc.getIdAttribute1Name(layerName);
                         while (features.hasNext()) {
                             Feature feature = features.next();
                             Document doc = new Document();
                             //Add name and type to the index for searching
 
-                            if (feature.getProperty(gc.getIdAttributeName(layerName)).getValue() != null) {
-                                doc.add(new Field("id", feature.getProperty(gc.getIdAttributeName(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
+                            if (feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue() != null) {
+                                doc.add(new Field("id", feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
                             }
                             if (feature.getProperty(gc.getNameAttributeName(layerName)).getValue() != null) {
                                 doc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));

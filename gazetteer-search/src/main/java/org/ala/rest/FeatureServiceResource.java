@@ -15,9 +15,11 @@ public class FeatureServiceResource extends MapResource {//ReflectiveResource {
     @Override
     public Map getMap() throws Exception {
        String layer = getRequest().getAttributes().get("layer").toString();
-       String key = getRequest().getAttributes().get("type").toString();
-
-       return new GazetteerFeature(layer,key).getJSONMap();
-
+       String id1 = getRequest().getAttributes().get("id1").toString();
+       String id2 = null;
+       if (getRequest().getAttributes().containsKey("id2"))
+           id2 = getRequest().getAttributes().get("id2").toString();
+       
+       return new GazetteerFeature(layer,id1,id2).getJSONMap();
     }
 }

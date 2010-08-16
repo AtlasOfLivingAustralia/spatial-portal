@@ -7,7 +7,11 @@
        <property name="routes">
           <map>
             <entry>
-              <key><value>/gazetteer/{layer}/{type}.{format}</value></key>
+              <key><value>/gazetteer/{layer}/{id1}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}/{id2}.{format}</value></key>
               <value>featureService</value>
             </entry>
          </map>
@@ -27,6 +31,7 @@
               <key><value>/gazetteer/result.{format}</value></key>
               <value>search</value>
             </entry>
+
          </map>
       </property>
     </bean>
