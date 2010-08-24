@@ -95,7 +95,7 @@ public class MaxentServiceImpl implements MaxentService {
     @Override
     public int process() {
         return runCommand(cmdMaxent.toString());
-    }
+        }
 
     /**
      * The runCommand method does the fork'ing
@@ -129,12 +129,18 @@ public class MaxentServiceImpl implements MaxentService {
              */
 
             System.out.println("Setting up output stream readers");
+            InputStreamReader isre = new InputStreamReader(proc.getErrorStream());
+            BufferedReader bre = new BufferedReader(isre);
             InputStreamReader isr = new InputStreamReader(proc.getInputStream());
             BufferedReader br = new BufferedReader(isr);
             String line;
 
             System.out.printf("Output of running %s is:", command);
             // Arrays.toString(acmd)
+
+            while ((line = bre.readLine()) != null) {
+                System.out.println(line);
+            }
 
             while ((line = br.readLine()) != null) {
                 System.out.println(line);

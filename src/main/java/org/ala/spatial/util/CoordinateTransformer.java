@@ -33,7 +33,7 @@ public class CoordinateTransformer {
 
 
             String filenamepart = oImg.getName().substring(0,oImg.getName().lastIndexOf("."));
-            String command = base_command + imgfilepath + " " + oImg.getParent() + "/t_" + filenamepart + ".tif";
+            String command = base_command + imgfilepath + " " + oImg.getParent() + File.separator + "t_" + filenamepart + ".tif";
 
             System.out.println("Exec'ing " + command);
             Process proc = runtime.exec(command);
@@ -70,11 +70,11 @@ public class CoordinateTransformer {
                 //tImg.renameTo(oImg);
 
                 // now let's convert the image
-                int cExitVal = convertImageType(oImg.getParent() + "/t_" + filenamepart + ".tif", oImg.getParent() + "/t_" + oImg.getName());
+                int cExitVal = convertImageType(oImg.getParent() + File.separator + "t_" + filenamepart + ".tif", oImg.getParent() + File.separator + "t_" + oImg.getName());
 
                 System.out.println("Convert Image Type: " + cExitVal); 
 
-                return oImg.getParent() + "/t_" + oImg.getName();
+                return oImg.getParent() + File.separator + "t_" + oImg.getName();
             }
         } catch (Exception e) {
             System.out.println("OOOOPPPSSS: " + e.toString());
@@ -90,7 +90,7 @@ public class CoordinateTransformer {
 
             Runtime runtime = Runtime.getRuntime();
 
-            String command = "convert " + srcImgPath + " " + destImgPath;
+            String command = TabulationSettings.convert_path + " " + srcImgPath + " " + destImgPath;
             System.out.println("Exec'ing " + command);
             Process proc = runtime.exec(command);
 
@@ -128,7 +128,7 @@ public class CoordinateTransformer {
         return -1;
     }
 
-    public static void generateWorldFiles(String outputpath, String baseFilename) {
+    public static void generateWorldFiles(String outputpath, String baseFilename, String xRes, String yRes, String xMin, String yMin) {
         try {
 
             if (!outputpath.endsWith(File.separator)) outputpath += File.separator;
@@ -138,20 +138,20 @@ public class CoordinateTransformer {
             StringBuffer sbWorldFile = new StringBuffer();
             //  pixel X size
             // sbWorldFile.append(xRes).append("\n");
-            sbWorldFile.append("0.16666666667").append("\n");
+            sbWorldFile.append(xRes).append("\n");
             // rotation about the Y axis (usually 0.0)
             sbWorldFile.append("0").append("\n");
             // rotation about the X axis (usually 0.0)
             sbWorldFile.append("0").append("\n");
             // negative pixel Y size
             // sbWorldFile.append(yRes).append("\n");
-            sbWorldFile.append("-0.16666666667").append("\n");
+            sbWorldFile.append(yRes).append("\n");
             // X coordinate of upper left pixel center
             // sbWorldFile.append(xMin).append("\n");
-            sbWorldFile.append("112.083333333335").append("\n");
+            sbWorldFile.append(xMin).append("\n");
             // Y coordinate of upper left pixel center
             // sbWorldFile.append(yMin).append("\n");
-            sbWorldFile.append("-9.083333333335").append("\n");
+            sbWorldFile.append(yMin).append("\n");
 
             StringBuffer sbProjection = new StringBuffer();
             sbProjection.append("GEOGCS[\"WGS 84\", ").append("\n");

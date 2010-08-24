@@ -237,6 +237,25 @@ public class SpatialSettingsWSController {
                     }
                 }
             }
+
+            //try again if still not found, by removing brackets
+            if (l == null && layer.lastIndexOf("(") > 0){
+                layer = layer.substring(0,layer.lastIndexOf("(")).trim();
+                for (int i = 0; i < _layerlist.length; i++) {
+                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                        l = _layerlist[i];
+                    }
+                }
+            }
+            if (l == null) {
+                _layerlist = ssets.getContextualLayers();
+
+                for (int i = 0; i < _layerlist.length; i++) {
+                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                        l = _layerlist[i];
+                    }
+                }
+            }
             return FilteringIndex.getLayerFilter(l.name);
 
         } catch (Exception e) {

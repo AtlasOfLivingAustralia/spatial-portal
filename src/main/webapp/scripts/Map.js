@@ -47,13 +47,8 @@
 	
 		function setPolygonLocation(obj){
 	      	    polygon = obj.geometry.toString();
-		    while(polygon.search(" ") >= 0){
-			    polygon = polygon.replace(" ",":");
-		    }
-		    polygon = polygon.replace("POLYGON((","");
-		    polygon = polygon.replace(")","");
-		    polygon = polygon.replace(")","");
-	       	    polycontrol.deactivate();
+
+                    polycontrol.deactivate();
 
 		    /* feedback to zk */
 		    var mye = document.getElementsByTagName('a');
@@ -64,7 +59,7 @@
 		}
 
 		function getALOCimage(img, long1, lat1, long2, lat2, width, height){			
-			var options = {isBaseLayer: false, visibility: true};
+			var options = {isBaseLayer: false, visibility: true, alwaysInRange: true};
 
 			counter++;
 			var aloc = new OpenLayers.Layer.Image(

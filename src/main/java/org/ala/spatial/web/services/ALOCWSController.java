@@ -56,7 +56,7 @@ public class ALOCWSController {
             AlocService.run(outputfile, envList, Integer.parseInt(groupCount), null, null, Long.toString(currTime));
 
             /* register with LayerImgService */
-            String extents = "252\n210\n112.083333333335\n-9.083333333335\n154.083333333335\n-44.083333333335";
+            String extents = "4074\n3480\n112.9\n-9.0\n153.64\n-43.8";
             StringBuffer legend = new StringBuffer();
             System.out.println("legend path:" + outputpath + "aloc.png.csv");
             BufferedReader flegend = new BufferedReader(new FileReader(outputpath + "aloc.png.csv"));
@@ -92,6 +92,7 @@ public class ALOCWSController {
             //String currentPath = TabulationSettings.base_output_dir;
             String outputpath = currentPath + "output" + File.separator + "aloc" + File.separator + currTime + File.separator;
             String outputfile = outputpath + "aloc.png";
+            String outputfile_orig = outputfile;
             File fDir = new File(outputpath);
             fDir.mkdir();
 
@@ -111,27 +112,47 @@ public class ALOCWSController {
             }
 
             AlocService.run(outputfile, envList, Integer.parseInt(groupCount), region, filter, Long.toString(currTime));
-            CoordinateTransformer.generateWorldFiles(outputpath, "aloc");
+
+            String line;
+
+            //get extents from aloc run
+            StringBuffer extents = new StringBuffer();
+            BufferedReader br = new BufferedReader(new FileReader(outputfile_orig + "extents.txt"));
+            int width = Integer.parseInt(br.readLine());
+            int height = Integer.parseInt(br.readLine());
+            double xmin = Double.parseDouble(br.readLine());
+            double ymin = Double.parseDouble(br.readLine());
+            double xmax = Double.parseDouble(br.readLine());
+            double ymax = Double.parseDouble(br.readLine());
+            br.close();
+            br = new BufferedReader(new FileReader(outputfile_orig + "extents.txt"));
+            while((line = br.readLine()) != null) {
+                extents.append(line).append("\n");
+            }
+            br.close();
+
+            CoordinateTransformer.generateWorldFiles(outputpath, "aloc",
+                    String.valueOf((xmax-xmin)/(double)width),
+                    "-" + String.valueOf((ymax-ymin)/(double)height),
+                    String.valueOf(xmin),
+                    String.valueOf(ymax));
             System.out.println("OUT1: " + outputfile);
             outputfile=CoordinateTransformer.transformToGoogleMercator(outputfile);
             System.out.println("OUT2: " + outputfile);
             
             /* register with LayerImgService */
 
-            //TODO: get extents from aloc run
-            String extents = "252\n210\n112.083333333335\n-9.083333333335\n154.083333333335\n-44.083333333335";
 
             StringBuffer legend = new StringBuffer();
             System.out.println("legend path:" + outputpath + "aloc.png.csv");
             BufferedReader flegend = new BufferedReader(new FileReader(outputpath + "aloc.png.csv"));
-            String line;
             while ((line = flegend.readLine()) != null) {
                 legend.append(line);
                 legend.append("\r\n");
             }
             flegend.close();
             System.out.println("registering layer image (A): pid=" + currTime);
-            if (!LayerImgService.registerLayerImage(currentPath, "" + currTime, outputfile, extents, legend.toString())) {
+            if (!LayerImgService.registerLayerImage(currentPath, "" + currTime, outputfile, extents.toString(), legend.toString())) {
                 //error
             }
 
@@ -152,17 +173,31 @@ public class ALOCWSController {
         Layer[] sellayers = new Layer[nameslist.length];
 
         Layer[] _layerlist = ssets.getEnvironmentalLayers();
-
+        int nulls = 0;
         for (int j = 0; j < nameslist.length; j++) {
-            for (int i = 0; i < _layerlist.length; i++) {
+            int i;
+            for (i = 0; i < _layerlist.length; i++) {
                 if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
                     sellayers[j] = _layerlist[i];
 
                     System.out.println("Adding layer for ALOC: " + sellayers[j].name);
-                    continue;
+                    break;
                 }
             }
-        }       
+            if(i == _layerlist.length){
+                System.out.println("Cannot add layer: " + nameslist[j]);
+                nulls++;
+            }
+        }
+
+        //remove nulls
+        Layer[] sellayersNoNulls = new Layer[sellayers.length - nulls];
+        int pos = 0;
+        for(int j=0;j<sellayers.length;j++){
+            if(sellayers[j] != null) {
+                sellayersNoNulls[pos++] = sellayers[j];
+            }
+        }
 
         return sellayers;
     }

@@ -351,6 +351,9 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @return SimpleRegion object
      */
     public static SimpleRegion parseWKT(String pointsString) {
+        if (pointsString == null) {
+            return null;
+        }
         pointsString = convertGeoToPoints(pointsString);
 
         String [] polygons = pointsString.split("S");
@@ -614,7 +617,7 @@ class ShapeRecords extends Object implements Serializable {
                     if(width > 100){width=100;}
                     if(height > 100){height=100;}
                     if(width > 3 && height > 3){
-                            sr.useMask(width,height);
+                    sr.useMask(width,height);
                     }*/
                     sr.useMask(100,50);
                 }
@@ -1502,7 +1505,7 @@ class ShapesReference extends Object implements Serializable {
         ArrayList<ComplexRegion> sra = sr.getRegions();
 
         int i;
-        
+
         /* test for mask */
         if (mask != null) {
             /* apply multipliers */
@@ -1512,7 +1515,7 @@ class ShapesReference extends Object implements Serializable {
             if (long1 >= 0 && long1 < mask[0].length
                     && lat1 >= 0 && lat1 < mask.length
                     && mask[long1][lat1] != null) {
-            
+
                 /* get list of shapes to check at this mask cell */
                 ArrayList<Integer> ali = mask[long1][lat1];
 

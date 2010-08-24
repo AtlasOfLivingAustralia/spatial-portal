@@ -91,7 +91,7 @@
 
                 if (method == 'mfilter') murl = mfilterUrl;
                 else if (method == 'msample') murl = msampleUrl;
-                else if (method == 'maloc') murl = malocURL
+                else if (method == 'maloc') murl = malocUrl;
                 else if (method == 'mmaxent') murl = mmaxentUrl;
                 else alert("Please select a method from the list");
 

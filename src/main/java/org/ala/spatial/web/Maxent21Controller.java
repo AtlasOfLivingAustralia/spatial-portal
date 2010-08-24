@@ -5,21 +5,30 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
+import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.Species;
+import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.zkoss.zk.ui.Component;
@@ -27,6 +36,7 @@ import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.InputEvent;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.GenericForwardComposer;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
@@ -73,6 +83,8 @@ public class Maxent21Controller extends GenericForwardComposer {
     private Tabbox outputtab;
     private Iframe mapframe;
     private Iframe infoframe;
+
+    Label lb_points;
 
     /**
      * When the page is loaded, setup the various settings that are needed
@@ -204,7 +216,7 @@ public class Maxent21Controller extends GenericForwardComposer {
 
                 }
 
-                process(envsel);
+                processgeo(envsel);
 
             }
             //Messagebox.show(msg, "Maxent", Messagebox.OK, Messagebox.INFORMATION);
@@ -231,17 +243,16 @@ public class Maxent21Controller extends GenericForwardComposer {
             System.out.println(">> " + s);
         }
 
-        String currentPath = Sessions.getCurrent().getWebApp().getRealPath("/");
+        String currentPath = Sessions.getCurrent().getWebApp().getRealPath(File.separator);
         //String currentPath = TabulationSettings.base_output_dir;
 
 
         // dump the species data to a file
         SamplingService ss = new SamplingService();
-        String[] csvdata = ss.sampleSpecies(sac.getValue(), null).split("\n");
+        double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null, (ArrayList<Integer>) null);
         StringBuffer sbSpecies = new StringBuffer();
-        for (int i = 0; i < csvdata.length; i++) {
-            String[] recdata = csvdata[i].split(",");
-            sbSpecies.append("species, " + recdata[recdata.length - 2] + ", " + recdata[recdata.length - 1]);
+        for (int i = 0; i < points.length; i+=2) {
+            sbSpecies.append("species, " + points[i] + ", " + points[i+1]);
         }
 
 
@@ -283,7 +294,10 @@ public class Maxent21Controller extends GenericForwardComposer {
             Hashtable htGeoserver = ssets.getGeoserverSettings();
 
             // if generated successfully, then add it to geoserver
-            String url = (String)htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/maxent_" + currTime + "/file.arcgrid?coverageName=species_" + currTime;
+            String url = (String)htGeoserver.get("geoserver_url")
+                    + "/rest/workspaces/ALA/coveragestores/maxent_"
+                    + currTime + "/file.arcgrid?coverageName=species_"
+                    + currTime;
             String extra = "";
             String username = (String)htGeoserver.get("geoserver_username");
             String password = (String)htGeoserver.get("geoserver_password");
@@ -301,7 +315,127 @@ public class Maxent21Controller extends GenericForwardComposer {
             //extraout += "map: " + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + currTime + "&styles=alastyles&bbox=112.0,-44.0,154.0,-9.0&width=700&height=500&srs=EPSG:4326&format=application/openlayers";
             extraout += "";
 
-            mapframe.setSrc((String)htGeoserver.get("geoserver_url") + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + currTime + "&styles=alastyles&bbox=112.0,-44.0,154.0,-9.0&width=700&height=500&srs=EPSG:4326&format=application/openlayers");
+            mapframe.setSrc((String)htGeoserver.get("geoserver_url")
+                    + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_"
+                    + currTime
+                    + "&styles=alastyles&bbox=112.0,-44.0,154.0,-9.0&width=700&height=500&srs=EPSG:4326&format=application/openlayers");
+            infoframe.setSrc("/output/maxent/" + currTime + "/species.html");
+            outputtab.setVisible(true);
+
+        } else {
+            extraout += "Status: failure\n";
+        }
+
+        test.setValue(extraout);
+
+    }
+
+    private void processgeo(String[] envsel) {
+
+        outputtab.setVisible(false);
+
+
+        Session session = (Session) Sessions.getCurrent();
+        long currTime = System.currentTimeMillis();
+
+        System.out.println("init params: ");
+        Iterator it = session.getWebApp().getInitParameterNames();
+        while (it.hasNext()) {
+            String s = (String) it.next();
+            System.out.println(">> " + s);
+        }
+
+        String currentPath = Sessions.getCurrent().getWebApp().getRealPath("/");
+        //String currentPath = TabulationSettings.base_output_dir;
+
+
+        // dump the species data to a file
+        SamplingService ss = new SamplingService();
+        double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null, (ArrayList<Integer>) null);
+        StringBuffer sbSpecies = new StringBuffer();
+        for (int i = 0; i < points.length; i+=2) {
+            sbSpecies.append("species, " + points[i] + ", " + points[i+1] + "\n");
+        }
+
+        //handle cut layers
+            String area = lb_points.getValue();
+            System.out.println("MAXENT area:" + area);
+            LayerFilter[] filter = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                filter = FilteringService.getFilters(area);
+            } else {
+                region = SimpleShapeFile.parseWKT(area);
+            }
+            String cutDataPath = ssets.getEnvDataPath();
+            Layer [] layers = getEnvFilesAsLayers(envsel);
+            cutDataPath = GridCutter.cut(layers, region, filter);
+            
+
+
+
+        MaxentSettings msets = new MaxentSettings();
+        //msets.setMaxentPath((String) session.getAttribute("maxentCmdPath"));
+        msets.setMaxentPath(ssets.getMaxentCmd());
+        msets.setEnvList(Arrays.asList(envsel));
+        msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage.getValue()));
+        //msets.setEnvPath((String) session.getAttribute("worldClimPresentVars") + "10minutes/");
+        msets.setEnvPath(cutDataPath);//ssets.getEnvDataPath());
+        msets.setEnvVarToggler("world");
+        msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator));
+        msets.setOutputPath(currentPath + "output" + File.separator + "maxent" + File.separator + currTime + File.separator);
+        if (chkJackknife.isChecked()) {
+            msets.setDoJackknife(true);
+        }
+        if (chkRCurves.isChecked()) {
+            msets.setDoResponsecurves(true);
+        }
+
+        test.setValue(msets.toString());
+
+
+        MaxentServiceImpl maxent = new MaxentServiceImpl();
+        maxent.setMaxentSettings(msets);
+        int exitValue = maxent.process();
+
+        System.out.println("Completed.");
+        test.setValue(test.getValue() + " \n Completed: " + exitValue);
+
+        String extraout = "";
+
+        if (exitValue == 0) {
+            // TODO: Should probably move this part an external "parent"
+            // function so can be used by other functions
+            //
+
+            Hashtable htGeoserver = ssets.getGeoserverSettings();
+
+            // if generated successfully, then add it to geoserver
+            String url = (String)htGeoserver.get("geoserver_url")
+                    + "/rest/workspaces/ALA/coveragestores/maxent_"
+                    + currTime + "/file.arcgrid?coverageName=species_"
+                    + currTime;
+            String extra = "";
+            String username = (String)htGeoserver.get("geoserver_username");
+            String password = (String)htGeoserver.get("geoserver_password");
+
+            // first zip up the file as it's going to be sent as binary
+            String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+
+            // Upload the file to GeoServer using REST calls
+            System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
+            UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
+
+            extraout += "status: success"; ///  \n <br />
+            //extraout += "file: " + "output/maxent/" + currTime + "/species.asc \n <br />";
+            //extraout += "info: " + "output/maxent/" + currTime + "/species.html \n <br />";
+            //extraout += "map: " + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + currTime + "&styles=alastyles&bbox=112.0,-44.0,154.0,-9.0&width=700&height=500&srs=EPSG:4326&format=application/openlayers";
+            extraout += "";
+
+            mapframe.setSrc((String)htGeoserver.get("geoserver_url")
+                    + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_"
+                    + currTime
+                    + "&styles=alastyles&bbox=112.0,-44.0,154.0,-9.0&width=700&height=500&srs=EPSG:4326&format=application/openlayers");
             infoframe.setSrc("/output/maxent/" + currTime + "/species.html");
             outputtab.setVisible(true);
 
@@ -359,6 +493,71 @@ public class Maxent21Controller extends GenericForwardComposer {
         }
 
         return null;
+    }
+
+    public void onClick$addToMap() {
+        System.out.println("show points");
+        try {
+        	//Label lb_points = (Label) getFellow("lb_points");
+
+    		String species = sac.getValue();
+    		String points = lb_points.getValue();
+    		if(points.length() == 0){
+    			points = "none";
+    		}
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(TabulationSettings.alaspatial_path + "ws/sampling/process/points?");
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(species, "UTF-8"));
+            sbProcessUrl.append("&points=" + URLEncoder.encode(points, "UTF-8"));
+
+            System.out.println("getpoints request: " + sbProcessUrl.toString());
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println("Got response from SamplingWSController: \n" + slist);
+
+/* TODO: make service response include longlat bounds and image resolution */
+
+            String client_request = "drawCircles('" + slist + "');";
+            System.out.println("evaljavascript: " + client_request);
+            Clients.evalJavaScript(client_request);
+
+
+        } catch (Exception ex) {
+            System.out.println("Opps!: ");
+            ex.printStackTrace(System.out);
+        }
+
+    }
+
+    private Layer[] getEnvFilesAsLayers(String [] envNames) {
+
+        String[] nameslist = envNames;
+        Layer[] sellayers = new Layer[nameslist.length];
+
+        Layer[] _layerlist = ssets.getEnvironmentalLayers();
+        String _layerPath = ssets.getEnvDataPath();
+
+
+        for (int j = 0; j < nameslist.length; j++) {
+            for (int i = 0; i < _layerlist.length; i++) {
+                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
+                    sellayers[j] = _layerlist[i];
+                    //sellayers[j].name = _layerPath + sellayers[j].name;
+                    System.out.println("Adding layer for ALOC: " + sellayers[j].name);
+                    continue;
+                }
+            }
+        }
+
+        return sellayers;
     }
 
 }

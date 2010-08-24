@@ -67,7 +67,7 @@ public class LayerImgWSController {
             String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
             //TabulationSettings.load();
             //String currentPath = TabulationSettings.base_output_dir;
-            String outputpath = /* currentPath + */ "output" + File.separator + "layers" + File.separator + pid + File.separator;
+            String outputpath = /* currentPath + */ "output/layers/" + pid + "/";
             String layerimage = outputpath + "img.png";            
             String layerlegend = outputpath + "legend.txt";
             String layerextents = outputpath + "extents.txt";

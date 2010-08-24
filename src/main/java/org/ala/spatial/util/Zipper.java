@@ -99,7 +99,7 @@ public class Zipper {
         System.out.println("v: " + g.maxval);
         System.out.println("size: " + g.xres + " x " + g.yres); 
 
-        double[] dv = g.getGrid();
+        float[] dv = g.getGrid();
 
         System.out.println("values:\n" + dv.length);
         for (int i=0; i<dv.length; i++) {

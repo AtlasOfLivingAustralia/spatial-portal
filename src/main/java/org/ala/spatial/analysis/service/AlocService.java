@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -11,8 +12,10 @@ import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
 import org.ala.spatial.util.Grid;
+import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
 
 /**
@@ -41,12 +44,12 @@ public class AlocService {
         int i, j;
         float[][] data = null;
         j = 0;
-        int width = 252, height = 210;
+        int width = 0, height = 0;
         String layerPath = TabulationSettings.environmental_data_path;
         if (layerPath == null) {
             layerPath = "";
         }
-        Grid grid = null;
+        /*Grid grid = null;
 
         boolean[] envelopesFound = null;
         if (envelope != null) {
@@ -63,9 +66,14 @@ public class AlocService {
             width = grid.ncols;
             height = grid.nrows;
 
-            double[] d = grid.getGrid();
+            (new SpatialLogger()).log("getting layer > " + l.name);
+            float[] d = grid.getGrid();
+            (new SpatialLogger()).log("got layer > " + l.name);
+
             if (data == null) {
+                (new SpatialLogger()).log("make space > " + l.name);
                 data = new float[d.length][layers.length];
+                (new SpatialLogger()).log("made space > " + l.name);
             }
 
             //find in envelope
@@ -96,11 +104,20 @@ public class AlocService {
                 }
             }
             j++;
-        }
+        }*/
+
+        //TODO: # piecies decided by memory available / memory required / threadcount
+        int pieces = Runtime.getRuntime().availableProcessors() * 2;
+        ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope);
+
+        double [] extents = (double[]) data_pieces.get(data_pieces.size()-1);
+            width = (int) extents[0];
+            height = (int) extents[1];
+            
 
         /* load envelopes not in layers apply to first data layer
          * as missing values
-         */
+         *
         if (envelopesFound != null) {
             for (i=0;i<envelope.length;i++) {
                 if(envelopesFound[i]){
@@ -111,9 +128,9 @@ public class AlocService {
 
                 width = grid.ncols;
                 height = grid.nrows;
-
-                double[] d = grid.getGrid();
-
+(new SpatialLogger()).log("getting env > " + envelope[i].layer.name);
+                float[] d = grid.getGrid();
+(new SpatialLogger()).log("got env> " + envelope[i].layer.name);
                 LayerFilter lf = envelope[i];
 
                 for (i = 0; i < d.length && i < data.length; i++) {
@@ -122,13 +139,21 @@ public class AlocService {
                     }
                 }
             }
-        }
+        }*/
 
-        /* align all data missing values */
+        /* align all data missing values 
         float[][] data_clean = null;
 
         int count = 0;
         int[] mapping = null;
+
+        (new SpatialLogger()).log("cleaning");
+
+        int minx = width;
+        int maxx = 0;
+        int miny = height;
+        int maxy = 0;
+        int x,y;
 
         if (data != null && grid != null) {
             if (region != null) {
@@ -165,11 +190,20 @@ public class AlocService {
                             mapping[count] = cells[i][0] + (height - cells[i][1] - 1) * width;
                         }
                         count++;
+
+                        //update extents
+                        x = i%width;
+                        y = (int)(i/width);
+                        if (x < minx) minx = x;
+                        if (x > maxx) maxx = x;
+                        if (y < miny) miny = y;
+                        if (y > maxy) maxy = y;
+
                     }
                 }
 
             } else {
-                /* code for non-region */
+                /* code for non-region 
                 for (i = 0; i < data.length; i++) {
                     for (j = 0; j < data[i].length; j++) {
                         if (Float.isNaN(data[i][j])) {
@@ -195,14 +229,43 @@ public class AlocService {
                             mapping[count] = i;
                         }
                         count++;
+
+                        //update extents
+                        x = i%width;
+                        y = (int)(i/width);
+                        if (x < minx) minx = x;
+                        if (x > maxx) maxx = x;
+                        if (y < miny) miny = y;
+                        if (y > maxy) maxy = y;
                     }
                 }
             }
 
+            (new SpatialLogger()).log("cleaned cells: " + count + " extents(pixels): " + minx + "," + miny + " " + maxx + "," + maxy);
+         *
+         *
+         */
+
+
+            /* export extents 
+            exportExtents(filename + "extents.txt"
+                    , maxx - minx
+                    , maxy - miny
+                    , minx*grid.xres + grid.xmin
+                    , miny*grid.yres + grid.ymin
+                    , maxx*grid.xres + grid.xmin
+                    , maxy*grid.yres + grid.ymin);
+             *
+             *
+             */
+        {
             /* run aloc
              * Note: requested number of groups may not always equal request
              */
-            int[] groups = Aloc.runGowerMetric(data_clean, numberofgroups);
+            //int[] groups = Aloc.runGowerMetricThreaded(data_clean, numberofgroups);
+            int[] groups = Aloc.runGowerMetricThreaded(data_pieces, numberofgroups, layers.length, pieces);
+
+            (new SpatialLogger()).log("done gower metric");
 
             /* recalculate group counts */
             numberofgroups = 0;
@@ -214,23 +277,35 @@ public class AlocService {
             numberofgroups++; //group number is 0..n-1
 
             /* calculate group means */
-            double[][] group_means = new double[numberofgroups][data_clean[0].length];
-            int[] group_counts = new int[numberofgroups];
+            double[][] group_means = new double[numberofgroups][layers.length];
+            int[][] group_counts = new int[numberofgroups][layers.length];
 
             /* TODO: handle numerical overflow when calculating means */
-            for (i = 0; i < groups.length; i++) {
-                group_counts[groups[i]]++;  //TODO: fix irregular overflow error
-                for (j = 0; j < data_clean[i].length; j++) {
-                    group_means[groups[i]][j] += data_clean[i][j];
-                }
-            }
-            for (i = 0; i < group_means.length; i++) {
-                /* TODO: this check needs to be removed */
-                if (group_counts[i] > 0) {
-                    for (j = 0; j < group_means[i].length; j++) {
-                        group_means[i][j] /= group_counts[i];
+            int row = 0;
+            for(int k=0;k<pieces;k++){
+                float [] d = (float[]) data_pieces.get(k);
+                int nRows = d.length / layers.length;
+                for (i = 0; i < d.length; i+=layers.length, row++) {                    
+                    for (j = 0; j < layers.length; j++) {
+                        if(!Float.isNaN(d[i+j])){
+                            group_counts[groups[row]][j]++;
+                            group_means[groups[row]][j] += d[i + j];
+                        }
                     }
                 }
+            }
+            System.out.println("GroupCounts");
+            for (i = 0; i < group_means.length; i++) {
+                /* TODO: this check needs to be removed */
+                System.out.print("g(" + i + ") GC: " + group_counts[i] + "> ");
+                
+                for (j = 0; j < group_means[i].length; j++) {
+                    if (group_counts[i][j] > 0) {
+                        group_means[i][j] /= group_counts[i][j];
+                        System.out.print(group_means[i][j] + ",");
+                    }
+                }
+                System.out.println("");
             }
 
             /* get RGB for colouring group means via PCA */
@@ -240,7 +315,7 @@ public class AlocService {
             exportMeansColours(filename + ".csv", group_means, colours, layers);
 
             /* export geoserver sld file for legend */
-            exportSLD(filename + ".sld", group_means, colours, layers, id);
+            //exportSLD(filename + ".sld", group_means, colours, layers, id);
 
             /* map back as colours, grey scale for now */
             BufferedImage image = new BufferedImage(width, height,
@@ -255,7 +330,7 @@ public class AlocService {
                 image_bytes[i] = 0x00000000;
             }
 
-            /* write out onto imagebytes grouping colours per cell */
+            /* write out onto imagebytes grouping colours per cell 
             int group;
             int[] colour = new int[3];
             for (i = 0; i < groups.length; i++) {
@@ -267,6 +342,20 @@ public class AlocService {
                 //set up rgb colour for this group
                 image_bytes[mapping[i]] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
 
+            }*/
+
+            int [][] cells = (int[][]) data_pieces.get(data_pieces.size()-2);            
+            int group;
+            int[] colour = new int[3];
+            for (i = 0; i < groups.length; i++) {
+                //groups.length == cells.length
+                group = groups[i];
+                for (j = 0; j < colour.length; j++) {
+                    colour[j] = (int) (colours[groups[i]][j]);
+                }
+
+                //set up rgb colour for this group (upside down)
+                image_bytes[cells[i][0] + (height-cells[i][1]-1) * width] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
             }
 
             /* write bytes to image */
@@ -278,12 +367,13 @@ public class AlocService {
                 ImageIO.write(image, "png",
                         new File(filename));
             } catch (IOException e) {
+                e.printStackTrace();
             }
 
             return groups;
         }
 
-        return null;
+      //  return null;
     }
 
     /**
@@ -339,6 +429,7 @@ public class AlocService {
 
             fw.close();
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -401,6 +492,22 @@ public class AlocService {
             fw.append(sld.toString());
             fw.close();
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void exportExtents(String filename, int width, int height, double minx, double miny, double maxx, double maxy) {
+        try{
+            FileWriter fw = new FileWriter(filename);
+            fw.append(String.valueOf(width)).append("\n");
+            fw.append(String.valueOf(height)).append("\n");
+            fw.append(String.valueOf(minx)).append("\n");
+            fw.append(String.valueOf(miny)).append("\n");
+            fw.append(String.valueOf(maxx)).append("\n");
+            fw.append(String.valueOf(maxy)).append("\n");
+            fw.close();
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 }

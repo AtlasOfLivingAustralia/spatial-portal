@@ -39,7 +39,7 @@ public class MaxentSettings {
         doResponsecurves = false;
         randomTestPercentage = 0;
 
-        defaultCmdVars = " -a warnings=false tooltips=false -z -outputfiletype asc ";
+        defaultCmdVars = " -a warnings=false tooltips=false -z ";// -outputfiletype asc ";
     }
 
     public String getDefaultCmdVars() {
@@ -173,7 +173,7 @@ public class MaxentSettings {
         //cmd += " -j " + futureEnvPath;
 
         // add the env.var toggler
-        cmd += " -N " + envVarToggler;
+        //cmd += " -N " + envVarToggler;
 
         // add the env vars
         for (Iterator<String> itr = envList.iterator(); itr.hasNext();) {
@@ -181,7 +181,7 @@ public class MaxentSettings {
 
             if (eval.length() == 1) eval = "0"+eval;
 
-            cmd += " -N " + envPrefix + eval + envSuffix;
+          //  cmd += " -N " + envPrefix + eval + envSuffix;
 
         }
 
