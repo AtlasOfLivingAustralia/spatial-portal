@@ -88,7 +88,7 @@ public class SpatialSettings {
         s1 = xr.getValue(edname, edi, 3);
         s2 = xr.getValue(eddisplay, edi, 3);
         s3 = xr.getValue(eddescription, edi, 3);
-        System.out.println(s1 + " : " + s2 + " : " + s3);
+        //System.out.println(s1 + " : " + s2 + " : " + s3);
         while (s1 != null) {
             layerlist.add(new Layer(s1, s2, s3, "environmental", null));
             edi[1]++;
@@ -96,7 +96,7 @@ public class SpatialSettings {
             s1 = xr.getValue(edname, edi, 3);
             s2 = xr.getValue(eddisplay, edi, 3);
             s3 = xr.getValue(eddescription, edi, 3);
-            System.out.println(s1 + " : " + s2 + " : " + s3);
+            //System.out.println(s1 + " : " + s2 + " : " + s3);
 
         }
         return (Layer[]) layerlist.toArray(new Layer[layerlist.size()]);

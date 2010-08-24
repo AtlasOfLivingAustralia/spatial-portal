@@ -273,13 +273,9 @@ public class MaxentWSController {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             }
             String cutDataPath = ssets.getEnvDataPath();
-            if (region != null) {
-                Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
-                cutDataPath = GridCutter.cut(layers, region);
-            } else if (filter != null) {
-                Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
-                cutDataPath = GridCutter.cut(layers, filter);
-            }
+            Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
+            cutDataPath = GridCutter.cut(layers, region, filter);
+            
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
             MaxentSettings msets = new MaxentSettings();

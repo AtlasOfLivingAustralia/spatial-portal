@@ -93,7 +93,7 @@
                 </geo_field>
             </geo_fields_to_return>
         </geo_table>
-        <geo_table>
+       <!-- <geo_table>
             <geo_table_name>imcra4_pb</geo_table_name>
             <geo_table_display_name>IMCRA Regions</geo_table_display_name>
             <geo_table_description>IMCRA Regions</geo_table_description>
@@ -116,7 +116,7 @@
                     <geo_field_display_name>Name</geo_field_display_name>
                 </geo_field>
             </geo_fields_to_return>
-        </geo_table>
+        </geo_table> -->
     </geo_tables>
 
     <!--
@@ -135,119 +135,1196 @@
         -->
     <environmental_data>
         <!-- absolute path for all .gri/.grd files -->
-        <!--<environmental_data_path>d:\mnt\ala\data\envlayers\WorldClimCurrent\10minutes\</environmental_data_path>-->
+        <environmental_data_path>d:\mnt\ala\data\envlayers\WorldClimCurrent\10minutes\</environmental_data_path>
         <!--environmental_data_path>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/</environmental_data_path-->
-        <environmental_data_path>/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/</environmental_data_path>
 
+        <!--
+            aligned data path is for environmental layers whose grid aligns to
+            the grid defined at <grd_definition>, regardless of grid origin.
+
+            when a grid provided does not align to <grd_definition> an aligning
+            copy is created with this path
+            -->
+        
+        <environmental_data_path_common>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/common/</environmental_data_path_common>
+        
         <environmental_data_files>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio01</environmental_data_file_name>
-                <environmental_data_file_display_name>Annual Mean Temperature</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+                <environmental_data_file_name>adefi</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month precipitation deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>adefm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual precipitation deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>adefx</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month precipitation deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>arid_max</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month aridity index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>arid_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual aridity index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>arid_min</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month aridity index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>c4gi</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual growth index C4 megatherm plants</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>eaeo_max</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month crop factor</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>eaeo_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual crop factor</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>eaeo_min</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month crop factor</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>evapi</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month evaporation</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>evapm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual evaporation</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>evapx</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month evaporation</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>maxti</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum temperature coolest month</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>maxtm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual maximum temperature</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>maxtx</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum temperature hottest month</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>megagi</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual growth index C3 macrotherm plants</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>mesogi</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual growth index C3 mesotherm plants</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>minti</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum temperature coldest month</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>mintm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual minimum temperature</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>mintx</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum temperature warmest month</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>pwat_max</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month soil water stress index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>pwat_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual soil water stress index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>pwat_min</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month soil water stress index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>radni</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month rainfall-modified solar radiation</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>radnm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual rainfall-modified solar radiation</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>radnx</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month rainfall-modified solar radiation</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>raini</environmental_data_file_name>
+                <environmental_data_file_display_name>Precipitation of the driest month</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rainm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual rainfall</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rainx</environmental_data_file_name>
+                <environmental_data_file_display_name>Precipitation of the wettest month</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rh2max</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month relative humidity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rh2mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual relative humidity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rh2min</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month relative humidity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rhu215_i</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month relative humidity at 3pm</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rhu215_m</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual relative humidity at 3pm</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rhu215_x</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month relative humidity at 3pm</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rprecmax</environmental_data_file_name>
+                <environmental_data_file_display_name>Greatest rainfall difference between successive months</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rprecmin</environmental_data_file_name>
+                <environmental_data_file_display_name>Least rainfall difference between successive months</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rtimax</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum difference in minimum temperatures</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rtimin</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum difference in minimum temperatures</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rtxmax</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum difference in maximum temperatures</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rtxmin</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum difference in maximum temperatures</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>slrain0</environmental_data_file_name>
+                <environmental_data_file_display_name>annual (log) rainfall seasonality index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>slrain1</environmental_data_file_name>
+                <environmental_data_file_display_name>summer or winter (log) rainfall season</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>slrain2</environmental_data_file_name>
+                <environmental_data_file_display_name>Spring or autumn (log) rainfall season</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>spls_max</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month soil water surplus</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>spls_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual soil water surplus</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>spls_min</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month soil water surplus</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>srain0</environmental_data_file_name>
+                <environmental_data_file_display_name>annual rainfall seasonality index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>srain0mp</environmental_data_file_name>
+                <environmental_data_file_display_name>annual rainfall seasonality ratio</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>srain1</environmental_data_file_name>
+                <environmental_data_file_display_name>summer or winter rainfall season</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>srain1mp</environmental_data_file_name>
+                <environmental_data_file_display_name>Solstice rainfall seasonality ratio</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>srain2</environmental_data_file_name>
+                <environmental_data_file_display_name>Spring or autumn rainfall season</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>srain2mp</environmental_data_file_name>
+                <environmental_data_file_display_name>Equinox rainfall seasonality ratio</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>tmaxabsm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual absolute mean maximum temperature</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>tmaxabsx</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum absolute mean maximum temperature</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>tminabsi</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum absolute mean minimum temperature</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>tminabsm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual absolute mean minimum temperature</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>trnga</environmental_data_file_name>
+                <environmental_data_file_display_name>Annual Range Temperature</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>trngi</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month diurnal temperature range</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>trngm</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual diurnal temperature range</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>trngx</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month diurnal temperature range</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>vpd29_i</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month vapour pressure deficit at 9am</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>vpd29_m</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual vapour pressure deficit at 9am</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>vpd29_x</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month vapour pressure deficit at 9am</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>vpd2max</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month vapour pressure deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>vpd2mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual vapour pressure deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>vpd2min</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month vapour pressure deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>wdef_max</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month soil water deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>wdef_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean month soil water deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>wdef_min</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month soil water deficit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>wpot_max</environmental_data_file_name>
+                <environmental_data_file_display_name>Maximum month soil water potential</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>wpot_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Mean annual soil water potential</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>wpot_min</environmental_data_file_name>
+                <environmental_data_file_display_name>Minimum month soil water potential</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+                        <environmental_data_file>
+                <environmental_data_file_name>bdensity</environmental_data_file_name>
+                <environmental_data_file_display_name>Bulk density</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio02</environmental_data_file_name>
-                <environmental_data_file_display_name>Mean Diurnal Range</environmental_data_file_display_name>
-                <environmental_data_file_description>(Mean of monthly (max temp - min temp)), Current</environmental_data_file_description>
+                <environmental_data_file_name>calcrete</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil calcrete</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio03</environmental_data_file_name>
-                <environmental_data_file_display_name>Isothermality</environmental_data_file_display_name>
-                <environmental_data_file_description>(P2/P7) (* 100), Current</environmental_data_file_description>
+                <environmental_data_file_name>clay</environmental_data_file_name>
+                <environmental_data_file_display_name>Clay Percent</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio04</environmental_data_file_name>
-                <environmental_data_file_display_name>Temperature Seasonality</environmental_data_file_display_name>
-                <environmental_data_file_description>(standard deviation *100), Current</environmental_data_file_description>
+                <environmental_data_file_name>coarse</environmental_data_file_name>
+                <environmental_data_file_display_name>Soils coarse</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio05</environmental_data_file_name>
-                <environmental_data_file_display_name>Max Temperature of Warmest Month</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+                <environmental_data_file_name>corg0</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil carbon store pre-European</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio06</environmental_data_file_name>
-                <environmental_data_file_display_name>Min Temperature of Coldest Month</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+                <environmental_data_file_name>datasupt</environmental_data_file_name>
+                <environmental_data_file_display_name>Substrate data reliability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio07</environmental_data_file_name>
-                <environmental_data_file_display_name>Temperature Annual Range</environmental_data_file_display_name>
-                <environmental_data_file_description>(Max Temp of Warmest Mth - Min Temp of Coldest Month), Current
-                </environmental_data_file_description>
+                <environmental_data_file_name>distanywater</environmental_data_file_name>
+                <environmental_data_file_display_name>Distance to any water (weighted)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio08</environmental_data_file_name>
-                <environmental_data_file_display_name>Mean Temperature of Wettest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+                <environmental_data_file_name>distcoast</environmental_data_file_name>
+                <environmental_data_file_display_name>Distance to coast</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio09</environmental_data_file_name>
-                <environmental_data_file_display_name>Mean Temperature of Driest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+                <environmental_data_file_name>distnonpermw</environmental_data_file_name>
+                <environmental_data_file_display_name>Distance to non-permanent water (weighted)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>world_10_bio10</environmental_data_file_name>
-                <environmental_data_file_display_name>Mean Temperature of Warmest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+                <environmental_data_file_name>distpermwat</environmental_data_file_name>
+                <environmental_data_file_display_name>Distance to permanent water (weighted)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>erosional</environmental_data_file_name>
+                <environmental_data_file_display_name>Proportion of erosional surfaces</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>fert</environmental_data_file_name>
+                <environmental_data_file_display_name>Lithology fertility</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>geollmeanage</environmental_data_file_name>
+                <environmental_data_file_display_name>Lithology mean age (log)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>geollrngeage</environmental_data_file_name>
+                <environmental_data_file_display_name>Lithology mean age range (log)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>geolmeanage</environmental_data_file_name>
+                <environmental_data_file_display_name>Lithology mean age</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>geolrngeage</environmental_data_file_name>
+                <environmental_data_file_display_name>Lithology age range</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>gravity</environmental_data_file_name>
+                <environmental_data_file_display_name>Bouger gravity anamalies</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>hpedality</environmental_data_file_name>
+                <environmental_data_file_display_name>Hydrological score of pedality</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>ksat</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil average saturated hydrologic conductivity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>ks_err</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil Saturated hydrological conductivity uncertainty</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>magnetics</environmental_data_file_name>
+                <environmental_data_file_display_name>Magnetic anomalies</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>mrrtf</environmental_data_file_name>
+                <environmental_data_file_display_name>Ridge top flatness</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>mrvbf</environmental_data_file_name>
+                <environmental_data_file_display_name>Valley bottom flatness index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>nmnlconcn0</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil nitrogen concentration pre-European</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>nmnln0</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil nitrogen store pre-European</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>ntotn0</environmental_data_file_name>
+                <environmental_data_file_display_name>Plant-available soil nitrogen pre-European</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>nutrients</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil nutrient status</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>pedality</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil pedality</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>pmnlconcn0</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil phosphorus pre-European</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>pmnln0</environmental_data_file_name>
+                <environmental_data_file_display_name>Plant-available soil mineral phosphorus pre-European</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>ptotn0</environmental_data_file_name>
+                <environmental_data_file_display_name>Plant-available total soil phosphorus pre-European</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>relief</environmental_data_file_name>
+                <environmental_data_file_display_name>Topographic relief</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>ridgetopflat</environmental_data_file_name>
+                <environmental_data_file_display_name>Proportion of ridge top flatness</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>roughness</environmental_data_file_name>
+                <environmental_data_file_display_name>Topographic roughness</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>slope</environmental_data_file_name>
+                <environmental_data_file_display_name>Topographic slope</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>soldepth</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil depth</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>solpawhc</environmental_data_file_name>
+                <environmental_data_file_display_name>Plant-available water holding capacity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>twi</environmental_data_file_name>
+                <environmental_data_file_display_name>Topographic wetness index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>valleybottom</environmental_data_file_name>
+                <environmental_data_file_display_name>Valley bottom Percent</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>wr_unr</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil unreliable water retention parameters</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
 
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio11</environmental_data_file_name>
-                <environmental_data_file_display_name>Mean Temperature of Coldest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>acanil</environmental_data_file_name>
+                <environmental_data_file_display_name>Prickly acacia</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio12</environmental_data_file_name>
-                <environmental_data_file_display_name>Annual Precipitation</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>add_nrm</environmental_data_file_name>
+                <environmental_data_file_display_name>Additional NRM expenditure</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio13</environmental_data_file_name>
-                <environmental_data_file_display_name>Precipitation of Wettest Month</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>altphi</environmental_data_file_name>
+                <environmental_data_file_display_name>Alligator Weed</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio14</environmental_data_file_name>
-                <environmental_data_file_display_name>Precipitation of Driest Month</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>anngla</environmental_data_file_name>
+                <environmental_data_file_display_name>Pond Apple</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio15</environmental_data_file_name>
-                <environmental_data_file_display_name>Precipitation Seasonality</environmental_data_file_display_name>
-                <environmental_data_file_description>(Coefficient of Variation), Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>aria</environmental_data_file_name>
+                <environmental_data_file_display_name>Remoteness index</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio16</environmental_data_file_name>
-                <environmental_data_file_display_name>Precipitation of Wettest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>aspasp</environmental_data_file_name>
+                <environmental_data_file_display_name>Bridal Creeper</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio17</environmental_data_file_name>
-                <environmental_data_file_display_name>Precipitation of Driest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>aspect</environmental_data_file_name>
+                <environmental_data_file_display_name>Aspect</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio18</environmental_data_file_name>
-                <environmental_data_file_display_name>Precipitation of Warmest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>banteng</environmental_data_file_name>
+                <environmental_data_file_display_name>Banteng</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-            <environmental_data_file>
-                <environmental_data_file_name>world_10_bio19</environmental_data_file_name>
-                <environmental_data_file_display_name>Precipitation of Coldest Quarter</environmental_data_file_display_name>
-                <environmental_data_file_description>Current</environmental_data_file_description>
+<environmental_data_file>
+                <environmental_data_file_name>beef_dse</environmental_data_file_name>
+                <environmental_data_file_display_name>Beef numbers</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
-            <environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>buffalo</environmental_data_file_name>
+                <environmental_data_file_display_name>Buffalo</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>cabcar</environmental_data_file_name>
+                <environmental_data_file_display_name>Cabomba caroliniana</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>camel</environmental_data_file_name>
+                <environmental_data_file_display_name>Camel</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>cane_toad</environmental_data_file_name>
+                <environmental_data_file_display_name>Cane Toad</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>carp</environmental_data_file_name>
+                <environmental_data_file_display_name>Carp</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>cat</environmental_data_file_name>
+                <environmental_data_file_display_name>Cat</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>cattle</environmental_data_file_name>
+                <environmental_data_file_display_name>Cattle</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>chrmni</environmental_data_file_name>
+                <environmental_data_file_display_name>Boneseed</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>chrrot</environmental_data_file_name>
+                <environmental_data_file_display_name>Bitou Bush</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>corn_snake</environmental_data_file_name>
+                <environmental_data_file_display_name>Corn Snake</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>crygra</environmental_data_file_name>
+                <environmental_data_file_display_name>Rubber Vine</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>dairy_dse</environmental_data_file_name>
+                <environmental_data_file_display_name>Dairy numbers</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>deer</environmental_data_file_name>
+                <environmental_data_file_display_name>Deer</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>dog</environmental_data_file_name>
+                <environmental_data_file_display_name>Dog</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>dolo_acid</environmental_data_file_name>
+                <environmental_data_file_display_name>Dolomite (acidity)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>dolo_phys</environmental_data_file_name>
+                <environmental_data_file_display_name>Dolomite (physical)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>donkey</environmental_data_file_name>
+                <environmental_data_file_display_name>Donkey</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>drain_cv</environmental_data_file_name>
+                <environmental_data_file_display_name>Drainage variability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>drain_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Drainage average</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>elevation</environmental_data_file_name>
+                <environmental_data_file_display_name>Elevation</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>erodibility</environmental_data_file_name>
+                <environmental_data_file_display_name>Erodibility</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
                 <environmental_data_file_name>erosivity</environmental_data_file_name>
-                <environmental_data_file_display_name>erosivity</environmental_data_file_display_name>
-                <environmental_data_file_description>erosivity</environmental_data_file_description>
+                <environmental_data_file_display_name>Erosivity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>evap_cv</environmental_data_file_name>
+                <environmental_data_file_display_name>Evaporation variability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>evap_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Evaporation average</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>fal_dom_ha_01</environmental_data_file_name>
+                <environmental_data_file_display_name>Dominant fallow practice (area)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>fal_dom_no_01</environmental_data_file_name>
+                <environmental_data_file_display_name>Dominant fallow practice (number)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>fci</environmental_data_file_name>
+                <environmental_data_file_display_name>Farm cash income</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>fire_frq</environmental_data_file_name>
+                <environmental_data_file_display_name>Fire frequency</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>fire_tslb08</environmental_data_file_name>
+                <environmental_data_file_display_name>Time since last burn</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>fox</environmental_data_file_name>
+                <environmental_data_file_display_name>Fox</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>goat</environmental_data_file_name>
+                <environmental_data_file_display_name>Goat</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>gypsum</environmental_data_file_name>
+                <environmental_data_file_display_name>Gypsum</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>hymamp</environmental_data_file_name>
+                <environmental_data_file_display_name>Hymenachne amplexicaulis</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>irr_dom_no_01</environmental_data_file_name>
+                <environmental_data_file_display_name>Dominant irrigation practice</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>lancam</environmental_data_file_name>
+                <environmental_data_file_display_name>Lantana</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>landcover</environmental_data_file_name>
+                <environmental_data_file_display_name>Land cover</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>landuse</environmental_data_file_name>
+                <environmental_data_file_display_name>Land use</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>lime</environmental_data_file_name>
+                <environmental_data_file_display_name>Lime</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>lv</environmental_data_file_name>
+                <environmental_data_file_display_name>Land values</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>migratry_sp</environmental_data_file_name>
+                <environmental_data_file_display_name>Migratory species (2008)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>mimpig</environmental_data_file_name>
+                <environmental_data_file_display_name>Mimosa pigra</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>myna</environmental_data_file_name>
+                <environmental_data_file_display_name>Myna</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>nastri</environmental_data_file_name>
+                <environmental_data_file_display_name>Serrated Tussock</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>native_veg</environmental_data_file_name>
+                <environmental_data_file_display_name>Native vegetation types</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>ndvi_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>NDVI Mean</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>npp_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>NPP Mean</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>nrm_exp</environmental_data_file_name>
+                <environmental_data_file_display_name>Natural resource management expenditure</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>ofi</environmental_data_file_name>
+                <environmental_data_file_display_name>Off farm income</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>osfci</environmental_data_file_name>
+                <environmental_data_file_display_name>Off Share farming and contracting cash income</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>paracu</environmental_data_file_name>
+                <environmental_data_file_display_name>Parkinsonia aculeata</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>parhys</environmental_data_file_name>
+                <environmental_data_file_display_name>Parthenium hysterophorus</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>pawhc</environmental_data_file_name>
+                <environmental_data_file_display_name>Water holding capacity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>ph</environmental_data_file_name>
+                <environmental_data_file_display_name>pH</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>pig</environmental_data_file_name>
+                <environmental_data_file_display_name>Pig</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>plague_minnow</environmental_data_file_name>
+                <environmental_data_file_display_name>Plague Minnow</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>popn_dens06</environmental_data_file_name>
+                <environmental_data_file_display_name>popn_dens06</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>present_veg</environmental_data_file_name>
+                <environmental_data_file_display_name>Present vegetation types</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>prospp</environmental_data_file_name>
+                <environmental_data_file_display_name>Mesquite (Prosopis spp)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rabbit</environmental_data_file_name>
+                <environmental_data_file_display_name>Rabbit</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rain_ann</environmental_data_file_name>
+                <environmental_data_file_display_name>Annual rainfall</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rain_aut</environmental_data_file_name>
+                <environmental_data_file_display_name>Autumn Rain</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rain_spr</environmental_data_file_name>
+                <environmental_data_file_display_name>Spring Rain</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rain_sum</environmental_data_file_name>
+                <environmental_data_file_display_name>Summer Rain</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rain_win</environmental_data_file_name>
+                <environmental_data_file_display_name>Winter Rain</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rel_aut</environmental_data_file_name>
+                <environmental_data_file_display_name>Autumn Rain Reliability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rel_spr</environmental_data_file_name>
+                <environmental_data_file_display_name>Spring Rain Reliability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rel_sum</environmental_data_file_name>
+                <environmental_data_file_display_name>Summer Rain Reliability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rel_win</environmental_data_file_name>
+                <environmental_data_file_display_name>Winter Rain Reliability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>ror</environmental_data_file_name>
+                <environmental_data_file_display_name>Rate of return</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>rubfru</environmental_data_file_name>
+                <environmental_data_file_display_name>Blackberry (Rubus fruticosus agg)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>runoff_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Runoff average</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>salmol</environmental_data_file_name>
+                <environmental_data_file_display_name>Salvinia molesta</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>salspp</environmental_data_file_name>
+                <environmental_data_file_display_name>Willows</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>seifa</environmental_data_file_name>
+                <environmental_data_file_display_name>Disadvantaged</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sheep</environmental_data_file_name>
+                <environmental_data_file_display_name>Sheep</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sheep_dse</environmental_data_file_name>
+                <environmental_data_file_display_name>Sheep numbers</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_dwell06</environmental_data_file_name>
+                <environmental_data_file_display_name>Home ownership</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_edu_deg</environmental_data_file_name>
+                <environmental_data_file_display_name>Education degrees</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_edu_voc</environmental_data_file_name>
+                <environmental_data_file_display_name>Education vocational training</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_empaffm</environmental_data_file_name>
+                <environmental_data_file_display_name>Employment</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_inc_high</environmental_data_file_name>
+                <environmental_data_file_display_name>High income</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_inc_low</environmental_data_file_name>
+                <environmental_data_file_display_name>Low income</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_internet</environmental_data_file_name>
+                <environmental_data_file_display_name>Internet</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_median_a</environmental_data_file_name>
+                <environmental_data_file_display_name>Age</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_older_wa</environmental_data_file_name>
+                <environmental_data_file_display_name>Older work force</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_popch</environmental_data_file_name>
+                <environmental_data_file_display_name>Population change</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_popdens</environmental_data_file_name>
+                <environmental_data_file_display_name>Population density</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_prime_wa</environmental_data_file_name>
+                <environmental_data_file_display_name>Prime age group</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sla_unemp</environmental_data_file_name>
+                <environmental_data_file_display_name>Unemployment rate</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>slider</environmental_data_file_name>
+                <environmental_data_file_display_name>Slider</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>slope2</environmental_data_file_name>
+                <environmental_data_file_display_name>Slope</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>slope_length</environmental_data_file_name>
+                <environmental_data_file_display_name>Slope length</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>sodicity</environmental_data_file_name>
+                <environmental_data_file_display_name>Sodicity</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>soilm_cv</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil moisture variability</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>soilm_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>Soil moisture average</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>soil_carbon</environmental_data_file_name>
+                <environmental_data_file_display_name>Organic carbon</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>starling</environmental_data_file_name>
+                <environmental_data_file_display_name>Starling</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>st_dom_ha_01</environmental_data_file_name>
+                <environmental_data_file_display_name>Dominant stubble practice (area)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>st_dom_no_01</environmental_data_file_name>
+                <environmental_data_file_display_name>Dominant stubble practice (number)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>tamaph</environmental_data_file_name>
+                <environmental_data_file_display_name>Athel Pine (Tamarix aphylla)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>tenure08</environmental_data_file_name>
+                <environmental_data_file_display_name>Tenure</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>threatnd_com</environmental_data_file_name>
+                <environmental_data_file_display_name>Threatened communities (2008)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>threatnd_sp</environmental_data_file_name>
+                <environmental_data_file_display_name>Threatened species (2008)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>til_dom_ha_01</environmental_data_file_name>
+                <environmental_data_file_display_name>Dominant tillage practice (area)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>til_dom_no_01</environmental_data_file_name>
+                <environmental_data_file_display_name>Dominant tillage practice (number)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>totk</environmental_data_file_name>
+                <environmental_data_file_display_name>Potassium</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>totn</environmental_data_file_name>
+                <environmental_data_file_display_name>Nitrogen</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>totp</environmental_data_file_name>
+                <environmental_data_file_display_name>Phosphorus</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>uleeur</environmental_data_file_name>
+                <environmental_data_file_display_name>Gorse (Ulex europaeus)</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>vast</environmental_data_file_name>
+                <environmental_data_file_display_name>Vegetation condition</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+<environmental_data_file>
+                <environmental_data_file_name>weather_loach</environmental_data_file_name>
+                <environmental_data_file_display_name>Weather Loach</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+
         </environmental_data_files>
     </environmental_data>
+
+
 
     <!--
                 occurances.csv as headed csv with species, longitude, latitude
@@ -255,8 +1332,8 @@
 
                 field list is comma separated, hierarchy fields
         -->
-    <occurances_csv>d:\mnt\ala\data\occurrences\occurrences.csv</occurances_csv>
-    <!-- occurances_csv>/mnt/ala/data/occurrences/occurrences.csv</occurances_csv -->
+    <!--occurances_csv>d:\mnt\ala\data\occurrences\occurrences.csv</occurances_csv-->
+    <occurances_csv>/mnt/ala/data/occurrences/occurrences.csv</occurances_csv>
 
     <!--
         field settings for occurances_csv_fields:
@@ -276,31 +1353,36 @@
 common names file as csv, no header, first 2 columns:
 species name, common name
 -->
-    <!-- <common_names_csv>d:\mnt\ala\data\commonnames\output4.csv</common_names_csv> -->
-    <common_names_csv>/Users/ajay/projects/ala/data/archive-ala/occurrences/output4.csv</common_names_csv>
+    <common_names_csv>d:\mnt\ala\data\commonnames\output4.csv</common_names_csv>
+    <!--common_names_csv>/Users/ajay/projects/ala/data/archive-ala/occurrences/output4.csv</common_names_csv-->
 
 
-    <!--<index_path>d:\mnt\ala\data\index\tabulation\</index_path>-->
-    <!-- index_path>/mnt/ala/data/index/tabulation/</index_path-->
-    <index_path>/Users/ajay/projects/ala/data/archive-ala/occurrences/tabulation_20100714/</index_path>
+    <index_path>d:\mnt\ala\data\index\tabulation\</index_path>
+    <!--index_path>/mnt/ala/data/index/tabulation/</index_path-->
 
     <maxent>
-        <!--<cmdpath>java -mx900m -jar d:\mnt\ala\modelling\maxent\maxent.jar </cmdpath>-->
+        <cmdpath>java -mx900m -jar d:\mnt\ala\modelling\maxent\maxent.jar </cmdpath>
         <!--cmdpath>java -mx900m -jar /mnt/ala/modelling/maxent/maxent.jar </cmdpath-->
-        <cmdpath>java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar </cmdpath>
+        <!--cmdpath>java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar </cmdpath-->
     </maxent>
 
     <geoserver>
         <url>http://localhost:8080/geoserver</url>
         <username>admin</username>
-        <password>geoserver</password>
+        <password>password</password>
     </geoserver>
 
     <geoserver_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver</geoserver_url>
     <geoserver_username>admin</geoserver_username>
-    <geoserver_password>geoserver</geoserver_password>
+    <geoserver_password>password</geoserver_password>
 
-    <gdal_apps_dir>/Library/Frameworks/GDAL.framework/Programs/</gdal_apps_dir>
+    <gdal_apps_dir>c:\progra~2\fwtool~1.7\bin\</gdal_apps_dir>
+    <!--gdal_apps_dir>/mnt/utils/gdal-1.7.2/apps/</gdal_apps_dir-->
+
+    <convert_path>c:\progra~2\imagem~1.3-Q\convert.exe -quiet </convert_path>
+    <!--convert_path>/usr/bin/convert -quiet </convert_path-->
+
+
 
     <!-- 
         'base_output_dir' should be the base directory where the 'output' folder sits
@@ -317,9 +1399,24 @@ species name, common name
     <base_output_dir>/Users/ajay/Sites/ala/</base_output_dir>
     <base_output_url>http://localhost/~ajay/ala/</base_output_url>
 
-    <max_record_count>10</max_record_count>
+    <max_record_count>100000</max_record_count>
 
+    <alaspatial_url>http://localhost:8084/alaspatial/</alaspatial_url>
 
-    <alaspatial_url>http://localhost:8080/alaspatial/</alaspatial_url>
+    <!--
+        common grid specification
+
+        - also acts to reduce the area of analysis
+        -->
+    <grd_definition>
+        <grd_xmin>112.900000</grd_xmin>
+        <grd_xmax>153.640000</grd_xmax>
+        <grd_ymin>-43.800000</grd_ymin>
+        <grd_ymax>-9.000000</grd_ymax>
+        <grd_xdiv>0.010000</grd_xdiv>
+        <grd_ydiv>0.010000</grd_ydiv>
+        <grd_ncols>4074</grd_ncols>
+        <grd_nrows>3480</grd_nrows>
+    </grd_definition>
 
 </tabulation>

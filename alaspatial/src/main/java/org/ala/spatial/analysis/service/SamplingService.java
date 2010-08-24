@@ -46,7 +46,7 @@ public class SamplingService {
      * @param filter species name as String
      * @param layers list of layer names of additional data to include as String []
      * @param baseDir base directory where the file should be written to
-     * @return samples as csv, String
+     * @return file name for samples in csv format, String
      */
     public String sampleSpecies(String filter, String[] layers, File baseDir) {
         StringBuffer output = new StringBuffer();

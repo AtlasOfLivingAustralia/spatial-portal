@@ -28,7 +28,7 @@ public class FilteringZK extends Window {
 
 	// to remember last layer being worked on
 	String active_layer_name = "";
-	double[] active_layer_grid;
+	float[] active_layer_grid;
 	Layer this_layer = null;
 
 	public FilteringZK() {

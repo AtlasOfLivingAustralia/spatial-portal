@@ -182,7 +182,7 @@ public class SamplingIndex implements AnalysisIndexService {
                         TabulationSettings.environmental_data_path
                         + layer.name);
 
-                double[] values = grid.getValues2(points);
+                float[] values = grid.getValues2(points);
                
                 /* export values - RAF for writeDouble() */
                 RandomAccessFile raf = new RandomAccessFile(

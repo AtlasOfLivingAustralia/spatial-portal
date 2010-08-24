@@ -374,15 +374,45 @@ public class ALOCWCController extends UtilityComposer {
         previousArea = currentArea;*/
     }
 
+    double [] getExtents(){
+            double [] d = new double[6];
+            try {
+                StringBuffer sbProcessUrl = new StringBuffer();
+		sbProcessUrl.append(satServer + "/alaspatial/output/aloc/" + pid + "/aloc.pngextents.txt");
+
+			HttpClient client = new HttpClient();
+			GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+			get.addRequestHeader("Accept", "text/plain");
+
+			int result = client.executeMethod(get);
+			String slist = get.getResponseBodyAsString();
+			System.out.println("getExtents:" + slist);
+
+                        String [] s = slist.split("\n");
+                        for(int i=0;i<6 && i<s.length;i++){
+                            d[i] = Double.parseDouble(s[i]);
+                        }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return d;
+        }
+
     private void loadMap() {
         String uri = satServer + "/alaspatial/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();
-        bbox.add(112.0);
+        /*bbox.add(112.0);
         bbox.add(-44.0000000007);
         bbox.add(154.00000000084);
-        bbox.add(-9.0);
+        bbox.add(-9.0);*/
+        double [] d = getExtents();
+        bbox.add(d[2]);
+        bbox.add(d[3]);
+        bbox.add(d[4]);
+        bbox.add(d[5]);
 
         mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);
         MapLayer mapLayer = mc.getMapLayer(layerLabel);

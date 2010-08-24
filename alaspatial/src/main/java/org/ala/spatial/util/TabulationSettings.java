@@ -1,5 +1,7 @@
 package org.ala.spatial.util;
 
+import java.io.File;
+
 /**
  * home of all relevant tabulation settings as loaded from
  * appropriate tabulation_settings.xml
@@ -78,6 +80,12 @@ public class TabulationSettings {
 	 */
 	public static String environmental_data_path;
 
+        /**
+	 * absolute file path for environmental .gri/.grd files created to
+         * align to the <grd_definition>
+	 */
+	public static String environmental_data_path_common;
+
 	/**
 	 * listing of available .gri/.grd files available at the
 	 * <code>environmental_data_path</code>
@@ -155,6 +163,22 @@ public class TabulationSettings {
      */
     public static int MAX_RECORD_COUNT;
 
+    /**
+     * common grid definition
+     */
+    public static double grd_xmin;
+    public static double grd_xmax;
+    public static double grd_ymin;
+    public static double grd_ymax;
+    public static int grd_nrows;
+    public static int grd_ncols;
+    public static double grd_xdiv;
+    public static double grd_ydiv;
+
+    /**
+     * path of convert executable
+     */
+    public static String convert_path;
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -271,6 +295,9 @@ public class TabulationSettings {
 		environmental_data_path = xr.getValue("environmental_data_path");
 		System.out.println("env_data_pth: " + environmental_data_path);
 
+                environmental_data_path_common = xr.getValue("environmental_data_path_common");
+		System.out.println("env_data_pth_common: " + environmental_data_path_common);
+
 		String [] edname = {"environmental_data_files","environmental_data_file","environmental_data_file_name"};
 		String [] eddisplay = {"environmental_data_files","environmental_data_file","environmental_data_file_display_name"};
 		String [] eddescription =  {"environmental_data_files","environmental_data_file","environmental_data_file_description"};
@@ -336,9 +363,31 @@ public class TabulationSettings {
 
 
                 maxent_cmdpth = xr.getValue("cmdpth");
-                System.out.println("maxent_cmdpth");
+                System.out.println("maxent_cmdpth:" + maxent_cmdpth);
+
+                convert_path = xr.getValue("convert_path");
+                System.out.println("convert_path:" + convert_path);
+
+                grd_xmin = Double.parseDouble(xr.getValue("grd_xmin"));
+                grd_xmax = Double.parseDouble(xr.getValue("grd_xmax"));
+                grd_ymin = Double.parseDouble(xr.getValue("grd_ymin"));
+                grd_ymax = Double.parseDouble(xr.getValue("grd_ymax"));
+                grd_nrows = Integer.parseInt(xr.getValue("grd_nrows"));
+                grd_ncols = Integer.parseInt(xr.getValue("grd_ncols"));
+                grd_xdiv = Double.parseDouble(xr.getValue("grd_xdiv"));
+                grd_ydiv = Double.parseDouble(xr.getValue("grd_ydiv"));
 	}
 
+        static public String getPath(String layerName){
+            //check for common grid
+            File file = new File(environmental_data_path_common + layerName + ".gri");
+            File file2 = new File(environmental_data_path_common + layerName + ".GRI");
+            if(file.exists()){
+                return environmental_data_path_common + layerName;
+            } else {
+                return environmental_data_path + layerName;
+            }
+        }
 
 
 }

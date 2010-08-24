@@ -126,4 +126,8 @@ public class EnvLayersCombobox extends Combobox {
         }
 
     }
+
+    void setSettingsSupplementary(SettingsSupplementary ss) {
+        settingsSupplementary = ss;
+    }
 }

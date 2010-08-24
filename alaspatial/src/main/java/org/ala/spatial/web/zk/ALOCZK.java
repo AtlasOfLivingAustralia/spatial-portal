@@ -18,6 +18,7 @@ import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -326,15 +327,15 @@ public class ALOCZK extends GenericForwardComposer {
 			sbProcessUrl.append("&envlist="
 					+ URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
 			if (points.length() > 0) {
-				sbProcessUrl.append("&points="
+				sbProcessUrl.append("&area="
 						+ URLEncoder.encode(points, "UTF-8"));
 			} else {
-				sbProcessUrl.append("&points="
+				sbProcessUrl.append("&area="
 						+ URLEncoder.encode("none", "UTF-8"));
 			}
 
 			HttpClient client = new HttpClient();
-			GetMethod get = new GetMethod(sbProcessUrl.toString());
+			PostMethod get = new PostMethod(sbProcessUrl.toString());
 
 			get.addRequestHeader("Accept", "text/plain");
 
@@ -351,8 +352,15 @@ public class ALOCZK extends GenericForwardComposer {
 			pid = slist;
 
 			String img = satServer + "output/aloc/" + slist + "/aloc.png";
-			String client_request = "getALOCimage('" + img
-					+ "',112,-9,154,-44,252,210);";
+                        double [] extents = getExtents(slist);
+			String client_request = "getALOCimage('" + img + "'," 
+                                + extents[2] + "," + extents[5] + ","
+                                + extents[4] + "," + extents[3] + ","
+                                + extents[0] + "," + extents[1] + ");";
+
+					//+ "',112,-9,154,-44,252,210);";
+
+
 			System.out.println("evaljavascript: " + client_request);
 			Clients.evalJavaScript(client_request);
 
@@ -582,5 +590,29 @@ public class ALOCZK extends GenericForwardComposer {
 	}
 
 
+        double [] getExtents(String path){
+            double [] d = new double[6];
+            try {
+                StringBuffer sbProcessUrl = new StringBuffer();
+		sbProcessUrl.append(satServer + "output/aloc/" + path + "/aloc.pngextents.txt");
+
+			HttpClient client = new HttpClient();
+			GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+			get.addRequestHeader("Accept", "text/plain");
+
+			int result = client.executeMethod(get);
+			String slist = get.getResponseBodyAsString();
+			System.out.println("getExtents:" + slist);
+
+                        String [] s = slist.split("\n");
+                        for(int i=0;i<6 && i<s.length;i++){
+                            d[i] = Double.parseDouble(s[i]);
+                        }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return d;
+        }
 	
 }

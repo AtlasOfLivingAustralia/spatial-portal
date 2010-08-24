@@ -5,9 +5,11 @@
 
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-
-    <window title="Maxent" width="800px" apply="org.ala.spatial.web.Maxent21Controller" style="padding: 10px">
-
+<script type="text/javascript" src="scripts/OpenLayers.js"/>
+<script type="text/javascript" src="scripts/Map.js"/>
+    <window title="Maxent" width="100%" apply="org.ala.spatial.web.Maxent21Controller" style="padding: 10px">
+<hbox>
+    <vbox>
         <style>
             .z-loading {
                 top: 50% !important;
@@ -27,6 +29,17 @@
                 </combobox>
                 <button id="getspinfo" label="Get info" visible="false" />
                 <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
+                <button label="add to map"  id="addToMap"/>
+                <div xmlns:h="http://www.zkoss.org/2005/zk/native"
+	onUser='lb_points_count.value = "occurances found in user defined region: " + org.zkoss.lang.Objects.toString(event.data)'>
+	<h:b/>
+	<label id="lb_points_count" />
+</div>
+<div xmlns:h="http://www.zkoss.org/2005/zk/native"
+	onUser='lb_points.value = org.zkoss.lang.Objects.toString(event.data)'>
+	<h:a/>
+	<label id="lb_points" visible="false" />
+	</div>
             </vbox>
         </groupbox>
 
@@ -109,6 +122,25 @@
 
 
 
+        </vbox>
+        <vbox>
+            <panel title="Map"
+width="500px" height ="600px" border="normal"  open="true">
+<panelchildren>
+
+<html><![CDATA[
+    <input type="button" value="draw polygon on map" onclick="createPolygon();">
+    <input type="button" value="clear" onclick="clearPolygon();">
+
+    <div id="map"  style="width:500px; height:550px"  class="smallmap"></div>
+<script>
+mapinit();
+</script>
+]]></html>
+
+</panelchildren>
+</panel></vbox>
+</hbox>
 
     </window>
 
