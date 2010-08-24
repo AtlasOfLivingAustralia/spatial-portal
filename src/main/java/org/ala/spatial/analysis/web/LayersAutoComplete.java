@@ -86,8 +86,8 @@ public class LayersAutoComplete extends Combobox {
                 int result = client.executeMethod(get);
                 String slist = get.getResponseBodyAsString();
 
-                System.out.println("Response status code: " + result);
-                System.out.println("Response: \n" + slist);
+                //System.out.println("Response status code: " + result);
+                //System.out.println("Response: \n" + slist);
 
                 JSONArray results = JSONArray.fromObject(slist);
                 System.out.println("got " + results.size() + " layers");

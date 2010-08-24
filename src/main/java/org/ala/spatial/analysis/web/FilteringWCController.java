@@ -86,6 +86,8 @@ public class FilteringWCController extends UtilityComposer {
             //TODO: error message
         }
 
+        cbEnvLayers.setSettingsSupplementary(settingsSupplementary);
+
         layersUtil = new LayersUtil(mc, satServer);
 
         selectedLayers = new Vector<String>();
@@ -123,10 +125,10 @@ public class FilteringWCController extends UtilityComposer {
             if (new_value.length() == 0) {
                 new_value = cbEnvLayers.getValue();
             }
-            if (new_value.equals("") || new_value.indexOf("(") < 0) {
+            if (new_value.equals("") || new_value.lastIndexOf("(") < 0) {
                 return;
             }
-            new_value = (new_value.equals("")) ? "" : new_value.substring(0, new_value.indexOf("(")).trim();
+            new_value = new_value.substring(0, new_value.lastIndexOf("(")).trim();
 
             if (selectedLayers.contains(new_value)) {
                 //not a new value to add
@@ -397,7 +399,7 @@ public class FilteringWCController extends UtilityComposer {
         Listcell lc = (Listcell) o;
         Listitem li = (Listitem) lc.getParent();
         layername = ((Listcell) li.getChildren().get(0)).getLabel();
-        layername = (layername.equals("")) ? "" : layername.substring(0, layername.indexOf("(")).trim();
+        layername = (layername.equals("")) ? "" : layername.substring(0, layername.lastIndexOf("(")).trim();
 
         popup_filter = getSPLFilter(layername);
         popup_idx.setValue(layername);
