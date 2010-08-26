@@ -1,5 +1,8 @@
 package au.org.emii.portal.composer;
 
+import au.org.emii.portal.config.xmlbeans.Supplementary;
+import au.org.emii.portal.settings.Settings;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -9,6 +12,7 @@ import java.util.TreeMap;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.zkoss.zhtml.Messagebox;
+import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -29,7 +33,7 @@ public class LayerListComposer extends UtilityComposer {
 
     private Tree tree;
     private ArrayList empty = new ArrayList();
-    //private MapComposer mc;
+    private MapComposer mc;
 
     private final String satServer = "http://spatial-dev.ala.org.au"; // "http://localhost:8080"
 
@@ -43,12 +47,34 @@ public class LayerListComposer extends UtilityComposer {
             System.out.println("tree is ready");
         }
 
+        mc = getThisMapComposer();
+
+        System.out.print("Settings.Suppl:");
+        SettingsSupplementary settingsSupplementary = mc.getSettingsSupplementary();
+        if (settingsSupplementary == null) System.out.println(" is bad");
+        else System.out.println(" is good");
+        System.out.print("mc.geoserver:" + mc.geoServer);
+
+        System.out.print("Settings.Global:");
+        Settings settings = mc.getSettings();
+        if (settingsSupplementary == null) System.out.println(" is bad");
+        else System.out.println(" is good");
+
+
         System.out.println("Loading the LayerListComposer");
         iterateAndLoad2();
 
 
         //System.out.println("with:\n" + layerlist);
 
+    }
+    private MapComposer getThisMapComposer() {
+
+        MapComposer mapComposer = null;
+        Page page = getPage();
+        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
+
+        return mapComposer;
     }
 
     private void iterateAndLoad() {
@@ -318,17 +344,19 @@ public class LayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
                             System.out.println("Loading layer: " + joLayer.getString("displayname") + " from " + joLayer.getString("displaypath"));
 
-                            String metadata = joLayer.getString("metadatapath");
-                            if (metadata.equals("")) {
-                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
-                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
-                                metadata += "Source: " + joLayer.getString("source") + "\n";
-                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
-                            }
+//                            String metadata = joLayer.getString("metadatapath");
+//                            if (metadata.equals("")) {
+//                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
+//                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
+//                                metadata += "Source: " + joLayer.getString("source") + "\n";
+//                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
+//                            }
 
-//                            mc.addWMSLayer(joLayer.getString("displayname"),
-//                                    joLayer.getString("displaypath"),
-//                                    (float) 0.75, metadata);
+                            String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+
+                            mc.addWMSLayer(joLayer.getString("displayname"),
+                                    joLayer.getString("displaypath"),
+                                    (float) 0.75, metadata);
                         }
                     });
 
@@ -342,10 +370,11 @@ public class LayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
                             String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid"); 
-                                Clients.evalJavaScript("window.open('"
-                                        + metadata
-                                        + "', 'metadataWindow');");
+//                                Clients.evalJavaScript("window.open('"
+//                                        + metadata
+//                                        + "', 'metadataWindow');");
 
+                            mc.activateLink(metadata, "Metadata", false);
 
                             /*
                             Object o = event.getTarget().getId();
