@@ -6,6 +6,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
@@ -19,7 +20,7 @@ import org.zkoss.zul.Comboitem;
  */
 public class LayersAutoComplete extends Combobox {
 
-    private static String SAT_SERVER = "http://localhost:8080";
+    private static String SAT_SERVER = "http://localhost:8080"; // "http://spatial-dev.ala.org.au"
 
     public LayersAutoComplete() {
         refresh(""); //init the child comboitems
@@ -91,6 +92,8 @@ public class LayersAutoComplete extends Combobox {
 
                 JSONArray results = JSONArray.fromObject(slist);
                 System.out.println("got " + results.size() + " layers");
+
+                Sessions.getCurrent().setAttribute("layerlist", results);
 
                 if (results.size() > 0) {
 

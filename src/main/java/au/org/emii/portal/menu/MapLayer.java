@@ -442,7 +442,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         }
         }
         if (uri == null) {
-            String geoserver = "http://spatial.ala.org.au";
+            String geoserver = "http://spatial-dev.ala.org.au";
             uri = geoserver + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=" + this.layer;
         }
 

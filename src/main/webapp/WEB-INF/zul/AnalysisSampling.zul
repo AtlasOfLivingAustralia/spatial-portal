@@ -18,7 +18,7 @@
                 <tab label="Produce sample" onClick="samplingwindow.produce();" visible="false"/>
             </tabs>
             <toolbar>
-                <button  label="Produce sample" onClick="samplingwindow.produce();"></button>
+                <button label="Produce sample" onClick="samplingwindow.produce();" sclass="goButton"></button>
                 </toolbar>
             <tabpanels>
                 <tabpanel>
@@ -37,7 +37,7 @@
             <vbox>
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
-                    <button id="btenvfilterclear" label="Clear filter" visible="false" />
+                    <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
                 </hbox>
                 <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="90%" >
                     <listhead>

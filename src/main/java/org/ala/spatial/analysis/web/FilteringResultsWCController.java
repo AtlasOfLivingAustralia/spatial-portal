@@ -23,12 +23,16 @@ import org.zkoss.zul.ListModelArray;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author adam
  */
 public class FilteringResultsWCController extends UtilityComposer {
+
+    private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
+
 
     private static final String SAT_URL = "sat_url";
     public Button download;
@@ -37,6 +41,8 @@ public class FilteringResultsWCController extends UtilityComposer {
     public Button mapspecies;
     public Listbox popup_listbox_results;
     public Label results_label;
+    public Label results_label2;
+    public Label results_label_extra;
     public int results_pos;
     public String[] results = null;
     public String pid;
@@ -50,12 +56,30 @@ public class FilteringResultsWCController extends UtilityComposer {
         super.afterCompose();
 
         // onClick$refreshButton2();
+
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("{\"eventTypeId\": 123,");
+        sb.append("\"comment\": \"For doing some research with..\",");
+        sb.append("\"userEmail\" : \"waiman.mok@csiro.au\",");
+        sb.append("\"recordCounts\" : {");
+        sb.append("\"dp123\": 32,");
+        sb.append("\"dr143\": 22,");
+        sb.append("\"ins322\": 55 } }");
+        logger.debug(sb.toString());
+        //logger.warn(sb.toString());
+        //logger.info(sb.toString());
+
+        //log to remote ala-logger
+        //logger.d;
+
     }
     boolean addedListener = false;
 
     @Override
     public void redraw(Writer out) throws java.io.IOException {
         super.redraw(out);
+            results_label_extra.setValue("    [Updating...]");
 
         System.out.println("redraw:filteringresultswccontroller");
         if (!addedListener) {
@@ -75,6 +99,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
 
         }
+            results_label_extra.setValue("");
     }
 
     public void populateList() {
@@ -94,6 +119,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             if (results.length == 0 || results[0].trim().length() == 0) {
                 results_label.setValue("no species in area");
+                results_label2.setValue("none");
                 results = null;
                 popup_listbox_results.setVisible(false);
                 refreshButton2.setVisible(true);
@@ -132,8 +158,11 @@ public class FilteringResultsWCController extends UtilityComposer {
                     });
             if (length < 200) {
                 results_label.setValue("species in active area: " + length);
+                results_label2.setValue(length + "");
             } else {
                 results_label.setValue("species in active area: " + length + " (first 200 listed)");
+                results_label2.setValue(length + "");
+                results_label_extra.setValue(" (first 200 listed)");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -173,6 +202,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             results_count = Integer.parseInt(out);
             if (results_count == 0) {
                 results_label.setValue("no species in active area");
+                results_label2.setValue("none");
                 results = null;
                 popup_listbox_results.setVisible(false);
                 refreshButton2.setVisible(true);
@@ -180,6 +210,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             }
 
             results_label.setValue("species in active area: " + results_count);
+            results_label2.setValue(results_count + "");
 
             //hide results list, show 'preview list' button
             popup_listbox_results.setVisible(false);
@@ -197,6 +228,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$download() {
+        results_label_extra.setValue("    [Generating download...]");
         //update 'results'
         if (updateParameters()
                 || !popup_listbox_results.isVisible()) {
@@ -209,10 +241,12 @@ public class FilteringResultsWCController extends UtilityComposer {
             sb.append(s.replace('*', ','));
             sb.append("\r\n");
         }
+        results_label_extra.setValue("");
         Filedownload.save(sb.toString(), "text/plain", "filter.csv");
     }
 
     public void onClick$downloadsamples() {
+            results_label_extra.setValue("    [Generating download...]");
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
@@ -225,6 +259,8 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             String samplesfile = postInfo(sbProcessUrl.toString());
 
+            results_label_extra.setValue("");
+
             URL u = new URL(satServer + "/alaspatial/" + samplesfile);
             Filedownload.save(u.openStream(), "application/zip", "filter_samples_" + pid + ".zip");
         } catch (Exception e) {
@@ -233,6 +269,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$mapspecies() {
+            results_label_extra.setValue("    [Mapping...]");
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(SAT_URL);
         }
@@ -246,6 +283,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             String geojsonfile = postInfo(sbProcessUrl.toString());
 
             getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
+
+            results_label_extra.setValue("");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -349,15 +388,20 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     void refreshCount(int newCount) {
+        results_label_extra.setValue("    [Updating...]");
         results_count = newCount;
         if (results_count == 0) {
             results_label.setValue("no species in active area");
+            results_label2.setValue("none");
+            results_label_extra.setValue("");
             results = null;
             popup_listbox_results.setVisible(false);
             refreshButton2.setVisible(true);
         }
 
         results_label.setValue("species in active area: " + results_count);
+        results_label2.setValue(results_count + "");
+        results_label_extra.setValue("");
 
         //hide results list, show 'preview list' button
         popup_listbox_results.setVisible(false);

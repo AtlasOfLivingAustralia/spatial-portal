@@ -93,7 +93,7 @@ public class SelectionController extends UtilityComposer {
     private Radiogroup rgAreaSelection;
     HtmlMacroComponent envelopeWindow;
     private SettingsSupplementary settingsSupplementary = null;
-    private String geoServer;// = "http://spatial.ala.org.au"; // http://localhost:8080
+    private String geoServer;// = "http://spatial-dev.ala.org.au"; // http://localhost:8080
     String satServer;
     String[] results = null;
     int results_pos;

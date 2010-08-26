@@ -27,7 +27,7 @@ import org.zkoss.zul.Listitem;
 
 public class AutoComplete extends Combobox {
 
-    private String gazServer = "http://spatial.ala.org.au";
+    private String gazServer = "http://spatial-dev.ala.org.au";
 
     public AutoComplete() {
         refresh(""); //init the child comboitems
@@ -99,7 +99,7 @@ public class AutoComplete extends Combobox {
      */
     private void refresh(String val) {
         //TODO: remove hardcoded host,
-        HttpHost targetHost = new HttpHost("ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com", 80, "http");
+        HttpHost targetHost = new HttpHost("spatial-dev.ala.org.au", 80, "http"); // "ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"
         DefaultHttpClient httpclient = new DefaultHttpClient();
         BasicHttpContext localcontext = new BasicHttpContext();
         String searchString = val.trim().replaceAll("\\s+", "+");
@@ -111,7 +111,9 @@ public class AutoComplete extends Combobox {
             
             //Read in the xml response
             DocumentBuilder builder = domFactory.newDocumentBuilder();
-            String uri = targetHost.toString() + "/geoserver/rest/gazetteer/result.xml?q=" + searchString;
+            //String uri = targetHost.toString() + "/geoserver/rest/gazetteer/result.xml?q=" + searchString;
+            String uri = gazServer + "/geoserver/rest/gazetteer/result.xml?q=" + searchString;
+            System.out.println("Looking gaz up on: " + uri); 
             //Messagebox.show(uri);
             Document resultDoc = builder.parse(uri);
 
