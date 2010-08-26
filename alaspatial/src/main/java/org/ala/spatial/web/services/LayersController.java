@@ -20,8 +20,17 @@ import org.springframework.web.servlet.ModelAndView;
  * @author ajay
  */
 @Controller
-@RequestMapping("/ws/layers")
+//@RequestMapping("/ws/layers")
 public class LayersController {
+
+    private final String LAYERS_BASE_WS = "/ws/layers";
+    private final String LAYERS_BASE = "/layers";
+    private final String LAYERS_INDEX = "/ws/layers/index";
+    private final String LAYERS_ADD = "/ws/layers/index";
+    private final String LAYERS_EDIT = "/ws/layers/edit";
+    private final String LAYERS_LIST = "/ws/layers/list";
+    
+
 
     private LayersDAO layersDao;
 
@@ -31,7 +40,7 @@ public class LayersController {
         this.layersDao = layersDao;
     }
 
-    @RequestMapping(value = "/index", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_INDEX, method = RequestMethod.GET)
     public ModelAndView showIndexPage() {
         ModelMap modelMap = new ModelMap();
         modelMap.addAttribute("message", "Displaying all layers");
@@ -40,7 +49,7 @@ public class LayersController {
         //return "layers/list";
     }
 
-    @RequestMapping(value = "/index", method = RequestMethod.POST)
+    @RequestMapping(value = LAYERS_INDEX, method = RequestMethod.POST)
     public ModelAndView searchLayers(@RequestParam String q) {
         ModelMap modelMap = new ModelMap();
 
@@ -68,12 +77,12 @@ public class LayersController {
         //return "layers/list";
     }
 
-    @RequestMapping(value = "/add", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_ADD, method = RequestMethod.GET)
     public String showAddPage() {
         return "layers/add";
     }
 
-    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @RequestMapping(value = LAYERS_ADD, method = RequestMethod.POST)
     public String add(LayerInfo layer) {
         //LayerInfo layer = new LayerInfo();
 
@@ -83,12 +92,12 @@ public class LayersController {
         return "layers/index";
     }
 
-    @RequestMapping(value = "/edit", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_EDIT, method = RequestMethod.GET)
     public String showEditPage() {
         return "layers/edit";
     }
 
-    @RequestMapping(value = "/edit", method = RequestMethod.POST)
+    @RequestMapping(value = LAYERS_EDIT, method = RequestMethod.POST)
     public String edit(LayerInfo layer) {
         //LayerInfo layer = new LayerInfo();
 
@@ -103,7 +112,7 @@ public class LayersController {
      * 
      * @return List layers
      */
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_LIST, method = RequestMethod.GET)
     public
     @ResponseBody
     List<LayerInfo> getLayers() {
@@ -116,7 +125,7 @@ public class LayersController {
      * @param name
      * @return List layers
      */
-    @RequestMapping(value = "/name/{name}", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_BASE + "/name/{name}", method = RequestMethod.GET)
     public
     @ResponseBody
     List<LayerInfo> getLayersByName(@PathVariable String name) {
@@ -125,17 +134,34 @@ public class LayersController {
     }
 
     /**
-     * Action call to get a layer info based on it's ID
+     * Action call to get a layer info based on it's UID
      * 
+     * @param uid
+     * @return ModelAndView view
+     */
+    @RequestMapping(value = LAYERS_BASE + "/{uid}", method = RequestMethod.GET)
+    public ModelAndView getLayerByUId(@PathVariable String uid) {
+        System.out.print("retriving layer list by id: " + uid);
+        LayerInfo layer = layersDao.getLayerById(uid);
+
+        ModelMap m = new ModelMap();
+        m.addAttribute("layer", layer);
+
+        return new ModelAndView("layers/view", m); 
+    }
+
+    /**
+     * Action call to get a layer info based on it's ID
+     *
      * @param id
      * @return LayerInfo layer
      */
-    @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_BASE + "/id/{uid}", method = RequestMethod.GET)
     public
     @ResponseBody
-    LayerInfo getLayerById(@PathVariable long id) {
-        System.out.print("retriving layer list by id: " + id);
-        return layersDao.getLayerById(id);
+    LayerInfo getLayerById(@PathVariable String uid) {
+        System.out.print("retriving layer list by id: " + uid);
+        return layersDao.getLayerById(uid);
     }
 
     /**
@@ -143,7 +169,7 @@ public class LayersController {
      * @param keywords
      * @return
      */
-    @RequestMapping(value = "/search/{keywords}", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_BASE + "/search/{keywords}", method = RequestMethod.GET)
     public 
     @ResponseBody
     List<LayerInfo> searchLayersByCriteria(@PathVariable String keywords) {

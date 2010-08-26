@@ -80,6 +80,8 @@ public class HeatMap {
     }
 
     private void initImages() {
+        System.out.println("Got base dir in initimages: " + baseDir.getAbsolutePath());
+        System.err.println("Got base dir in initimages: " + baseDir.getAbsolutePath()); 
         try {
             backgroundImage = ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/mapaus1_white.png"));
             dotImage = getDotImageFile();
