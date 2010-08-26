@@ -132,7 +132,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private static final String SAT_URL = "sat_url";
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
-    private String geoServer;
+    public String geoServer;
 
     /*
      * Autowired controls
