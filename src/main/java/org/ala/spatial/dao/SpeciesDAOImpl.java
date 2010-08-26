@@ -140,7 +140,23 @@ public class SpeciesDAOImpl extends HibernateDaoSupport implements SpeciesDAO {
      */
     @Override
     public List<Species> getRecordsById(String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+
+        final String lsid = id + "%";
+        return (List) this.hibernateTemplate.execute(new HibernateCallback() {
+
+            @Override
+            public List<Species> doInHibernate(Session session) {
+                //Query query = session.createQuery("from Species where taxonconceptid = :lsid AND (longitude <> '' or longitude <> '') "); // (:level)
+                //Query query = session.createQuery("from Species where scientificname like :lsid AND (longitude <> '' or longitude <> '') "); // (:level)
+                Query query = session.createQuery("from Species where scientificname like :id AND (longitude is not null or longitude is not null) "); // (:level)
+                //query.setParameter(0, theLevel);
+                //query.setParameter(1, theName);
+                //query.setString("level", theLevel);
+                query.setString("id", lsid);
+                return query.list();
+            }
+        });
     }
 
     /*

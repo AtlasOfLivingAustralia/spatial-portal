@@ -45,8 +45,8 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      * @return LayerInfo
      */
     @Override
-    public LayerInfo getLayerById(long id) {
-        List<LayerInfo> layers = hibernateTemplate.find("from LayerInfo where id = ? ", id);
+    public LayerInfo getLayerById(String id) {
+        List<LayerInfo> layers = hibernateTemplate.find("from LayerInfo where uid = ? ", id);
         if (layers.size() > 0) {
             return layers.get(0);
         } else {

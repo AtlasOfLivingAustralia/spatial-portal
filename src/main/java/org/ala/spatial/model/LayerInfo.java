@@ -24,6 +24,9 @@ public class LayerInfo {
     @Column(name = "id", insertable = false, updatable = false)
     private long id;
 
+    @Column(name="uid")
+    private String uid;
+
     @Column(name="name")
     private String name;
 
@@ -104,6 +107,14 @@ public class LayerInfo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public boolean isEnabled() {

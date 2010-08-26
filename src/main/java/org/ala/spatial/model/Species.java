@@ -16,7 +16,7 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name = "OCCURRENCESV1")
+@Table(name = "OCCURRENCESV2")
 public class Species {
 
     @Id
@@ -24,6 +24,12 @@ public class Species {
     @SequenceGenerator(name = "occurrences_ocid_seq", sequenceName = "occurrences_ocid_seq")
     @Column(name = "ocid", insertable = false, updatable = false)
     private long id;
+
+    @Column(name="taxonconceptid")
+    private String taxonconceptid;
+
+    @Column(name="scientificname")
+    private String scientificname;
 
     @Column(name="genus")
     private String genus;
@@ -54,6 +60,22 @@ public class Species {
         //this.scientificname = scientificname;
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public String getTaxonconceptid() {
+        return taxonconceptid;
+    }
+
+    public void setTaxonconceptid(String taxonconceptid) {
+        this.taxonconceptid = taxonconceptid;
+    }
+
+    public String getScientificname() {
+        return scientificname;
+    }
+
+    public void setScientificname(String scientificname) {
+        this.scientificname = scientificname;
     }
 
     public String getGenus() {

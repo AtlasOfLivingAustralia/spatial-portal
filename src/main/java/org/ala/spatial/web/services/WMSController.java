@@ -15,6 +15,7 @@ import org.ala.spatial.analysis.heatmap.HeatMap;
 import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.dao.SpeciesDAO;
+import org.ala.spatial.model.Species;
 import org.ala.spatial.model.ValidTaxonName;
 import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,8 @@ public class WMSController {
 
     @RequestMapping(value = "/map", method = RequestMethod.GET)
     public void getDensityMap(
+            @RequestParam(value = "spname", required = false, defaultValue = "") String spname,
+            @RequestParam(value = "tcid", required = false, defaultValue = "") String tcid,
             @RequestParam(value = "family_lsid", required = false, defaultValue = "") String family_lsid,
             @RequestParam(value = "genus_lsid", required = false, defaultValue = "") String genus_lsid,
             @RequestParam(value = "species_lsid", required = false, defaultValue = "") String species_lsid,
@@ -77,20 +80,24 @@ public class WMSController {
             String lsid = "";
             if (family_lsid != null) {
                 System.out.print("generating family density map for: " + family_lsid);
-                msg = "generating density family map for: " + family_lsid;
+                //msg = "generating density family map for: " + family_lsid;
                 lsid = family_lsid;
             } else if (genus_lsid != null) {
                 System.out.print("generating genus density map for: " + genus_lsid);
-                msg = "generating density genus map for: " + genus_lsid;
+                //msg = "generating density genus map for: " + genus_lsid;
                 lsid = genus_lsid;
             } else if (species_lsid != null) {
                 System.out.print("generating species density map for: " + species_lsid);
-                msg = "generating density species map for: " + species_lsid;
+                //msg = "generating density species map for: " + species_lsid;
                 lsid = species_lsid;
             } else if (subspecies_lsid != null) {
                 System.out.print("generating subspecies density map for: " + subspecies_lsid);
-                msg = "generating density subspecies map for: " + subspecies_lsid;
+                //msg = "generating density subspecies map for: " + subspecies_lsid;
                 lsid = subspecies_lsid;
+            } else if (tcid != null) {
+                System.out.print("generating taxonconceptid density map for: " + tcid);
+                //msg = "generating density subspecies map for: " + subspecies_lsid;
+                //lsid = tcid;
             }
 
             //String currentPath = session.getServletContext().getRealPath(File.separator);
@@ -108,10 +115,10 @@ public class WMSController {
 
                     List<ValidTaxonName> l = speciesDao.findById(lsid);
                     System.out.println("re-returning " + l.size() + " records");
-                    msg += "\nre-returning " + l.size() + " records";
+                    //msg += "\nre-returning " + l.size() + " records";
                     if (l.size() > 0) {
                         ValidTaxonName vtn = l.get(0);
-                        msg += "\n" + vtn.getScientificname() + " - " + vtn.getRankstring();
+                        //msg += "\n" + vtn.getScientificname() + " - " + vtn.getRankstring();
 
                         System.out.println("Have: " + vtn.getScientificname() + " - " + vtn.getRankstring());
 
@@ -136,7 +143,8 @@ public class WMSController {
                             System.out.println("Sending out: " + msg);
 
                         } else {
-                            msg = "No species";
+                            //msg = "No species";
+                            msg = "base/mapaus1_white.png";
                             System.out.println("Empty filter species");
                         }
                     } else {
@@ -156,13 +164,13 @@ public class WMSController {
                     // this should only happen if there is one collection_code
                     // as if several, then we can assume its fine
                     if (collection_code.length == 1) {
-                        String[] tmpCollCode = collection_code[0].split(",");
+                    String[] tmpCollCode = collection_code[0].split(",");
 
-                        // now copy it back into collection_code itself
-                        collection_code = tmpCollCode;
+                    // now copy it back into collection_code itself
+                    collection_code = tmpCollCode;
                     }
-                    *
-                    */
+                     *
+                     */
 
                     for (int i = 0; i < collection_code.length; i++) {
                         baseFilename += "_" + collection_code[i];
@@ -176,7 +184,7 @@ public class WMSController {
                     msg = baseOutUrl + baseFilename + ".png";
                 } else {
                     System.out.println("Starting out search for: " + institution_code);
-                    msg = "generating density insitution code map for: " + institution_code;
+                    //msg = "generating density insitution code map for: " + institution_code;
                     int[] recs = OccurrencesIndex.lookup("institutionCode", institution_code);
 
                     if (recs != null) {
@@ -188,7 +196,7 @@ public class WMSController {
 
                         if (collection_code != null) {
                             for (int i = 0; i < collection_code.length; i++) {
-                                msg = "generating density insitution/collection code map for: " + institution_code + "/" + collection_code[i];
+                                //msg = "generating density insitution/collection code map for: " + institution_code + "/" + collection_code[i];
                                 int[] recs2 = OccurrencesIndex.lookup("collectionCode", collection_code[i]);
                                 if (recs2 != null) {
                                     System.out.println("Got recs2.length: " + recs2.length);
@@ -312,6 +320,66 @@ public class WMSController {
                 }
                  * 
                  */
+            } else if (tcid != null) {
+                msg = baseOutUrl + process(baseDir, "taxonConceptId", tcid);
+            } else if (spname != null) {
+                System.out.println("Mapping via speciesname: " + spname);
+                String outputfile = baseDir + File.separator + spname + ".png";
+                //IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(spname);
+                IndexedRecord[] ir = null;
+                if (ir != null) {
+                    double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
+
+                    System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
+                    HeatMap hm = new HeatMap(baseDir, spname);
+                    if ((points.length / 2) < 500) {
+                        hm.generatePoints(points);
+                        hm.drawOuput(outputfile, false);
+                    } else {
+                        hm.generateClasses(points);
+                        hm.drawOuput(outputfile, true);
+                    }
+
+
+                    msg = baseOutUrl + spname + ".png";
+                    System.out.println("Sending out: " + msg);
+
+                } else {
+                    System.out.println("getting " + spname + " from db");
+                    List<Species> species = speciesDao.getRecordsById(spname);
+
+                    if (species != null) {
+                        double[] points = new double[species.size()*2];
+                        int pi=0;
+                        for (Species sp : species) {
+                            System.out.println("sp: " + sp.getSpecies() + " at " + sp.getLongitude() + ", " + sp.getLatitude());
+                            points[pi] = Double.parseDouble(sp.getLongitude());
+                            points[pi+1] = Double.parseDouble(sp.getLatitude());
+                            pi+=2;
+                        }
+                        HeatMap hm = new HeatMap(baseDir, spname);
+                        if ((points.length / 2) < 500) {
+                            hm.generatePoints(points);
+                            hm.drawOuput(outputfile, false);
+                        } else {
+                            hm.generateClasses(points);
+                            hm.drawOuput(outputfile, true);
+                        }
+
+                        msg = baseOutUrl + spname + ".png";
+                        System.out.println("Sending out: " + msg);
+
+                    } else {
+                        msg = "base/mapaus1_white.png";
+                        System.out.println("Empty filter species");
+                    }
+
+
+                    //msg = "No species";
+                    //msg = "base/mapaus1_white.png";
+                    //System.out.println("Empty filter species");
+                }
+
             }
 
         } catch (Exception ex) {
@@ -389,7 +457,7 @@ public class WMSController {
             msg = value + ".png";
         } else {
             System.out.println("Starting out search for: " + value);
-            msg = "generating density data_provider_id map for: " + value;
+            //msg = "generating density data_provider_id map for: " + value;
             int[] recs = OccurrencesIndex.lookup(key, value);
             if (recs != null) {
                 int[] finalRecs = recs;
@@ -434,6 +502,33 @@ public class WMSController {
                     + request.getContextPath();
         }
     }
+
+    public String generateMapLSID(String lsid) {
+
+
+        String value = lsid;
+
+        List<Species> species = speciesDao.getRecordsById(lsid);
+        System.out.println("Found " + species.size() + " records via db");
+        double[] points = null;
+        String outputfile = "";
+        File baseDir = null;
+        for (Species sp : species) {
+        }
+
+        HeatMap hm = new HeatMap(baseDir, value);
+        if ((points.length / 2) < 500) {
+            hm.generatePoints(points);
+            hm.drawOuput(outputfile, false);
+        } else {
+            hm.generateClasses(points);
+            hm.drawOuput(outputfile, true);
+        }
+
+        return value + ".png";
+
+    }
+
     /**
      * Action call to get a layer info based on it's ID
      *
@@ -458,4 +553,6 @@ public class WMSController {
     }
      * 
      */
+    public static void main(String[] args) {
+    }
 }

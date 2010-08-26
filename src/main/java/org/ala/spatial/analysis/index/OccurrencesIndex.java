@@ -1084,6 +1084,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                 if (pos >= 0 && pos < ir.length) {
                     matches.add(ir[pos]);
+                    break; 
                 }
 
                 i++;
