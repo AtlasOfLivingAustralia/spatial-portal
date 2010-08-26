@@ -192,11 +192,11 @@ a:hover, a:active, #nav-tabs li a:hover.selected {
 }
 
 
-remove.z-north-splt, remove.z-west-splt {
+.z-north-splt, .z-west-splt {
     background-color: #E8EACE; 
 }
 
-remove.z-tab-hr, remove.z-tab-hl, remove.z-tab-hm, remove.z-tab, remove.z-tab-seld, remove.z-tab-cnt {
+.z-tab-hr, .z-tab-hl, .z-tab-hm, .z-tab, .z-tab-seld, .z-tab-cnt {
     background-color:#e8eace;
     color:#7d8804;
     border-color: #e8eace !important;
@@ -209,6 +209,24 @@ remove.z-tab-hr, remove.z-tab-hl, remove.z-tab-hm, remove.z-tab, remove.z-tab-se
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8eace', EndColorStr='#fafbf5')"; /* IE8 */
     text-shadow: 1px 1px 0px #fff;
     outline:none;
+}
+
+.z-tabs-cnt li {
+    margin-right: 5px;
+    border-color: #e8eace !important;
+}
+
+.z-tab-seld .z-tab-text, .z-tab-seld .z-tab-hl:hover .z-tab-text {
+    color: #7D8804;
+}
+
+div.z-listbox-header tr.z-list-head, div.z-listbox-header tr.z-auxhead {
+    /*background: url("/webportal/zkau/web/8914214/zul/img/grid/column-bg.png") repeat-x scroll 0 0 #C7E5F1; */
+    background-image: -moz-linear-gradient(bottom, #fafbf5, #e8eace); /* FF3.6 */
+    background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, #fafbf5),color-stop(1, #e8eace)); /* Saf4+, Chrome */
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8eace', EndColorStr='#fafbf5'); /* IE6,IE7 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8eace', EndColorStr='#fafbf5')"; /* IE8 */
+
 }
 
 /*

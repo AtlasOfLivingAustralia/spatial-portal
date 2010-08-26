@@ -6,6 +6,14 @@
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
         >
+            <style>
+                .resultsCount {
+                    font-size: 14px;
+                    background-color: #c7e3f3;
+                    padding: 4px;
+                    font-weight: bold; 
+                }
+            </style>
 
         <tabbox>
             <tabs>
@@ -13,8 +21,8 @@
             </tabs>
             <toolbar>
                    
-                <button label="Produce species list" id="download" />
-                <button label="Produce sample" id="downloadsamples" />
+                <button label="Produce species list" id="download" sclass="goButton" />
+                <button label="Produce sample" id="downloadsamples" sclass="goButton" />
 
 
             </toolbar>
@@ -25,11 +33,17 @@
                     <vbox>
                         <separator />
             
-                        <label style="font-weight: bold" id="results_label" />
+                        <label style="font-weight: bold" id="results_label" visible="false" />
                         <separator />
                         <hbox>
-                            <button label="Show species list preview" id="refreshButton2" visible="true"/>
-                            <button label="Map all species in active area" id="mapspecies" visible="false"/>
+                        <label style="font-weight: bold" value="Species in active area: " />
+                        <label sclass="resultsCount" id="results_label2" />
+                        <label style="font-weight: bold" id="results_label_extra" value="" />
+                        </hbox>
+                        <separator />
+                        <hbox>
+                            <button label="Show species list preview" id="refreshButton2" visible="true" sclass="goButton"/>
+                            <button label="Map all species in active area" id="mapspecies" visible="false" sclass="goButton"/>
                         </hbox>
                         <listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
                             <listhead>

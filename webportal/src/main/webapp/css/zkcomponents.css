@@ -19,13 +19,18 @@ html, body {
     padding: 0px;
 }
 
-
+/*
 html, body *{
     color:teal;
 }
+*/
 
 div.z-listbox {
     border:0px;
+    background-image: -moz-linear-gradient(bottom, #fafbf5, #e8eace); /* FF3.6 */
+    background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, #fafbf5),color-stop(1, #e8eace)); /* Saf4+, Chrome */
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8eace', EndColorStr='#fafbf5'); /* IE6,IE7 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8eace', EndColorStr='#fafbf5')"; /* IE8 */
 }
 
 .z-vbox {
@@ -365,7 +370,7 @@ a[rel="external"], a.external {
     display: none;
 }
 
-.z-tabs-scroll .z-tabs-cnt {
+.z-toolbar-tabs-outer, .z-tabs-scroll .z-tabs-cnt {
     background:#FFFFFF url(../img/base-shadow.png) repeat-x scroll left bottom;
     border:0 none !important;
     padding-top:5px;
@@ -431,9 +436,14 @@ a[rel="external"], a.external {
 
 
 .z-tab .z-tab-text{
-    color:teal;
+    color: #01716E;
 }
 
+.z-tab .z-tab-hl:hover .z-tab-text {
+    /*color: #7D8804;
+    font-weight: bold; */
+    color: #f00;
+}
 
 
 .z-tabs-cnt {
@@ -641,11 +651,29 @@ tr.z-list-item-over{background:#dae7f6;}tr.z-list-item-over-seld{background:#6ea
 }
 
 
+
+.buttons, .helpButtonMain, .goButton {
+    /*margin:0 15px 0 0;*/
+    /*padding: 5px 10px;*/
+    display:block;
+    /*height:5em;*/
+    /*width:127px;*/
+    overflow:hidden;
+    background-color:#fff;
+    border:1px solid #ccc;
+    -moz-border-radius: 7px; /* FF1+ */
+    -webkit-border-radius: 7px; /* Saf3+, Chrome */
+    border-radius: 7px; /* Opera 10.5, IE 9 */
+    background:transparent url(http://test.ala.org.au/wp-content/themes/ala/images/button_bg.png) right bottom repeat-x;
+    line-height: 1em;
+    padding: 0px 5px;
+}
+
 .goButton {
-    height: 38px;
+    /*height: 38px;
     color: #EEEEEE;
     background-color: teal;
-    font-size: 12px;
+    font-size: 12px;*/
 }
 
 .helpButton {
@@ -658,9 +686,12 @@ tr.z-list-item-over{background:#dae7f6;}tr.z-list-item-over-seld{background:#6ea
     position: absolute;
     right: 30px;
     padding: 3px 10px;
+    /*
     border: 1px solid #7EAAC6;
     background-color: #B4E7FF;
-    
+    */
+    line-height: 1.6em; 
+
 }
 closebox a.helpButtonMain {
     text-decoration: none;

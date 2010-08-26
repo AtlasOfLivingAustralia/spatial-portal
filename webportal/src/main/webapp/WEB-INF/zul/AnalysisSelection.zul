@@ -107,7 +107,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                         <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
                     </hbox>
                     <hbox>
-                        <button label="Show Species" id="btnShowSpecies" visible="false" />
+                        <button label="Show Species" id="btnShowSpecies" visible="false" sclass="goButton" />
 
                     </hbox>
                 </vbox>

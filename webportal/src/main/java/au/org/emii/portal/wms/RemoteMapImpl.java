@@ -442,10 +442,11 @@ public class RemoteMapImpl implements RemoteMap {
         mapLayer.setType(layerUtilities.internalVersion(version));
 
         // Request a 1px test image from the layer
-        if (imageTester.testLayer(mapLayer)) {
-            testedMapLayer = mapLayer;
-        }
-        return testedMapLayer;
+        //if (imageTester.testLayer(mapLayer)) {
+        //    testedMapLayer = mapLayer;
+        //}
+        //return testedMapLayer;
+        return mapLayer; 
     }
 
     @Override
@@ -481,10 +482,11 @@ public class RemoteMapImpl implements RemoteMap {
         mapLayer.setType(layerUtilities.internalVersion(version));
 
         // Request a 1px test image from the layer
-        if (imageTester.testLayer(mapLayer)) {
-            testedMapLayer = mapLayer;
-        }
-        return testedMapLayer;
+        //if (imageTester.testLayer(mapLayer)) {
+        //    testedMapLayer = mapLayer;
+        //}
+        //return testedMapLayer;
+        return mapLayer;
     }
 
     public LanguagePack getLanguagePack() {

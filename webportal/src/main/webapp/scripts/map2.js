@@ -295,7 +295,7 @@ function buildMapReal() {
     parent.bLayer2 = bLayer2;
 
     var dem = new OpenLayers.Layer.WMS( "ALA - dem9s",
-        "http://spatial.ala.org.au/geoserver/wms", {
+        "http://spatial-dev.ala.org.au/geoserver/wms", {
             layers: 'ALA:dem-9s',
             transparent:true
         }, {
@@ -709,6 +709,7 @@ function selected (evt) {
                 "<h2>Occurrence information</h2>" +
                 " Scientific name: " + species + "</a> <br />" +
                 " Family: <a href='http://bie.ala.org.au/species/" + attrs["familyconceptid"] + "' target='_blank'>" + attrs["family"] + "</a> <br />" +
+                " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + attrs["dataprovideruid"] + "' target='_blank'>" + attrs["dataprovidername"] + "</a> <br />" +
                 " Longitude: "+attrs['longitude'] + " , Latitude: " + attrs['latitude'] + " <br/>" +
                 " Occurrence date: " + occurrencedate + " <br />" +
                 "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + attrs["occurrenceid"] + "' target='_blank'>View details</a>"

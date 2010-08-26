@@ -61,7 +61,7 @@ public class GazetteerSearchController extends UtilityComposer {
     }
     //TODO get this from the config - done by Ajay
 
-    private String gazServer = "http://spatial.ala.org.au"; // http://localhost:8080
+    private String gazServer = "http://spatial-dev.ala.org.au"; // http://localhost:8080
     private String gazSearchURL = "/geoserver/rest/gazetteer/result.xml?q=";
     private JSONArray arr = null;
     private GazetteerSearch gsr = new GazetteerSearch();
