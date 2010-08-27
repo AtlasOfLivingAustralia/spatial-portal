@@ -121,6 +121,7 @@ public class AnalysisController extends UtilityComposer {
     }
 
     public void callPullFromActiveLayers() {
+        ((SelectionController)sf.getFellow("selectionwindow")).checkForAreaRemoval();
     	if (samplingTabActive) {
     		((SamplingWCController)asf.getFellow("samplingwindow")).callPullFromActiveLayers();
     	} else if(maxentTabActive) {

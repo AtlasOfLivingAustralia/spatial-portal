@@ -769,4 +769,14 @@ public class SelectionController extends UtilityComposer {
 
         setInstructions(null, null);
     }
+
+    public void checkForAreaRemoval(){
+        MapLayer ml = getMapComposer().getMapLayer("Active Area");
+        if(ml == null && cbAreaSelection.getSelectedItem() != ciBoxCurrentView){
+            onClick$btnClearSelection(null);
+            if(wInstructions != null){
+                wInstructions.detach();
+            }
+        }
+    }
 }
