@@ -22,13 +22,13 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
             if (activeLayer != null) {
                 //mapComposer.deactiveLayer(activeLayer, true, false);
 
-                System.out.println("activeLayer.metdata: " + activeLayer.getMapLayerMetadata().getMoreInfo());
-                if (activeLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
+                //System.out.println("activeLayer.metdata: " + activeLayer.getMapLayerMetadata().getMoreInfo());
+                if (activeLayer.getMapLayerMetadata() != null && activeLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
                     // send the user to the BIE page for the species
                     Clients.evalJavaScript("window.open('"
                             + activeLayer.getMapLayerMetadata().getMoreInfo()
                             + "', 'metadataWindow');");
-                } else if (activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
+                } else if (activeLayer.getMapLayerMetadata() != null && activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                     //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
                     mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
                 } else {
