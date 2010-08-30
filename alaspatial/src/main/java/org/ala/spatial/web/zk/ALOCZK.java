@@ -35,9 +35,11 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Popup;
+import org.zkoss.zul.Progressmeter;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Timer;
 
 public class ALOCZK extends GenericForwardComposer {
 	String pid = "";
@@ -102,7 +104,15 @@ public class ALOCZK extends GenericForwardComposer {
 	public Label newcolour;
 	public int legend_counter = 0;
 
+        Textbox jobstate;
+        Textbox jobstatus;
+        Textbox jobprogress;
+        Textbox joblog;
+        Timer timer;
+        Progressmeter progressbar;
+
 	public Button run_button;
+        public Button run_button2;
 
 	public Listbox legend;
 	ArrayList<String> legend_lines;
@@ -132,6 +142,8 @@ public class ALOCZK extends GenericForwardComposer {
 		}
 
 		onChanging$cb(null);
+
+                timer.stop();
 
 		System.out.println("done layer setup");
 	}
@@ -309,6 +321,80 @@ public class ALOCZK extends GenericForwardComposer {
 		}
 	}
 
+        public void onClick$run_button2() {
+		try {
+			File temporary_file0 = java.io.File.createTempFile("ALOC_", ".png");
+			LayerFilter[] filters = getSelectedFilters();
+
+			if (filters == null || filters.length == 0) {
+				return;
+			}
+
+			Layer[] layers = new Layer[filters.length];
+			int i;
+			for (i = 0; i < layers.length; i++) {
+				layers[i] = filters[i].layer;
+			}
+
+			SimpleRegion sr = null;
+			if (lb_points.getValue().length() > 0) {
+				sr = getSimpleRegion(lb_points.getValue());
+			}
+
+			btnGenerate2(layers, number_of_groups.getValue(), lb_points
+					.getValue());
+			if (download != null) {
+				download.setVisible(true);
+			}
+
+                        onTimer$timer(null);
+
+                        timer.start();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+        public void onTimer$timer(Event e) {
+            //get status
+            
+            jobstatus.setValue(get("status"));
+            String s = get("state");
+            jobstate.setValue(get("state"));
+            String p = get("progress");
+            jobprogress.setValue(p);
+            //joblog.setValue(get("log"));
+
+            double d = Double.parseDouble(p);
+            progressbar.setValue((int)(d*100));
+
+            if(s.equals("SUCCESSFUL") || s.equals("FAILED")){
+                timer.stop();
+            }
+        }
+
+        String get(String type){
+            try{
+                StringBuffer sbProcessUrl = new StringBuffer();
+                sbProcessUrl.append(satServer + "ws/jobs/").append(type).append("?pid=").append(pid2);
+
+                System.out.println(sbProcessUrl.toString());
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+                get.addRequestHeader("Accept", "text/plain");
+
+                int result = client.executeMethod(get);
+                String slist = get.getResponseBodyAsString();
+                System.out.println(slist);
+                return slist;
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            return "";
+        }
+
 	public void btnGenerate(Layer[] layers, String number_of_groups,
 			String points) {
 		try {
@@ -374,6 +460,72 @@ public class ALOCZK extends GenericForwardComposer {
 		}
 
 	}
+        String pid2;
+        public void btnGenerate2(Layer[] layers, String number_of_groups,
+			String points) {
+		try {
+			StringBuffer sbenvsel = new StringBuffer();
+			for (int i = 0; i < layers.length; i++) {
+				sbenvsel.append(layers[i].display_name);
+				if (i < layers.length - 1) {
+					sbenvsel.append(":");
+				}
+			}
+
+			StringBuffer sbProcessUrl = new StringBuffer();
+			sbProcessUrl.append(satServer + "ws/aloc/processgeoq?");
+			sbProcessUrl.append("gc="
+					+ URLEncoder.encode(number_of_groups, "UTF-8"));
+			sbProcessUrl.append("&envlist="
+					+ URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+			if (points.length() > 0) {
+				sbProcessUrl.append("&area="
+						+ URLEncoder.encode(points, "UTF-8"));
+			} else {
+				sbProcessUrl.append("&area="
+						+ URLEncoder.encode("none", "UTF-8"));
+			}
+
+			HttpClient client = new HttpClient();
+			PostMethod get = new PostMethod(sbProcessUrl.toString());
+
+			get.addRequestHeader("Accept", "text/plain");
+
+			int result = client.executeMethod(get);
+			String slist = get.getResponseBodyAsString();
+
+			System.out
+					.println("Got response from ALOCWSController: \n" + slist);
+
+                        pid2 = slist;
+
+		} catch (Exception ex) {
+			System.out.println("Opps!: ");
+			ex.printStackTrace(System.out);
+		}
+
+	}
+
+        public void onClick$addbutton(Event e){
+
+            String img = satServer + "output/aloc/" + pid2 + "/aloc.png";
+            double [] extents = getExtents(pid2);
+            String client_request = "getALOCimage('" + img + "',"
+                    + extents[2] + "," + extents[5] + ","
+                    + extents[4] + "," + extents[3] + ","
+                    + extents[0] + "," + extents[1] + ");";
+
+                            //+ "',112,-9,154,-44,252,210);";
+
+
+            System.out.println("evaljavascript: " + client_request);
+            Clients.evalJavaScript(client_request);
+
+            results_path = img;
+
+            buildLegend();
+
+        }
 
 	SimpleRegion getSimpleRegion(String pointsString) {
 		SimpleRegion simpleregion = new SimpleRegion();

@@ -62,6 +62,30 @@ Environmental layers for use in classification.
 <label value="click button to run classification" />
 <button id="run_button" label="run ALOC">
 </button>
+
+<button id="run_button2" label="run ALOC (with progress)">
+</button>
+
+<timer id="timer" delay="1000" repeats="true" />
+
+<separator />
+<label value="job state" />
+<textbox id="jobstate" />
+<separator />
+<label value="job status" />
+<textbox id="jobstatus" width="350px" />
+<separator />
+<label value="job progress" />
+<textbox id="jobprogress" />
+<progressmeter id="progressbar" value="10" width="350px" />
+<separator />
+<label value="job log" />
+<textbox id="joblog" />
+<separator />
+<button id="addbutton" label="get results">
+</button>
+
+
 <separator />
 <separator />
 <button label="download" id="download" visible="false"/>

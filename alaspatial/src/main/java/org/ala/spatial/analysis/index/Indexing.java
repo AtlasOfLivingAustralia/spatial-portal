@@ -56,7 +56,7 @@ public class Indexing {
 				FilteringIndex speciesListIndex = new FilteringIndex();
 				speciesListIndex.layersUpdate(args[i].replace('_',' ')); //reverse ' ' to '_'
 			}
-		}else if(args.length > 1 && args[0].equals("layer_distances")){
+		}else if(args.length > 0 && args[0].equals("layer_distances")){
                     TabulationSettings.load();
 
                     LayerDistanceIndex ldi = new LayerDistanceIndex();

@@ -179,6 +179,11 @@ public class TabulationSettings {
      * path of convert executable
      */
     public static String convert_path;
+
+    /**
+     * maximum number of running jobs allowed
+     */
+    public static int jobs_maximum;
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -376,12 +381,14 @@ public class TabulationSettings {
                 grd_ncols = Integer.parseInt(xr.getValue("grd_ncols"));
                 grd_xdiv = Double.parseDouble(xr.getValue("grd_xdiv"));
                 grd_ydiv = Double.parseDouble(xr.getValue("grd_ydiv"));
+
+                jobs_maximum = Integer.parseInt(xr.getValue("jobs_maximum"));
 	}
 
         static public String getPath(String layerName){
             //check for common grid
             File file = new File(environmental_data_path_common + layerName + ".gri");
-            File file2 = new File(environmental_data_path_common + layerName + ".GRI");
+            //File file2 = new File(environmental_data_path_common + layerName + ".GRI");
             if(file.exists()){
                 return environmental_data_path_common + layerName;
             } else {

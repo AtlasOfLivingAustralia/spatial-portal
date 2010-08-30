@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.method;
 
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.spatial.util.AnalysisJobAloc;
 import org.ala.spatial.util.SpatialLogger;
 
 /**
@@ -256,6 +257,13 @@ public class Aloc {
     }
    
     public static int[] runGowerMetricThreaded(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces) {
+        return runGowerMetricThreaded(data_pieces, nNoOfGroups, nCols, pieces, null);
+    }
+
+    public static int[] runGowerMetricThreaded(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, AnalysisJobAloc job) {
+
+        if(job != null) job.setStage(1);    //seeding stage
+
         int[] rowCounts = new int[pieces];
         int nRowsTotal = 0;
         for (int i = 0; i < pieces; i++) {
@@ -266,7 +274,6 @@ public class Aloc {
         }
         nRowsTotal += rowCounts[pieces - 1];
         int nRows;
-
 
         int min_movement = -1;
         int[] min_groups = new int[nRowsTotal];
@@ -405,9 +412,13 @@ public class Aloc {
                 }
             }
 
+            if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
             (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
+        if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+
+        if(job != null) job.setStage(2); //iterations
 
         int threadcount = Runtime.getRuntime().availableProcessors();
 
@@ -621,10 +632,15 @@ public class Aloc {
             //test for -1 group allocations here
 
             iteration++;
+
+            if(job != null) job.setProgress(iteration / 100.0);
         }
+
+        if(job != null) job.setProgress(1);
 
         //write-back row groups
         return min_groups;
+
     }
 }
 
