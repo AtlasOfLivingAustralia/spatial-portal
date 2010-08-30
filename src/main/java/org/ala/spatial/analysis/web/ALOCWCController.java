@@ -20,6 +20,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Messagebox;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
@@ -282,7 +283,7 @@ public class ALOCWCController extends UtilityComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeo?");
+            sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeoq?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (true) { //an area always exists; useArea.isChecked()) {
@@ -318,7 +319,13 @@ public class ALOCWCController extends UtilityComposer {
 
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
 
-            loadMap();
+
+            //loadMap();
+
+            ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", this, null);
+            window.parent = this;
+            window.start(pid);
+            window.doModal();
 
         } catch (Exception ex) {
             System.out.println("Opps!: ");
@@ -399,7 +406,7 @@ public class ALOCWCController extends UtilityComposer {
             return d;
         }
 
-    private void loadMap() {
+    public void loadMap() {
         String uri = satServer + "/alaspatial/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 
