@@ -11,6 +11,7 @@ import org.ala.spatial.analysis.index.LayerFilter;
 
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
+import org.ala.spatial.util.AnalysisJobAloc;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
@@ -38,342 +39,7 @@ public class AlocService {
      * @return groups as int[] TODO: ???
      */
     public static int[] run(String filename, Layer[] layers, int numberofgroups, SimpleRegion region, LayerFilter[] envelope, String id) {
-        TabulationSettings.load();
-
-        /* get data, remove missing values, restrict by optional region */
-        int i, j;
-        float[][] data = null;
-        j = 0;
-        int width = 0, height = 0;
-        String layerPath = TabulationSettings.environmental_data_path;
-        if (layerPath == null) {
-            layerPath = "";
-        }
-        /*Grid grid = null;
-
-        boolean[] envelopesFound = null;
-        if (envelope != null) {
-            envelopesFound = new boolean[envelope.length];
-            for (i = 0; i < envelopesFound.length; i++) {
-                envelopesFound[i] = false;
-            }
-        }
-
-        //load and apply any valid envelopes
-        for (Layer l : layers) {
-            grid = new Grid(layerPath + l.name);
-
-            width = grid.ncols;
-            height = grid.nrows;
-
-            (new SpatialLogger()).log("getting layer > " + l.name);
-            float[] d = grid.getGrid();
-            (new SpatialLogger()).log("got layer > " + l.name);
-
-            if (data == null) {
-                (new SpatialLogger()).log("make space > " + l.name);
-                data = new float[d.length][layers.length];
-                (new SpatialLogger()).log("made space > " + l.name);
-            }
-
-            //find in envelope
-            int envelopeIdx = 0;
-            if (envelope != null) {
-                for (envelopeIdx = 0; envelopeIdx < envelope.length; envelopeIdx++) {
-                    if (envelope[envelopeIdx].layer.name.equals(l.name)) {
-                        break;
-                    }
-                }
-            }
-
-            //apply envelope if it exists
-            if (envelope != null && envelopeIdx < envelope.length) {
-                LayerFilter lf = envelope[envelopeIdx];
-                envelopesFound[envelopeIdx] = true;
-
-                for (i = 0; i < d.length && i < data.length; i++) {
-                    if (lf.maximum_value >= d[i] && lf.minimum_value <= d[i]) {
-                        data[i][j] = (float) d[i];
-                    } else {
-                        data[i][j] = Float.NaN;
-                    }
-                }
-            } else {
-                for (i = 0; i < d.length && i < data.length; i++) {
-                    data[i][j] = (float) d[i];
-                }
-            }
-            j++;
-        }*/
-
-        //TODO: # piecies decided by memory available / memory required / threadcount
-        int pieces = Runtime.getRuntime().availableProcessors() * 2;
-        ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope);
-
-        double [] extents = (double[]) data_pieces.get(data_pieces.size()-1);
-            width = (int) extents[0];
-            height = (int) extents[1];
-            
-
-        /* load envelopes not in layers apply to first data layer
-         * as missing values
-         *
-        if (envelopesFound != null) {
-            for (i=0;i<envelope.length;i++) {
-                if(envelopesFound[i]){
-                    continue;
-                }
-
-                grid = new Grid(layerPath + envelope[i].layer.name);
-
-                width = grid.ncols;
-                height = grid.nrows;
-(new SpatialLogger()).log("getting env > " + envelope[i].layer.name);
-                float[] d = grid.getGrid();
-(new SpatialLogger()).log("got env> " + envelope[i].layer.name);
-                LayerFilter lf = envelope[i];
-
-                for (i = 0; i < d.length && i < data.length; i++) {
-                    if (!(lf.maximum_value >= d[i] && lf.minimum_value <= d[i])) {
-                        data[i][0] = Float.NaN; //applied to first layer
-                    }
-                }
-            }
-        }*/
-
-        /* align all data missing values 
-        float[][] data_clean = null;
-
-        int count = 0;
-        int[] mapping = null;
-
-        (new SpatialLogger()).log("cleaning");
-
-        int minx = width;
-        int maxx = 0;
-        int miny = height;
-        int maxy = 0;
-        int x,y;
-
-        if (data != null && grid != null) {
-            if (region != null) {
-                //roll out missing values and values not in region
-                int[][] cells = region.getOverlapGridCells(
-                        grid.xmin, grid.ymin,
-                        grid.xmax, grid.ymax,
-                        grid.ncols, grid.nrows,
-                        null);
-
-                for (i = 0; i < cells.length; i++) {
-                    for (j = 0; j < data[0].length; j++) {
-                        if (Float.isNaN(data[cells[i][0] + (height - cells[i][1] - 1) * width][j])) {
-                            break;
-                        }
-                    }
-                    if (j == data[0].length) {
-                        count++;
-                    }
-                }
-
-                data_clean = new float[count][data[0].length];
-                mapping = new int[count];
-                count = 0;
-                for (i = 0; i < cells.length; i++) {
-                    for (j = 0; j < data[0].length; j++) {
-                        if (Float.isNaN(data[cells[i][0] + (height - cells[i][1] - 1) * width][j])) {
-                            break;
-                        }
-                    }
-                    if (j == data[0].length) {
-                        for (j = 0; j < data[0].length; j++) {
-                            data_clean[count][j] = data[cells[i][0] + (height - cells[i][1] - 1) * width][j];
-                            mapping[count] = cells[i][0] + (height - cells[i][1] - 1) * width;
-                        }
-                        count++;
-
-                        //update extents
-                        x = i%width;
-                        y = (int)(i/width);
-                        if (x < minx) minx = x;
-                        if (x > maxx) maxx = x;
-                        if (y < miny) miny = y;
-                        if (y > maxy) maxy = y;
-
-                    }
-                }
-
-            } else {
-                /* code for non-region 
-                for (i = 0; i < data.length; i++) {
-                    for (j = 0; j < data[i].length; j++) {
-                        if (Float.isNaN(data[i][j])) {
-                            break;
-                        }
-                    }
-                    if (j == data[i].length) {
-                        count++;
-                    }
-                }
-                data_clean = new float[count][data[0].length];
-                mapping = new int[count];
-                count = 0;
-                for (i = 0; i < data.length; i++) {
-                    for (j = 0; j < data[i].length; j++) {
-                        if (Float.isNaN(data[i][j])) {
-                            break;
-                        }
-                    }
-                    if (j == data[i].length) {
-                        for (j = 0; j < data[i].length; j++) {
-                            data_clean[count][j] = data[i][j];
-                            mapping[count] = i;
-                        }
-                        count++;
-
-                        //update extents
-                        x = i%width;
-                        y = (int)(i/width);
-                        if (x < minx) minx = x;
-                        if (x > maxx) maxx = x;
-                        if (y < miny) miny = y;
-                        if (y > maxy) maxy = y;
-                    }
-                }
-            }
-
-            (new SpatialLogger()).log("cleaned cells: " + count + " extents(pixels): " + minx + "," + miny + " " + maxx + "," + maxy);
-         *
-         *
-         */
-
-
-            /* export extents 
-            exportExtents(filename + "extents.txt"
-                    , maxx - minx
-                    , maxy - miny
-                    , minx*grid.xres + grid.xmin
-                    , miny*grid.yres + grid.ymin
-                    , maxx*grid.xres + grid.xmin
-                    , maxy*grid.yres + grid.ymin);
-             *
-             *
-             */
-        {
-            /* run aloc
-             * Note: requested number of groups may not always equal request
-             */
-            //int[] groups = Aloc.runGowerMetricThreaded(data_clean, numberofgroups);
-            int[] groups = Aloc.runGowerMetricThreaded(data_pieces, numberofgroups, layers.length, pieces);
-
-            (new SpatialLogger()).log("done gower metric");
-
-            /* recalculate group counts */
-            numberofgroups = 0;
-            for (i=0;i<groups.length;i++){
-                if(groups[i] > numberofgroups){
-                    numberofgroups = groups[i];
-                }
-            }
-            numberofgroups++; //group number is 0..n-1
-
-            /* calculate group means */
-            double[][] group_means = new double[numberofgroups][layers.length];
-            int[][] group_counts = new int[numberofgroups][layers.length];
-
-            /* TODO: handle numerical overflow when calculating means */
-            int row = 0;
-            for(int k=0;k<pieces;k++){
-                float [] d = (float[]) data_pieces.get(k);
-                int nRows = d.length / layers.length;
-                for (i = 0; i < d.length; i+=layers.length, row++) {                    
-                    for (j = 0; j < layers.length; j++) {
-                        if(!Float.isNaN(d[i+j])){
-                            group_counts[groups[row]][j]++;
-                            group_means[groups[row]][j] += d[i + j];
-                        }
-                    }
-                }
-            }
-            System.out.println("GroupCounts");
-            for (i = 0; i < group_means.length; i++) {
-                /* TODO: this check needs to be removed */
-                System.out.print("g(" + i + ") GC: " + group_counts[i] + "> ");
-                
-                for (j = 0; j < group_means[i].length; j++) {
-                    if (group_counts[i][j] > 0) {
-                        group_means[i][j] /= group_counts[i][j];
-                        System.out.print(group_means[i][j] + ",");
-                    }
-                }
-                System.out.println("");
-            }
-
-            /* get RGB for colouring group means via PCA */
-            int[][] colours = Pca.getColours(group_means);
-
-            /* export means + colours */
-            exportMeansColours(filename + ".csv", group_means, colours, layers);
-
-            /* export geoserver sld file for legend */
-            //exportSLD(filename + ".sld", group_means, colours, layers, id);
-
-            /* map back as colours, grey scale for now */
-            BufferedImage image = new BufferedImage(width, height,
-                    BufferedImage.TYPE_INT_ARGB);
-            int[] image_bytes;
-
-            image_bytes = image.getRGB(0, 0, image.getWidth(), image.getHeight(),
-                    null, 0, image.getWidth());
-
-            /* try transparency as missing value */
-            for (i = 0; i < image_bytes.length; i++) {
-                image_bytes[i] = 0x00000000;
-            }
-
-            /* write out onto imagebytes grouping colours per cell 
-            int group;
-            int[] colour = new int[3];
-            for (i = 0; i < groups.length; i++) {
-                group = groups[i];
-                for (j = 0; j < colour.length; j++) {
-                    colour[j] = (int) (colours[groups[i]][j]);
-                }
-
-                //set up rgb colour for this group
-                image_bytes[mapping[i]] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
-
-            }*/
-
-            int [][] cells = (int[][]) data_pieces.get(data_pieces.size()-2);            
-            int group;
-            int[] colour = new int[3];
-            for (i = 0; i < groups.length; i++) {
-                //groups.length == cells.length
-                group = groups[i];
-                for (j = 0; j < colour.length; j++) {
-                    colour[j] = (int) (colours[groups[i]][j]);
-                }
-
-                //set up rgb colour for this group (upside down)
-                image_bytes[cells[i][0] + (height-cells[i][1]-1) * width] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
-            }
-
-            /* write bytes to image */
-            image.setRGB(0, 0, image.getWidth(), image.getHeight(),
-                    image_bytes, 0, image.getWidth());
-
-            /* save image */
-            try {
-                ImageIO.write(image, "png",
-                        new File(filename));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return groups;
-        }
-
-      //  return null;
+        return run(filename, layers, numberofgroups, region, envelope, id, null);
     }
 
     /**
@@ -497,7 +163,7 @@ public class AlocService {
     }
 
     private static void exportExtents(String filename, int width, int height, double minx, double miny, double maxx, double maxy) {
-        try{
+        try {
             FileWriter fw = new FileWriter(filename);
             fw.append(String.valueOf(width)).append("\n");
             fw.append(String.valueOf(height)).append("\n");
@@ -506,8 +172,137 @@ public class AlocService {
             fw.append(String.valueOf(maxx)).append("\n");
             fw.append(String.valueOf(maxy)).append("\n");
             fw.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static int[] run(String filename, Layer[] layers, int numberOfGroups, SimpleRegion region, LayerFilter[] envelope, String name, AnalysisJobAloc job) {
+        TabulationSettings.load();
+
+        if(job != null) job.log("start ALOC");
+
+        /* get data, remove missing values, restrict by optional region */
+        int i, j;        
+        j = 0;
+        int width = 0, height = 0;
+        String layerPath = TabulationSettings.environmental_data_path;
+        if (layerPath == null) {
+            layerPath = "";
+        }
+        //TODO: # piecies decided by memory available / memory required / threadcount
+        int pieces = Runtime.getRuntime().availableProcessors() * 2;
+        ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
+
+        if(job != null) job.setCells(((int[][])data_pieces.get(data_pieces.size() - 2)).length);
+
+        if(job != null) job.log("set cells length");
+
+        double[] extents = (double[]) data_pieces.get(data_pieces.size() - 1);
+        width = (int) extents[0];
+        height = (int) extents[1];
+
+        /* run aloc
+         * Note: requested number of groups may not always equal request
+         */
+        //int[] groups = Aloc.runGowerMetricThreaded(data_clean, numberofgroups);
+        int[] groups = Aloc.runGowerMetricThreaded(data_pieces, numberOfGroups, layers.length, pieces, job);
+
+        if(job != null) job.log("identified groups");
+
+        (new SpatialLogger()).log("done gower metric");
+
+        /* recalculate group counts */
+        int newNumberOfGroups = 0;
+        for (i = 0; i < groups.length; i++) {
+            if (groups[i] > newNumberOfGroups) {
+                newNumberOfGroups = groups[i];
+            }
+        }
+        newNumberOfGroups++; //group number is 0..n-1
+        numberOfGroups = newNumberOfGroups;
+
+        /* calculate group means */
+        double[][] group_means = new double[numberOfGroups][layers.length];
+        int[][] group_counts = new int[numberOfGroups][layers.length];
+
+        /* determine group means */
+        int row = 0;
+        for (int k = 0; k < pieces; k++) {
+            float[] d = (float[]) data_pieces.get(k);
+            for (i = 0; i < d.length; i += layers.length, row++) {
+                for (j = 0; j < layers.length; j++) {
+                    if (!Float.isNaN(d[i + j])) {
+                        group_counts[groups[row]][j]++;
+                        group_means[groups[row]][j] += d[i + j];
+                    }
+                }
+            }
+        }        
+        for (i = 0; i < group_means.length; i++) {
+            for (j = 0; j < group_means[i].length; j++) {
+                if (group_counts[i][j] > 0) {
+                    group_means[i][j] /= group_counts[i][j];
+                }
+            }
+        }
+        if(job != null) job.log("determined group means");
+
+        /* get RGB for colouring group means via PCA */
+        int[][] colours = Pca.getColours(group_means);
+        if(job != null) job.log("determined group colours");
+
+
+        /* export means + colours */
+        exportMeansColours(filename + ".csv", group_means, colours, layers);
+        if(job != null) job.log("exported group means and colours");
+
+        /* export geoserver sld file for legend */
+        //exportSLD(filename + ".sld", group_means, colours, layers, id);
+
+        /* map back as colours, grey scale for now */
+        BufferedImage image = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_ARGB);
+        int[] image_bytes;
+
+        image_bytes = image.getRGB(0, 0, image.getWidth(), image.getHeight(),
+                null, 0, image.getWidth());
+
+        /* try transparency as missing value */
+        for (i = 0; i < image_bytes.length; i++) {
+            image_bytes[i] = 0x00000000;
+        }
+
+        int[][] cells = (int[][]) data_pieces.get(data_pieces.size() - 2);
+        int group;
+        int[] colour = new int[3];
+        for (i = 0; i < groups.length; i++) {
+            //groups.length == cells.length
+            group = groups[i];
+            for (j = 0; j < colour.length; j++) {
+                colour[j] = (int) (colours[groups[i]][j]);
+            }
+
+            //set up rgb colour for this group (upside down)
+            image_bytes[cells[i][0] + (height - cells[i][1] - 1) * width] = 0xff000000 | ((colour[0] << 16) | (colour[1] << 8) | colour[2]);
+        }
+
+        /* write bytes to image */
+        image.setRGB(0, 0, image.getWidth(), image.getHeight(),
+                image_bytes, 0, image.getWidth());
+
+        /* save image */
+        try {
+            ImageIO.write(image, "png",
+                    new File(filename));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        if(job != null) job.log("saved image");
+
+        if(job != null) job.log("finished ALOC");
+
+        return groups;
     }
 }

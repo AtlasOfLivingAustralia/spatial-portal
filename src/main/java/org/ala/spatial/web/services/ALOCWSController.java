@@ -10,6 +10,8 @@ import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.service.AlocService;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.LayerImgService;
+import org.ala.spatial.util.AnalysisJobAloc;
+import org.ala.spatial.util.AnalysisQueue;
 import org.ala.spatial.util.CoordinateTransformer;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
@@ -31,53 +33,6 @@ public class ALOCWSController {
 
     private SpatialSettings ssets;
    
-    @RequestMapping(value = "/process", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String process(HttpServletRequest req) {
-        String pid = "";
-        try {
-            TabulationSettings.load();
-
-            long currTime = System.currentTimeMillis();
-
-            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
-            //String currentPath = TabulationSettings.base_output_dir;
-            String outputpath = currentPath + "output" + File.separator + "aloc" + File.separator + currTime + File.separator;
-            String outputfile = outputpath + "aloc.png";
-            File fDir = new File(outputpath);
-            fDir.mkdir();
-
-            ssets = new SpatialSettings();
-
-            String groupCount = req.getParameter("gc");
-            Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
-
-            AlocService.run(outputfile, envList, Integer.parseInt(groupCount), null, null, Long.toString(currTime));
-
-            /* register with LayerImgService */
-            String extents = "4074\n3480\n112.9\n-9.0\n153.64\n-43.8";
-            StringBuffer legend = new StringBuffer();
-            System.out.println("legend path:" + outputpath + "aloc.png.csv");
-            BufferedReader flegend = new BufferedReader(new FileReader(outputpath + "aloc.png.csv"));
-            String line;
-            while ((line = flegend.readLine()) != null) {
-                legend.append(line);
-                legend.append("\r\n");
-            }
-            flegend.close();
-            System.out.println("registering layer image (A)");
-            if (!LayerImgService.registerLayerImage(currentPath, pid, outputfile, extents, legend.toString())) {
-                //error
-            }
-
-            pid = "" + currTime;
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-        return pid;
-    }
-
     @RequestMapping(value = "/processgeo", method = RequestMethod.POST)
     public
     @ResponseBody
@@ -157,6 +112,43 @@ public class ALOCWSController {
             }
 
             pid = "" + currTime;
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return pid;
+    }
+
+    @RequestMapping(value = "/processgeoq", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String processgeoq(HttpServletRequest req) {
+        String pid = "";
+        try {
+            TabulationSettings.load();
+
+            long currTime = System.currentTimeMillis();
+
+            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+           
+            ssets = new SpatialSettings();
+
+            String groupCount = req.getParameter("gc");
+            Layer[] envList = getEnvFilesAsLayers(req.getParameter("envlist"));
+
+            String area = req.getParameter("area");
+
+            LayerFilter[] filter = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                filter = FilteringService.getFilters(req.getParameter("area"));
+            } else {
+                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
+            }
+
+            pid = Long.toString(currTime);
+            AnalysisJobAloc aja = new AnalysisJobAloc(pid, currentPath, envList, Integer.parseInt(groupCount), region, filter);
+            AnalysisQueue.addJob(aja);
+            
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

@@ -26,7 +26,7 @@ import org.apache.commons.io.FileUtils;
  * Interface for .gri/.grd files for now
  */
 public class Grid { //  implements Serializable
-    static public int max_grids = 30;
+    static public int max_grids = 75;
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
 
     final double noDataValueDefault = -3.4E38;
