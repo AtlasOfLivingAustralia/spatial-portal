@@ -15,29 +15,64 @@ import java.util.Calendar;
  */
 public class AnalysisJob extends Thread implements Serializable {
     private final String DATE_FORMAT_NOW = "dd-MM-yyyy HH:mm:ss";
-    public final String WAITING = "WAITING";
-    public final String RUNNING = "RUNNING";
-    public final String SUCCESSFUL = "SUCCESSFUL";
-    public final String FAILED = "FAILED";
+    private final int ESTIMATE_LENGTH = 8;  //number of estimates * 2
+    public final static String WAITING = "WAITING";
+    public final static String RUNNING = "RUNNING";
+    public final static String SUCCESSFUL = "SUCCESSFUL";
+    public final static String FAILED = "FAILED";
 
-    double progress;    //progress 0 to 1
-    long progressTime;  //time of last set progress
-    int stage;          //for use by extended classes
-    String status;      //status of thread
-    StringBuffer log;         //log of job events
-    long runTime;       //total run time in ms
-    String currentState;//state of job; WAITING, RUNNING, SUCCESSFUL, FAILED
+    Double progress;            //progress 0 to 1
+    long progressTime;          //time of last set progress
+    int stage;                  //for use by extended classes
+    String status;              //status of thread
+    StringBuffer log;           //log of job events
+    long runTime;               //total run time in ms
+    String currentState;        //state of job; WAITING, RUNNING, SUCCESSFUL, FAILED
+    long [] estimatePairs = null;//pairs of time requested of time remaining
 
     public AnalysisJob(String pid){
         this.setName(pid);
         status = "";
         log = new StringBuffer();
         stage = -1;
+        progress = new Double(0);
         setCurrentState(WAITING);
     }
 
+    public long smoothEstimate(long nextEstimate){
+        long currentTime = System.currentTimeMillis();
+
+        if(estimatePairs == null){
+            estimatePairs = new long[ESTIMATE_LENGTH];
+            for(int i=0;i<ESTIMATE_LENGTH;i+=2){
+                estimatePairs[i] = currentTime;
+                estimatePairs[i+1] = nextEstimate;
+            }
+        }
+
+        //shift estimates back one
+        for(int i=2;i<ESTIMATE_LENGTH;i+=2){
+            estimatePairs[i] = estimatePairs[i-2];
+            estimatePairs[i+1] = estimatePairs[i-1];
+        }
+
+        //apply this estimate
+        estimatePairs[0] = currentTime;
+        estimatePairs[1] = nextEstimate;
+
+        //calculate
+        double smoothEstimate = 0;
+        for(int i=0;i<ESTIMATE_LENGTH-2;i+=2){
+            long timeSinceEstimate = currentTime - estimatePairs[i];
+            smoothEstimate += estimatePairs[i+1] - timeSinceEstimate;
+        }
+
+        //return average time remaining
+        return Math.round(smoothEstimate / (ESTIMATE_LENGTH/2));
+    }
+
     public long getEstimate(){
-        return 0;
+        return smoothEstimate(0);
     }
 
     public boolean cancel(){
@@ -78,8 +113,10 @@ public class AnalysisJob extends Thread implements Serializable {
     }
 
     public void setProgress(double d){
-        progress = d;
-        progressTime = System.currentTimeMillis();
+        synchronized(progress){
+            progress = d;
+            progressTime = System.currentTimeMillis();
+        }
     }
 
      public int getStage() {

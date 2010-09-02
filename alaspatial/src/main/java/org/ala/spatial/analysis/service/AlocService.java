@@ -191,7 +191,7 @@ public class AlocService {
             layerPath = "";
         }
         //TODO: # piecies decided by memory available / memory required / threadcount
-        int pieces = Runtime.getRuntime().availableProcessors() * 2;
+        int pieces = Runtime.getRuntime().availableProcessors() * 4;
         ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
 
         if(job != null) job.setCells(((int[][])data_pieces.get(data_pieces.size() - 2)).length);
@@ -206,8 +206,41 @@ public class AlocService {
          * Note: requested number of groups may not always equal request
          */
         //int[] groups = Aloc.runGowerMetricThreaded(data_clean, numberofgroups);
+       /* long start = System.currentTimeMillis();
         int[] groups = Aloc.runGowerMetricThreaded(data_pieces, numberOfGroups, layers.length, pieces, job);
+        long middle = System.currentTimeMillis();
 
+        long one = middle - start;
+        
+        //reset data
+        data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
+        start = System.currentTimeMillis();
+        int[] groups1 = Aloc.runGowerMetricThreadedSpeedup1(data_pieces, numberOfGroups, layers.length, pieces, job);
+        middle = System.currentTimeMillis();
+        long two = middle -start;
+
+        //reset data
+        data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
+        start  = System.currentTimeMillis();*/
+        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, job);
+        /*middle = System.currentTimeMillis();
+        long three = middle -start;
+
+        System.out.println("ALOC TIMINGS: (A)" + (one) + " (B)" + (two) + " (C)" + (three));
+
+        System.out.println("start check: " + groups.length + " == " + groups2.length);
+        int count = 0;
+        int count2 = 0;
+        for(i=0;i<groups.length && i < groups2.length;i++){
+            if(groups[i] != groups1[i]){
+                count++;
+            }
+            if(groups[i] != groups2[i]){
+                count2++;
+            }
+        }
+        System.out.println("end check: (a-b)" + (count / (double)groups.length) + " (a-c)" + (count2 / (double)groups.length));
+*/
         if(job != null) job.log("identified groups");
 
         (new SpatialLogger()).log("done gower metric");

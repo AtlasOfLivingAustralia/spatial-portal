@@ -25,8 +25,7 @@ import org.apache.commons.io.FileUtils;
  * 
  * Interface for .gri/.grd files for now
  */
-public class Grid { //  implements Serializable
-    static public int max_grids = 75;
+public class Grid { //  implements Serializable    
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
 
     final double noDataValueDefault = -3.4E38;
@@ -105,7 +104,7 @@ public class Grid { //  implements Serializable
 
     static void addGrid(Grid g){
         synchronized(all_grids){
-            if(all_grids.size() == max_grids){
+            if(all_grids.size() == TabulationSettings.max_grids_load){
                 all_grids.remove(0);
             }
             all_grids.add(g);
@@ -673,4 +672,48 @@ public class Grid { //  implements Serializable
         grid_data = ret;
         return ret;
     }
+/*
+    float[] getValues2(double xmin, double xmax, double ymin, double ymax) {
+        int xrange = (int) Math.ceil((xmax - xmin) / TabulationSettings.grd_xdiv);
+        int yrange = (int) Math.ceil((ymax - ymin) / TabulationSettings.grd_ydiv);
+
+        //init output structure
+        int len = xrange * yrange;
+        float[] ret = new float[len];
+        for(int i=0;i<len;i++){
+            ret[i] = Float.NaN;
+        }
+
+        if(xmin < this.xmin){
+            istart = 0;
+            xoff = (int) Math.ceil((xmax - xmin) / TabulationSettings.grd_xdiv)
+        }
+        int x,y;
+        for(int j=0;j<yrange;j++){
+            y = ?;
+            for(int i=0;i<xrange;i++){
+                ret[y++] = grid[i];
+            }
+        }
+
+        //load whole grid
+        float[] grid = getGrid();
+
+        int length = points.length;
+        int i, pos;
+
+        System.out.println(filename + ", " + datatype + ":" + points.length);
+
+        //points loop
+        for (i = 0; i < length; i++) {
+            pos = getcellnumber(points[i][0], points[i][1]);
+            if (pos >= 0) {
+                ret[i] = grid[pos];
+            } else {
+                ret[i] = Float.NaN;
+            }
+        }
+
+        return ret;
+    }*/
 }
