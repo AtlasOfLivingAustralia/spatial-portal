@@ -8,15 +8,15 @@
   <name>gazetteer-search</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <geotools.version>2.6-SNAPSHOT</geotools.version>
+    <geotools.version>2.7-SNAPSHOT</geotools.version>
 </properties>
 
   <dependencies>
-      <dependency>
+<!--      <dependency>
         <groupId>org.geotools</groupId>
         <artifactId>gt-jdbc-postgis</artifactId>
         <version>${geotools.version}</version>
-    </dependency>
+    </dependency> -->
 
     <dependency>
         <groupId>org.geotools</groupId>
