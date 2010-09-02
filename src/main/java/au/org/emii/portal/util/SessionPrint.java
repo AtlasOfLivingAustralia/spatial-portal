@@ -4,6 +4,7 @@
  */
 package au.org.emii.portal.util;
 
+import au.org.emii.portal.composer.MapComposer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -36,7 +37,9 @@ public class SessionPrint {
     double grid;
     double scaleBy;
 
-    public SessionPrint(String server, String height, String width, String htmlpth, String htmlurl, String uid, String jsessionid, String zoom, String header, double grid, String format, int resolution) {
+    MapComposer mc;
+
+    public SessionPrint(String server, String height, String width, String htmlpth, String htmlurl, String uid, String jsessionid, String zoom, String header, double grid, String format, int resolution, MapComposer mc_) {
         this.server = server;
         this.height = height;
         this.width = width;
@@ -53,6 +56,7 @@ public class SessionPrint {
         this.resolution = resolution;
         this.format = format;
         this.grid = grid;
+        this.mc = mc_;
 
         //resolution == 0 (current)
         //resolution == 1 (print: width up to 4800px, height up to 7200px)
@@ -166,7 +170,7 @@ public class SessionPrint {
             delay += 25000;
         }
         //TODO: dynamic path and settings
-        String cmd = "/mnt/ala/printing/wkhtmltoimage"        
+        String cmd = mc.getSettingsSupplementary().getValue("wkhtmltoimage_cmd")
                 + " --debug-javascript"
                 + " --load-error-handling ignore"
                 + " --javascript-delay " + delay //delay 15s for tiles to load
@@ -233,9 +237,9 @@ public class SessionPrint {
         //TODO: dynamic path and settings
         //String cmd = "/mnt/ala/printing/wkhtmltoimage"
         String [][] cmds = {
-            {"/usr/bin/convert",imgFilename,imgFilename},
-            {"/usr/bin/convert",imgFilename,jpgFilename},
-            {"/usr/bin/convert",imgFilename,pdfFilename}};
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,imgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,jpgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,pdfFilename}};
 
         try {
             for (String [] cmd : cmds) {

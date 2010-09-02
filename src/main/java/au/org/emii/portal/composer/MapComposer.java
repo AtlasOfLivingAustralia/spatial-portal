@@ -3534,7 +3534,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String[] ps = p.split(",");
 
         String server;
-        server = "http://spatial-dev.ala.org.au/webportal/";
+        server = settingsSupplementary.getValue("print_server_url");
 
 
         //session id/cookie JSESSIONID=
@@ -3587,13 +3587,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //unique id
         String uid = String.valueOf(System.currentTimeMillis());
 
-        String pth = "/usr/local/tomcat/instance_03_webportal/webapps/webportal/print/";
+        String pth = this.settingsSupplementary.getValue("print_output_path");
 
         String htmlpth = pth;
-        String htmlurl = server + "print/";
+        String htmlurl = settingsSupplementary.getValue("print_output_url");
 
         try {
-            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid, zoom, header, grid, format, resolution);
+            SessionPrint pp = new SessionPrint(server, height, width, htmlpth, htmlurl, uid, jsessionid, zoom, header, grid, format, resolution, this);
 
             if (!preview) {
                 pp.print();
