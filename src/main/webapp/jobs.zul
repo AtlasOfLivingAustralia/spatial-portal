@@ -1,0 +1,38 @@
+<zk>
+<window id="win" apply="org.ala.spatial.web.zk.JobsZK"
+title="Jobs" width="100%" border="normal">
+<separator/>
+<button id="refreshButton" label="refresh lists" />
+<hbox>
+<vbox>
+<label value="jobs waiting" />
+<listbox id="lbwaiting" multiple="false" checkmark="false" width="420px" rows="5" >
+<listhead>
+<listheader width="265px" label=""></listheader>
+</listhead>
+</listbox>
+</vbox>
+<vbox>
+<label value="jobs running" />
+<listbox id="lbrunning" multiple="false" checkmark="false" width="420px" rows="5" >
+<listhead>
+<listheader width="265px" label=""></listheader>
+</listhead>
+</listbox>
+</vbox>
+<vbox>
+<label value="jobs finished" />
+<listbox id="lbfinished" multiple="false" checkmark="false" width="420px" rows="5" >
+<listhead>
+<listheader width="265px" label=""></listheader>
+</listhead>
+</listbox>
+</vbox>
+
+</hbox>
+<vbox width="100%">
+<label value="job log" />
+<textbox width="100%" id="joblog" height="300px" multiline="true" />
+</vbox>
+</window>
+</zk>

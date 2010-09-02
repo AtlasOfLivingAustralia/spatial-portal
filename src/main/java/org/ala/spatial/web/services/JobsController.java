@@ -115,6 +115,52 @@ public class JobsController {
 
         return "job does not exist";
     }
+
+    @RequestMapping(value = "/listwaiting", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String listWaiting(HttpServletRequest req) {
+        try {
+            String s = AnalysisQueue.listWaiting();
+            if(s != null) return s;
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return "job does not exist";
+    }
+
+
+    @RequestMapping(value = "/listrunning", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String listRunning(HttpServletRequest req) {
+        try {
+            String s = AnalysisQueue.listRunning();
+            if(s != null) return s;
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return "job does not exist";
+    }
+
+    @RequestMapping(value = "/listfinished", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String listFinished(HttpServletRequest req) {
+        try {
+            String s = AnalysisQueue.listFinished();
+            if(s != null) return s;
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return "job does not exist";
+    }
 }
 
 

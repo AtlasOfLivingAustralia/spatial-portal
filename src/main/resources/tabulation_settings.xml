@@ -1421,4 +1421,6 @@ species name, common name
 
     <jobs_maximum>4</jobs_maximum>
 
+    <max_grids_load>75</max_grids_load>
+
 </tabulation>

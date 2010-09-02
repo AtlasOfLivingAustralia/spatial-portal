@@ -62,6 +62,10 @@
 		<from>/maxentwizard.zul</from>
 		<to>/maxentwizard.zul</to>
 	</rule>
+        <rule>
+		<from>/jobs.zul</from>
+		<to>/jobs.zul</to>
+	</rule>
 	<rule>
 		<from>/speciesList.zul</from>
 		<to>/speciesList.zul</to>

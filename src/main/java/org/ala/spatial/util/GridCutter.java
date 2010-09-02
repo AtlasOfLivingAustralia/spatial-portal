@@ -108,7 +108,7 @@ public class GridCutter {
 
         //process layers
         for (Layer l : layers) {
-            grid = new Grid(layerPath + l.name);
+            grid = Grid.getGrid(layerPath + l.name);
 
             float[] d = grid.getGrid(); //get whole layer
 
@@ -193,7 +193,7 @@ public class GridCutter {
         int k;
         for (k = 0; k < envelope.length; k++) {
             System.out.println("cutting with: " + envelope[k].layer.name);
-            grid = new Grid(layerPath + envelope[k].layer.name);
+            grid = Grid.getGrid(layerPath + envelope[k].layer.name);
 
             float[] d = grid.getGrid();
 
@@ -216,7 +216,7 @@ public class GridCutter {
 
         /* process provided layers */
         for (Layer l : layers) {
-            grid = new Grid(layerPath + l.name);
+            grid = Grid.getGrid(layerPath + l.name);
 
             float[] d = grid.getGrid();
             double[] dfiltered = new double[d.length];
@@ -273,9 +273,10 @@ public class GridCutter {
         }
         for (int k = 0; k < envelope.length; k++) {
             System.out.println("cutting with: " + envelope[k].layer.name);
-            Grid grid = new Grid(TabulationSettings.getPath(envelope[k].layer.name));
+            Grid grid = Grid.getGrid(TabulationSettings.getPath(envelope[k].layer.name));
 
             float[] d = grid.getValues2(points);
+            //float[] d = grid.getValues2(xmin, xmax, ymin, ymax);
 
             LayerFilter lf = envelope[k];
             for (int i = 0; i < d.length; i++) {
@@ -320,7 +321,7 @@ public class GridCutter {
         double xmax = Double.MIN_VALUE;
         double ymax = Double.MIN_VALUE;
         for (Layer l : layers) {
-            Grid g = new Grid(TabulationSettings.getPath(l.name));
+            Grid g = Grid.getGrid(TabulationSettings.getPath(l.name));
             if (xmin > g.xmin) {
                 xmin = g.xmin;
             }
@@ -415,12 +416,12 @@ public class GridCutter {
 
         //iterate for layers
         for (int j = 0; j < layers.length; j++) {
-            Grid g = new Grid(TabulationSettings.getPath(layers[j].name));
+            Grid g = Grid.getGrid(TabulationSettings.getPath(layers[j].name));
+            float[] v = g.getValues2(points);
 
             //iterate for pieces
             for (int i = 0; i < pieces; i++) {
-                float[] d = (float[]) data.get(i);
-                float[] v = g.getValues2(points);
+                float[] d = (float[]) data.get(i);                
                 for (int k = j, n = i * step; k < d.length; k += layers.length, n++) {
                     d[k] = v[n];
                 }
@@ -493,7 +494,7 @@ public class GridCutter {
         double ymax = Double.MIN_VALUE;
         if(envelopes != null){
             for (LayerFilter lf : envelopes) {
-                Grid g = new Grid(TabulationSettings.getPath(lf.layer.name));
+                Grid g = Grid.getGrid(TabulationSettings.getPath(lf.layer.name));
                 if (xmin > g.xmin) {
                     xmin = g.xmin;
                 }

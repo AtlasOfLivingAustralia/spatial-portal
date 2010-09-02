@@ -12,6 +12,7 @@
                 <tab label="Sampling" />
                 <tab label="Maxent" />
                 <tab label="ALOC" />
+                <tab label="Jobs" />
             </tabs>
             <tabpanels>
                 <tabpanel>
@@ -27,6 +28,9 @@
                 </tabpanel>
                 <tabpanel>
                     <include src="ALOC.zul" />
+                </tabpanel>
+                <tabpanel>
+                    <include src="jobs.zul" />
                 </tabpanel>
             </tabpanels>
         </tabbox>

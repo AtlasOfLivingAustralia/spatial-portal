@@ -505,7 +505,7 @@ public class FilteringService implements Serializable {
 
         /* get samples records from records indexes */
         String[] samples = OccurrencesIndex.getSortedRecords(records);
-        double[][] bbox = region.getBoundingBox(); 
+        double[][] bbox = region.getBoundingBox();
 
         StringBuffer sbGeoJSON = new StringBuffer();
         sbGeoJSON.append("{");

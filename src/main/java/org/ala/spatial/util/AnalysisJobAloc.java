@@ -129,40 +129,45 @@ public class AnalysisJobAloc extends AnalysisJob {
     public long getEstimate(){
         if(getProgress() == 0) return 0;
 
-        long timeElapsed = progressTime - stageTimes[getStage()];
+        long timeElapsed;
+        double prog;
+        synchronized(progress){
+           timeElapsed = progressTime - stageTimes[getStage()];
+           prog = progress;
+        }
         long timeRemaining = 0;
 
         if(stage <= 0){ //data load; 0 to 0.2
-            if(getProgress() > 0){
+            if(prog > 0){
 
-                timeRemaining += timeElapsed * (.2 - getProgress())/getProgress() ; //projected
+                timeRemaining += timeElapsed * (.2 - prog)/prog ; //projected
             } else {
                 timeRemaining +=  cells * 0.002* layers.length ; //default
             }
         } 
         if(stage <= 1){ //seeding; 0.2 to 0.3
-            if(getProgress() > 0.2){
-                timeRemaining += timeElapsed * (.1 - (getProgress()-.2))/(getProgress()-.2) ;   //projected
+            if(prog > 0.2){
+                timeRemaining += timeElapsed * (.1 - (prog-.2))/(prog-.2) ;   //projected
             } else {
                 timeRemaining += (cells / 20000) * layers.length * numberOfGroups; //default
             }
         } 
         if(stage <= 2){ //iterations; 0.3 to 0.9            
-            if(getProgress() > 0.3){
-                timeRemaining +=  timeElapsed  * (.6 - (getProgress()-.3))/(getProgress()-.3);   //projected
+            if(prog > 0.3){
+                timeRemaining +=  timeElapsed  * (.6 - (prog-.3))/(prog-.3);   //projected
             } else {
                 timeRemaining += numberOfGroups * Math.sqrt(layers.length) * cells / 2000 + 7000; //default
             }
         } 
         if(stage <= 3){ //transforming data; 0.9 to 1.0
-            if(getProgress() > 0.9){
-                timeRemaining += timeElapsed  * (.1 - (getProgress()-.9))/(getProgress()-.9); //projected
+            if(prog > 0.9){
+                timeRemaining += timeElapsed  * (.1 - (prog-.9))/(prog-.9); //projected
             } else {
                 timeRemaining += 2000; //default
             }
         }
         
-        return timeRemaining;
+        return smoothEstimate(timeRemaining);
     }
     
     @Override
@@ -217,8 +222,9 @@ public class AnalysisJobAloc extends AnalysisJob {
 
     public String toString(){
         StringBuffer sb = new StringBuffer();
-        sb.append("Classification");
-        sb.append("; state=").append(getState());
+        sb.append(getName());
+        sb.append("; Classification");
+        sb.append("; state=").append(getCurrentState());
         sb.append("; status=").append(getStatus());
         sb.append("; grid cell count=").append(cells);
         sb.append("; number of groups=").append(numberOfGroups);

@@ -184,6 +184,11 @@ public class TabulationSettings {
      * maximum number of running jobs allowed
      */
     public static int jobs_maximum;
+
+    /**
+     * maximum number of whole grids that can be loaded into memory
+     */
+    public static int max_grids_load;
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -383,6 +388,8 @@ public class TabulationSettings {
                 grd_ydiv = Double.parseDouble(xr.getValue("grd_ydiv"));
 
                 jobs_maximum = Integer.parseInt(xr.getValue("jobs_maximum"));
+
+                max_grids_load = Integer.parseInt(xr.getValue("max_grids_load"));
 	}
 
         static public String getPath(String layerName){
