@@ -19,6 +19,13 @@ public class SearchResultItem {
     @XStreamAsAttribute
     String link;
 
+    SearchResultItem(String layerName, String id) {
+        this.name = id;
+        this.type = layerName;
+        this.link = "/geoserver/rest/gazetteer/";
+        this.link += this.type + '/' + id.replace(" ", "_") + ".json";
+    }
+
     SearchResultItem(List<Fieldable> fields, Boolean includeLink) {
         
         String id = "";

@@ -38,6 +38,7 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 //
 //    }
 
+    @Override
     public MockData buildTestData() throws Exception {
         MockData dataDirectory = super.buildTestData();
         FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParentFile().getParent(), "gazetteer.xml"), dataDirectory.getDataDirectoryRoot());
@@ -160,6 +161,13 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
        // print(json);
     }
 
+    public void testPointSearch() throws Exception {
+        System.out.println("*************");
+        Document dom = getAsDOM("/rest/gazetteer/result.xml?point=0.003,0.001&layer=NamedPlaces");
+       
+        print(dom);
+        System.out.println("*************");
+    }
     public void testGazetteerLuceneIndex() throws Exception {
         File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
         if (file.exists()) {
