@@ -1,9 +1,13 @@
 package org.ala.spatial.web.services;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.net.URLDecoder;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.dao.LayersDAO;
 import org.ala.spatial.model.LayerInfo;
+import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -26,9 +30,10 @@ public class LayersController {
     private final String LAYERS_BASE_WS = "/ws/layers";
     private final String LAYERS_BASE = "/layers";
     private final String LAYERS_INDEX = "/ws/layers/index";
-    private final String LAYERS_ADD = "/ws/layers/index";
+    private final String LAYERS_ADD = "/ws/layers/add";
     private final String LAYERS_EDIT = "/ws/layers/edit";
     private final String LAYERS_LIST = "/ws/layers/list";
+    private final String LAYERS_ASSOCIATIONS = "/layers/analysis/inter_layer_association.csv";
     
 
 
@@ -142,13 +147,13 @@ public class LayersController {
     @RequestMapping(value = LAYERS_BASE + "/{uid}", method = RequestMethod.GET)
     public ModelAndView getLayerByUId(@PathVariable String uid) {
         System.out.print("retriving layer list by id: " + uid);
-        LayerInfo layer = layersDao.getLayerById(uid);
+            LayerInfo layer = layersDao.getLayerById(uid);
 
-        ModelMap m = new ModelMap();
-        m.addAttribute("layer", layer);
+            ModelMap m = new ModelMap();
+            m.addAttribute("layer", layer);
 
-        return new ModelAndView("layers/view", m); 
-    }
+            return new ModelAndView("layers/view", m);
+        }
 
     /**
      * Action call to get a layer info based on it's ID
@@ -181,5 +186,27 @@ public class LayersController {
         }
         System.out.print("retriving layer list by criteria: " + keywords);
         return layersDao.getLayersByCriteria(keywords);
+    }
+
+    @RequestMapping(value = LAYERS_ASSOCIATIONS, method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getLayerAssociations(HttpServletRequest req) {
+        //layer associations file named "layerDistances.csv" under index directory
+        StringBuffer sb = new StringBuffer();
+        try{
+            BufferedReader br = new BufferedReader(
+                    new FileReader(TabulationSettings.index_path
+                    + "layerDistances.csv"));
+
+            String line;
+            while((line=br.readLine()) != null){
+                sb.append(line).append("\n");
+            }
+            br.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return sb.toString();
     }
 }

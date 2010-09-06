@@ -52,18 +52,30 @@ public class AnalysisQueue {
         });
 
         for (String j : js) {
-            String name = j.substring(j.lastIndexOf("JOB") + 3);
-            AnalysisJob jb = getSavedJob(name);
-            jb.setName(name);
-            addJob(jb);
+            try{
+                String name = j.substring(j.lastIndexOf("JOB") + 3);
+                AnalysisJob jb = getSavedJob(name);
+                jb.setName(name);
+                addJob(jb);
+            }catch(Exception e){
+                System.out.println("failed to load " + j);
+            }
         }
+    }
+
+    public static void cancelJob(String pid){
+        AnalysisJob job = getJob(pid);
+        if(job != null && !job.isFinished()){
+            job.setCurrentState(AnalysisJob.CANCELLED);
+        }
+        //don't wait for it to finish.
     }
 
     public static void addJob(AnalysisJob job) {
         init();
 
         try {
-            if (job.getCurrentState().equals(AnalysisJob.SUCCESSFUL) || job.getCurrentState().equals(AnalysisJob.FAILED)) {
+            if (job.isFinished()) {
                 finishedJobs.put(job.getName(), job);
             } else {
                 jobs.put(job);
@@ -245,7 +257,7 @@ public class AnalysisQueue {
             j = (AnalysisJob) ois.readObject();
             ois.close();
         } catch (Exception e) {
-            e.printStackTrace();
+          //  e.printStackTrace();
         }
         return j;
     }
@@ -285,6 +297,16 @@ public class AnalysisQueue {
 
         return sb.toString();
     }
+
+    public static String getInputs(String pid) {
+        init();
+
+        AnalysisJob j = getJob(pid);
+        if (j != null) {
+            return j.getInputs();
+        }
+        return null;
+    }
 }
 
 class AnalysisJobConsumer extends Thread {
@@ -297,6 +319,8 @@ class AnalysisJobConsumer extends Thread {
         jobs = jobs_;
         runningJobs = runningJobs_;
         finishedJobs = finishedJobs_;
+
+        setPriority(Thread.MIN_PRIORITY);
     }
 
     @Override
@@ -338,6 +362,8 @@ class AnalysisJobFinishedConsumer extends Thread {
         jobs = jobs_;
         runningJobs = runningJobs_;
         finishedJobs = finishedJobs_;
+
+        setPriority(Thread.MIN_PRIORITY);
     }
 
     @Override

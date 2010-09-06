@@ -21,12 +21,12 @@ public class IndexedRecord implements Serializable{
 	/**
 	 * first char position in sorted records file
 	 */
-	public int file_start;
+	public long file_start;
 	
 	/**
 	 * last char position in sorted records file
 	 */
-	public int file_end;
+	public long file_end;
 	
 	/**
 	 * first record position in sorted records file
@@ -55,7 +55,7 @@ public class IndexedRecord implements Serializable{
 	 * @param _type type as byte, current usage as sorted records file 
 	 * column index
 	 */
-	public IndexedRecord(String _name, int _file_start, int _file_end, 
+	public IndexedRecord(String _name, long _file_start, long _file_end,
 			int _record_start, int _record_end, byte _type){
 		name = _name;
 		file_start = _file_start;

@@ -24,6 +24,8 @@ import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.util.AnalysisJobMaxent;
+import org.ala.spatial.util.AnalysisQueue;
 import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
@@ -373,6 +375,61 @@ public class MaxentWSController {
                 return "status:failure;";
 
             }
+
+        } catch (Exception e) {
+            System.out.println("Error processing Maxent request:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+
+    }
+
+    @RequestMapping(value = "/processgeoq", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String processgeoq(HttpServletRequest req) {
+
+        try {
+            TabulationSettings.load();
+
+            ssets = new SpatialSettings();
+
+            HttpSession session = req.getSession(true);
+            long currTime = System.currentTimeMillis();
+
+            String currentPath = session.getServletContext().getRealPath("/");
+            String taxon = req.getParameter("taxonid");
+            String area = req.getParameter("area");
+            String envlist = req.getParameter("envlist");
+            String txtTestPercentage = req.getParameter("txtTestPercentage");
+            String chkJackknife = req.getParameter("chkJackknife");
+            String chkResponseCurves = req.getParameter("chkResponseCurves");
+
+            Layer [] layers = getEnvFilesAsLayers(envlist);
+
+            LayerFilter[] filter = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                filter = FilteringService.getFilters(area);
+            } else {
+                region = SimpleShapeFile.parseWKT(area);
+            }
+
+            String pid = Long.toString(currTime);
+            AnalysisJobMaxent ajm = new AnalysisJobMaxent(pid, currentPath, taxon, envlist, region, filter, layers, txtTestPercentage,chkJackknife,chkResponseCurves);
+            StringBuffer inputs = new StringBuffer();
+            inputs.append("pid:").append(pid);
+            inputs.append(";taxonid:").append(taxon);
+            inputs.append(";area:").append(area);
+            inputs.append(";envlist:").append(envlist);
+            inputs.append(";txtTestPercentage:").append(txtTestPercentage);
+            inputs.append(";chkJackknife:").append(chkJackknife);
+            inputs.append(";chkResponseCurves:").append(chkResponseCurves);
+            ajm.setInputs(inputs.toString());
+            AnalysisQueue.addJob(ajm);
+
+            return pid;
 
         } catch (Exception e) {
             System.out.println("Error processing Maxent request:");

@@ -49,6 +49,8 @@ public class JobsZK extends GenericForwardComposer {
         Listbox lbrunning;
         Listbox lbfinished;
 
+        Textbox selectedJob;
+
         Textbox joblog;
 
         String pid;
@@ -92,7 +94,12 @@ public class JobsZK extends GenericForwardComposer {
             refreshInfo();
         }
 
+        public void onClick$btnCancel(Event e){
+            get("cancel");
+        }
+
         void refreshInfo(){
+            selectedJob.setValue(pid);
             joblog.setValue(get("log"));
         }
 

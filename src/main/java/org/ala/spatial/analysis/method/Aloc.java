@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.util.AnalysisJobAloc;
 import org.ala.spatial.util.SpatialLogger;
+import org.ala.spatial.util.TabulationSettings;
 
 /**
  * ALOC
@@ -263,6 +264,7 @@ public class Aloc {
     public static int[] runGowerMetricThreaded(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, AnalysisJobAloc job) {
 
         if(job != null) job.setStage(1);    //seeding stage
+        if(job != null && job.isCancelled()) return null;
 
         int[] rowCounts = new int[pieces];
         int nRowsTotal = 0;
@@ -415,14 +417,16 @@ public class Aloc {
             }
 
             if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+            if(job != null && job.isCancelled()) return null;
             (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+        if(job != null && job.isCancelled()) return null;
         (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
 
         if(job != null) job.setStage(2); //iterations
 
-        int threadcount = Runtime.getRuntime().availableProcessors();
+        int threadcount = TabulationSettings.analysis_threads;
 
         seeds = java.util.Arrays.copyOf(seeds, seedidxsize * nCols);//new float[seedidxsize * nCols];
         int[] seedgroup_nonmissingvalues = new int[seedidxsize * nCols];
@@ -672,9 +676,15 @@ public class Aloc {
             iteration++;
 
             if(job != null) job.setProgress(iteration / 100.0);
+            if(job != null && job.isCancelled()) {
+                for (i = 0; i < threadcount; i++) {
+                    ail[i].kill();
+                }
+                return null;
+            }
         }
 
-        if(job != null) job.setProgress(1);
+        if(job != null) job.setProgress(1);        
 
         //write-back row groups
         return min_groups;
@@ -684,6 +694,7 @@ public class Aloc {
     public static int[] runGowerMetricThreadedSpeedup1(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, AnalysisJobAloc job) {
 
         if(job != null) job.setStage(1);    //seeding stage
+        if(job != null && job.isCancelled()) return null;
 
         int[] rowCounts = new int[pieces];
         int nRowsTotal = 0;
@@ -836,14 +847,16 @@ public class Aloc {
             }
 
             if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+            if(job != null && job.isCancelled()) return null;
             (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+        if(job != null && job.isCancelled()) return null;
         (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
 
         if(job != null) job.setStage(2); //iterations
 
-        int threadcount = Runtime.getRuntime().availableProcessors();
+        int threadcount = TabulationSettings.analysis_threads;
 
         seeds = java.util.Arrays.copyOf(seeds, seedidxsize * nCols);//new float[seedidxsize * nCols];
         int[] seedgroup_nonmissingvalues = new int[seedidxsize * nCols];
@@ -1110,9 +1123,16 @@ public class Aloc {
             iteration++;
 
             if(job != null) job.setProgress(iteration / 100.0);
+            if(job != null && job.isCancelled()) {
+                for (i = 0; i < threadcount; i++) {
+                    ail[i].kill();
+                }
+                return null;
+            }if(job != null && job.isCancelled()) return null;
         }
 
         if(job != null) job.setProgress(1);
+        if(job != null && job.isCancelled()) return null;
 
         //write-back row groups
         return min_groups;
@@ -1139,6 +1159,7 @@ public class Aloc {
     public static int[] runGowerMetricThreadedMemory(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, AnalysisJobAloc job) {
 
         if(job != null) job.setStage(1);    //seeding stage
+        if(job != null && job.isCancelled()) return null;
 
         ArrayList<float[]> distancesAll = new ArrayList<float[]>(pieces);
 
@@ -1293,14 +1314,16 @@ public class Aloc {
             }
 
             if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+            if(job != null && job.isCancelled()) return null;
             (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+        if(job != null && job.isCancelled()) return null;
         (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
 
         if(job != null) job.setStage(2); //iterations
 
-        int threadcount = Runtime.getRuntime().availableProcessors();
+        int threadcount = TabulationSettings.analysis_threads;
 
         seeds = java.util.Arrays.copyOf(seeds, seedidxsize * nCols);//new float[seedidxsize * nCols];
         int[] seedgroup_nonmissingvalues = new int[seedidxsize * nCols];
@@ -1575,10 +1598,17 @@ public class Aloc {
 
             iteration++;
 
-            if(job != null) job.setProgress(iteration / 100.0);
+            //job progress is non-linear, use something else so estimates are better
+            if(job != null) job.setProgress(Math.sqrt(iteration / 100.0), "moving (" + iteration + ") > moved " + movement);
+            if(job != null && job.isCancelled()) {
+                for (i = 0; i < threadcount; i++) {
+                    ail[i].kill();
+                }
+                return null;
+            }
         }
 
-        if(job != null) job.setProgress(1);
+        if(job != null) job.setProgress(1);        
 
         //write-back row groups
         return min_groups;
@@ -1611,6 +1641,7 @@ class AlocInnerLoop1 extends Thread {
     Boolean sleeping;
     float[] rowDist;
     float[] otherGroupMovement;
+    boolean killed;
 
     public AlocInnerLoop1(LinkedBlockingQueue<int[]> lbq_, ArrayList<Object> dataPieces_, int nCols_, float[] colrange_, int seedidxsize_, float[] seeds_, int[] seedgroup_nonmissingvalues_, short[] groups_, float[] seeds_adjustment_, int[] seeds_nmv_adjustment_, int[] groupsize_, int[] records_movement_, float[] dist_, float[] otherGroupMovement_) {
         lbq = lbq_;
@@ -1630,10 +1661,14 @@ class AlocInnerLoop1 extends Thread {
         otherGroupMovement = otherGroupMovement_;
 
         sleeping = new Boolean(false);
+
+        killed = false;
+
+        setPriority(Thread.MIN_PRIORITY);
     }
 
     public void run() {
-        while (true) {
+        while (!killed) {
             // get next batch to operate on
             int[] next;
 
@@ -1797,6 +1832,11 @@ class AlocInnerLoop1 extends Thread {
         }
         System.out.print("[" + Math.round((skips / (double)nRows) * 100.0) + "%]");
     }
+
+    void kill() {
+        killed = true;
+        this.interrupt();
+    }
 }
 
 /**
@@ -1824,6 +1864,7 @@ class AlocInnerLoop2 extends Thread {
     Boolean sleeping;
     float[] rowDist;
     float[] otherGroupMovement;
+    boolean killed;
 
     public AlocInnerLoop2(LinkedBlockingQueue<int[]> lbq_, ArrayList<Object> dataPieces_, int nCols_, float[] colrange_, int seedidxsize_, float[] seeds_, int[] seedgroup_nonmissingvalues_, short[] groups_, float[] seeds_adjustment_, int[] seeds_nmv_adjustment_, int[] groupsize_, int[] records_movement_, float[] dist_, float[] otherGroupMovement_) {
         lbq = lbq_;
@@ -1843,10 +1884,13 @@ class AlocInnerLoop2 extends Thread {
         otherGroupMovement = otherGroupMovement_;
 
         sleeping = new Boolean(false);
+        killed = false;
+
+        setPriority(Thread.MIN_PRIORITY);
     }
 
     public void run() {
-        while (true) {
+        while (!killed) {
             // get next batch to operate on
             int[] next;
 
@@ -2010,6 +2054,11 @@ class AlocInnerLoop2 extends Thread {
         }
         System.out.print("[" + Math.round((skips / (double)nRows) * 100.0) + "%]");
     }
+
+    void kill() {
+        killed = true;
+        this.interrupt();
+    }
 }
 
 
@@ -2040,6 +2089,7 @@ class AlocInnerLoop3 extends Thread {
     float[] otherGroupMovement;
     ArrayList<float[]> distancesAll;
     float[] groupMovement;
+    boolean killed;
 
     public AlocInnerLoop3(LinkedBlockingQueue<int[]> lbq_, ArrayList<Object> dataPieces_, int nCols_, float[] colrange_, int seedidxsize_, float[] seeds_, int[] seedgroup_nonmissingvalues_, short[] groups_, float[] seeds_adjustment_, int[] seeds_nmv_adjustment_, int[] groupsize_, int[] records_movement_, float[] dist_, float[] otherGroupMovement_, ArrayList<float[]> distancesAll_, float[] groupMovement_) {
         lbq = lbq_;
@@ -2062,10 +2112,13 @@ class AlocInnerLoop3 extends Thread {
         groupMovement = groupMovement_;
 
         sleeping = new Boolean(false);
+        killed = false;
+
+        setPriority(Thread.MIN_PRIORITY);
     }
 
     public void run() {
-        while (true) {
+        while (!killed) {
             // get next batch to operate on
             int[] next;
 
@@ -2296,5 +2349,10 @@ class AlocInnerLoop3 extends Thread {
             }
         }
         System.out.print("[" + Math.round((skips / (double)(nRows*seedidxsize)) * 100.0) + "%]");
+    }
+
+    void kill() {
+        killed = true;
+        this.interrupt();
     }
 }

@@ -191,7 +191,7 @@ public class AlocService {
             layerPath = "";
         }
         //TODO: # piecies decided by memory available / memory required / threadcount
-        int pieces = Runtime.getRuntime().availableProcessors() * 4;
+        int pieces = TabulationSettings.analysis_threads * 4;
         ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
 
         if(job != null) job.setCells(((int[][])data_pieces.get(data_pieces.size() - 2)).length);
@@ -223,6 +223,7 @@ public class AlocService {
         data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
         start  = System.currentTimeMillis();*/
         int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, job);
+        if(job != null && job.isCancelled()) return null;
         /*middle = System.currentTimeMillis();
         long three = middle -start;
 

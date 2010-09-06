@@ -81,7 +81,7 @@ public class SamplingIndex implements AnalysisIndexService {
         //intersectCatagories(null);
 
         /* threaded building, needs more ram than one at a time */
-        int threadcount = Runtime.getRuntime().availableProcessors();
+        int threadcount = TabulationSettings.analysis_threads;
         ArrayList<String> layers = new ArrayList();
         int i;
         for (i = 0; i < TabulationSettings.geo_tables.length; i++) {

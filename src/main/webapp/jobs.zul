@@ -6,7 +6,7 @@ title="Jobs" width="100%" border="normal">
 <hbox>
 <vbox>
 <label value="jobs waiting" />
-<listbox id="lbwaiting" multiple="false" checkmark="false" width="420px" rows="5" >
+<listbox id="lbwaiting" multiple="false" checkmark="false" width="320px" rows="5" >
 <listhead>
 <listheader width="265px" label=""></listheader>
 </listhead>
@@ -14,7 +14,7 @@ title="Jobs" width="100%" border="normal">
 </vbox>
 <vbox>
 <label value="jobs running" />
-<listbox id="lbrunning" multiple="false" checkmark="false" width="420px" rows="5" >
+<listbox id="lbrunning" multiple="false" checkmark="false" width="320px" rows="5" >
 <listhead>
 <listheader width="265px" label=""></listheader>
 </listhead>
@@ -22,7 +22,7 @@ title="Jobs" width="100%" border="normal">
 </vbox>
 <vbox>
 <label value="jobs finished" />
-<listbox id="lbfinished" multiple="false" checkmark="false" width="420px" rows="5" >
+<listbox id="lbfinished" multiple="false" checkmark="false" width="320px" rows="5" >
 <listhead>
 <listheader width="265px" label=""></listheader>
 </listhead>
@@ -31,6 +31,7 @@ title="Jobs" width="100%" border="normal">
 
 </hbox>
 <vbox width="100%">
+<hbox><textbox id="selectedJob" /><button id="btnCancel" label="cancel job" /></hbox>
 <label value="job log" />
 <textbox width="100%" id="joblog" height="300px" multiline="true" />
 </vbox>

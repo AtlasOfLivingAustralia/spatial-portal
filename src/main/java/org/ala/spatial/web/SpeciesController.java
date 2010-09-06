@@ -118,7 +118,9 @@ public class SpeciesController {
             //System.out.println(">>>>> dumping out s.names <<<<<<<<<<");
             //System.out.println(slist);
             //System.out.println(">>>>> dumping out c.names <<<<<<<<<<");
-            List<CommonName> clist = speciesDao.getCommonNames(name);
+//long t1 = System.currentTimeMillis();
+/*
+           List<CommonName> clist = speciesDao.getCommonNames(name);
             Iterator<CommonName> it = clist.iterator();
             String previousScientificName = "";
             while (it.hasNext()) {
@@ -131,8 +133,17 @@ public class SpeciesController {
                     slist.append(cn.getCommonname()).append(" / Scientific name: ").append(cn.getScientificname()).append(" / found ").append(records).append("\n");
                     previousScientificName = cn.getScientificname();
                 }
-            }
-            System.out.println(">>>>> done <<<<<<<<<<");
+            }*/
+//long t2 = System.currentTimeMillis();
+ 
+            String s = OccurrencesIndex.getCommonNames(name);
+            slist.append(s);
+
+//long t3 = System.currentTimeMillis();
+
+//System.out.println("timings: DAO=" + (t2 - t1) + "ms; OI=" + (t3-t2) + "ms");
+
+            //System.out.println(">>>>> done <<<<<<<<<<");
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
