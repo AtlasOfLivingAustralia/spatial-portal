@@ -156,6 +156,9 @@ public class MaxentSettings {
         // add the default cmd vars
         cmd += defaultCmdVars;
 
+        // set thread count
+        cmd += " threads=" + TabulationSettings.analysis_threads;
+
         // add the random test percentage
         cmd += " -X " + randomTestPercentage;
 

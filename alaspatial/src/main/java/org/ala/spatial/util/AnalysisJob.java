@@ -20,6 +20,7 @@ public class AnalysisJob extends Thread implements Serializable {
     public final static String RUNNING = "RUNNING";
     public final static String SUCCESSFUL = "SUCCESSFUL";
     public final static String FAILED = "FAILED";
+    public final static String CANCELLED = "CANCELLED";
 
     Double progress;            //progress 0 to 1
     long progressTime;          //time of last set progress
@@ -29,6 +30,7 @@ public class AnalysisJob extends Thread implements Serializable {
     long runTime;               //total run time in ms
     String currentState;        //state of job; WAITING, RUNNING, SUCCESSFUL, FAILED
     long [] estimatePairs = null;//pairs of time requested of time remaining
+    String inputs;              //input name:value; pairs
 
     public AnalysisJob(String pid){
         this.setName(pid);
@@ -61,8 +63,8 @@ public class AnalysisJob extends Thread implements Serializable {
         estimatePairs[1] = nextEstimate;
 
         //calculate
-        double smoothEstimate = 0;
-        for(int i=0;i<ESTIMATE_LENGTH-2;i+=2){
+        double smoothEstimate = 0;        
+        for(int i=0;i<ESTIMATE_LENGTH;i+=2){
             long timeSinceEstimate = currentTime - estimatePairs[i];
             smoothEstimate += estimatePairs[i+1] - timeSinceEstimate;
         }
@@ -75,7 +77,27 @@ public class AnalysisJob extends Thread implements Serializable {
         return smoothEstimate(0);
     }
 
+    public boolean isFinished(){
+        return getCurrentState().equals(CANCELLED) ||
+                getCurrentState().equals(SUCCESSFUL) ||
+                getCurrentState().equals(FAILED);
+    }
+
+    public boolean isCancelled(){
+        return getCurrentState().equals(CANCELLED);
+    }
+
+    public String getEstimateInMinutes(){
+        double minutes = getEstimate() / 60000.0;
+        if(minutes < 0.5){
+            return "< 1";
+        } else {
+            return String.valueOf((int)Math.ceil(minutes));
+        }
+    }
+
     public boolean cancel(){
+        setStatus(CANCELLED);
         return true;
     }
 
@@ -139,5 +161,13 @@ public class AnalysisJob extends Thread implements Serializable {
 
     public void setCurrentState(String state){
         currentState = state;
+    }
+
+    public String getInputs() {
+        return inputs;
+    }
+
+    public void setInputs(String inputs_){
+        inputs = inputs_;
     }
 }

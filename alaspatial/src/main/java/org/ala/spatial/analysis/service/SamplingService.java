@@ -87,6 +87,7 @@ public class SamplingService {
                 fw.append(output.toString());
 
                 for (IndexedRecord r : ir) {
+                    System.out.println(r.name + ", " + r.file_start + ", " + r.file_end + ", " + r.record_start + ", " + r.record_end);
                     columns.clear();
 
                     /*
@@ -94,8 +95,8 @@ public class SamplingService {
                      */
 
                     int step = 5000000; //max characters to read
-                    int rstart = r.file_start;
-                    int rend;
+                    long rstart = r.file_start;
+                    long rend;
 
                     rend = rstart + step;
                     if (rend > r.file_end) {
@@ -182,13 +183,14 @@ public class SamplingService {
 
                     int step = 10000000;		/*TODO: move this into tabulation_settings.xml */
 
-                    for (i = r.file_start; i < r.file_end - step; i += step) {
+                    long k;
+                    for (k = r.file_start; k < r.file_end - step; k += step) {
                         fw.append(OccurrencesIndex.getSortedRecordsString(
-                                i, i + step));
+                                k, k + step));
                     }
 
                     fw.append(OccurrencesIndex.getSortedRecordsString(
-                            i, r.file_end));
+                            k, r.file_end));
 
                 }
                 fw.close();
@@ -306,8 +308,8 @@ public class SamplingService {
                  */
 
                 int step = 50000; //max characters to read TODO: move to tabulation settings.xml
-                int rstart = r.file_start;
-                int rend;
+                long rstart = r.file_start;
+                long rend;
 
                 rend = rstart + step;
                 if (rend > r.file_end) {
@@ -506,8 +508,8 @@ public class SamplingService {
                      */
 
                     int step = 5000000; //max characters to read TODO: move to tabulation settings.xmls
-                    int rstart = r.file_start;
-                    int rend;
+                    long rstart = r.file_start;
+                    long  rend;
 
                     rend = rstart + step;
                     if (rend > r.file_end) {

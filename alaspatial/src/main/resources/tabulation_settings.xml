@@ -1419,8 +1419,49 @@ species name, common name
         <grd_nrows>3480</grd_nrows>
     </grd_definition>
 
+    <!--
+        maximum number of simultanious analysis jobs
+        -->
     <jobs_maximum>4</jobs_maximum>
 
-    <max_grids_load>75</max_grids_load>
+    <!--
+        maximum number of buffered grid files
+
+        NOTE: must be greater than (<analysis_threads> + 3)
+        -->
+    <max_grids_load>30</max_grids_load>
+
+    <!--
+        number of threads allowed for use by analysis jobs
+        -->
+    <analysis_threads>6</analysis_threads>
+
+    <!--
+        set of variables for analysis runnning time estimates
+        -->
+    <processing_estimates>
+        <!--
+            ALOC timings;
+            0 = data load
+            1 = preparation/seeding
+            2 = iterations
+            3 = data formatting/conversion
+            -->
+        <aloc_timing_0>.002</aloc_timing_0>
+        <aloc_timing_1>.00005</aloc_timing_1>
+        <aloc_timing_2>.0005</aloc_timing_2>
+        <aloc_timing_3>1</aloc_timing_3>
+
+        <!--
+            Maxent timings;
+            0 = data load
+            1 = maxent running
+            2 = data formatting/conversion
+            -->
+        <maxent_timing_0>0.002</maxent_timing_0>
+        <maxent_timing_1>0.00005</maxent_timing_1>
+        <maxent_timing_2>1</maxent_timing_2>
+    </processing_estimates>
+
 
 </tabulation>

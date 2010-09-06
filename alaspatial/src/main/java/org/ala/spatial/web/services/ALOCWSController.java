@@ -147,6 +147,12 @@ public class ALOCWSController {
 
             pid = Long.toString(currTime);
             AnalysisJobAloc aja = new AnalysisJobAloc(pid, currentPath, envList, Integer.parseInt(groupCount), region, filter);
+            StringBuffer inputs = new StringBuffer();
+            inputs.append("pid:").append(pid);
+            inputs.append(";gc:").append(groupCount);
+            inputs.append(";area:").append(area);
+            inputs.append(";envlist:").append(req.getParameter("envlist"));
+            aja.setInputs(inputs.toString());
             AnalysisQueue.addJob(aja);
             
         } catch (Exception e) {

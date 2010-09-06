@@ -24,6 +24,7 @@ import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
 import org.apache.log4j.Logger;
+import org.zkoss.zk.ui.event.Events;
 
 /**
  *
@@ -187,6 +188,11 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void refreshCount() {
+        results_label2.setValue("    [Updating...]");
+        Events.echoEvent("onRefreshCount", this, null);
+    }
+
+    public void onRefreshCount(Event e) throws Exception {
         //check if tab is open        
         if (!isTabOpen() || !updateParameters()) {
             return;
@@ -222,8 +228,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             } else {
                 mapspecies.setVisible(false);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -270,6 +276,10 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onClick$mapspecies() {
             results_label_extra.setValue("    [Mapping...]");
+            Events.echoEvent("onMapSpecies", this, null);
+    }
+
+    public void onMapSpecies(Event event){
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(SAT_URL);
         }

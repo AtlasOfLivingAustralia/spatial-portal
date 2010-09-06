@@ -494,7 +494,7 @@ public class GridCutter {
         double ymax = Double.MIN_VALUE;
         if(envelopes != null){
             for (LayerFilter lf : envelopes) {
-                Grid g = Grid.getGrid(TabulationSettings.getPath(lf.layer.name));
+                Grid g = new Grid(TabulationSettings.getPath(lf.layer.name));
                 if (xmin > g.xmin) {
                     xmin = g.xmin;
                 }

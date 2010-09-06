@@ -56,6 +56,8 @@ public class AnalysisJobAloc extends AnalysisJob {
 
         AlocService.run(filename, layers, numberOfGroups, region, envelope, getName(),this);
 
+        if(isCancelled()) return;
+        
         exportResults();
 
         long end = System.currentTimeMillis();
@@ -65,8 +67,6 @@ public class AnalysisJobAloc extends AnalysisJob {
 
         //write out infor for adjusting input parameters
         System.out.println("ALOC:" + cells + "," + numberOfGroups + "," + layers.length + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]) + " " + (end - stageTimes[3]));
-
-
     }
 
     void exportResults(){
@@ -130,6 +130,7 @@ public class AnalysisJobAloc extends AnalysisJob {
         if(getProgress() == 0) return 0;
 
         long timeElapsed;
+        long t1=0, t2=0, t3=0, t4=0;
         double prog;
         synchronized(progress){
            timeElapsed = progressTime - stageTimes[getStage()];
@@ -139,34 +140,38 @@ public class AnalysisJobAloc extends AnalysisJob {
 
         if(stage <= 0){ //data load; 0 to 0.2
             if(prog > 0){
-
-                timeRemaining += timeElapsed * (.2 - prog)/prog ; //projected
-            } else {
-                timeRemaining +=  cells * 0.002* layers.length ; //default
+                t1 = (long) (timeElapsed * (.2 - prog)/prog ); //projected
+            }
+            if(t1<=0 || prog <= 0){
+                t1 = (long) (cells * TabulationSettings.aloc_timing_0 * layers.length); //default
             }
         } 
         if(stage <= 1){ //seeding; 0.2 to 0.3
             if(prog > 0.2){
-                timeRemaining += timeElapsed * (.1 - (prog-.2))/(prog-.2) ;   //projected
-            } else {
-                timeRemaining += (cells / 20000) * layers.length * numberOfGroups; //default
+                t2 = (long) (timeElapsed * (.1 - (prog-.2))/(prog-.2)) ;   //projected
+            }
+            if(t2<=0 || prog <= 0.2){
+                t2 = (long) (cells * TabulationSettings.aloc_timing_1 * layers.length * numberOfGroups); //default
             }
         } 
         if(stage <= 2){ //iterations; 0.3 to 0.9            
             if(prog > 0.3){
-                timeRemaining +=  timeElapsed  * (.6 - (prog-.3))/(prog-.3);   //projected
-            } else {
-                timeRemaining += numberOfGroups * Math.sqrt(layers.length) * cells / 2000 + 7000; //default
+                t3 = (long) (timeElapsed  * (.6 - (prog-.3))/(prog-.3));   //projected
+            }
+            if(t3<=0 || prog <= 0.3){
+                t3 = (long) (cells * Math.sqrt(numberOfGroups) * Math.sqrt(layers.length) * TabulationSettings.aloc_timing_2); //default
             }
         } 
         if(stage <= 3){ //transforming data; 0.9 to 1.0
             if(prog > 0.9){
-                timeRemaining += timeElapsed  * (.1 - (prog-.9))/(prog-.9); //projected
-            } else {
-                timeRemaining += 2000; //default
+                t4 = (long) (timeElapsed  * (.1 - (prog-.9))/(prog-.9)); //projected
+            }
+            if(t4<=0 || prog <= 0.9){
+                t4 = (long) (2000 * TabulationSettings.aloc_timing_3); //default
             }
         }
-        
+
+        timeRemaining = t1 + t2 + t3 + t4;
         return smoothEstimate(timeRemaining);
     }
     
@@ -197,12 +202,12 @@ public class AnalysisJobAloc extends AnalysisJob {
             } else {    //transforming data; 0.9 to 1.0
                 msg =  "Exporting results, ";
             }
-            return msg + "est remaining=" + Math.round(getEstimate()/1000) + "s";
+            return msg + "est remaining: " + getEstimateInMinutes() + " min";
         } else {
-            if(stage == -1){
-                return "not started, est=" + Math.round(getEstimate()/1000) + "s";
+            if (stage == -1) {
+                return "not started, est: " + getEstimateInMinutes() + " min";
             } else {
-                return "finished, total run time=" + Math.round(getRunTime()/1000) + "s";
+                return "finished, total run time=" + Math.round(getRunTime() / 1000) + "s";
             }
         }
     }

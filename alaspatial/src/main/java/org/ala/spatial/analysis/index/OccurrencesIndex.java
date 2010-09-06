@@ -24,6 +24,8 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.BitSet;
 import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -130,6 +132,32 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * for frequent use
      */
     static double[][] all_points = null;
+
+    public static String getCommonNames(String name) {
+        TreeSet<Integer> ss = new TreeSet<Integer>();
+        StringBuffer sb = new StringBuffer();
+        String nameLowerCase = name.toLowerCase();
+        for(int i=0;i<common_names_indexed.length;i++){
+            if(common_names_indexed[i].nameLowerCase.contains(nameLowerCase)){
+                //determine if index already present, add if missing
+                int s1 = ss.size();
+                ss.add(common_names_indexed[i].index);
+                if(ss.size() > s1){
+                    String sn = single_index[common_names_indexed[i].index].name;
+                    sn = sn.substring(0, 1).toUpperCase() + sn.substring(1).toLowerCase();
+                    sb.append(common_names_indexed[i].name)
+                            .append(" / Scientific name: ")
+                            .append(sn)
+                            .append(" / found ")
+                            .append(single_index[common_names_indexed[i].index].record_end -
+                                single_index[common_names_indexed[i].index].record_start + 1)
+                            .append("\n");
+                }
+            }
+        }
+        return sb.toString();
+    }
+
     /**
      * all occurrences data
      */
@@ -178,6 +206,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * list of common names against species names
      */
     static String [] common_names;
+    /**
+     * sorted list of common names and reference to single_index row in file_pos
+     */
+    static CommonNameRecord [] common_names_indexed;
 
     /**
      * default constructor
@@ -781,7 +813,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             System.out.println("\r\nsorted columns: " + countOfIndexed);
 
             String[] last_value = new String[countOfIndexed];
-            int[] last_position = new int[countOfIndexed];
+            long[] last_position = new long[countOfIndexed];
             int[] last_record = new int[countOfIndexed];
 
             for (i = 0; i < countOfIndexed; i++) {
@@ -790,7 +822,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 last_record[i] = 0;
             }
 
-            int filepos = 0;
+            long filepos = 0;
             int recordpos = 0;
 
             int idColumn = (new OccurrencesFieldsUtil()).onetwoCount;
@@ -1212,6 +1244,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
     
         loadCommonNames();  //done last since dependant on indexed records
+        loadCommonNamesIndex();  //done last since dependant on indexed records
 
         /* setup species_to_family idx */
         //TODO: speedup by pregenerating
@@ -1395,6 +1428,77 @@ public class OccurrencesIndex implements AnalysisIndexService {
             e.printStackTrace();
         }
     }
+    /**
+     * loads common names index (common name with file_pos == single_index position)
+     */
+    static void loadCommonNamesIndex() {
+        try {
+            ArrayList<CommonNameRecord> cn = new ArrayList<CommonNameRecord>(single_index.length);
+
+            //load the common names file (csv), populate common_names as it goes
+            BufferedReader br = new BufferedReader(
+                    new FileReader(TabulationSettings.common_names_csv));
+
+            String s;
+            String [] sa;
+            int i;
+            int max_columns = 0;
+
+            int count= 0;
+            while ((s = br.readLine()) != null) {
+                sa = s.split(",");
+
+                /* handlers for the text qualifiers and ',' in the middle */
+                if (sa != null && max_columns == 0) {
+                    max_columns = sa.length;
+                }
+                if (sa != null && sa.length > max_columns) {
+                    sa = split(s);
+                }
+
+                /* remove quotes and commas form terms */
+                for (i = 0; i < sa.length; i++) {
+                    if (sa[i].length() > 0) {
+                        sa[i] = sa[i].replace("\"", "");
+                        sa[i] = sa[i].replace(",", " ");
+                    }
+                }
+
+                //find scientific name pos
+                IndexedRecord lookfor = new IndexedRecord(sa[0].toLowerCase(), 0, 0, 0, 0, (byte) -1);
+
+                int pos = java.util.Arrays.binarySearch(single_index,
+                    lookfor,
+                    new Comparator<IndexedRecord>() {
+                        public int compare(IndexedRecord r1, IndexedRecord r2) {
+                            return r1.name.toLowerCase().compareTo(r2.name);
+                        }
+                    });
+
+                if (pos >= 0 && pos < single_index.length) {
+                    cn.add(new CommonNameRecord(sa[1].replace(',', ';'),pos));
+                    count++;
+                }
+            }
+            
+            //copy
+            common_names_indexed = new CommonNameRecord[cn.size()];
+            cn.toArray(common_names_indexed);
+            
+            //sort
+            java.util.Arrays.sort(common_names_indexed,
+                    new Comparator<CommonNameRecord>() {
+                        public int compare(CommonNameRecord r1, CommonNameRecord r2) {
+                            return r1.nameLowerCase.compareTo(r2.nameLowerCase);
+                        }
+                    });
+
+            System.out.println("common name index finds: " + count);
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
     
 
     /**
@@ -1464,6 +1568,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             return lines;
         } catch (Exception e) {
             (new SpatialLogger()).log("getSortedRecords", e.toString());
+            e.printStackTrace();
         }
 
         return null;
@@ -1478,9 +1583,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param file_end  one more than last character to return
      * @return each record between first and end character positions, split by new line as String[]
      */
-    public static String[] getSortedRecords(int file_start, int file_end) {
+    public static String[] getSortedRecords(long file_start, long file_end) {
         try {
-            byte[] data = new byte[file_end - file_start];
+            byte[] data = new byte[(int)(file_end - file_start)];
             FileInputStream fis = new FileInputStream(
                     TabulationSettings.index_path
                     + SORTED_FILENAME);
@@ -1491,6 +1596,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             return (new String(data)).split("\n");		//convert to string
         } catch (Exception e) {
             (new SpatialLogger()).log("getSortedRecords", e.toString());
+            e.printStackTrace();
         }
 
         return null;
@@ -1505,9 +1611,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param file_end one more than last character to return
      * @return each record between first and end character positions, as String
      */
-    public static String getSortedRecordsString(int file_start, int file_end) {
+    public static String getSortedRecordsString(long file_start, long file_end) {
         try {
-            byte[] data = new byte[file_end - file_start];
+            byte[] data = new byte[(int)(file_end - file_start)];
             FileInputStream fis = new FileInputStream(
                     TabulationSettings.index_path
                     + SORTED_FILENAME);
@@ -1518,6 +1624,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
             return (new String(data));		//convert to string
         } catch (Exception e) {
             (new SpatialLogger()).log("getSortedRecords", e.toString());
+            System.out.println(file_start + " to " + file_end);
+            e.printStackTrace();
         }
 
         return null;
@@ -2390,7 +2498,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             speciesSortByRecordNumber = all_indexes.get(all_indexes.size() - 1).clone();
 
             //preserve original order in a secondary list, to be returned
-            int[] tmp = new int[speciesSortByRecordNumber.length];
+            long[] tmp = new long[speciesSortByRecordNumber.length];
             int i;
             for (i = 0; i < speciesSortByRecordNumber.length; i++) {
                 tmp[i] = speciesSortByRecordNumber[i].file_end;
@@ -2406,13 +2514,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     });
 
             //return value to borrowed variable
-            int t;
+            long t;
             speciesSortByRecordNumberOrder = new int[speciesSortByRecordNumber.length];
             for (i = 0; i < speciesSortByRecordNumber.length; i++) {
                 t = speciesSortByRecordNumber[i].file_end;
-                speciesSortByRecordNumber[i].file_end = tmp[t];
+                speciesSortByRecordNumber[i].file_end = tmp[(int)t];
 
-                speciesSortByRecordNumberOrder[i] = t;
+                speciesSortByRecordNumberOrder[i] = (int)t;
             }
         }
     }
@@ -2559,6 +2667,18 @@ class Point extends Object {
         longitude = longitude_;
         latitude = latitude_;
         idx = idx_;
+    }
+}
+
+class CommonNameRecord {
+    public String name;
+    public String nameLowerCase;
+    public int index;
+
+    public CommonNameRecord(String name_, int index_){
+        name = name_;
+        index = index_;
+        nameLowerCase = name_.toLowerCase();
     }
 }
 

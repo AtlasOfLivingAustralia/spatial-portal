@@ -189,6 +189,26 @@ public class TabulationSettings {
      * maximum number of whole grids that can be loaded into memory
      */
     public static int max_grids_load;
+
+    /**
+     * number of threads available to analysis
+     */
+    public static int analysis_threads;
+
+    /**
+     * aloc timings
+     */
+    public static double aloc_timing_0;
+    public static double aloc_timing_1;
+    public static double aloc_timing_2;
+    public static double aloc_timing_3;
+
+    /**
+     * maxent timings
+     */
+     public static double maxent_timing_0;
+     public static double maxent_timing_1;
+     public static double maxent_timing_2;
     
 	/**
 	 * loads settings form name of the appropriate xml resource file
@@ -390,6 +410,17 @@ public class TabulationSettings {
                 jobs_maximum = Integer.parseInt(xr.getValue("jobs_maximum"));
 
                 max_grids_load = Integer.parseInt(xr.getValue("max_grids_load"));
+
+                analysis_threads = Integer.parseInt(xr.getValue("analysis_threads"));
+
+                aloc_timing_0 = Double.parseDouble(xr.getValue("aloc_timing_0"));
+                aloc_timing_1 = Double.parseDouble(xr.getValue("aloc_timing_1"));
+                aloc_timing_2 = Double.parseDouble(xr.getValue("aloc_timing_2"));
+                aloc_timing_3 = Double.parseDouble(xr.getValue("aloc_timing_3"));
+
+                maxent_timing_0 = Double.parseDouble(xr.getValue("maxent_timing_0"));
+                maxent_timing_1 = Double.parseDouble(xr.getValue("maxent_timing_1"));
+                maxent_timing_2 = Double.parseDouble(xr.getValue("maxent_timing_2"));
 	}
 
         static public String getPath(String layerName){

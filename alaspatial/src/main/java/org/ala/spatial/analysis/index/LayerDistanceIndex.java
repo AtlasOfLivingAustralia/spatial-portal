@@ -76,7 +76,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
         //do distance calculations in blocks to reduce grids being loaded
         (new SpatialLogger()).log("calculating distances");
         ArrayList<int[]> comparisons = new ArrayList<int[]>();
-        int inc = TabulationSettings.max_grids_load - Runtime.getRuntime().availableProcessors();
+        int inc = TabulationSettings.max_grids_load - TabulationSettings.analysis_threads;
         for (int span = 0; span < layers.length; span += inc){
             for (int j = span; j < layers.length; j++) {
                 for (int i = span; i < span + inc && i < layers.length; i++) {
@@ -92,7 +92,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
         
         LinkedBlockingQueue<int[]> lbq = new LinkedBlockingQueue(comparisons);
         
-        int threadcount = Runtime.getRuntime().availableProcessors();
+        int threadcount = TabulationSettings.analysis_threads;
         CalculateDistanceThread [] cdts = new CalculateDistanceThread[threadcount];
         for(int i = 0; i<cdts.length;i++){
             cdts[i] = new CalculateDistanceThread(lbq, range, min, measures, layers);

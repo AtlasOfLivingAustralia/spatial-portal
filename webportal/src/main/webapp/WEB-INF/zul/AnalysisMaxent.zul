@@ -29,6 +29,7 @@
             </tabs>
              <toolbar>
                 <button  label="Produce model" onClick="maxentwindow.produce();" sclass="goButton"></button>
+                <button  label="Previous model" onClick="maxentwindow.previousModel();" sclass="goButton"></button>
                 </toolbar>
             <tabpanels>
                 <tabpanel>
