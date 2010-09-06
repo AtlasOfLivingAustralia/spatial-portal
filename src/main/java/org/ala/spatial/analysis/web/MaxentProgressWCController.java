@@ -18,7 +18,7 @@ import org.zkoss.zul.Timer;
  *
  * @author ajay
  */
-public class ALOCProgressWCController extends UtilityComposer {
+public class MaxentProgressWCController extends UtilityComposer {
 
     private static final String SAT_URL = "sat_url";
     Label jobstatus;
@@ -28,7 +28,7 @@ public class ALOCProgressWCController extends UtilityComposer {
     public String pid = null;
     private String satServer = "";
     private SettingsSupplementary settingsSupplementary = null;
-    public ALOCWCController parent = null;
+    public MaxentWCController parent = null;
 
     @Override
     public void afterCompose() {
@@ -58,7 +58,7 @@ public class ALOCProgressWCController extends UtilityComposer {
         String s = get("state");
         if(s.equals("job does not exist")){
             timer.stop();
-            getMapComposer().showMessage("Classification request does not exist","");//get("error"));
+            getMapComposer().showMessage("Prediction request does not exist","");//get("error"));
             this.detach();
             return;
         }
@@ -78,14 +78,13 @@ public class ALOCProgressWCController extends UtilityComposer {
             this.detach();
         } else if(s.equals("FAILED")) {
             timer.stop();
-            getMapComposer().showMessage("Classification failed","");//get("error"));
+            getMapComposer().showMessage("Prediction failed",get("error"));
             this.detach();
         } else if(s.equals("CANCELLED")){
             timer.stop();
-            getMapComposer().showMessage("Classification cancelled by user");
+            getMapComposer().showMessage("Prediction cancelled by user");
             this.detach();
         }
-
     }
 
     String get(String type) {

@@ -1,9 +1,9 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
-<window id="alocprogress" title="Classification" border="normal"
-    use="org.ala.spatial.analysis.web.ALOCProgressWCController"
-            apply="org.ala.spatial.analysis.web.ALOCProgressWCController"
+<window id="maxentprogress" title="Prediction" border="normal"
+    use="org.ala.spatial.analysis.web.MaxentProgressWCController"
+            apply="org.ala.spatial.analysis.web.MaxentProgressWCController"
             closable="false" mode="embedded" width="320px">
 
             <separator />
@@ -13,9 +13,8 @@
             <separator />
             <timer id="timer" delay="10000" repeats="true" />
             <separator />
-            <hbox  visible="false"><label value="Reference number" /> <textbox readonly="true" id="tbPid" /> </hbox>
+            <hbox visible="false"><label value="Reference number" /> <textbox readonly="true" id="tbPid" /> </hbox>
             <separator />
-            <button id="btnHide" label="continue" />
-            <button id="btnCancel" label="cancel" />
+            <button id="btnHide" label="continue" /> <button id="btnCancel" label="cancel" />
     </window>
 </zk>

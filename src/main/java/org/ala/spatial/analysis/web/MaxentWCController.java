@@ -25,6 +25,7 @@ import org.zkoss.zhtml.Iframe;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.InputEvent;
@@ -45,6 +46,7 @@ import org.zkoss.zul.Window;
 import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Comboitem;
 
 /**
@@ -86,6 +88,9 @@ public class MaxentWCController extends UtilityComposer {
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
+    private String pid;
+    String taxon;
+
     //Checkbox useArea;
     //String previousArea = "";
 
@@ -287,7 +292,7 @@ public class MaxentWCController extends UtilityComposer {
 
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/processgeo?");
+            sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/processgeoq?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
@@ -324,50 +329,114 @@ public class MaxentWCController extends UtilityComposer {
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
+            pid = get.getResponseBodyAsString();
+            this.taxon = taxon;
 
-            System.out.println("Got response from MaxentWSController: \n" + slist);
-
-            String[] maxentresponse = slist.split(";");
-            String[] status = maxentresponse[0].split(":");
-            String[] pid = maxentresponse[1].split(":");
-            String[] info = maxentresponse[2].split(":");
-
-            this.status.setValue("Status: " + status[1]);
-            if (status[1].equalsIgnoreCase("success")) {
-                String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid[1] + "&styles=alastyles&FORMAT=image%2Fpng";
-
-                String legendurl = geoServer
-                        + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
-                        + "&LAYER=ALA:species_" + pid[1]
-                        + "&STYLE=alastyles";
-
-                System.out.println(legendurl);
-
-                //get the current MapComposer instance
-                //MapComposer mc = getThisMapComposer();
-
-                mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5, "", legendurl);
-
-                if (info.length == 2) {
-                    infourl.setValue("Show process information");
-                    showInfoWindow(info[1]);
-                }
-
-                infourl.setValue(info[1]);
-                btnInfo.setVisible(true);
-
-            } else {
-                Messagebox.show("Unable to process Maxent", "Maxent", Messagebox.OK, Messagebox.INFORMATION);
-            }
+            openProgressBar();
 
             //Messagebox.show(msg, "Maxent", Messagebox.OK, Messagebox.INFORMATION);
         } catch (Exception e) {
             System.out.println("Maxent error: ");
             e.printStackTrace(System.out);
         }
+    }
+    Window wInputBox;
+    public void previousModel(){
+        wInputBox = new Window("Enter reference number", "normal", false);
+        wInputBox.setWidth("300px");
+        wInputBox.setClosable(true);
+        Textbox t = new Textbox();
+        t.setId("txtBox");
+        t.setWidth("280px");
+        t.setParent(wInputBox);
+        Button b = new Button();
+        b.setLabel("Ok");
+        b.addEventListener("onClick", new EventListener() {
+                public void onEvent(Event event) throws Exception {
+                    pid = ((Textbox)wInputBox.getFellow("txtBox")).getValue();
+                    taxon = "";
+                    openProgressBar();
+                    wInputBox.detach();
+                }
+            });
+        b.setParent(wInputBox);
+        wInputBox.setParent(getMapComposer().getFellow("mapIframe").getParent());
+        wInputBox.setPosition("top,center");
+        try {
+            wInputBox.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    void openProgressBar(){
+        if(maxentInfoWindow != null){
+            maxentInfoWindow.detach();
+        }
+        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
+        window.parent = this;
+        window.start(pid);
+        try{
+            window.doModal();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
+    String getJob(String type) {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+
+            System.out.println(sbProcessUrl.toString());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            System.out.println(slist);
+            return slist;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public void loadMap(){
+        String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+
+        String legendurl = geoServer
+                + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "&LAYER=ALA:species_" + pid
+                + "&STYLE=alastyles";
+
+        System.out.println(legendurl);
+
+        //get job inputs
+        try{
+            for(String s : getJob("inputs").split(";")) {
+                if(s.startsWith("taxon")){
+                    taxon = s.split(":")[1];
+                    break;
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        if(taxon == null){
+            taxon = "species";
+        }
+
+        mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5, "", legendurl);
+
+        infourl.setValue("Show process information");
+        showInfoWindow("/output/maxent/" + pid + "/species.html");
+
+        infourl.setValue("/output/maxent/" + pid + "/species.html");
+        btnInfo.setVisible(true);
     }
 
     public void onClick$btnInfo(Event event) {

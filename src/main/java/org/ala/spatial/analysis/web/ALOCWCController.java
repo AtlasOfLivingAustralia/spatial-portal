@@ -23,6 +23,7 @@ import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
@@ -38,6 +39,7 @@ import org.zkoss.zul.Intbox;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Toolbarbutton;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -333,6 +335,46 @@ public class ALOCWCController extends UtilityComposer {
         }
     }
 
+    Window wInputBox;
+    public void onClick$previousModel(Event event){
+        wInputBox = new Window("Enter reference number", "normal", false);
+        wInputBox.setWidth("300px");
+        wInputBox.setClosable(true);
+        Textbox t = new Textbox();
+        t.setId("txtBox");
+        t.setWidth("280px");
+        t.setParent(wInputBox);
+        Button b = new Button();
+        b.setLabel("Ok");
+        b.addEventListener("onClick", new EventListener() {
+                public void onEvent(Event event) throws Exception {
+                    pid = ((Textbox)wInputBox.getFellow("txtBox")).getValue();
+                    openProgressBar();
+                    wInputBox.detach();
+                }
+            });
+        b.setParent(wInputBox);
+        wInputBox.setParent(getMapComposer().getFellow("mapIframe").getParent());
+        wInputBox.setPosition("top,center");
+        try {
+            wInputBox.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void openProgressBar(){
+        ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", this, null);
+            window.parent = this;
+            window.start(pid);
+            try{
+                window.doModal();
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+    }
+
     /**
      * Gets the main pages controller so we can add a
      * layer to the map
@@ -406,20 +448,56 @@ public class ALOCWCController extends UtilityComposer {
             return d;
         }
 
+    String getJob(String type) {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+
+            System.out.println(sbProcessUrl.toString());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            System.out.println(slist);
+            return slist;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     public void loadMap() {
         String uri = satServer + "/alaspatial/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();
-        /*bbox.add(112.0);
-        bbox.add(-44.0000000007);
-        bbox.add(154.00000000084);
-        bbox.add(-9.0);*/
+        
         double [] d = getExtents();
         bbox.add(d[2]);
         bbox.add(d[3]);
         bbox.add(d[4]);
         bbox.add(d[5]);
+
+        //get job inputs
+        try{
+            for(String s : getJob("inputs").split(";")) {
+                if(s.startsWith("gc")){
+                    layerLabel = "Classification #" + generation_count + " - " + s.split(":")[1] + " groups";
+                    generation_count++;
+                    break;
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        if(layerLabel == null){
+            layerLabel = "Classification #" + generation_count;
+            generation_count++;
+        }
 
         mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);
         MapLayer mapLayer = mc.getMapLayer(layerLabel);

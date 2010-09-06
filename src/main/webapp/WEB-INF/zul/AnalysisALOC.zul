@@ -27,6 +27,7 @@
             </tabs>
             <toolbar>
                 <button  label="Produce classification" onClick="alocwindow.produce()" sclass="goButton"></button>
+                <button  label="Previous classification" id="previousModel" sclass="goButton"></button>
                 </toolbar>
             <tabpanels>
                 <tabpanel>
