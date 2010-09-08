@@ -314,33 +314,35 @@ function buildMapReal() {
     //addLine DrawingLayer("ocean_east_aus_temp/temp","http://emii3.its.utas.edu.au/ncWMS/wms");
 
     // create a new event handler for single click query
-    clickEventHandler = new OpenLayers.Handler.Click({
-        'map': map
-    }, {
-        'click': function(e) {
-            getpointInfo(e);
-            mkpopup(e);
-        }
-    });
-    clickEventHandler.activate();
-    clickEventHandler.fallThrough = false;
-
-    // cursor mods
-    map.div.style.cursor="pointer";
-    jQuery("#navtoolbar div.olControlZoomBoxItemInactive ").click(function(){
-        map.div.style.cursor="crosshair";
-        clickEventHandler.deactivate();
-    });
-    jQuery("#navtoolbar div.olControlNavigationItemActive ").click(function(){
-        map.div.style.cursor="pointer";
-        clickEventHandler.activate();
-        setVectorLayersSelectable();
-    });
+//    clickEventHandler = new OpenLayers.Handler.Click({
+//        'map': map
+//    }, {
+//        'click': function(e) {
+//            getpointInfo(e);
+//            mkpopup(e);
+//        }
+//    });
+//    clickEventHandler.activate();
+//    clickEventHandler.fallThrough = false;
+//
+//    // cursor mods
+//    map.div.style.cursor="pointer";
+//    jQuery("#navtoolbar div.olControlZoomBoxItemInactive ").click(function(){
+//        map.div.style.cursor="crosshair";
+//        clickEventHandler.deactivate();
+//    });
+//    jQuery("#navtoolbar div.olControlNavigationItemActive ").click(function(){
+//        map.div.style.cursor="pointer";
+//        clickEventHandler.activate();
+//        setVectorLayersSelectable();
+//    });
 
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
         Event.stop(e);
     });
+
+    
 
 }
 
@@ -431,16 +433,44 @@ function addFeatureSelectionTool() {
     //    areaSelectControl.activate();
     removeAreaSelection();
     areaSelectOn = true;
-    //    clickEventHandler = new OpenLayers.Handler.Click({
-    //        'map': map
-    //    }, {
-    //        'click': function(e) {
-    //            getpointInfo(e);
-    //            mkpopup(e);
-    //        }
-    //    });
-    //    clickEventHandler.activate();
-    //    clickEventHandler.fallThrough = false;
+//        clickEventHandler = new OpenLayers.Handler.Click({
+//            'map': map
+//        }, {
+//            'click': function(e) {
+//                getpointInfo(e);
+//                mkpopup(e);
+//            }
+//        });
+//        clickEventHandler.activate();
+//        clickEventHandler.fallThrough = false;
+        //////////////
+           OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
+            defaultHandlerOptions: {
+                'single': true,
+                'double': false,
+                'pixelTolerance': 0,
+                'stopSingle': false,
+                'stopDouble': false
+            },
+
+            initialize: function(options) {
+                this.handlerOptions = OpenLayers.Util.extend(
+                    {}, this.defaultHandlerOptions
+                );
+                OpenLayers.Control.prototype.initialize.apply(
+                    this, arguments
+                );
+                this.handler = new OpenLayers.Handler.Click(
+                    this, {
+                        'click': function(evt){alert('map clicked');}
+                    }, this.handlerOptions
+                );
+            }
+        });
+        var mapClickControl = new OpenLayers.Control.Click();
+        map.addControl(mapClickControl);
+        mapClickControl.activate();
+        ////////////
     //  setVectorLayersSelectable();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
@@ -1107,7 +1137,7 @@ function removeDeselectedLayers(layerIds) {
 /*---------------*/
 
 function getpointInfo(e) {
-
+ alert("now here");
     tmp_response = '';
     timeSeriesPlotUri = null;
     layername = new Object();

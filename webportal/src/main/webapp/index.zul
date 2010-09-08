@@ -97,6 +97,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             return result;
             }
 
+             function setSearchPoint(lon,lat) {
+                if (setSearchPointAnalysis != undefined) {
+                    setSearchPointAnalysis(lon,lat)
+                }
+            }
+
             function setExtent() {
 
 

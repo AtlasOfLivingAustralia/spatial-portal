@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.value.BoundingBox;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
@@ -17,8 +18,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import java.lang.String;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -30,8 +33,13 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
+import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -42,6 +50,7 @@ import org.zkoss.zk.ui.HtmlMacroComponent;
 
 
 import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -65,6 +74,8 @@ import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 
+
+
 /**
  *
  * @author Angus
@@ -74,6 +85,7 @@ public class SelectionController extends UtilityComposer {
     private static final String SAT_URL = "sat_url";
     private static final String GEOSERVER_URL = "geoserver_url";
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
+    private Textbox searchPoint;
     private Textbox selectionGeom;
     private Textbox boxGeom;
     private Textbox displayGeom;
@@ -226,6 +238,8 @@ public class SelectionController extends UtilityComposer {
         mc.removeFromList(mc.getMapLayer("Active Area"));
         lastTool = null;
     }
+
+
 
     public void onChange$cbAreaSelection() {
         lastTool = cbAreaSelection.getSelectedItem();
@@ -383,6 +397,78 @@ public class SelectionController extends UtilityComposer {
         }
 
     }
+
+    /**
+     * Searches the gazetter at a given point and then maps the polygon feature 
+     * found at the location (for the current top contextual layer).
+     * @param event triggered by the usual javascript trickery
+     */
+    public void onChange$searchPoint(Event event) {
+            String lon = searchPoint.getValue().split(",")[0];
+            String lat = searchPoint.getValue().split(",")[1];
+            Object llist = Sessions.getCurrent().getAttribute("layerlist");
+            JSONArray layerlist = JSONArray.fromObject(llist);
+            MapComposer mc = getThisMapComposer();
+
+            for (int i = 0; i < layerlist.size(); i++) {
+                JSONObject jo = layerlist.getJSONObject(i);
+                if (jo.getString("type").equalsIgnoreCase("contextual")) {
+                    System.out.println("********" + jo.getString("name"));
+                    if (mc.getMapLayer(jo.getString("displayname")) != null) {
+                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"));
+                        //add feature to the map as a new layer
+
+                        String json = readGeoJSON(featureURI);
+                        String wkt = wktFromJSON(json);
+                        if (wkt.contentEquals("none"))
+                            break;
+                        else {
+                            displayGeom.setValue(wkt);
+                            MapLayer mapLayer = mc.addWKTLayer(wkt,"Active Area");
+                            break;
+                        }
+                    }
+                }
+            }
+    }
+
+    private String wktFromJSON(String json) {
+        try {
+        JSONObject obj = JSONObject.fromObject(json);
+
+         String coords = obj.getJSONArray("geometries").getJSONObject(0).getString("coordinates");
+        
+        String wkt = coords.replace("],[", "*").replace(",", " ").replace("*",",").replace("[[[[", "POLYGON((").replace("]]]]","))");
+        return wkt;
+        }
+        catch (JSONException e) {
+            return "none";
+        }
+    }
+
+    private String readGeoJSON(String feature) {
+      StringBuffer content = new StringBuffer();
+
+		try {
+	        // Construct data
+
+	        // Send data
+	        URL url = new URL(feature);
+	        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+	              conn.connect();
+
+	        // Get the response
+	        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+	        String line;
+	        while ((line = rd.readLine()) != null) {
+	           content.append(line);
+	    }
+		conn.disconnect();
+	  } catch (Exception e) {    }
+          return content.toString();
+	}
+
+
 
     /**
      * 

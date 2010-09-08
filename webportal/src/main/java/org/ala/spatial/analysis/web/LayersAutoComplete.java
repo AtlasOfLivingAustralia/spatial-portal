@@ -20,7 +20,7 @@ import org.zkoss.zul.Comboitem;
  */
 public class LayersAutoComplete extends Combobox {
 
-    private static String SAT_SERVER = "http://localhost:8080"; // "http://spatial-dev.ala.org.au"
+    private static String SAT_SERVER = "http://spatial-dev.ala.org.au";
 
     public LayersAutoComplete() {
         refresh(""); //init the child comboitems
