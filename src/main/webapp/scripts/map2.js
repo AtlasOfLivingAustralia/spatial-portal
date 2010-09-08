@@ -42,6 +42,7 @@ var currentBaseLayer = null;
 
 var selectionLayers = new Array();
 
+var mapClickControl;
 var polygonControl = null;
 var radiusControl = null;  //for deactivate after drawing
 var boxControl = null;	//for deactivate after drawing
@@ -294,31 +295,22 @@ function buildMapReal() {
     parent.bLayer = bLayer;
     parent.bLayer2 = bLayer2;
 
-    var dem = new OpenLayers.Layer.WMS( "ALA - dem9s",
-        "http://spatial-dev.ala.org.au/geoserver/wms", {
-            layers: 'ALA:dem-9s',
-            transparent:true
-        }, {
-            'opacity': 0.4,
-            visibility: true,
-            'isBaseLayer': false,
-            'wrapDateLine': true
-        } );
+
 
     //map.addLayer(dem);
     loadBaseMap();
 
     // create a new event handler for single click query
-    clickEventHandler = new OpenLayers.Handler.Click({
-        'map': map
-    }, {
-        'click': function(e) {
-            getpointInfo(e);
-            mkpopup(e);
-        }
-    });
-    clickEventHandler.activate();
-    clickEventHandler.fallThrough = false;
+//    clickEventHandler = new OpenLayers.Handler.Click({
+//        'map': map
+//    }, {
+//        'click': function(e) {
+//            getpointInfo(e);
+//            mkpopup(e);
+//        }
+//    });
+//    clickEventHandler.activate();
+//    clickEventHandler.fallThrough = false;
 
     // cursor mods
     map.div.style.cursor="pointer";
@@ -401,16 +393,45 @@ function addFeatureSelectionTool() {
     //    areaSelectControl.activate();
     removeAreaSelection();
     areaSelectOn = true;
-    //    clickEventHandler = new OpenLayers.Handler.Click({
-    //        'map': map
-    //    }, {
-    //        'click': function(e) {
-    //            getpointInfo(e);
-    //            mkpopup(e);
-    //        }
-    //    });
-    //    clickEventHandler.activate();
-    //    clickEventHandler.fallThrough = false;
+//    clickEventHandler = new OpenLayers.Handler.Click({
+//        'map': map
+//    }, {
+//        'click': function(e) {
+//            getpointInfo(e);
+//            mkpopup(e);
+//        }
+//    });
+//    clickEventHandler.activate();
+//    clickEventHandler.fallThrough = false;
+//    alert("here");
+
+     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
+            defaultHandlerOptions: {
+                'single': true,
+                'double': false,
+                'pixelTolerance': 0,
+                'stopSingle': false,
+                'stopDouble': false
+            },
+
+            initialize: function(options) {
+                this.handlerOptions = OpenLayers.Util.extend(
+                    {}, this.defaultHandlerOptions
+                );
+                OpenLayers.Control.prototype.initialize.apply(
+                    this, arguments
+                );
+                this.handler = new OpenLayers.Handler.Click(
+                    this, {
+                        'click': pointSearch
+                    }, this.handlerOptions
+                );
+            }
+        });
+        mapClickControl = new OpenLayers.Control.Click();
+        map.addControl(mapClickControl);
+        mapClickControl.activate();
+        ///////////////////
     //  setVectorLayersSelectable();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
@@ -421,6 +442,11 @@ function addFeatureSelectionTool() {
     });
     featureSelectLayer.setVisibility(true);
     map.addLayer(featureSelectLayer);
+}
+
+function pointSearch(e) {
+    var lonlat = map.getLonLatFromViewPortPx(e.xy);
+    parent.setSearchPoint(lonlat);
 }
 
 function addRadiusDrawingTool() {
@@ -547,6 +573,10 @@ function removeAreaSelection() {
         }
     }
 
+    if(mapClickControl != null) {
+        mapClickControl.deactivate();
+        map.removeControl(mapClickControl);
+    }
 }
 
 //function addPolygonDrawingToolFiltering() {

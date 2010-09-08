@@ -55,6 +55,7 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
             return json;
         } catch (IOException iox) {
             logger.debug(iox.toString());
+            
         }
         return "fail";
 

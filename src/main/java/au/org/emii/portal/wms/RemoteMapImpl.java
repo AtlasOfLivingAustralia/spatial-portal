@@ -349,6 +349,8 @@ public class RemoteMapImpl implements RemoteMap {
         geoJSON.setEnvColour(rgbColour);
 
         geoJSON.setType(layerUtilities.GEOJSON);
+        System.out.println("getting json .... " + uri);
+       
         geoJSON.setGeoJSON(geoJSONUtilities.getJson(uri));
 
         //lets parse the json to find out what type of feature it is
