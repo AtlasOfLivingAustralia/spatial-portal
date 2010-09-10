@@ -9,6 +9,9 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.WMSStyle;
+import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ala.spatial.util.LayersUtil;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -497,6 +500,12 @@ public class ALOCWCController extends UtilityComposer {
         if(layerLabel == null){
             layerLabel = "Classification #" + generation_count;
             generation_count++;
+        }
+        legendPath = "";
+        try {
+            legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
         }
 
         mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);

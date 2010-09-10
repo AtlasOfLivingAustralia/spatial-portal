@@ -67,6 +67,7 @@ import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Component;
@@ -469,10 +470,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (spVal.trim().startsWith("Scientific")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             sSearchTerm = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
-            mapSpeciesByName(sSearchTerm, searchSpeciesAuto.getValue());
+          //  mapSpeciesByName(sSearchTerm, searchSpeciesAuto.getValue());
         } else {
-            mapSpeciesByName(sSearchTerm);
+         //   mapSpeciesByName(sSearchTerm);
         }
+        mapSpeciesByLsid(searchSpeciesAuto.getSelectedItem().getAnnotation("LSID").getName(), sSearchTerm);
 
         btnSearchSpecies.setVisible(false);
 
@@ -546,7 +548,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
-        if (searchSpeciesAuto.getSelectedItem() == null) {
+        if (searchSpeciesAuto.getSelectedItem() == null
+                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
+                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
             return;
         }
 
@@ -554,17 +558,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String taxon = searchSpeciesAuto.getValue();
         String rank = "";
 
+        
+
+        
+
         String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
         if (spVal.trim().startsWith("Scientific name")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
             rank = "common name";
-            mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
+        //    mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
-            mapSpeciesByNameRank(taxon, rank, null);
+//            mapSpeciesByNameRank(taxon, rank, null);
         }
+        mapSpeciesByLsid((String)(searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
 
 
         System.out.println(">>>>> " + taxon + " <<<<<");
@@ -1997,7 +2006,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                  * TODO: do this nicely when implementing editable prediction layers
                  */
                 String legendUri = currentSelection.getSelectedStyle().getLegendUri();
-                if (legendUri.indexOf(".zul") >= 0) {
+                if (legendUri != null && legendUri.indexOf(".zul") >= 0) {
                     //remove all
                     while (legendHtml.getChildren().size() > 0) {
                         legendHtml.removeChild(legendHtml.getFirstChild());
@@ -2607,7 +2616,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (userParams != null) {
 
                 if (userParams.containsKey("species_lsid")) {
-                    ml = mapSpeciesByLsid(userParams.get("species_lsid"));
+                    //TODO: get species name as layer name
+                    ml = mapSpeciesByLsid(userParams.get("species_lsid"),userParams.get("species_lsid"));
                     showLayerTab = true;
                 } else if (userParams.containsKey("layer")) {
                     // TODO: eventually add env/ctx layer loading code here
@@ -3235,25 +3245,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public MapLayer mapSpeciesByLsid(String lsid) {
+    public MapLayer mapSpeciesByLsid(String lsid, String species) {
         try {
-            String satServer = "http://spatial-dev.ala.org.au";
-            //if (settingsSupplementary != null) {
-            //    geoServer = settingsSupplementary.getValue("sat_url");
-            //}
+            String satServer = settingsSupplementary.getValue(SAT_URL);//"http://spatial-dev.ala.org.au";
 
             lsid = StringUtils.replace(lsid, ".", "__");
             lsid = URLEncoder.encode(lsid, "UTF-8");
 
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/species/lsid/" + lsid); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("/species");
+            sbProcessUrl.append("/lsid/").append(lsid);
+            sbProcessUrl.append("/geojson");
 
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
 
             System.out.println(slist);
 
+            getMapComposer().addGeoJSONLayer(species, satServer + "/alaspatial/" + slist);
+/*
             if (StringUtils.isNotBlank(slist) && !slist.equalsIgnoreCase("[]")) {
                 JSONArray ja = JSONArray.fromObject(slist);
 
@@ -3273,6 +3287,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else {
                 Messagebox.show("No occurrence data found for LSID: " + URLDecoder.decode(StringUtils.replace(lsid, "__", "."), "UTF-8"));
             }
+ *
+ */
 
         } catch (Exception ex) {
             //logger.debug(ex.getMessage());

@@ -51,7 +51,7 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
             connection = httpConnection.configureURLConnection(url);
             in = connection.getInputStream();
             json = IOUtils.toString(in);
-            json = cleanUpJson(json);
+            //json = cleanUpJson(json);
             return json;
         } catch (IOException iox) {
             logger.debug(iox.toString());

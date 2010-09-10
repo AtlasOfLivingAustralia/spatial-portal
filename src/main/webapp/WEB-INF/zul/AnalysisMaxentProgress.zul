@@ -11,7 +11,7 @@
              <separator />
             <label id="jobstatus" value="" width="300px"/>
             <separator />
-            <timer id="timer" delay="10000" repeats="true" />
+            <timer id="timer" delay="3000" repeats="true" />
             <separator />
             <hbox visible="false"><label value="Reference number" /> <textbox readonly="true" id="tbPid" /> </hbox>
             <separator />
