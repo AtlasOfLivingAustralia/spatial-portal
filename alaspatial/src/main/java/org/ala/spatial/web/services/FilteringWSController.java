@@ -295,7 +295,8 @@ public class FilteringWSController {
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
-            String count = String.valueOf(FilteringService.getSpeciesCount(pid, region));
+            int [] counts = FilteringService.getSpeciesCount(pid, region);
+            String count = String.valueOf(counts[0] + "\n" + counts[1]);
 
             long endtime = System.currentTimeMillis();
             System.out.println("getSpeciesCount()=" + count + " in " + (endtime - starttime) + "ms");

@@ -472,7 +472,7 @@ public class ALOCWCController extends UtilityComposer {
         return "";
     }
 
-    public void loadMap() {
+    public void loadMap(Event event) {
         String uri = satServer + "/alaspatial/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 

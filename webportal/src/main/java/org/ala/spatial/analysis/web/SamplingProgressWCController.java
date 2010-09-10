@@ -9,6 +9,7 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Progressmeter;
 import org.zkoss.zul.Textbox;
@@ -73,12 +74,12 @@ public class SamplingProgressWCController extends UtilityComposer {
 
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
-            parent.downloadSampling();
+            Events.echoEvent("downloadSampling",parent,null);
             showReferenceNumber();
             this.detach();
         } else if(s.equals("FAILED")) {
             timer.stop();
-            getMapComposer().showMessage("Sampling failed","");//get("error"));
+            getMapComposer().showMessage("Sampling failed");//get("error"));
             this.detach();
         } else if(s.equals("CANCELLED")){
             timer.stop();

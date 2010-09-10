@@ -390,7 +390,7 @@ public class MaxentWCController extends UtilityComposer {
         return "";
     }
 
-    public void loadMap(){
+    public void loadMap(Event event){
         String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
         String legendurl = geoServer
@@ -562,6 +562,11 @@ public class MaxentWCController extends UtilityComposer {
      * @return
      */
     private String cleanTaxon() {
+
+        if(sac.getSelectedItem() == null && sac.getValue() != null){
+            sac.refresh(sac.getValue());
+        }
+        
         // make the sac.getValue() a selected value if it appears in the list
         // - fix for common names entered but not selected
         if (sac.getSelectedItem() == null) {

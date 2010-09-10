@@ -194,6 +194,10 @@ public class AlocService {
         int pieces = TabulationSettings.analysis_threads * 4;
         ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
 
+        //number of pieces may have changed
+        pieces = data_pieces.size()-2;
+
+
         if(job != null) job.setCells(((int[][])data_pieces.get(data_pieces.size() - 2)).length);
 
         if(job != null) job.log("set cells length");

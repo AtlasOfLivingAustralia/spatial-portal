@@ -268,12 +268,14 @@ public class FilteringService implements Serializable {
      *
      * @param session_id_ session id as String, or "none"
      * @param region bounding region for results, or null for none
-     * @return number of unqiue species as int
+     * @return number of unqiue species as int[0], number of occurrences as int[1]
      */
-    static public int getSpeciesCount(String session_id_, SimpleRegion region) {
+    static public int [] getSpeciesCount(String session_id_, SimpleRegion region) {
         int i;
 
         BitSet species;
+
+        Integer occurrencesCount = new Integer(0);
 
         /* check for "none" session */
         if (session_id_.equals("none")) {
@@ -288,11 +290,14 @@ public class FilteringService implements Serializable {
             /* get top filter speciesrecord */
             ArrayList<Integer> rk = fs.getTopSpeciesRecord();
             if (rk == null) {
-                return 0;
+                int [] ret = new int[2];
+                ret[0] = 0;
+                ret[1] = 0;
+                return ret;
             }
 
             /* make list of species, for inside region filter */
-            species = OccurrencesIndex.getSpeciesBitset(rk, region); //new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+            species = OccurrencesIndex.getSpeciesBitset(rk, region, occurrencesCount); //new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
         }
 
         /* count species */
@@ -303,7 +308,10 @@ public class FilteringService implements Serializable {
             }
         }
 
-        return count;
+       int [] ret = new int[2];
+                ret[0] = count;
+                ret[1] = occurrencesCount.intValue();
+                return ret;
     }
 
     /**
@@ -335,7 +343,7 @@ public class FilteringService implements Serializable {
             ArrayList<Integer> rk = fs.getTopSpeciesRecord();
 
             /* make species list */
-            species = OccurrencesIndex.getSpeciesBitset(rk, region);
+            species = OccurrencesIndex.getSpeciesBitset(rk, region, null);
         }
 
         /* make into string of species names */

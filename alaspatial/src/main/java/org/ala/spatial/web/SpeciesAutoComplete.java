@@ -132,7 +132,7 @@ public class SpeciesAutoComplete extends Combobox {
         }
     }
 
-    private void refresh(String val) {
+    public void refresh(String val) {
         try {
 
             if (val.length() == 0) {

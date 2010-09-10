@@ -204,8 +204,10 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/species/count");
 
-            String out = postInfo(sbProcessUrl.toString());
-            results_count = Integer.parseInt(out);
+            String []out = postInfo(sbProcessUrl.toString()).split("\n");
+
+            results_count = Integer.parseInt(out[0]);
+            int results_count_occurrences = Integer.parseInt(out[1]);
             if (results_count == 0) {
                 results_label.setValue("no species in active area");
                 results_label2.setValue("none");
@@ -216,14 +218,14 @@ public class FilteringResultsWCController extends UtilityComposer {
             }
 
             results_label.setValue("species in active area: " + results_count);
-            results_label2.setValue(results_count + "");
+            results_label2.setValue(results_count + " (" + results_count_occurrences + " occurrences)");
 
             //hide results list, show 'preview list' button
             popup_listbox_results.setVisible(false);
             refreshButton2.setVisible(true);
 
             // toggle the map button
-            if (results_count > 0 && results_count < 5001) {
+            if (results_count > 0 && results_count_occurrences < 5001) {
                 mapspecies.setVisible(true);
             } else {
                 mapspecies.setVisible(false);

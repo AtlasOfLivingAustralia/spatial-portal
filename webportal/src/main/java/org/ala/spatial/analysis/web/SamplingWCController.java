@@ -337,7 +337,7 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".","__"), "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (true) { //an area always exists; useArea.isChecked()) {
                 user_polygon = mc.getSelectionArea();
@@ -369,7 +369,7 @@ public class SamplingWCController extends UtilityComposer {
 
             //error condition, for example, when no combobox item is selected
             if (result != 200) {
-                mc.showMessage("no records available for: " + taxon);
+                mc.showMessage("no records available");
                 window.detach();
                 return;
             }
@@ -468,7 +468,7 @@ public class SamplingWCController extends UtilityComposer {
         }
     }
 
-    public void download() {
+    public void download(Event event) {
         try {
 
             String taxon = cleanTaxon();
@@ -481,11 +481,14 @@ public class SamplingWCController extends UtilityComposer {
                 while (it.hasNext()) {
                     Listitem li = (Listitem) it.next();
 
-                    sbenvsel.append(li.getLabel());
-                    if (it.hasNext()) {
-                        sbenvsel.append(":");
+                    if (!li.getLabel().equals("Environmental")
+                            && !li.getLabel().equals("Contextual")) {
+                        sbenvsel.append(li.getLabel());
+                        if (it.hasNext()) {
+                            sbenvsel.append(":");
+                        }
+                        i++;
                     }
-                    i++;
                 }
                 if (i == 0) {
                     sbenvsel.append("none");
@@ -537,7 +540,7 @@ public class SamplingWCController extends UtilityComposer {
         }
     }
 
-    public void downloadSampling() {
+    public void downloadSampling(Event event) {
         try {
             if (pid == null || pid.equalsIgnoreCase("")) {
                 Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
@@ -549,10 +552,10 @@ public class SamplingWCController extends UtilityComposer {
                         if (s.startsWith("output_path")) {
                             pth = s.split(":")[1];
                             pth = "";
-                            String [] sp = s.split(":");
-                            for(int i=1;i<sp.length;i++){
+                            String[] sp = s.split(":");
+                            for (int i = 1; i < sp.length; i++) {
                                 pth += sp[i];
-                                if(i < sp.length - 1){
+                                if (i < sp.length - 1) {
                                     pth += ":";
                                 }
                             }
@@ -593,7 +596,7 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     public void onClick$btnDownload(Event event) {
-        download();
+        download(null);
     }
 
     /**
@@ -622,22 +625,22 @@ public class SamplingWCController extends UtilityComposer {
 
         cleanTaxon();
         String taxon = sac.getValue();
-        
+
         String rank = "";
         String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().startsWith("Scientific name")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
             rank = "common name";
-         //   mc.mapSpeciesByName(taxon, sac.getValue());
+            //   mc.mapSpeciesByName(taxon, sac.getValue());
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             //mc.mapSpeciesByName(taxon);
-         //   mc.mapSpeciesByNameRank(taxon, rank, null);
+            //   mc.mapSpeciesByNameRank(taxon, rank, null);
         }
         taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
         //mc.mapSpeciesByName(taxon);
-        mc.mapSpeciesByLsid((String)(sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
+        mc.mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
     }
 
     /**
@@ -657,6 +660,10 @@ public class SamplingWCController extends UtilityComposer {
     private String cleanTaxon() {
         String taxon = null;
 
+        if(sac.getSelectedItem() == null && sac.getValue() != null){
+            sac.refresh(sac.getValue());
+        }
+
         //make the sac.getValue() a selected value if it appears in the list
         // - fix for common names entered but not selected
         if (sac.getSelectedItem() == null) {
@@ -670,31 +677,31 @@ public class SamplingWCController extends UtilityComposer {
                 }
             }
         }
-/*
+        /*
         if (StringUtils.isNotBlank(taxon)) {
 
-            // check for condition 1
-            System.out.println("Checking for cond.1: " + taxon);
-            if (taxon.contains(" (")) {
-                taxon = StringUtils.substringBefore(taxon, " (");
-            }
-            System.out.println("After checking for cond.1: " + taxon);
+        // check for condition 1
+        System.out.println("Checking for cond.1: " + taxon);
+        if (taxon.contains(" (")) {
+        taxon = StringUtils.substringBefore(taxon, " (");
+        }
+        System.out.println("After checking for cond.1: " + taxon);
 
-            // check for condition 2
-            if (sac.getSelectedItem() != null) {
-                String spVal = sac.getSelectedItem().getDescription();
-                System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
-                if (spVal.trim().startsWith("Scientific name")) {
-                    //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
-                    taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
-                }
-                System.out.println("After checking for cond.2: " + taxon);
-            }
+        // check for condition 2
+        if (sac.getSelectedItem() != null) {
+        String spVal = sac.getSelectedItem().getDescription();
+        System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
+        if (spVal.trim().startsWith("Scientific name")) {
+        //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+        taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+        }
+        System.out.println("After checking for cond.2: " + taxon);
+        }
 
         }*/
 
-        if(sac.getSelectedItem() != null){
-            taxon = (String)sac.getSelectedItem().getAnnotatedProperties().get(0);
+        if (sac.getSelectedItem() != null) {
+            taxon = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 
         return taxon;

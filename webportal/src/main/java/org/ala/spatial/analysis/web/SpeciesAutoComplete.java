@@ -153,7 +153,7 @@ public class SpeciesAutoComplete extends Combobox {
 */
     /** Refresh comboitem based on the specified value.
      */
-    private void refresh(String val) {
+    public void refresh(String val) {
 
         // Start by constraining the search to a min 3-chars
         if (val.length() < 3) {
