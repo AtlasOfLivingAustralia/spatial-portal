@@ -445,6 +445,7 @@ function addFeatureSelectionTool() {
 }
 
 function pointSearch(e) {
+ 
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
     parent.setSearchPoint(lonlat);
 }
@@ -617,11 +618,13 @@ function addBoxDrawingTool() {
 }
 
 function featureSelected(feature) {
-    // alert("win!");
+    //alert(feature.geometry.CLASS_NAME)
    
     areaSelectOn = false;
     setVectorLayersSelectable();
-    parent.setPolygonGeometry(feature.geometry);
+    parent.setPolygonGeometry(feature.geometry.components[0]);
+
+    removeAreaSelection();
 
 // featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
 //  polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
@@ -818,7 +821,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
         style : layer_style
     });
     map.addLayer(wktLayer);
-    
+  //  alert(featureWKT);
     var geom = new OpenLayers.Geometry.fromWKT(featureWKT);
     geom = geom.transform(map.displayProjection, map.projection);
     wktLayer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
