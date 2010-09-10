@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.UtilityComposer;
 
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Rows;
 
@@ -16,7 +17,7 @@ public class SamplingResultsWCController extends UtilityComposer {
     Rows results_rows;
 
     public void onClick$btnDownload(Event event) {
-        parent.download();
+        Events.echoEvent("download",parent,null);
         detach();
     }    
 }
