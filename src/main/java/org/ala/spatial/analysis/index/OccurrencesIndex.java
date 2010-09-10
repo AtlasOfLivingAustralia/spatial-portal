@@ -2770,9 +2770,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * return number of Species within a SimpleRegion
      *
      * @param r region for test as SimpleRegion
-     * @return number of species found as int
+     * @return number of species found as int[0], number of occurrences as int[1]
      */
-    static public int getSpeciesCountInside(SimpleRegion r) {
+    static public int [] getSpeciesCountInside(SimpleRegion r) {
         /* init */
         loadIndexes();
 
@@ -2784,6 +2784,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         /* for matching cells, test each record within  */
         BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+
+        int countOccurrences = 0;
 
         for (i = 0; i < cells.length; i++) {
             int start = grid_key[cells[i][1]][cells[i][0]];
@@ -2806,6 +2808,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 for (j = start; j < end; j++) {
                     if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
                     bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                    countOccurrences++;
                     }
                 }
             } else {
@@ -2813,6 +2816,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                         if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
                         bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                        countOccurrences++;
                         }
                     }
                 }
@@ -2826,7 +2830,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
         }
 
-        return speciesCount;
+        int [] ret = new int[2];
+        ret[0] = speciesCount;
+        ret[1] = countOccurrences;
+        return ret;
     }
     static IndexedRecord[] speciesSortByRecordNumber = null;
     static int[] speciesSortByRecordNumberOrder = null;
@@ -2865,12 +2872,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
     }
 
-    static public BitSet getSpeciesBitset(ArrayList<Integer> records, SimpleRegion region) {
+    static public BitSet getSpeciesBitset(ArrayList<Integer> records, SimpleRegion region, Integer occurrencesCount) {
         makeSpeciesSortByRecordNumber();
 
         int i;
         int spos = 0;
         BitSet species = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+
+        int ocount = 0;
 
         //assume records sorted
         for (i = 1; i < records.size(); i++) {
@@ -2901,6 +2910,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
 
                 species.set(speciesSortByRecordNumberOrder[spos]);
+                ocount++;
+
                 spos++;
                 i++;
                 if (spos < speciesSortByRecordNumber.length) {
@@ -2928,6 +2939,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         && OccurrencesIndex.inRegion(spos, region)) {
 
                     species.set(speciesSortByRecordNumberOrder[spos]);
+                    ocount++;
 
                     spos++; //inc
 
@@ -2940,6 +2952,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     }
                 }
             }
+        }
+        
+        if(occurrencesCount != null){
+            occurrencesCount = ocount;
         }
 
         return species;

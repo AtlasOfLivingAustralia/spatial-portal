@@ -240,19 +240,16 @@ public class SamplingService {
     }
 
     public String[][] sampleSpecies(String filter, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows, AnalysisJobSampling job) {
+
         String[][] results = null;
 
         StringBuffer output = new StringBuffer();
-
         int number_of_columns = TabulationSettings.occurances_csv_fields.length;
-
         OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
-
         for (String s : ofu.getOutputColumnNames()) {
             output.append(s);
             output.append(",");
         }
-
         if (layers != null) {
             for (String l : layers) {
                 output.append(Layers.layerNameToDisplayName(l));
@@ -260,12 +257,16 @@ public class SamplingService {
             }
             number_of_columns += layers.length;
         }
-
         /* tidy up header */
         output.deleteCharAt(output.length() - 1); //take off end ','
         output.append("\r\n");
 
         IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
+
+        if(ir != null && ir.length > 0 && max_rows<=100){
+            return sampleSpeciesSmall(filter, layers, region, records, max_rows, job);
+        }
+
         int i, j;
 
         int recordsPos = 0; //for records intersection counter
@@ -794,5 +795,94 @@ public class SamplingService {
 
         return sbRec.toString();
 
+    }
+
+    private String[][] sampleSpeciesSmall(String filter, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows, AnalysisJobSampling job) {
+        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
+
+        if (ir != null && ir.length > 0) {
+            if(records != null) java.util.Collections.sort(records);
+
+            /* get points */
+            double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
+
+            /* test for region absence */
+            int i;
+
+            int alen = 0;
+            int [] a = new int[max_rows];
+
+            int recordsPos = 0; //for test on records
+
+            /* return all valid points within the region */
+            for (i = 0; i < points.length && alen < max_rows; i += 2) {
+                int currentRecord = (i/2) + ir[0].record_start;
+
+                //do not add if does not intersect with records list
+                if (records != null) {
+                    //increment recordsPos as required
+                    while (recordsPos < records.size()
+                            && records.get(recordsPos).intValue() < currentRecord) {
+                        recordsPos++;
+                    }
+                    //test for intersect
+                    if (recordsPos >= records.size()
+                            || currentRecord != records.get(recordsPos).intValue()) {
+                        continue;
+                    }
+                }
+                //region test
+                if (region == null || region.isWithin(points[i], points[i + 1])) {
+                    a[alen++] = currentRecord;
+                }
+            }
+            
+            if(alen == 0){
+                return null;
+            }
+
+            //filled a up to alen, get the data
+            if(alen < max_rows){
+                a = java.util.Arrays.copyOf(a,alen);
+            }
+            String [] oi = OccurrencesIndex.getSortedRecords(a);
+
+            int layerscount = (layers == null)?0:layers.length;
+            int headercount = oi[0].split(",").length;
+            String [][] output = new String[oi.length+1][headercount+layerscount];//+1 for header
+
+            //fill
+            for(i=0;i<oi.length;i++){
+                String [] line = oi[i].split(",");
+                for(int j=0;j<line.length && j < headercount;j++){
+                    output[i+1][j] = line[j];   //+1 for header
+                }
+            }
+
+            for(i=0;layers != null && i<layers.length;i++){
+                String [] si = SamplingIndex.getRecords(layers[i], a);
+                if(si != null){
+                    for(int j=0;j<si.length && j < output.length;j++){
+                        output[j][headercount + i] = si[j];
+                    }
+                }
+            }
+
+            //header
+            OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+            i = 0;
+            for (String s : ofu.getOutputColumnNames()) {
+                output[0][i++] = s.trim();
+            }
+            if (layers != null) {
+                for (String l : layers) {
+                    output[0][i++] = Layers.layerNameToDisplayName(l).trim();
+                }
+            }
+            
+            return output;
+        }
+
+        return null;
     }
 }

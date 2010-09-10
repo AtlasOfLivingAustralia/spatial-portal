@@ -325,10 +325,10 @@ public class SamplingIndex implements AnalysisIndexService {
 
             String[] lookup_values = SamplingIndex.getLayerCatagories(
                     Layers.getLayer(layer_name));
-            System.out.println("lookupvalues=" + lookup_values);
+            //System.out.println("lookupvalues=" + lookup_values);
 
             if ((new File(filenameD)).exists()) {
-                System.out.println("D file found");
+                //System.out.println("D file found");
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameD, "r");
                 raf.seek(record_start * 4);
@@ -343,7 +343,7 @@ public class SamplingIndex implements AnalysisIndexService {
                 }
                 raf.close();
             } else if ((new File(filenameI)).exists()) {
-                System.out.println("I file found");
+                //System.out.println("I file found");
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
                 raf.seek(record_start * 2);
@@ -405,8 +405,8 @@ public class SamplingIndex implements AnalysisIndexService {
                     } else {
                         output.add(String.valueOf(f));
                     }
-                    raf.close();
                 }
+                raf.close();
             } else if ((new File(filenameI)).exists()) {
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
