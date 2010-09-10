@@ -56,7 +56,14 @@ public class AnalysisJobMaxent extends AnalysisJob {
         chkResponseCurves = chkResponseCurves_;
         envlist= envlist_;
 
-        cells = GridCutter.countCells(region, envelope);
+        //TODO: remove rough estimate
+        if(region != null){
+            cells = (int)Math.ceil(region.getWidth() / TabulationSettings.grd_xdiv
+                    + region.getHeight() / TabulationSettings.grd_ydiv);
+        }else{
+            cells = 1000000; //or something
+        }
+        //cells = GridCutter.countCells(region, envelope);
 
         SamplingService ss = new SamplingService();
         OccurrencesService os = new OccurrencesService();
@@ -182,13 +189,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
             } else {
                 setProgress(1, "failed");
                 setCurrentState(FAILED);
-
             }
-
-
-
         } catch (Exception e) {
             e.printStackTrace();
+            setProgress(1, "failed: " + e.getMessage());
+            setCurrentState(FAILED);
         }
     }
 

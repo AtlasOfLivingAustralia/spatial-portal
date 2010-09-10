@@ -35,38 +35,52 @@ public class AnalysisJobAloc extends AnalysisJob {
         region = region_;
         envelope = envelope_;
 
-        //TODO: keep cells?  check time to calculate/space
-        cells = GridCutter.countCells(region, envelope);
+        //TODO: remove rough estimate
+        if(region != null){
+            cells = (int)Math.ceil(region.getWidth() / TabulationSettings.grd_xdiv
+                    + region.getHeight() / TabulationSettings.grd_ydiv);
+        }else{
+            cells = 1000000; //or something
+        }
+        //cells = GridCutter.countCells(region, envelope);
         
         stageTimes = new long[4];
     }
 
     @Override
     public void run(){
-        long start = System.currentTimeMillis();
+        try{
 
-        setCurrentState(RUNNING);
 
-        setStage(0);
+            long start = System.currentTimeMillis();
 
-        filepath = currentPath + "output" + File.separator + "aloc" + File.separator + getName() + File.separator;
-        filename = filepath + "aloc.png";
-        File fDir = new File(filepath);
-        fDir.mkdir();
+            setCurrentState(RUNNING);
 
-        AlocService.run(filename, layers, numberOfGroups, region, envelope, getName(),this);
+            setStage(0);
 
-        if(isCancelled()) return;
-        
-        exportResults();
+            filepath = currentPath + "output" + File.separator + "aloc" + File.separator + getName() + File.separator;
+            filename = filepath + "aloc.png";
+            File fDir = new File(filepath);
+            fDir.mkdir();
 
-        long end = System.currentTimeMillis();
-        setRunTime(end - start);
+            AlocService.run(filename, layers, numberOfGroups, region, envelope, getName(),this);
 
-        setCurrentState(SUCCESSFUL);
+            if(isCancelled()) return;
 
-        //write out infor for adjusting input parameters
-        System.out.println("ALOC:" + cells + "," + numberOfGroups + "," + layers.length + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]) + " " + (end - stageTimes[3]));
+            exportResults();
+
+            long end = System.currentTimeMillis();
+            setRunTime(end - start);
+
+            setCurrentState(SUCCESSFUL);
+
+            //write out infor for adjusting input parameters
+            System.out.println("ALOC:" + cells + "," + numberOfGroups + "," + layers.length + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]) + " " + (end - stageTimes[3]));
+        }catch(Exception e){
+            setProgress(1, "failed: " + e.getMessage());
+            setCurrentState(FAILED);
+            e.printStackTrace();
+        }
     }
 
     void exportResults(){

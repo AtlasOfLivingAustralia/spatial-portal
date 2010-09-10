@@ -188,16 +188,16 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void refreshCount() {
+        //check if tab is open
+        if (!isTabOpen() || !updateParameters()) {
+            return;
+        }
+        
         results_label2.setValue("    [Updating...]");
         Events.echoEvent("onRefreshCount", this, null);
     }
 
     public void onRefreshCount(Event e) throws Exception {
-        //check if tab is open        
-        if (!isTabOpen() || !updateParameters()) {
-            return;
-        }
-
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("/filtering/apply");

@@ -70,7 +70,9 @@ public class AnalysisJob extends Thread implements Serializable {
         }
 
         //return average time remaining
-        return Math.round(smoothEstimate / (ESTIMATE_LENGTH/2));
+        long estimate = ((long)Math.round(smoothEstimate / (ESTIMATE_LENGTH/2))) - progressTime;
+        if(estimate < 1000) estimate = 1000;
+        return estimate;
     }
 
     public long getEstimate(){

@@ -466,6 +466,14 @@ public class GridCutter {
             }
         }
 
+        //remove zero length data pieces
+        for (int i = pieces-1; i >= 0; i--) {
+            float[] d = (float[]) data.get(i);
+            if(d.length == 0){
+                data.remove(i);
+            }
+        }
+
         //add cells reference to output
         data.add(cells);
 

@@ -66,7 +66,7 @@ public class MaxentWSController {
             String currentPath = session.getServletContext().getRealPath("/");
             //String currentPath = TabulationSettings.base_output_dir;
 
-            String taxon = req.getParameter("taxonid");
+            String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
 
             ssets = new SpatialSettings();
 
@@ -399,7 +399,7 @@ public class MaxentWSController {
             long currTime = System.currentTimeMillis();
 
             String currentPath = session.getServletContext().getRealPath("/");
-            String taxon = req.getParameter("taxonid");
+            String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
             String area = req.getParameter("area");
             String envlist = req.getParameter("envlist");
             String txtTestPercentage = req.getParameter("txtTestPercentage");

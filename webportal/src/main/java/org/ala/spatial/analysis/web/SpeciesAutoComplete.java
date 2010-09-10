@@ -1,5 +1,7 @@
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.composer.MapComposer;
+import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.PortalSessionUtilities;
@@ -17,6 +19,7 @@ import org.ala.spatial.search.TaxaScientificSearchSummary;
 import org.apache.commons.httpclient.HttpClient;
 
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
@@ -46,13 +49,15 @@ public class SpeciesAutoComplete extends Combobox {
         this.bSearchCommon = searchCommon;
     }
 
-    public SpeciesAutoComplete() {
+    public SpeciesAutoComplete() {  
         refresh(""); //init the child comboitems
         //refreshJSON("");
         //System.out.println("setting cnurl in sac()");
         //cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
         //System.out.println("setting satserver in sac()");
         //satServer = settingsSupplementary.getValue(SAT_URL);
+
+
     }
 
     public SpeciesAutoComplete(String value) {
@@ -78,7 +83,7 @@ public class SpeciesAutoComplete extends Combobox {
             //refreshJSON(evt.getValue());
         }
     }
-
+/*
     private void refreshBIE(String val) {
         //String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=";
         try {
@@ -145,7 +150,7 @@ public class SpeciesAutoComplete extends Combobox {
             new Comboitem("No species found. error.").setParent(this);
         }
     }
-
+*/
     /** Refresh comboitem based on the specified value.
      */
     private void refresh(String val) {
@@ -159,9 +164,15 @@ public class SpeciesAutoComplete extends Combobox {
         //TODO get this from the config file
         if (settingsSupplementary != null) {
             //System.out.println("setting ss.val");
+            //satServer = settingsSupplementary.getValue(SAT_URL);
+        } else if(this.getParent() != null){
+            settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
+            System.out.println("SAC got SS: " + settingsSupplementary);
             satServer = settingsSupplementary.getValue(SAT_URL);
-        } else {
+            cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
             //System.out.println("NOT setting ss.val");
+        }else{
+            return;
         }
 
         String snUrl = satServer + "/alaspatial/species/taxon/";
@@ -242,6 +253,7 @@ public class SpeciesAutoComplete extends Combobox {
                         String taxon = spVal[0].trim();
                         taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1).toLowerCase();
 
+
                         //Label hiddenVal = new Label();
                         //hiddenVal.setValue(spVal[1].trim());
                         //hiddenVal.setVisible(false);
@@ -255,13 +267,16 @@ public class SpeciesAutoComplete extends Combobox {
                             myci = new Comboitem(taxon);
                             myci.setParent(this);
                         }
-                        myci.setDescription(spVal[1].trim() + " - " + spVal[2].trim() + " records");
+                        myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records");
                         myci.setDisabled(false);
+                        myci.addAnnotation(spVal[1].trim(),"LSID", null);
+                        
                         //hiddenVal.setParent(myci);
 
-                        if (spVal[1].trim().startsWith("Scientific name")) {
+                        //if (spVal[1].trim().startsWith("Scientific name")) {
+                        if (spVal[2].trim().contains(":")) {
                             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
-                            myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":") + 1).trim());
+                            myci.setValue(spVal[2].trim().substring(spVal[2].trim().indexOf(":") + 1).trim());
                         } else {
                             myci.setValue(taxon);
                         }
@@ -299,7 +314,7 @@ public class SpeciesAutoComplete extends Combobox {
         }
 
     }
-
+/*
     private String refreshCommonNames(String val) {
         StringBuffer cnListString = new StringBuffer();
         cnListString.append("");
@@ -355,7 +370,9 @@ public class SpeciesAutoComplete extends Combobox {
 
         return cnListString.toString();
     }
+*/
 
+    /*
     private void refreshJSON(String val) {
 
         String baseUrl = "http://data.ala.org.au/search/";
@@ -425,7 +442,7 @@ public class SpeciesAutoComplete extends Combobox {
 
             //new Comboitem("No species found. error.").setParent(this);
         }
-    }
+    }*/
 
     public JSONArray searchScientific(String json) {
 
@@ -511,7 +528,7 @@ public class SpeciesAutoComplete extends Combobox {
 
         return null;
     }
-
+/*
     private String getScientificName(String cname) {
         String taxon = "";
 
@@ -574,5 +591,14 @@ public class SpeciesAutoComplete extends Combobox {
 
         return taxon;
 
+    }*/
+
+    private MapComposer getThisMapComposer() {
+
+        MapComposer mapComposer = null;
+        Page page = getPage();
+        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
+
+        return mapComposer;
     }
 }

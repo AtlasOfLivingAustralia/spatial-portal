@@ -383,6 +383,9 @@ class AnalysisJobFinishedConsumer extends Thread {
     void removeFinishedJobs() {
         for (Entry<String, AnalysisJob> e : runningJobs.entrySet()) {
             if (!e.getValue().isAlive()) {
+                if(!((AnalysisJob)e.getValue()).isFinished()){
+                    ((AnalysisJob)e.getValue()).setCurrentState(AnalysisJob.FAILED);
+                }
                 runningJobs.remove(e.getValue().getName());
                 finishedJobs.put(e.getValue().getName(), e.getValue());
 

@@ -62,6 +62,8 @@ public class SamplingWCController extends UtilityComposer {
     private String[] groupLabels = null;
     //String previousArea = "";
     LayersUtil layersUtil;
+    private String pid;
+    private String species;
 
     @Override
     public void afterCompose() {
@@ -230,7 +232,7 @@ public class SamplingWCController extends UtilityComposer {
 
     public void onClick$btnPreview(Event event) {
         Clients.showBusy("Sampling...", true);
-        Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
+        Events.echoEvent("onDoInit", this, (event == null) ? null : event.toString());
     }
 
     /**
@@ -283,11 +285,11 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     public void runsampling() {
-        
+
 
         try {
 
-            String taxon = cleanTaxon(sac.getValue());
+            String taxon = cleanTaxon();
             // check if its a common name, if so, grab the scientific name
             //if (rdoCommonSearch.isChecked()) {
             //    taxon = getScientificName();
@@ -335,7 +337,7 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".","__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (true) { //an area always exists; useArea.isChecked()) {
                 user_polygon = mc.getSelectionArea();
@@ -469,7 +471,7 @@ public class SamplingWCController extends UtilityComposer {
     public void download() {
         try {
 
-            String taxon = cleanTaxon(sac.getValue());
+            String taxon = cleanTaxon();
 
             StringBuffer sbenvsel = new StringBuffer();
 
@@ -521,21 +523,73 @@ public class SamplingWCController extends UtilityComposer {
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
+            pid = get.getResponseBodyAsString();
 
-            System.out.println("Got response from SamplingWSController: \n" + slist);
+            System.out.println("Got response from SamplingWSController: \n" + pid);
 
-
-            if (slist.equalsIgnoreCase("")) {
-                Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
-            } else {
-                System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist);
-                Filedownload.save(new URL(satServer + "/alaspatial" + slist), "application/zip");
-            }
+            SamplingProgressWCController window = (SamplingProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingProgress.zul", this, null);
+            window.parent = this;
+            window.start(pid);
+            window.doModal();
         } catch (Exception e) {
             System.out.println("Exception calling sampling.download:");
             e.printStackTrace(System.out);
         }
+    }
+
+    public void downloadSampling() {
+        try {
+            if (pid == null || pid.equalsIgnoreCase("")) {
+                Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
+            } else {
+                //get job inputs/outputs
+                String pth = "";
+                try {
+                    for (String s : getJob("inputs").split(";")) {
+                        if (s.startsWith("output_path")) {
+                            pth = s.split(":")[1];
+                            pth = "";
+                            String [] sp = s.split(":");
+                            for(int i=1;i<sp.length;i++){
+                                pth += sp[i];
+                                if(i < sp.length - 1){
+                                    pth += ":";
+                                }
+                            }
+                            break;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                System.out.println("Sending file to user: " + satServer + "/alaspatial" + pth);
+                Filedownload.save(new URL(satServer + "/alaspatial" + pth), "application/zip");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    String getJob(String type) {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+
+            System.out.println(sbProcessUrl.toString());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            System.out.println(slist);
+            return slist;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public void onClick$btnDownload(Event event) {
@@ -566,21 +620,24 @@ public class SamplingWCController extends UtilityComposer {
             return;
         }
 
+        cleanTaxon();
         String taxon = sac.getValue();
+        
         String rank = "";
         String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().startsWith("Scientific name")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
             rank = "common name";
-            mc.mapSpeciesByName(taxon, sac.getValue());
+         //   mc.mapSpeciesByName(taxon, sac.getValue());
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             //mc.mapSpeciesByName(taxon);
-            mc.mapSpeciesByNameRank(taxon, rank, null);
+         //   mc.mapSpeciesByNameRank(taxon, rank, null);
         }
-        //taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
+        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
         //mc.mapSpeciesByName(taxon);
+        mc.mapSpeciesByLsid((String)(sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
     }
 
     /**
@@ -597,21 +654,23 @@ public class SamplingWCController extends UtilityComposer {
      * @param taxon
      * @return
      */
-    private String cleanTaxon(String taxon) {
+    private String cleanTaxon() {
+        String taxon = null;
+
         //make the sac.getValue() a selected value if it appears in the list
         // - fix for common names entered but not selected
         if (sac.getSelectedItem() == null) {
             List list = sac.getItems();
-            for (int i=0;i<list.size();i++) {
+            for (int i = 0; i < list.size(); i++) {
                 Comboitem ci = (Comboitem) list.get(i);
-                if (ci.getLabel().equalsIgnoreCase(taxon)) {
+                if (ci.getLabel().equalsIgnoreCase(sac.getValue())) {
                     System.out.println("cleanTaxon: set selected item");
                     sac.setSelectedItem(ci);
                     break;
                 }
             }
         }
-
+/*
         if (StringUtils.isNotBlank(taxon)) {
 
             // check for condition 1
@@ -620,7 +679,7 @@ public class SamplingWCController extends UtilityComposer {
                 taxon = StringUtils.substringBefore(taxon, " (");
             }
             System.out.println("After checking for cond.1: " + taxon);
-            
+
             // check for condition 2
             if (sac.getSelectedItem() != null) {
                 String spVal = sac.getSelectedItem().getDescription();
@@ -632,6 +691,10 @@ public class SamplingWCController extends UtilityComposer {
                 System.out.println("After checking for cond.2: " + taxon);
             }
 
+        }*/
+
+        if(sac.getSelectedItem() != null){
+            taxon = (String)sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 
         return taxon;
@@ -667,13 +730,13 @@ public class SamplingWCController extends UtilityComposer {
         /*//an area always exists;  validate the area box presence, check if area updated
         String currentArea = mc.getSelectionArea();
         if (currentArea.length() > 0) {
-            useArea.setDisabled(false);
-            if (!currentArea.equalsIgnoreCase(previousArea)) {
-                useArea.setChecked(true);
-            }
+        useArea.setDisabled(false);
+        if (!currentArea.equalsIgnoreCase(previousArea)) {
+        useArea.setChecked(true);
+        }
         } else {
-            useArea.setDisabled(true);
-            useArea.setChecked(false);
+        useArea.setDisabled(true);
+        useArea.setChecked(false);
         }
         previousArea = currentArea;*/
     }

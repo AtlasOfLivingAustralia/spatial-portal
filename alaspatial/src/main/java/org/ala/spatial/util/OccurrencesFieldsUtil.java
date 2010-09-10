@@ -107,10 +107,10 @@ public class OccurrencesFieldsUtil {
         output[pos++] = "latitude";
 
         //dump
-        for (String s : output) {
-            System.out.println(s + ", ");
-        }
-        System.out.println("\r\n");
+    //    for (String s : output) {
+     //       System.out.println(s + ", ");
+     //   }
+      //  System.out.println("\r\n");
 
         return output;
     }
@@ -124,7 +124,7 @@ public class OccurrencesFieldsUtil {
         for (int i=0;i<lookups.length;i++) {
             for(int j=0;j<columns.length;j++) {
                 if (columns[j].equalsIgnoreCase(lookups[i])) {
-                    System.out.println("extra index: " + columns[j] + " (" + j + ")");
+       //             System.out.println("extra index: " + columns[j] + " (" + j + ")");
                    output[i] = j;
                    break;
                 }

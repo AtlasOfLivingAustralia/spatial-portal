@@ -550,7 +550,7 @@ public class FilteringService implements Serializable {
     private static String getRecordAsGeoJSON(String rec) {
         String[] recdata = rec.split(",");
 
-        StringBuffer sbRec = new StringBuffer();
+        /*StringBuffer sbRec = new StringBuffer();
         sbRec.append("{");
         sbRec.append("  \"type\":\"Feature\",");
         sbRec.append("  \"id\":\"occurrences.data.").append(recdata[11]).append("\",");
@@ -573,6 +573,27 @@ public class FilteringService implements Serializable {
         sbRec.append("      \"longitude\":\"").append(recdata[24]).append("\",");
         sbRec.append("      \"latitude\":\"").append(recdata[25]).append("\",");
         sbRec.append("      \"occurrencedate\":\"").append(recdata[30]).append("\"");
+        sbRec.append("  }");
+        sbRec.append("}");*/
+
+        StringBuffer sbRec = new StringBuffer();
+        sbRec.append("{");
+        sbRec.append("  \"type\":\"Feature\",");
+        StringBuffer append = sbRec.append("  \"id\":\"occurrences.data.").append(recdata[TabulationSettings.geojson_id]).append("\",");
+        sbRec.append("  \"geometry\":{");
+        sbRec.append("      \"type\":\"Point\",");
+        sbRec.append("      \"coordinates\":[\"").append(recdata[TabulationSettings.geojson_longitude]).append("\",\"").append(recdata[TabulationSettings.geojson_latitude]).append("\"]");
+        sbRec.append("   },");
+        sbRec.append("  \"geometry_name\":\"the_geom\",");
+        sbRec.append("  \"properties\":{");
+        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+            sbRec.append("      \"").append(TabulationSettings.geojson_property_names[i])
+                    .append("\":\"").append(recdata[TabulationSettings.geojson_property_fields[i]])
+                    .append("\"");
+            if(i < TabulationSettings.geojson_property_names.length-1){
+                sbRec.append(",");
+            }
+        }
         sbRec.append("  }");
         sbRec.append("}");
 

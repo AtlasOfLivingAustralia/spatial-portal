@@ -57,32 +57,18 @@ public class MaxentWCController extends UtilityComposer {
 
     private static final long serialVersionUID = 165701023268014945L;
     private static final String GEOSERVER_URL = "geoserver_url";
-    private static final String GEOSERVER_USERNAME = "geoserver_username";
-    private static final String GEOSERVER_PASSWORD = "geoserver_password";
     private static final String SAT_URL = "sat_url";
-    private Radio rdoCommonSearch;
     private SpeciesAutoComplete sac;
-    private Button btnMapSpecies;
     Tabbox tabboxmaxent;
     private Label status;
     private Label infourl;
     private Button btnInfo;
     private Textbox tbenvfilter;
-    private Button btenvfilterclear;
     private Listbox lbenvlayers;
-    private Button startmaxent;
-    private List<Layer> _layers;
     private Checkbox chkJackknife;
     private Checkbox chkRCurves;
     private Textbox txtTestPercentage;
-    private Textbox trun;
-    //private SpatialSettings ssets;
-    private Tabbox outputtab;
-    private Iframe mapframe;
-    private Iframe infoframe;
-    private Window maxentWindow;
     private Window maxentInfoWindow;
-    private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport;
     private MapComposer mc;
     private String geoServer = "http://spatial-dev.ala.org.au";  // http://localhost:8080
     private String satServer = geoServer;
@@ -154,7 +140,7 @@ public class MaxentWCController extends UtilityComposer {
             e.printStackTrace(System.out);
         }
     }
-
+/*
     public void onCheck$rdoCommonSearch() {
         sac.setSearchCommon(true);
         sac.getItems().clear();
@@ -164,7 +150,7 @@ public class MaxentWCController extends UtilityComposer {
         sac.setSearchCommon(false);
         sac.getItems().clear();
     }
-
+*/
     public void onChange$sac(Event event) {
         loadSpeciesOnMap();
     }
@@ -241,7 +227,7 @@ public class MaxentWCController extends UtilityComposer {
 
     public void runmaxent() {
         try {
-            String taxon = cleanTaxon(sac.getValue());
+            String taxon = cleanTaxon();
             
             if (taxon == null || taxon.equals("")) {
                 Messagebox.show("Please select a species in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
@@ -293,7 +279,7 @@ public class MaxentWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/processgeoq?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".","__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
@@ -497,14 +483,15 @@ public class MaxentWCController extends UtilityComposer {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
             rank = "common name";
-            mc.mapSpeciesByName(taxon, sac.getValue());
+            //mc.mapSpeciesByName(taxon, sac.getValue());
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             //mc.mapSpeciesByName(taxon);
-            mc.mapSpeciesByNameRank(taxon, rank, null);
+            //mc.mapSpeciesByNameRank(taxon, rank, null);
         }
+        mc.mapSpeciesByLsid((String)(sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
     }
-
+/*
     private String getScientificName() {
         String taxon = "";
         try {
@@ -559,7 +546,7 @@ public class MaxentWCController extends UtilityComposer {
 
         return taxon;
     }
-
+*/
     /**
      * get rid of the common name if present
      * 2 conditions here
@@ -574,14 +561,14 @@ public class MaxentWCController extends UtilityComposer {
      * @param taxon
      * @return
      */
-    private String cleanTaxon(String taxon) {
+    private String cleanTaxon() {
         // make the sac.getValue() a selected value if it appears in the list
         // - fix for common names entered but not selected
         if (sac.getSelectedItem() == null) {
             List list = sac.getItems();
             for (int i=0;i<list.size();i++) {
                 Comboitem ci = (Comboitem) list.get(i);
-                if (ci.getLabel().equalsIgnoreCase(taxon)) {
+                if (ci.getLabel().equalsIgnoreCase(sac.getValue())) {
                     System.out.println("cleanTaxon: set selected item");
                     sac.setSelectedItem(ci);
                     break;
@@ -589,7 +576,7 @@ public class MaxentWCController extends UtilityComposer {
             }
         }
         
-        if (StringUtils.isNotBlank(taxon)) {
+/*        if (StringUtils.isNotBlank(taxon)) {
 
             // check for condition 1
             System.out.println("Checking for cond.1: " + taxon);
@@ -609,6 +596,10 @@ public class MaxentWCController extends UtilityComposer {
                 System.out.println("After checking for cond.2: " + taxon);
             }
 
+        }*/
+
+        if(sac.getSelectedItem() != null){
+            taxon = (String)sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 
         return taxon;

@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.index.SamplingIndex;
+import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
 
 /**
@@ -217,40 +219,7 @@ public class SamplingService {
      * @return samples as grid, String [][]
      */
     public String sampleSpeciesAsCSV(String filter, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows) {
-        try {
-
-            System.out.println("Limiting sampling to : " + max_rows); 
-
-            String[][] results = sampleSpecies(filter, layers, region, null, max_rows);
-            StringBuilder sbResults = new StringBuilder();
-
-            for (int i = 0; i < results.length; i++) {
-                for (int j = 0; j < results[i].length; j++) {
-                    if (results[i][j] != null) {
-                        sbResults.append(results[i][j]);
-                    }
-                    if (j < results[i].length - 1) {
-                        sbResults.append(",");
-                    }
-                }
-                sbResults.append("\r\n");
-            }
-
-            /* open output file */
-            File temporary_file = java.io.File.createTempFile("sample", ".csv");
-            FileWriter fw = new FileWriter(temporary_file);
-
-            fw.append(sbResults.toString());
-            fw.close();
-            return temporary_file.getPath();
-
-
-        } catch (Exception e) {
-            System.out.println("error with samplesSpeciesAsCSV:");
-            e.printStackTrace(System.out);
-        }
-
-        return "";
+        return sampleSpeciesAsCSV(filter, layers, region, records, max_rows, null);
     }
 
     /**
@@ -267,6 +236,10 @@ public class SamplingService {
      * @return samples as grid, String [][]
      */
     public String[][] sampleSpecies(String filter, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows) {
+        return sampleSpecies(filter, layers, region, records, max_rows, null);
+    }
+
+    public String[][] sampleSpecies(String filter, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows, AnalysisJobSampling job) {
         String[][] results = null;
 
         StringBuffer output = new StringBuffer();
@@ -299,8 +272,13 @@ public class SamplingService {
 
         ArrayList<String[]> columns = new ArrayList<String[]>();
 
+        if(job != null) job.setProgress(0.1);
+
         try {
-            for (IndexedRecord r : ir) {
+            //for (IndexedRecord r : ir) {
+            if(ir != null){ //only expect one result back from oi.filterspr(f);
+                IndexedRecord r = ir[0];
+                
                 columns.clear();
 
                 /*
@@ -326,9 +304,11 @@ public class SamplingService {
                  * repeat until 20, or so records retrieved
                  */
                 int rowoffset = 0;
+                double rowCount = r.record_end - r.record_start + 1;
                 results = null;
                 while (rowoffset <= max_rows && rend <= r.file_end) {
-
+                    if(job != null) job.setProgress(rowoffset / rowCount);
+                    
                     columns.clear();
 
                     sortedrecords = OccurrencesIndex.getSortedRecords(rstart, rend);
@@ -437,7 +417,18 @@ public class SamplingService {
                         rend = r.file_end + 1;
                     }
                 }
+
+                //trim back results
+                String [][] results_trim = new String[rowoffset][results[0].length];
+                for(i=0;i<results_trim.length;i++){
+                    for(j=0;j<results_trim[i].length;j++){
+                        results_trim[i][j] = results[i][j];
+                    }
+                }
+                return results_trim;
             }
+
+
 
             return results;
         } catch (Exception e) {
@@ -679,5 +670,129 @@ public class SamplingService {
         }
 
         return null;
+    }
+
+    /**
+     * gets samples; occurrences records + optional intersecting layer values,
+     *
+     *
+     * limit output
+     *
+     * @param filter species name as String
+     * @param layers list of layer names of additional data to include as String []
+     * @param region region to restrict results as SimpleRegion
+     * @param records sorted pool of records to intersect with as ArrayList<Integer>
+     * @param max_rows upper limit of records to return as int
+     * @return samples as grid, String [][]
+     */
+    public String sampleSpeciesAsCSV(String species, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows, AnalysisJobSampling job) {
+         try {
+
+            System.out.println("Limiting sampling to : " + max_rows);
+
+            String[][] results = sampleSpecies(species, layers, region, null, max_rows);
+            StringBuilder sbResults = new StringBuilder();
+
+            for (int i = 0; i < results.length; i++) {
+                for (int j = 0; j < results[i].length; j++) {
+                    if (results[i][j] != null) {
+                        sbResults.append(results[i][j]);
+                    }
+                    if (j < results[i].length - 1) {
+                        sbResults.append(",");
+                    }
+                }
+                sbResults.append("\r\n");
+            }
+
+            /* open output file */
+            File temporary_file = java.io.File.createTempFile("sample", ".csv");
+            FileWriter fw = new FileWriter(temporary_file);
+
+            fw.append(sbResults.toString());
+            fw.close();
+            return temporary_file.getPath();
+
+
+        } catch (Exception e) {
+            System.out.println("error with samplesSpeciesAsCSV:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+    }
+
+
+    public static String getLSIDAsGeoJSON(String lsid, File outputpath) {
+        int i;
+
+        /* get samples records from records indexes */
+        String[][] samples = (new SamplingService()).sampleSpecies(lsid, null, null, null, TabulationSettings.MAX_RECORD_COUNT, null);
+
+        StringBuffer sbGeoJSON = new StringBuffer();
+        sbGeoJSON.append("{");
+        sbGeoJSON.append("  \"type\": \"FeatureCollection\",");
+        sbGeoJSON.append("  \"features\": [");
+        for (i = 1; i < samples.length; i++) {
+            sbGeoJSON.append(getRecordAsGeoJSON(samples,i));
+            if (i<samples.length-1) sbGeoJSON.append(",");
+        }
+        sbGeoJSON.append("  ],");
+        sbGeoJSON.append("  \"crs\": {");
+        sbGeoJSON.append("    \"type\": \"EPSG\",");
+        sbGeoJSON.append("    \"properties\": {");
+        sbGeoJSON.append("      \"code\": \"4326\"");
+        sbGeoJSON.append("    }");
+        sbGeoJSON.append("  }");
+        //sbGeoJSON.append(",  \"bbox\": [");
+        //sbGeoJSON.append("    ").append(bbox[0][0]).append(",").append(bbox[0][1]).append(",").append(bbox[1][0]).append(",").append(bbox[1][1]);
+        //sbGeoJSON.append("  ]");
+        sbGeoJSON.append("}");
+
+        /* write samples to a file */
+        try {
+            File temporary_file = java.io.File.createTempFile("filter_sample", ".csv", outputpath);
+            FileWriter fw = new FileWriter(temporary_file);
+
+            fw.write(sbGeoJSON.toString());
+
+            fw.close();
+
+            return temporary_file.getName();	//return location of temp file
+
+        } catch (Exception e) {
+            (new SpatialLogger()).log("SamplingService: getLSIDAsGeoJSON()", e.toString());
+            e.printStackTrace();
+        }
+        return "";
+
+    }
+
+    private static String getRecordAsGeoJSON(String [][] rec, int rw) {
+        //String[] recdata = rec.split(",");
+
+        StringBuffer sbRec = new StringBuffer();
+        sbRec.append("{");
+        sbRec.append("  \"type\":\"Feature\",");
+        sbRec.append("  \"id\":\"occurrences.data.").append(rec[rw][TabulationSettings.geojson_id]).append("\",");
+        sbRec.append("  \"geometry\":{");
+        sbRec.append("      \"type\":\"Point\",");
+        sbRec.append("      \"coordinates\":[\"").append(rec[rw][TabulationSettings.geojson_longitude]).append("\",\"").append(rec[rw][TabulationSettings.geojson_latitude].trim()).append("\"]");
+        sbRec.append("   },");
+        sbRec.append("  \"geometry_name\":\"the_geom\",");
+        sbRec.append("  \"properties\":{");
+        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+            sbRec.append("      \"").append(TabulationSettings.geojson_property_names[i])
+                    .append("\":\"").append(rec[rw][TabulationSettings.geojson_property_fields[i]])
+                    .append("\"");
+            if(i < TabulationSettings.geojson_property_names.length-1){
+                sbRec.append(",");
+            }
+        }
+        sbRec.append("  }");
+        sbRec.append("}");
+
+        return sbRec.toString();
+
     }
 }
