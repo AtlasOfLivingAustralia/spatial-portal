@@ -1,5 +1,6 @@
 package org.ala.spatial.web;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Iterator;
@@ -7,10 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 
 import org.ala.spatial.analysis.service.OccurrencesService;
+import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.CommonName;
 import org.ala.spatial.model.ValidTaxonName;
@@ -187,5 +190,40 @@ public class SpeciesController {
         }
 
         return null;
+    }
+
+    /**
+     * Returns a relative path to a zip file of the filtered georeferenced data
+     *
+     * @param pid
+     * @param shape
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/lsid/{lsid}/geojson", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String getSamplesListAsGeoJSON(@PathVariable String lsid, HttpServletRequest req) {
+        TabulationSettings.load();
+
+        try {
+
+            lsid = URLDecoder.decode(lsid, "UTF-8");
+            lsid=lsid.replaceAll("__",".");
+
+            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //String currentPath = TabulationSettings.base_output_dir;
+            long currTime = System.currentTimeMillis();
+            String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator + currTime + File.separator;
+            File fDir = new File(outputpath);
+            fDir.mkdir();
+
+            String gjsonFile = SamplingService.getLSIDAsGeoJSON(lsid, fDir);
+
+            return "output/sampling/" + currTime + "/" + gjsonFile;
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return "";
     }
 }

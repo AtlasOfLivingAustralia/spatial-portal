@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -14,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.analysis.service.FilteringService;
+import org.ala.spatial.util.AnalysisJobSampling;
+import org.ala.spatial.util.AnalysisQueue;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
@@ -45,23 +48,39 @@ public class SamplingWSController {
         try {
             ssets = new SpatialSettings();
 
-            String species = req.getParameter("taxonid");
-            String[] layers = getLayerFiles(req.getParameter("envlist"));
-
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
             System.out.println("area: " + req.getParameter("area"));
 
             String area = req.getParameter("area");
+
+           /* String[] layers = getLayerFiles();
             ArrayList<Integer> records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
             } else {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
-            }
+            } */
+            
+            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
 
+            String pid = Long.toString(System.currentTimeMillis());
+            AnalysisJobSampling ajs = new AnalysisJobSampling(pid, currentPath, species, req.getParameter("envlist"), area);
+            StringBuffer inputs = new StringBuffer();
+            inputs.append("pid:").append(pid);
+            inputs.append(";area:").append(area);
+            inputs.append(";envlist:").append(req.getParameter("envlist"));
+            inputs.append(";output_path:").append("/output/sampling/").append(/*species.replaceAll(" ", "_")*/"").append("_sample_").append(pid).append(".zip");
+            ajs.setInputs(inputs.toString());
+            AnalysisQueue.addJob(ajs);
+
+            return pid;
+
+            /*
             SamplingService ss = new SamplingService();
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"));
 
@@ -86,7 +105,7 @@ public class SamplingWSController {
             String outfile = fDir.getAbsolutePath() + File.separator + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
             Zipper.zipFiles(files, outfile);
 
-            return "/output/sampling/" + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
+            return "/output/sampling/" + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";*/
 
         } catch (Exception e) {
             System.out.println("Error processing Sampling request:");
@@ -106,7 +125,7 @@ public class SamplingWSController {
 
             ssets = new SpatialSettings();
 
-            String species = req.getParameter("taxonid");
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
             String[] layers = getLayerFiles(req.getParameter("envlist"));
 
             System.out.println("species: " + species);
@@ -149,8 +168,6 @@ public class SamplingWSController {
                 rList.add(htRecs);
             }
 
-            //return results;
-            //return rList;
             return sbResults.toString();
 
         } catch (Exception e) {
@@ -196,34 +213,12 @@ public class SamplingWSController {
 
         for (int j = 0; j < nameslist.length; j++) {
 
-            //Layer[] _layerlist1 = ssets.getEnvironmentalLayers();
-            //Layer[] _layerlist2 = ssets.getContextualLayers();
-
             pathlist[j] = Layers.layerDisplayNameToName(nameslist[j]); 
-            /*
-            for (int i = 0; i < _layerlist1.length; i++) {
-                if (_layerlist1[i].display_name.equalsIgnoreCase(nameslist[j])) {
-                    pathlist[j] = _layerlist1[i].name;
-                    continue;
-                }
-            }
-
-            for (int i = 0; i < _layerlist2.length; i++) {
-                if (_layerlist2[i].display_name.equalsIgnoreCase(nameslist[j])) {
-                    pathlist[j] = _layerlist2[i].name;
-                    continue;
-                }
-            }
-            *
-            */
         }
 
         return pathlist;
     }
 
-    private void writeAsJSON() {
-    }
-    
     @RequestMapping(value = "/process/points", method = RequestMethod.POST)
     public
     @ResponseBody
@@ -232,7 +227,7 @@ public class SamplingWSController {
         try {
             ssets = new SpatialSettings();
 
-            String species = req.getParameter("taxonid");
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
             
             System.out.println("species: " + species);
 

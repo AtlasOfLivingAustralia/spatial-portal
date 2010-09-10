@@ -428,6 +428,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         /* is it continous (grid file) */
         File continous_file = new File(TabulationSettings.environmental_data_path
                 + layer.name + ".gri");
+        if(!continous_file.exists()){
+            continous_file = new File(TabulationSettings.environmental_data_path
+                + layer.name + ".GRI");
+        }
         if (continous_file.exists()) {
             /* load grid file and fill layerfilter with min/max */
             try {

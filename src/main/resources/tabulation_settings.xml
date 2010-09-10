@@ -1332,8 +1332,17 @@
 
                 field list is comma separated, hierarchy fields
         -->
-    <!--occurances_csv>d:\mnt\ala\data\occurrences\occurrences.csv</occurances_csv-->
-    <occurances_csv>/mnt/ala/data/occurrences/occurrences.csv</occurances_csv>
+    <occurances_csv>d:\mnt\ala\data\occurrences\occurrences2.csv</occurances_csv>
+    
+    <!--
+    limit index size, for testing
+    
+    use -1 for all
+    
+    samples first n records.
+    -->
+    <occurances_csv_max_records>-1</occurances_csv_max_records>
+    <!--occurances_csv>/mnt/ala/data/occurrences/occurrences.csv</occurances_csv-->
 
     <!--
         field settings for occurances_csv_fields:
@@ -1345,15 +1354,57 @@
         5 is unique id, same as (0)
         6 is unique id, same as (2)
     -->
-    <occurances_csv_fields>occurrenceId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataProviderId,dataResourceId,institutionCode,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
+    <!--occurances_csv_fields>occurrenceId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataProviderId,dataResourceId,institutionCode,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
     <occurances_csv_field_settings>0,1,1,2,2,2,2,0,2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
-    <occurances_csv_fields_lookups>dataProviderId,dataResourceId,institutionCode,collectionCode</occurances_csv_fields_lookups>
+    <occurances_csv_fields_lookups>dataProviderId,dataResourceId,institutionCode,collectionCode</occurances_csv_fields_lookups-->
+
+    <occurances_csv_fields>occurrenceId,kingdomConceptId,phylumConceptId,classConceptId,orderConceptId,familyConceptId,genusConceptId,speciesConceptId,taxonConceptId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataProviderUid,dataProviderName,dataResourceUid,dataResourceDisplayName,institutionUid,institutionCode,institutionName,collectionUid,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
+    <occurances_csv_field_settings>0,1,1,2,2,2,2,2,2,0,0,0,0,0,0,0,0,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
+    <occurances_csv_fields_lookups>dataProviderUid,dataResourceUid,institutionUid,institutionCode,collectionUid,collectionCode</occurances_csv_fields_lookups>
+    <occurances_csv_field_pairs>classConceptId,class,orderConceptId,order,familyConceptId,family,genusConceptId,genus,speciesConceptId,species,taxonConceptId,scientificName</occurances_csv_field_pairs>
+
+    <!--
+        autocomplete friendly names for 1's & 2's (type names)
+        -->
+    <occurances_csv_twos_names>kingdom,phylum,class,order,family,genus,species,scientific name</occurances_csv_twos_names>
+
+    <!--
+        integer indexes (0-n) for occurrence columns containing:
+            id (occurrence id)
+            longitude
+            latitude
+            property_fields (csv)
+        property names for export with property field column (by idx) values
+            property_names (csv)
+
+        Note: indexes in field output order, NOT as above:
+        order:
+            (1's & 2's)
+            (0's)
+            (longitude)
+            (latitude)
+
+          -->
+    <geojson_id>8</geojson_id>
+    <geojson_longitude>37</geojson_longitude>
+    <geojson_latitude>38</geojson_latitude>
+    <geojson_property_names>family,familyconceptid,occurrenceid,scientificname,occurrenceDate,coordinateUncertaintyInMeters,taxonconceptid,dataprovideruid,dataprovidername</geojson_property_names>;
+    <geojson_property_fields>13,4,8,16,27,32,7,17,18</geojson_property_fields>
+    
+    <!--
+        column for inclusion as the first column in species list exports.
+
+        n'th 2's column (0 to n) from occurrences_csv_field_settings.
+        -->
+    <species_list_first_column_index>2</species_list_first_column_index>
 
     <!--
 common names file as csv, no header, first 2 columns:
-species name, common name
+species name, common name.
+
+if not csv, then tab delimited
 -->
-    <common_names_csv>d:\mnt\ala\data\commonnames\output4.csv</common_names_csv>
+    <common_names_csv>d:\mnt\ala\data\commonnames\common_names_ranks.txt</common_names_csv>
     <!--common_names_csv>/Users/ajay/projects/ala/data/archive-ala/occurrences/output4.csv</common_names_csv-->
 
 
@@ -1361,7 +1412,7 @@ species name, common name
     <!--index_path>/mnt/ala/data/index/tabulation/</index_path-->
 
     <maxent>
-        <cmdpath>java -mx900m -jar d:\mnt\ala\modelling\maxent\maxent.jar </cmdpath>
+        <cmdpath>java -Xmx5000m -jar d:\mnt\ala\modelling\maxent\maxent.jar </cmdpath>
         <!--cmdpath>java -mx900m -jar /mnt/ala/modelling/maxent/maxent.jar </cmdpath-->
         <!--cmdpath>java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar </cmdpath-->
     </maxent>

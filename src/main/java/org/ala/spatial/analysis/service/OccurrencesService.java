@@ -1,7 +1,12 @@
 package org.ala.spatial.analysis.service;
 
+import java.io.File;
+import java.io.FileWriter;
 import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.util.SpatialLogger;
+import org.ala.spatial.util.TabulationSettings;
 
 /**
  * facilitates access into occurrences index, 

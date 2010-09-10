@@ -795,4 +795,12 @@ public class SimpleRegion extends Object implements Serializable {
 
         return simpleregion;
     }
+
+    public double getWidth() {
+        return bounding_box[1][0] - bounding_box[0][0];
+    }
+
+    public double getHeight() {
+        return bounding_box[1][1] - bounding_box[0][1];
+    }
 }
