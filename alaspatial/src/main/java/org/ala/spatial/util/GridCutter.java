@@ -419,6 +419,24 @@ public class GridCutter {
             Grid g = Grid.getGrid(TabulationSettings.getPath(layers[j].name));
             float[] v = g.getValues2(points);
 
+            //row range standardization
+            float minv = Float.MAX_VALUE;
+            float maxv = Float.MIN_VALUE;
+            for(int i=0;i<v.length;i++){
+                if(v[i] < minv) minv = v[i];
+                if(v[i] > maxv) maxv = v[i];
+            }
+            float range = maxv - minv;
+            if(range > 0){
+                for(int i=0;i<v.length;i++){
+                    v[i] = (v[i] - minv) / range;
+                }
+            } else {
+                for(int i=0;i<v.length;i++){
+                    v[i] = 0;
+                }
+            }
+
             //iterate for pieces
             for (int i = 0; i < pieces; i++) {
                 float[] d = (float[]) data.get(i);                

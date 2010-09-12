@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.util;
 
 import java.io.BufferedReader;
@@ -23,13 +22,14 @@ import org.ala.spatial.analysis.service.SamplingService;
  * @author Adam
  */
 public class AnalysisJobSampling extends AnalysisJob {
-    String [] layers;
+
+    String[] layers;
     int numberOfGroups;
     SimpleRegion region;
-    LayerFilter [] envelope;
+    LayerFilter[] envelope;
     String species;
     ArrayList<Integer> records;
-    long [] stageTimes;
+    long[] stageTimes;
     String envlist;
     String area;
     String currentPath;
@@ -57,14 +57,15 @@ public class AnalysisJobSampling extends AnalysisJob {
     }
 
     @Override
-    public void run(){
-        try{
+    public void run() {
+        try {
             long start = System.currentTimeMillis();
 
             setCurrentState(RUNNING);
             setStage(0);
 
-            SpatialSettings ssets; ssets = new SpatialSettings();
+            SpatialSettings ssets;
+            ssets = new SpatialSettings();
 
             SamplingService ss = new SamplingService();
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"), this);
@@ -78,7 +79,7 @@ public class AnalysisJobSampling extends AnalysisJob {
             while (it.hasNext()) {
                 System.out.println("Adding to download: " + it.next());
             }
-            
+
             String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
@@ -94,7 +95,7 @@ public class AnalysisJobSampling extends AnalysisJob {
 
             //write out infor for adjusting input parameters
             System.out.println("Sampling:" + " " + (end - start));
-        }catch(Exception e){
+        } catch (Exception e) {
             setProgress(1, "failed: " + e.getMessage());
             setCurrentState(FAILED);
             e.printStackTrace();
@@ -102,33 +103,35 @@ public class AnalysisJobSampling extends AnalysisJob {
     }
 
     @Override
-    public long getEstimate(){
-        if(getProgress() == 0) return 0;
+    public long getEstimate() {
+        if (getProgress() == 0) {
+            return 0;
+        }
 
         long timeElapsed;
-        long t1=0, t2=0, t3=0, t4=0;
+        long t1 = 0, t2 = 0, t3 = 0, t4 = 0;
         double prog;
-        synchronized(progress){
-           timeElapsed = progressTime - stageTimes[getStage()];
-           prog = progress;
+        synchronized (progress) {
+            timeElapsed = progressTime - stageTimes[getStage()];
+            prog = progress;
         }
         long timeRemaining = 0;
 
-        
-        if(prog > 0){
-            t1 = (long) (timeElapsed * (.2 - prog)/prog ); //projected
+
+        if (prog > 0) {
+            t1 = (long) (timeElapsed * (.2 - prog) / prog); //projected
         }
-        if(t1<=0 || prog <= 0){
+        if (t1 <= 0 || prog <= 0) {
             t1 = (long) (1000); //default
         }
 
-        timeRemaining = t1 ;
+        timeRemaining = t1;
         return smoothEstimate(timeRemaining);
-    }    
-   
+    }
+
     @Override
-    public String getStatus(){
-        if(getProgress() < 1){
+    public String getStatus() {
+        if (getProgress() < 1) {
             return "est remaining: " + getEstimateInMinutes() + " min";
         } else {
             if (stage == -1) {
@@ -140,31 +143,31 @@ public class AnalysisJobSampling extends AnalysisJob {
     }
 
     @Override
-    public void setStage(int i){
+    public void setStage(int i) {
         super.setStage(i);
 
-        if(i < 4){
+        if (i < 4) {
             stageTimes[i] = System.currentTimeMillis();
         }
     }
 
-    public String toString(){
+    public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(getName());
         sb.append("; Sampling");
         sb.append("; state=").append(getCurrentState());
         sb.append("; status=").append(getStatus());
         sb.append("; species=").append(species);
-        sb.append("; layers list=").append(envlist);
-        sb.append("; area=").append(area);
+        //sb.append("; layers list=").append(envlist);
+        //sb.append("; area=").append(area);
 
         return sb.toString();
     }
 
     private String[] getLayerFiles(String envNames) {
-    	if(envNames.equals("none")){
-    		return null;
-    	}
+        if (envNames.equals("none")) {
+            return null;
+        }
         String[] nameslist = envNames.split(":");
         String[] pathlist = new String[nameslist.length];
 
