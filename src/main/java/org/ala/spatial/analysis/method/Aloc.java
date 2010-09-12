@@ -1,6 +1,8 @@
 package org.ala.spatial.analysis.method;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.util.AnalysisJobAloc;
 import org.ala.spatial.util.SpatialLogger;
@@ -1161,7 +1163,6 @@ public class Aloc {
         if(job != null) job.setStage(1);    //seeding stage
         if(job != null && job.isCancelled()) return null;
 
-        ArrayList<float[]> distancesAll = new ArrayList<float[]>(pieces);
 
         int[] rowCounts = new int[pieces];
         int nRowsTotal = 0;
@@ -1325,23 +1326,54 @@ public class Aloc {
 
         int threadcount = TabulationSettings.analysis_threads;
 
-        seeds = java.util.Arrays.copyOf(seeds, seedidxsize * nCols);//new float[seedidxsize * nCols];
-        int[] seedgroup_nonmissingvalues = new int[seedidxsize * nCols];
+        //setup piece data
+        List apdList = java.util.Collections.synchronizedList(new ArrayList());
+        for(i=0;i<pieces;i++){
+            int rowcount = ((float[]) data_pieces.get(i)).length / nCols;
+            apdList.add(new AlocPieceData(
+                    (float[]) data_pieces.get(i),
+                    new float[rowcount * seedidxsize],
+                    new short[rowcount],
+                    new float[rowcount]));
+        }
+        
+        //setup shared data
+        seeds = java.util.Arrays.copyOf(seeds, seedidxsize * nCols);
+        int [] seedgroup_nonmissingvalues = new int[seedidxsize * nCols];
+        float [] otherGroupMovement = new float[seedidxsize];
+        float [] groupMovement = new float[seedidxsize];
+        AlocSharedData asd = new AlocSharedData(
+                    otherGroupMovement,
+                    groupMovement,
+                    nCols,
+                    col_range,
+                    seedidxsize,
+                    seeds,
+                    seedgroup_nonmissingvalues     
+                    );
+        AlocSharedData [] asdCopies = new AlocSharedData[threadcount];
+        for(i=0;i<threadcount;i++){
+            asdCopies[i] = new AlocSharedData(
+                    otherGroupMovement.clone(),
+                    groupMovement.clone(),
+                    nCols,
+                    col_range.clone(),
+                    seedidxsize,
+                    seeds.clone(),
+                    seedgroup_nonmissingvalues.clone()
+                    );
+        }
 
-        ArrayList<float[]> seeds_adjustments = new ArrayList<float[]>(threadcount);
-        ArrayList<int[]> seeds_nmv_adjustments = new ArrayList<int[]>(threadcount);
-        ArrayList<int[]> seeds_groupsize_adjustments = new ArrayList<int[]>(threadcount);
-        ArrayList<int[]> records_movement = new ArrayList<int[]>(threadcount);
-        for (i = 0; i < threadcount; i++) {
-            seeds_adjustments.add(new float[seedidxsize * nCols]);
-            seeds_nmv_adjustments.add(new int[seedidxsize * nCols]);
-            seeds_groupsize_adjustments.add(new int[seedidxsize]);
-            records_movement.add(new int[1]);
+        //setup thread data
+        AlocThreadData [] atdArray = new AlocThreadData[threadcount];
+        for(i=0;i<threadcount;i++){
+            atdArray[i] = new AlocThreadData(
+                    new int[seedidxsize], new int[seedidxsize * nCols],
+            new float[seedidxsize * nCols]
+                    );
         }
 
         //2. allocate all objects to a group
-        short[] groups = new short[nRowsTotal];
-        float[] groups_dist = new float[nRowsTotal];
         int[] groupsize = new int[seedidxsize];
         for (i = 0; i < seedidxsize; i++) {
             groupsize[i] = 0;
@@ -1359,43 +1391,18 @@ public class Aloc {
                 }
             }
         }
-        for (i = 0; i < nRowsTotal; i++) {
-            groups[i] = -1;
+        for (i = 0; i < pieces; i++) {
+            AlocPieceData apd = (AlocPieceData)apdList.get(i);
+            for(j=0;j<apd.groups.length;j++){
+                apd.groups[j] = -1;
+            }
         }
 
-        //setup main loop
-        ArrayList<int[]> record_spans = new ArrayList(pieces);
-        for (i = 0; i < pieces; i++) {
-            int[] r = new int[2];
-            r[0] = i;
-            r[1] = rowCounts[i];
-            record_spans.add(r);
-        }
-        LinkedBlockingQueue<int[]> lbq = new LinkedBlockingQueue(record_spans);
+        LinkedBlockingQueue<AlocPieceData> lbq = new LinkedBlockingQueue(new ArrayList<AlocPieceData>());
 
         AlocInnerLoop3[] ail = new AlocInnerLoop3[threadcount];
-
-        //setup for large memory usage/speedup tradoff (#cells * #groups)
-        for(i=0;i<pieces;i++){
-            float[] f = new float[((float[]) data_pieces.get(i)).length / nCols * seedidxsize];
-            distancesAll.add(f);
-        }
-
-        //for reducing distance calculations
-        float [] rowDist = new float[groups.length];
-        float [] otherGroupMovement = new float[seedidxsize];
-        float [] groupMovement = new float[seedidxsize];
-        for(i=0;i<seedidxsize;i++){
-            otherGroupMovement[i] = 0;
-            groupMovement[i] = 0;
-        }
-        for(i=0;i<rowDist.length;i++){
-            rowDist[i] = 0;
-        }
-
         for (i = 0; i < threadcount; i++) {
-            ail[i] = new AlocInnerLoop3(
-                    lbq, data_pieces, nCols, col_range, seedidxsize, seeds, seedgroup_nonmissingvalues, groups, seeds_adjustments.get(i), seeds_nmv_adjustments.get(i), seeds_groupsize_adjustments.get(i), records_movement.get(i), rowDist, otherGroupMovement, distancesAll, groupMovement);
+            ail[i] = new AlocInnerLoop3(lbq, atdArray[i], asdCopies[i]);
         }
 
         System.out.println("Started AlocInnerLoops (" + threadcount + " threads): " + System.currentTimeMillis());
@@ -1413,45 +1420,39 @@ public class Aloc {
                     preserved_members[i] = -1;
                 }
                 int count_preserved = 0;
-                for (i = 0; i < nRowsTotal && count_preserved < seedidxsize; i++) {
-                    if (preserved_members[groups[i]] == -1) {
-                        preserved_members[groups[i]] = i;
-                        count_preserved++;
-                    }
-                }
-            }
-
-            if (record_spans.size() == 0) {
-                System.out.print("0");
-            }
-
-            //rebuild sync'ed spans
-            for (i = 0; i < pieces; i++) {
-                int[] r = new int[2];
-                r[0] = i;
-                r[1] = rowCounts[i];
-                lbq.add(r);
-            }
-
-            //run
-            for (i = 0; i < threadcount; i++) {
-                //ail[i].start();
-                ail[i].next();
-            }
-
-            //run main loop
-            try {
-                boolean alive = true;
-                while (alive) {
-                    Thread.sleep(20);
-                    alive = false;
-                    for (i = 0; i < threadcount; i++) {
-                        if (!ail[i].isSleeping()) {
-                            alive = true;
-                            break;
+                int pos = 0;
+                for (i = 0; i < pieces && count_preserved < seedidxsize; i++) {
+                    short [] grps = ((AlocPieceData)apdList.get(i)).groups;
+                    for(j=0;j<grps.length;j++,pos++){
+                        if (preserved_members[grps[j]] == -1) {
+                            preserved_members[grps[j]] = pos;
+                            count_preserved++;
                         }
                     }
                 }
+            }
+
+            //get copies of shared data
+            if(iteration == 0){
+                for(i=0;i<threadcount;i++){
+                    asdCopies[i].otherGroupMovement = otherGroupMovement;
+                    asdCopies[i].groupMovement = groupMovement;
+                    asdCopies[i].seeds = seeds;
+                    asdCopies[i].seedgroup_nonmissingvalues = seedgroup_nonmissingvalues;
+                }
+            }
+            //rebuild spans
+            CountDownLatch cdl = new CountDownLatch(pieces);
+            for (i = 0; i < threadcount; i++) {
+                ail[i].next(cdl);
+            }
+            for (i = 0; i < pieces; i++) {                
+                lbq.add((AlocPieceData)apdList.get(i));
+            }
+
+            //wait for pieces to be finished
+            try {
+                cdl.await();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1463,6 +1464,7 @@ public class Aloc {
             }
 
             //update seeds and nonmissingvalues counts
+            //TODO: alternatives to seed updating
             if (iteration == 0) {
                 for (i = 0; i < seedidxsize; i++) {
                     for (j = 0; j < nCols; j++) {
@@ -1472,9 +1474,9 @@ public class Aloc {
             }
             movement = 0;
             for (i = 0; i < threadcount; i++) {
-                movement += records_movement.get(i)[0];
-                float[] seed_adj = seeds_adjustments.get(i);
-                int[] seed_nmv_adj = seeds_nmv_adjustments.get(i);
+                movement += atdArray[i].movement;
+                float[] seed_adj = atdArray[i].seeds_adjustment;
+                int[] seed_nmv_adj = atdArray[i].seeds_nmv_adjustment;
 
                 for (j = 0; j < seedidxsize * nCols; j++) {
                     if (Float.isNaN(seeds[j])
@@ -1489,7 +1491,7 @@ public class Aloc {
 
             //update group sizes
             for (i = 0; i < threadcount; i++) {
-                int[] seed_gs_adj = seeds_groupsize_adjustments.get(i);
+                int[] seed_gs_adj = atdArray[i].groupsize;
                 for (j = 0; j < seedidxsize; j++) {
                     groupsize[j] += seed_gs_adj[j];
                 }
@@ -1504,13 +1506,23 @@ public class Aloc {
                     //check
                     for (i = 0; i < seedidxsize; i++) {
                         if (groupsize[i] == 0) {
+                            System.out.print("*");
                             repeat = true;
 
                             //move original member back here
                             //old group == cg, new group == i
                             //row == preserved_members[i]
                             int row = preserved_members[i];
-                            int cg = groups[row];
+                            int pos = 0;
+                            int cg = -1;
+                            for(j=0;j<pieces;j++){
+                                short [] grps = ((AlocPieceData)apdList.get(i)).groups;
+                                if(pos + grps.length > row){
+                                    cg = grps[row - pos];
+                                    break;
+                                }
+                                pos += grps.length;
+                            }
 
                             groupsize[i]++;
                             groupsize[cg]--;
@@ -1588,9 +1600,14 @@ public class Aloc {
             if (min_movement == -1 || min_movement > movement) {
                 min_movement = movement;
                 //copy groups to min_groups
-                for (k = 0; k < nRowsTotal; k++) {
-                    min_groups[k] = groups[k];
-                    min_dists[k] = groups_dist[k];
+                k = 0;
+                for(i=0;i<pieces;i++){
+                    short [] grps = ((AlocPieceData)apdList.get(i)).groups;
+                    float [] dist = ((AlocPieceData)apdList.get(i)).rowDist;
+                    for(j=0;j<grps.length;j++,k++){
+                        min_groups[k] = grps[j];
+                        min_dists[k] = dist[j];
+                    }
                 }
             }
 
@@ -1608,7 +1625,11 @@ public class Aloc {
             }
         }
 
-        if(job != null) job.setProgress(1);        
+        if(job != null) job.setProgress(1);
+        
+        for (i = 0; i < threadcount; i++) {
+            ail[i].kill();
+        }
 
         //write-back row groups
         return min_groups;
@@ -2068,291 +2089,243 @@ class AlocInnerLoop2 extends Thread {
  * @author Adam
  */
 class AlocInnerLoop3 extends Thread {
+    LinkedBlockingQueue<AlocPieceData> lbq;
+    
+    AlocThreadData alocThreadData;
+    AlocSharedData alocSharedData;
+    CountDownLatch countDownLatch;
 
-    Thread t;
-    LinkedBlockingQueue<int[]> lbq;
-    int step;
-    int[] target;
-    ArrayList<Object> dataPieces;
-    int nCols;
-    float[] col_range;
-    int seedidxsize;
-    float[] seeds;
-    float[] seeds_adjustment;
-    int[] seedgroup_nonmissingvalues;
-    short[] groups;
-    int[] seeds_nmv_adjustment;
-    int[] groupsize;
-    int[] records_movement;
-    Boolean sleeping;
-    float[] rowDist;
-    float[] otherGroupMovement;
-    ArrayList<float[]> distancesAll;
-    float[] groupMovement;
-    boolean killed;
 
-    public AlocInnerLoop3(LinkedBlockingQueue<int[]> lbq_, ArrayList<Object> dataPieces_, int nCols_, float[] colrange_, int seedidxsize_, float[] seeds_, int[] seedgroup_nonmissingvalues_, short[] groups_, float[] seeds_adjustment_, int[] seeds_nmv_adjustment_, int[] groupsize_, int[] records_movement_, float[] dist_, float[] otherGroupMovement_, ArrayList<float[]> distancesAll_, float[] groupMovement_) {
+    public AlocInnerLoop3(LinkedBlockingQueue<AlocPieceData> lbq_, AlocThreadData alocThreadData_, AlocSharedData alocSharedData_) {
         lbq = lbq_;
-        dataPieces = dataPieces_;
-        nCols = nCols_;
-        col_range = colrange_;
-        seedidxsize = seedidxsize_;
-        seeds = seeds_;
-        seedgroup_nonmissingvalues = seedgroup_nonmissingvalues_;
-        groups = groups_;
-        seeds_adjustment = seeds_adjustment_;
-        seeds_nmv_adjustment = seeds_nmv_adjustment_;
-        groupsize = groupsize_;
-        records_movement = records_movement_;
-
-        rowDist = dist_;
-        otherGroupMovement = otherGroupMovement_;
-
-        distancesAll = distancesAll_;
-        groupMovement = groupMovement_;
-
-        sleeping = new Boolean(false);
-        killed = false;
+        alocThreadData = alocThreadData_;
+        alocSharedData = alocSharedData_;
 
         setPriority(Thread.MIN_PRIORITY);
     }
 
+    @Override
     public void run() {
-        while (!killed) {
-            // get next batch to operate on
-            int[] next;
-
-            try {
-                //reset seeds_adjustment;
-                for (int i = 0; i < seeds_adjustment.length; i++) {
-                    seeds_adjustment[i] = 0;
-                    seeds_nmv_adjustment[i] = 0;
-                }
-
-                //reset group size adjustment;
-                for (int i = 0; i < groupsize.length; i++) {
-                    groupsize[i] = 0;
-                }
-
-                //reset movement
-                records_movement[0] = 0;
-
-                //actual loop
-                synchronized (lbq) {
-                    if (lbq.size() > 0) {
-                        next = lbq.take();
-                    } else {
-                        next = null;
-                    }
-                }
-
-                while (next != null) {
-                    // run
-                    alocInnerLoop(next);
-
-                    // get next available
-                    synchronized (lbq) {
-                        if (lbq.size() > 0) {
-                            next = lbq.take();
-                        } else {
-                            next = null;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+        try{
+            while(true){
+                // run on next batch
+                AlocPieceData next = lbq.take();
+                alocInnerLoop(next);
+                countDownLatch.countDown();
             }
-            synchronized (sleeping) {
-                sleeping = true;
-            }
-            while (true) {
-                try {
-                    this.sleep(100000);
-                } catch (Exception e) {
-                    break;
-                }
-            }
-            synchronized (sleeping) {
-                sleeping = false;
-            }
+        } catch (InterruptedException ex){             
+        }catch (Exception e)        {
+            e.printStackTrace();
         }
     }
 
-    public boolean isSleeping() {
-        boolean s;
-        synchronized (sleeping) {
-            s = sleeping;
-        }
-        return s;
-    }
+    public void next(CountDownLatch newCountDownLatch) {
+        //reset movement
+        alocThreadData.movement = 0;        
+        countDownLatch = newCountDownLatch;
 
-    public void next() {
-        if (isAlive()) {
-            this.interrupt();
-        } else {
-            start();
+        if(!isAlive()){
+            this.start();
         }
     }
 
-    private void alocInnerLoop(int[] next) {
+    private void alocInnerLoop(AlocPieceData apd) {
+        float[] data = apd.data;
+        float[] distances = apd.distances;
+        short[] groups = apd.groups;
+
+        final float[] groupMovement = alocSharedData.groupMovement;
+        final int nCols = alocSharedData.nCols;
+        final float [] col_range = alocSharedData.col_range;
+        final int seedidxsize = alocSharedData.seedidxsize;
+        final float[] seeds = alocSharedData.seeds;
+        final int[] seedgroup_nonmissingvalues = alocSharedData.seedgroup_nonmissingvalues;
+
         int i, j, k;
         float min_dist_value = 0.00001f;
         int min_idx = 0;
         float dist;
-        float dist2;
         int missing;
         float v2;
         float v1;
 
         float min_dist;
-        float[] data = (float[]) dataPieces.get(next[0]);
-        float[] distances = (float[]) distancesAll.get(next[0]);
+        
         int nRows = data.length / nCols;
-        int rowOffset = next[1] - nRows;
-        int rw;
         int rws;
         float gm;
         int grp;
-        float[] centroidDistances = new float[seedidxsize];
+        //int skips = 0;
 
-        int skips = 0;
-        boolean [] updateRequired = new boolean[seedidxsize];
-
-        for (i = 0; i < nRows; i++) {
-            rw = i + rowOffset;
+        for (i = 0; i < nRows; i++) {            
             rws = i * seedidxsize;
-            grp = groups[rw];
+            grp = groups[i];
 
-            //test (1) if movement check is required
-//            if(groups[rw] >= 0) rowDist[rw] -= otherGroupMovement[groups[rw]];
-//            if(rowDist[rw] <= 0){
-
-            {
-                if(grp >= 0){
-                    distances[rws + grp] += groupMovement[grp]+min_dist_value;
-                    gm = distances[rws + grp];
-                    min_idx = groups[rw];
+            if(grp >= 0){
+                distances[rws + grp] += groupMovement[grp]+min_dist_value;
+                gm = distances[rws + grp];
+                min_idx = groups[i];
+                if(Float.isNaN(gm)){
+                    gm = Float.MAX_VALUE;
                 }
-                else gm = 0;
-                
-                min_dist = Float.MAX_VALUE;
-                
-                for (j = 0; j < seedidxsize; j++) {
-                    //if(j == grp) continue;
+            }
+            else gm = 0;
 
-                    distances[rws + j] -= groupMovement[j];
-                    if( j == grp || distances[rws + j] <= gm){
-                        //calc dist between obj(i) & obj(seeds(j))
-                        dist = 0;
-                        missing = 0;
-                        for (k = 0; k < nCols; k++) {
-                            v1 = data[i * nCols + k];
-                            v2 = seeds[j * nCols + k];
-                            if (Float.isNaN(v1) || Float.isNaN(v2) || col_range[k] == 0) {
-                                missing++;
-                            } else {
-                                if (seedgroup_nonmissingvalues[j * nCols + k] > 0) {
-                                    v2 = v2 / seedgroup_nonmissingvalues[j * nCols + k];
-                                }
-                                dist += java.lang.Math.abs(v1 - v2);//range == 1 (standardized 0-1); / (float) col_range[k];
+            min_dist = Float.MAX_VALUE;
+
+            for (j = 0; j < seedidxsize; j++) {
+                distances[rws + j] -= groupMovement[j];
+                if( j == grp || !(distances[rws + j] > gm)){
+                    //calc dist between obj(i) & obj(seeds(j))
+                    dist = 0;
+                    missing = 0;
+                    for (k = 0; k < nCols; k++) {
+                        v1 = data[i * nCols + k];
+                        v2 = seeds[j * nCols + k];
+                        if (Float.isNaN(v1) || Float.isNaN(v2) || col_range[k] == 0) {
+                            missing++;
+                        } else {
+                            if (seedgroup_nonmissingvalues[j * nCols + k] > 0) {
+                                v2 = v2 / seedgroup_nonmissingvalues[j * nCols + k];
                             }
-                        }
-                        dist = dist / (float) (nCols - missing);
-                        //centroidDistances[j] = dist;
-                        if (min_dist > dist) {
-                            min_dist = dist;
-                            min_idx = j;
-                        }
-                       /* if(distances[rws + j] > gm && distances[rws+j]-min_dist_value > dist){
-                            int q = 1;
-                        }*/
-                        distances[rws + j] = dist;
-                    }else{
-                        skips++;
-                    }
-                }
-/*
-                if(grp >= 0 && distances[rws+min_idx] > gm && min_idx != grp){
-                    double m = groupMovement[min_idx];
-                    grp = grp+1;
-                    grp--;
-                }
-                /*
-                //repeat for primary group if group allocation differs
-                if (false){//grp != (short) min_idx && grp >= 0) {
-                    j = grp;
-                    skips--;
-                    {
-                            //calc dist between obj(i) & obj(seeds(j))
-                            dist = 0;
-                            missing = 0;
-                            for (k = 0; k < nCols; k++) {
-                                v1 = data[i * nCols + k];
-                                v2 = seeds[j * nCols + k];
-                                if (Float.isNaN(v1) || Float.isNaN(v2) || col_range[k] == 0) {
-                                    missing++;
-                                } else {
-                                    if (seedgroup_nonmissingvalues[j * nCols + k] > 0) {
-                                        v2 = v2 / seedgroup_nonmissingvalues[j * nCols + k];
-                                    }
-                                    dist += java.lang.Math.abs(v1 - v2);//range == 1 (standardized 0-1); / (float) col_range[k];
-                                }
-                            }
-                            dist = dist / (float) (nCols - missing);
-                            centroidDistances[j] = dist;
-                            if (j == 0 || min_dist > dist) {
-                                min_dist = dist;
-                                min_idx = j;
-                            }
-                            distances[rws + j] = dist;                     
-                    }
-                }
-
-
-                //identify max distance from min distace for this row
-                dist2 = Float.NaN;
-                for(j=0;j<seedidxsize;j++){
-                    if(j != min_idx && !(dist2 < centroidDistances[j])){
-                        dist2 = centroidDistances[j];
-                    }
-                }
-                rowDist[rw] = dist2 - min_dist;*/
-
-                //add this group to group min_idx;
-                if (grp != (short) min_idx) {
-                    records_movement[0]++;
-
-                    //remove from previous group
-                    if (grp >= 0) {
-                        groupsize[grp]--;
-                        for (j = 0; j < nCols; j++) {
-                            if (!Float.isNaN(data[i * nCols + j])) {
-                                seeds_adjustment[grp * nCols + j] -= data[i * nCols + j];
-                                seeds_nmv_adjustment[grp * nCols + j]--;
-                            }
+                            dist += java.lang.Math.abs(v1 - v2);//range == 1 (standardized 0-1); / (float) col_range[k];
                         }
                     }
+                    dist = dist / (float) (nCols - missing);
+                    if (min_dist > dist) {
+                        min_dist = dist;
+                        min_idx = j;
+                    }
+                    distances[rws + j] = dist;
+                }
+                //else{
+                 //   skips++;
+                //}
+            }
 
-                    //reassign group
-                    groups[rw] = (short) min_idx;
+            //loop for checking
+            /*
+            for (j = 0; j < seedidxsize; j++) {
+                if( j != grp && !(distances[rws + j] <= gm)){
+                    //calc dist between obj(i) & obj(seeds(j))
+                    dist = 0;
+                    missing = 0;
+                    for (k = 0; k < nCols; k++) {
+                        v1 = data[i * nCols + k];
+                        v2 = seeds[j * nCols + k];
+                        if (Float.isNaN(v1) || Float.isNaN(v2) || col_range[k] == 0) {
+                            missing++;
+                        } else {
+                            if (seedgroup_nonmissingvalues[j * nCols + k] > 0) {
+                                v2 = v2 / seedgroup_nonmissingvalues[j * nCols + k];
+                            }
+                            dist += java.lang.Math.abs(v1 - v2);//range == 1 (standardized 0-1); / (float) col_range[k];
+                        }
+                    }
+                    dist = dist / (float) (nCols - missing);
+                    if (min_dist >= dist && j != grp) {
+                        //should NEVER get here
+                        min_dist = dist;
+                        min_idx = j;
+                    }
+                    //do not store distance in test; distances[rws + j] = dist;
+                }
+            }*/
 
-                    //add to new group
-                    groupsize[min_idx]++;
+            //add this group to group min_idx;
+            if (grp != (short) min_idx) {
+                alocThreadData.movement++;
 
+                //remove from previous group
+                if (grp >= 0) {
+                    alocThreadData.groupsize[grp]--;
                     for (j = 0; j < nCols; j++) {
                         if (!Float.isNaN(data[i * nCols + j])) {
-                            seeds_adjustment[min_idx * nCols + j] += data[i * nCols + j];
-                            seeds_nmv_adjustment[min_idx * nCols + j]++;
+                            alocThreadData.seeds_adjustment[grp * nCols + j] -= data[i * nCols + j];
+                            alocThreadData.seeds_nmv_adjustment[grp * nCols + j]--;
                         }
+                    }
+                }
+
+                //reassign group
+                groups[i] = (short) min_idx;
+
+                //add to new group
+                alocThreadData.groupsize[min_idx]++;
+
+                for (j = 0; j < nCols; j++) {
+                    if (!Float.isNaN(data[i * nCols + j])) {
+                        alocThreadData.seeds_adjustment[min_idx * nCols + j] += data[i * nCols + j];
+                        alocThreadData.seeds_nmv_adjustment[min_idx * nCols + j]++;
                     }
                 }
             }
         }
-        System.out.print("[" + Math.round((skips / (double)(nRows*seedidxsize)) * 100.0) + "%]");
+        //System.out.print("[" + Math.round((skips / (double)(nRows*seedidxsize)) * 100.0) + "%]");
     }
 
-    void kill() {
-        killed = true;
+    void kill() {        
         this.interrupt();
+    }
+}
+
+
+class AlocPieceData {
+    public float [] data;
+    public float [] distances;
+    public short[] groups;
+    public float[] rowDist;
+
+    public AlocPieceData(float [] data_,
+    float [] distances_,
+    short[] groups_,
+    float[] rowDist_){
+        data = data_;
+        distances = distances_;
+        groups = groups_;
+        rowDist = rowDist_;
+    }
+}
+
+class AlocThreadData {
+    public int[] groupsize;
+    public int[] seeds_nmv_adjustment;
+    public float[] seeds_adjustment;
+    public int movement;
+
+    public AlocThreadData(int[] groupsize_, int [] seeds_nvm_adjustment_,
+            float[] seeds_adjustment_){
+        groupsize = groupsize_;
+        seeds_nmv_adjustment = seeds_nvm_adjustment_;
+        seeds_adjustment = seeds_adjustment_;
+        movement = 0;
+    }
+}
+
+class AlocSharedData {
+    public float[] otherGroupMovement;
+    public float[] groupMovement;
+    public int nCols;
+    public float[] col_range;
+    public int seedidxsize;
+    public float[] seeds;
+    public int[] seedgroup_nonmissingvalues;
+    
+    public AlocSharedData(
+    float[] otherGroupMovement_,
+    float[] groupMovement_,
+    int nCols_,
+    float[] col_range_,
+    int seedidxsize_,
+    float[] seeds_,
+    int[] seedgroup_nonmissingvalues_
+    ){
+        otherGroupMovement = otherGroupMovement_;
+        groupMovement = groupMovement_;
+        nCols = nCols_;
+        col_range = col_range_;
+        seedidxsize = seedidxsize_;
+        seeds = seeds_;
+        seedgroup_nonmissingvalues = seedgroup_nonmissingvalues_; 
     }
 }

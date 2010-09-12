@@ -77,8 +77,9 @@ public class AnalysisJobAloc extends AnalysisJob {
             //write out infor for adjusting input parameters
             System.out.println("ALOC:" + cells + "," + numberOfGroups + "," + layers.length + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]) + " " + (end - stageTimes[3]));
         }catch(Exception e){
-            setProgress(1, "failed: " + e.getMessage());
+            setProgress(1, "failed: " + e.toString());
             setCurrentState(FAILED);
+            System.out.println("ALOC ERROR");
             e.printStackTrace();
         }
     }
@@ -250,5 +251,14 @@ public class AnalysisJobAloc extends AnalysisJob {
         sb.append("; number of layers=").append(layers.length);
 
         return sb.toString();
+    }
+
+    public String getImage(){
+        return "output/aloc/" + getName() + "/t_aloc.png";
+    }
+
+    AnalysisJob copy() {
+        return new AnalysisJobAloc(String.valueOf(System.currentTimeMillis()),
+                currentPath, layers, numberOfGroups, region, envelope);
     }
 }

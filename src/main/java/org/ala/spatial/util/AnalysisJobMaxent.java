@@ -54,22 +54,22 @@ public class AnalysisJobMaxent extends AnalysisJob {
         txtTestPercentage = txtTestPercentage_;
         chkJackknife = chkJackknife_;
         chkResponseCurves = chkResponseCurves_;
-        envlist= envlist_;
+        envlist = envlist_;
 
         //TODO: remove rough estimate
-        if(region != null){
-            cells = (int)Math.ceil(region.getWidth() / TabulationSettings.grd_xdiv
+        if (region != null) {
+            cells = (int) Math.ceil(region.getWidth() / TabulationSettings.grd_xdiv
                     + region.getHeight() / TabulationSettings.grd_ydiv);
-        }else{
+        } else {
             cells = 1000000; //or something
         }
         //cells = GridCutter.countCells(region, envelope);
 
         SamplingService ss = new SamplingService();
         OccurrencesService os = new OccurrencesService();
-        double [] p = ss.sampleSpeciesPoints(taxon, region, null);
-        if(p != null){
-            speciesCount = p.length/2;
+        double[] p = ss.sampleSpeciesPoints(taxon, region, null);
+        if (p != null) {
+            speciesCount = p.length / 2;
         }
         stageTimes = new long[4];
     }
@@ -146,9 +146,9 @@ public class AnalysisJobMaxent extends AnalysisJob {
             setProgress(0, "exporting results");
 
             Hashtable htProcess = new Hashtable();
-            if(isCancelled()) {
+            if (isCancelled()) {
                 //
-            }else if (exitValue == 0) {
+            } else if (exitValue == 0) {
                 // rename the env filenames to their display names
                 for (int ei = 0; ei < envnameslist.length; ei++) {
                     readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species.html", envpathlist[ei], envnameslist[ei]);
@@ -216,7 +216,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             if (prog > 0) {
                 t1 += timeElapsed * (.2 - prog) / prog; //projected
             }
-            if(t1 <= 0 || prog <= 0) {
+            if (t1 <= 0 || prog <= 0) {
                 t1 += cells * TabulationSettings.maxent_timing_0 * layers.length; //default
             }
         }
@@ -224,7 +224,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             if (prog > 0.2) {
                 t2 += timeElapsed * (.7 - (prog - .2)) / (prog - .2);   //projected
             }
-            if(t2 <=0 || prog <= 0.2) {
+            if (t2 <= 0 || prog <= 0.2) {
                 t2 += cells * TabulationSettings.maxent_timing_1 * layers.length; //default
             }
         }
@@ -375,5 +375,15 @@ public class AnalysisJobMaxent extends AnalysisJob {
             System.out.println("error writing species file:");
             ex.printStackTrace(System.out);
         }
+    }
+
+    public String getImage() {
+        return "output/maxent/" + getName() + "/plots/species.png";
+    }
+
+    AnalysisJob copy() {
+        return new AnalysisJobMaxent(String.valueOf(System.currentTimeMillis()),
+                currentPath, taxon, envlist, region, envelope, layers,
+                txtTestPercentage, chkJackknife, chkResponseCurves);
     }
 }

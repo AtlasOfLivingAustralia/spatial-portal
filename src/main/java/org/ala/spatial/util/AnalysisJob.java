@@ -172,4 +172,12 @@ public class AnalysisJob extends Thread implements Serializable {
     public void setInputs(String inputs_){
         inputs = inputs_;
     }
+
+    public String getImage(){
+        return null;
+    }
+
+    AnalysisJob copy() {
+        return new AnalysisJob(String.valueOf(System.currentTimeMillis()));
+    }
 }

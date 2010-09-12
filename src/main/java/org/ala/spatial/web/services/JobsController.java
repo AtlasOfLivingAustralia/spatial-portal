@@ -161,6 +161,41 @@ public class JobsController {
 
         return "job does not exist";
     }
+
+    @RequestMapping(value = "/image", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String image(HttpServletRequest req) {
+        try {
+            String pid = req.getParameter("pid");
+
+            String s = AnalysisQueue.getImage(pid);
+            return s;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return "job does not exist";
+    }
+
+    @RequestMapping(value = "/copy", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String copy(HttpServletRequest req) {
+        try {
+            String pid = req.getParameter("pid");
+
+            String s = AnalysisQueue.copy(pid);
+
+            if(s == null) s = "";
+            
+            return s;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return "job does not exist";
+    }
 }
 
 

@@ -254,8 +254,11 @@ public class AnalysisQueue {
                     + "JOB" + pid);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
-            j = (AnalysisJob) ois.readObject();
-            ois.close();
+            try{
+                j = (AnalysisJob) ois.readObject();
+            } finally {
+                ois.close();
+            }
         } catch (Exception e) {
           //  e.printStackTrace();
         }
@@ -304,6 +307,28 @@ public class AnalysisQueue {
         AnalysisJob j = getJob(pid);
         if (j != null) {
             return j.getInputs();
+        }
+        return null;
+    }
+
+    public static String getImage(String pid) {
+        init();
+
+        AnalysisJob j = getJob(pid);
+        if (j != null) {
+            return j.getImage();
+        }
+        return null;
+    }
+
+    public static String copy(String pid) {
+        AnalysisJob j = getJob(pid);
+        if(j != null){
+          //  AnalysisJob jcopy = j.copy();
+          //  if(jcopy != null){
+          //      addJob(jcopy);
+          //      return jcopy.getName();
+          //  }
         }
         return null;
     }
