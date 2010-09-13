@@ -554,7 +554,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void redrawFeatures(MapLayer selectedLayer) {
-        String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + ")";
+        String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
         execute(script);
 
 
@@ -583,7 +583,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
          */
 
         String script = ""
-                + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + ");"
+                + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");"
                 + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
                 + "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 

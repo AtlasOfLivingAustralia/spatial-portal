@@ -14,6 +14,7 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.index.FilteringIndex;
+import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.AnalysisQueue;
@@ -72,9 +73,21 @@ public class SamplingWSController {
             AnalysisJobSampling ajs = new AnalysisJobSampling(pid, currentPath, species, req.getParameter("envlist"), area);
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);
+            inputs.append(";taxonid:").append(species);
+
+            String [] n = OccurrencesIndex.getFirstName(species);
+            String speciesName;
+            if(n != null){
+                speciesName = n[0];
+                inputs.append(";scientificName:").append(n[0]);
+                inputs.append(";taxonRank:").append(n[1]);
+            } else {
+                speciesName = "";
+            }
+
             inputs.append(";area:").append(area);
             inputs.append(";envlist:").append(req.getParameter("envlist"));
-            inputs.append(";output_path:").append("/output/sampling/").append(/*species.replaceAll(" ", "_")*/"").append("_sample_").append(pid).append(".zip");
+            inputs.append(";output_path:").append("/output/sampling/").append(speciesName.replaceAll(" ", "_")).append("_sample_").append(pid).append(".zip");
             ajs.setInputs(inputs.toString());
             AnalysisQueue.addJob(ajs);
 

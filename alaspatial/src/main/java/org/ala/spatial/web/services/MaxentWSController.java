@@ -20,6 +20,7 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.FilteringService;
@@ -421,6 +422,13 @@ public class MaxentWSController {
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);
             inputs.append(";taxonid:").append(taxon);
+            
+            String [] n = OccurrencesIndex.getFirstName(taxon);
+            if(n != null){
+                inputs.append(";scientificName:").append(n[0]);
+                inputs.append(";taxonRank:").append(n[1]);
+            }
+
             inputs.append(";area:").append(area);
             inputs.append(";envlist:").append(envlist);
             inputs.append(";txtTestPercentage:").append(txtTestPercentage);

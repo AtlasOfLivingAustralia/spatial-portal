@@ -480,9 +480,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                                         <div  width="100%">
-
-
-                                            <div id="sizeChooser" visible="false">
+                                            <div id="sizeChooser" visible="false" width="100%">
                                                 <hbox>
                                                     <div style="padding-top:0px" width="60px">
                                                         <label value="Size: " sclass="h3" />
@@ -492,6 +490,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     </div>
                                                     <div align="right" style="padding-top:0px">
                                                         <label id="sizeLabel" />
+                                                    </div>
+                                                </hbox>
+                                                <hbox width="100%">
+                                                    <div align="right" style="padding-top:0px">
+                                                        <checkbox id="chkUncertaintySize" label="use uncertainty as size" />
                                                     </div>
                                                 </hbox>
                                             </div>

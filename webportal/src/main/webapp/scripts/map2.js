@@ -712,7 +712,7 @@ function forceRedrawVectorLayers() {
             //layersV[i].display(true);
             //layersV[i].display(true);
             var l = layersV[i];
-            redrawFeatures(l.features, l.name, l.style.fillColor, l.style.fillOpacity, l.style.pointRadius)();
+            redrawFeatures(l.features, l.name, l.style.fillColor, l.style.fillOpacity, l.style.pointRadius,l.style.szUncertain)();
         }
     } catch (err) {
 
@@ -729,23 +729,27 @@ function selected (evt) {
     }
     else {
         //test to see if its occurrence data
-        if (attrs["occurrenceid"] != null) {
-            var species = "<a href='http://bie.ala.org.au/species/" + attrs["taxonconceptid"] + "' target='_blank'>" + attrs["scientificname"] + "</a>";
-            if (!attrs["taxonconceptid"]) {
-                species = attrs["scientificname"];
+        if (attrs["oi"] != null) {
+            var species = "<a href='http://bie.ala.org.au/species/" + attrs["ti"] + "' target='_blank'>" + attrs["s"] + "</a>";
+            if (!attrs["ti"]) {
+                species = attrs["s"];
             }
-            var occurrencedate = attrs["occurrencedate"];
+            var occurrencedate = attrs["d"];
+            var uncertainty = attrs['u'];
+            if(uncertainty == "" || uncertainty == undefined) uncertainty = "<b>Undefined!</b>";
             if (!occurrencedate) occurrencedate="";
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100,100),
                 "<h2>Occurrence information</h2>" +
-                " Scientific name: " + species + "</a> <br />" +
-                " Family: <a href='http://bie.ala.org.au/species/" + attrs["familyconceptid"] + "' target='_blank'>" + attrs["family"] + "</a> <br />" +
-                " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + attrs["dataprovideruid"] + "' target='_blank'>" + attrs["dataprovidername"] + "</a> <br />" +
-                " Longitude: "+attrs['longitude'] + " , Latitude: " + attrs['latitude'] + " <br/>" +
+                " Scientific name: " + species + "</a> <br />" +                
+                " Family: <a href='http://bie.ala.org.au/species/" + attrs["fi"] + "' target='_blank'>" + attrs["f"] + "</a> <br />" +
+                " Kingdom: <a href='http://bie.ala.org.au/species/" + attrs["ki"] + "' target='_blank'>" + attrs["k"] + "</a> <br />" +
+                " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + attrs["pi"] + "' target='_blank'>" + attrs["p"] + "</a> <br />" +
+                " Longitude: "+attrs['lo'] + " , Latitude: " + attrs['la'] + " <br/>" +
+                " Uncertainty in meters: " + uncertainty + " <br />" +
                 " Occurrence date: " + occurrencedate + " <br />" +
-                "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + attrs["occurrenceid"] + "' target='_blank'>View details</a>"
+                "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + attrs["oi"] + "' target='_blank'>View details</a>"
                 ,
                 null, true, onPopupClose);
 
@@ -832,7 +836,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
     return wktLayer;
 }
 
-function addJsonFeatureToMap(feature, name, hexColour, radius, opacity) {
+function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncertain) {
     //    alert(name);
     var in_options = {
         'internalProjection': map.baseLayer.projection,
@@ -853,8 +857,10 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity) {
     var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = hexColour;
     layer_style.strokeColor = hexColour;
+    layer_style.pointRadius = 0;
     layer_style.pointRadius = radius;
     layer_style.fillOpacity = opacity;
+    layer_style.szUncertain = szUncertain;
 
 
     var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
@@ -863,7 +869,9 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity) {
     vector_layer.style = layer_style;
     vector_layer.isFixed = false;
     features = geojson_format.read(feature);
-    vector_layer.addFeatures(features);
+
+    //apply uncertainty to features
+    vector_layer.addFeatures(applyFeatureUncertainty(features, szUncertain));
 
     ////selectionLayers[selectionLayers.length] = vector_layer;
     vector_layer.events.register("featureselected", vector_layer, selected);
@@ -989,7 +997,7 @@ function redrawWKTFeatures(featureWKT, name,hexColour,opacity) {
     }
 }
 
-function redrawFeatures(feature, name, hexColour, opacity, radius) {
+function redrawFeatures(feature, name, hexColour, opacity, radius, szUncertain) {
     var in_options = {
         'internalProjection': map.baseLayer.projection,
         'externalProjection': new OpenLayers.Projection("EPSG:4326")
@@ -1003,6 +1011,7 @@ function redrawFeatures(feature, name, hexColour, opacity, radius) {
     layer_style.strokeColor = hexColour;
     layer_style.fillOpacity = opacity;
     layer_style.pointRadius = radius;
+    layer_style.szUncertain = szUncertain;
     
     for (key in gjLayers) {
 
@@ -1014,13 +1023,11 @@ function redrawFeatures(feature, name, hexColour, opacity, radius) {
 
                 layer.destroyFeatures();
                 layer.style = layer_style;
-                layer.addFeatures(features);
-
+                layer.addFeatures(applyFeatureUncertainty(features,szUncertain));
 
             }
         }
     }
-
 }
 
 function zoomBoundsGeoJSON(layerName) {
@@ -1884,4 +1891,22 @@ function acornHistory(request_string,div) {
     jQuery("#acorn"+div).html(str);
     //alert(jQuery(".acorn"+div).html());
     return false;
+}
+
+function applyFeatureUncertainty(features,szUncertain){
+    if(!szUncertain) return features;
+    var f = features;
+    var len = f.length;
+    for(var j=0;j<len && j<f.length;j++){        
+        if(f[j].geometry.toString().indexOf('POI') == 0) {
+            var u = f[j].attributes['u'];
+            if(u == '' || u == undefined || u == '0')
+                u = 10000;
+            var c = OpenLayers.Geometry.Polygon.createRegularPolygon(f[j].geometry,
+                    u,20,0);
+            var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,null);
+            f[j] = fv;
+        }        
+    }
+    return f;
 }

@@ -74,8 +74,8 @@ public class MaxentProgressWCController extends UtilityComposer {
 
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
-            Events.echoEvent("loadMap", parent, null);
             showReferenceNumber();
+            Events.echoEvent("loadMap", parent, null);            
             this.detach();
         } else if(s.equals("FAILED")) {
             timer.stop();

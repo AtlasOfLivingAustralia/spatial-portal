@@ -402,10 +402,11 @@ public class MaxentWCController extends UtilityComposer {
         System.out.println(legendurl);
 
         //get job inputs
+        String speciesName = "";
         try{
             for(String s : getJob("inputs").split(";")) {
-                if(s.startsWith("taxon")){
-                    taxon = s.split(":")[1];
+                if(s.startsWith("scientificName")){
+                    speciesName = s.split(":")[1];
                     break;
                 }
             }
@@ -417,7 +418,7 @@ public class MaxentWCController extends UtilityComposer {
             taxon = "species";
         }
 
-        mc.addWMSLayer("Maxent model for " + taxon, mapurl, (float) 0.5, "", legendurl);
+        mc.addWMSLayer("Maxent model for " + speciesName, mapurl, (float) 0.5, "", legendurl);
 
         infourl.setValue("Show process information");
         showInfoWindow("/output/maxent/" + pid + "/species.html");

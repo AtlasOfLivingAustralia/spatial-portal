@@ -340,6 +340,7 @@ public class RemoteMapImpl implements RemoteMap {
         geoJSON.setRedVal(r);
 
         geoJSON.setSizeVal(4); //TODO: default point size
+        geoJSON.setSizeUncertain(false);
 
         //Color c =new Color(r,g,b);
         //String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
@@ -371,7 +372,7 @@ public class RemoteMapImpl implements RemoteMap {
         if (geoJSON.getMapLayerMetadata() == null) {
             geoJSON.setMapLayerMetadata(new MapLayerMetadata());
         }
-        String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "taxonconceptid");
+        String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);
         if (!taxonconceptid.equals("")) {
             System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
             geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid);

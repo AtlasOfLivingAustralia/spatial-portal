@@ -208,6 +208,8 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     private int sizeVal;
 
+    private boolean sizeUncertain;
+
     public int getBlueVal() {
         return blueVal;
     }
@@ -238,6 +240,14 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     public void setSizeVal(int sizeVal) {
         this.sizeVal = sizeVal;
+    }
+
+    public boolean getSizeUncertain(){
+        return sizeUncertain;
+    }
+
+    public void setSizeUncertain(boolean sizeUncertain){
+        this.sizeUncertain = sizeUncertain;
     }
 
 

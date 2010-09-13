@@ -37,6 +37,8 @@ public class LayerListComposer extends UtilityComposer {
 
     private final String satServer = "http://spatial-dev.ala.org.au"; // "http://localhost:8080"
 
+    SettingsSupplementary settingsSupplementary;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -159,6 +161,10 @@ public class LayerListComposer extends UtilityComposer {
         //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
         Object llist = Sessions.getCurrent().getAttribute("layerlist");
 
+        if(llist == null){
+            return;
+        }
+        
         ArrayList top = new ArrayList();
 
         TreeMap htCat1 = new TreeMap();
@@ -263,7 +269,7 @@ public class LayerListComposer extends UtilityComposer {
                     found = true;
                     break;
                 } else {
-                    System.out.println(": not this"); 
+                    System.out.println(": not this");
                 }
             }
             if (!found) {

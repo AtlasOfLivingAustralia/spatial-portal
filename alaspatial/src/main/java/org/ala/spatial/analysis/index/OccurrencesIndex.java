@@ -149,44 +149,67 @@ public class OccurrencesIndex implements AnalysisIndexService {
     /**
      * mapping between conceptId's and paired searchable names
      */
-    static String [] occurances_csv_field_pairs_ConceptId;
-    static String [] occurances_csv_field_pairs_Name;
-    static int [] occurances_csv_field_pairs_ToSingleIndex;
-    static int [] occurances_csv_field_pairs_FirstFromSingleIndex;  //length == single_index.length
+    static String[] occurances_csv_field_pairs_ConceptId;
+    static String[] occurances_csv_field_pairs_Name;
+    static int[] occurances_csv_field_pairs_ToSingleIndex;
+    static int[] occurances_csv_field_pairs_FirstFromSingleIndex;  //length == single_index.length
 
     public static String getCommonNames(String name) {
         TreeSet<Integer> ss = new TreeSet<Integer>();
         StringBuffer sb = new StringBuffer();
         String nameLowerCase = name.toLowerCase();
-        for(int i=0;i<common_names_indexed.length;i++){
-            if(common_names_indexed[i].nameLowerCase.contains(nameLowerCase)){
+        for (int i = 0; i < common_names_indexed.length; i++) {
+            if (common_names_indexed[i].nameLowerCase.contains(nameLowerCase)) {
                 //determine if index already present, add if missing
                 int s1 = ss.size();
                 ss.add(common_names_indexed[i].index);
-                if(ss.size() > s1){
+                if (ss.size() > s1) {
                     int o = occurances_csv_field_pairs_FirstFromSingleIndex[common_names_indexed[i].index];
 
                     //String sn = single_index[common_names_indexed[i].index].name;
                     String sn = "";
-                    if(o >= 0) sn = occurances_csv_field_pairs_Name[o];
+                    if (o >= 0) {
+                        sn = occurances_csv_field_pairs_Name[o];
+                    }
                     sn = sn.substring(0, 1).toUpperCase() + sn.substring(1).toLowerCase();
 
-                    sb.append(common_names_indexed[i].name)
-                            .append(" / ")
-                            .append(single_index[common_names_indexed[i].index].name)
-                            //.append(" / Scientific name: ")
-                            .append(" / ").append(getIndexType(single_index[common_names_indexed[i].index].type)).append(": ")
-                            .append(sn)
-                            .append(" / found ")
-                            .append(single_index[common_names_indexed[i].index].record_end -
-                                single_index[common_names_indexed[i].index].record_start + 1)
-                            .append("\n");
+                    sb.append(common_names_indexed[i].name).append(" / ").append(single_index[common_names_indexed[i].index].name) //.append(" / Scientific name: ")
+                            .append(" / ").append(getIndexType(single_index[common_names_indexed[i].index].type)).append(": ").append(sn).append(" / found ").append(single_index[common_names_indexed[i].index].record_end
+                            - single_index[common_names_indexed[i].index].record_start + 1).append("\n");
                 }
             }
         }
         return sb.toString();
     }
 
+    /**
+     * gets scientificName taxonrank for provided lsid
+     * @param lsid
+     * @return String [] where String[0] is scientific name and String[1] is taxonrank name
+     */
+    public static String [] getFirstName(String lsid) {
+        loadIndexes();
+
+        String lsidLowerCase = lsid.toLowerCase();
+
+        IndexedRecord searchfor = new IndexedRecord(lsidLowerCase, 0, 0, 0, 0, (byte) 0);
+        int pos = java.util.Arrays.binarySearch(single_index, searchfor,
+                new Comparator<IndexedRecord>() {
+
+                    public int compare(IndexedRecord r1, IndexedRecord r2) {
+                        return r1.name.compareTo(r2.name);
+                    }
+                });
+
+        if (pos >= 0) {
+            String [] out = new String[2];
+            out[0] = occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[pos]];
+            out[1] = getIndexType(single_index[pos].type);
+            return out;
+        }
+
+        return null;
+    }
     /**
      * all occurrences data
      */
@@ -230,15 +253,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * key: String
      * object: ArrayList<Integer> when building, int [] when built.
      */
-    static HashMap<String,Object> [] extra_indexes = null;
+    static HashMap<String, Object>[] extra_indexes = null;
     /**
      * list of common names against species names
      */
-    static String [] common_names;
+    static String[] common_names;
     /**
      * sorted list of common names and reference to single_index row in file_pos
      */
-    static CommonNameRecord [] common_names_indexed;
+    static CommonNameRecord[] common_names_indexed;
 
     /**
      * default constructor
@@ -321,7 +344,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                 //write top records & increment
                 for (i = 0; i < numberOfParts; i++) {
-                    if (lines[i] != null &&  topline.equalsIgnoreCase(lines[i])) {
+                    if (lines[i] != null && topline.equalsIgnoreCase(lines[i])) {
                         fw.append(lines[i]);
                         fw.append("\n");
 
@@ -350,7 +373,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             byte[] b = new byte[pointsPos * 8];
             ByteBuffer bb = ByteBuffer.wrap(b);
 
-            for (i=0;i<pointsPos;i++){
+            for (i = 0; i < pointsPos; i++) {
                 bb.putDouble(aPoints[i]);
             }
 
@@ -361,7 +384,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             //for (i = 0; i < numberOfParts; i++) {
             //    (new File(TabulationSettings.index_path
             //            + SORTED_FILENAME + "_" + i)).delete();
-           // }
+            // }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -428,13 +451,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
             int cc = 0;
             while ((s = br.readLine()) != null) {
                 //TODO: remove this hack for bad csv header
-                if(progress == 0) s = s.replace("\", \"", "\",\"");
-      
+                if (progress == 0) {
+                    s = s.replace("\", \"", "\",\"");
+                }
+
                 //apply limit for dev
-                if(progress > TabulationSettings.occurances_csv_max_records && TabulationSettings.occurances_csv_max_records > 0){
+                if (progress > TabulationSettings.occurances_csv_max_records && TabulationSettings.occurances_csv_max_records > 0) {
                     break;
                 }
-                
+
                 if ((cc % PART_SIZE_MAX == 0) && cc > 0) {
                     //export sorted part
                     exportSortedPart(partNumber);
@@ -483,9 +508,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     // species values, instead of the other way around,  move
                     // speciesColumn-1 to speciesColumn, where speciesColumn
                     // (the last indexed column) is empty.
-                    if(sa.length >= columnsSettings.length &&
-                            sa[column_positions[ofu.speciesColumn]].length() == 0){
-                        sa[column_positions[ofu.speciesColumn]] = sa[column_positions[ofu.speciesColumn-1]];
+                    if (sa.length >= columnsSettings.length
+                            && sa[column_positions[ofu.speciesColumn]].length() == 0) {
+                        sa[column_positions[ofu.speciesColumn]] = sa[column_positions[ofu.speciesColumn - 1]];
                     }
 
                     if (sa.length >= columnsSettings.length
@@ -543,7 +568,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         } catch (Exception e) {
                             //don't cate                           
                         }
-                    }else{
+                    } else {
                         fwExcluded.append(s);
                     }
                 }
@@ -777,8 +802,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
             } else if (qualified
                     && line.charAt(i) == '"'
                     && ((line.length() > i + 1
-                        && line.charAt(i + 1) == ',')
-                        || line.length() == i+1)) {//end term
+                    && line.charAt(i + 1) == ',')
+                    || line.length() == i + 1)) {//end term
                 end_term = true;
                 qualified = false;
                 i++;
@@ -811,7 +836,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         int i;
         int j;
 
-        for(i=0;i<column_positions.length;i++){
+        for (i = 0; i < column_positions.length; i++) {
             column_positions[i] = -1;
         }
 
@@ -825,13 +850,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         StringBuffer msg = new StringBuffer();
         boolean error = false;
-        for(i=0;i<column_positions.length;i++){
-            if(column_positions[i] == -1){
+        for (i = 0; i < column_positions.length; i++) {
+            if (column_positions[i] == -1) {
                 msg.append("\r\n").append(column_positions[i]);
                 error = true;
             }
         }
-        if(error){
+        if (error) {
             throw new Error("occurrences file has no column: " + msg.toString());
         }
     }
@@ -862,21 +887,21 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         int i;
 
-        for (i=0;i<extra_indexes.length;i++) {
+        for (i = 0; i < extra_indexes.length; i++) {
             extra_indexes[i] = new HashMap<String, Object>();
         }
 
         //names vs concept ids
         TreeMap<String, String> idnames = new TreeMap<String, String>();
-        int [] idnamesIdx = new int[TabulationSettings.occurances_csv_field_pairs.length];
-        for(int j=0;j<TabulationSettings.occurances_csv_field_pairs.length;j++){
-            for(i=0;i<ofu.columnNames.length;i++){
-                if(TabulationSettings.occurances_csv_field_pairs[j].equalsIgnoreCase(ofu.columnNames[i])){
+        int[] idnamesIdx = new int[TabulationSettings.occurances_csv_field_pairs.length];
+        for (int j = 0; j < TabulationSettings.occurances_csv_field_pairs.length; j++) {
+            for (i = 0; i < ofu.columnNames.length; i++) {
+                if (TabulationSettings.occurances_csv_field_pairs[j].equalsIgnoreCase(ofu.columnNames[i])) {
                     idnamesIdx[j] = i;
                     break;
                 }
             }
-            if(ofu.columnNames.length == i){
+            if (ofu.columnNames.length == i) {
                 System.out.println("ERORR:" + TabulationSettings.occurances_csv_field_pairs[j]);
             }
         }
@@ -912,9 +937,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             int idColumn = (new OccurrencesFieldsUtil()).onetwoCount;
 
-            ArrayList<Integer> [] obj = new ArrayList[extra_indexes.length];
-            String [] prev_key = new String[extra_indexes.length];
-            String [] current_key = new String[extra_indexes.length];
+            ArrayList<Integer>[] obj = new ArrayList[extra_indexes.length];
+            String[] prev_key = new String[extra_indexes.length];
+            String[] current_key = new String[extra_indexes.length];
 
             while ((s = br.readLine()) != null) {
                 if (progress % 100000 == 0) {
@@ -922,8 +947,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
                 sa = s.split(",");
 
-                if(s.contains("urn:lsid:catalogueoflife.org:taxon:d9286e88-29c1-102b-9a4a-00304854f820")
-                        || s.contains(",Alaba,")){
+                if (s.contains(",Acacia")) {
                     int q = 4;
                 }
 
@@ -933,13 +957,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 if (sa.length >= countOfIndexed && sa.length > idColumn) {
 
                     //conceptid vs names
-                    for(i=0;i<idnamesIdx.length;i+=2){
-                        String joined = sa[idnamesIdx[i+1]].toLowerCase() + " | " + sa[idnamesIdx[i]].toLowerCase();
-                        idnames.put(joined,sa[idnamesIdx[i]].toLowerCase());
+                    for (i = 0; i < idnamesIdx.length; i += 2) {
+                        //append 2 spaces for ordering
+                        String joined = sa[idnamesIdx[i + 1]].toLowerCase() + "  |  " + sa[idnamesIdx[i]].toLowerCase();
+                        idnames.put(joined, sa[idnamesIdx[i]].toLowerCase());
                     }
 
                     //add current record to extra_indexes
-                    for(i=0;i<extra_indexes.length;i++){
+                    for (i = 0; i < extra_indexes.length; i++) {
                         current_key[i] = sa[ofu.extraIndexes[i]];
                         if (current_key[i].equals(prev_key[i]) && obj[i] != null) {
                             obj[i].add(new Integer(recordpos));
@@ -950,7 +975,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                             if (obj[i] == null) {
                                 obj[i] = new ArrayList<Integer>();
-                                extra_indexes[i].put(current_key[i],obj[i]);
+                                extra_indexes[i].put(current_key[i], obj[i]);
                             }
                             obj[i].add(new Integer(recordpos));
                         }
@@ -1001,27 +1026,27 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         /* write out extra_indexes */
         //transform ArrayList<Integer> to int[]
-        for (i=0;i<extra_indexes.length;i++) {
+        for (i = 0; i < extra_indexes.length; i++) {
             int sz = 0;
             System.out.println("lookup name: " + TabulationSettings.occurances_csv_fields_lookups[i]);
-            
-            for(Entry<String,Object> e : extra_indexes[i].entrySet()) {
+
+            for (Entry<String, Object> e : extra_indexes[i].entrySet()) {
                 ArrayList<Integer> al = (ArrayList<Integer>) e.getValue();
-                int [] new_obj = new int[al.size()];
+                int[] new_obj = new int[al.size()];
                 int z = 0;
-                for(Integer q : al) {
+                for (Integer q : al) {
                     new_obj[z++] = q.intValue();
                 }
-                if(sz < 10){
+                if (sz < 10) {
                     System.out.println(e.getKey() + " > " + al.size());
-                    
+
                 }
                 sz++;
                 e.setValue(new_obj);
             }
             System.out.println("total: " + sz);
         }
-        try{
+        try {
             FileOutputStream fos = new FileOutputStream(
                     TabulationSettings.index_path
                     + ID_LOOKUP);
@@ -1029,7 +1054,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(extra_indexes);
             oos.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -1084,21 +1109,26 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
 
         //this will fail on the occurances_csv_fields_pairs... loads
-        try{loadIndexes();}catch(Exception e){System.out.println("!!!!!!!!!!!Exception expected here!!!!!!!!!!!!!!");e.printStackTrace();}
+        try {
+            loadIndexes();
+        } catch (Exception e) {
+            System.out.println("!!!!!!!!!!!Exception expected here!!!!!!!!!!!!!!");
+            e.printStackTrace();
+        }
 
         //write out conceptid vs names
         occurances_csv_field_pairs_ConceptId = new String[idnames.size()];
         occurances_csv_field_pairs_Name = new String[idnames.size()];
         i = 0;
-        for(Entry<String, String> et : idnames.entrySet()){
+        for (Entry<String, String> et : idnames.entrySet()) {
             occurances_csv_field_pairs_ConceptId[i] = et.getValue();
-            occurances_csv_field_pairs_Name[i] = et.getKey().substring(0,et.getKey().indexOf('|')).trim(); //first value is name
+            occurances_csv_field_pairs_Name[i] = et.getKey().substring(0, et.getKey().indexOf('|')).trim(); //first value is name
             i++;
         }
         //load single_index
         occurances_csv_field_pairs_ToSingleIndex = new int[occurances_csv_field_pairs_ConceptId.length];
-        IndexedRecord lookfor = new IndexedRecord("",0,0,0,0,(byte)-1);
-        for(i=0;i<occurances_csv_field_pairs_ConceptId.length;i++){
+        IndexedRecord lookfor = new IndexedRecord("", 0, 0, 0, 0, (byte) -1);
+        for (i = 0; i < occurances_csv_field_pairs_ConceptId.length; i++) {
             lookfor.name = occurances_csv_field_pairs_ConceptId[i];
             occurances_csv_field_pairs_ToSingleIndex[i] = java.util.Arrays.binarySearch(single_index,
                     lookfor,
@@ -1108,26 +1138,26 @@ public class OccurrencesIndex implements AnalysisIndexService {
                             return r1.name.compareTo(r2.name);
                         }
                     });
-             if(occurances_csv_field_pairs_ToSingleIndex[i] < 0){
-                 System.out.println("ERROR2: " + occurances_csv_field_pairs_ConceptId[i] + " : " + occurances_csv_field_pairs_Name[i]);
-             }
+            if (occurances_csv_field_pairs_ToSingleIndex[i] < 0) {
+                System.out.println("ERROR2: " + occurances_csv_field_pairs_ConceptId[i] + " : " + occurances_csv_field_pairs_Name[i]);
+            }
         }
         int j;
         occurances_csv_field_pairs_FirstFromSingleIndex = new int[single_index.length];
-        HashMap<String, Integer> hm = new HashMap<String,Integer>();
-        for(i=0;i<occurances_csv_field_pairs_ConceptId.length;i++){
+        HashMap<String, Integer> hm = new HashMap<String, Integer>();
+        for (i = 0; i < occurances_csv_field_pairs_ConceptId.length; i++) {
             hm.put(occurances_csv_field_pairs_ConceptId[i], i);
         }
-        for(i=0;i<single_index.length;i++){
+        for (i = 0; i < single_index.length; i++) {
             Integer in = hm.get(single_index[i].name);
-            if(in == null){
+            if (in == null) {
                 System.out.println("ERROR3: " + single_index[i].name);
                 occurances_csv_field_pairs_FirstFromSingleIndex[i] = -1;
             } else {
                 occurances_csv_field_pairs_FirstFromSingleIndex[i] = in.intValue();
             }
         }
-        try{
+        try {
             FileOutputStream fos = new FileOutputStream(
                     TabulationSettings.index_path
                     + SORTED_CONCEPTID_NAMES);
@@ -1141,18 +1171,18 @@ public class OccurrencesIndex implements AnalysisIndexService {
             FileWriter fw = new FileWriter(
                     TabulationSettings.index_path
                     + SORTED_CONCEPTID_NAMES + "0.csv");
-            for(i=0;i<occurances_csv_field_pairs_ConceptId.length;i++){
+            for (i = 0; i < occurances_csv_field_pairs_ConceptId.length; i++) {
                 fw.append(occurances_csv_field_pairs_ConceptId[i]).append("\r\n");
             }
             fw.close();
             fw = new FileWriter(
                     TabulationSettings.index_path
                     + SORTED_CONCEPTID_NAMES + "1.csv");
-            for(i=0;i<occurances_csv_field_pairs_Name.length;i++){
+            for (i = 0; i < occurances_csv_field_pairs_Name.length; i++) {
                 fw.append(occurances_csv_field_pairs_Name[i]).append("\r\n");
             }
             fw.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -1168,46 +1198,46 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param limit limit on output
      * @return formatted species matches as String[]
      */
-    static public String[] filterIndex(String filter, int limit) {        
+    static public String[] filterIndex(String filter, int limit) {
         loadIndexes();
         OccurrencesFieldsUtil.load();
 
-        if (filter == null || filter.length() == 0){
+        if (filter == null || filter.length() == 0) {
             return new String[0];
         }
 
         filter = filter.toLowerCase();
 
         int pos = Arrays.binarySearch(occurances_csv_field_pairs_Name, filter);
-        int upperpos = Arrays.binarySearch(occurances_csv_field_pairs_Name,filter.substring(0, filter.length() - 1)
+        int upperpos = Arrays.binarySearch(occurances_csv_field_pairs_Name, filter.substring(0, filter.length() - 1)
                 + ((char) (((int) filter.charAt(filter.length() - 1)) + 1)));
-        IndexedRecord lookfor = new IndexedRecord("",0,0,0,0,(byte)-1);
+        IndexedRecord lookfor = new IndexedRecord("", 0, 0, 0, 0, (byte) -1);
 
-       // IndexedRecord lookfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) -1);
-       // IndexedRecord lookforupper = new IndexedRecord(filter.substring(0, filter.length() - 1), 0, 0, 0, 0, (byte) -1);
-       // char nextc = (char) (((int) filter.charAt(filter.length() - 1)) + 1);
-       // lookforupper.name += nextc;
+        // IndexedRecord lookfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) -1);
+        // IndexedRecord lookforupper = new IndexedRecord(filter.substring(0, filter.length() - 1), 0, 0, 0, 0, (byte) -1);
+        // char nextc = (char) (((int) filter.charAt(filter.length() - 1)) + 1);
+        // lookforupper.name += nextc;
 
         String[] matches_array = null;
 
         /* starts with comparator, get first (pos) and last (upperpos) */
         if (!filter.contains("*")) {
             /*int pos = java.util.Arrays.binarySearch(single_index,
-                    lookfor,
-                    new Comparator<IndexedRecord>() {
+            lookfor,
+            new Comparator<IndexedRecord>() {
 
-                        public int compare(IndexedRecord r1, IndexedRecord r2) {
-                            return r1.name.compareTo(r2.name);
-                        }
-                    });
+            public int compare(IndexedRecord r1, IndexedRecord r2) {
+            return r1.name.compareTo(r2.name);
+            }
+            });
             int upperpos = java.util.Arrays.binarySearch(single_index,
-                    lookforupper,
-                    new Comparator<IndexedRecord>() {
+            lookforupper,
+            new Comparator<IndexedRecord>() {
 
-                        public int compare(IndexedRecord r1, IndexedRecord r2) {
-                            return r1.name.compareTo(r2.name);
-                        }
-                    });
+            public int compare(IndexedRecord r1, IndexedRecord r2) {
+            return r1.name.compareTo(r2.name);
+            }
+            });
              */
 
             /* adjust/limit positions found for non-exact matches */
@@ -1273,56 +1303,56 @@ public class OccurrencesIndex implements AnalysisIndexService {
          *
         String type = null;
         if (filter.contains("/")) {
-            type = filter.split("/")[1].trim();
-            filter = filter.split("/")[0].trim();
+        type = filter.split("/")[1].trim();
+        filter = filter.split("/")[0].trim();
         }*/
 
         loadIndexes();
 
         IndexedRecord searchfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) 0);
         int pos = java.util.Arrays.binarySearch(single_index, searchfor,
-                        new Comparator<IndexedRecord>() {
+                new Comparator<IndexedRecord>() {
 
-                            public int compare(IndexedRecord r1, IndexedRecord r2) {
-                                return r1.name.compareTo(r2.name);
-                            }
-                        });
+                    public int compare(IndexedRecord r1, IndexedRecord r2) {
+                        return r1.name.compareTo(r2.name);
+                    }
+                });
 
-          if (pos >= 0) {
-                IndexedRecord[] indexedRecord = new IndexedRecord[1];
-                indexedRecord[0] = single_index[pos];
-                return indexedRecord;
-            }
+        if (pos >= 0) {
+            IndexedRecord[] indexedRecord = new IndexedRecord[1];
+            indexedRecord[0] = single_index[pos];
+            return indexedRecord;
+        }
 
         /*if (all_indexes.size() > 0) {
-            ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>(all_indexes.size());
-            int i = 0;
-            for (IndexedRecord[] ir : all_indexes) {
-                // binary search
-                IndexedRecord searchfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) 0);
+        ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>(all_indexes.size());
+        int i = 0;
+        for (IndexedRecord[] ir : all_indexes) {
+        // binary search
+        IndexedRecord searchfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) 0);
 
-                int pos = java.util.Arrays.binarySearch(ir, searchfor,
-                        new Comparator<IndexedRecord>() {
+        int pos = java.util.Arrays.binarySearch(ir, searchfor,
+        new Comparator<IndexedRecord>() {
 
-                            public int compare(IndexedRecord r1, IndexedRecord r2) {
-                                return r1.name.compareTo(r2.name);
-                            }
-                        });
+        public int compare(IndexedRecord r1, IndexedRecord r2) {
+        return r1.name.compareTo(r2.name);
+        }
+        });
 
-                if (pos >= 0 && pos < ir.length) {
-                    matches.add(ir[pos]);
-                    break; 
-                }
+        if (pos >= 0 && pos < ir.length) {
+        matches.add(ir[pos]);
+        break;
+        }
 
-                i++;
-            }
+        i++;
+        }
 
-            // return something if found as []
-            if (matches.size() > 0) {
-                IndexedRecord[] indexedRecord = new IndexedRecord[matches.size()];
-                matches.toArray(indexedRecord);
-                return indexedRecord;
-            }
+        // return something if found as []
+        if (matches.size() > 0) {
+        IndexedRecord[] indexedRecord = new IndexedRecord[matches.size()];
+        matches.toArray(indexedRecord);
+        return indexedRecord;
+        }
         }*/
 
         return null;
@@ -1336,7 +1366,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * excludes points indexes
      */
     static public void loadIndexes() {
-       // System.gc();
+        // System.gc();
         TabulationSettings.load();
 
         if (single_index != null) {
@@ -1344,9 +1374,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
 
         loadSortedLineStarts();
-     
+
         OccurrencesFieldsUtil.load();
-      
+
         String[] columns = TabulationSettings.occurances_csv_fields;
         String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
 
@@ -1401,15 +1431,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
         /* put all_indexes into single_index */
         TreeMap<String, IndexedRecord> si = new TreeMap<String, IndexedRecord>();
         for (IndexedRecord[] rl : all_indexes) {
-            for (IndexedRecord r : rl) {   
-                if(si.get(r.name) == null){
+            for (IndexedRecord r : rl) {
+                if (si.get(r.name) == null) {
                     si.put(r.name, r);
                 }
-            }             
+            }
         }
         single_index = new IndexedRecord[si.size()];
         i = 0;
-        for(Entry<String, IndexedRecord> es : si.entrySet()){
+        for (Entry<String, IndexedRecord> es : si.entrySet()) {
             single_index[i++] = es.getValue();
         }
 
@@ -1421,12 +1451,12 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         return r1.name.compareTo(r2.name);
                     }
                 });
-              
+
         //build speciesNumberInRecordsOrder
         getPointsPairsGrid(); //load up gridded points
         IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
         speciesNumberInRecordsOrder = new int[grid_points_idx.length];
-        for (i=0;i<grid_points_idx.length;i++){
+        for (i = 0; i < grid_points_idx.length; i++) {
             speciesNumberInRecordsOrder[i] = -1;
         }
         for (i = 0; i < species.length; i++) {
@@ -1436,28 +1466,28 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
         //error checking, likely hierarchy problems
         int countmissing = 0;
-        for (i=0;i<grid_points_idx.length;i++){
-            if(speciesNumberInRecordsOrder[i] == -1){
+        for (i = 0; i < grid_points_idx.length; i++) {
+            if (speciesNumberInRecordsOrder[i] == -1) {
                 countmissing++;
             }
         }
         System.out.println("******* missing: " + countmissing);
 
-    
+
         loadCommonNames();  //done last since dependant on indexed records
         loadCommonNamesIndex();  //done last since dependant on indexed records
 
         /* setup species_to_family idx */
         //TODO: speedup by pregenerating
-        IndexedRecord [] speciesIdx = all_indexes.get(all_indexes.size()-1);
-        IndexedRecord [] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index);
+        IndexedRecord[] speciesIdx = all_indexes.get(all_indexes.size() - 1);
+        IndexedRecord[] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index);
         species_to_family = new int[speciesIdx.length];
-        for(i=0;i<species_to_family.length;i++){
+        for (i = 0; i < species_to_family.length; i++) {
             species_to_family[i] = -1;
         }
-        for(i=0;i<species_to_family.length;i++){
-            for(int j=0;j<familyIdx.length;j++){
-                if(speciesIdx[i].record_start <= familyIdx[j].record_end
+        for (i = 0; i < species_to_family.length; i++) {
+            for (int j = 0; j < familyIdx.length; j++) {
+                if (speciesIdx[i].record_start <= familyIdx[j].record_end
                         && speciesIdx[i].record_start >= familyIdx[j].record_start) {
                     species_to_family[i] = j;
                     break;
@@ -1467,7 +1497,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         loadIdLookup();
 
-      }
+    }
 
     /**
      * loads id lookup and conceptid vs name
@@ -1475,50 +1505,50 @@ public class OccurrencesIndex implements AnalysisIndexService {
     static void loadIdLookup() {
         try {
             FileInputStream fis = new FileInputStream(
-                TabulationSettings.index_path
-                + ID_LOOKUP);
+                    TabulationSettings.index_path
+                    + ID_LOOKUP);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
-            extra_indexes = (HashMap<String,Object> [])ois.readObject();
+            extra_indexes = (HashMap<String, Object>[]) ois.readObject();
             ois.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         try {
             FileInputStream fis = new FileInputStream(
-                TabulationSettings.index_path
-                + SORTED_CONCEPTID_NAMES);
+                    TabulationSettings.index_path
+                    + SORTED_CONCEPTID_NAMES);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
-            occurances_csv_field_pairs_ConceptId = (String [])ois.readObject();
-            occurances_csv_field_pairs_Name = (String [])ois.readObject();
-            occurances_csv_field_pairs_FirstFromSingleIndex = (int[])ois.readObject();
-            occurances_csv_field_pairs_ToSingleIndex = (int[])ois.readObject();
+            occurances_csv_field_pairs_ConceptId = (String[]) ois.readObject();
+            occurances_csv_field_pairs_Name = (String[]) ois.readObject();
+            occurances_csv_field_pairs_FirstFromSingleIndex = (int[]) ois.readObject();
+            occurances_csv_field_pairs_ToSingleIndex = (int[]) ois.readObject();
             ois.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }       
+        }
     }
-    
+
     /**
      * list available extra_indexes
      */
-    static String [] listLookups() {
+    static String[] listLookups() {
         OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
         ofu.load();
 
-        String [] list = new String[TabulationSettings.occurances_csv_fields_lookups.length +
-                ofu.twoCount];
+        String[] list = new String[TabulationSettings.occurances_csv_fields_lookups.length
+                + ofu.twoCount];
 
         int pos = 0;
         int i;
 
-        for(i=0;i<TabulationSettings.occurances_csv_fields_lookups.length;i++){
+        for (i = 0; i < TabulationSettings.occurances_csv_fields_lookups.length; i++) {
             list[pos++] = TabulationSettings.occurances_csv_fields_lookups[i];
         }
 
-        for(i=0;i<ofu.twoCount;i++){
+        for (i = 0; i < ofu.twoCount; i++) {
             list[pos++] = ofu.columnNames[ofu.twos[i]];
         }
 
@@ -1532,10 +1562,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param key index value to lookup as String
      * @return records found as int [] or null for none
      */
-    public static int [] lookup(int lookup_idx, String key) {
+    public static int[] lookup(int lookup_idx, String key) {
         loadIndexes();
         if (lookup_idx < extra_indexes.length) {
-            return (int[])extra_indexes[lookup_idx].get(key);
+            return (int[]) extra_indexes[lookup_idx].get(key);
         } else {
             return lookupRegular(key);
         }
@@ -1548,12 +1578,12 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param key index value to lookup as String
      * @return records found as int [] or null for none
      */
-    public static int [] lookup(String lookupName, String key) {
+    public static int[] lookup(String lookupName, String key) {
         loadIndexes();
-        String [] lookups = listLookups();
-        for (int i=0;i<lookups.length;i++){
-            if(lookupName.equalsIgnoreCase(lookups[i])) {
-                return (int[])extra_indexes[i].get(key);
+        String[] lookups = listLookups();
+        for (int i = 0; i < lookups.length; i++) {
+            if (lookupName.equalsIgnoreCase(lookups[i])) {
+                return (int[]) extra_indexes[i].get(key);
             }
         }
 
@@ -1565,12 +1595,12 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param key lookup value as String, e.g. species name
      * @return records found as int [] or null for none
      */
-    static int [] lookupRegular(String key) {
-         //check against regular index
+    static int[] lookupRegular(String key) {
+        //check against regular index
         IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(key);
         if (ir != null && ir.length > 0) {
-            int [] output = new int[ir[0].record_end - ir[0].record_start + 1];
-            for(int i=0;i<output.length;i++){
+            int[] output = new int[ir[0].record_end - ir[0].record_start + 1];
+            for (int i = 0; i < output.length; i++) {
                 output[i] = i + ir[0].record_start;
             }
             return output;
@@ -1578,13 +1608,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         return null;
     }
-    
+
     /**
      * loads common names lookup (species records only, one match only)
      */
     static void loadCommonNames() {
         try {
-            IndexedRecord [] ir = all_indexes.get(all_indexes.size()-1);
+            IndexedRecord[] ir = all_indexes.get(all_indexes.size() - 1);
             common_names = new String[ir.length];
 
             //load the common names file (csv), populate common_names as it goes
@@ -1592,15 +1622,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     new FileReader(TabulationSettings.common_names_csv));
 
             String s;
-            String [] sa;
+            String[] sa;
             int i;
             int max_columns = 0;
 
-            int count= 0;
+            int count = 0;
             boolean csv_file = true; //otherwise tab delimited
             while ((s = br.readLine()) != null) {
                 sa = s.split(",");
-                if(!csv_file || (count == 0 && sa.length == 1)){
+                if (!csv_file || (count == 0 && sa.length == 1)) {
                     csv_file = false;
                     sa = s.split("\t");
                 }
@@ -1625,21 +1655,22 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 IndexedRecord lookfor = new IndexedRecord(sa[0].toLowerCase(), 0, 0, 0, 0, (byte) -1);
 
                 int pos = java.util.Arrays.binarySearch(ir,
-                    lookfor,
-                    new Comparator<IndexedRecord>() {
-                        public int compare(IndexedRecord r1, IndexedRecord r2) {
-                            return r1.name.toLowerCase().compareTo(r2.name);
-                        }
-                    });
+                        lookfor,
+                        new Comparator<IndexedRecord>() {
 
-                if (pos >= 0 && pos < ir.length) {                    
+                            public int compare(IndexedRecord r1, IndexedRecord r2) {
+                                return r1.name.toLowerCase().compareTo(r2.name);
+                            }
+                        });
+
+                if (pos >= 0 && pos < ir.length) {
                     common_names[pos] = sa[1].replace(',', ';');
                 }
             }
-            
+
             // report finds & set to empty string
-            for (i=0;i<common_names.length;i++) {
-                if(common_names[i] != null){
+            for (i = 0; i < common_names.length; i++) {
+                if (common_names[i] != null) {
                     count++;
                 } else {
                     common_names[i] = "";
@@ -1647,10 +1678,11 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
             System.out.println("common name finds: " + count);
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     /**
      * loads common names index (common name with file_pos == single_index position)
      */
@@ -1663,15 +1695,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     new FileReader(TabulationSettings.common_names_csv));
 
             String s;
-            String [] sa;
+            String[] sa;
             int i;
             int max_columns = 0;
 
-            int count= 0;
+            int count = 0;
             boolean isCsv = true;
             while ((s = br.readLine()) != null) {
                 sa = s.split(",");
-                if(!isCsv || (count == 0 && sa.length == 1)){
+                if (!isCsv || (count == 0 && sa.length == 1)) {
                     sa = s.split("\t");
                     isCsv = false;
                 }
@@ -1680,7 +1712,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 if (sa != null && max_columns == 0) {
                     max_columns = sa.length;
                 }
-                if(sa.length < max_columns || sa[0] == null || sa[0].length() == 0 || s.contains("\\")){
+                if (sa.length < max_columns || sa[0] == null || sa[0].length() == 0 || s.contains("\\")) {
                     System.out.println("error with common names line: " + s);
                     continue;
                 }
@@ -1690,35 +1722,37 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                 /* remove quotes and commas form terms */
                 for (i = 0; i < sa.length; i++) {
-                    if (sa[i].length() > 0) {                 
+                    if (sa[i].length() > 0) {
                         sa[i] = sa[i].replace("\"", "");
                         sa[i] = sa[i].replace(",", " ");
                     }
                 }
-                
+
                 IndexedRecord lookfor = new IndexedRecord(sa[0].toLowerCase(), 0, 0, 0, 0, (byte) -1);
 
                 int pos = java.util.Arrays.binarySearch(single_index,
-                    lookfor,
-                    new Comparator<IndexedRecord>() {
-                        public int compare(IndexedRecord r1, IndexedRecord r2) {
-                            return r1.name.toLowerCase().compareTo(r2.name);
-                        }
-                    });
+                        lookfor,
+                        new Comparator<IndexedRecord>() {
+
+                            public int compare(IndexedRecord r1, IndexedRecord r2) {
+                                return r1.name.toLowerCase().compareTo(r2.name);
+                            }
+                        });
 
                 if (pos >= 0 && pos < single_index.length) {
-                    cn.add(new CommonNameRecord(sa[1].replace(',', ';'),pos));
+                    cn.add(new CommonNameRecord(sa[1].replace(',', ';'), pos));
                     count++;
                 }
             }
-            
+
             //copy
             common_names_indexed = new CommonNameRecord[cn.size()];
             cn.toArray(common_names_indexed);
-            
+
             //sort
             java.util.Arrays.sort(common_names_indexed,
                     new Comparator<CommonNameRecord>() {
+
                         public int compare(CommonNameRecord r1, CommonNameRecord r2) {
                             return r1.nameLowerCase.compareTo(r2.nameLowerCase);
                         }
@@ -1726,11 +1760,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             System.out.println("common name index finds: " + count);
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
 
     /**
      * gets species IndexedRecords only
@@ -1760,9 +1793,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
         //return OccurrencesFieldsUtil.columnNames[type];
         return TabulationSettings.occurances_csv_twos_names[type];
     }
+    static long[] sortedLineStarts = null;
 
-    static long [] sortedLineStarts = null;
-    static void makeSortedLineStarts(){
+    static void makeSortedLineStarts() {
         TabulationSettings.load();
 
         getPointsPairs();   //ensures all_points is loaded
@@ -1770,15 +1803,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
         sortedLineStarts = new long[all_points.length];
         try {
             BufferedReader br = new BufferedReader(new FileReader(
-                        TabulationSettings.index_path + SORTED_FILENAME));
+                    TabulationSettings.index_path + SORTED_FILENAME));
 
             long filepos = 0;
             int idxpos = 0;
             sortedLineStarts[idxpos++] = filepos;
             String line;
-            while((line = br.readLine()) != null && idxpos < sortedLineStarts.length){
+            while ((line = br.readLine()) != null && idxpos < sortedLineStarts.length) {
                 filepos += line.length() + 1;   //+1 for '\n' //us-ascii enforced elsewhere
-                sortedLineStarts[idxpos++] = filepos; 
+                sortedLineStarts[idxpos++] = filepos;
             }
             br.close();
             System.out.println("filepos = " + filepos);
@@ -1787,7 +1820,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             e.printStackTrace();
         }
 
-        try{
+        try {
             FileOutputStream fos = new FileOutputStream(
                     TabulationSettings.index_path
                     + SORTED_LINE_STARTS);
@@ -1795,13 +1828,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(sortedLineStarts);
             oos.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    static void loadSortedLineStarts(){
-        if(sortedLineStarts == null){
+    static void loadSortedLineStarts() {
+        if (sortedLineStarts == null) {
             try {
                 FileInputStream fis = new FileInputStream(
                         TabulationSettings.index_path
@@ -1842,38 +1875,38 @@ public class OccurrencesIndex implements AnalysisIndexService {
         /* iterate through sorted records file and extract only required records */
         try {
             /*LineNumberReader br = new LineNumberReader(
-                    new FileReader(TabulationSettings.index_path
-                    + SORTED_FILENAME));
+            new FileReader(TabulationSettings.index_path
+            + SORTED_FILENAME));
 
             for (i = 0; i < records.length; i++) {
-                int loopcounter = records[i] - br.getLineNumber();
-                while (loopcounter > 0) {
-                    br.readLine();
-                    loopcounter--;
-                }
-                lines[i] = br.readLine();
+            int loopcounter = records[i] - br.getLineNumber();
+            while (loopcounter > 0) {
+            br.readLine();
+            loopcounter--;
+            }
+            lines[i] = br.readLine();
             }
             br.close();*/
 
             //BufferedReader br = new BufferedReader(new FileReader(
-             //           TabulationSettings.index_path + SORTED_FILENAME));
+            //           TabulationSettings.index_path + SORTED_FILENAME));
 
             //long filepos = 0;
             //int idxpos = 0;
 
             //skip to record, update filepos, read line, increment
             //do{
-               // br.skip(sortedLineStarts[records[idxpos]] - filepos);
-               // filepos = sortedLineStarts[records[idxpos]];
-               // lines[idxpos] = br.readLine();
-               // idxpos++;
+            // br.skip(sortedLineStarts[records[idxpos]] - filepos);
+            // filepos = sortedLineStarts[records[idxpos]];
+            // lines[idxpos] = br.readLine();
+            // idxpos++;
             //}while(idxpos < lines.length && idxpos < records.length
-                 //   && lines[idxpos-1] != null);
+            //   && lines[idxpos-1] != null);
 
             //br.close();
 
             //max line len 100000 characters
-            byte[] data = new byte[(int)(100000)];
+            byte[] data = new byte[(int) (100000)];
             FileInputStream fis = new FileInputStream(
                     TabulationSettings.index_path
                     + SORTED_FILENAME);
@@ -1882,15 +1915,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
             int idxpos = 0;
 
             //skip to record, update filepos, read line, increment
-            do{
-               fis.skip(sortedLineStarts[records[idxpos]] - filepos);
-               filepos = sortedLineStarts[records[idxpos] + 1];
-               int len = (int)(sortedLineStarts[records[idxpos]+1] - sortedLineStarts[records[idxpos]]);
-               fis.read(data,0,len);
-               lines[idxpos] = (new String(Arrays.copyOfRange(data,0,len))).trim();
-               idxpos++;
-            }while(idxpos < lines.length && idxpos < records.length
-                    && lines[idxpos-1] != null);
+            do {
+                fis.skip(sortedLineStarts[records[idxpos]] - filepos);
+                filepos = sortedLineStarts[records[idxpos] + 1];
+                int len = (int) (sortedLineStarts[records[idxpos] + 1] - sortedLineStarts[records[idxpos]]);
+                fis.read(data, 0, len);
+                lines[idxpos] = (new String(Arrays.copyOfRange(data, 0, len))).trim();
+                idxpos++;
+            } while (idxpos < lines.length && idxpos < records.length
+                    && lines[idxpos - 1] != null);
 
             fis.close();
 
@@ -1905,8 +1938,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
         return null;
     }
 
-
-
     /**
      * gets sorted records between two file character positions
      *
@@ -1918,7 +1949,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     public static String[] getSortedRecords(long file_start, long file_end) {
         try {
-            byte[] data = new byte[(int)(file_end - file_start)];
+            byte[] data = new byte[(int) (file_end - file_start)];
             FileInputStream fis = new FileInputStream(
                     TabulationSettings.index_path
                     + SORTED_FILENAME);
@@ -1946,7 +1977,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     public static String getSortedRecordsString(long file_start, long file_end) {
         try {
-            byte[] data = new byte[(int)(file_end - file_start)];
+            byte[] data = new byte[(int) (file_end - file_start)];
             FileInputStream fis = new FileInputStream(
                     TabulationSettings.index_path
                     + SORTED_FILENAME);
@@ -2673,10 +2704,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         int i, j;
 
-        /* for matching cells, test each record within  */       
+        /* for matching cells, test each record within  */
 
         IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
-        IndexedRecord [] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index);
+        IndexedRecord[] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index);
 
         BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
 
@@ -2701,14 +2732,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
             //test each potential match, otherwise add
             if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
                 for (j = start; j < end; j++) {
-                    if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
+                    if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
                         bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                     }
                 }
             } else {
                 for (j = start; j < end; j++) {
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
-                        if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
+                        if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
                             bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                         }
                     }
@@ -2717,31 +2748,32 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
 
         long t3 = System.currentTimeMillis();
-    
+
         String output = getSpeciesListRecords(bitset);
 
         long t4 = System.currentTimeMillis();
 
-        System.out.println("getSpeciesInside(): t2-t1=" + (t2-t1) + " t3-t2=" + (t3-t2) + " t4-t3=" + (t4-t3));
+        System.out.println("getSpeciesInside(): t2-t1=" + (t2 - t1) + " t3-t2=" + (t3 - t2) + " t4-t3=" + (t4 - t3));
 
         return output;
     }
 
     static String getIndexedValue(int index, int record) {
-        IndexedRecord [] irs = all_indexes.get(index);
+        IndexedRecord[] irs = all_indexes.get(index);
 
-        IndexedRecord ir = new IndexedRecord("",0,0,record,0,(byte)0);
+        IndexedRecord ir = new IndexedRecord("", 0, 0, record, 0, (byte) 0);
 
-        int pos = java.util.Arrays.binarySearch(irs,ir,
-                new Comparator<IndexedRecord>(){
+        int pos = java.util.Arrays.binarySearch(irs, ir,
+                new Comparator<IndexedRecord>() {
+
                     public int compare(IndexedRecord r1, IndexedRecord r2) {
                         return r1.record_start - r2.record_start;
                     }
-        });
+                });
 
         if (pos >= 0 && pos < irs.length
                 && irs[pos].record_end >= record) {
-           return irs[pos].name;
+            return irs[pos].name;
         }
 
         return "";
@@ -2753,14 +2785,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
         //SimpleRegion sr = SimpleShapeFile.parseWKT("POLYGON((116.0 -44.0,116.0 -9.0,117.0 -9.0,117.0 -44.0,116.0 -44.0))");
         //getSpeciesInside(sr);
 
-        makeSortedLineStarts();
+        //makeSortedLineStarts();
 
 
-//        OccurrencesIndex oi = new OccurrencesIndex();
-        //oi.exportFieldIndexes();
- //       oi.occurancesUpdate();
+        OccurrencesIndex oi = new OccurrencesIndex();
+        oi.exportFieldIndexes();
+        //       oi.occurancesUpdate();
 
-        int [] list = OccurrencesIndex.lookup(0, "143");
+        int[] list = OccurrencesIndex.lookup(0, "143");
         System.out.println("list:" + list);
         System.out.println("list len:" + list.length);
         System.out.println("done");
@@ -2772,7 +2804,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param r region for test as SimpleRegion
      * @return number of species found as int[0], number of occurrences as int[1]
      */
-    static public int [] getSpeciesCountInside(SimpleRegion r) {
+    static public int[] getSpeciesCountInside(SimpleRegion r) {
         /* init */
         loadIndexes();
 
@@ -2806,17 +2838,17 @@ public class OccurrencesIndex implements AnalysisIndexService {
             //test each potential match, otherwise add
             if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
                 for (j = start; j < end; j++) {
-                    if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
-                    bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
-                    countOccurrences++;
+                    if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
+                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                        countOccurrences++;
                     }
                 }
             } else {
                 for (j = start; j < end; j++) {
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
-                        if(speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0){   //TODO: remove this validation, should not be required
-                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
-                        countOccurrences++;
+                        if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
+                            bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                            countOccurrences++;
                         }
                     }
                 }
@@ -2830,7 +2862,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
         }
 
-        int [] ret = new int[2];
+        int[] ret = new int[2];
         ret[0] = speciesCount;
         ret[1] = countOccurrences;
         return ret;
@@ -2865,9 +2897,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
             speciesSortByRecordNumberOrder = new int[speciesSortByRecordNumber.length];
             for (i = 0; i < speciesSortByRecordNumber.length; i++) {
                 t = speciesSortByRecordNumber[i].file_end;
-                speciesSortByRecordNumber[i].file_end = tmp[(int)t];
+                speciesSortByRecordNumber[i].file_end = tmp[(int) t];
 
-                speciesSortByRecordNumberOrder[i] = (int)t;
+                speciesSortByRecordNumberOrder[i] = (int) t;
             }
         }
     }
@@ -2953,8 +2985,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
             }
         }
-        
-        if(occurrencesCount != null){
+
+        if (occurrencesCount != null) {
             occurrencesCount = ocount;
         }
 
@@ -2964,37 +2996,38 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
     static public String getSpeciesListRecords(BitSet bitset) {
         IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
-        IndexedRecord [] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index); 
+        IndexedRecord[] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index);
 
         StringBuffer sb = new StringBuffer();
 
-        IndexedRecord lookfor = new IndexedRecord("",0,0,0,0,(byte)-1);
+        IndexedRecord lookfor = new IndexedRecord("", 0, 0, 0, 0, (byte) -1);
 
         for (int i = 0; i < bitset.size(); i++) {
             if (bitset.get(i)) {
-                if(species_to_family[i] >= 0) {
+                if (species_to_family[i] >= 0) {
                     //sb.append(StringUtils.capitalize(
-                      //      familyIdx[species_to_family[i]].name));
+                    //      familyIdx[species_to_family[i]].name));
                     lookfor.name = familyIdx[species_to_family[i]].name;
 
 
                     int j = java.util.Arrays.binarySearch(single_index,
-                        lookfor,
-                    new Comparator<IndexedRecord>() {
-                        public int compare(IndexedRecord r1, IndexedRecord r2) {
-                            return r1.name.compareTo(r2.name);
-                        }
-                    });
+                            lookfor,
+                            new Comparator<IndexedRecord>() {
 
-                    if(j >=0 && j < occurances_csv_field_pairs_FirstFromSingleIndex.length){
+                                public int compare(IndexedRecord r1, IndexedRecord r2) {
+                                    return r1.name.compareTo(r2.name);
+                                }
+                            });
+
+                    if (j >= 0 && j < occurances_csv_field_pairs_FirstFromSingleIndex.length) {
                         j = occurances_csv_field_pairs_FirstFromSingleIndex[j];
 
-                        if(j >= 0 && j < occurances_csv_field_pairs_Name.length){
+                        if (j >= 0 && j < occurances_csv_field_pairs_Name.length) {
                             sb.append(StringUtils.capitalize(occurances_csv_field_pairs_Name[j]));
-                        }else{
+                        } else {
                             sb.append("undefined");
                         }
-                    }else{
+                    } else {
                         sb.append("undefined");
                     }
                 } else {
@@ -3002,27 +3035,28 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
                 sb.append("*");
                 //sb.append(StringUtils.capitalize(species[i].name));
-                    lookfor.name = species[i].name;
+                lookfor.name = species[i].name;
 
-                    int j = java.util.Arrays.binarySearch(single_index,
+                int j = java.util.Arrays.binarySearch(single_index,
                         lookfor,
-                    new Comparator<IndexedRecord>() {
-                        public int compare(IndexedRecord r1, IndexedRecord r2) {
-                            return r1.name.compareTo(r2.name);
-                        }
-                    });
+                        new Comparator<IndexedRecord>() {
 
-                    if(j >=0 && j < occurances_csv_field_pairs_FirstFromSingleIndex.length){
-                        j = occurances_csv_field_pairs_FirstFromSingleIndex[j];
+                            public int compare(IndexedRecord r1, IndexedRecord r2) {
+                                return r1.name.compareTo(r2.name);
+                            }
+                        });
 
-                        if(j >= 0 && j < occurances_csv_field_pairs_Name.length){
-                            sb.append(StringUtils.capitalize(occurances_csv_field_pairs_Name[j]));
-                        }else{
-                            sb.append("undefined");
-                        }
-                    }else{
+                if (j >= 0 && j < occurances_csv_field_pairs_FirstFromSingleIndex.length) {
+                    j = occurances_csv_field_pairs_FirstFromSingleIndex[j];
+
+                    if (j >= 0 && j < occurances_csv_field_pairs_Name.length) {
+                        sb.append(StringUtils.capitalize(occurances_csv_field_pairs_Name[j]));
+                    } else {
                         sb.append("undefined");
                     }
+                } else {
+                    sb.append("undefined");
+                }
                 if (common_names[i].length() > 0) {
                     sb.append("*");
                     sb.append(common_names[i]);
@@ -3073,14 +3107,14 @@ class Point extends Object {
 }
 
 class CommonNameRecord {
+
     public String name;
     public String nameLowerCase;
     public int index;
 
-    public CommonNameRecord(String name_, int index_){
+    public CommonNameRecord(String name_, int index_) {
         name = name_;
         index = index_;
         nameLowerCase = name_.toLowerCase();
     }
 }
-
