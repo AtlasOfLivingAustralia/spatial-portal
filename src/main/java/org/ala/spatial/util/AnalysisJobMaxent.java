@@ -23,6 +23,7 @@ import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -153,6 +154,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 for (int ei = 0; ei < envnameslist.length; ei++) {
                     readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species.html", envpathlist[ei], envnameslist[ei]);
                 }
+
+                //remove species image path in output species.html
+                readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species.html", "species.png", "");
+                //delete image
+                FileUtils.deleteQuietly(new File(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator + "species.png"));
 
                 writeProjectionFile(msets.getOutputPath());
 
@@ -378,7 +384,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
     }
 
     public String getImage() {
-        return "output/maxent/" + getName() + "/plots/species.png";
+        return "output/maxent/" + getName() + "/plots/species_hidden.png";
     }
 
     AnalysisJob copy() {

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.AlocService;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.LayerImgService;
@@ -83,7 +84,13 @@ public class AnalysisJobSampling extends AnalysisJob {
             String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
-            String outfile = fDir.getAbsolutePath() + File.separator /*+ species.replaceAll(" ", "_")*/ + "_sample_" + getName() + ".zip";
+
+            String [] n = OccurrencesIndex.getFirstName(species);
+            String speciesName = "";
+            if(n != null){
+                speciesName = n[0];
+            }
+            String outfile = fDir.getAbsolutePath() + File.separator + speciesName.replaceAll(" ", "_") + "_sample_" + getName() + ".zip";
             Zipper.zipFiles(files, outfile);
 
             //return "/output/sampling/" + species.replaceAll(" ", "_") + "_sample_" + getName() + ".zip";
