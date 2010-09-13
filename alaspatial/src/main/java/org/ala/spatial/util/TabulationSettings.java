@@ -174,12 +174,19 @@ public class TabulationSettings {
     public static double aloc_timing_1;
     public static double aloc_timing_2;
     public static double aloc_timing_3;
+    public static double aloc_timing_4;
+    public static double aloc_timing_5;
+    public static double aloc_timing_6;
     /**
      * maxent timings
      */
     public static double maxent_timing_0;
     public static double maxent_timing_1;
     public static double maxent_timing_2;
+    /**
+     * smoothing factor for analysis job estimates
+     */
+    public static int process_estimate_smoothing;
     /**
      * species list includes one additional (e.g. Family) column in the export,
      * this is the column order or 2's in occurances_csv_field_settings.
@@ -420,6 +427,9 @@ public class TabulationSettings {
         aloc_timing_1 = Double.parseDouble(xr.getValue("aloc_timing_1"));
         aloc_timing_2 = Double.parseDouble(xr.getValue("aloc_timing_2"));
         aloc_timing_3 = Double.parseDouble(xr.getValue("aloc_timing_3"));
+        aloc_timing_4 = Double.parseDouble(xr.getValue("aloc_timing_4"));
+        aloc_timing_5 = Double.parseDouble(xr.getValue("aloc_timing_5"));
+        aloc_timing_6 = Double.parseDouble(xr.getValue("aloc_timing_6"));
 
         maxent_timing_0 = Double.parseDouble(xr.getValue("maxent_timing_0"));
         maxent_timing_1 = Double.parseDouble(xr.getValue("maxent_timing_1"));
@@ -443,6 +453,8 @@ public class TabulationSettings {
         for(int i=0;i<pf.length;i++){
             geojson_property_fields[i] = Integer.parseInt(pf[i]);
         }
+        
+        process_estimate_smoothing = Integer.parseInt(xr.getValue("process_estimate_smoothing"));
     }
 
     static public String getPath(String layerName) {

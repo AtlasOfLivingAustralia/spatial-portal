@@ -65,7 +65,7 @@ public class MaxentProgressWCController extends UtilityComposer {
         }
 
         String p = get("progress");
-        System.out.println("prog:" + p);
+        
         try {
             double d = Double.parseDouble(p);
             jobprogress.setValue((int) (d * 100));
@@ -92,8 +92,7 @@ public class MaxentProgressWCController extends UtilityComposer {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
-
-            System.out.println(sbProcessUrl.toString());
+            
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
@@ -101,7 +100,6 @@ public class MaxentProgressWCController extends UtilityComposer {
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
-            System.out.println(slist);
             return slist;
         } catch (Exception e) {
             e.printStackTrace();

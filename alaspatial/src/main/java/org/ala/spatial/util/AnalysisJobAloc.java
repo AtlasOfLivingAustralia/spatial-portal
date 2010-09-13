@@ -37,8 +37,8 @@ public class AnalysisJobAloc extends AnalysisJob {
 
         //TODO: remove rough estimate
         if(region != null){
-            cells = (int)Math.ceil(region.getWidth() / TabulationSettings.grd_xdiv
-                    + region.getHeight() / TabulationSettings.grd_ydiv);
+            cells = (int)Math.ceil((region.getWidth() / TabulationSettings.grd_xdiv)
+                    * (region.getHeight() / TabulationSettings.grd_ydiv));
         }else{
             cells = 1000000; //or something
         }
@@ -142,47 +142,61 @@ public class AnalysisJobAloc extends AnalysisJob {
 
     @Override
     public long getEstimate(){
-        if(getProgress() == 0) return 0;
+        //if(getProgress() == 0) return 0;
 
         long timeElapsed;
         long t1=0, t2=0, t3=0, t4=0;
         double prog;
+        long progTime;
         synchronized(progress){
+           progTime = progressTime;
            timeElapsed = progressTime - stageTimes[getStage()];
            prog = progress;
         }
         long timeRemaining = 0;
 
         if(stage <= 0){ //data load; 0 to 0.2
-            if(prog > 0){
+            if(prog > 0.2){
                 t1 = (long) (timeElapsed * (.2 - prog)/prog ); //projected
             }
-            if(t1<=0 || prog <= 0){
-                t1 = (long) (cells * TabulationSettings.aloc_timing_0 * layers.length); //default
+            if(t1<=0 || prog <= 0.2){
+                t1 = (long) (cells * TabulationSettings.aloc_timing_0 * layers.length
+                        + TabulationSettings.aloc_timing_1); //default
             }
         } 
         if(stage <= 1){ //seeding; 0.2 to 0.3
-            if(prog > 0.2){
-                t2 = (long) (timeElapsed * (.1 - (prog-.2))/(prog-.2)) ;   //projected
+            if(prog > 0.22){
+                //t2 = (long) (timeElapsed * (.1 - (prog-.2))/(prog-.2)) ;   //projected
+                t2 = (long) ((cells * TabulationSettings.aloc_timing_2) * (double)layers.length * numberOfGroups
+                        + TabulationSettings.aloc_timing_3); //default
+                t2 = t2 + progTime - stageTimes[1];
             }
-            if(t2<=0 || prog <= 0.2){
-                t2 = (long) (cells * TabulationSettings.aloc_timing_1 * layers.length * numberOfGroups); //default
+            if(t2<=0 || prog <= 0.22){
+                t2 = (long) ((cells * TabulationSettings.aloc_timing_2) * (double)layers.length * numberOfGroups
+                        + TabulationSettings.aloc_timing_3); //default
             }
         } 
         if(stage <= 2){ //iterations; 0.3 to 0.9            
             if(prog > 0.3){
-                t3 = (long) (timeElapsed  * (.6 - (prog-.3))/(prog-.3));   //projected
+                //t3 = (long) (timeElapsed  * (.6 - (prog-.3))/(prog-.3));   //projected
+
+                t3 = (long) ((cells * TabulationSettings.aloc_timing_4) * (double) numberOfGroups * layers.length * layers.length
+                        + TabulationSettings.aloc_timing_5); //default
+                t3 = t3 + progTime - stageTimes[2];
             }
             if(t3<=0 || prog <= 0.3){
-                t3 = (long) (cells * Math.sqrt(numberOfGroups) * Math.sqrt(layers.length) * TabulationSettings.aloc_timing_2); //default
+                t3 = (long) ((cells * TabulationSettings.aloc_timing_4) * (double) numberOfGroups * layers.length * layers.length
+                        + TabulationSettings.aloc_timing_5); //default
             }
         } 
         if(stage <= 3){ //transforming data; 0.9 to 1.0
             if(prog > 0.9){
-                t4 = (long) (timeElapsed  * (.1 - (prog-.9))/(prog-.9)); //projected
+                //t4 = (long) (timeElapsed  * (.1 - (prog-.9))/(prog-.9)); //projected
+                t4 = (long) (2000 * TabulationSettings.aloc_timing_6); //default
+                t4 = t4 + progTime - stageTimes[3];
             }
             if(t4<=0 || prog <= 0.9){
-                t4 = (long) (2000 * TabulationSettings.aloc_timing_3); //default
+                t4 = (long) (2000 * TabulationSettings.aloc_timing_6); //default
             }
         }
 

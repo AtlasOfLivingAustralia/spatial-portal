@@ -15,7 +15,6 @@ import java.util.Calendar;
  */
 public class AnalysisJob extends Thread implements Serializable {
     private final String DATE_FORMAT_NOW = "dd-MM-yyyy HH:mm:ss";
-    private final int ESTIMATE_LENGTH = 8;  //number of estimates * 2
     public final static String WAITING = "WAITING";
     public final static String RUNNING = "RUNNING";
     public final static String SUCCESSFUL = "SUCCESSFUL";
@@ -42,18 +41,21 @@ public class AnalysisJob extends Thread implements Serializable {
     }
 
     public long smoothEstimate(long nextEstimate){
+        int estimates_length = TabulationSettings.process_estimate_smoothing * 2;
+        long difference = -1 * progressTime;
         long currentTime = System.currentTimeMillis();
+        difference += currentTime;
 
         if(estimatePairs == null){
-            estimatePairs = new long[ESTIMATE_LENGTH];
-            for(int i=0;i<ESTIMATE_LENGTH;i+=2){
+            estimatePairs = new long[estimates_length];
+            for(int i=0;i<estimates_length;i+=2){
                 estimatePairs[i] = currentTime;
                 estimatePairs[i+1] = nextEstimate;
             }
         }
 
         //shift estimates back one
-        for(int i=2;i<ESTIMATE_LENGTH;i+=2){
+        for(int i=2;i<estimates_length;i+=2){
             estimatePairs[i] = estimatePairs[i-2];
             estimatePairs[i+1] = estimatePairs[i-1];
         }
@@ -64,13 +66,13 @@ public class AnalysisJob extends Thread implements Serializable {
 
         //calculate
         double smoothEstimate = 0;        
-        for(int i=0;i<ESTIMATE_LENGTH;i+=2){
+        for(int i=0;i<estimates_length;i+=2){
             long timeSinceEstimate = currentTime - estimatePairs[i];
             smoothEstimate += estimatePairs[i+1] - timeSinceEstimate;
         }
 
         //return average time remaining
-        long estimate = ((long)Math.round(smoothEstimate / (ESTIMATE_LENGTH/2))) - progressTime;
+        long estimate = ((long)Math.round(smoothEstimate / (estimates_length/2))) - difference;
         if(estimate < 1000) estimate = 1000;
         return estimate;
     }

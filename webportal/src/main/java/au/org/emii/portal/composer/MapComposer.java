@@ -474,7 +474,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
          //   mapSpeciesByName(sSearchTerm);
         }
-        mapSpeciesByLsid(searchSpeciesAuto.getSelectedItem().getAnnotation("LSID").getName(), sSearchTerm);
+        mapSpeciesByLsid((String)(searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), sSearchTerm);
 
         btnSearchSpecies.setVisible(false);
 
