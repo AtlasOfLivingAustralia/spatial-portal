@@ -211,6 +211,7 @@ public class SpeciesAutoComplete extends Combobox {
 
             //System.out.println("Looking up scientific name for '" + val + "' at " + snUrl);
 
+            getItems().clear();
             Iterator it = getItems().iterator();
             if (val.length() == 0) {
                 Comboitem myci = null;

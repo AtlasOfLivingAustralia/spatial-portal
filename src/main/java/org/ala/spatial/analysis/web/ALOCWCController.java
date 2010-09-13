@@ -246,7 +246,7 @@ public class ALOCWCController extends UtilityComposer {
 
     public void onDoInit(Event event) throws Exception {
         runclassification();
-        Clients.showBusy("", false);
+        //Clients.showBusy("", false);
     }
 
     public void produce() {
@@ -254,8 +254,9 @@ public class ALOCWCController extends UtilityComposer {
     }
 
     public void onClick$btnGenerate(Event event) {
-        Clients.showBusy("Classification running...", true);
-        Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
+        //Clients.showBusy("Classification running...", true);
+        //Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
+        try{onDoInit(null);}catch(Exception e){}
     }
 
     public void runclassification() {

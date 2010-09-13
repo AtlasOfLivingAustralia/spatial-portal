@@ -65,7 +65,6 @@ public class SamplingProgressWCController extends UtilityComposer {
         }
 
         String p = get("progress");
-        System.out.println("prog:" + p);
         try {
             double d = Double.parseDouble(p);
             jobprogress.setValue((int) (d * 100));
@@ -75,7 +74,7 @@ public class SamplingProgressWCController extends UtilityComposer {
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
             Events.echoEvent("downloadSampling",parent,null);
-            showReferenceNumber();
+            //showReferenceNumber();
             this.detach();
         } else if(s.equals("FAILED")) {
             timer.stop();
@@ -94,7 +93,6 @@ public class SamplingProgressWCController extends UtilityComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
-            System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
@@ -102,7 +100,6 @@ public class SamplingProgressWCController extends UtilityComposer {
 
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
-            System.out.println(slist);
             return slist;
         } catch (Exception e) {
             e.printStackTrace();

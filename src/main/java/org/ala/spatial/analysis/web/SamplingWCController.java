@@ -223,7 +223,7 @@ public class SamplingWCController extends UtilityComposer {
 
     public void onDoInit(Event event) throws Exception {
         runsampling();
-        Clients.showBusy("", false);
+        //Clients.showBusy("", false);
     }
 
     public void produce() {
@@ -231,12 +231,13 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     public void onClick$btnPreview(Event event) {
-        Clients.showBusy("Sampling...", true);
-        Events.echoEvent("onDoInit", this, (event == null) ? null : event.toString());
+        //Clients.showBusy("Sampling...", true);
+        //Events.echoEvent("onDoInit", this, (event == null) ? null : event.toString());
+        try{onDoInit(null);}catch(Exception e){}
     }
 
     /**
-     * Iterate thru' the layer list setup in the @doAfterCompose method
+     * Iterate thru' the layer lifst setup in the @doAfterCompose method
      * and setup the listbox
      */
     private String[] setupEnvironmentalLayers() {
@@ -700,7 +701,7 @@ public class SamplingWCController extends UtilityComposer {
 
         }*/
 
-        if (sac.getSelectedItem() != null) {
+        if (sac.getSelectedItem() != null && sac.getSelectedItem().getAnnotatedProperties() != null) {
             taxon = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 

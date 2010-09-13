@@ -213,7 +213,7 @@ public class MaxentWCController extends UtilityComposer {
 
     public void onDoInit(Event event) throws Exception {
         runmaxent();
-        Clients.showBusy("", false);
+        //Clients.showBusy("", false);
     }
 
     public void produce() {
@@ -221,8 +221,9 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     public void onClick$startmaxent(Event event) {
-        Clients.showBusy("Maxent running...", true);
-        Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
+        //Clients.showBusy("Maxent running...", true);
+        //Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
+        try{onDoInit(null);}catch(Exception e){}
     }
 
     public void runmaxent() {
@@ -603,7 +604,7 @@ public class MaxentWCController extends UtilityComposer {
 
         }*/
 
-        if(sac.getSelectedItem() != null){
+        if(sac.getSelectedItem() != null && sac.getSelectedItem().getAnnotatedProperties() != null){
             taxon = (String)sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 
