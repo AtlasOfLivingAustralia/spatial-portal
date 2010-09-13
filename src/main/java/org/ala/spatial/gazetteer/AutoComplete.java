@@ -2,6 +2,7 @@ package org.ala.spatial.gazetteer;
 
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.composer.MapComposer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zk.ui.event.InputEvent;
 import java.util.Iterator;
@@ -26,8 +27,8 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 
 public class AutoComplete extends Combobox {
-
-    private String gazServer = "http://spatial.ala.org.au";
+    private static final String GAZ_URL = "geoserver_url";
+    private String gazServer = null;//"http://spatial.ala.org.au";
 
     public AutoComplete() {
         refresh(""); //init the child comboitems
@@ -46,6 +47,15 @@ public class AutoComplete extends Combobox {
     }
 
     public void onSelect(Event event) {
+        if(gazServer == null && this.getParent() != null){
+                SettingsSupplementary settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
+                System.out.println("AC got SS: " + settingsSupplementary);
+                gazServer = settingsSupplementary.getValue(GAZ_URL);
+        }        
+        if(gazServer == null){
+            return;
+        }
+
           String label = null;
             String entity = null;
             MapLayer mapLayer = null;
@@ -98,8 +108,16 @@ public class AutoComplete extends Combobox {
     /** Refresh comboitem based on the specified value.
      */
     private void refresh(String val) {
-        //TODO: remove hardcoded host,
-        HttpHost targetHost = new HttpHost("spatial.ala.org.au", 80, "http"); // "ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"
+        if(gazServer == null && this.getParent() != null){
+                SettingsSupplementary settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
+                System.out.println("AC got SS: " + settingsSupplementary);
+                gazServer = settingsSupplementary.getValue(GAZ_URL);
+        }
+        if(gazServer == null){
+            return;
+        }
+
+        HttpHost targetHost = new HttpHost(gazServer, 80, "http"); // "ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"
         DefaultHttpClient httpclient = new DefaultHttpClient();
         BasicHttpContext localcontext = new BasicHttpContext();
         String searchString = val.trim().replaceAll("\\s+", "+");
