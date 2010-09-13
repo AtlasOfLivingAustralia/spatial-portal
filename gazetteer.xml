@@ -9,6 +9,7 @@
     <name>NamedPlaces</name>
     <idAttribute1>NAME</idAttribute1>
     <idAttribute2>FID</idAttribute2> 
+    <classAttribute>NAME</classAttribute>
     <nameAttribute>NAME</nameAttribute>
     <descriptionAttributes>
     <!--   <descriptionAttribute>NAME</descriptionAttribute> -->

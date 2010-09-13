@@ -1,8 +1,13 @@
 package org.ala.rest;
 
+
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -61,15 +66,17 @@ public class GazetteerIndex implements InitializingBean {
         try {
 
             //Initialize lucene index
-            File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-            if (file.exists()) {
+            File featureIndexDir = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
+            File classIndexDir = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-class-index");
+            if (featureIndexDir.exists()) {
                 return;//FileUtils.forceDelete(file);
             } else {
-                FileUtils.forceMkdir(file);
+                FileUtils.forceMkdir(featureIndexDir);
+                FileUtils.forceMkdir(classIndexDir);
 
                 StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-                IndexWriter iw = new IndexWriter(FSDirectory.open(file), analyzer /*Version.LUCENE_CURRENT)*/, true, IndexWriter.MaxFieldLength.UNLIMITED);
-
+                IndexWriter featureIndex = new IndexWriter(FSDirectory.open(featureIndexDir), analyzer /*Version.LUCENE_CURRENT)*/, true, IndexWriter.MaxFieldLength.UNLIMITED);
+                IndexWriter classIndex = new IndexWriter(FSDirectory.open(classIndexDir),analyzer,true,IndexWriter.MaxFieldLength.UNLIMITED);
 
                 for (String layerName : gc.getLayerNames()) {
                     LayerInfo layerInfo = catalog.getLayerByName(layerName);
@@ -79,27 +86,34 @@ public class GazetteerIndex implements InitializingBean {
                     Map params = layerStore.getConnectionParameters();//layerInfo.getResource().getStore().getConnectionParameters();
 
                     dataStore = DataStoreUtils.acquireDataStore(params, sc);//DataStoreFinder.getDataStore(params);
-
+                    Set classNames = new HashSet();
                     if (dataStore == null) {
                         throw new Exception("Could not find datastore for this layer");
                     } else {
+                        System.out.println("Indexing " + layerName);
                         FeatureSource layer = dataStore.getFeatureSource(layerName);
                         features = layer.getFeatures().features();
                         List<String> descriptionAttributes = gc.getDescriptionAttributes(layerName);
                         String idAttribute = gc.getIdAttribute1Name(layerName);
+                        
                         while (features.hasNext()) {
                             Feature feature = features.next();
-                            Document doc = new Document();
+                            Document featureDoc = new Document();
+                            
                             //Add name and type to the index for searching
 
                             if (feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue() != null) {
-                                doc.add(new Field("id", feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
+                                featureDoc.add(new Field("id", feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
                             }
                             if (feature.getProperty(gc.getNameAttributeName(layerName)).getValue() != null) {
-                                doc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
+                                featureDoc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
                             }
 
-                            doc.add(new Field("type", layerName, Store.YES, Index.ANALYZED));
+                            if (feature.getProperty(gc.getClassAttributeName(layerName)).getValue() != null) {
+                                classNames.add(feature.getProperty(gc.getClassAttributeName(layerName)).getValue().toString());
+                            }
+
+                            featureDoc.add(new Field("type", layerName, Store.YES, Index.ANALYZED));
 
                             //Add all the other feature properties to the index as well but not for searching
                             String geomName = feature.getDefaultGeometryProperty().getName().toString();
@@ -107,7 +121,7 @@ public class GazetteerIndex implements InitializingBean {
                             for (Property property : feature.getProperties()) {
                                // System.out.println(property.getName().toString());
                                 if ((descriptionAttributes.contains(property.getName().toString())) && (property.getValue() != null)) { //&& (!(property.getName().toString().contentEquals(geomName)))) {
-                                    doc.add(new Field(property.getName().toString(), property.getValue().toString(), Store.YES, Index.NO));
+                                    featureDoc.add(new Field(property.getName().toString(), property.getValue().toString(), Store.YES, Index.NO));
 
                                 }
 //                                // where there is more than one id attribute - the id becomes a concatenation
@@ -118,14 +132,26 @@ public class GazetteerIndex implements InitializingBean {
                             
 //                            doc.add(new Field("id", idString, Store.YES, Index.ANALYZED));
 
-                            iw.addDocument(doc);
+                            featureIndex.addDocument(featureDoc);
                             System.out.print(".");
                         }
                         features.close();
+
                     }
                     dataStore.dispose();
+                    Document classDoc = new Document();
+                    Iterator iter = classNames.iterator();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(iter.next());
+                    while (iter.hasNext()) {
+                        sb.append(",").append(iter.next());
+                    }
+                    classDoc.add(new Field("layer",layerName,Store.YES,Index.ANALYZED));
+                    classDoc.add(new Field("classes",sb.toString(),Store.YES,Index.NO));
+                    classIndex.addDocument(classDoc);
                 }
-                iw.close();
+                featureIndex.close();
+                classIndex.close();
             }
         } catch (Exception e) {
             //FIXME

@@ -173,4 +173,30 @@ public class GazetteerConfig {
         }
         return idAttribute;
     }
+
+       /***
+     * Gets the gazetteer class attribute for the layer
+     * @param layerName
+     * @return the name of the layers class attribute
+     */
+    public String getClassAttributeName(String layerName) {
+        //using xpath to query
+        String idAttribute = "none";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr
+             = xpath.compile("//layer[name='" + layerName + "']/classAttribute/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            idAttribute = nodes.item(0).getNodeValue();
+
+        }
+        catch(Exception e)
+        {
+            //FIXME
+        }
+        return idAttribute;
+    }
 }

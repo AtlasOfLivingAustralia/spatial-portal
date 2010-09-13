@@ -162,18 +162,52 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
     }
 
     public void testPointSearch() throws Exception {
-        System.out.println("*************");
+       
         Document dom = getAsDOM("/rest/gazetteer/result.xml?point=0.003,0.001&layer=NamedPlaces");
        
         print(dom);
+    }
+
+      public void testLayerClasses() throws Exception {
+        System.out.println("*************");
+        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces.json");
+
+        print(json);
         System.out.println("*************");
     }
-    public void testGazetteerLuceneIndex() throws Exception {
+
+    public void testGazetteerFeatureIndex() throws Exception {
         File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
         if (file.exists()) {
             IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
             QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
             Query nameQuery = qp.parse("Ash*");
+
+            TopDocs topDocs = is.search(nameQuery, 20);
+
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                org.apache.lucene.document.Document doc = is.doc(scoreDoc.doc);
+                List<Fieldable> fields = doc.getFields();
+                for (Fieldable field : fields) {
+                    System.out.println(field.name() + ": " + field.stringValue());
+                }
+                System.out.println("---------------------------------------------");
+            }
+
+            System.out.println("---------------------------------------------");
+            System.out.println("Total hits: " + topDocs.totalHits);
+            System.out.println("---------------------------------------------");
+        } else {
+            assertTrue(0 == 1);
+        }
+    }
+
+     public void testGazetteerClassIndex() throws Exception {
+        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-class-index");
+        if (file.exists()) {
+            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
+            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "layer", new StandardAnalyzer(Version.LUCENE_CURRENT));
+            Query nameQuery = qp.parse("NamedPlaces");
 
             TopDocs topDocs = is.search(nameQuery, 20);
 

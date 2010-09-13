@@ -40,40 +40,41 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
 
         System.out.println(getRequest().getAttributes().toString());
 
-        
+
         String query = getRequest().getAttributes().get("q").toString();
+        
         if (query.contains("q")) {
-        String nameTerm = query.split("=")[1].replace(",type","");
-        //Support & as separator as well
-        nameTerm = nameTerm.replace("&type","");
-        Search searchObj;
-        if (query.contains("type")) {
-            String typeTerm =  query.split("=")[2].replace(",","");
-            searchObj = new Search(nameTerm.replace("+", "* AND ") + "*", typeTerm);
-            xstream.processAnnotations(Search.class);
-            //System.out.println(xstream.toXML(searchObj));
-            String xmlString = xstream.toXML(searchObj);
-            getResponse().setEntity(format.toRepresentation(xmlString));
-        } else {
-            searchObj = new Search(nameTerm.replace("+", "* AND ") + "*");
-            xstream.processAnnotations(Search.class);
-            //System.out.println(xstream.toXML(searchObj));
-            String xmlString =  xstream.toXML(searchObj);
-            getResponse().setEntity(format.toRepresentation(xmlString));
-        }
-        }
-        else if (query.contains("point")) {
-            System.out.println("Point search ...");
+            String nameTerm = query.split("=")[1].replace(",type", "");
+            System.out.println(query);
+            //Support & as separator as well
+            nameTerm = nameTerm.replace("&type", "");
+            Search searchObj;
+            if (query.contains("type")) {
+                String typeTerm = query.split("=")[2].replace(",", "");
+                searchObj = new Search(nameTerm.replace("+", "* AND ") + "*", typeTerm);
+                xstream.processAnnotations(Search.class);
+                //System.out.println(xstream.toXML(searchObj));
+                String xmlString = xstream.toXML(searchObj);
+                getResponse().setEntity(format.toRepresentation(xmlString));
+            } else {
+                searchObj = new Search(nameTerm.replace("+", "* AND ") + "*");
+                xstream.processAnnotations(Search.class);
+                //System.out.println(xstream.toXML(searchObj));
+                String xmlString = xstream.toXML(searchObj);
+                getResponse().setEntity(format.toRepresentation(xmlString));
+            }
+        } else if (query.contains("point")) {
+            System.out.println("+++++Point search ...");
             String point = query.split("&")[0];
             String layerName = query.split("&layer=")[1];
             String x = point.split("=")[1].split(",")[0];
             String y = point.split("=")[1].split(",")[1];
 
 
-            PointSearch searchObj = new PointSearch(x,y,layerName);
+            PointSearch searchObj = new PointSearch(x, y, layerName);
             xstream.processAnnotations(PointSearch.class);
             //System.out.println(xstream.toXML(searchObj));
-            String xmlString =  xstream.toXML(searchObj);
+            String xmlString = xstream.toXML(searchObj);
             getResponse().setEntity(format.toRepresentation(xmlString));
         }
     }
