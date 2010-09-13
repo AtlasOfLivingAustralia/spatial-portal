@@ -277,8 +277,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$mapspecies() {
-            results_label_extra.setValue("    [Mapping...]");
-            Events.echoEvent("onMapSpecies", this, null);
+            //results_label_extra.setValue("    [Mapping...]");
+            //Events.echoEvent("onMapSpecies", this, null);
+        onMapSpecies(null);
     }
 
     public void onMapSpecies(Event event){

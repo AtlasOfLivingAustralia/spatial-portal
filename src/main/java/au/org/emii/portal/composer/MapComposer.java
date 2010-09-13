@@ -170,6 +170,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Slider greenSlider;
     private Slider blueSlider;
     private Slider sizeSlider;
+    private Checkbox chkUncertaintySize;
     private Label redLabel;
     private Label greenLabel;
     private Label blueLabel;
@@ -391,6 +392,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 selectedLayer.setGreenVal(greenSlider.getCurpos());
                 selectedLayer.setBlueVal(blueSlider.getCurpos());
                 selectedLayer.setSizeVal(sizeSlider.getCurpos());
+                selectedLayer.setSizeUncertain(chkUncertaintySize.isChecked());
 
                 //Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
                 String rgbColour = "rgb(" + String.valueOf(redSlider.getCurpos()) + "," + greenSlider.getCurpos() + "," + blueSlider.getCurpos() + ")";
@@ -1975,6 +1977,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 int blue = currentSelection.getBlueVal();
                 int green = currentSelection.getGreenVal();
                 int size = currentSelection.getSizeVal();
+                boolean sizeUncertain = currentSelection.getSizeUncertain();
                 System.out.println("r:" + red + " g:" + green + " b:" + blue);
                 Color c = new Color(red, green, blue);
 
@@ -1982,6 +1985,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 greenSlider.setCurpos(green);
                 blueSlider.setCurpos(blue);
                 sizeSlider.setCurpos(size); //size scale
+                chkUncertaintySize.setChecked(sizeUncertain);
 
                 blueLabel.setValue(String.valueOf(blue));
                 redLabel.setValue(String.valueOf(red));
@@ -2313,6 +2317,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onScroll$sizeSlider() {
         int size = sizeSlider.getCurpos();
         sizeLabel.setValue(String.valueOf(size));
+        updateLegendImage();
+        onClick$applyChange();
+    }
+
+    public void onCheck$chkUncertaintySize() {        
         updateLegendImage();
         onClick$applyChange();
     }
