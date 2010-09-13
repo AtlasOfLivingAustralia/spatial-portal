@@ -1498,10 +1498,13 @@ if not csv, then tab delimited
             2 = iterations
             3 = data formatting/conversion
             -->
-        <aloc_timing_0>.002</aloc_timing_0>
-        <aloc_timing_1>.00005</aloc_timing_1>
-        <aloc_timing_2>.0005</aloc_timing_2>
-        <aloc_timing_3>1</aloc_timing_3>
+        <aloc_timing_0>.00002</aloc_timing_0>
+        <aloc_timing_1>1000</aloc_timing_1>
+        <aloc_timing_2>.000013</aloc_timing_2>
+        <aloc_timing_3>1000</aloc_timing_3>
+        <aloc_timing_4>.000000031</aloc_timing_4>
+        <aloc_timing_5>1000</aloc_timing_5>
+        <aloc_timing_6>5</aloc_timing_6>
 
         <!--
             Maxent timings;
@@ -1511,8 +1514,9 @@ if not csv, then tab delimited
             -->
         <maxent_timing_0>0.002</maxent_timing_0>
         <maxent_timing_1>0.00005</maxent_timing_1>
-        <maxent_timing_2>1</maxent_timing_2>
+        <maxent_timing_2>20</maxent_timing_2>
     </processing_estimates>
 
+    <process_estimate_smoothing>20</process_estimate_smoothing>
 
 </tabulation>
