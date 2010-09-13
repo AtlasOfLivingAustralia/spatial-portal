@@ -66,6 +66,7 @@ public class GazetteerFeature {
             if (dataStore == null)
                     throw new Exception("Could not find datastore for this layer");
             else {
+                System.out.println("*********" + layerName);
                 FeatureSource layer = dataStore.getFeatureSource(layerName);
 
                 String cql = gc.getIdAttribute1Name(layerName) + "='" + id1.replace('_',' ');
@@ -81,8 +82,9 @@ public class GazetteerFeature {
                     if (features.hasNext()) {
                         while (features.hasNext()) {
                             Feature feature = (Feature) features.next();
+                            System.out.println("*********" + gc.getNameAttributeName(layerName));
                             this.id = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
-
+                            System.out.println("*********" + this.id);
                             //Construct a geoJSON reperesntation of the geometry uing GeoJSONBuilder
                             StringWriter w = new StringWriter();
                             GeoJSONBuilder geoJson = new GeoJSONBuilder(w);
@@ -94,6 +96,7 @@ public class GazetteerFeature {
                             String geomName = feature.getDefaultGeometryProperty().getName().toString();
                             this.properties = new HashMap();
                             for (Property property : featureProperties) {
+                                System.out.println("*********" + property.toString());
                                 if ((property.getName() != null) && (property.getValue() != null) && (!(property.getName().toString().contentEquals(geomName)))) {
                                     this.properties.put(property.getName().toString(), property.getValue().toString());
                                 }
@@ -111,6 +114,7 @@ public class GazetteerFeature {
         }
         finally {
              dataStore.dispose();
+            
         }
     }
 

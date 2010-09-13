@@ -1,22 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
  <beans>
-   <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
-
-    <bean id="featureServiceMapping" class="org.geoserver.rest.RESTMapping">
-       <property name="routes">
-          <map>
-            <entry>
-              <key><value>/gazetteer/{layer}/{id1}.{format}</value></key>
-              <value>featureService</value>
-            </entry>
-            <entry>
-              <key><value>/gazetteer/{layer}/{id1}/{id2}.{format}</value></key>
-              <value>featureService</value>
-            </entry>
-         </map>
-      </property>
-    </bean> 
+  
 
     <bean id="gazetteerConfig" class="org.ala.rest.GazetteerConfig"/>
 
@@ -35,5 +20,26 @@
          </map>
       </property>
     </bean>
+
+     <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
+
+    <bean id="featureServiceMapping" class="org.geoserver.rest.RESTMapping">
+       <property name="routes">
+          <map>
+            <entry>
+              <key><value>/gazetteer/{layer}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}/{id2}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+         </map>
+      </property>
+    </bean> 
 </beans>
 

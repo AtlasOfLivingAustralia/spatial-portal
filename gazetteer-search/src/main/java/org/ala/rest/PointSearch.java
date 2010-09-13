@@ -72,7 +72,7 @@ public class PointSearch {
         GeoServer gs = GeoServerExtensions.bean( GeoServer.class );
         ServletContext sc = GeoServerExtensions.bean( ServletContext.class );
         Catalog catalog = gs.getCatalog();
-
+        System.out.println("+++++++++" + lon + "," + lat + "," + layerName);
         try {
 
            // for (String layerName : gc.getLayerNames()) {
@@ -81,7 +81,7 @@ public class PointSearch {
 
                 DataStore dataStore = DataStoreUtils.acquireDataStore(params, sc);//DataStoreFinder.getDataStore(params);
                 FeatureSource layer = dataStore.getFeatureSource(layerName);
-
+                System.out.println("++++++++++Searching " + layerName);
 //                Coordinate point = new Coordinate(Float.parseFloat(lat),Float.parseFloat(lon));
 //
 //                FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
