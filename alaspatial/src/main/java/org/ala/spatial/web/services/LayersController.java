@@ -174,7 +174,7 @@ public class LayersController {
      * @param keywords
      * @return
      */
-    @RequestMapping(value = LAYERS_BASE + "/search/{keywords}", method = RequestMethod.GET)
+    @RequestMapping(value = LAYERS_BASE_WS + "/search/{keywords}", method = RequestMethod.GET)
     public 
     @ResponseBody
     List<LayerInfo> searchLayersByCriteria(@PathVariable String keywords) {
