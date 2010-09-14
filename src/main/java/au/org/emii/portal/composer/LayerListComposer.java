@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Sessions;
@@ -79,144 +81,66 @@ public class LayerListComposer extends UtilityComposer {
         return mapComposer;
     }
 
-    private void iterateAndLoad() {
 
-        //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
-        Object llist = Sessions.getCurrent().getAttribute("layerlist");
+    public void iterateAndLoad2() {
+        try {
 
-        ArrayList top = new ArrayList();
-        ArrayList cat1 = new ArrayList();
-        ArrayList cat2 = new ArrayList();
+            String layersListURL = "http://spatial-dev.ala.org.au" + "/alaspatial/ws/layers/list";
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(layersListURL);
+            //get.addRequestHeader("Content-type", "application/json");
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
-        Hashtable htCat1 = new Hashtable();
-        Hashtable htCat2 = new Hashtable();
+            int result = client.executeMethod(get);
+            String llist = get.getResponseBodyAsString();
 
-        JSONArray layerlist = JSONArray.fromObject(llist);
-        for (int i = 0; i < layerlist.size(); i++) {
-            JSONObject jo = layerlist.getJSONObject(i);
+            //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
 
-            if (!jo.getBoolean("enabled")) {
-                continue;
+            //Object llist = Sessions.getCurrent().getAttribute("layerlist");
+
+            if (llist == null) {
+                return;
             }
 
-            SimpleTreeNode stn = new SimpleTreeNode(jo, new ArrayList());
-            addToMap(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
+            ArrayList top = new ArrayList();
 
-        }
+            TreeMap htCat1 = new TreeMap();
+            TreeMap htCat2 = new TreeMap();
+            System.out.println("LAYERLIST>>>>>>>>>>" + (String) llist);
 
-        System.out.println("ht1.size: " + htCat1.size());
-        System.out.println("ht2.size: " + htCat2.size());
+            JSONArray layerlist = JSONArray.fromObject(llist);
+            for (int i = 0; i < layerlist.size(); i++) {
+                JSONObject jo = layerlist.getJSONObject(i);
 
-        Enumeration it2 = htCat2.keys();
-        while (it2.hasMoreElements()) {
-            String catKey = (String) it2.nextElement();
-            JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
-            SimpleTreeNode cat = new SimpleTreeNode(joCat, (ArrayList) htCat2.get(catKey));
-            //cat2.add(cat);
-            top.add(cat);
-        }
+                if (!jo.getBoolean("enabled")) {
+                    continue;
+                }
 
-//        Enumeration it1 = htCat1.keys();
-//        while(it1.hasMoreElements()) {
-//            String catKey = (String) it1.nextElement();
-//            JSONObject joCat = JSONObject.fromObject("{displayname:'"+catKey+"'}");
-//            SimpleTreeNode cat = new SimpleTreeNode(joCat,(ArrayList) htCat1.get(catKey));
-//            top.add(cat);
-//        }
-        SimpleTreeNode root = new SimpleTreeNode("ROOT", top);
-        SimpleTreeModel stm = new SimpleTreeModel(root);
-        tree.setModel(stm);
+                SimpleTreeNode stn = new SimpleTreeNode(jo, empty);
+                addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
 
-        renderTree();
-
-    }
-
-    private void addToMap(Hashtable htCat1, Hashtable htCat2, String cat1, String cat2, SimpleTreeNode stn) {
-
-        if (cat1.trim().equals("")) {
-            cat1 = "Other";
-        }
-        if (cat2.trim().equals("")) {
-            cat2 = "Other";
-        }
-
-        ArrayList alCat2 = (ArrayList) htCat2.get(cat2);
-        if (alCat2 == null) {
-            alCat2 = new ArrayList();
-        }
-        alCat2.add(stn);
-        htCat2.put(cat2, alCat2);
-
-        ArrayList alCat1 = (ArrayList) htCat1.get(cat1);
-        if (alCat1 == null) {
-            alCat1 = new ArrayList();
-        }
-        alCat1.add(stn);
-        htCat1.put(cat1, alCat1);
-
-    }
-
-    private void iterateAndLoad2() {
-
-        //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
-        Object llist = Sessions.getCurrent().getAttribute("layerlist");
-
-        if(llist == null){
-            return;
-        }
-        
-        ArrayList top = new ArrayList();
-
-        TreeMap htCat1 = new TreeMap();
-        TreeMap htCat2 = new TreeMap();
-
-        JSONArray layerlist = JSONArray.fromObject(llist);
-        for (int i = 0; i < layerlist.size(); i++) {
-            JSONObject jo = layerlist.getJSONObject(i);
-
-            if (!jo.getBoolean("enabled")) {
-                continue;
             }
 
-            SimpleTreeNode stn = new SimpleTreeNode(jo, empty);
-            addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
+            System.out.println("ht1.size: " + htCat1.size());
+            System.out.println("ht2.size: " + htCat2.size());
 
+            Iterator it1 = htCat1.keySet().iterator();
+            while (it1.hasNext()) {
+                String catKey = (String) it1.next();
+                JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
+                SimpleTreeNode cat = new SimpleTreeNode(joCat, (ArrayList) htCat1.get(catKey));
+                top.add(cat);
+            }
+
+
+            SimpleTreeNode root = new SimpleTreeNode("ROOT", top);
+            SimpleTreeModel stm = new SimpleTreeModel(root);
+            tree.setModel(stm);
+
+            renderTree();
+        } catch (Exception e) {
+            //FIXME:
         }
-
-        System.out.println("ht1.size: " + htCat1.size());
-        System.out.println("ht2.size: " + htCat2.size());
-
-//        Enumeration it2 = htCat2.keys();
-//        while (it2.hasMoreElements()) {
-//            String catKey = (String) it2.nextElement();
-//            JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
-//            SimpleTreeNode cat = new SimpleTreeNode(joCat, (ArrayList) htCat2.get(catKey));
-//            //cat2.add(cat);
-//            top.add(cat);
-//        }
-
-//        Enumeration it1 = htCat1.keys();
-//        while(it1.hasMoreElements()) {
-//            String catKey = (String) it1.nextElement();
-//            JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
-//            SimpleTreeNode cat = new SimpleTreeNode(joCat,(ArrayList) htCat1.get(catKey));
-//            top.add(cat);
-//        }
-
-        Iterator it1 = htCat1.keySet().iterator();
-        while (it1.hasNext()) {
-            String catKey = (String) it1.next();
-            JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
-            SimpleTreeNode cat = new SimpleTreeNode(joCat, (ArrayList) htCat1.get(catKey));
-            top.add(cat);
-        }
-
-
-        SimpleTreeNode root = new SimpleTreeNode("ROOT", top);
-        SimpleTreeModel stm = new SimpleTreeModel(root);
-        tree.setModel(stm);
-
-        renderTree();
 
     }
 
@@ -381,34 +305,6 @@ public class LayerListComposer extends UtilityComposer {
 //                                        + "', 'metadataWindow');");
 
                             mc.activateLink(metadata, "Metadata", false);
-
-                            /*
-                            Object o = event.getTarget().getId();
-                            Treecell tc = (Treecell) event.getTarget();
-                            JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
-                            String metadata = joLayer.getString("metadatapath");
-                            if (metadata.equals("")) {
-                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
-                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
-                                metadata += "Source: " + joLayer.getString("source") + "\n";
-                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
-                            }
-
-                            System.out.println("Loading layer info: " + joLayer.getString("displayname") + " from " + metadata);
-                            if (metadata.startsWith("http://")) {
-                                // send the user to the BIE page for the species
-                                Clients.evalJavaScript("window.open('"
-                                        + metadata
-                                        + "', 'metadataWindow');");
-                            } else if (metadata.length() > 0) {
-                                //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
-                                //mc.showMessage(metadata);
-                                Messagebox.show(metadata);
-                            } else {
-                                //mc.showMessage("Metadata currently unavailable");
-                                Messagebox.show("Metadata currently unavailable");
-                            }
-                            */
                         }
                     });
                 }
@@ -420,22 +316,6 @@ public class LayerListComposer extends UtilityComposer {
                 item.setOpen(false);
             }
         });
-
-    }
-
-    private ArrayList loadLayers() {
-        ArrayList top = new ArrayList();
-
-        ArrayList cat1 = new ArrayList();
-        ArrayList cat2 = new ArrayList();
-
-        cat1.add("Hello");
-        cat2.add("world");
-
-        top.add(cat1);
-        top.add(cat2);
-
-        return top;
 
     }
 }
