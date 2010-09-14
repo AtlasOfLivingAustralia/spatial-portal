@@ -122,6 +122,12 @@ public class AutoComplete extends Combobox {
         BasicHttpContext localcontext = new BasicHttpContext();
         String searchString = val.trim().replaceAll("\\s+", "+");
 
+        // check if searchString is empty, if so, set it to "a"
+        // this is a hack to make sure a valid xml is returned
+        // rather than just a "1"
+        // TODO: angus fix this?
+        searchString = (searchString.equals(""))?"a":searchString; 
+
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
         domFactory.setNamespaceAware(true); 
 
