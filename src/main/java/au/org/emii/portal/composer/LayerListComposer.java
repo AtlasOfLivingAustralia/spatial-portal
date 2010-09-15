@@ -160,6 +160,7 @@ public class LayerListComposer extends UtilityComposer {
 
     private List getContextualClasses(JSONObject joLayer) {
         String layerName = joLayer.getString("name");
+        String layerDisplayName = joLayer.getString("displayname");
         String classesURL = "http://spatial-dev.ala.org.au" + "/geoserver/rest/gazetteer/" + layerName + ".json";
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(classesURL);
@@ -190,7 +191,9 @@ public class LayerListComposer extends UtilityComposer {
                                      + "',uid:'"
                                      + joLayer.getString("uid")
                                      + "',classname:'"
-                                     + classAttribute 
+                                     + classAttribute
+                                     + "',layername:'"
+                                     + layerDisplayName
                                      + "'}";
                             System.out.println(info);
                             JSONObject joClass = JSONObject.fromObject(info);
@@ -356,12 +359,14 @@ public class LayerListComposer extends UtilityComposer {
                             else {
                                 String classAttribute = joLayer.getString("classname");
                                 String classValue = joLayer.getString("displayname");
+                                String layer = joLayer.getString("layername");
                                 String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+                                //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/","");
                                // Messagebox.show(displaypath);
                                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                                mc.addWMSLayer(joLayer.getString("displayname"),
+                                mc.addWMSLayer(layer + " - " + classValue,
                                     displaypath,
                                     (float) 0.75, metadata);
                             }
