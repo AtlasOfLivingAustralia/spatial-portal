@@ -469,6 +469,78 @@ public class SamplingWCController extends UtilityComposer {
         }
     }
 
+    public void downloadWithProgressBar(Event event) {
+        try {
+
+            String taxon = cleanTaxon();
+
+            StringBuffer sbenvsel = new StringBuffer();
+
+            if (lbenvlayers.getSelectedCount() > 0) {
+                Iterator it = lbenvlayers.getSelectedItems().iterator();
+                int i = 0;
+                while (it.hasNext()) {
+                    Listitem li = (Listitem) it.next();
+
+                    if (!li.getLabel().equals("Environmental")
+                            && !li.getLabel().equals("Contextual")) {
+                        sbenvsel.append(li.getLabel());
+                        if (it.hasNext()) {
+                            sbenvsel.append(":");
+                        }
+                        i++;
+                    }
+                }
+                if (i == 0) {
+                    sbenvsel.append("none");
+                }
+            } else {
+                sbenvsel.append("none");
+            }
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/processq/download?");
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
+            sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            if (true) { //an area always exists; useArea.isChecked()) {
+                user_polygon = mc.getSelectionArea();
+            } else {
+                user_polygon = "";
+            }
+            System.out.println("user_polygon: " + user_polygon);
+            String area;
+            if (user_polygon.length() > 0) {
+                //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
+                area = user_polygon;
+            } else {
+                //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+                area = "none";
+            }
+
+            //String testurl = satServer + "/alaspatial/ws/sampling/test";
+
+            HttpClient client = new HttpClient();
+            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
+            get.addParameter("area", area);
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            pid = get.getResponseBodyAsString();
+
+            System.out.println("Got response from SamplingWSController: \n" + pid);
+
+            SamplingProgressWCController window = (SamplingProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingProgress.zul", this, null);
+            window.parent = this;
+            window.start(pid);
+            window.doModal();
+        } catch (Exception e) {
+            System.out.println("Exception calling sampling.download:");
+            e.printStackTrace(System.out);
+        }
+    }
+
     public void download(Event event) {
         try {
 
@@ -527,14 +599,17 @@ public class SamplingWCController extends UtilityComposer {
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
-            pid = get.getResponseBodyAsString();
+            String slist = get.getResponseBodyAsString();
 
-            System.out.println("Got response from SamplingWSController: \n" + pid);
+            System.out.println("Got response from SamplingWSController: \n" + slist);
 
-            SamplingProgressWCController window = (SamplingProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingProgress.zul", this, null);
-            window.parent = this;
-            window.start(pid);
-            window.doModal();
+            if (slist.equalsIgnoreCase("")) {
+                Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
+            } else {
+                System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist);
+                Filedownload.save(new URL(satServer + "/alaspatial" + slist), "application/zip");
+            }
+
         } catch (Exception e) {
             System.out.println("Exception calling sampling.download:");
             e.printStackTrace(System.out);

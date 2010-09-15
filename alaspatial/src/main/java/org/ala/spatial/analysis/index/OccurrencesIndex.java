@@ -84,7 +84,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
     /**
      * sorted store of String[] * 2, first for ConceptId, 2nd for Names
      */
-    static final String SORTED_CONCEPTID_NAMES = "OCC_CONCEPTID_NAMES.dat";
+    public static final String SORTED_CONCEPTID_NAMES = "OCC_CONCEPTID_NAMES.dat";
     /**
      * geo sorted points filename, in latitude then longitude sorted order
      */
@@ -1497,6 +1497,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         loadIdLookup();
 
+        System.out.println("INDEXES LOADED");
+
     }
 
     /**
@@ -2796,7 +2798,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         System.out.println("list:" + list);
         System.out.println("list len:" + list.length);
         System.out.println("done");
-    }
+	}
 
     /**
      * return number of Species within a SimpleRegion

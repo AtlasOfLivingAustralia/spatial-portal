@@ -491,12 +491,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <div align="right" style="padding-top:0px">
                                                         <label id="sizeLabel" />
                                                     </div>
-                                                </hbox>
-                                                <hbox width="100%">
-                                                    <div align="right" style="padding-top:0px">
-                                                        <checkbox id="chkUncertaintySize" label="use uncertainty as size" />
-                                                    </div>
-                                                </hbox>
+                                                </hbox>                                                
                                             </div>
                                             <div id="colourChooser" visible="false">
 
@@ -546,6 +541,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                             <label id="blueLabel" />
                                                         </div>
                                                     </hbox>
+                                                    <separator />
+                                                    <hbox width="100%">
+                                                    <div align="left" style="padding-top:0px">
+                                                        <checkbox id="chkUncertaintySize" label="Show uncertainty circle" />
+                                                    </div>
+                                                    <separator />
+                                                </hbox>
                                                 </vbox>
 
                                             </div>
@@ -586,7 +588,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
                                         <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
 
-                                        <button id="removeAllLayers" label="Remove All Layers" sclass="goButton" />
+                                        <button id="removeAllLayers" label="Remove All Layers" sclass="goButton" />                                       
                                     </div>
 
                                     <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">

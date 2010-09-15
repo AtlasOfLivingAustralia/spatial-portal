@@ -58,6 +58,75 @@ public class SamplingWSController {
 
             String area = req.getParameter("area");
 
+            String[] layers = getLayerFiles(URLDecoder.decode(req.getParameter("envlist"), "UTF-8"));
+            ArrayList<Integer> records = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(req.getParameter("area"));
+            } else {
+                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
+            } 
+
+            String [] n = OccurrencesIndex.getFirstName(species);
+            String speciesName;
+            if(n != null){
+                speciesName = n[0];
+            } else {
+                speciesName = "";
+            }
+            
+            SamplingService ss = new SamplingService();
+            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"));
+
+            Vector<String> vFiles = new Vector<String>();
+            vFiles.add(datafile);
+
+            String[] files = (String[]) vFiles.toArray(new String[vFiles.size()]);
+
+            //String[] files = new String[vFiles.size()];
+            Iterator it = vFiles.iterator();
+            while (it.hasNext()) {
+                System.out.println("Adding to download: " + it.next());
+            }
+
+            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //TabulationSettings.load();
+            //String currentPath = TabulationSettings.base_output_dir;
+            long currTime = System.currentTimeMillis();
+            String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
+            File fDir = new File(outputpath);
+            fDir.mkdir();
+            String outfile = fDir.getAbsolutePath() + File.separator + speciesName.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
+            Zipper.zipFiles(files, outfile);
+
+            return "/output/sampling/" + speciesName.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
+
+        } catch (Exception e) {
+            System.out.println("Error processing Sampling request:");
+            e.printStackTrace(System.out);
+        }
+
+        return "";
+
+    }
+
+    @RequestMapping(value = "/processq/download", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String processq(HttpServletRequest req) {
+
+        try {
+            ssets = new SpatialSettings();
+
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+
+            System.out.println("species: " + species);
+            System.out.println("envlist: " + req.getParameter("envlist"));
+            System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
+            System.out.println("area: " + req.getParameter("area"));
+
+            String area = req.getParameter("area");
+
            /* String[] layers = getLayerFiles();
             ArrayList<Integer> records = null;
             SimpleRegion region = null;
@@ -66,7 +135,7 @@ public class SamplingWSController {
             } else {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             } */
-            
+
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
 
             String pid = Long.toString(System.currentTimeMillis());

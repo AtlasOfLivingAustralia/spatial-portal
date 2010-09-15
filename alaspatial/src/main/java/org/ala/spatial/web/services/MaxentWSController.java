@@ -277,7 +277,7 @@ public class MaxentWSController {
             }
             String cutDataPath = ssets.getEnvDataPath();
             Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
-            cutDataPath = GridCutter.cut(layers, region, filter);
+            cutDataPath = GridCutter.cut(layers, region, filter, null);
             
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 

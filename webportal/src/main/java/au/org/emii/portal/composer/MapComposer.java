@@ -131,6 +131,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";
     private static final String GEOSERVER_URL = "geoserver_url";
     private static final String SAT_URL = "sat_url";
+    private static final String SPECIES_METADATA_URL = "species_metadata_url";
+
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
     public String geoServer;
@@ -3276,6 +3278,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println(slist);
 
             getMapComposer().addGeoJSONLayer(species, satServer + "/alaspatial/" + slist);
+
+            MapLayer ml = getMapLayer(species);
+            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_",lsid);
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if(md == null){
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(infoUrl);
+
 /*
             if (StringUtils.isNotBlank(slist) && !slist.equalsIgnoreCase("[]")) {
                 JSONArray ja = JSONArray.fromObject(slist);
@@ -3642,5 +3654,40 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         showMessage("Error generating export");
 
         return null;
+    }
+
+    /*
+     * for Events.echoEvent("openUrl",mapComposer,url as string)
+     */
+    public void openUrl(Event event){
+        //browsers don't like popups so these two don't work well
+        /*Clients.evalJavaScript("alert('hello'); window.open('"
+                            + (String)event.getData()
+                            + "', '_blank');");*/
+        //Executions.getCurrent().sendRedirect((String)event.getData(), "_blank");
+        
+        Window w = new Window("Metadata", "normal", false);
+        w.setWidth("80%");
+        w.setClosable(true);
+        /*
+        Link url = new Link();
+        url.setUri((String)event.getData());
+        url.setName("link to metadata");
+        url.setParent(w);*/
+        
+        Iframe iframe = new Iframe();
+        iframe.setWidth("95%");
+        iframe.setHeight("90%");
+        iframe.setSrc((String)event.getData());
+        iframe.setParent(w);        
+        
+        w.setParent(getMapComposer().getFellow("mapIframe").getParent());
+        w.setPosition("top,center");
+        try {
+            w.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

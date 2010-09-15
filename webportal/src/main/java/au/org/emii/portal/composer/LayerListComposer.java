@@ -39,13 +39,16 @@ public class LayerListComposer extends UtilityComposer {
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
 
-    private final String satServer = "http://spatial-dev.ala.org.au"; // "http://localhost:8080"
+    private final String SAT_URL = "sat_url";
+    private String satServer = "http://spatial-dev.ala.org.au"; // "http://localhost:8080"
 
     SettingsSupplementary settingsSupplementary;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        satServer = settingsSupplementary.getValue(SAT_URL);
 
         if (tree == null) {
             System.out.println("tree is null");
@@ -87,7 +90,7 @@ public class LayerListComposer extends UtilityComposer {
     public void iterateAndLoad2() {
         try {
 
-            String layersListURL = "http://spatial-dev.ala.org.au" + "/alaspatial/ws/layers/list";
+            String layersListURL = satServer + "/alaspatial/ws/layers/list";
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
             //get.addRequestHeader("Content-type", "application/json");
@@ -95,6 +98,8 @@ public class LayerListComposer extends UtilityComposer {
 
             int result = client.executeMethod(get);
             String llist = get.getResponseBodyAsString();
+
+            System.out.println(llist);
 
             //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
 
