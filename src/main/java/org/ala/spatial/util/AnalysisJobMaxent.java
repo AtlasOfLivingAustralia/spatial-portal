@@ -109,7 +109,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
             String cutDataPath = ssets.getEnvDataPath();
 
-            cutDataPath = GridCutter.cut(layers, region, envelope);
+            cutDataPath = GridCutter.cut(layers, region, envelope, null);
 
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
 
@@ -147,18 +147,35 @@ public class AnalysisJobMaxent extends AnalysisJob {
             setProgress(0, "exporting results");
 
             Hashtable htProcess = new Hashtable();
+
+            String [] imgExtensions = {".png","_only.png","_only_thumb.png","_thumb.png"};
+
             if (isCancelled()) {
                 //
             } else if (exitValue == 0) {
                 // rename the env filenames to their display names
+                String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
+                String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator ;
                 for (int ei = 0; ei < envnameslist.length; ei++) {
-                    readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species.html", envpathlist[ei], envnameslist[ei]);
+                    readReplace(pth + "species.html", envpathlist[ei], envnameslist[ei].replace(" ","_"));
+                    for(int j=0;j<imgExtensions.length;j++){
+                        try{
+                        FileUtils.moveFile(
+                                new File(pth_plots + "species_" + envpathlist[ei] + imgExtensions[j]),
+                                new File(pth_plots + "species_" + envnameslist[ei].replace(" ","_") + imgExtensions[j]));
+                        }catch(Exception ex){
+                        
+                        }
+                    }
                 }
 
                 //remove species image path in output species.html
-                readReplace(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species.html", "species.png", "");
+                readReplace(pth + "species.html", "species.png", "");
+                readReplace(pth + "species.html", "<a href = \"plots/\"> <img src=\"plots/\" width=600></a>","see map window");
+                readReplace(pth + "species.html", "plots\\\\","plots/");
+                readReplace(pth + "species.html", "<a href=species_explain.bat type=application/bat>here<a>","<i>not available</i>");
                 //delete image
-                FileUtils.deleteQuietly(new File(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator + "species.png"));
+                FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
 
                 writeProjectionFile(msets.getOutputPath());
 
@@ -209,33 +226,24 @@ public class AnalysisJobMaxent extends AnalysisJob {
             return 0;
         }
 
-        long timeElapsed;
-        double prog;
+        long progTime;
         synchronized (progress) {
-            timeElapsed = progressTime - stageTimes[getStage()];
-            prog = progress;
+            progTime = progressTime;
         }
         long timeRemaining = 0;
         long t1 = 0, t2 = 0, t3 = 0;
 
-        if (stage <= 0) { //data load; 0 to 0.2
-            if (prog > 0) {
-                t1 += timeElapsed * (.2 - prog) / prog; //projected
-            }
-            if (t1 <= 0 || prog <= 0) {
-                t1 += cells * TabulationSettings.maxent_timing_0 * layers.length; //default
-            }
+        if (stage <= 0) { //data load; 0 to 0.2            
+            t1 += (cells * TabulationSettings.maxent_timing_0) * layers.length; //default
+            t1 = t1 + progTime - stageTimes[0];
         }
-        if (stage <= 1) { //running; 0.2 to 0.9
-            if (prog > 0.2) {
-                t2 += timeElapsed * (.7 - (prog - .2)) / (prog - .2);   //projected
-            }
-            if (t2 <= 0 || prog <= 0.2) {
-                t2 += cells * TabulationSettings.maxent_timing_1 * layers.length; //default
-            }
+        if (stage <= 1) { //running; 0.2 to 0.9            
+            t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
+            t2 = t2 + progTime - stageTimes[1];
         }
         if (stage > 1) { //data export + done
             t3 += 5000 * TabulationSettings.maxent_timing_2; //default
+            t3 = t3 + progTime - stageTimes[2];
         }
 
         timeRemaining = t1 + t2 + t3;
@@ -253,6 +261,49 @@ public class AnalysisJobMaxent extends AnalysisJob {
             progress = 0.9 + d / 10.0;
         }
         super.setProgress(progress);
+    }
+
+    @Override
+    public double getProgress(){
+        //return expected progress since cannot track internals
+
+        long currentTime = System.currentTimeMillis();
+
+        long progTime;
+        synchronized (progress) {
+            progTime = progressTime;
+        }
+
+        long t1 = 0, t2 = 0, t3 = 0;
+        double d1, d2, d3;
+
+        //progress is [time passed] / [time expected]
+        if (stage <= 0) { //data load; 0 to 0.2
+            t1 += (cells * TabulationSettings.maxent_timing_0) * layers.length; //default
+            d1 = (currentTime - stageTimes[0]) / (double)t1;
+            if(d1 > 0.9) d1 = 0.9;
+            d1 *= 0.2; //range limit
+        }else {
+            d1 = 0.2;
+        }
+        if (stage <= 1) { //running; 0.2 to 0.9
+            t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
+            d2 = (currentTime - stageTimes[1]) /(double) t2;
+            if(d2 > 0.9) d2 = 0.9;
+            d2 *= 0.7; //range limit
+        } else {
+            d2 = 0.7;
+        }
+        if (stage > 1) { //data export + done
+            t3 += 5000 * TabulationSettings.maxent_timing_2; //default
+            d3 = (currentTime - stageTimes[2]) / (double)t3;
+            if(d3 > 0.9) d3 = 0.9;
+            d3 *= 0.1; //range limit
+        } else {
+            d3 = 0.1;
+        }
+
+        return d1 + d2 + d3;
     }
 
     @Override

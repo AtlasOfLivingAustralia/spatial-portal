@@ -29,7 +29,7 @@ public class GridCutter {
      * @param region 
      * @return
      */
-    public static String cut(Layer[] layers, SimpleRegion region, LayerFilter[] envelopes) {
+    public static String cut(Layer[] layers, SimpleRegion region, LayerFilter[] envelopes, String extentsFilename) {
         TabulationSettings.load();
 
         //mkdir in index location
@@ -147,6 +147,22 @@ public class GridCutter {
                         maxx,
                         maxy,
                         TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv, height, width);
+
+                //write extents into a file now
+                if (extentsFilename != null && l == layers[0]) {
+                    try {
+                        FileWriter fw = new FileWriter(extentsFilename);
+                        fw.append(String.valueOf(width)).append("\n");
+                        fw.append(String.valueOf(height)).append("\n");
+                        fw.append(String.valueOf(minx)).append("\n");
+                        fw.append(String.valueOf(miny)).append("\n");
+                        fw.append(String.valueOf(maxx)).append("\n");
+                        fw.append(String.valueOf(maxy));
+                        fw.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
 

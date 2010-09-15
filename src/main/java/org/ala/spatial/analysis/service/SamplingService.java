@@ -286,7 +286,7 @@ public class SamplingService {
                  * cap the number of records per read
                  */
 
-                int step = 50000; //max characters to read TODO: move to tabulation settings.xml
+                int step = 1000000; //max characters to read TODO: move to tabulation settings.xml
                 long rstart = r.file_start;
                 long rend;
 
@@ -314,7 +314,12 @@ public class SamplingService {
 
                     sortedrecords = OccurrencesIndex.getSortedRecords(rstart, rend);
 
-                    sortedrecords[0] = lastpart + sortedrecords[0];
+                    if(lastpart.split(",").length == TabulationSettings.occurances_csv_fields.length
+                            && sortedrecords[0].split(",").length == TabulationSettings.occurances_csv_fields.length){
+                        sortedrecords[0] = lastpart + "\n" + sortedrecords[0];
+                    }else {
+                        sortedrecords[0] = lastpart + sortedrecords[0];
+                    }
 
                     columns.add(sortedrecords);
 
@@ -390,7 +395,7 @@ public class SamplingService {
                                     if (i == 0) {
                                         row = columns.get(i)[j].split(",");
 
-                                        for (int k = 0; k < row.length; k++) {
+                                        for (int k = 0; k < row.length && k < results[rowoffset].length; k++) {
                                             results[rowoffset][k] = row[k];
                                         }
                                         coloffset = row.length - 1;
@@ -735,8 +740,11 @@ public class SamplingService {
         sbGeoJSON.append("  \"type\": \"FeatureCollection\",");
         sbGeoJSON.append("  \"features\": [");
         for (i = 1; i < samples.length; i++) {
-            sbGeoJSON.append(getRecordAsGeoJSON(samples,i));
-            if (i<samples.length-1) sbGeoJSON.append(",");
+            String s = getRecordAsGeoJSON(samples,i);
+            if(s != null){
+                sbGeoJSON.append(s);
+                if (i<samples.length-1) sbGeoJSON.append(",");
+            }
         }
         sbGeoJSON.append("  ],");
         sbGeoJSON.append("  \"crs\": {");
@@ -771,6 +779,16 @@ public class SamplingService {
 
     private static String getRecordAsGeoJSON(String [][] rec, int rw) {
         //String[] recdata = rec.split(",");
+
+        if(rec == null || rec.length <= rw || rec[rw].length <= TabulationSettings.geojson_latitude){
+            return null;
+        }
+
+        for(int i=0;i<TabulationSettings.geojson_latitude;i++){
+            if(rec[rw][i] == null){
+                return null;
+            }
+        }
 
         StringBuffer sbRec = new StringBuffer();
         sbRec.append("{");
