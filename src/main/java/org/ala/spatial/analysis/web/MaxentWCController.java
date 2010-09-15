@@ -2,34 +2,18 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
-import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import java.net.URLEncoder;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
-import net.sf.json.util.PropertyFilter;
-import org.ala.spatial.search.TaxaCommonSearchResult;
-import org.ala.spatial.search.TaxaCommonSearchSummary;
-import org.ala.spatial.util.Layer;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.zkoss.zhtml.Iframe;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.event.InputEvent;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Label;
@@ -38,7 +22,6 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.Radio;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
@@ -47,6 +30,7 @@ import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Comboitem;
 
 /**
@@ -175,7 +159,7 @@ public class MaxentWCController extends UtilityComposer {
      *
      * @param event The event attached to the component
      */
-    public void onChanging$tbenvfilter(InputEvent event) {
+    /*public void onChanging$tbenvfilter(InputEvent event) {
         String filter = event.getValue().toLowerCase();
         System.out.println("checking for: " + filter);
         System.out.print("Number of list items to iterate thru: ");
@@ -191,14 +175,14 @@ public class MaxentWCController extends UtilityComposer {
                 }
             }
         }
-    }
+    }*/
 
     /**
      * Clear the filter text box
      *
      * @param event The event attached to the component
      */
-    public void onClick$btenvfilterclear(Event event) {
+    /*public void onClick$btenvfilterclear(Event event) {
         try {
             tbenvfilter.setValue("");
             for (Listitem li : (List<Listitem>) lbenvlayers.getItems()) {
@@ -209,7 +193,7 @@ public class MaxentWCController extends UtilityComposer {
             Logger.getLogger(MaxentWCController.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Clicked on clear env list button");
         }
-    }
+    }*/
 
     public void onDoInit(Event event) throws Exception {
         runmaxent();
@@ -392,6 +376,7 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     public void loadMap(Event event){
+
         String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
         String legendurl = geoServer
@@ -407,6 +392,9 @@ public class MaxentWCController extends UtilityComposer {
             for(String s : getJob("inputs").split(";")) {
                 if(s.startsWith("scientificName")){
                     speciesName = s.split(":")[1];
+                    if(speciesName != null && speciesName.length() > 1){
+                        speciesName = speciesName.substring(0,1).toUpperCase() + speciesName.substring(1);
+                    }
                     break;
                 }
             }
@@ -418,13 +406,26 @@ public class MaxentWCController extends UtilityComposer {
             taxon = "species";
         }
 
-        mc.addWMSLayer("Maxent model for " + speciesName, mapurl, (float) 0.5, "", legendurl);
+        String layername = "Maxent model for " + speciesName;
+        mc.addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl);
+        MapLayer ml = mc.getMapLayer(layername);
+        String infoUrl = satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
+        MapLayerMetadata md = ml.getMapLayerMetadata();
+        if(md == null){
+            md = new MapLayerMetadata();
+            ml.setMapLayerMetadata(md);
+        }
+        md.setMoreInfo(infoUrl);
 
-        infourl.setValue("Show process information");
+        getMapComposer().showMessage("Reference number to retrieve results: " + pid);
+
+        showInfoWindow("/output/maxent/" + pid + "/species.html");
+
+        /*infourl.setValue("Show process information");
         showInfoWindow("/output/maxent/" + pid + "/species.html");
 
         infourl.setValue("/output/maxent/" + pid + "/species.html");
-        btnInfo.setVisible(true);
+        btnInfo.setVisible(true);*/
     }
 
     public void onClick$btnInfo(Event event) {
@@ -436,6 +437,13 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     private void showInfoWindow(String url) {
+        String infoUrl = satServer + "/alaspatial" + url;
+
+        Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
+
+        //Executions.getCurrent().sendRedirect(infoUrl, "_blank");
+
+        /*
         Map args = new Hashtable();
         args.put("url", satServer + "/alaspatial" + url);
         if (maxentInfoWindow == null) {
@@ -450,7 +458,7 @@ public class MaxentWCController extends UtilityComposer {
         maxentInfoWindow.setId(java.util.UUID.randomUUID().toString());
         maxentInfoWindow.setMaximizable(true);
         maxentInfoWindow.setPosition("center");
-        maxentInfoWindow.doOverlapped();
+        maxentInfoWindow.doOverlapped();*/
     }
 
     /**

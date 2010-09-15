@@ -69,7 +69,7 @@ public class LayersUtil {
     public String getFirstSpeciesLayer() {
         List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
         for (MapLayer ml : activeLayers) {
-            if (isSpeciesName(ml.getName())) {
+            if (ml.isDisplayed() && isSpeciesName(ml.getName())) {
                 return ml.getName();
             }
         }

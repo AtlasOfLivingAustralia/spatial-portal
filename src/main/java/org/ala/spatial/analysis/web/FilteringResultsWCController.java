@@ -244,7 +244,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         StringBuffer sb = new StringBuffer();
-        sb.append("family name,species name,common name\r\n");
+        sb.append("Family Name,Scientific Name,Common names\r\n");
         for (String s : results) {
             sb.append(s.replace('*', ','));
             sb.append("\r\n");
