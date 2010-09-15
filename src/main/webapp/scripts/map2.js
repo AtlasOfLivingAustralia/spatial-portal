@@ -742,9 +742,9 @@ function selected (evt) {
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100,100),
                 "<h2>Occurrence information</h2>" +
-                " Scientific name: " + species + "</a> <br />" +                
-                " Family: <a href='http://bie.ala.org.au/species/" + attrs["fi"] + "' target='_blank'>" + attrs["f"] + "</a> <br />" +
+                " Scientific name: " + species + "</a> <br />" +
                 " Kingdom: <a href='http://bie.ala.org.au/species/" + attrs["ki"] + "' target='_blank'>" + attrs["k"] + "</a> <br />" +
+                " Family: <a href='http://bie.ala.org.au/species/" + attrs["fi"] + "' target='_blank'>" + attrs["f"] + "</a> <br />" +                
                 " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + attrs["pi"] + "' target='_blank'>" + attrs["p"] + "</a> <br />" +
                 " Longitude: "+attrs['lo'] + " , Latitude: " + attrs['la'] + " <br/>" +
                 " Uncertainty in meters: " + uncertainty + " <br />" +
@@ -1895,6 +1895,9 @@ function acornHistory(request_string,div) {
 
 function applyFeatureUncertainty(features,szUncertain){
     if(!szUncertain) return features;
+    var new_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
+    new_style.fillOpacity = 0;
+    new_style.strokeColor = 'white';
     var f = features;
     var len = f.length;
     for(var j=0;j<len && j<f.length;j++){        
@@ -1904,8 +1907,8 @@ function applyFeatureUncertainty(features,szUncertain){
                 u = 10000;
             var c = OpenLayers.Geometry.Polygon.createRegularPolygon(f[j].geometry,
                     u,20,0);
-            var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,null);
-            f[j] = fv;
+            var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,new_style);
+            f[len + j] = fv;
         }        
     }
     return f;
