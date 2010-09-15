@@ -104,32 +104,36 @@ public class WMSController {
             String currentPath = TabulationSettings.base_output_dir;
             File baseDir = new File(currentPath + "output" + File.separator + "sampling" + File.separator);
             if (!lsid.equalsIgnoreCase("")) {
-                String outputfile = baseDir + File.separator + lsid + ".png";
+                String outputfile = baseDir + File.separator + lsid.replace(":","_") + ".png";
                 System.out.println("Checking if already present: " + outputfile);
                 File imgFile = new File(outputfile);
                 if (imgFile.exists()) {
-                    System.out.println("File already present, sending that: " + baseOutUrl + lsid + ".png");
-                    msg = baseOutUrl + lsid + ".png";
+                    System.out.println("File already present, sending that: " + baseOutUrl + lsid.replace(":","_") + ".png");
+                    msg = baseOutUrl + lsid.replace(":","_") + ".png";
                 } else {
                     System.out.println("Starting out search for: " + lsid);
 
-                    List<ValidTaxonName> l = speciesDao.findById(lsid);
-                    System.out.println("re-returning " + l.size() + " records");
+                    //List<ValidTaxonName> l = speciesDao.findById(lsid);
+                    //System.out.println("re-returning " + l.size() + " records");
                     //msg += "\nre-returning " + l.size() + " records";
-                    if (l.size() > 0) {
-                        ValidTaxonName vtn = l.get(0);
+                    //if (l.size() > 0) {
+
+                    //    ValidTaxonName vtn = l.get(0);
                         //msg += "\n" + vtn.getScientificname() + " - " + vtn.getRankstring();
 
-                        System.out.println("Have: " + vtn.getScientificname() + " - " + vtn.getRankstring());
+                   //     System.out.println("Have: " + vtn.getScientificname() + " - " + vtn.getRankstring());
 
                         //File baseDir = new File("/Users/ajay/projects/tmp/heatmap/web/");
 
-                        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(vtn.getScientificname());
+                   //     IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(vtn.getScientificname());
+                        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
+                    if(ir != null){
                         if (ir != null) {
                             double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
 
                             System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
-                            HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());
+                            //HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());
+                            HeatMap hm = new HeatMap(baseDir, lsid.replace(":","_"));
                             if ((points.length / 2) < 500) {
                                 hm.generatePoints(points);
                                 hm.drawOuput(outputfile, false);
@@ -139,7 +143,7 @@ public class WMSController {
                             }
 
 
-                            msg = baseOutUrl + lsid + ".png";
+                            msg = baseOutUrl + lsid.replace(":","_") + ".png";
                             System.out.println("Sending out: " + msg);
 
                         } else {
