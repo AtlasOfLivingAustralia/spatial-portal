@@ -4,9 +4,11 @@ import au.org.emii.portal.config.xmlbeans.Supplementary;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import net.sf.json.JSONArray;
@@ -116,7 +118,19 @@ public class LayerListComposer extends UtilityComposer {
                     continue;
                 }
 
-                SimpleTreeNode stn = new SimpleTreeNode(jo, empty);
+                System.out.println("TYPE:"+jo.getString("type"));
+
+                List classNodes = new ArrayList();
+                if (jo.getString("type").equalsIgnoreCase("Contextual")) {
+                    classNodes = getContextualClasses(jo);
+                }
+                SimpleTreeNode stn;
+                if (classNodes.isEmpty()) {
+                     stn = new SimpleTreeNode(jo, empty);
+                }
+                else {
+                    stn = new SimpleTreeNode(jo, classNodes);
+                }
                 addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
 
             }
@@ -144,7 +158,53 @@ public class LayerListComposer extends UtilityComposer {
 
     }
 
-    private void addToMap2(TreeMap htCat1, TreeMap htCat2, String cat1, String cat2, SimpleTreeNode stn) {
+    private List getContextualClasses(JSONObject joLayer) {
+        String layerName = joLayer.getString("name");
+        String classesURL = "http://spatial-dev.ala.org.au" + "/geoserver/rest/gazetteer/" + layerName + ".json";
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(classesURL);
+        //get.addRequestHeader("Content-type", "application/json");
+        //get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+        List<String> classList = new ArrayList();
+        List classNodes = new ArrayList();
+        try {
+            int result = client.executeMethod(get);
+            String classes = get.getResponseBodyAsString();
+
+            //JSONObject joClasses = JSONObject.fromObject(classes);
+            System.out.println("CLASSES JSON:" + classes);
+            classes = classes.replace("\"","").replace("{","").replace("}", "");
+
+            String classAttribute = classes.split(":")[0];
+            classList = Arrays.asList(classes.split(":")[1].split(","));
+           // System.out.println("KEY:" + classAttribute);
+           // classList = Arrays.asList((jo.getString(classAttribute)).split(","));
+            
+            for (String classVal : classList) {
+                        System.out.println("CLASS:"+(String)classVal);
+                        if (!classVal.contentEquals("none")) {
+                            String info = "{displayname:'"
+                                     + classVal
+                                     + "',type:'class',displaypath:'"
+                                     + joLayer.getString("displaypath")
+                                     + "',uid:'"
+                                     + joLayer.getString("uid")
+                                     + "',classname:'"
+                                     + classAttribute 
+                                     + "'}";
+                            System.out.println(info);
+                            JSONObject joClass = JSONObject.fromObject(info);
+                            classNodes.add(new SimpleTreeNode(joClass,empty));
+                        }
+                    }
+            return classNodes;
+        } catch (Exception e) {
+            System.out.println("Failure to get contextual classes.");
+            return classNodes;
+        }
+    }
+
+    private void addToMap2(TreeMap htCat1, TreeMap htCat2, String cat1, String cat2, SimpleTreeNode treeNode) {
 
         if (cat1.trim().equals("") || cat1.trim().equals("?")) {
             cat1 = "Other";
@@ -156,7 +216,7 @@ public class LayerListComposer extends UtilityComposer {
             if (alCat1 == null) {
                 alCat1 = new ArrayList();
             }
-            alCat1.add(stn);
+            alCat1.add(treeNode);
             htCat1.put(cat1, alCat1);
 
         } else {
@@ -171,7 +231,7 @@ public class LayerListComposer extends UtilityComposer {
                 alCat2 = new ArrayList();
             }
             System.out.println("add new stn to: " + cat1 + " > " + cat2);
-            alCat2.add(stn);
+            alCat2.add(treeNode);
             if (!htCat2.containsKey(cat2_full)) {
                 htCat2.put(cat2_full, alCat2);
             }
@@ -256,6 +316,10 @@ public class LayerListComposer extends UtilityComposer {
                 } else {
                 }
 
+                if (joLayer.getString("type").equals("class")) {
+                    tcAdd.setImage("/img/add.png");
+                }
+
                 String displayname = joLayer.getString("displayname");
                 displayname = (displayname.contains(">"))? displayname.split(">")[1]:displayname;
                 Treecell tcName = new Treecell(displayname);
@@ -272,6 +336,7 @@ public class LayerListComposer extends UtilityComposer {
                             Object o = event.getTarget().getId();
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
+                            if (!joLayer.getString("type").contentEquals("class")) {
                             System.out.println("Loading layer: " + joLayer.getString("displayname") + " from " + joLayer.getString("displaypath"));
 
 //                            String metadata = joLayer.getString("metadatapath");
@@ -287,6 +352,19 @@ public class LayerListComposer extends UtilityComposer {
                             mc.addWMSLayer(joLayer.getString("displayname"),
                                     joLayer.getString("displaypath"),
                                     (float) 0.75, metadata);
+                            }
+                            else {
+                                String classAttribute = joLayer.getString("classname");
+                                String classValue = joLayer.getString("displayname");
+                                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+                                displaypath = displaypath.replace("gwc/service/","");
+                               // Messagebox.show(displaypath);
+                                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+
+                                mc.addWMSLayer(joLayer.getString("displayname"),
+                                    displaypath,
+                                    (float) 0.75, metadata);
+                            }
                         }
                     });
 
@@ -299,13 +377,16 @@ public class LayerListComposer extends UtilityComposer {
                             Object o = event.getTarget().getId();
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
-                            String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid"); 
+                            
+                             String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 //                                Clients.evalJavaScript("window.open('"
 //                                        + metadata
 //                                        + "', 'metadataWindow');");
 
                             mc.activateLink(metadata, "Metadata", false);
+                          
                         }
+
                     });
                 }
 
