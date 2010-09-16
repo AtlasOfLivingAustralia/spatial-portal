@@ -31,6 +31,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
     <script type="text/javascript">
         var mapLayers = null;
+        var currFeature = null;
         var map = null;
         var bLayer = null;
         var bLayer2 = null;
@@ -53,6 +54,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         var georss = ${layerUtilities.georss};
         var kml = ${layerUtilities.kml};
         var unsupported =${layerUtilities.unsupported};
+
+
 
     </script>
 
@@ -91,6 +94,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         -->
         <textbox id="polyGeom" visible="false"/>
         <textbox id="tbxTabSelection" visible="false"/>
+        <textbox id="tbxReloadLayers" visible="false"/>
         <script type="text/JavaScript">
             function roundNumber(num, dec) {
             var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
@@ -219,6 +223,31 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             //	tbxTabSelection.value = "";
             }
+
+            function reloadSpecies() {
+            console.log("reloadSpecies");
+            var tbxReloadLayers = $e('${tbxReloadLayers.uuid}');
+        var currentTime = new Date();
+        tbxReloadLayers.value = "z=" + map.zoom;
+
+        console.log("reloadSpecies: " + map.zoom);
+
+        if (document.createEvent) {
+          var evt = document.createEvent('HTMLEvents');
+          evt.initEvent( 'blur', false, false);
+          tbxReloadLayers.dispatchEvent(evt);
+
+          var evt2 = document.createEvent('HTMLEvents');
+          evt2.initEvent( 'change', false, false);
+          tbxReloadLayers.dispatchEvent(evt2);
+        } else if (document.createEventObject) {
+          tbxReloadLayers.fireEvent('onblur');
+          tbxReloadLayers.fireEvent('onchange');
+        }
+      }
+        function showInfo(curr) {
+            window.mapFrame.showInfo(curr); 
+        }
         </script>
 
         <textbox id="tbxPrintHack" visible="false"/>
