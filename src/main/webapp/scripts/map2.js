@@ -224,14 +224,14 @@ function buildMapReal() {
     // ---------- map setup --------------- //
 
     var mapControls = [
-        new OpenLayers.Control.PanZoomBar({
-            div: document.getElementById('controlPanZoom')
-        }),
-        new OpenLayers.Control.LayerSwitcher(),
-        new OpenLayers.Control.ScaleLine({
-            div: document.getElementById('mapscale')
-        }),
-        /*
+    new OpenLayers.Control.PanZoomBar({
+        div: document.getElementById('controlPanZoom')
+    }),
+    new OpenLayers.Control.LayerSwitcher(),
+    new OpenLayers.Control.ScaleLine({
+        div: document.getElementById('mapscale')
+    }),
+    /*
         new OpenLayers.Control.OverviewMap({
             autoPan: true,
             minRectSize: 30,
@@ -244,13 +244,13 @@ function buildMapReal() {
             }
         }),
         */
-        new OpenLayers.Control.Attribution(),
-        new OpenLayers.Control.MousePosition({
-            div: document.getElementById('mapcoords'),
-            prefix: '<b>Lon:</b> ',
-            separator: ' <BR><b>Lat:</b> '
-        }),
-        new OpenLayers.Control.Navigation()
+    new OpenLayers.Control.Attribution(),
+    new OpenLayers.Control.MousePosition({
+        div: document.getElementById('mapcoords'),
+        prefix: '<b>Lon:</b> ',
+        separator: ' <BR><b>Lat:</b> '
+    }),
+    new OpenLayers.Control.Navigation()
     ];
     var mapOptions = {
         projection: new OpenLayers.Projection("EPSG:900913"),
@@ -301,16 +301,16 @@ function buildMapReal() {
     loadBaseMap();
 
     // create a new event handler for single click query
-//    clickEventHandler = new OpenLayers.Handler.Click({
-//        'map': map
-//    }, {
-//        'click': function(e) {
-//            getpointInfo(e);
-//            mkpopup(e);
-//        }
-//    });
-//    clickEventHandler.activate();
-//    clickEventHandler.fallThrough = false;
+    //    clickEventHandler = new OpenLayers.Handler.Click({
+    //        'map': map
+    //    }, {
+    //        'click': function(e) {
+    //            getpointInfo(e);
+    //            mkpopup(e);
+    //        }
+    //    });
+    //    clickEventHandler.activate();
+    //    clickEventHandler.fallThrough = false;
 
     // cursor mods
     map.div.style.cursor="pointer";
@@ -329,6 +329,11 @@ function buildMapReal() {
         Event.stop(e);
     });
 
+    map.events.register("zoomend" , map, function (e) {
+        Event.stop(e);
+        //console.log("zoomend");
+        parent.reloadSpecies();
+    });
 }
 
 
@@ -393,45 +398,45 @@ function addFeatureSelectionTool() {
     //    areaSelectControl.activate();
     removeAreaSelection();
     areaSelectOn = true;
-//    clickEventHandler = new OpenLayers.Handler.Click({
-//        'map': map
-//    }, {
-//        'click': function(e) {
-//            getpointInfo(e);
-//            mkpopup(e);
-//        }
-//    });
-//    clickEventHandler.activate();
-//    clickEventHandler.fallThrough = false;
-//    alert("here");
+    //    clickEventHandler = new OpenLayers.Handler.Click({
+    //        'map': map
+    //    }, {
+    //        'click': function(e) {
+    //            getpointInfo(e);
+    //            mkpopup(e);
+    //        }
+    //    });
+    //    clickEventHandler.activate();
+    //    clickEventHandler.fallThrough = false;
+    //    alert("here");
 
-     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
-            defaultHandlerOptions: {
-                'single': true,
-                'double': false,
-                'pixelTolerance': 0,
-                'stopSingle': false,
-                'stopDouble': false
-            },
+    OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
+        defaultHandlerOptions: {
+            'single': true,
+            'double': false,
+            'pixelTolerance': 0,
+            'stopSingle': false,
+            'stopDouble': false
+        },
 
-            initialize: function(options) {
-                this.handlerOptions = OpenLayers.Util.extend(
-                    {}, this.defaultHandlerOptions
+        initialize: function(options) {
+            this.handlerOptions = OpenLayers.Util.extend(
+            {}, this.defaultHandlerOptions
                 );
-                OpenLayers.Control.prototype.initialize.apply(
-                    this, arguments
+            OpenLayers.Control.prototype.initialize.apply(
+                this, arguments
                 );
-                this.handler = new OpenLayers.Handler.Click(
-                    this, {
-                        'click': pointSearch
-                    }, this.handlerOptions
+            this.handler = new OpenLayers.Handler.Click(
+                this, {
+                    'click': pointSearch
+                }, this.handlerOptions
                 );
-            }
-        });
-        mapClickControl = new OpenLayers.Control.Click();
-        map.addControl(mapClickControl);
-        mapClickControl.activate();
-        ///////////////////
+        }
+    });
+    mapClickControl = new OpenLayers.Control.Click();
+    map.addControl(mapClickControl);
+    mapClickControl.activate();
+    ///////////////////
     //  setVectorLayersSelectable();
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
@@ -719,10 +724,115 @@ function forceRedrawVectorLayers() {
     }
 }
 
+var currFeature;
+function showInfo(curr) {
+    var info = currFeature.attributes[curr];
+    if (document.getElementById("sppopup") != null) {
+        document.getElementById("sppopup").innerHTML = "Requesting data...";
+    }
+    //var occinfo = getOccurrenceInfo(info);
+    //console.log("got occinfo");
+    //console.log(occinfo);
+    var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; ";
+    try {
+        if (currFeature.attributes[curr+1].id != null) {
+            nextBtn = "<a href='javascript:parent.showInfo("+(curr+1)+")'>next &rArr;</a>";
+        }
+    } catch (err) {}
+    var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; ";
+    try {
+        if (currFeature.attributes[curr-1].id != null) {
+            prevBtn = "<a href='javascript:parent.showInfo("+(curr-1)+")'>&lArr; previous</a>";
+        }
+    } catch (err) {}
+
+    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+info.id+".json", function(data) {
+        var occinfo = data.occurrence;
+        //console.log(occinfo);
+        var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
+        " Scientific name: " + info.name + "</a> <br />" +
+        " Family: " + occinfo.family + "</a> <br />" +
+        " Kingdom: " + occinfo.kingdom + "</a> <br />" +
+        " Occ-id: " + data.id + "</a> <br />" +
+        //" Longitude: "+info.longitude + " , Latitude: " + info.latitude + " <br/>" +
+        "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
+        "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            //currFeature.geometry.getBounds().getCenterLonLat(),
+            new OpenLayers.LonLat(info.longitude, info.latitude).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject()),
+            new OpenLayers.Size(100,100),
+            infohtml
+            ,
+            null, true, onPopupClose);
+
+        if (document.getElementById("sppopup") != null) {
+            document.getElementById("sppopup").innerHTML = infohtml;
+        }
+
+    });
+
+
+//    var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
+//    " Scientific name: " + info.name + "</a> <br />" +
+//    " Longitude: "+info.longitude + " , Latitude: " + info.latitude + " <br/>" +
+//    "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
+//    "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+//
+//    popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+//        currFeature.geometry.getBounds().getCenterLonLat(),
+//        new OpenLayers.Size(100,100),
+//        infohtml
+//        ,
+//        null, true, onPopupClose);
+//
+//    if (document.getElementById("sppopup") != null) {
+//        document.getElementById("sppopup").innerHTML = infohtml;
+//    }
+}
+
+function getOccurrenceInfo(occ) {
+    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ.id+".json", function(data) {
+        var occinfo = data.occurrence;
+        //console.log(occinfo);
+        var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
+        " Scientific name: " + occ.name + "</a> <br />" +
+        " Family: " + occinfo.family + "</a> <br />" +
+        " Kingdom: " + occinfo.kingdom + "</a> <br />" +
+        " Longitude: "+info.longitude + " , Latitude: " + occ.latitude + " <br/>" +
+        "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occ.id + "' target='_blank'>View details</a> <br /> <br />" +
+        "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            currFeature.geometry.getBounds().getCenterLonLat(),
+            new OpenLayers.Size(100,100),
+            infohtml
+            ,
+            null, true, onPopupClose);
+
+        if (document.getElementById("sppopup") != null) {
+            document.getElementById("sppopup").innerHTML = infohtml;
+        }
+        
+    });
+
+//    var request = OpenLayers.Request.GET({
+//        url: "http://biocache.ala.org.au/occurrences/"+occid+".json",
+//        callback: function(request) {
+//            var occinfo = request.responseText.occurrence;
+//            console.log(occinfo);
+//        }
+//    });
+
+}
+
 function selected (evt) {
 
     var feature = (evt.feature==null)?evt:evt.feature;
     var attrs = feature.attributes;
+    currFeature = feature; 
     
     if (areaSelectOn) {
         featureSelected(feature);
@@ -752,6 +862,38 @@ function selected (evt) {
                 "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + attrs["oi"] + "' target='_blank'>View details</a>"
                 ,
                 null, true, onPopupClose);
+
+        } else if (attrs["0"].id != "") {
+            //            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            //                feature.geometry.getBounds().getCenterLonLat(),
+            //                new OpenLayers.Size(100,100),
+            //                "<h2>Occurrence information - " + attrs["0"].id + "</h2> <div id='sppopup'>" +
+            //                " Scientific name: " + attrs["0"].name + "</a> <br />" +
+            //                " Longitude: "+attrs['0'].longitude + " , Latitude: " + attrs['0'].latitude + " <br/>" +
+            //                "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + attrs["0"].id + "' target='_blank'>View details</a></div>" +
+            //                ""
+            //                ,
+            //                null, true, onPopupClose);
+
+            //showInfo(feature, attrs["0"]);
+            parent.showInfo(0);
+
+        /*
+            var ci=0;
+            while(true) {
+                try {
+                    if (attrs[ci].id == null) {
+                        break;
+                    }
+                    console.log(attrs[ci].id + " - " + attrs[ci].name);
+                    //showInfo(ci);
+                    ci++;
+                } catch (err) {
+                    break;
+                }
+            }
+            */
+
 
         } else {
 
@@ -825,7 +967,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
         style : layer_style
     });
     map.addLayer(wktLayer);
-  //  alert(featureWKT);
+    //  alert(featureWKT);
     var geom = new OpenLayers.Geometry.fromWKT(featureWKT);
     geom = geom.transform(map.displayProjection, map.projection);
     wktLayer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
@@ -1906,7 +2048,7 @@ function applyFeatureUncertainty(features,szUncertain){
             if(u == '' || u == undefined || u == '0')
                 u = 10000;
             var c = OpenLayers.Geometry.Polygon.createRegularPolygon(f[j].geometry,
-                    u,20,0);
+                u,20,0);
             var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,new_style);
             f[len + j] = fv;
         }        

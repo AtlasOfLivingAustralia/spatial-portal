@@ -308,7 +308,7 @@ public class SpeciesAutoComplete extends Combobox {
             }
 
         } catch (Exception e) {
-            System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refreshRemote");
+            System.out.println("Oopss! something went wrong in SpeciesAutoComplete.refresh");
             e.printStackTrace(System.out);
 
             //new Comboitem("No species found. error.").setParent(this);

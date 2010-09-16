@@ -49,6 +49,7 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
         try {
 
             connection = httpConnection.configureURLConnection(url);
+            connection.addRequestProperty("accept", "application/json, text/javascript, */*"); 
             in = connection.getInputStream();
             json = IOUtils.toString(in);
             //json = cleanUpJson(json);
@@ -187,8 +188,15 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
                     logger.debug("Iterating thru' " + countFeatures + " features");
                     for (int i = 0; i < countFeatures; i++) {
                         JSONObject o = obj.getJSONArray("features").getJSONObject(i);
-                        JSONObject oprop = o.getJSONObject("properties");
-                        System.out.println("key value: " + oprop.getString(key)); 
+                        JSONObject oprop;
+                        try {
+                            oprop = o.getJSONObject("properties");
+
+                        } catch (Exception e) {
+                            oprop = o.getJSONArray("properties").getJSONObject(0);
+                        }
+                        
+                        //System.out.println("key value: " + oprop.getString(key));
                         if (oprop.containsKey(key)) {
                             value = oprop.getString(key);
                             if (!value.trim().equalsIgnoreCase("")) {

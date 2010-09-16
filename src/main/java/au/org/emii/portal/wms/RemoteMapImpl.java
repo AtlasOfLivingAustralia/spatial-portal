@@ -316,7 +316,12 @@ public class RemoteMapImpl implements RemoteMap {
 
         geoJSON.setName(label);
 
-        geoJSON.setUri(uri);
+        if (uri.indexOf("?") == -1) {
+            geoJSON.setUri(uri);
+        } else {
+            geoJSON.setUri(uri.substring(0, uri.lastIndexOf("?")));
+        }
+
         geoJSON.setId(uri);
         geoJSON.setLayer(label);
 
