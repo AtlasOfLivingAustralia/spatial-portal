@@ -506,7 +506,7 @@ public class SamplingService {
 
                     int step = 5000000; //max characters to read TODO: move to tabulation settings.xmls
                     long rstart = r.file_start;
-                    long  rend;
+                    long rend;
 
                     rend = rstart + step;
                     if (rend > r.file_end) {

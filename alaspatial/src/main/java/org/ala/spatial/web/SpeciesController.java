@@ -3,21 +3,35 @@ package org.ala.spatial.web;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import org.ala.spatial.analysis.cluster.ClusteredRecord;
+import org.ala.spatial.analysis.cluster.Record;
+import org.ala.spatial.analysis.cluster.SpatialCluster;
+import org.ala.spatial.analysis.cluster.SpatialCluster3;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.service.FilteringService;
 
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
-import org.ala.spatial.model.CommonName;
 import org.ala.spatial.model.ValidTaxonName;
+import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SimpleShapeFile;
+import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -36,6 +50,8 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping("/species")
 public class SpeciesController {
 
+    private final int DEFAULT_PIXEL_DISTANCE = 20;
+    private final int DEFAULT_MAP_ZOOM = 4;
     private SpeciesDAO speciesDao;
 
     @Autowired
@@ -114,7 +130,7 @@ public class SpeciesController {
                 aslist[0] = "";
             }
 
-            for (String s : aslist) {                
+            for (String s : aslist) {
                 slist.append(s).append("\n");
             }
 
@@ -123,22 +139,22 @@ public class SpeciesController {
             //System.out.println(">>>>> dumping out c.names <<<<<<<<<<");
 //long t1 = System.currentTimeMillis();
 /*
-           List<CommonName> clist = speciesDao.getCommonNames(name);
+            List<CommonName> clist = speciesDao.getCommonNames(name);
             Iterator<CommonName> it = clist.iterator();
             String previousScientificName = "";
             while (it.hasNext()) {
-                CommonName cn = it.next();
-                //System.out.println("> " + cn.getCommonname() + " -- " + cn.getScientificname());
-                
-                //only add if different from previous (query is sorted by scientificName)
-                if (!previousScientificName.equals(cn.getScientificname())) {
-                    int records = OccurrencesService.getSpeciesCount(cn.getScientificname());
-                    slist.append(cn.getCommonname()).append(" / Scientific name: ").append(cn.getScientificname()).append(" / found ").append(records).append("\n");
-                    previousScientificName = cn.getScientificname();
-                }
+            CommonName cn = it.next();
+            //System.out.println("> " + cn.getCommonname() + " -- " + cn.getScientificname());
+
+            //only add if different from previous (query is sorted by scientificName)
+            if (!previousScientificName.equals(cn.getScientificname())) {
+            int records = OccurrencesService.getSpeciesCount(cn.getScientificname());
+            slist.append(cn.getCommonname()).append(" / Scientific name: ").append(cn.getScientificname()).append(" / found ").append(records).append("\n");
+            previousScientificName = cn.getScientificname();
+            }
             }*/
 //long t2 = System.currentTimeMillis();
- 
+
             String s = OccurrencesIndex.getCommonNames(name);
             slist.append(s);
 
@@ -161,8 +177,8 @@ public class SpeciesController {
     List<ValidTaxonName> getTaxonByLsid(@PathVariable("lsid") String lsid) {
         try {
             lsid = URLDecoder.decode(lsid, "UTF-8");
-            lsid=lsid.replaceAll("__",".");
-            System.out.println("Starting out search for: " + lsid); 
+            lsid = lsid.replaceAll("__", ".");
+            System.out.println("Starting out search for: " + lsid);
             List l = speciesDao.findById(lsid);
             System.out.println("re-returning " + l.size() + " records");
 
@@ -178,8 +194,8 @@ public class SpeciesController {
 
             double[][] pts = OccurrencesIndex.getPointsPairs();
             for (i=0;i<finalRecs.length;i++) {
-                pts[finalRecs[i]][0];
-                pts[finalRecs[i]][1];
+            pts[finalRecs[i]][0];
+            pts[finalRecs[i]][1];
             }
              */
 
@@ -209,7 +225,7 @@ public class SpeciesController {
         try {
 
             lsid = URLDecoder.decode(lsid, "UTF-8");
-            lsid=lsid.replaceAll("__",".");
+            lsid = lsid.replaceAll("__", ".");
 
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             //String currentPath = TabulationSettings.base_output_dir;
@@ -225,5 +241,114 @@ public class SpeciesController {
             e.printStackTrace(System.out);
         }
         return "";
+    }
+
+    @RequestMapping(value = "/cluster/{species}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    Hashtable getClusteredRecords(@PathVariable("species") String species, HttpServletRequest req) {
+        try {
+            SpatialSettings ssets = new SpatialSettings();
+
+            int zoom = DEFAULT_MAP_ZOOM;
+            int pdist = DEFAULT_PIXEL_DISTANCE;
+
+            species = URLDecoder.decode(species, "UTF-8");
+            species = species.replaceAll("__", ".");
+
+            try {
+                if (req.getParameter("z") != null) {
+                    zoom = Integer.parseInt(req.getParameter("z"));
+                }
+            } catch (Exception e) {
+                zoom = DEFAULT_MAP_ZOOM;
+            }
+            try {
+                if (req.getParameter("d") != null) {
+                    pdist = Integer.parseInt(req.getParameter("d"));
+                }
+            } catch (Exception e) {
+                pdist = DEFAULT_PIXEL_DISTANCE;
+            }
+
+            System.out.println("req.sp: " + species);
+            System.out.println("req.z: " + zoom);
+            System.out.println("req.d: " + pdist);
+
+            //String lsid = "urn:lsid:biodiversity.org.au:apni.taxon:295864";
+            //species = lsid;
+
+            System.out.println("species: " + species);
+
+            SamplingService ss = new SamplingService();
+
+            String[][] results = ss.sampleSpecies(species, null, null, null, TabulationSettings.MAX_RECORD_COUNT);
+            StringBuilder sbResults = new StringBuilder();
+            Vector dataPoints = new Vector();
+
+            if (results != null) {
+                System.out.println("Got " + results.length + " records for species: " + species);
+            } else {
+                System.out.println("Got no records for species: " + species);
+            }
+
+            for (int i = 1; i < results.length; i++) {
+                //System.out.println("Adding to cluster");
+                // System.out.println(results[i][TabulationSettings.geojson_id] + " - " + results[i][TabulationSettings.geojson_property_fields[5]] + " - " + results[i][TabulationSettings.geojson_longitude] + ", " + results[i][TabulationSettings.geojson_latitude]);
+                if (results[i][TabulationSettings.geojson_id] != null) {
+                    if (!results[i][TabulationSettings.geojson_id].toLowerCase().equals("null")) {
+                        dataPoints.add(new Record(results[i][TabulationSettings.geojson_id], results[i][TabulationSettings.geojson_property_fields[5]], Double.parseDouble(results[i][TabulationSettings.geojson_longitude]), Double.parseDouble(results[i][TabulationSettings.geojson_latitude])));
+                    }
+                }
+            }
+
+            Vector allFeatures = new Vector();
+            // SpatialCluster3 stuff start
+            SpatialCluster3 scluster = new SpatialCluster3();
+            Vector<Vector<Record>> clustered = scluster.cluster(dataPoints, pdist, zoom);
+            for (int i = 0; i < clustered.size(); i++) {
+                //System.out.println(i + "> " + clustered.get(i).toString());
+
+                Vector<Record> cluster = clustered.get(i);
+                Record r = cluster.get(0);
+
+                Hashtable geometry = new Hashtable();
+                geometry.put("type", "Point");
+                double[] coords = {r.getLongitude(), r.getLatitude()};
+                geometry.put("coordinates", coords);
+
+                Map cFeature = new HashMap();
+                cFeature.put("type", "Feature"); // feature.getType().getName().toString()
+                cFeature.put("id", "occurrences." + i + 1);
+                cFeature.put("properties", cluster);
+                cFeature.put("geometry_name", "the_geom");
+                cFeature.put("geometry", geometry);
+
+                allFeatures.add(cFeature);
+
+            }
+            // SpatialCluster3 stuff end
+
+            Hashtable data = new Hashtable();
+            data.put("type", "FeatureCollection");
+            data.put("features", allFeatures);
+
+            /*
+            System.out.println("returning allFeatures:" + allFeatures.toArray());
+            System.out.println("===========================");
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(System.out, data);
+            System.out.println("===========================");
+             * 
+             */
+
+            return data;
+
+        } catch (Exception e) {
+            System.out.println("getClusteredRecords.error: ");
+            e.printStackTrace(System.out);
+        }
+        System.out.println("returning null");
+        return null;
     }
 }
