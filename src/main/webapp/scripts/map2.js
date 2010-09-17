@@ -75,6 +75,11 @@ var overCallback = {
 
 var selecteFeature;
 
+// check if the Google Layer automatically got
+// switched between normal and hybrid around zoom level 16
+var autoBaseLayerSwitch = false;
+
+
 function stopCheckingLibraryLoaded() {
     clearInterval(checkLibraryLoadedTimeout);
 }
@@ -168,9 +173,9 @@ function goToLocation(lon, lat, zoom) {
 
 function changeBaseLayer(type) {
     if (type == 'normal') {
-        map.setBaseLayer(window.mapFrame.bLayer2);
+        map.setBaseLayer(bLayer2);
     } else {
-        map.setBaseLayer(window.mapFrame.bLayer);
+        map.setBaseLayer(bLayer);
     }
 }
 
@@ -344,6 +349,16 @@ function buildMapReal() {
         Event.stop(e);
         //console.log("zoomend");
         parent.reloadSpecies();
+
+        if (map.zoom > 15) {
+            autoBaseLayerSwitch = true
+            changeBaseLayer('hybrid');
+        } else {
+            if (autoBaseLayerSwitch) {
+                changeBaseLayer('normal');
+                autoBaseLayerSwitch = false;
+            }
+        }
     });
 }
 
