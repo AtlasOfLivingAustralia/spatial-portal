@@ -146,13 +146,24 @@ function checkLibraryLoaded() {
 var bLayer,bLayer2;
 function loadBaseMap() {
 
+    goToLocation(134, -25, 4);
+
+    // Google.v3 uses EPSG:900913 as projection, so we have to
+    // transform our coordinates
+//    map.setCenter(
+//        new OpenLayers.LonLat(134, -25).transform(
+//            new OpenLayers.Projection("EPSG:4326"),
+//            map.getProjectionObject()),
+//        4);
+}
+function goToLocation(lon, lat, zoom) {
     // Google.v3 uses EPSG:900913 as projection, so we have to
     // transform our coordinates
     map.setCenter(
-        new OpenLayers.LonLat(134, -25).transform(
+        new OpenLayers.LonLat(lon, lat).transform(
             new OpenLayers.Projection("EPSG:4326"),
             map.getProjectionObject()),
-        4);
+        zoom);
 }
 
 function changeBaseLayer(type) {
@@ -736,13 +747,13 @@ function showInfo(curr) {
     var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
         if (currFeature.attributes[curr+1].id != null) {
-            nextBtn = "<a href='javascript:parent.showInfo("+(curr+1)+")'>next &rArr;</a>";
+            nextBtn = "<a href='javascript:parent.showInfo("+(curr+1)+");hidePrecision();'>next &rArr;</a>";
         }
     } catch (err) {}
     var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
         if (currFeature.attributes[curr-1].id != null) {
-            prevBtn = "<a href='javascript:parent.showInfo("+(curr-1)+")'>&lArr; previous</a>";
+            prevBtn = "<a href='javascript:parent.showInfo("+(curr-1)+");hidePrecision();'>&lArr; previous</a>";
         }
     } catch (err) {}
 
@@ -775,8 +786,8 @@ function showInfo(curr) {
         " Kingdom: " + kingdom + " <br />" +
         " Occ-id: " + data.id + "</a> <br />" +
         " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
-        //" Longitude: "+attrs['lo'] + " , Latitude: " + attrs['la'] + " <br/>" +
-        " Uncertainty in meters: " + uncertainty + " <br />" +
+        " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
+        " Spatial uncertainty in meters: " + uncertainty + " (<a href='javascript:showPrecision(10000)'>view</a>)<br />" +
         " Occurrence date: " + occurrencedate + " <br />" +
         "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
         "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
@@ -930,6 +941,8 @@ function onPopupClose(evt) {
         this.feature.popup = null;
     
         selectControl.unselect(this.feature);
+
+        hidePrecision(); 
 
     } catch(err) {
     //alert(err);
@@ -2048,4 +2061,31 @@ function applyFeatureUncertainty(features,szUncertain){
         }        
     }
     return f;
+}
+
+var precisionLayer = null;
+function showPrecision(precision) {
+    // constructor params:
+    // 1. The point where circlecenter must be at
+    // 2. The radius in unit's of the map (in this case, precision in meters)
+    // 3. The number of sides (50 makes a nice circle)
+    // 4. The angle to start drawing
+
+    var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillColor = "#ffffff";
+    layer_style.strokeColor = "#ffffff";
+    layer_style.fillOpacity = 0.4;
+    precisionLayer = new OpenLayers.Layer.Vector("Precision", {
+        style : layer_style
+    });
+    //map.addLayer(wktLayer);
+    var circle =
+    OpenLayers.Geometry.Polygon.createRegularPolygon(currFeature.geometry,
+        precision, 50)
+    precisionLayer.addFeatures(new OpenLayers.Feature.Vector(circle));
+    map.addLayer(precisionLayer);
+}
+function hidePrecision() {
+    if (precisionLayer)
+        map.removeLayer(precisionLayer);
 }
