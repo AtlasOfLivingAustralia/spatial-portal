@@ -26,14 +26,16 @@ public class AnalysisJobAloc extends AnalysisJob {
     String currentPath;
     int cells;
     long [] stageTimes;
+    public String area;
 
-    public AnalysisJobAloc(String pid, String currentpath_, Layer[] layers_, int numberofgroups_, SimpleRegion region_, LayerFilter[] envelope_){
+    public AnalysisJobAloc(String pid, String currentpath_, Layer[] layers_, int numberofgroups_, SimpleRegion region_, LayerFilter[] envelope_, String area_){
         super(pid);
         currentPath = currentpath_;
         numberOfGroups = numberofgroups_;
         layers = layers_;
         region = region_;
         envelope = envelope_;
+        area = area_;
 
         //TODO: remove rough estimate
         if(region != null){
@@ -128,10 +130,20 @@ public class AnalysisJobAloc extends AnalysisJob {
                 legend.append("\r\n");
             }
             flegend.close();
+
+            StringBuffer metadata = new StringBuffer();
+            System.out.println("meatadata path:" + filepath + "aloc.png.html");
+            BufferedReader fmetadata = new BufferedReader(new FileReader(filepath + "aloc.png.html"));
+            while ((line = fmetadata.readLine()) != null) {
+                metadata.append(line);
+                metadata.append("\n");
+            }
+            fmetadata.close();
+
             setProgress(0.5);
 
             System.out.println("registering layer image (A): pid=" + getName());
-            if (!LayerImgService.registerLayerImage(currentPath, "" + getName(), outputfile, extents.toString(), legend.toString())) {
+            if (!LayerImgService.registerLayerImage(currentPath, "" + getName(), outputfile, extents.toString(), legend.toString(), metadata.toString())) {
                 //error
             }
             setProgress(1);
@@ -273,6 +285,6 @@ public class AnalysisJobAloc extends AnalysisJob {
 
     AnalysisJob copy() {
         return new AnalysisJobAloc(String.valueOf(System.currentTimeMillis()),
-                currentPath, layers, numberOfGroups, region, envelope);
+                currentPath, layers, numberOfGroups, region, envelope, area);
     }
 }

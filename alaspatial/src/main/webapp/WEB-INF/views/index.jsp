@@ -114,7 +114,7 @@
                 <li><a id="msample" href="#" onclick="menuClick(this.id);return false;">Sampling</a></li>
                 <li><a id="mmaxent" href="#" onclick="menuClick(this.id);return false;">Maxent</a></li>
                 <li><a id="maloc" href="#" onclick="menuClick(this.id);return false;">ALOC</a></li>
-                <li><a id="mjobs" href="#" onclick="menuClick(this.id);return false;">Jobs</a></li>
+                <li><a id="mjobs" href="#" onclick="menuClick(this.id);return false;">Admin</a></li>
             </ul>
         </div>
 

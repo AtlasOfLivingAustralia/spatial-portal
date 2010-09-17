@@ -43,7 +43,7 @@ import org.apache.commons.io.FileUtils;
 * @author adam
 */
 public class LayerImgService {	
-	public static boolean registerLayerImage(String outputlayerdir, String pid, String srcimagepath, String extents, String legend){
+	public static boolean registerLayerImage(String outputlayerdir, String pid, String srcimagepath, String extents, String legend, String metadata){
 		/* check directory exists at outputlayerdir */
 		String path = outputlayerdir + "output" + File.separator + "layers" + File.separator + pid + File.separator;
 		System.out.println("about to create directory: " + outputlayerdir + "output" + File.separator + "layers" + File.separator + pid + " : "
@@ -75,6 +75,11 @@ public class LayerImgService {
 			/* write legend */
 			fw = new FileWriter(path + "legend.txt");
 			fw.append(legend);
+			fw.close();
+
+                        /* write metadata */
+                        fw = new FileWriter(path + "metadata.html");
+                        fw.append(metadata);
 			fw.close();
 			
 			return true;

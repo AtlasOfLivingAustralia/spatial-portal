@@ -174,6 +174,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Slider blueSlider;
     private Slider sizeSlider;
     private Checkbox chkUncertaintySize;
+    private Div uncertainty;
     private Label redLabel;
     private Label greenLabel;
     private Label blueLabel;
@@ -1999,9 +2000,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
                     legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
                     sizeChooser.setVisible(false);
+                    uncertainty.setVisible(false);
                 } else {
                     legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
                     sizeChooser.setVisible(true);
+                    uncertainty.setVisible(true);
                 }
                 legendImg.setVisible(true);
                 legendLabel.setVisible(true);
@@ -2313,8 +2316,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         if (selectedLayer.getGeometryType() != GeoJSONUtilities.POINT) {
             legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
+            sizeChooser.setVisible(false);
+            uncertainty.setVisible(false);
         } else {
             legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
+            sizeChooser.setVisible(true);
+            uncertainty.setVisible(true);
         }
     }
 
