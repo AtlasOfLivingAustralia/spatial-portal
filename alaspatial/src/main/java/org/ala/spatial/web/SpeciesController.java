@@ -292,12 +292,23 @@ public class SpeciesController {
                 System.out.println("Got no records for species: " + species);
             }
 
+            int sciname_pos = -1;
+            int prec_pos = -1;
+            for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+                if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
+                    sciname_pos = i;
+                }
+                if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("u")) {
+                    prec_pos = i;
+                }
+            }
+
             for (int i = 1; i < results.length; i++) {
                 //System.out.println("Adding to cluster");
                 // System.out.println(results[i][TabulationSettings.geojson_id] + " - " + results[i][TabulationSettings.geojson_property_fields[5]] + " - " + results[i][TabulationSettings.geojson_longitude] + ", " + results[i][TabulationSettings.geojson_latitude]);
                 if (results[i][TabulationSettings.geojson_id] != null) {
                     if (!results[i][TabulationSettings.geojson_id].toLowerCase().equals("null")) {
-                        dataPoints.add(new Record(results[i][TabulationSettings.geojson_id], results[i][TabulationSettings.geojson_property_fields[5]], Double.parseDouble(results[i][TabulationSettings.geojson_longitude]), Double.parseDouble(results[i][TabulationSettings.geojson_latitude])));
+                        dataPoints.add(new Record(results[i][TabulationSettings.geojson_id], results[i][TabulationSettings.geojson_property_fields[sciname_pos]], Double.parseDouble(results[i][TabulationSettings.geojson_longitude]), Double.parseDouble(results[i][TabulationSettings.geojson_latitude]), results[i][TabulationSettings.geojson_property_fields[prec_pos]]));
                     }
                 }
             }
