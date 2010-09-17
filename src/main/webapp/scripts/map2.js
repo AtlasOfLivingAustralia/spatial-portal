@@ -712,7 +712,7 @@ function forceRedrawVectorLayers() {
     try {
         var layersV = map.getLayersByClass('OpenLayers.Layer.Vector');
         for (var i = 0; i < layersV.length; i++) {
-            console.log("redrawing: " + layersV[i].name);
+            //console.log("redrawing: " + layersV[i].name);
             //layersV[i].display(false);
             //layersV[i].display(true);
             //layersV[i].display(true);
