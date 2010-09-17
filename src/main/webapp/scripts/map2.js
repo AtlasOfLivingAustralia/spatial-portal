@@ -727,19 +727,19 @@ function forceRedrawVectorLayers() {
 var currFeature;
 function showInfo(curr) {
     var info = currFeature.attributes[curr];
-    if (document.getElementById("sppopup") != null) {
-        document.getElementById("sppopup").innerHTML = "Requesting data...";
-    }
+    //    if (document.getElementById("sppopup") != null) {
+    //        document.getElementById("sppopup").innerHTML = "Requesting data...";
+    //    }
     //var occinfo = getOccurrenceInfo(info);
     //console.log("got occinfo");
     //console.log(occinfo);
-    var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; ";
+    var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
         if (currFeature.attributes[curr+1].id != null) {
             nextBtn = "<a href='javascript:parent.showInfo("+(curr+1)+")'>next &rArr;</a>";
         }
     } catch (err) {}
-    var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; ";
+    var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
         if (currFeature.attributes[curr-1].id != null) {
             prevBtn = "<a href='javascript:parent.showInfo("+(curr-1)+")'>&lArr; previous</a>";
@@ -748,25 +748,48 @@ function showInfo(curr) {
 
     $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+info.id+".json", function(data) {
         var occinfo = data.occurrence;
-        //console.log(occinfo);
+
+        var species = occinfo.species;
+        if (occinfo.speciesLsid != null) {
+            species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
+        }
+
+        var family = occinfo.family;
+        if (occinfo.familyLsid != null) {
+            family = '<a href="http://bie.ala.org.au/species/'+occinfo.familyLsid+'" target="_blank">'+family+'</a>';
+        }
+
+        var kingdom = occinfo.kingdom;
+        if (occinfo.kingdomLsid != null) {
+            kingdom = '<a href="http://bie.ala.org.au/species/'+occinfo.kingdomLsid+'" target="_blank">'+kingdom+'</a>';
+        }
+
+        var occurrencedate = occinfo.occurrenceDate;
+        var uncertainty = occinfo.coordinatePrecision;
+        if(uncertainty == "" || uncertainty == undefined || uncertainty == null) uncertainty = "<b>Undefined!</b>";
+        if (!occurrencedate) occurrencedate="";
+
         var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
-        " Scientific name: " + info.name + "</a> <br />" +
-        " Family: " + occinfo.family + "</a> <br />" +
-        " Kingdom: " + occinfo.kingdom + "</a> <br />" +
+        " Scientific name: " + species + " <br />" +
+        " Family: " + family + " <br />" +
+        " Kingdom: " + kingdom + " <br />" +
         " Occ-id: " + data.id + "</a> <br />" +
-        //" Longitude: "+info.longitude + " , Latitude: " + info.latitude + " <br/>" +
+        " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
+        //" Longitude: "+attrs['lo'] + " , Latitude: " + attrs['la'] + " <br/>" +
+        " Uncertainty in meters: " + uncertainty + " <br />" +
+        " Occurrence date: " + occurrencedate + " <br />" +
         "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
         "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
-        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-            //currFeature.geometry.getBounds().getCenterLonLat(),
-            new OpenLayers.LonLat(info.longitude, info.latitude).transform(
-            new OpenLayers.Projection("EPSG:4326"),
-            map.getProjectionObject()),
-            new OpenLayers.Size(100,100),
-            infohtml
-            ,
-            null, true, onPopupClose);
+        //        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+        //            //currFeature.geometry.getBounds().getCenterLonLat(),
+        //            new OpenLayers.LonLat(info.longitude, info.latitude).transform(
+        //            new OpenLayers.Projection("EPSG:4326"),
+        //            map.getProjectionObject()),
+        //            new OpenLayers.Size(100,100),
+        //            infohtml
+        //            ,
+        //            null, true, onPopupClose);
 
         if (document.getElementById("sppopup") != null) {
             document.getElementById("sppopup").innerHTML = infohtml;
@@ -791,41 +814,6 @@ function showInfo(curr) {
 //    if (document.getElementById("sppopup") != null) {
 //        document.getElementById("sppopup").innerHTML = infohtml;
 //    }
-}
-
-function getOccurrenceInfo(occ) {
-    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ.id+".json", function(data) {
-        var occinfo = data.occurrence;
-        //console.log(occinfo);
-        var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
-        " Scientific name: " + occ.name + "</a> <br />" +
-        " Family: " + occinfo.family + "</a> <br />" +
-        " Kingdom: " + occinfo.kingdom + "</a> <br />" +
-        " Longitude: "+info.longitude + " , Latitude: " + occ.latitude + " <br/>" +
-        "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occ.id + "' target='_blank'>View details</a> <br /> <br />" +
-        "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
-
-        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-            currFeature.geometry.getBounds().getCenterLonLat(),
-            new OpenLayers.Size(100,100),
-            infohtml
-            ,
-            null, true, onPopupClose);
-
-        if (document.getElementById("sppopup") != null) {
-            document.getElementById("sppopup").innerHTML = infohtml;
-        }
-        
-    });
-
-//    var request = OpenLayers.Request.GET({
-//        url: "http://biocache.ala.org.au/occurrences/"+occid+".json",
-//        callback: function(request) {
-//            var occinfo = request.responseText.occurrence;
-//            console.log(occinfo);
-//        }
-//    });
-
 }
 
 function selected (evt) {
@@ -875,7 +863,13 @@ function selected (evt) {
             //                ,
             //                null, true, onPopupClose);
 
-            //showInfo(feature, attrs["0"]);
+            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(100,100),
+                "<div id='sppopup' style='width: 350px; height: 200px;'>Retrieving data... </div>"
+                ,
+                null, true, onPopupClose);
+
             parent.showInfo(0);
 
         /*
