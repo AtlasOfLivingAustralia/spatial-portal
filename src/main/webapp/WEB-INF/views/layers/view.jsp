@@ -76,6 +76,11 @@
                     ${layer.notes}
                 </p>
 
+                <p>
+                    <span class="title">More information:</span> <br />
+                    ${layer.metadatapath}
+                </p>
+
             </c:when>
             <c:otherwise>
                 <div class="notavailable">Layer information not available</div>
