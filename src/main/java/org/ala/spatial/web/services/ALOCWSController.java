@@ -106,8 +106,18 @@ public class ALOCWSController {
                 legend.append("\r\n");
             }
             flegend.close();
+
+            StringBuffer metadata = new StringBuffer();
+            System.out.println("meatadata path:" + outputpath + "aloc.png.html");
+            BufferedReader fmetadata = new BufferedReader(new FileReader(outputpath + "aloc.png.html"));
+            while ((line = fmetadata.readLine()) != null) {
+                metadata.append(line);
+                metadata.append("\n");
+            }
+            fmetadata.close();
+
             System.out.println("registering layer image (A): pid=" + currTime);
-            if (!LayerImgService.registerLayerImage(currentPath, "" + currTime, outputfile, extents.toString(), legend.toString())) {
+            if (!LayerImgService.registerLayerImage(currentPath, "" + currTime, outputfile, extents.toString(), legend.toString(), metadata.toString())) {
                 //error
             }
 
@@ -146,7 +156,7 @@ public class ALOCWSController {
             }
 
             pid = Long.toString(currTime);
-            AnalysisJobAloc aja = new AnalysisJobAloc(pid, currentPath, envList, Integer.parseInt(groupCount), region, filter);
+            AnalysisJobAloc aja = new AnalysisJobAloc(pid, currentPath, envList, Integer.parseInt(groupCount), region, filter, area);
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);
             inputs.append(";gc:").append(groupCount);

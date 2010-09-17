@@ -1,15 +1,17 @@
 package org.ala.spatial.web.zk;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.net.URLEncoder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.ala.spatial.util.TabulationSettings;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.io.FileUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.GenericForwardComposer;
 import org.zkoss.zul.Iframe;
-import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.SimpleListModel;
@@ -17,10 +19,13 @@ import org.zkoss.zul.Textbox;
 
 public class JobsZK extends GenericForwardComposer {
 
+    //Memory tab
+    Label lMemUsage;
+
+    //Analysis tab
     Listbox lbwaiting;
     Listbox lbrunning;
-    Listbox lbfinished;
-    Label lMemUsage;
+    Listbox lbfinished;    
     Textbox selectedJob;
     Textbox joblog;
     Textbox jobparameters;
@@ -28,6 +33,9 @@ public class JobsZK extends GenericForwardComposer {
     Textbox imgpth;
     String pid;
     Textbox newjob;
+
+    //Other tab
+    Label lCachedImageCount;
 
     @Override
     public void doAfterCompose(Component comp) throws Exception {
@@ -38,6 +46,8 @@ public class JobsZK extends GenericForwardComposer {
         setMemoryLabel();
 
         onClick$refreshButton(null);
+
+        updateCachedImageCount();
 
     }
 
@@ -201,4 +211,37 @@ public class JobsZK extends GenericForwardComposer {
             e.printStackTrace();
         }
     }
+
+    public void onClick$btnClearCache(Event event){
+        String pth = TabulationSettings.base_output_dir + "output" + File.separator + "sampling" + File.separator;
+        File dir = new File(pth);
+        String [] f = dir.list(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith("png");
+            }
+        });
+        for(int i=0;i<f.length;i++){
+            FileUtils.deleteQuietly(new File(pth + f[i]));
+        }
+
+        updateCachedImageCount();
+    }
+
+    void updateCachedImageCount(){
+        File dir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "sampling"  + File.separator);
+        String [] f = dir.list(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith("png");
+            }
+        });
+
+        if(f == null){
+            lCachedImageCount.setValue("0");
+        }else {
+            lCachedImageCount.setValue(String.valueOf(f.length));
+        }
+
+    }
+
+
 }

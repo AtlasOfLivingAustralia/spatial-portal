@@ -14,9 +14,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import org.ala.spatial.analysis.cluster.ClusteredRecord;
+//import org.ala.spatial.analysis.cluster.ClusteredRecord;
 import org.ala.spatial.analysis.cluster.Record;
-import org.ala.spatial.analysis.cluster.SpatialCluster;
+//import org.ala.spatial.analysis.cluster.SpatialCluster;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.FilteringService;
@@ -155,7 +155,7 @@ public class SpeciesController {
             }*/
 //long t2 = System.currentTimeMillis();
 
-            String s = OccurrencesIndex.getCommonNames(name);
+            String s = OccurrencesIndex.getCommonNames(name,aslist);
             slist.append(s);
 
 //long t3 = System.currentTimeMillis();

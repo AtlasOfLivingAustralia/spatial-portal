@@ -1631,6 +1631,28 @@ public class Aloc {
             ail[i].kill();
         }
 
+        //reverse column range standardization
+        for (k = 0; k < pieces; k++) {
+            float[] data = (float[]) data_pieces.get(k);
+            for (i = 0; i < nCols; i++) {
+                nRows = data.length / nCols;
+                for (j = 0; j < nRows; j++) {
+                    data[i + j * nCols] = (data[i + j * nCols] * col_range[i]) + col_min[i];
+                }
+            }
+        }
+        //reverse row range standardization
+        double [] extents = (double[]) data_pieces.get(data_pieces.size()-1);
+        for (k = 0; k < pieces; k++) {
+            float[] data = (float[]) data_pieces.get(k);
+            for (i = 0; i < nCols; i++) {
+                nRows = data.length / nCols;
+                for (j = 0; j < nRows; j++) {
+                    data[i + j * nCols] = (float)((data[i + j * nCols] * (extents[6+i*2+1]-extents[6+i*2])) + extents[6+i*2]);
+                }
+            }
+        }
+
         //write-back row groups
         return min_groups;
 

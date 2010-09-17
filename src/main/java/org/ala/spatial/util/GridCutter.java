@@ -431,6 +431,7 @@ public class GridCutter {
         }
 
         //iterate for layers
+        double [] layerExtents = new double[layers.length*2];
         for (int j = 0; j < layers.length; j++) {
             Grid g = Grid.getGrid(TabulationSettings.getPath(layers[j].name));
             float[] v = g.getValues2(points);
@@ -452,6 +453,8 @@ public class GridCutter {
                     v[i] = 0;
                 }
             }
+            layerExtents[j*2] = minv;
+            layerExtents[j*2+1] = maxv;
 
             //iterate for pieces
             for (int i = 0; i < pieces; i++) {
@@ -512,13 +515,16 @@ public class GridCutter {
         data.add(cells);
 
         //add extents to output
-        double[] extents = new double[6];
+        double[] extents = new double[6 + layerExtents.length];
         extents[0] = width;
         extents[1] = height;
         extents[2] = xmin;
         extents[3] = ymin;
         extents[4] = xmax;
         extents[5] = ymax;
+        for(int i=0;i<layerExtents.length;i++){
+            extents[6+i] = layerExtents[i];
+        }
         data.add(extents);
         
         if(job != null) job.setProgress(1,"cleaned data");

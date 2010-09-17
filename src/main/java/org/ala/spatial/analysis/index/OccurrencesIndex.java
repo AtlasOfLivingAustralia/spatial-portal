@@ -24,6 +24,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -154,12 +155,39 @@ public class OccurrencesIndex implements AnalysisIndexService {
     static int[] occurances_csv_field_pairs_ToSingleIndex;
     static int[] occurances_csv_field_pairs_FirstFromSingleIndex;  //length == single_index.length
 
-    public static String getCommonNames(String name) {
+    /**
+     * list of all common names vs single_index
+     */
+    static String [] common_names_all_vs_single_index;
+
+    /**
+     * finds isWithin matches against common names
+     *
+     * output is '\n' separated list of commonName / index(LSID) / scientificName / count
+     *
+     * @param name partial common name text to search
+     * @param index_finds list of strings containing LSIDs to be excluded.  Can be null.
+     * @return '\n' separated String of 'commonName / index(LSID) / scientificName / count'
+     */
+    public static String getCommonNames(String name, String [] index_finds) {
+        int j;
         TreeSet<Integer> ss = new TreeSet<Integer>();
         StringBuffer sb = new StringBuffer();
         String nameLowerCase = name.toLowerCase();
         for (int i = 0; i < common_names_indexed.length; i++) {
             if (common_names_indexed[i].nameLowerCase.contains(nameLowerCase)) {
+                String lsid = single_index[common_names_indexed[i].index].name;
+                //check within index_finds for the lsid
+                if(index_finds != null){
+                    for(j=0;j<index_finds.length;j++){
+                        if(index_finds[j].contains(lsid)){
+                            break;
+                        }
+                    }
+                    if(j<index_finds.length){
+                        continue;
+                    }
+                }
                 //determine if index already present, add if missing
                 int s1 = ss.size();
                 ss.add(common_names_indexed[i].index);
@@ -173,7 +201,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     }
                     sn = sn.substring(0, 1).toUpperCase() + sn.substring(1).toLowerCase();
 
-                    sb.append(common_names_indexed[i].name).append(" / ").append(single_index[common_names_indexed[i].index].name) //.append(" / Scientific name: ")
+                    sb.append(common_names_indexed[i].name).append(" / ").append(lsid) //.append(" / Scientific name: ")
                             .append(" / ").append(getIndexType(single_index[common_names_indexed[i].index].type)).append(": ").append(sn).append(" / found ").append(single_index[common_names_indexed[i].index].record_end
                             - single_index[common_names_indexed[i].index].record_start + 1).append("\n");
                 }
@@ -1619,6 +1647,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
             IndexedRecord[] ir = all_indexes.get(all_indexes.size() - 1);
             common_names = new String[ir.length];
 
+            HashSet<String> unique = new HashSet<String>(all_indexes.size() * 2);
+            int duplicates = 0;
+
             //load the common names file (csv), populate common_names as it goes
             BufferedReader br = new BufferedReader(
                     new FileReader(TabulationSettings.common_names_csv));
@@ -1643,6 +1674,17 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
                 if (csv_file && sa != null && sa.length > max_columns) {
                     sa = split(s);
+                }
+
+                /* test for uniqueness */
+                int sz = unique.size();
+                if(sa[0].equals("urn:lsid:biodiversity.org.au:afd.taxon:5a447b32-6584-4624-8249-1c0df32ff802")){
+                    int q = 1;
+                }
+                unique.add(sa[0] + sa[1].toLowerCase().trim());
+                if(sz == unique.size()){
+                    duplicates++;
+                    continue;
                 }
 
                 /* remove quotes and commas form terms */
@@ -1679,6 +1721,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
             }
             System.out.println("common name finds: " + count);
+            System.out.println("common name duplicates: " + duplicates);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1727,6 +1770,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     if (sa[i].length() > 0) {
                         sa[i] = sa[i].replace("\"", "");
                         sa[i] = sa[i].replace(",", " ");
+                        sa[i] = sa[i].replace("|", "-");
                     }
                 }
 
@@ -1759,6 +1803,22 @@ public class OccurrencesIndex implements AnalysisIndexService {
                             return r1.nameLowerCase.compareTo(r2.nameLowerCase);
                         }
                     });
+
+
+            //common_names_all_matching_single_index
+            common_names_all_vs_single_index = new String[single_index.length];
+            for(i=0;i<common_names_all_vs_single_index.length;i++){
+                if(common_names_all_vs_single_index[i] == null){
+                    common_names_all_vs_single_index[i] = "";
+                }
+            }
+            for(i=0;i<common_names_indexed.length;i++){
+                if(common_names_all_vs_single_index[common_names_indexed[i].index].length() > 0){
+                    common_names_all_vs_single_index[common_names_indexed[i].index] += ", ";
+                }
+                common_names_all_vs_single_index[common_names_indexed[i].index] += common_names_indexed[i].name;
+            }
+
 
             System.out.println("common name index finds: " + count);
 
@@ -3006,6 +3066,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         for (int i = 0; i < bitset.size(); i++) {
             if (bitset.get(i)) {
+                //append family
                 if (species_to_family[i] >= 0) {
                     //sb.append(StringUtils.capitalize(
                     //      familyIdx[species_to_family[i]].name));
@@ -3035,8 +3096,12 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 } else {
                     sb.append("undefined");
                 }
+
+                //append delimeter
                 sb.append("*");
-                //sb.append(StringUtils.capitalize(species[i].name));
+
+
+                //append scientific name
                 lookfor.name = species[i].name;
 
                 int j = java.util.Arrays.binarySearch(single_index,
@@ -3049,22 +3114,28 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         });
 
                 if (j >= 0 && j < occurances_csv_field_pairs_FirstFromSingleIndex.length) {
-                    j = occurances_csv_field_pairs_FirstFromSingleIndex[j];
+                    int k = occurances_csv_field_pairs_FirstFromSingleIndex[j];
 
-                    if (j >= 0 && j < occurances_csv_field_pairs_Name.length) {
-                        sb.append(StringUtils.capitalize(occurances_csv_field_pairs_Name[j]));
+                    if (k >= 0 && k < occurances_csv_field_pairs_Name.length) {
+                        sb.append(StringUtils.capitalize(occurances_csv_field_pairs_Name[k]));
+
+                        sb.append("*"); //delimeter
+
+                        //append common names if present
+                        sb.append(common_names_all_vs_single_index[j]);
+
+                        sb.append("*"); //delimeter
+
+                        //taxon rank
+                        sb.append(getIndexType(single_index[j].type));
                     } else {
                         sb.append("undefined");
                     }
                 } else {
                     sb.append("undefined");
-                }
-                if (common_names[i].length() > 0) {
-                    sb.append("*");
-                    sb.append(common_names[i]);
-                }
+                }  
 
-                sb.append(",");
+                sb.append("|"); //next record delimeter
             }
         }
 

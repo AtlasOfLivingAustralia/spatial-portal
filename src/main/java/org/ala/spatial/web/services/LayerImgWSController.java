@@ -71,8 +71,9 @@ public class LayerImgWSController {
             String layerimage = outputpath + "img.png";            
             String layerlegend = outputpath + "legend.txt";
             String layerextents = outputpath + "extents.txt";
+            String layermetadata = outputpath + "metadata.html";
         
-            return layerimage + "\r\n" +  layerlegend + "\r\n" + layerextents;
+            return layerimage + "\n" +  layerlegend + "\n" + layerextents + "\n" + layermetadata;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

@@ -1,13 +1,24 @@
 
 <zk>
     <window id="win" apply="org.ala.spatial.web.zk.JobsZK"
-title="Jobs" width="100%" border="normal">
+title="Admin" width="100%" border="normal">
+    <tabbox width="100%">
+        <tabs>
+                    <tab label="Memory" />
+                    <tab label="Analysis Jobs" />
+                    <tab label="Other" />
+                </tabs>
+                <tabpanels>
+                    <tabpanel>
         <separator/>
         <hbox>
             <label id="lMemUsage" />
             <button label="cleanup memory usage" id="btnMemoryClean" />
         </hbox>
+        </tabpanel>
+        <tabpanel>
         <separator/>
+
         <button id="refreshButton" label="refresh lists" />
 
         <tabbox width="95%">
@@ -77,5 +88,13 @@ title="Jobs" width="100%" border="normal">
                 <textbox width="100%" id="newjob" height="100px" multiline="true" />
                 <button id="btnNewClassification" label="new Classification" />
             </vbox>
+            </tabpanel>
+            <tabpanel>
+                <label value="Number of cached species images: " /><label id="lCachedImageCount" value="" />
+                <button id="btnClearCache" label="clear" />
+            </tabpanel>
+            </tabpanels>
+            </tabbox>
+
     </window>
 </zk>

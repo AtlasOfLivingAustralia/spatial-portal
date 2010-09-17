@@ -66,9 +66,9 @@ public class AlocService {
 
             /* header */
             fw.append("group number");
-            fw.append("red");
-            fw.append("green");
-            fw.append("blue");
+            fw.append(",red");
+            fw.append(",green");
+            fw.append(",blue");
             for (i = 0; i < layers.length; i++) {
                 fw.append(",");
                 fw.append(layers[i].display_name);
@@ -77,7 +77,7 @@ public class AlocService {
 
             /* outputs */
             for (i = 0; i < means.length; i++) {
-                fw.append(String.valueOf(i));
+                fw.append(String.valueOf(i+1));
                 fw.append(",");
                 fw.append(String.valueOf(colours[i][0]));
                 fw.append(",");
@@ -92,6 +92,56 @@ public class AlocService {
 
                 fw.append("\r\n");
             }
+
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void exportMetadata(String filename, int numberOfGroups,  Layer[] layers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy) {
+        try {
+            FileWriter fw = new FileWriter(filename);
+            int i, j;
+
+            fw.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"> <html> <head> <meta http-equiv=\"Content-Type\" content=\"text/html; charset=MacRoman\"> <title>Layer information</title> <link rel=\"stylesheet\" href=\"/alaspatial/styles/style.css\" type=\"text/css\" media=\"all\" /> </head> ");
+            
+            fw.append("<body>");
+            fw.append("<h1>").append("Classification").append("</h1>");
+
+            fw.append("<p> <span class=\"title\">Reference number:</span> <br /> ");
+            fw.append(pid);
+            fw.append("</p>");
+
+            fw.append("<p> <span class=\"title\">Number of groups:</span> <br /> ");
+            fw.append(String.valueOf(numberOfGroups));
+            fw.append("</p>");
+
+            fw.append("<p> <span class=\"title\">Layers:</span> <br /> ");
+            for(i=0;i<layers.length;i++){
+                fw.append(layers[i].display_name);
+                if(i < layers.length-1){
+                    fw.append(", ");
+                }
+            }
+            fw.append("</p>");
+
+            fw.append("<p> <span class=\"title\">Extent:</span> <br /> ");
+            fw.append("width=").append(String.valueOf(width)).append("<br />");
+            fw.append("height=").append(String.valueOf(height)).append("<br />");
+            fw.append(String.valueOf(minx)).append(",").append(String.valueOf(miny)).append(";");
+            fw.append(String.valueOf(maxx)).append(",").append(String.valueOf(maxy));
+            fw.append("</p>");
+
+            fw.append("<p> <span class=\"title\">Area:</span> <br /> ");
+            fw.append(area);
+            fw.append("</p>");
+
+            fw.append("<p> <span class=\"title\">Initial group colours and means:</span> <br /> ");
+            fw.append("<a href=\"" + coloursAndMeansUrl + "\">(right click and save as csv)</a>");
+            fw.append("</p>");
+
+            fw.append("</body> </html> ");
 
             fw.close();
         } catch (Exception e) {
@@ -205,6 +255,7 @@ public class AlocService {
         width = (int) extents[0];
         height = (int) extents[1];
 
+
         /* run aloc
          * Note: requested number of groups may not always equal request
          */        
@@ -281,24 +332,39 @@ public class AlocService {
                     }
                 }
             }
-        }        
+        }
+
+        double [][] group_means_copy = new double[group_means.length][group_means[0].length];
         for (i = 0; i < group_means.length; i++) {
             for (j = 0; j < group_means[i].length; j++) {
                 if (group_counts[i][j] > 0) {
                     group_means[i][j] /= group_counts[i][j];
+                    group_means_copy[i][j] = group_means[i][j];
                 }
             }
         }
+
         if(job != null) job.log("determined group means");
 
         /* get RGB for colouring group means via PCA */
-        int[][] colours = Pca.getColours(group_means);
+        int[][] colours = Pca.getColours(group_means_copy);
         if(job != null) job.log("determined group colours");
 
 
         /* export means + colours */
         exportMeansColours(filename + ".csv", group_means, colours, layers);
         if(job != null) job.log("exported group means and colours");
+
+        /* export metadata html */        
+        String pth = "output" + File.separator + "aloc" + File.separator;
+        int pos = filename.indexOf(pth);
+        String f = filename.substring(pos + pth.length());
+        String urlpth = TabulationSettings.alaspatial_path + "output/aloc/" + f.replace("\\", "/");
+        exportMetadata(filename + ".html", numberOfGroups, layers,
+                (job != null)?job.getName() : "",
+                 urlpth + ".csv",
+                (job != null)?job.area : "",
+                width, height, extents[2], extents[3], extents[4], extents[5]);
 
         /* export geoserver sld file for legend */
         //exportSLD(filename + ".sld", group_means, colours, layers, id);
