@@ -105,7 +105,7 @@ function loadEnd() {
 }
 
 function toggleLoadingImage(display) {
-    var div = document.getElementById("loader");
+    /*var div = document.getElementById("loader");
     if (div != null) {
         if (display == "none") {
             jQuery("#loader").hide(2000);
@@ -117,7 +117,7 @@ function toggleLoadingImage(display) {
                 }
             }, 2000);
         }
-    }
+    }*/
 }
 
 function checkLibraryLoaded() {
@@ -801,8 +801,8 @@ function showInfo(curr) {
 
         var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
         " Scientific name: " + species + " <br />" +
-        " Family: " + family + " <br />" +
         " Kingdom: " + kingdom + " <br />" +
+        " Family: " + family + " <br />" +        
         " Occ-id: " + data.id + "</a> <br />" +
         " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
         " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +

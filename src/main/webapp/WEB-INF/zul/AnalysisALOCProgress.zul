@@ -15,7 +15,7 @@
             <separator />
             <hbox  visible="false"><label value="Reference number" /> <textbox readonly="true" id="tbPid" /> </hbox>
             <separator />
-            <button id="btnHide" label="continue" />
+            <button visible="false" id="btnHide" label="continue" />
             <button id="btnCancel" label="cancel" />
     </window>
 </zk>

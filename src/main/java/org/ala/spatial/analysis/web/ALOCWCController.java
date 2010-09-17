@@ -7,6 +7,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.UnsupportedEncodingException;
@@ -521,6 +522,12 @@ public class ALOCWCController extends UtilityComposer {
             System.out.println("legend:" + legendPath);
             mapLayer.addStyle(style);
             mapLayer.setSelectedStyleIndex(1);
+
+            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+            if(md == null){
+                md = new MapLayerMetadata();
+            }
+            md.setMoreInfo(satServer + "/alaspatial/output/layers/" + pid + "/metadata.html");            
         }
     }
 }
