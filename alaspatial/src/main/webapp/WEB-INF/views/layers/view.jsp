@@ -39,8 +39,23 @@
                 </p>
 
                 <p>
-                    <span class="title">Source:</span> <br />
+                    <span class="title">Metadata contact organization:</span> <br />
                     ${layer.source}
+                </p>
+
+                <p>
+                    <span class="title">Metadata date:</span> <br />
+                    ${layer.mddatest}
+                </p>
+
+                <p>
+                    <span class="title">Reference date:</span> <br />
+                    ${layer.citationdate}
+                </p>
+
+                <p>
+                    <span class="title">Resource constraints:</span> <br />
+                    ${layer.licencelevel}
                 </p>
 
                 <p>
@@ -57,22 +72,13 @@
                 </p>
 
                 <p>
-                    <span class="title">Metadata:</span> <br />
-                    ${layer.metadatapath}
+                    <span class="title">Notes:</span> <br />
+                    ${layer.notes}
                 </p>
 
-                <p>
-                    <span class="title">Extent:</span> <br />
-                    2. ${layer.minlongitude} ${layer.minlatitude}, ${layer.maxlongitude}, ${layer.maxlatitude}
-                </p>
-
-                <p>
-                    <span class="title">Display path:</span> <br />
-                    ${layer.displaypath}
-                </p>
             </c:when>
             <c:otherwise>
-                <div class="notavailable">Layer info not available</div>
+                <div class="notavailable">Layer information not available</div>
             </c:otherwise>
         </c:choose>
     </body>
