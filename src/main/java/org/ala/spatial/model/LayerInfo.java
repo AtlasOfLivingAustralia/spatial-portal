@@ -93,6 +93,30 @@ public class LayerInfo {
     @Column(name="classification2")
     private String classification2;
 
+    @Column(name="mddatest")
+    private String mddatest;
+
+    @Column(name="citation_date")
+    private String citationdate;
+
+    @Column(name="datalang")
+    private String datalang;
+
+    @Column(name="mdhrlv")
+    private String mdhrlv;
+
+    @Column(name="respparty_role")
+    private String resppartyrole;
+
+    @Column(name="licence_level")
+    private String licencelevel;
+
+    @Column(name="licence_link")
+    private String licence_link;
+
+    @Column(name="licence_notes")
+    private String licence_notes;
+
     public LayerInfo() {
     }
 
@@ -291,6 +315,70 @@ public class LayerInfo {
 
     public void setMetadatapath(String metadatapath) {
         this.metadatapath = metadatapath;
+    }
+
+    public String getCitationdate() {
+        return citationdate;
+    }
+
+    public void setCitationdate(String citationdate) {
+        this.citationdate = citationdate;
+    }
+
+    public String getDatalang() {
+        return datalang;
+    }
+
+    public void setDatalang(String datalang) {
+        this.datalang = datalang;
+    }
+
+    public String getLicence_link() {
+        return licence_link;
+    }
+
+    public void setLicence_link(String licence_link) {
+        this.licence_link = licence_link;
+    }
+
+    public String getLicence_notes() {
+        return licence_notes;
+    }
+
+    public void setLicence_notes(String licence_notes) {
+        this.licence_notes = licence_notes;
+    }
+
+    public String getLicencelevel() {
+        return licencelevel;
+    }
+
+    public void setLicencelevel(String licencelevel) {
+        this.licencelevel = licencelevel;
+    }
+
+    public String getMddatest() {
+        return mddatest;
+    }
+
+    public void setMddatest(String mddatest) {
+        this.mddatest = mddatest;
+    }
+
+    public String getMdhrlv() {
+        return mdhrlv;
+    }
+
+    public void setMdhrlv(String mdhrlv) {
+        this.mdhrlv = mdhrlv;
+    }
+
+    public String getResppartyrole() {
+        return resppartyrole;
+    }
+
+    public void setResppartyrole(String resppartyrole) {
+        this.resppartyrole = resppartyrole;
     }
 
 }
