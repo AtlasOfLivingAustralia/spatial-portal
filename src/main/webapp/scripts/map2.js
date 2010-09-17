@@ -792,7 +792,11 @@ function showInfo(curr) {
 
         var occurrencedate = occinfo.occurrenceDate;
         var uncertainty = occinfo.coordinatePrecision;
-        if(uncertainty == "" || uncertainty == undefined || uncertainty == null) uncertainty = "<b>Undefined!</b>";
+        var uncertaintyText = uncertainty + " meters"; 
+        if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
+            uncertaintyText = "<b>Undefined! setting to 10km</b>";
+            uncertainty = 10000;
+        }
         if (!occurrencedate) occurrencedate="";
 
         var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
@@ -802,7 +806,7 @@ function showInfo(curr) {
         " Occ-id: " + data.id + "</a> <br />" +
         " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
         " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
-        " Spatial uncertainty in meters: " + uncertainty + " (<a href='javascript:showPrecision(10000)'>view</a>)<br />" +
+        " Spatial uncertainty in meters: " + uncertaintyText + " (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)<br />" +
         " Occurrence date: " + occurrencedate + " <br />" +
         "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
         "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
