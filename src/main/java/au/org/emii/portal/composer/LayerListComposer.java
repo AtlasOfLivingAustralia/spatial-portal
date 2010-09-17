@@ -214,10 +214,10 @@ public class LayerListComposer extends UtilityComposer {
 
     private void addToMap2(TreeMap htCat1, TreeMap htCat2, String cat1, String cat2, SimpleTreeNode treeNode) {
 
-        if (cat1.trim().equals("") || cat1.trim().equals("?")) {
+        if (cat1.trim().equals("") || cat1.trim().equals("?") || cat1.trim().equals("null")) {
             cat1 = "Other";
         }
-        if (cat2.trim().equals("") || cat2.trim().equals("?")) {
+        if (cat2.trim().equals("") || cat2.trim().equals("?") || cat2.trim().equals("null")) {
             //cat2 = "Other";
             System.out.println("Adding layer to cat1.other as cat2=" + cat2);
             ArrayList alCat1 = (ArrayList) htCat1.get(cat1);
