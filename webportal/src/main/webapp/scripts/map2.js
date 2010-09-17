@@ -804,7 +804,7 @@ function showInfo(curr) {
         " Family: " + family + " <br />" +
         " Kingdom: " + kingdom + " <br />" +
         " Occ-id: " + data.id + "</a> <br />" +
-        " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
+        " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
         " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
         " Spatial uncertainty in meters: " + uncertaintyText + " (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)<br />" +
         " Occurrence date: " + occurrencedate + " <br />" +
@@ -873,7 +873,7 @@ function selected (evt) {
                 " Scientific name: " + species + "</a> <br />" +
                 " Kingdom: <a href='http://bie.ala.org.au/species/" + attrs["ki"] + "' target='_blank'>" + attrs["k"] + "</a> <br />" +
                 " Family: <a href='http://bie.ala.org.au/species/" + attrs["fi"] + "' target='_blank'>" + attrs["f"] + "</a> <br />" +                
-                " Data provider: <a href='http://biocache.ala.org.au/data_provider/" + attrs["pi"] + "' target='_blank'>" + attrs["p"] + "</a> <br />" +
+                " Data provider: <a href='http://collections.ala.org.au/public/show/" + attrs["pi"] + "' target='_blank'>" + attrs["p"] + "</a> <br />" +
                 " Longitude: "+attrs['lo'] + " , Latitude: " + attrs['la'] + " <br/>" +
                 " Uncertainty in meters: " + uncertainty + " <br />" +
                 " Occurrence date: " + occurrencedate + " <br />" +
