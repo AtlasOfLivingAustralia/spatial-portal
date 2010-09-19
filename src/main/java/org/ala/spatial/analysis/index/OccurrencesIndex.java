@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -312,6 +313,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         exportFieldIndexes();
 
         makeSortedLineStarts();
+        loadClusterRecords();
     }
     TreeMap<String, Integer>[] columnKeys;
     int[] columnKeysToOccurrencesOrder;
@@ -1525,6 +1527,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         loadIdLookup();
 
+        loadClusterRecords();
+
         System.out.println("INDEXES LOADED");
 
     }
@@ -1678,9 +1682,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                 /* test for uniqueness */
                 int sz = unique.size();
-                if(sa[0].equals("urn:lsid:biodiversity.org.au:afd.taxon:5a447b32-6584-4624-8249-1c0df32ff802")){
-                    int q = 1;
-                }
                 unique.add(sa[0] + sa[1].toLowerCase().trim());
                 if(sz == unique.size()){
                     duplicates++;
@@ -1691,7 +1692,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 for (i = 0; i < sa.length; i++) {
                     if (sa[i].length() > 0) {
                         sa[i] = sa[i].replace("\"", "");
-                        sa[i] = sa[i].replace(",", " ");
+                        sa[i] = sa[i].replace(",", ";");
+                        sa[i] = sa[i].replace("/",";");
+                        sa[i] = sa[i].replace("|", "-");
                     }
                 }
 
@@ -1769,8 +1772,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 for (i = 0; i < sa.length; i++) {
                     if (sa[i].length() > 0) {
                         sa[i] = sa[i].replace("\"", "");
-                        sa[i] = sa[i].replace(",", " ");
+                        sa[i] = sa[i].replace(",", ";");
                         sa[i] = sa[i].replace("|", "-");
+                        sa[i] = sa[i].replace("/", ";");
                     }
                 }
 
@@ -2849,9 +2853,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         //makeSortedLineStarts();
 
+        loadClusterRecords();
 
-        OccurrencesIndex oi = new OccurrencesIndex();
-        oi.exportFieldIndexes();
+        //OccurrencesIndex oi = new OccurrencesIndex();
+        //oi.exportFieldIndexes();
         //       oi.occurancesUpdate();
 
         int[] list = OccurrencesIndex.lookup(0, "143");
@@ -3140,6 +3145,317 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
 
         return sb.toString();
+    }
+    
+    /*static Record[] cluster_records = null;
+    static void loadClusterRecords(){
+        if(cluster_records != null){
+            return;
+        }
+        loadIndexes();
+        getPointsPairs();
+
+        //check for existing file, load if it exists
+        try{
+            File f = new File(TabulationSettings.index_path
+                    + "CLUSTER_RECORDS.dat");
+            if(f.exists()){
+                FileInputStream fis = new FileInputStream(
+                    TabulationSettings.index_path
+                    + "CLUSTER_RECORDS.dat");
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                ObjectInputStream ois = new ObjectInputStream(bis);
+                cluster_records = (Record[]) ois.readObject();
+                ois.close();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        int sciname_pos = -1;
+        int prec_pos = -1;
+        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+            if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
+                sciname_pos = i;
+            }
+            if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("u")) {
+                prec_pos = i;
+            }
+        }
+
+        cluster_records = new Record[all_points.length];
+
+
+        System.out.println("Cluster records not built, building now");
+        
+        try {
+            BufferedReader br = new BufferedReader(
+                    new FileReader(
+                    TabulationSettings.index_path
+                    + SORTED_FILENAME));
+            String s;
+            String[] sa;
+
+            int recordpos = 0;
+
+            while ((s = br.readLine()) != null) {
+                if(recordpos % 100000 == 0){
+                    System.out.println("progress: " + recordpos);
+                }
+                sa = s.split(",");
+
+                if (sa[TabulationSettings.geojson_id] != null) {
+                    if (!sa[TabulationSettings.geojson_id].toLowerCase().equals("null")) {
+                        cluster_records[recordpos] =
+                            new Record(sa[TabulationSettings.geojson_id],
+                            sa[TabulationSettings.geojson_property_fields[sciname_pos]],
+                            Double.parseDouble(sa[TabulationSettings.geojson_longitude]),
+                            Double.parseDouble(sa[TabulationSettings.geojson_latitude]),
+                            sa[TabulationSettings.geojson_property_fields[prec_pos]]);
+
+                    }else {
+                        cluster_records[recordpos] = null;
+                    }
+                }
+
+                recordpos++;
+            }
+
+            br.close();
+        } catch (Exception e) {
+            (new SpatialLogger()).log("cluster records, build", e.toString());
+            e.printStackTrace();
+        }
+
+        //export cluster records
+        try{
+            FileOutputStream fos = new FileOutputStream(
+                TabulationSettings.index_path
+                + "CLUSTER_RECORDS.dat");
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(cluster_records);
+            oos.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    public static Vector sampleSpeciesForClustering(String species, SimpleRegion region, int max_records){
+        Vector records = new Vector();
+
+        if(species != null){
+            IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(species);
+            if(ir == null || ir.length == 0){
+                return null;
+            }
+            int count = ir[0].record_end - ir[0].record_start + 1;
+            if(max_records < count) count = max_records;
+            int end = count + ir[0].record_start;
+            if(region == null){
+                for(int i=ir[0].record_start;i<=end;i++){
+                    records.add(cluster_records[i]);
+                }
+            }else{
+                for(int i=ir[0].record_start;i<=end;i++){
+                    if(region.isWithin(all_points[i][0],all_points[i][1])){
+                        records.add(cluster_records[i]);
+                    }
+                }
+            }
+        }else if(region != null) {
+            int [] r = getRecordsInside(region);
+
+            int count = r.length;
+            if(max_records < count) count = max_records;
+
+            for(int i=0;i<count;i++){
+                records.add(cluster_records[r[i]]);
+            }
+        }
+        
+        return records;
+    }*/
+
+    static String[][] cluster_records = null;
+    static void loadClusterRecords(){
+        if(cluster_records != null){
+            return;
+        }
+        loadIndexes();
+        getPointsPairs();
+
+        //check for existing file, load if it exists
+        try{
+            File f = new File(TabulationSettings.index_path
+                    + "CLUSTER_RECORDS.dat");
+            if(f.exists()){
+/*                FileInputStream fis = new FileInputStream(
+                    TabulationSettings.index_path
+                    + "CLUSTER_RECORDS.dat");
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                ObjectInputStream ois = new ObjectInputStream(bis);
+                cluster_records = (String[][]) ois.readObject();
+                ois.close();*/
+            
+                cluster_records = new String[all_points.length][2];
+
+                BufferedReader br = new BufferedReader(
+                        new FileReader(
+                        TabulationSettings.index_path
+                        + "CLUSTER_RECORDS.dat"));
+                String s;
+
+                int pos = 0;
+                while ((s = br.readLine()) != null) {
+                    cluster_records[pos][0] = s;
+                    cluster_records[pos][1] = br.readLine();
+                    pos++;
+                }
+                
+                return;
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        int sciname_pos = -1;
+        int prec_pos = -1;
+        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+            if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
+                sciname_pos = i;
+            }
+            if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("u")) {
+                prec_pos = i;
+            }
+        }
+
+        cluster_records = new String[all_points.length][2];
+
+        System.out.println("Cluster records not built, building now");
+
+        try {
+            BufferedReader br = new BufferedReader(
+                    new FileReader(
+                    TabulationSettings.index_path
+                    + SORTED_FILENAME));
+            String s;
+            String[] sa;
+
+            int recordpos = 0;
+
+            FileWriter fw = new FileWriter(TabulationSettings.index_path
+                + "CLUSTER_RECORDS.dat");
+
+            while ((s = br.readLine()) != null) {
+                if(recordpos % 100000 == 0){
+                    System.out.println("progress: " + recordpos);
+                    if(recordpos % 2000000 == 0){
+                        System.gc();
+                    }
+                }
+                sa = s.split(",");
+
+                if (sa[TabulationSettings.geojson_id] != null) {
+                    if (!sa[TabulationSettings.geojson_id].toLowerCase().equals("null")) {
+                        fw.append(sa[TabulationSettings.geojson_id]);
+                        fw.append("\n");
+                        if(!(sa[TabulationSettings.geojson_property_fields[prec_pos]] == null)){
+                            fw.append(sa[TabulationSettings.geojson_property_fields[prec_pos]]);
+                        }
+                        fw.append("\n");                        
+
+                        //cluster_records[recordpos][0] = sa[TabulationSettings.geojson_property_fields[sciname_pos]];
+                        //cluster_records[recordpos][1] = sa[TabulationSettings.geojson_property_fields[prec_pos]];
+                    }else {
+                        //cluster_records[recordpos][0] = null;
+                    }
+                }
+
+                recordpos++;
+            }
+
+            fw.close();
+
+            br.close();
+        } catch (Exception e) {
+            (new SpatialLogger()).log("cluster records, build", e.toString());
+            e.printStackTrace();
+        }
+/*
+        //export cluster records
+        try{
+            FileOutputStream fos = new FileOutputStream(
+                TabulationSettings.index_path
+                + "CLUSTER_RECORDS.dat");
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(cluster_records);
+            oos.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }*/
+    }
+
+    public static Vector sampleSpeciesForClustering(String species, SimpleRegion region, int max_records){
+        Vector records = new Vector();
+
+        if(species != null){
+            IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(species);
+            if(ir == null || ir.length == 0){
+                return null;
+            }
+            int count = ir[0].record_end - ir[0].record_start + 1;
+            if(max_records < count) count = max_records;
+            int end = count + ir[0].record_start;
+            if(region == null){
+                for(int i=ir[0].record_start;i<=end;i++){
+                    if(speciesNumberInRecordsOrder[i] >= 0){
+                        records.add(
+                                new Record(                            
+                            cluster_records[i][0],
+                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                            all_points[i][0],
+                            all_points[i][1],
+                            cluster_records[i][1]));
+                    }
+                }
+            }else{
+                for(int i=ir[0].record_start;i<=end;i++){
+                    if(region.isWithin(all_points[i][0],all_points[i][1])
+                            && speciesNumberInRecordsOrder[i] >= 0){
+                        records.add(
+                                new Record(
+                            cluster_records[i][0],
+                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                            all_points[i][0],
+                            all_points[i][1],
+                            cluster_records[i][1]));
+                    }
+                }
+            }
+        }else if(region != null) {
+            int [] r = getRecordsInside(region);
+
+            int count = r.length;
+            if(max_records < count) count = max_records;
+
+            for(int j=0;j<count;j++){
+                int i = r[j];
+                if(speciesNumberInRecordsOrder[i] >= 0){
+                        records.add(
+                                new Record(
+                            cluster_records[i][0],
+                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                            all_points[i][0],
+                            all_points[i][1],
+                            cluster_records[i][1]));
+                    }
+            }
+        }
+
+        return records;
     }
 }
 

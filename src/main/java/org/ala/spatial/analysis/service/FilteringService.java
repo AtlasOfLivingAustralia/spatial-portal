@@ -10,8 +10,10 @@ import java.io.FileWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Date;
 
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
@@ -361,7 +363,7 @@ public class FilteringService implements Serializable {
      * gets samples records from a session and filtered region
      * @param session_id_ session id as String
      * @param region filtered region as SimpleRegion or null for none
-     * @return Samples records as String
+     * @return Samples records in a csv in the filename returned as String
      */
     static public String getSamplesList(String session_id_, SimpleRegion region) {
         int[] records;
@@ -423,7 +425,10 @@ public class FilteringService implements Serializable {
 
         /* write samples to a file */
         try {
-            File temporary_file = java.io.File.createTempFile("filter_sample", ".csv");
+            SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+            String sdate = date.format(new Date());
+
+            File temporary_file = java.io.File.createTempFile("Sample_" + sdate + "_", ".csv");
             FileWriter fw = new FileWriter(temporary_file);
 
             /* output header */
@@ -454,6 +459,82 @@ public class FilteringService implements Serializable {
         }
 
         return ""; //failed
+    }
+
+    /**
+     * gets samples records from a session and filtered region
+     * @param session_id_ session id as String
+     * @param region filtered region as SimpleRegion or null for none
+     * @return Samples records in a csv in the filename returned as String
+     */
+    static public String[][] getSamplesCells(String session_id_, SimpleRegion region) {
+        int[] records;
+        int i;
+
+        /* check for "none" session */
+        if (session_id_.equals("none")) {
+            /* TODO: fix this up when no longer using ArrayList
+            in getSpeciesBitset */
+            records = OccurrencesIndex.getRecordsInside(region);
+            System.out.println("region:" + records);
+
+        } else {
+            /* load session */
+            FilteringService fs = FilteringService.getSession(session_id_);
+
+            /* get top speciesrecord */
+            ArrayList<Integer> rk = fs.getTopSpeciesRecord();
+
+            /* get record indexes */
+            if (rk.size() == 0) {
+                return null;	//no records to return;
+            }
+            records = new int[rk.size()];
+            int p = 0;
+
+            if (region == null) {
+                /* no defined region, use all */
+                for (i = 0; i < rk.size(); i++) {
+                    records[p++] = rk.get(i);
+                }
+            } else {
+                /* restrict by region */
+
+                /* TODO: check, could be faster to use
+                 * OccurrencesIndex.getRecordsInside(region)
+                 */
+                for (i = 0; i < rk.size(); i++) {
+                    if (OccurrencesIndex.inRegion(rk.get(i), region)) {
+                        records[p++] = rk.get(i);
+                    }
+                }
+                if (p > 0) {
+                    int[] records_tmp = java.util.Arrays.copyOf(records, p);
+                    records = records_tmp;
+                } else {
+                    return null;	//no records to return
+                }
+            }
+        }
+
+        //test for no records
+        if (records == null || records.length == 0) {
+            return null;
+        }
+
+        /* get samples records from records indexes */
+        String[] samples = OccurrencesIndex.getSortedRecords(records);
+
+        int nCols = samples[0].split(",").length;
+        String[][] output = new String[samples.length][nCols];
+        for(i=0;i<samples.length;i++){
+            int j = 0;
+            for(String s : samples[i].split(",")){
+                output[i][j++] = s;
+            }
+        }
+
+        return output;
     }
 
     public static String getSamplesListAsGeoJSON(String session_id_, SimpleRegion region, File outputpath) {
@@ -538,7 +619,10 @@ public class FilteringService implements Serializable {
 
         /* write samples to a file */
         try {
-            File temporary_file = java.io.File.createTempFile("filter_sample", ".csv", outputpath);
+            SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+            String sdate = date.format(new Date());
+
+            File temporary_file = java.io.File.createTempFile("Sample_" + sdate + "_", ".csv", outputpath);
             FileWriter fw = new FileWriter(temporary_file);
 
             fw.write(sbGeoJSON.toString());
