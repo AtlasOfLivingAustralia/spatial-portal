@@ -11,8 +11,6 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ala.spatial.util.LayersUtil;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -28,8 +26,6 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Listbox;
@@ -40,9 +36,7 @@ import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Intbox;
-import org.zkoss.zul.Popup;
 import org.zkoss.zul.Tabbox;
-import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Window;
 
 /**
@@ -52,7 +46,7 @@ import org.zkoss.zul.Window;
 public class ALOCWCController extends UtilityComposer {
 
     private static final String SAT_URL = "sat_url";
-    private Listbox lbenvlayers;
+    //private Listbox lbenvlayers;
     private Combobox cbEnvLayers;
     private Intbox groupCount;
     Tabbox tabboxclassification;
@@ -74,6 +68,8 @@ public class ALOCWCController extends UtilityComposer {
     private Checkbox chkAutoPreview; 
     private List<JSONObject> selectedLayers2;
 
+    EnvironmentalList lbListLayers;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -85,16 +81,18 @@ public class ALOCWCController extends UtilityComposer {
 
         layersUtil = new LayersUtil(mc, satServer);
 
-        setupEnvironmentalLayers();
+        //setupEnvironmentalLayers();
 
         selectedLayers = new Vector<String>();
         selectedLayers2 = new Vector<JSONObject>();
+
+        lbListLayers.init(mc, satServer);
     }
 
     /**
      * Iterate thru' the layer list setup in the @doAfterCompose method
      * and setup the listbox
-     */
+     *
     private void setupEnvironmentalLayers() {
         try {
             String[] aslist = layersUtil.getEnvironmentalLayers();
@@ -117,7 +115,7 @@ public class ALOCWCController extends UtilityComposer {
             System.out.println("error setting up env list");
             e.printStackTrace(System.out);
         }
-    }
+    }*/
 
     public void onChange$cbEnvLayers(Event event) {
         String new_value = "";
@@ -264,8 +262,8 @@ public class ALOCWCController extends UtilityComposer {
         try {
             StringBuffer sbenvsel = new StringBuffer();
 
-            if (lbenvlayers.getSelectedCount() > 1) {
-                Iterator it = lbenvlayers.getSelectedItems().iterator();
+            if (lbListLayers.getSelectedCount() > 1) {
+                Iterator it = lbListLayers.getSelectedItems().iterator();
                 int i = 0;
                 while (it.hasNext()) {
                     Listitem li = (Listitem) it.next();
@@ -403,11 +401,11 @@ public class ALOCWCController extends UtilityComposer {
 
         /* set as selected each envctx layer found */
         if (layers != null) {
-            List<Listitem> lis = lbenvlayers.getItems();
+            List<Listitem> lis = lbListLayers.getItems();
             for (int i = 0; i < lis.size(); i++) {
                 for (int j = 0; j < layers.length; j++) {
                     if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-                        lbenvlayers.addItemToSelection(lis.get(i));
+                        lbListLayers.addItemToSelection(lis.get(i));
                         break;
                     }
                 }
@@ -527,7 +525,7 @@ public class ALOCWCController extends UtilityComposer {
             if(md == null){
                 md = new MapLayerMetadata();
             }
-            md.setMoreInfo(satServer + "/alaspatial/output/layers/" + pid + "/metadata.html");            
+            md.setMoreInfo(satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output");
         }
     }
 }
