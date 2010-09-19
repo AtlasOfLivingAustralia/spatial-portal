@@ -60,7 +60,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
         //TODO: remove rough estimate
         if (region != null) {
             cells = (int) Math.ceil(region.getWidth() / TabulationSettings.grd_xdiv
-                    + region.getHeight() / TabulationSettings.grd_ydiv);
+                    * region.getHeight() / TabulationSettings.grd_ydiv);
         } else {
             cells = 1000000; //or something
         }

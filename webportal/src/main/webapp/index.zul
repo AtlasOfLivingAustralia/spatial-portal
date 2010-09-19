@@ -356,7 +356,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 </div>
             </north>
             <west 	style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
-                   id="menus" collapsible="true"
+                   id="menus" collapsible="true" 
                    splittable="true" minsize="250">
                 <div id="westChild">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >

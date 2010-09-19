@@ -99,7 +99,7 @@ public class LayerListComposer extends UtilityComposer {
             int result = client.executeMethod(get);
             String llist = get.getResponseBodyAsString();
 
-            System.out.println(llist);
+         //   System.out.println(llist);
 
             //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
 
@@ -113,7 +113,7 @@ public class LayerListComposer extends UtilityComposer {
 
             TreeMap htCat1 = new TreeMap();
             TreeMap htCat2 = new TreeMap();
-            System.out.println("LAYERLIST>>>>>>>>>>" + (String) llist);
+            //System.out.println("LAYERLIST>>>>>>>>>>" + (String) llist);
 
             JSONArray layerlist = JSONArray.fromObject(llist);
             for (int i = 0; i < layerlist.size(); i++) {
@@ -123,7 +123,7 @@ public class LayerListComposer extends UtilityComposer {
                     continue;
                 }
 
-                System.out.println("TYPE:"+jo.getString("type"));
+                //System.out.println("TYPE:"+jo.getString("type"));
 
                 List classNodes = new ArrayList();
                 if (jo.getString("type").equalsIgnoreCase("Contextual")) {
@@ -140,8 +140,8 @@ public class LayerListComposer extends UtilityComposer {
 
             }
 
-            System.out.println("ht1.size: " + htCat1.size());
-            System.out.println("ht2.size: " + htCat2.size());
+            //System.out.println("ht1.size: " + htCat1.size());
+            //System.out.println("ht2.size: " + htCat2.size());
 
             Iterator it1 = htCat1.keySet().iterator();
             while (it1.hasNext()) {
@@ -178,7 +178,7 @@ public class LayerListComposer extends UtilityComposer {
             String classes = get.getResponseBodyAsString();
 
             //JSONObject joClasses = JSONObject.fromObject(classes);
-            System.out.println("CLASSES JSON:" + classes);
+           // System.out.println("CLASSES JSON:" + classes);
             classes = classes.replace("\"","").replace("{","").replace("}", "");
 
             String classAttribute = classes.split(":")[0];
@@ -187,7 +187,7 @@ public class LayerListComposer extends UtilityComposer {
            // classList = Arrays.asList((jo.getString(classAttribute)).split(","));
             
             for (String classVal : classList) {
-                        System.out.println("CLASS:"+(String)classVal);
+                   //     System.out.println("CLASS:"+(String)classVal);
                         if (!classVal.contentEquals("none")) {
                             String info = "{displayname:'"
                                      + classVal
@@ -200,7 +200,7 @@ public class LayerListComposer extends UtilityComposer {
                                      + "',layername:'"
                                      + layerDisplayName
                                      + "'}";
-                            System.out.println(info);
+                 //           System.out.println(info);
                             JSONObject joClass = JSONObject.fromObject(info);
                             classNodes.add(new SimpleTreeNode(joClass,empty));
                         }
@@ -219,7 +219,7 @@ public class LayerListComposer extends UtilityComposer {
         }
         if (cat2.trim().equals("") || cat2.trim().equals("?") || cat2.trim().equals("null")) {
             //cat2 = "Other";
-            System.out.println("Adding layer to cat1.other as cat2=" + cat2);
+            //System.out.println("Adding layer to cat1.other as cat2=" + cat2);
             ArrayList alCat1 = (ArrayList) htCat1.get(cat1);
             if (alCat1 == null) {
                 alCat1 = new ArrayList();
@@ -238,7 +238,7 @@ public class LayerListComposer extends UtilityComposer {
             if (alCat2 == null) {
                 alCat2 = new ArrayList();
             }
-            System.out.println("add new stn to: " + cat1 + " > " + cat2);
+            //System.out.println("add new stn to: " + cat1 + " > " + cat2);
             alCat2.add(treeNode);
             if (!htCat2.containsKey(cat2_full)) {
                 htCat2.put(cat2_full, alCat2);
@@ -248,26 +248,26 @@ public class LayerListComposer extends UtilityComposer {
             if (alCat1 == null) {
                 alCat1 = new ArrayList();
             }
-            System.out.println("\tAdding new cat2");
+            //System.out.println("\tAdding new cat2");
             JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2_full + "',type:'node'}");
             SimpleTreeNode stnCat2 = new SimpleTreeNode(joCat2, alCat2);
-            System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
-            System.out.println("\t=======================" + stnCat2);
+            //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
+            //System.out.println("\t=======================" + stnCat2);
             boolean found = false;
             for (int i=0; i<alCat1.size(); i++) {
-                System.out.print("\t\t " + alCat1.get(i));
+               // System.out.print("\t\t " + alCat1.get(i));
                 if (stnCat2.toString().equals(alCat1.get(i).toString())) {
-                    System.out.println(": found");
+              //      System.out.println(": found");
                     found = true;
                     break;
                 } else {
-                    System.out.println(": not this");
+              //      System.out.println(": not this");
                 }
             }
             if (!found) {
                 alCat1.add(stnCat2);
             } 
-            System.out.println("\t=======================");
+            //System.out.println("\t=======================");
             
             if (!htCat1.containsKey(cat1)) {
                 htCat1.put(cat1, alCat1);
@@ -345,7 +345,7 @@ public class LayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
                             if (!joLayer.getString("type").contentEquals("class")) {
-                            System.out.println("Loading layer: " + joLayer.getString("displayname") + " from " + joLayer.getString("displaypath"));
+                //            System.out.println("Loading layer: " + joLayer.getString("displayname") + " from " + joLayer.getString("displaypath"));
 
 //                            String metadata = joLayer.getString("metadatapath");
 //                            if (metadata.equals("")) {

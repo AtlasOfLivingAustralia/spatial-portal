@@ -259,7 +259,7 @@ public class SamplingService {
         }
         /* tidy up header */
         output.deleteCharAt(output.length() - 1); //take off end ','
-        output.append("\r\n");
+        //output.append("\r\n");
 
         IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
 

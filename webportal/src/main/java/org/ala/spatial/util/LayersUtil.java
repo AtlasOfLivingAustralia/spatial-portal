@@ -17,6 +17,8 @@ import org.apache.commons.lang.StringUtils;
  * - species names
  * - environmental layer names
  * - contextual layer names
+ *
+ * can maintain minimum distance between selected and remaining layers.
  * 
  * used to autocomplete layer entries
  * 

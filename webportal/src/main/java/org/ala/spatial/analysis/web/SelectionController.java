@@ -138,15 +138,7 @@ public class SelectionController extends UtilityComposer {
         }
 
         //default to: current view to be dynamically returned on usage
-        BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
-
-        String wkt = "POLYGON(("
-                + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
-                + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
-                + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
-                + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
-                + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
-        return wkt;
+        return getMapComposer().getViewArea();
 
     }
 

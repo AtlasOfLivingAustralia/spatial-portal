@@ -2,6 +2,8 @@ package org.ala.spatial.web.services;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -390,10 +392,12 @@ public class FilteringWSController {
             String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
-            String outfile = fDir.getAbsolutePath() + File.separator + "filter_samples_" + currTime + ".zip";
+            SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+            String sdate = date.format(new Date());
+            String outfile = fDir.getAbsolutePath() + File.separator + "Sample_" + sdate + "_" + currTime + ".zip";
             Zipper.zipFiles(files, outfile);
 
-            return "output/filtering/filter_samples_" + currTime + ".zip";
+            return "output/filtering/" + "Sample_" + sdate + "_" + currTime + ".zip";
 
         } catch (Exception e) {
             e.printStackTrace(System.out);

@@ -36,6 +36,7 @@ import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.util.SessionPrint;
+import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
@@ -1413,7 +1414,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     if (mapLayer.getMapLayerMetadata() == null) {
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                     }
-                    mapLayer.getMapLayerMetadata().setMoreInfo(metadata);
+                    mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);
                     addUserDefinedLayerToMenu(mapLayer, true);
                     addedOk = true;
                 }
@@ -3359,7 +3360,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 md = new MapLayerMetadata();
                 ml.setMapLayerMetadata(md);
             }
-            md.setMoreInfo(infoUrl);
+            md.setMoreInfo(infoUrl + "\n" + species);
 
             /*
             if (StringUtils.isNotBlank(slist) && !slist.equalsIgnoreCase("[]")) {
@@ -3741,15 +3742,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         + "', '_blank');");*/
         //Executions.getCurrent().sendRedirect((String)event.getData(), "_blank");
 
+        /*
         Window w = new Window("Metadata", "normal", false);
         w.setWidth("80%");
         w.setClosable(true);
-        /*
-        Link url = new Link();
-        url.setUri((String)event.getData());
-        url.setName("link to metadata");
-        url.setParent(w);*/
-
+        
         Iframe iframe = new Iframe();
         iframe.setWidth("95%");
         iframe.setHeight("90%");
@@ -3762,7 +3759,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             w.doModal();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
+        String s = (String) event.getData();
+        int separator = s.lastIndexOf("\n");
+        String url = (separator>0)?s.substring(0,separator).trim() : s;
+        String header =  (separator>0)?s.substring(separator).trim() : "";
+        activateLink(url, header, false);
+    }
+
+    public String getViewArea() {
+        //default to: current view to be dynamically returned on usage
+        BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
+
+        String wkt = "POLYGON(("
+                + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
+                + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
+                + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
+                + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
+                + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
+
+        return wkt;
     }
 }

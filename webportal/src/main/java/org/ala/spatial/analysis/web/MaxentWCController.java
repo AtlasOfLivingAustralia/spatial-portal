@@ -48,7 +48,8 @@ public class MaxentWCController extends UtilityComposer {
     private Label infourl;
     private Button btnInfo;
     private Textbox tbenvfilter;
-    private Listbox lbenvlayers;
+    //private Listbox lbenvlayers;
+    EnvironmentalList lbListLayers;
     private Checkbox chkJackknife;
     private Checkbox chkRCurves;
     private Textbox txtTestPercentage;
@@ -90,7 +91,9 @@ public class MaxentWCController extends UtilityComposer {
 
             layersUtil = new LayersUtil(mc, satServer);
 
-            setupEnvironmentalLayers();
+            //setupEnvironmentalLayers();
+            lbListLayers.init(mc, satServer);
+
         } catch (Exception e) {
             System.out.println("opps in after compose");
         }
@@ -100,7 +103,7 @@ public class MaxentWCController extends UtilityComposer {
     /**
      * Iterate thru' the layer list setup in the @doAfterCompose method
      * and setup the listbox
-     */
+     *
     private void setupEnvironmentalLayers() {
         try {
             String[] aslist = layersUtil.getEnvironmentalLayers();
@@ -123,7 +126,7 @@ public class MaxentWCController extends UtilityComposer {
             System.out.println("error setting up env list");
             e.printStackTrace(System.out);
         }
-    }
+    }*/
 /*
     public void onCheck$rdoCommonSearch() {
         sac.setSearchCommon(true);
@@ -221,7 +224,7 @@ public class MaxentWCController extends UtilityComposer {
                 return;
             }
 
-            if (lbenvlayers.getSelectedCount() <= 0) {
+            if (lbListLayers.getSelectedCount() <= 0) {
                 Messagebox.show("Please select one or more layers in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 //highlight step 2
                 tabboxmaxent.setSelectedIndex(1);
@@ -235,10 +238,10 @@ public class MaxentWCController extends UtilityComposer {
             status.setValue("Status: Running Maxent, please wait... ");
             btnInfo.setVisible(false);
 
-            if (lbenvlayers.getSelectedCount() > 0) {
-                envsel = new String[lbenvlayers.getSelectedCount()];
-                msg = "Selected " + lbenvlayers.getSelectedCount() + " items \n ";
-                Iterator it = lbenvlayers.getSelectedItems().iterator();
+            if (lbListLayers.getSelectedCount() > 0) {
+                envsel = new String[lbListLayers.getSelectedCount()];
+                msg = "Selected " + lbListLayers.getSelectedCount() + " items \n ";
+                Iterator it = lbListLayers.getSelectedItems().iterator();
                 int i = 0;
                 while (it.hasNext()) {
                     Listitem li = (Listitem) it.next();
@@ -415,7 +418,7 @@ public class MaxentWCController extends UtilityComposer {
             md = new MapLayerMetadata();
             ml.setMapLayerMetadata(md);
         }
-        md.setMoreInfo(infoUrl);
+        md.setMoreInfo(infoUrl + "\nMaxent Output");
 
         getMapComposer().showMessage("Reference number to retrieve results: " + pid);
 
@@ -439,7 +442,7 @@ public class MaxentWCController extends UtilityComposer {
     private void showInfoWindow(String url) {
         String infoUrl = satServer + "/alaspatial" + url;
 
-        Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
+        Events.echoEvent("openUrl", this.getMapComposer(), infoUrl + "\nMaxent output");
 
         //Executions.getCurrent().sendRedirect(infoUrl, "_blank");
 
@@ -637,11 +640,11 @@ public class MaxentWCController extends UtilityComposer {
 
         /* set as selected each envctx layer found */
         if (layers != null) {
-            List<Listitem> lis = lbenvlayers.getItems();
+            List<Listitem> lis = lbListLayers.getItems();
             for (int i = 0; i < lis.size(); i++) {
                 for (int j = 0; j < layers.length; j++) {
                     if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-                        lbenvlayers.addItemToSelection(lis.get(i));
+                        lbListLayers.addItemToSelection(lis.get(i));
                         break;
                     }
                 }

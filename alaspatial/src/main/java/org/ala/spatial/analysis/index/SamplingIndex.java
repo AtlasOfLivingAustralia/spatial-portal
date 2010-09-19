@@ -408,13 +408,16 @@ public class SamplingIndex implements AnalysisIndexService {
                 }
                 raf.close();
             } else if ((new File(filenameI)).exists()) {
+                String[] lookup_values = SamplingIndex.getLayerCatagories(
+                    Layers.getLayer(layer_name));
+
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
                 for (int k = 0; k < records.length; k++) {
-                    raf.seek(records[k]);
+                    raf.seek(records[k] * 2);
                     short v = raf.readShort();
-                    if (v >= 0) {
-                        output.add(String.valueOf(v));
+                    if (v >= 0 && v < lookup_values.length) {
+                        output.add(lookup_values[v]);
                     } else {
                         output.add("");
                     }

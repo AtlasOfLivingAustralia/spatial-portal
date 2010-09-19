@@ -7,7 +7,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -20,11 +19,9 @@ import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
-import org.zkoss.zul.Popup;
 import org.zkoss.zul.ListModelArray;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Tabbox;
-import org.zkoss.zul.Textbox;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Row;
@@ -259,7 +256,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             refreshButton2.setVisible(true);
 
             // toggle the map button
-            if (results_count > 0 && results_count_occurrences < 5001) {
+            if (results_count > 0 && results_count_occurrences <= 100000) {
                 mapspecies.setVisible(true);
             } else {
                 mapspecies.setVisible(false);
@@ -278,13 +275,23 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         StringBuffer sb = new StringBuffer();
-        sb.append("Family Name,Scientific Name,Common name\\s\r\n");
+        sb.append("Family Name,Scientific Name,Common name\\s,Taxon rank\r\n");
         for (String s : results) {
-            sb.append(s.replace('*', ','));
+            sb.append("\"");
+            sb.append(s.replaceAll("\\*", "\",\""));
+            sb.append("\"");
             sb.append("\r\n");
         }
         //results_label_extra.setValue("");
-        Filedownload.save(sb.toString(), "text/plain", "filter.csv");
+        String spid = pid;
+        if(spid == null || spid.equals("none")){
+            spid = String.valueOf(System.currentTimeMillis());
+        }
+
+        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        String sdate = date.format(new Date());
+
+        Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
     }
 
     public void onClick$downloadsamples() {
@@ -307,7 +314,12 @@ public class FilteringResultsWCController extends UtilityComposer {
             SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
             String sdate = date.format(new Date());
 
-            Filedownload.save(u.openStream(), "application/zip", "Sample_" + sdate + "_" + pid + ".zip");
+            String spid = pid;
+            if(spid == null || spid.equals("none")){
+                spid = String.valueOf(System.currentTimeMillis());
+            }
+
+            Filedownload.save(u.openStream(), "application/zip", u.getFile());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -326,13 +338,20 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/filtering/apply");
+            /*sbProcessUrl.append("/filtering/apply");
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/samples/geojson");
 
             String geojsonfile = postInfo(sbProcessUrl.toString());
 
-            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
+            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);*/
+
+            String area = getMapComposer().getViewArea();
+
+            sbProcessUrl.append("species");
+            sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area,"UTF-8"));
+            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());
+
 
             //results_label_extra.setValue("");
 
@@ -462,7 +481,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         refreshButton2.setVisible(true);
         
         // toggle the map button
-        if (results_count > 0 && results_count < 5001) {
+        if (results_count > 0 && results_count <= 100000) {
             mapspecies.setVisible(true);
         } else {
             mapspecies.setVisible(false);

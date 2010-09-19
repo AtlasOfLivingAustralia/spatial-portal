@@ -380,7 +380,7 @@ public class RemoteMapImpl implements RemoteMap {
         String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);
         if (!taxonconceptid.equals("")) {
             System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
-            geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid);
+            geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid + "\n" + label);
         } else {
             System.out.println("not species");
             geoJSON.getMapLayerMetadata().setMoreInfo("");
