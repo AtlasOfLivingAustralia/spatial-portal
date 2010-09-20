@@ -380,7 +380,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                            tooltiptext="ALA Spatial Portal Help" 
                                            forward="onClick=onActivateLink()" >
                                 <!--<custom-attributes link="http://emii1.its.utas.edu.au/drupal/" />-->
-                                    <custom-attributes link="help.html" />
+                                    <custom-attributes link="http://test.ala.org.au/explore/species-maps/species-maps-help/" />
                                     <custom-attributes label="Help" />
                                 </toolbarbutton>
                                 <toolbarbutton
