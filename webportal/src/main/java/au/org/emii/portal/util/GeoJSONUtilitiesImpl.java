@@ -48,7 +48,7 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
 
         try {
 
-            connection = httpConnection.configureURLConnection(url);
+            connection = httpConnection.configureSlowURLConnection(url);
             connection.addRequestProperty("accept", "application/json, text/javascript, */*"); 
             in = connection.getInputStream();
             json = IOUtils.toString(in);
