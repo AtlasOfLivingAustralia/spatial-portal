@@ -257,6 +257,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + // register for loading images...
                 "registerLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']);";
 
+              
 
         return wrapWithSafeToProceed(script);
 
@@ -515,7 +516,8 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             }
         }
 
-
+        String test = wrapWithSafeToProceed(getAdditionalScript() + script.toString());
+             //   System.out.println("EXECUTING - " + test);
 
         return wrapWithSafeToProceed(getAdditionalScript() + script.toString());
     }
@@ -673,12 +675,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         String script =
                 "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS("
                 + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS() + "', "
+                + "		'" + layer.getUriJS().replace("\\/gwc\\/service","") + "', "
                 + "		{"
                 + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
-                + "			transparent: " + (!layer.isBaseLayer()) + ", "
+                + "			transparent: false," //+ (!layer.isBaseLayer()) + ", "
                 + "			" + params
                 + wmsVersionDeclaration(layer) + //","
                 "		}, "
