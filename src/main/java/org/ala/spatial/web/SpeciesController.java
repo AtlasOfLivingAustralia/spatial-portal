@@ -50,7 +50,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping("/species")
 public class SpeciesController {
 
-    private final int DEFAULT_PIXEL_DISTANCE = 20;
+    private final int DEFAULT_PIXEL_DISTANCE = 40;
     private final int DEFAULT_MAP_ZOOM = 4;
     private SpeciesDAO speciesDao;
 
@@ -280,11 +280,9 @@ public class SpeciesController {
             //String lsid = "urn:lsid:biodiversity.org.au:apni.taxon:295864";
             //species = lsid;
 
-            System.out.println("species: " + species);
-
             /*SamplingService ss = new SamplingService();
 
-            String[][] results = ss.sampleSpecies(species, null, null, null, TabulationSettings.MAX_RECORD_COUNT);
+            String[][] results = ss.sampleSpecies(species, null, region, null, TabulationSettings.MAX_RECORD_COUNT);
             StringBuilder sbResults = new StringBuilder();
             Vector dataPoints = new Vector();
 
@@ -337,6 +335,149 @@ public class SpeciesController {
                 cFeature.put("type", "Feature"); // feature.getType().getName().toString()
                 cFeature.put("id", "occurrences." + i + 1);
                 cFeature.put("properties", cluster);
+                cFeature.put("geometry_name", "the_geom");
+                cFeature.put("geometry", geometry);
+
+                allFeatures.add(cFeature);
+
+            }
+            // SpatialCluster3 stuff end
+
+            Hashtable data = new Hashtable();
+            data.put("type", "FeatureCollection");
+            data.put("features", allFeatures);
+
+            /*
+            System.out.println("returning allFeatures:" + allFeatures.toArray());
+            System.out.println("===========================");
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(System.out, data);
+            System.out.println("===========================");
+             *
+             */
+
+            long end = System.currentTimeMillis();
+
+            System.out.println("cluster/species: datapoints=" + (timePoints - start) + "ms total=" + (end - start) + "ms");
+
+            return data;
+
+        } catch (Exception e) {
+            System.out.println("getClusteredRecords.error: ");
+            e.printStackTrace(System.out);
+        }
+        System.out.println("returning null");
+        return null;
+    }
+
+    @RequestMapping(value = "/cluster/{species}/area/{area}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    Hashtable getClusteredRecords(@PathVariable("species") String species, @PathVariable("area") String area, HttpServletRequest req) {
+        try {
+            SpatialSettings ssets = new SpatialSettings();
+
+            long start = System.currentTimeMillis();
+
+            int zoom = DEFAULT_MAP_ZOOM;
+            int pdist = DEFAULT_PIXEL_DISTANCE;
+
+            species = URLDecoder.decode(species, "UTF-8");
+            species = species.replaceAll("__", ".");
+
+            try {
+                if (req.getParameter("z") != null) {
+                    zoom = Integer.parseInt(req.getParameter("z"));
+                }
+            } catch (Exception e) {
+                zoom = DEFAULT_MAP_ZOOM;
+            }
+            try {
+                if (req.getParameter("d") != null) {
+                    pdist = Integer.parseInt(req.getParameter("d"));
+                }
+            } catch (Exception e) {
+                pdist = DEFAULT_PIXEL_DISTANCE;
+            }
+
+//            String area = req.getParameter("area");
+//            ArrayList<Integer> records = null;
+//            SimpleRegion region = null;
+//            if (area != null && area.startsWith("ENVELOPE")) {
+//                records = FilteringService.getRecords(req.getParameter("area"));
+//            } else {
+//                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
+//            }
+
+            SimpleRegion region = SimpleShapeFile.parseWKT(URLDecoder.decode(area,"UTF-8"));
+
+            System.out.println("req.sp: " + species);
+            System.out.println("req.a: " + area);
+            System.out.println("req.z: " + zoom);
+            System.out.println("req.d: " + pdist);
+
+            //String lsid = "urn:lsid:biodiversity.org.au:apni.taxon:295864";
+            //species = lsid;
+
+            /*SamplingService ss = new SamplingService();
+
+            String[][] results = ss.sampleSpecies(species, null, region, null, TabulationSettings.MAX_RECORD_COUNT);
+            StringBuilder sbResults = new StringBuilder();
+            Vector dataPoints = new Vector();
+
+            if (results != null) {
+                System.out.println("Got " + results.length + " records for species: " + species);
+            } else {
+                System.out.println("Got no records for species: " + species);
+            }
+
+            int sciname_pos = -1;
+            int prec_pos = -1;
+            for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+                if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
+                    sciname_pos = i;
+                }
+                if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("u")) {
+                    prec_pos = i;
+                }
+            }
+
+            for (int i = 1; i < results.length; i++) {
+                //System.out.println("Adding to cluster");
+                // System.out.println(results[i][TabulationSettings.geojson_id] + " - " + results[i][TabulationSettings.geojson_property_fields[5]] + " - " + results[i][TabulationSettings.geojson_longitude] + ", " + results[i][TabulationSettings.geojson_latitude]);
+                if (results[i][TabulationSettings.geojson_id] != null) {
+                    if (!results[i][TabulationSettings.geojson_id].toLowerCase().equals("null")) {
+                        dataPoints.add(new Record(results[i][TabulationSettings.geojson_id], results[i][TabulationSettings.geojson_property_fields[sciname_pos]], Double.parseDouble(results[i][TabulationSettings.geojson_longitude]), Double.parseDouble(results[i][TabulationSettings.geojson_latitude]), results[i][TabulationSettings.geojson_property_fields[prec_pos]]));
+                    }
+                }
+            }*/
+            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species,region,TabulationSettings.MAX_RECORD_COUNT);
+
+            long timePoints = System.currentTimeMillis();
+
+            Vector allFeatures = new Vector();
+            // SpatialCluster3 stuff start
+            SpatialCluster3 scluster = new SpatialCluster3();
+            Vector<Vector<Record>> clustered = scluster.cluster(dataPoints, pdist, zoom);
+            for (int i = 0; i < clustered.size(); i++) {
+                //System.out.println(i + "> " + clustered.get(i).toString());
+
+                Vector<Record> cluster = clustered.get(i);
+                Record r = cluster.get(0);
+
+                Hashtable geometry = new Hashtable();
+                geometry.put("type", "Point");
+                double[] coords = {r.getLongitude(), r.getLatitude()};
+                geometry.put("coordinates", coords);
+
+                Hashtable properties = new Hashtable();
+                properties.put("cluster", cluster);
+                properties.put("count", cluster.size()); 
+
+                Map cFeature = new HashMap();
+                cFeature.put("type", "Feature"); // feature.getType().getName().toString()
+                cFeature.put("id", "occurrences." + i + 1);
+                cFeature.put("properties", properties);
                 cFeature.put("geometry_name", "the_geom");
                 cFeature.put("geometry", geometry);
 
