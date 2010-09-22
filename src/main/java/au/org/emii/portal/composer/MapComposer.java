@@ -1861,7 +1861,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /*public void onClick$layerNavigationTab() {
     activateNavigationTab(PortalSession.LAYER_TAB);
     }
-
+    
     public void onClick$areaNavigationTab() {
     activateNavigationTab(PortalSession.AREA_TAB);
     }*/
@@ -3066,6 +3066,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * Reload all species layers
      */
     public void onChange$tbxReloadLayers() {
+        String satServer = settingsSupplementary.getValue(SAT_URL);//"http://spatial-dev.ala.org.au";
         System.out.println("tbxReloadLayers.getValue(): " + tbxReloadLayers.getValue());
         // iterate thru' active map layers
         List udl = getPortalSession().getActiveLayers();
@@ -3088,10 +3089,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
                 //ml.setUri(ml.getUri() + "?" + tbxReloadLayers.getValue());
 
+                StringBuffer sbProcessUrl = new StringBuffer();
                 try {
+                    String lsid = ml.getMapLayerMetadata().getSpeciesLsid();
+                    lsid = StringUtils.replace(lsid, ".", "__");
+                    lsid = URLEncoder.encode(lsid, "UTF-8");
+                    sbProcessUrl.append("/species");
+                    sbProcessUrl.append("/cluster/").append(lsid);
+                    sbProcessUrl.append("/area/").append(URLEncoder.encode(getViewArea(), "UTF-8"));
+                } catch (Exception e) {
+                    System.out.println("Unabled to set sp.cluster url");
+                    e.printStackTrace(System.out);
+                }
+
+                try {
+                    
+                    String reqUri = satServer + "/alaspatial/" + 
+                            sbProcessUrl.toString() +
+                            "?" + tbxReloadLayers.getValue();
 
                     HttpClient client = new HttpClient();
-                    GetMethod post = new GetMethod(ml.getUri() + "?" + tbxReloadLayers.getValue());
+                    GetMethod post = new GetMethod(reqUri);
                     post.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
                     int result = client.executeMethod(post);
@@ -3333,6 +3351,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             lsid = StringUtils.replace(lsid, ".", "__");
             lsid = URLEncoder.encode(lsid, "UTF-8");
 
+            String area = getViewArea();
+
             StringBuffer sbProcessUrl = new StringBuffer();
 //            sbProcessUrl.append("/species");
 //            sbProcessUrl.append("/lsid/").append(lsid);
@@ -3351,6 +3371,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             sbProcessUrl.append("/species");
             sbProcessUrl.append("/cluster/").append(lsid);
+            sbProcessUrl.append("/area/").append(URLEncoder.encode(area, "UTF-8"));
             addGeoJSONLayer(species, satServer + "/alaspatial/" + sbProcessUrl.toString());
 
             MapLayer ml = getMapLayer(species);
@@ -3361,16 +3382,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 ml.setMapLayerMetadata(md);
             }
             md.setMoreInfo(infoUrl + "\n" + species);
+            md.setSpeciesLsid(lsid);
 
             /*
             if (StringUtils.isNotBlank(slist) && !slist.equalsIgnoreCase("[]")) {
             JSONArray ja = JSONArray.fromObject(slist);
-
+            
             JSONObject jo = ja.getJSONObject(0);
             System.out.println(jo.size());
             String sn = (String) jo.get("scientificname");
             String tr = (String) jo.get("rankstring");
-
+            
             if (tr.equalsIgnoreCase("species")) {
             tr = "scientificname";
             }
@@ -3752,19 +3774,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         iframe.setHeight("90%");
         iframe.setSrc((String) event.getData());
         iframe.setParent(w);
-
+        
         w.setParent(getMapComposer().getFellow("mapIframe").getParent());
         w.setPosition("top,center");
         try {
-            w.doModal();
+        w.doModal();
         } catch (Exception e) {
-            e.printStackTrace();
+        e.printStackTrace();
         }*/
 
         String s = (String) event.getData();
         int separator = s.lastIndexOf("\n");
-        String url = (separator>0)?s.substring(0,separator).trim() : s;
-        String header =  (separator>0)?s.substring(separator).trim() : "";
+        String url = (separator > 0) ? s.substring(0, separator).trim() : s;
+        String header = (separator > 0) ? s.substring(separator).trim() : "";
         activateLink(url, header, false);
     }
 

@@ -5,8 +5,9 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -165,6 +166,38 @@ public class LayersUtil {
         }
         return false;
     }
+
+    /**
+     * Check if the species is a pest species
+     * @param lsid LSID of the species 
+     * @return 
+     */
+    public boolean isPestSpecies(String lsid) {
+
+        String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
+
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(snUrl);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            JSONObject jo = JSONObject.fromObject(slist);
+            JSONArray pestStatuses = jo.getJSONObject("extendedTaxonConceptDTO").getJSONArray("pestStatuses");
+            JSONObject pstatus = pestStatuses.getJSONObject(0); 
+
+            
+        } catch (Exception e) {
+            System.out.println("Error checking if pest species ");
+            e.printStackTrace(System.out); 
+        }
+
+
+        return false;
+    }
+
 
     /**
      * tests if a String is an environmental layer name
