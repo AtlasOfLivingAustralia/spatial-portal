@@ -61,7 +61,8 @@ public class SpatialCluster3 {
         // a given zoom level into a cluster.
 
         Vector<Vector> clusters = new Vector();
-        Vector<Record> removed = new Vector();
+        //Vector<Record> removed = new Vector();
+        boolean [] removed = new boolean[datapoints.size()];
 
         //System.out.println("Clustering " + datapoints.size() + " records. ");
 
@@ -70,7 +71,7 @@ public class SpatialCluster3 {
 
             //System.out.println("Checking r: " + r.getId());
 
-            if (removed.contains(r)) {
+            if (removed[i]) {
                 //System.out.println("   skipping: " + r.getId());
                 continue;
             }
@@ -79,7 +80,7 @@ public class SpatialCluster3 {
             for (int j = 0; j < datapoints.size(); j++) {
                 Record r2 = (Record) datapoints.get(j);
                 //System.out.println("Checking with r2: " + r2.getId());
-                if (removed.contains(r2) || r == r2) {
+                if (removed[j] || r == r2) {
                     //System.out.println("   skipping: " + r2.getId());
                     continue;
                 }
@@ -94,7 +95,8 @@ public class SpatialCluster3 {
                     //System.out.println("  is " + pixel_distance);
                     cluster.add(r2);
                     //datapoints.remove(r2);
-                    removed.add(r2);
+                    //removed.add(r2);
+                    removed[j] = true;
                 } else {
                     //System.out.print("---- Distance between " + r.getLongitude() + ", " + r.getLatitude());
                     //System.out.print("  and " + r2.getLongitude() + ", " + r2.getLatitude());
