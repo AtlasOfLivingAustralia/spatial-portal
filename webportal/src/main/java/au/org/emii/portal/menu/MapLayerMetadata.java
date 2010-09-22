@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class MapLayerMetadata implements Serializable {
@@ -35,6 +36,35 @@ public class MapLayerMetadata implements Serializable {
     private List<Double> zAxisValues = new ArrayList<Double>();
     private long id;
     private long maplayerid;
+
+    private boolean isSpeciesLayer = false;
+    private JSONObject speciesInformation;
+    private String speciesLsid;
+
+    public boolean isIsSpeciesLayer() {
+        return isSpeciesLayer;
+    }
+
+    public void setIsSpeciesLayer(boolean isSpeciesLayer) {
+        this.isSpeciesLayer = isSpeciesLayer;
+    }
+
+    public JSONObject getSpeciesInformation() {
+        return speciesInformation;
+    }
+
+    public void setSpeciesInformation(JSONObject speciesInformation) {
+        this.speciesInformation = speciesInformation;
+    }
+
+    public String getSpeciesLsid() {
+        return speciesLsid;
+    }
+
+    public void setSpeciesLsid(String speciesLsid) {
+        this.speciesLsid = speciesLsid;
+    }
+
 
     public long getMaplayerid() {
         return maplayerid;

@@ -342,23 +342,25 @@ function buildMapReal() {
 
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
+        parent.reloadSpecies();
         Event.stop(e);
     });
 
     map.events.register("zoomend" , map, function (e) {
         Event.stop(e);
         //console.log("zoomend");
-        parent.reloadSpecies();
+        //parent.reloadSpecies();
 
         if (map.zoom > 15) {
             autoBaseLayerSwitch = true
             changeBaseLayer('hybrid');
-        } else {
-            if (autoBaseLayerSwitch) {
-                changeBaseLayer('normal');
-                autoBaseLayerSwitch = false;
-            }
         }
+//        else {
+//            if (autoBaseLayerSwitch) {
+//                changeBaseLayer('normal');
+//                autoBaseLayerSwitch = false;
+//            }
+//        }
     });
 }
 
@@ -751,6 +753,7 @@ function forceRedrawVectorLayers() {
 }
 
 var currFeature;
+var currFeatureCount; 
 function showInfo(curr) {
     var info = currFeature.attributes[curr];
     //    if (document.getElementById("sppopup") != null) {
@@ -846,6 +849,101 @@ function showInfo(curr) {
 //    }
 }
 
+function showClusterInfo(curr) {
+    var info = currFeature.attributes["cluster"][curr];
+    //    if (document.getElementById("sppopup") != null) {
+    //        document.getElementById("sppopup").innerHTML = "Requesting data...";
+    //    }
+    //var occinfo = getOccurrenceInfo(info);
+    //console.log("got occinfo");
+    //console.log(occinfo);
+    var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
+    try {
+        if (currFeature.attributes["cluster"][curr+1].id != null) {
+            nextBtn = "<a href='javascript:showClusterInfo("+(curr+1)+");hidePrecision();'>next &rArr;</a>";
+        }
+    } catch (err) {}
+    var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
+    try {
+        if (currFeature.attributes["cluster"][curr-1].id != null) {
+            prevBtn = "<a href='javascript:showClusterInfo("+(curr-1)+");hidePrecision();'>&lArr; previous</a>";
+        }
+    } catch (err) {}
+
+    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+info.id+".json", function(data) {
+        var occinfo = data.occurrence;
+
+        var species = occinfo.species;
+        if (occinfo.speciesLsid != null) {
+            species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
+        }
+
+        var family = occinfo.family;
+        if (occinfo.familyLsid != null) {
+            family = '<a href="http://bie.ala.org.au/species/'+occinfo.familyLsid+'" target="_blank">'+family+'</a>';
+        }
+
+        var kingdom = occinfo.kingdom;
+        if (occinfo.kingdomLsid != null) {
+            kingdom = '<a href="http://bie.ala.org.au/species/'+occinfo.kingdomLsid+'" target="_blank">'+kingdom+'</a>';
+        }
+
+        var occurrencedate = occinfo.occurrenceDate;
+        var uncertainty = occinfo.coordinatePrecision;
+        var uncertaintyText = uncertainty + " meters";
+        if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
+            uncertaintyText = "<b>Undefined! setting to 10km</b>";
+            uncertainty = 10000;
+        }
+        if (!occurrencedate) occurrencedate="";
+
+        var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
+        " Scientific name: " + species + " <br />" +
+        " Kingdom: " + kingdom + " <br />" +
+        " Family: " + family + " <br />" +
+        //" Occ-id: " + data.id + "</a> <br />" +
+        " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
+        " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
+        " Spatial uncertainty in meters: " + uncertaintyText + " (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)<br />" +
+        " Occurrence date: " + occurrencedate + " <br />" +
+        "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
+        "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+        //        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+        //            //currFeature.geometry.getBounds().getCenterLonLat(),
+        //            new OpenLayers.LonLat(info.longitude, info.latitude).transform(
+        //            new OpenLayers.Projection("EPSG:4326"),
+        //            map.getProjectionObject()),
+        //            new OpenLayers.Size(100,100),
+        //            infohtml
+        //            ,
+        //            null, true, onPopupClose);
+
+        if (document.getElementById("sppopup") != null) {
+            document.getElementById("sppopup").innerHTML = infohtml;
+        }
+
+    });
+
+
+//    var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
+//    " Scientific name: " + info.name + "</a> <br />" +
+//    " Longitude: "+info.longitude + " , Latitude: " + info.latitude + " <br/>" +
+//    "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
+//    "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+//
+//    popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+//        currFeature.geometry.getBounds().getCenterLonLat(),
+//        new OpenLayers.Size(100,100),
+//        infohtml
+//        ,
+//        null, true, onPopupClose);
+//
+//    if (document.getElementById("sppopup") != null) {
+//        document.getElementById("sppopup").innerHTML = infohtml;
+//    }
+}
+
 function selected (evt) {
 
     var feature = (evt.feature==null)?evt:evt.feature;
@@ -881,7 +979,45 @@ function selected (evt) {
                 ,
                 null, true, onPopupClose);
 
-        } else if (attrs["0"].id != "") {
+        } /*else if (attrs["0"].id != undefined) {
+            //            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            //                feature.geometry.getBounds().getCenterLonLat(),
+            //                new OpenLayers.Size(100,100),
+            //                "<h2>Occurrence information - " + attrs["0"].id + "</h2> <div id='sppopup'>" +
+            //                " Scientific name: " + attrs["0"].name + "</a> <br />" +
+            //                " Longitude: "+attrs['0'].longitude + " , Latitude: " + attrs['0'].latitude + " <br/>" +
+            //                "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + attrs["0"].id + "' target='_blank'>View details</a></div>" +
+            //                ""
+            //                ,
+            //                null, true, onPopupClose);
+
+            var ci=0;
+            while(true) {
+                try {
+                    if (attrs[ci].id == null) {
+                        break;
+                    }
+                    //console.log(attrs[ci].id + " - " + attrs[ci].name);
+                    //showInfo(ci);
+                    ci++;
+                } catch (err) {
+                    break;
+                }
+            }
+            currFeatureCount = ci;
+            
+            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(100,100),
+                "<div id='sppopup' style='width: 350px; height: 200px;'>Retrieving data... </div>"
+                ,
+                null, true, onPopupClose);
+
+            parent.showInfo(0);
+
+
+
+        } */else if (attrs["count"] != null) {
             //            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
             //                feature.geometry.getBounds().getCenterLonLat(),
             //                new OpenLayers.Size(100,100),
@@ -896,27 +1032,12 @@ function selected (evt) {
             popup = new OpenLayers.Popup.FramedCloud("featurePopup",
                 feature.geometry.getBounds().getCenterLonLat(),
                 new OpenLayers.Size(100,100),
-                "<div id='sppopup' style='width: 350px; height: 200px;'>Retrieving data... </div>"
+                "<div id='sppopup' style='width: 350px; height: 200px;'>" + attrs["count"] + " occurrences found in this location <br /> Retrieving data... </div>"
                 ,
                 null, true, onPopupClose);
 
-            parent.showInfo(0);
+            showClusterInfo(0);
 
-        /*
-            var ci=0;
-            while(true) {
-                try {
-                    if (attrs[ci].id == null) {
-                        break;
-                    }
-                    console.log(attrs[ci].id + " - " + attrs[ci].name);
-                    //showInfo(ci);
-                    ci++;
-                } catch (err) {
-                    break;
-                }
-            }
-            */
 
 
         } else {
@@ -1003,7 +1124,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
 
     return wktLayer;
 }
-
+var myVector;
 function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncertain) {
     //    alert(name);
     var in_options = {
@@ -1012,13 +1133,15 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     };
 
 
+    
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
         fillOpacity: opacity,
         strokeOpacity: 1,
         strokeWidth: 2,
-        strokeColor: hexColour
+        strokeColor: hexColour,
+        label: "${count}"
     },
     OpenLayers.Feature.Vector.style["new"]));
 
@@ -1029,10 +1152,41 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     layer_style.pointRadius = radius;
     layer_style.fillOpacity = opacity;
     layer_style.szUncertain = szUncertain;
-
+    
+   /*
+   var layer_style = new OpenLayers.Style({
+       pointRadius: "${radius}",
+       fillColor: hexColour,
+       fillOpacity: opacity,
+       strokeColor: hexColour,
+       lable: "${label}",
+       szUncertain: szUncertain
+   },{
+       context: {
+           radius: function (feature) {
+               return Math.min(feature.attributes["count"], 7) + 3;
+           },
+           lable: function (feature) {
+               var c = feature.attributes["count"];
+               return (c>1)?c:"";
+           }
+       }
+   });
+   var styleMap = new OpenLayers.StyleMap({
+       "default": layer_style,
+       "select": {
+           fillColor: "#8aeeef",
+           strokeColor: "#32a8a9"
+       }
+   });
+   */
 
     var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
-    var vector_layer = new OpenLayers.Layer.Vector(name);
+    var vector_layer = new OpenLayers.Layer.Vector(name,{
+        styleMap: styleMap
+    });
+
+    myVector = vector_layer;
 
     vector_layer.style = layer_style;
     vector_layer.isFixed = false;
