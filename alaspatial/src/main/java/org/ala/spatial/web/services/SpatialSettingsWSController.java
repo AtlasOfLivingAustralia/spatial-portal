@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
@@ -65,7 +64,7 @@ public class SpatialSettingsWSController {
             _layers.add(_layerlist[i]);
             //System.out.println("Layer: " + _layerlist[i].name + " - " + _layerlist[i].display_name);
 
-            sbEnvList.append(_layerlist[i].display_name + "\n");
+            sbEnvList.append(_layerlist[i].name + "\n");
 
         }
 
@@ -88,7 +87,7 @@ public class SpatialSettingsWSController {
             _layers.add(_layerlist[i]);
             //System.out.println("Layer: " + _layerlist[i].name + " - " + _layerlist[i].display_name);
 
-            sbEnvList.append(_layerlist[i].display_name + "\n");
+            sbEnvList.append(_layerlist[i].name + "\n");
 
         }
 
@@ -111,7 +110,7 @@ public class SpatialSettingsWSController {
             _layers.add(_layerlist[i]);
             //System.out.println("Layer: " + _layerlist[i].name + " - " + _layerlist[i].display_name);
 
-            sbEnvList.append(_layerlist[i].display_name + "\n");
+            sbEnvList.append(_layerlist[i].name + "\n");
 
         }
 
@@ -121,7 +120,7 @@ public class SpatialSettingsWSController {
             _layers.add(_layerlist[i]);
             //System.out.println("Layer: " + _layerlist[i].name + " - " + _layerlist[i].display_name);
 
-            sbEnvList.append(_layerlist[i].display_name + "\n");
+            sbEnvList.append(_layerlist[i].name + "\n");
 
         }
 
@@ -180,7 +179,7 @@ public class SpatialSettingsWSController {
             Layer[] _layerlist = ssets.getEnvironmentalLayers();
 
             for (int i = 0; i < _layerlist.length; i++) {
-                if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                if (_layerlist[i].name.equalsIgnoreCase(layer)) {
                     l = _layerlist[i];
                 }
             }
@@ -189,7 +188,7 @@ public class SpatialSettingsWSController {
                 _layerlist = ssets.getContextualLayers();
 
                 for (int i = 0; i < _layerlist.length; i++) {
-                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                    if (_layerlist[i].name.equalsIgnoreCase(layer)) {
                         l = _layerlist[i];
                     }
                 }
@@ -223,7 +222,8 @@ public class SpatialSettingsWSController {
             Layer[] _layerlist = ssets.getEnvironmentalLayers();
 
             for (int i = 0; i < _layerlist.length; i++) {
-                if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                if (_layerlist[i].display_name.equalsIgnoreCase(layer)
+                        || _layerlist[i].name.equalsIgnoreCase(layer)) {
                     l = _layerlist[i];
                 }
             }
@@ -232,17 +232,19 @@ public class SpatialSettingsWSController {
                 _layerlist = ssets.getContextualLayers();
 
                 for (int i = 0; i < _layerlist.length; i++) {
-                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)
+                            || _layerlist[i].name.equalsIgnoreCase(layer)) {
                         l = _layerlist[i];
                     }
                 }
             }
 
             //try again if still not found, by removing brackets
-            if (l == null && layer.lastIndexOf("(") > 0){
-                layer = layer.substring(0,layer.lastIndexOf("(")).trim();
+            if (l == null && layer.lastIndexOf("(") > 0) {
+                layer = layer.substring(0, layer.lastIndexOf("(")).trim();
                 for (int i = 0; i < _layerlist.length; i++) {
-                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)
+                            || _layerlist[i].name.equalsIgnoreCase(layer)) {
                         l = _layerlist[i];
                     }
                 }
@@ -251,7 +253,8 @@ public class SpatialSettingsWSController {
                 _layerlist = ssets.getContextualLayers();
 
                 for (int i = 0; i < _layerlist.length; i++) {
-                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)) {
+                    if (_layerlist[i].display_name.equalsIgnoreCase(layer)
+                            || _layerlist[i].name.equalsIgnoreCase(layer)) {
                         l = _layerlist[i];
                     }
                 }

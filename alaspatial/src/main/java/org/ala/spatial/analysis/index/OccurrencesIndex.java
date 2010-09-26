@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.LineNumberReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
@@ -26,12 +25,10 @@ import java.util.Vector;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
-import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
 import org.springframework.util.StringUtils;
@@ -133,7 +130,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
     /**
      * size of parts to be exported by splitter
      */
-    static final int PART_SIZE_MAX = 250000;
+    static final int PART_SIZE_MAX = 750000;
     /**
      * static instance of all indexed data for filtering
      */
@@ -155,11 +152,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
     static String[] occurances_csv_field_pairs_Name;
     static int[] occurances_csv_field_pairs_ToSingleIndex;
     static int[] occurances_csv_field_pairs_FirstFromSingleIndex;  //length == single_index.length
-
     /**
      * list of all common names vs single_index
      */
-    static String [] common_names_all_vs_single_index;
+    static String[] common_names_all_vs_single_index;
 
     /**
      * finds isWithin matches against common names
@@ -170,7 +166,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param index_finds list of strings containing LSIDs to be excluded.  Can be null.
      * @return '\n' separated String of 'commonName / index(LSID) / scientificName / count'
      */
-    public static String getCommonNames(String name, String [] index_finds) {
+    public static String getCommonNames(String name, String[] index_finds) {
         int j;
         TreeSet<Integer> ss = new TreeSet<Integer>();
         StringBuffer sb = new StringBuffer();
@@ -179,13 +175,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
             if (common_names_indexed[i].nameLowerCase.contains(nameLowerCase)) {
                 String lsid = single_index[common_names_indexed[i].index].name;
                 //check within index_finds for the lsid
-                if(index_finds != null){
-                    for(j=0;j<index_finds.length;j++){
-                        if(index_finds[j].contains(lsid)){
+                if (index_finds != null) {
+                    for (j = 0; j < index_finds.length; j++) {
+                        if (index_finds[j].contains(lsid)) {
                             break;
                         }
                     }
-                    if(j<index_finds.length){
+                    if (j < index_finds.length) {
                         continue;
                     }
                 }
@@ -216,7 +212,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @param lsid
      * @return String [] where String[0] is scientific name and String[1] is taxonrank name
      */
-    public static String [] getFirstName(String lsid) {
+    public static String[] getFirstName(String lsid) {
         loadIndexes();
 
         String lsidLowerCase = lsid.toLowerCase();
@@ -231,7 +227,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 });
 
         if (pos >= 0) {
-            String [] out = new String[2];
+            String[] out = new String[2];
             out[0] = occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[pos]];
             out[1] = getIndexType(single_index[pos].type);
             return out;
@@ -531,19 +527,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     /*ignore records with no species or longitude or
                      * latitude */
 
-                    //TODO: remove this.
-                    //
-                    // the last column is subspecies, or last prev hierarchy
-                    // value.  since the current data export is missing some
-                    // species values, instead of the other way around,  move
-                    // speciesColumn-1 to speciesColumn, where speciesColumn
-                    // (the last indexed column) is empty.
-                    if (sa.length >= columnsSettings.length
-                            && sa[column_positions[ofu.speciesColumn]].length() == 0) {
-                        sa[column_positions[ofu.speciesColumn]] = sa[column_positions[ofu.speciesColumn - 1]];
-                    }
+                    /* ignore records missing a key index column (hierarchy value) 
+                    for (i = 0; i < ofu.onestwos.length; i++) {
+                        if (sa[column_positions[ofu.onestwos[i]]].length() == 0) {
+                            break;
+                        }
+                    }*/
 
                     if (sa.length >= columnsSettings.length
+                            //tied to the hierarchy check//&& i == columnsSettings.length
                             && sa[column_positions[ofu.speciesColumn]].length() > 0
                             && sa[column_positions[ofu.longitudeColumn]].length() > 0
                             && sa[column_positions[ofu.latitudeColumn]].length() > 0) {
@@ -596,7 +588,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
                                 al.add(it);
                             }
                         } catch (Exception e) {
-                            //don't cate                           
+                            //error
+                            fwExcluded.append(s);
                         }
                     } else {
                         fwExcluded.append(s);
@@ -1683,7 +1676,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 /* test for uniqueness */
                 int sz = unique.size();
                 unique.add(sa[0] + sa[1].toLowerCase().trim());
-                if(sz == unique.size()){
+                if (sz == unique.size()) {
                     duplicates++;
                     continue;
                 }
@@ -1693,7 +1686,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     if (sa[i].length() > 0) {
                         sa[i] = sa[i].replace("\"", "");
                         sa[i] = sa[i].replace(",", ";");
-                        sa[i] = sa[i].replace("/",";");
+                        sa[i] = sa[i].replace("/", ";");
                         sa[i] = sa[i].replace("|", "-");
                     }
                 }
@@ -1811,13 +1804,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             //common_names_all_matching_single_index
             common_names_all_vs_single_index = new String[single_index.length];
-            for(i=0;i<common_names_all_vs_single_index.length;i++){
-                if(common_names_all_vs_single_index[i] == null){
+            for (i = 0; i < common_names_all_vs_single_index.length; i++) {
+                if (common_names_all_vs_single_index[i] == null) {
                     common_names_all_vs_single_index[i] = "";
                 }
             }
-            for(i=0;i<common_names_indexed.length;i++){
-                if(common_names_all_vs_single_index[common_names_indexed[i].index].length() > 0){
+            for (i = 0; i < common_names_indexed.length; i++) {
+                if (common_names_all_vs_single_index[common_names_indexed[i].index].length() > 0) {
                     common_names_all_vs_single_index[common_names_indexed[i].index] += ", ";
                 }
                 common_names_all_vs_single_index[common_names_indexed[i].index] += common_names_indexed[i].name;
@@ -2846,24 +2839,24 @@ public class OccurrencesIndex implements AnalysisIndexService {
     }
 
     public static void main(String[] args) {
-        //OccurrencesIndex oi = new OccurrencesIndex();
-        //oi.occurancesUpdate();
+        OccurrencesIndex oi = new OccurrencesIndex();
+        oi.occurancesUpdate();
         //SimpleRegion sr = SimpleShapeFile.parseWKT("POLYGON((116.0 -44.0,116.0 -9.0,117.0 -9.0,117.0 -44.0,116.0 -44.0))");
         //getSpeciesInside(sr);
 
         //makeSortedLineStarts();
 
-        loadClusterRecords();
+        //loadClusterRecords();
 
         //OccurrencesIndex oi = new OccurrencesIndex();
         //oi.exportFieldIndexes();
         //       oi.occurancesUpdate();
 
-        int[] list = OccurrencesIndex.lookup(0, "143");
-        System.out.println("list:" + list);
-        System.out.println("list len:" + list.length);
-        System.out.println("done");
-	}
+        //int[] list = OccurrencesIndex.lookup(0, "143");
+        //System.out.println("list:" + list);
+        //System.out.println("list len:" + list.length);
+        //System.out.println("done");
+    }
 
     /**
      * return number of Species within a SimpleRegion
@@ -3138,7 +3131,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     }
                 } else {
                     sb.append("undefined");
-                }  
+                }
 
                 sb.append("|"); //next record delimeter
             }
@@ -3146,158 +3139,157 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         return sb.toString();
     }
-    
     /*static Record[] cluster_records = null;
     static void loadClusterRecords(){
-        if(cluster_records != null){
-            return;
-        }
-        loadIndexes();
-        getPointsPairs();
+    if(cluster_records != null){
+    return;
+    }
+    loadIndexes();
+    getPointsPairs();
 
-        //check for existing file, load if it exists
-        try{
-            File f = new File(TabulationSettings.index_path
-                    + "CLUSTER_RECORDS.dat");
-            if(f.exists()){
-                FileInputStream fis = new FileInputStream(
-                    TabulationSettings.index_path
-                    + "CLUSTER_RECORDS.dat");
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                ObjectInputStream ois = new ObjectInputStream(bis);
-                cluster_records = (Record[]) ois.readObject();
-                ois.close();
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+    //check for existing file, load if it exists
+    try{
+    File f = new File(TabulationSettings.index_path
+    + "CLUSTER_RECORDS.dat");
+    if(f.exists()){
+    FileInputStream fis = new FileInputStream(
+    TabulationSettings.index_path
+    + "CLUSTER_RECORDS.dat");
+    BufferedInputStream bis = new BufferedInputStream(fis);
+    ObjectInputStream ois = new ObjectInputStream(bis);
+    cluster_records = (Record[]) ois.readObject();
+    ois.close();
+    }
+    }catch(Exception e){
+    e.printStackTrace();
+    }
 
-        int sciname_pos = -1;
-        int prec_pos = -1;
-        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
-            if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
-                sciname_pos = i;
-            }
-            if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("u")) {
-                prec_pos = i;
-            }
-        }
+    int sciname_pos = -1;
+    int prec_pos = -1;
+    for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+    if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
+    sciname_pos = i;
+    }
+    if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("u")) {
+    prec_pos = i;
+    }
+    }
 
-        cluster_records = new Record[all_points.length];
+    cluster_records = new Record[all_points.length];
 
 
-        System.out.println("Cluster records not built, building now");
-        
-        try {
-            BufferedReader br = new BufferedReader(
-                    new FileReader(
-                    TabulationSettings.index_path
-                    + SORTED_FILENAME));
-            String s;
-            String[] sa;
+    System.out.println("Cluster records not built, building now");
 
-            int recordpos = 0;
+    try {
+    BufferedReader br = new BufferedReader(
+    new FileReader(
+    TabulationSettings.index_path
+    + SORTED_FILENAME));
+    String s;
+    String[] sa;
 
-            while ((s = br.readLine()) != null) {
-                if(recordpos % 100000 == 0){
-                    System.out.println("progress: " + recordpos);
-                }
-                sa = s.split(",");
+    int recordpos = 0;
 
-                if (sa[TabulationSettings.geojson_id] != null) {
-                    if (!sa[TabulationSettings.geojson_id].toLowerCase().equals("null")) {
-                        cluster_records[recordpos] =
-                            new Record(sa[TabulationSettings.geojson_id],
-                            sa[TabulationSettings.geojson_property_fields[sciname_pos]],
-                            Double.parseDouble(sa[TabulationSettings.geojson_longitude]),
-                            Double.parseDouble(sa[TabulationSettings.geojson_latitude]),
-                            sa[TabulationSettings.geojson_property_fields[prec_pos]]);
+    while ((s = br.readLine()) != null) {
+    if(recordpos % 100000 == 0){
+    System.out.println("progress: " + recordpos);
+    }
+    sa = s.split(",");
 
-                    }else {
-                        cluster_records[recordpos] = null;
-                    }
-                }
+    if (sa[TabulationSettings.geojson_id] != null) {
+    if (!sa[TabulationSettings.geojson_id].toLowerCase().equals("null")) {
+    cluster_records[recordpos] =
+    new Record(sa[TabulationSettings.geojson_id],
+    sa[TabulationSettings.geojson_property_fields[sciname_pos]],
+    Double.parseDouble(sa[TabulationSettings.geojson_longitude]),
+    Double.parseDouble(sa[TabulationSettings.geojson_latitude]),
+    sa[TabulationSettings.geojson_property_fields[prec_pos]]);
 
-                recordpos++;
-            }
+    }else {
+    cluster_records[recordpos] = null;
+    }
+    }
 
-            br.close();
-        } catch (Exception e) {
-            (new SpatialLogger()).log("cluster records, build", e.toString());
-            e.printStackTrace();
-        }
+    recordpos++;
+    }
 
-        //export cluster records
-        try{
-            FileOutputStream fos = new FileOutputStream(
-                TabulationSettings.index_path
-                + "CLUSTER_RECORDS.dat");
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(cluster_records);
-            oos.close();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+    br.close();
+    } catch (Exception e) {
+    (new SpatialLogger()).log("cluster records, build", e.toString());
+    e.printStackTrace();
+    }
+
+    //export cluster records
+    try{
+    FileOutputStream fos = new FileOutputStream(
+    TabulationSettings.index_path
+    + "CLUSTER_RECORDS.dat");
+    BufferedOutputStream bos = new BufferedOutputStream(fos);
+    ObjectOutputStream oos = new ObjectOutputStream(bos);
+    oos.writeObject(cluster_records);
+    oos.close();
+    }catch(Exception e){
+    e.printStackTrace();
+    }
     }
     
     public static Vector sampleSpeciesForClustering(String species, SimpleRegion region, int max_records){
-        Vector records = new Vector();
+    Vector records = new Vector();
 
-        if(species != null){
-            IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(species);
-            if(ir == null || ir.length == 0){
-                return null;
-            }
-            int count = ir[0].record_end - ir[0].record_start + 1;
-            if(max_records < count) count = max_records;
-            int end = count + ir[0].record_start;
-            if(region == null){
-                for(int i=ir[0].record_start;i<=end;i++){
-                    records.add(cluster_records[i]);
-                }
-            }else{
-                for(int i=ir[0].record_start;i<=end;i++){
-                    if(region.isWithin(all_points[i][0],all_points[i][1])){
-                        records.add(cluster_records[i]);
-                    }
-                }
-            }
-        }else if(region != null) {
-            int [] r = getRecordsInside(region);
+    if(species != null){
+    IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(species);
+    if(ir == null || ir.length == 0){
+    return null;
+    }
+    int count = ir[0].record_end - ir[0].record_start + 1;
+    if(max_records < count) count = max_records;
+    int end = count + ir[0].record_start;
+    if(region == null){
+    for(int i=ir[0].record_start;i<=end;i++){
+    records.add(cluster_records[i]);
+    }
+    }else{
+    for(int i=ir[0].record_start;i<=end;i++){
+    if(region.isWithin(all_points[i][0],all_points[i][1])){
+    records.add(cluster_records[i]);
+    }
+    }
+    }
+    }else if(region != null) {
+    int [] r = getRecordsInside(region);
 
-            int count = r.length;
-            if(max_records < count) count = max_records;
+    int count = r.length;
+    if(max_records < count) count = max_records;
 
-            for(int i=0;i<count;i++){
-                records.add(cluster_records[r[i]]);
-            }
-        }
-        
-        return records;
+    for(int i=0;i<count;i++){
+    records.add(cluster_records[r[i]]);
+    }
+    }
+
+    return records;
     }*/
-
     static String[][] cluster_records = null;
-    static void loadClusterRecords(){
-        if(cluster_records != null){
+
+    static void loadClusterRecords() {
+        if (cluster_records != null) {
             return;
         }
         loadIndexes();
         getPointsPairs();
 
         //check for existing file, load if it exists
-        try{
+        try {
             File f = new File(TabulationSettings.index_path
                     + "CLUSTER_RECORDS.dat");
-            if(f.exists()){
-/*                FileInputStream fis = new FileInputStream(
-                    TabulationSettings.index_path
-                    + "CLUSTER_RECORDS.dat");
+            if (f.exists()) {
+                /*                FileInputStream fis = new FileInputStream(
+                TabulationSettings.index_path
+                + "CLUSTER_RECORDS.dat");
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 ObjectInputStream ois = new ObjectInputStream(bis);
                 cluster_records = (String[][]) ois.readObject();
                 ois.close();*/
-            
+
                 cluster_records = new String[all_points.length][2];
 
                 BufferedReader br = new BufferedReader(
@@ -3312,17 +3304,17 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     cluster_records[pos][1] = br.readLine();
                     pos++;
                 }
-                
+
                 return;
             }
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         int sciname_pos = -1;
         int prec_pos = -1;
-        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
+        for (int i = 0; i < TabulationSettings.geojson_property_names.length; i++) {
             if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
                 sciname_pos = i;
             }
@@ -3346,12 +3338,12 @@ public class OccurrencesIndex implements AnalysisIndexService {
             int recordpos = 0;
 
             FileWriter fw = new FileWriter(TabulationSettings.index_path
-                + "CLUSTER_RECORDS.dat");
+                    + "CLUSTER_RECORDS.dat");
 
             while ((s = br.readLine()) != null) {
-                if(recordpos % 100000 == 0){
+                if (recordpos % 100000 == 0) {
                     System.out.println("progress: " + recordpos);
-                    if(recordpos % 2000000 == 0){
+                    if (recordpos % 2000000 == 0) {
                         System.gc();
                     }
                 }
@@ -3361,14 +3353,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     if (!sa[TabulationSettings.geojson_id].toLowerCase().equals("null")) {
                         fw.append(sa[TabulationSettings.geojson_id]);
                         fw.append("\n");
-                        if(!(sa[TabulationSettings.geojson_property_fields[prec_pos]] == null)){
+                        if (!(sa[TabulationSettings.geojson_property_fields[prec_pos]] == null)) {
                             fw.append(sa[TabulationSettings.geojson_property_fields[prec_pos]]);
                         }
-                        fw.append("\n");                        
+                        fw.append("\n");
 
                         //cluster_records[recordpos][0] = sa[TabulationSettings.geojson_property_fields[sciname_pos]];
                         //cluster_records[recordpos][1] = sa[TabulationSettings.geojson_property_fields[prec_pos]];
-                    }else {
+                    } else {
                         //cluster_records[recordpos][0] = null;
                     }
                 }
@@ -3383,75 +3375,79 @@ public class OccurrencesIndex implements AnalysisIndexService {
             (new SpatialLogger()).log("cluster records, build", e.toString());
             e.printStackTrace();
         }
-/*
+        /*
         //export cluster records
         try{
-            FileOutputStream fos = new FileOutputStream(
-                TabulationSettings.index_path
-                + "CLUSTER_RECORDS.dat");
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(cluster_records);
-            oos.close();
+        FileOutputStream fos = new FileOutputStream(
+        TabulationSettings.index_path
+        + "CLUSTER_RECORDS.dat");
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(cluster_records);
+        oos.close();
         }catch(Exception e){
-            e.printStackTrace();
+        e.printStackTrace();
         }*/
     }
 
-    public static Vector sampleSpeciesForClustering(String species, SimpleRegion region, int max_records){
+    public static Vector sampleSpeciesForClustering(String species, SimpleRegion region, int max_records) {
         Vector records = new Vector();
 
-        if(species != null){
+        if (species != null) {
             IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(species);
-            if(ir == null || ir.length == 0){
+            if (ir == null || ir.length == 0) {
                 return null;
             }
             int count = ir[0].record_end - ir[0].record_start + 1;
-            if(max_records < count) count = max_records;
+            if (max_records < count) {
+                count = max_records;
+            }
             int end = count + ir[0].record_start;
-            if(region == null){
-                for(int i=ir[0].record_start;i<=end;i++){
-                    if(speciesNumberInRecordsOrder[i] >= 0){
-                        records.add(
-                                new Record(                            
-                            cluster_records[i][0],
-                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
-                            all_points[i][0],
-                            all_points[i][1],
-                            cluster_records[i][1]));
-                    }
-                }
-            }else{
-                for(int i=ir[0].record_start;i<=end;i++){
-                    if(region.isWithin(all_points[i][0],all_points[i][1])
-                            && speciesNumberInRecordsOrder[i] >= 0){
+            if (region == null) {
+                for (int i = ir[0].record_start; i <= end; i++) {
+                    if (speciesNumberInRecordsOrder[i] >= 0) {
                         records.add(
                                 new Record(
-                            cluster_records[i][0],
-                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
-                            all_points[i][0],
-                            all_points[i][1],
-                            cluster_records[i][1]));
+                                cluster_records[i][0],
+                                occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                                all_points[i][0],
+                                all_points[i][1],
+                                cluster_records[i][1]));
+                    }
+                }
+            } else {
+                for (int i = ir[0].record_start; i <= end; i++) {
+                    if (region.isWithin(all_points[i][0], all_points[i][1])
+                            && speciesNumberInRecordsOrder[i] >= 0) {
+                        records.add(
+                                new Record(
+                                cluster_records[i][0],
+                                occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                                all_points[i][0],
+                                all_points[i][1],
+                                cluster_records[i][1]));
                     }
                 }
             }
-        }else if(region != null) {
-            int [] r = getRecordsInside(region);
+        } else if (region != null) {
+            int[] r = getRecordsInside(region);
 
             int count = r.length;
-            if(max_records < count) count = max_records;
+            if (max_records < count) {
+                count = max_records;
+            }
 
-            for(int j=0;j<count;j++){
+            for (int j = 0; j < count; j++) {
                 int i = r[j];
-                if(speciesNumberInRecordsOrder[i] >= 0){
-                        records.add(
-                                new Record(
+                if (speciesNumberInRecordsOrder[i] >= 0) {
+                    records.add(
+                            new Record(
                             cluster_records[i][0],
                             occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
                             all_points[i][0],
                             all_points[i][1],
                             cluster_records[i][1]));
-                    }
+                }
             }
         }
 
@@ -3505,5 +3501,432 @@ class CommonNameRecord {
         name = name_;
         index = index_;
         nameLowerCase = name_.toLowerCase();
+    }
+}
+
+
+class MakeOccurrenceParts extends Thread {
+    /**
+     * all occurrences data
+     */
+    HashMap<Integer, Object> occurrences;
+    /**
+     * object to perform sorting on occurances_csv
+     */
+    SortedMap<String, StringBuffer> column_keys;
+    /**
+     * index to actual csv field positions to named
+     * fields
+     */
+    int[] column_positions;
+    /**
+     * for column_keys write buffer to take some load off sorting
+     */
+    String prev_key = null;
+    /**
+     * for column_keys write buffer to take some load off sorting
+     */
+    StringBuffer prev_value = null;
+
+    TreeMap<String, Integer>[] columnKeys;
+    int[] columnKeysToOccurrencesOrder;
+
+    public MakeOccurrenceParts(){
+        setPriority(Thread.MIN_PRIORITY);
+    }
+
+    public void run(){
+        try{
+            while(true){
+
+            }
+        }catch(Exception e){
+
+        }
+    }
+    void makePart(long part_number, long filestart, long fileend){
+        String[] columns = TabulationSettings.occurances_csv_fields;
+        String[] columnsSettings =
+                TabulationSettings.occurances_csv_field_settings;
+        int i;
+        columnKeys = new TreeMap[columns.length];
+        for (i = 0; i < columnKeys.length; i++) {
+            columnKeys[i] = new TreeMap<String, Integer>();
+        }
+
+        int partNumber = 0;
+        occurrences = new HashMap<Integer, Object>();
+
+        /* read occurances_csv */
+
+        try {
+            BufferedReader br = new BufferedReader(
+                    new FileReader(TabulationSettings.occurances_csv));
+
+            FileWriter fwExcluded = new FileWriter(TabulationSettings.index_path
+                    + OccurrencesIndex.EXCLUDED_FILENAME + part_number);
+
+            String s;
+            String[] sa;
+            int[] il;
+            Integer iv;
+
+            /* lines read */
+            int progress = 0;
+
+            /* helps with ',' in text qualifier records */
+            int max_columns = 0;
+
+            OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+
+            String[] colnames = ofu.getOutputColumnNames();
+
+            columnKeysToOccurrencesOrder = new int[columnsSettings.length];
+            int p = 0;
+            for (i = 0; i < ofu.onetwoCount; i++) {
+                columnKeysToOccurrencesOrder[p++] = ofu.onestwos[i];
+              //  System.out.print("[" + ofu.onestwos[i] + " " + colnames[p - 1]);
+            }
+            for (i = 0; i < ofu.zeroCount; i++) {
+                columnKeysToOccurrencesOrder[p++] = ofu.zeros[i];
+              //  System.out.print("[" + ofu.zeros[i] + " " + colnames[p - 1]);
+            }
+            columnKeysToOccurrencesOrder[p++] = ofu.longitudeColumn;
+           // System.out.print("[" + ofu.longitudeColumn + " " + colnames[p - 1]);
+            columnKeysToOccurrencesOrder[p] = ofu.latitudeColumn;
+          //  System.out.print("[" + ofu.latitudeColumn + " " + colnames[p]);
+
+            column_keys = new TreeMap<String, StringBuffer>();
+
+            int cc = 0;
+            long filepos = filestart;
+            br.skip(filestart);
+            //discard first line read
+            s = br.readLine();
+            filepos += s.getBytes().length;
+
+            while (filepos < fileend && (s = br.readLine()) != null) {
+                filepos += s.getBytes().length;
+                if(s.length() != s.getBytes().length){
+                    i = 2;
+                }
+               
+                //apply limit for dev
+                if (progress > TabulationSettings.occurances_csv_max_records && TabulationSettings.occurances_csv_max_records > 0) {
+                    break;
+                }
+
+                /*if ((cc % OccurrencesIndex.PART_SIZE_MAX == 0) && cc > 0) {
+                    //export sorted part
+                    exportSortedPart(partNumber);
+
+                    //reset
+                    occurrences = new HashMap<Integer, Object>();
+                    for (i = 0; i < columnKeys.length; i++) {
+                        columnKeys[i] = new TreeMap<String, Integer>();
+                    }
+                    System.gc();
+
+                    //inc partnumber
+                    partNumber++;
+                }*/
+                cc++;
+                sa = s.split(",");
+
+                /* handlers for the text qualifiers and ',' in the middle */
+                if (sa != null && max_columns == 0) {
+                    max_columns = sa.length;
+                }
+                if (sa != null && sa.length > max_columns) {
+                    sa = OccurrencesIndex.split(s);
+                }
+
+                /* remove quotes and commas form terms */
+                for (i = 0; i < sa.length; i++) {
+                    if (sa[i].length() > 0) {
+                        sa[i] = sa[i].replace("\"", "");
+                        sa[i] = sa[i].replace(",", " ");
+                    }
+                }
+
+                progress++;
+
+                //if (progress == 1) {		//first record
+                  //  getColumnPositions(sa);
+                //} else
+                {
+                    /*ignore records with no species or longitude or
+                     * latitude */
+
+                    /* ignore records missing a key index column (hierarchy value) */
+
+                    for (i = 0; i < columnsSettings.length; i++) {
+                        if (sa[column_positions[i]].length() == 0) {
+                            break;
+                        }
+                    }
+
+                    if (sa.length >= columnsSettings.length
+                            && i == columnsSettings.length
+                            && sa[column_positions[ofu.speciesColumn]].length() > 0
+                            && sa[column_positions[ofu.longitudeColumn]].length() > 0
+                            && sa[column_positions[ofu.latitudeColumn]].length() > 0) {
+                        try {
+                            //parse long & lat, failure makes record skipped
+                            double longitude = Double.parseDouble(sa[column_positions[ofu.longitudeColumn]]);
+                            double latitude = Double.parseDouble(sa[column_positions[ofu.latitudeColumn]]);
+
+                            /* get int vs unique key for every column */
+                            il = new int[columnsSettings.length];
+                            for (i = 0; i < columnsSettings.length; i++) {
+                                iv = columnKeys[i].get(sa[column_positions[i]]);
+                                if (iv == null) {
+                                    il[i] = columnKeys[i].size();
+                                    columnKeys[i].put(sa[column_positions[i]], columnKeys[i].size());
+                                } else {
+                                    il[i] = iv.intValue();
+                                }
+                            }
+
+                            /* put into tree */
+                            HashMap<Integer, Object> obj = occurrences;
+                            HashMap<Integer, Object> objtmp;
+                            for (i = 0; i < ofu.onetwoCount; i++) {
+                                objtmp = (HashMap<Integer, Object>) obj.get(Integer.valueOf(il[ofu.onestwos[i]]));
+                                if (objtmp == null) {
+                                    objtmp = new HashMap<Integer, Object>();
+                                    obj.put(Integer.valueOf(il[ofu.onestwos[i]]), objtmp);
+                                }
+                                obj = objtmp;
+                            }
+
+                            /* create int[] to add, longitude + latitude + zeros */
+                            int[] it = new int[ofu.zeroCount + 2];
+                            for (i = 0; i < ofu.zeroCount; i++) {
+                                it[i] = il[ofu.zeros[i]];
+                            }
+                            it[i++] = il[ofu.longitudeColumn];
+                            it[i] = il[ofu.latitudeColumn];
+
+                            ArrayList<int[]> al;
+
+                            //add
+                            if (obj.size() == 0) {
+                                al = new ArrayList<int[]>();
+                                al.add(it);
+                                obj.put(Integer.valueOf(0), al);
+                            } else {
+                                al = (ArrayList<int[]>) obj.get(Integer.valueOf(0));
+                                al.add(it);
+                            }
+                        } catch (Exception e) {
+                            //error
+                            fwExcluded.append(s);
+                        }
+                    } else {
+                        fwExcluded.append(s);
+                    }
+                }
+            }
+
+            //export remaining sorted part
+            exportSortedPart((int)part_number);
+            //reset
+            occurrences = new HashMap<Integer, Object>();
+            for (i = 0; i < columnKeys.length; i++) {
+                columnKeys[i] = new TreeMap<String, Integer>();
+            }
+            System.gc();
+
+
+            fwExcluded.close();
+            br.close();
+
+            (new SpatialLogger()).log("loadOccurances done");
+        } catch (Exception e) {
+            (new SpatialLogger()).log("loadoccurances", e.toString());
+            e.printStackTrace();
+        }
+    }
+
+    void exportSortedPart(int partNumber) {
+        System.out.println("exporting part: " + partNumber);
+
+        String[] columns = TabulationSettings.occurances_csv_fields;
+        int i;
+
+        OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+
+        try {
+            /* sorting & exporting of keys */
+            ArrayList<int[]> columnKeysOrder = new ArrayList<int[]>(columnKeys.length);
+            ArrayList<String[]> columnKeysReverseOrderStrings = new ArrayList<String[]>(columnKeys.length);
+            int j;
+            for (i = 0; i < columnKeys.length; i++) {
+                int[] il = new int[columnKeys[columnKeysToOccurrencesOrder[i]].size()];
+                String[] ilStringsReverseOrder = new String[columnKeys[columnKeysToOccurrencesOrder[i]].size()];
+                Set<Map.Entry<String, Integer>> mes = columnKeys[columnKeysToOccurrencesOrder[i]].entrySet();
+                Iterator<Map.Entry<String, Integer>> mei = mes.iterator();
+                Map.Entry<String, Integer> me;
+
+                /* make key to order mapping */
+                j = 0;
+                while (mei.hasNext()) {
+                    me = mei.next();
+                    il[me.getValue().intValue()] = j;
+                    ilStringsReverseOrder[j] = me.getKey();
+                    j++;
+                }
+
+                columnKeysOrder.add(il);
+                columnKeysReverseOrderStrings.add(ilStringsReverseOrder);
+            }
+
+            /* open output file */
+            FileWriter sorted = new FileWriter(
+                    TabulationSettings.index_path + OccurrencesIndex.SORTED_FILENAME + "_" + partNumber);
+
+            /* store points (long/lat) here until exported */
+            ArrayList<Double> aPoints = new ArrayList<Double>(500000);
+
+
+            //write to file
+            StringBuffer s = new StringBuffer();
+            writeMap(sorted, aPoints, occurrences, columnKeysOrder, columnKeysReverseOrderStrings, 0, ofu.onetwoCount, s);
+            sorted.close();
+
+            /* export points */
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + OccurrencesIndex.POINTS_FILENAME + "_" + partNumber,
+                    "rw");
+            byte[] b = new byte[aPoints.size() * 8];
+            ByteBuffer bb = ByteBuffer.wrap(b);
+            for (Double d : aPoints) {
+                bb.putDouble(d.doubleValue());
+            }
+            points.write(b);
+            points.close();
+
+            (new SpatialLogger()).log("exportSortedPoints done");
+        } catch (Exception e) {
+            (new SpatialLogger()).log("exportSortedPoints", e.toString());
+            e.printStackTrace();
+        }
+    }
+
+    void writeMap(FileWriter sorted, ArrayList<Double> aPoints, HashMap<Integer, Object> map,
+            ArrayList<int[]> columnKeysOrder,
+            ArrayList<String[]> columnKeysReverseOrderStrings,
+            int depth, int maxDepth, StringBuffer line) {
+        /* two cases; last record (one object, is arraylist of String []),
+         * not last record (object is another hash map)
+         */
+        if (depth == maxDepth) {
+            ArrayList<int[]> ai =
+                    (ArrayList<int[]>) map.get(Integer.valueOf(0));
+            int i, j;
+            try {
+                String linec = new String(line.toString().getBytes("US-ASCII"));
+                for (i = 0; i < ai.size(); i++) {
+                    sorted.append(linec);
+                    int[] sl = ai.get(i);
+                    for (j = 0; j < sl.length; j++) {
+                        int[] keysOrder = columnKeysOrder.get(depth + j);
+                        String[] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j);
+                        String s = new String(keysReverseOrderStrings[keysOrder[sl[j]]].getBytes("US-ASCII"));
+                        sorted.append(s);
+
+                        if (j < sl.length - 1) {
+                            sorted.append(",");
+                        }
+                    }
+
+                    //parse longlat
+                    double longitude = 0;
+                    double latitude = 0;
+                    try {
+                        int[] keysOrder = columnKeysOrder.get(depth + j - 2);
+                        String[] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j - 2);
+                        longitude = Double.parseDouble(keysReverseOrderStrings[keysOrder[sl[j - 2]]]);
+
+                        keysOrder = columnKeysOrder.get(depth + j - 1);
+                        keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth + j - 1);
+
+                        latitude = Double.parseDouble(keysReverseOrderStrings[keysOrder[sl[j - 1]]]);
+                    } catch (Exception e) {
+                    }
+                    aPoints.add(longitude);
+                    aPoints.add(latitude);
+
+                    sorted.append("\n");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            //sort this hash map as in a tree map
+            TreeMap<Integer, Object> sortedMap = new TreeMap<Integer, Object>();
+            int[] keysOrder = columnKeysOrder.get(depth);
+            Iterator<Map.Entry<Integer, Object>> it = map.entrySet().iterator();
+            Map.Entry<Integer, Object> me;
+            while (it.hasNext()) {
+                me = it.next();
+                //translate Integer value
+                sortedMap.put(keysOrder[me.getKey().intValue()], me.getValue());
+            }
+
+            //iterate over & write
+            String[] keysReverseOrderStrings = columnKeysReverseOrderStrings.get(depth);
+            it = sortedMap.entrySet().iterator();
+            while (it.hasNext()) {
+                me = it.next();
+
+                StringBuffer sb = new StringBuffer(line.toString());
+                sb.append(keysReverseOrderStrings[me.getKey().intValue()]);
+                sb.append(",");
+
+                //drill down
+                writeMap(sorted, aPoints, (HashMap<Integer, Object>) me.getValue(), columnKeysOrder,
+                        columnKeysReverseOrderStrings, depth + 1, maxDepth, sb);
+            }
+
+        }
+    }
+
+    /**
+     * populates column_positions array with actual column positions
+     * of named columns in the header.
+     *
+     * @param line header of occurances.csv as String []
+     */
+    void getColumnPositions(String[] line) throws Exception {
+        String[] columns = TabulationSettings.occurances_csv_fields;
+        column_positions = new int[columns.length];
+        int i;
+        int j;
+
+        for (i = 0; i < column_positions.length; i++) {
+            column_positions[i] = -1;
+        }
+
+        for (j = 0; j < line.length; j++) {
+            for (i = 0; i < columns.length; i++) {
+                if (columns[i].equalsIgnoreCase(line[j])) {
+                    column_positions[i] = j;
+                }
+            }
+        }
+
+        StringBuffer msg = new StringBuffer();
+        boolean error = false;
+        for (i = 0; i < column_positions.length; i++) {
+            if (column_positions[i] == -1) {
+                msg.append("\r\n").append(column_positions[i]);
+                error = true;
+            }
+        }
+        if (error) {
+            throw new Error("occurrences file has no column: " + msg.toString());
+        }
     }
 }

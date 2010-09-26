@@ -599,7 +599,8 @@ public class MaxentWSController {
 
         for (int j = 0; j < nameslist.length; j++) {
             for (int i = 0; i < _layerlist.length; i++) {
-                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
+                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])
+                        || _layerlist[i].name.equalsIgnoreCase(nameslist[j])) {
                     sellayers[j] = _layerlist[i];
                     //sellayers[j].name = _layerPath + sellayers[j].name;
                     System.out.println("Adding layer for ALOC: " + sellayers[j].name);

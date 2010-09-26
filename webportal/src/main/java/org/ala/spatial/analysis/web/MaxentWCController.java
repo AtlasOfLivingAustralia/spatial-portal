@@ -92,7 +92,7 @@ public class MaxentWCController extends UtilityComposer {
             layersUtil = new LayersUtil(mc, satServer);
 
             //setupEnvironmentalLayers();
-            lbListLayers.init(mc, satServer);
+            lbListLayers.init(mc, satServer,true);
 
         } catch (Exception e) {
             System.out.println("opps in after compose");
@@ -230,6 +230,16 @@ public class MaxentWCController extends UtilityComposer {
                 tabboxmaxent.setSelectedIndex(1);
                 return;
             }
+            if(lbListLayers.getSelectedCount() > 100){
+                Messagebox.show(lbListLayers.getSelectedCount() + " layers selected.  Please select fewer than 100 environmental layers in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                tabboxmaxent.setSelectedIndex(1);
+                return;
+            }
+
+            if(LayersUtil.isPestSpecies(taxon)){
+                Messagebox.show("arning: Invasive species will rarely be in equilibrium with the environment at their observed locations so modelling distributions should only be attempted by experienced analysts.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+            }
+
 
             String msg = "";
             String[] envsel = null;
@@ -238,19 +248,15 @@ public class MaxentWCController extends UtilityComposer {
             status.setValue("Status: Running Maxent, please wait... ");
             btnInfo.setVisible(false);
 
-            if (lbListLayers.getSelectedCount() > 0) {
-                envsel = new String[lbListLayers.getSelectedCount()];
-                msg = "Selected " + lbListLayers.getSelectedCount() + " items \n ";
-                Iterator it = lbListLayers.getSelectedItems().iterator();
-                int i = 0;
-                while (it.hasNext()) {
-                    Listitem li = (Listitem) it.next();
-
-                    sbenvsel.append(li.getLabel());
-                    if (it.hasNext()) {
+            String [] selectedLayers = lbListLayers.getSelectedLayers();
+            if (selectedLayers.length > 0) {
+                envsel = new String[selectedLayers.length];
+                msg = "Selected " + selectedLayers.length + " items \n ";
+                for(int i=0;i<selectedLayers.length;i++){
+                    sbenvsel.append(selectedLayers[i]);
+                    if (i < selectedLayers.length -1) {
                         sbenvsel.append(":");
                     }
-
                 }
             }
 
@@ -640,15 +646,7 @@ public class MaxentWCController extends UtilityComposer {
 
         /* set as selected each envctx layer found */
         if (layers != null) {
-            List<Listitem> lis = lbListLayers.getItems();
-            for (int i = 0; i < lis.size(); i++) {
-                for (int j = 0; j < layers.length; j++) {
-                    if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-                        lbListLayers.addItemToSelection(lis.get(i));
-                        break;
-                    }
-                }
-            }
+            lbListLayers.selectLayers(layers);
         }
 
         /*//an area always exists;  validate the area box presence, check if area updated

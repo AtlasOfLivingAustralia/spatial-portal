@@ -185,7 +185,8 @@ public class ALOCWSController {
         for (int j = 0; j < nameslist.length; j++) {
             int i;
             for (i = 0; i < _layerlist.length; i++) {
-                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])) {
+                if (_layerlist[i].display_name.equalsIgnoreCase(nameslist[j])
+                        || _layerlist[i].name.equalsIgnoreCase(nameslist[j])) {
                     sellayers[j] = _layerlist[i];
 
                     System.out.println("Adding layer for ALOC: " + sellayers[j].name);

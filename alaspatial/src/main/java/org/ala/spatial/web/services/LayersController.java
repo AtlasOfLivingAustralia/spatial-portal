@@ -34,9 +34,8 @@ public class LayersController {
     private final String LAYERS_EDIT = "/ws/layers/edit";
     private final String LAYERS_LIST = "/ws/layers/list";
     private final String LAYERS_ASSOCIATIONS = "/layers/analysis/inter_layer_association.csv";
+    private final String LAYERS_ASSOCIATIONS_RAWNAMES = "/layers/analysis/inter_layer_association_rawnames.csv";
     
-
-
     private LayersDAO layersDao;
 
     @Autowired
@@ -198,6 +197,28 @@ public class LayersController {
             BufferedReader br = new BufferedReader(
                     new FileReader(TabulationSettings.index_path
                     + "layerDistances.csv"));
+
+            String line;
+            while((line=br.readLine()) != null){
+                sb.append(line).append("\n");
+            }
+            br.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
+
+    @RequestMapping(value = LAYERS_ASSOCIATIONS_RAWNAMES, method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getLayerAssociationsRawNames(HttpServletRequest req) {
+        //layer associations file named "layerDistances.csv" under index directory
+        StringBuffer sb = new StringBuffer();
+        try{
+            BufferedReader br = new BufferedReader(
+                    new FileReader(TabulationSettings.index_path
+                    + "layerDistancesRawNames.csv"));
 
             String line;
             while((line=br.readLine()) != null){

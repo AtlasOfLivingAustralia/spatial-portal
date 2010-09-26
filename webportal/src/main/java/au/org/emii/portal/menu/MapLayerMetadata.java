@@ -41,6 +41,8 @@ public class MapLayerMetadata implements Serializable {
     private JSONObject speciesInformation;
     private String speciesLsid;
 
+    int partsCount;
+
     public boolean isIsSpeciesLayer() {
         return isSpeciesLayer;
     }
@@ -268,5 +270,13 @@ public class MapLayerMetadata implements Serializable {
      */
     public String getUnitsJS() {
         return StringEscapeUtils.escapeJavaScript(getUnits());
+    }
+
+    public int getPartsCount() {
+        return partsCount;
+    }
+
+    public void setPartsCount(int pc) {
+        partsCount = pc;
     }
 }

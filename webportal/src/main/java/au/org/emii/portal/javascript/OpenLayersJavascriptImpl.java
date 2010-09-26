@@ -413,7 +413,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String activateMapLayer(MapLayer mapLayer) {
-        return activateMapLayer(mapLayer, false);
+        return activateMapLayer(mapLayer, false, false);
     }
 
     /**
@@ -424,7 +424,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      * @return
      */
     @Override
-    public String activateMapLayer(MapLayer mapLayer, boolean recursive) {
+    public String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript) {
         String associativeArray;
         boolean okToAddLayer;
         if (mapLayer.isBaseLayer()) {
@@ -462,7 +462,11 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 break;
             case LayerUtilitiesImpl.GEOJSON:
                 //script.append("window.mapFrame.addJsonFeatureToMap('" + mapLayer.getGeoJSON() + "', '" + mapLayer.getName() + "')");
-                script.append(defineGeoJSONMapLayer(mapLayer));
+                if(alternativeScript){
+                    script.append("window.mapFrame.drawFeaturesGeoJsonUrl('" + mapLayer.getUri() + "'," + mapLayer.getMapLayerMetadata().getPartsCount() + ", '" + mapLayer.getName() + "','" + mapLayer.getEnvColour() + "', " + mapLayer.getOpacity() + "," + mapLayer.getSizeVal() + "," + mapLayer.getSizeUncertain() + ")");
+                }else{
+                    script.append(defineGeoJSONMapLayer(mapLayer));
+                }
                 okToAddLayer = true;
                 break;
             case LayerUtilitiesImpl.WKT:
@@ -488,7 +492,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         // only attempt to add a layer to the map if the type is supported
         if (okToAddLayer) {
             script.append(
-                    "	map.addLayer(" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "']); ");
+                    "	if(" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "'] != undefined) map.addLayer(" + associativeArray + "['" + mapLayer.getUniqueIdJS() + "']); ");
 
             /* for base layers, we must also call setBaseLayer() now the map knows about
              * the layer
@@ -512,7 +516,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
         if (recursive) {
             for (MapLayer child : mapLayer.getChildren()) {
-                script.append(activateMapLayer(child, recursive));
+                script.append(activateMapLayer(child, recursive, alternativeScript));
             }
         }
 
@@ -556,7 +560,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void redrawFeatures(MapLayer selectedLayer) {
-        String script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
+        String script;
+        if(selectedLayer.getGeoJSON() == null || selectedLayer.getGeoJSON().length() == 0){
+            script = "window.mapFrame.redrawFeaturesGeoJsonUrl('" + selectedLayer.getUri() + "'," + selectedLayer.getMapLayerMetadata().getPartsCount() + ", '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
+        }else {
+            script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
+        }
         //String script = "window.mapFrame.redrawUrlFeatures('" + selectedLayer.getUri() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + ")";
         execute(script);
 
@@ -585,11 +594,16 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
          * the layer definition
          */
 
-        String script = ""
+        String script;
+        if(layer.getGeoJSON() != null && layer.getGeoJSON().length() > 0){
+            script = ""
                 + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");"
-                //+ "var vector_layer = window.mapFrame.addJsonUrlToMap('" + layer.getUri() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + ");"
                 + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
-                + "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+                + "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);"
+                ;
+        }else{
+            script = "window.mapFrame.addJsonUrlToMap('" + layer.getUri() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");";
+        }
 
         System.out.println("defineGeoJSONMapLayer: " + script);
 
@@ -760,7 +774,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 MapLayer layer = (MapLayer) layers.get(i);
                 // skip any layers that are not marked for display
                 if (layer.isDisplayed()) {
-                    script.append(activateMapLayer(layer));
+                    script.append(activateMapLayer(layer, false, true));
                 }
             }
         }
@@ -812,11 +826,13 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      */
     @Override
     public String reloadMapLayer(MapLayer mapLayer) {
-        String script =
-                removeMapLayer(mapLayer)
+        if(mapLayer.getGeoJSON() == null && mapLayer.getType() == LayerUtilitiesImpl.GEOJSON){
+            return removeMapLayer(mapLayer)
+                + activateMapLayer(mapLayer, false, true);
+        }else {
+            return removeMapLayer(mapLayer)
                 + activateMapLayer(mapLayer);
-
-        return script;
+        }
 
     }
 

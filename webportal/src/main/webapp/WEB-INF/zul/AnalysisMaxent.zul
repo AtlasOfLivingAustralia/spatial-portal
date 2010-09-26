@@ -11,7 +11,16 @@
             vertical-align: middle;
             }
         </style>
+         <style>
+         .envlist .z-list-header-cnt input, .z-list-group-inner div input {
+         display: none;
+         }
 
+         .envlist div.z-list-cell-cnt {
+         font-size: 10px;
+         }
+
+        </style>
         <div sclass="highlighted" visible="false" >
             <vbox>
                 <label value="Step 1: Restrict area" />
@@ -36,7 +45,7 @@
                     <!-- <label value="Step 1: Select your species " /> -->
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 1: Select your species" /> -->
-                    <div sclass="highlighted">
+                    
                         <label value="Step 1: Select your species" />
                         <vbox>
                             <label>Enter a scientific or common name</label>
@@ -55,36 +64,36 @@
                 <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
                         </vbox>
                         <!--  </groupbox> -->
-                    </div>
+                    
                 </tabpanel>
 
                 <tabpanel>
                     <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 2: Select your environmental layers" />-->
-                    <div sclass="highlighted">
                         <label value="Step 2: Select your environmental layers" />
                         <vbox>
                             <hbox>
                                 <textbox id="tbenvfilter" visible="false" />
                                 <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
                             </hbox>
-                            <listbox visible="false" id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="250px" >
+                            <!-- listbox visible="false" id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="250px" >
                                 <listhead>
                                     <listheader label="Select layers" />
                                 </listhead>
 
-                            </listbox>
-                            <listbox id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
+                            </listbox -->
+                            <listbox sclass="envlist" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
                     <listhead>
-                        <!-- listheader label="catagory" width="120px" / -->
-                        <listheader label="name" width="" />
+                        <listheader label="catagory" width="190px" />
+                        <listheader label="name" width="190px" />
+                        <listheader label=" " width="20px" />
                         <listheader label=" " width="10px" />
                     </listhead>
                  </listbox>
                         </vbox>
                         <!-- </groupbox> -->
-                    </div>
+                   
                 </tabpanel>
 
                 <tabpanel>
@@ -92,27 +101,25 @@
 
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 3: Select your optional parameters" /> -->
-                    <div sclass="highlighted">
+                    
                         Step 3: Select your optional paramters here. You can leave the following
-                        options as defaults and proceed to Step 4 and run Maxent
-                    </div>
-                    <div sclass="highlighted">
+                        options as defaults.
+                    <separator />
                         <!-- <label value="Step 3: Select your optional parameters" /> -->
                         <vbox>
                             <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" visible="false" />
                             <checkbox id="chkRCurves" label="Create response curves" />
                         </vbox>
                         <!-- </groupbox> -->
-                    </div>
-                    <div sclass="highlighted">
+                   
                         <vbox>
+                            <separator />
                             <hbox>
                                 <label value="Random test percentage (0 - 100):" />
                                 <textbox id="txtTestPercentage" value="0" />
                             </hbox>
                         </vbox>
-                        <!-- </groupbox> -->
-                    </div>
+                  
 
                 </tabpanel>
                 <tabpanel>

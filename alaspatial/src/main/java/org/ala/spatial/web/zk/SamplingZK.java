@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.net.URLEncoder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.util.Clients;
 
 public class SamplingZK extends Window {
@@ -431,8 +432,13 @@ public class SamplingZK extends Window {
         try {
         	Bandbox bb = (Bandbox) getFellow("bb");
     		Label lb_points = (Label) getFellow("lb_points");
-
-    		String species = bb.getValue().toLowerCase();
+System.out.println("LL:" + bb.getValue());
+                String [] selection = bb.getValue().toLowerCase().split("/");
+                String species = bb.getValue();
+                if(selection.length > 1){
+                    species = selection[1].trim();
+                }
+    		
     		String points = lb_points.getValue();
     		if(points.length() == 0){
     			points = "none";
@@ -445,7 +451,7 @@ public class SamplingZK extends Window {
             
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString()); 
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
 
             get.addRequestHeader("Accept", "text/plain");
 

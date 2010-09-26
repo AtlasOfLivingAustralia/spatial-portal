@@ -61,13 +61,17 @@ public class Layers {
 		/* convert layer name to TabulationSettings.Layers name */
 		String layer_name = display_name;
 		for(Layer l : TabulationSettings.geo_tables){
-			if(l.display_name.equals(display_name)){
+			if(l.display_name.equals(display_name)
+                                || l.name.equals(display_name)){
 				layer_name = l.name;
+                                break;
 			}
 		}
 		for(Layer l : TabulationSettings.environmental_data_files){
-			if(l.display_name.equals(display_name)){
+			if(l.display_name.equals(display_name)
+                                || l.name.equals(display_name)){
 				layer_name = l.name;
+                                break;
 			}
 		}
 

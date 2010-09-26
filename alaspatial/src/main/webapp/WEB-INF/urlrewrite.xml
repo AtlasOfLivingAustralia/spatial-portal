@@ -46,6 +46,10 @@
 		<from>/analysis</from>
 		<to>/index.zul</to>
 	</rule>
+        <rule>
+		<from>/layers/analysis/inter_layer_association.pdf</from>
+		<to>/output/inter_layer_association.pdf</to>
+	</rule>
 	<rule>
 		<from>/maxent2.zul</from>
 		<to>/maxent2.zul</to>

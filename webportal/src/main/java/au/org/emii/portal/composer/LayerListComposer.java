@@ -40,7 +40,9 @@ public class LayerListComposer extends UtilityComposer {
     private MapComposer mc;
 
     private final String SAT_URL = "sat_url";
+    private static final String GEOSERVER_URL = "geoserver_url";
     private String satServer = "http://spatial-dev.ala.org.au"; // "http://localhost:8080"
+    private String geoServer = "";
 
     SettingsSupplementary settingsSupplementary;
 
@@ -49,6 +51,7 @@ public class LayerListComposer extends UtilityComposer {
         super.afterCompose();
 
         satServer = settingsSupplementary.getValue(SAT_URL);
+        geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
 
         if (tree == null) {
             System.out.println("tree is null");
@@ -90,23 +93,21 @@ public class LayerListComposer extends UtilityComposer {
     public void iterateAndLoad2() {
         try {
 
-            String layersListURL = satServer + "/alaspatial/ws/layers/list";
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(layersListURL);
-            //get.addRequestHeader("Content-type", "application/json");
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(get);
-            String llist = get.getResponseBodyAsString();
-
          //   System.out.println(llist);
 
-            //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
+            String llist = (String)Sessions.getCurrent().getAttribute("layerlist");
 
             //Object llist = Sessions.getCurrent().getAttribute("layerlist");
 
             if (llist == null) {
-                return;
+                String layersListURL = satServer + "/alaspatial/ws/layers/list";
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(layersListURL);
+                //get.addRequestHeader("Content-type", "application/json");
+                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+                int result = client.executeMethod(get);
+                llist = get.getResponseBodyAsString();
             }
 
             ArrayList top = new ArrayList();
@@ -166,7 +167,7 @@ public class LayerListComposer extends UtilityComposer {
     private List getContextualClasses(JSONObject joLayer) {
         String layerName = joLayer.getString("name");
         String layerDisplayName = joLayer.getString("displayname");
-        String classesURL = "http://spatial-dev.ala.org.au" + "/geoserver/rest/gazetteer/" + layerName + ".json";
+        String classesURL = geoServer + "/geoserver/rest/gazetteer/" + layerName + ".json";
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(classesURL);
         //get.addRequestHeader("Content-type", "application/json");
@@ -272,7 +273,7 @@ public class LayerListComposer extends UtilityComposer {
             if (!htCat1.containsKey(cat1)) {
                 htCat1.put(cat1, alCat1);
             } else {
-                System.out.println("\thad existing");
+              //  System.out.println("\thad existing");
             }
 
         }

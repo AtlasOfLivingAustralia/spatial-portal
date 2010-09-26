@@ -341,17 +341,16 @@ public class FilteringResultsWCController extends UtilityComposer {
             /*sbProcessUrl.append("/filtering/apply");
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/samples/geojson");
-
             String geojsonfile = postInfo(sbProcessUrl.toString());
-
-            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);*/
+            //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
+            getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString(),"",false,results_count_occurrences,null);
+             */
 
             String area = getMapComposer().getViewArea();
 
             sbProcessUrl.append("species");
             sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area,"UTF-8"));
-            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());
-
+            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());            
 
             //results_label_extra.setValue("");
 

@@ -51,6 +51,10 @@ public interface RemoteMap {
 
     MapLayer createGeoJSONLayer(String label, String uri);
 
+    String getJson(String uri);
+
+    MapLayer createGeoJSONLayerWithGeoJSON(String label, String uri, String json);
+
     MapLayer createWKTLayer(String wkt, String label);
 
     /**

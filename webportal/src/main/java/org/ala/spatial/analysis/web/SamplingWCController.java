@@ -48,7 +48,7 @@ public class SamplingWCController extends UtilityComposer {
     private static final String SAT_URL = "sat_url";
     private SpeciesAutoComplete sac;
     Tabbox tabboxsampling;
-    private Listbox lbenvlayers;
+   // private Listbox lbenvlayers;
     private Popup p;
     private Html h;
     private List layers;
@@ -65,66 +65,74 @@ public class SamplingWCController extends UtilityComposer {
     private String pid;
     private String species;
 
+    EnvironmentalList lbListLayers;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        mc = getThisMapComposer();
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
-        }
-
-        layersUtil = new LayersUtil(mc, satServer);
-
-        layers = new Vector();
-        layerdata = new Hashtable<String, String[]>();
-
-        String[][] datas = new String[][]{
-            setupEnvironmentalLayers(),
-            setupContextualLayers()
-        };
-
-        lbenvlayers.setItemRenderer(new ListitemRenderer() {
-
-            @Override
-            public void render(Listitem li, Object data) {
-                try {
-                    String layername = (String) data;
-                    li.setWidth(null);
-                    Listcell lc = new Listcell(layername);
-                    lc.setParent(li);
-
-                    /* onclick event for popup content update */
-                    lc.addEventListener("onClick", new EventListener() {
-
-                        @Override
-                        public void onEvent(Event event) throws Exception {
-                            showLayerExtents(event.getTarget());
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace(System.out);
-                }
+        try{
+            mc = getThisMapComposer();
+            if (settingsSupplementary != null) {
+                satServer = settingsSupplementary.getValue(SAT_URL);
             }
-        });
-        groupLabels = new String[]{"Environmental", "Contextual"};
-        if (datas != null) {
-            lbenvlayers.setModel(new SimpleGroupsModel(datas, groupLabels));
-        }
 
-        // need to renderAll() as being a group list
-        // items hidden initially weren't being selected
-        // when selecting all layers without scrolling
-        lbenvlayers.renderAll();
+            layersUtil = new LayersUtil(mc, satServer);
 
-        // disable the checkboxes for the groups
-        List groups = lbenvlayers.getGroups();
-        Iterator<Listgroup> itGroups = groups.iterator();
-        while (itGroups.hasNext()) {
-            Listgroup lg = itGroups.next();
-            //System.out.println("ListGroup: " + lg.getLabel() + " - " + lg.isListenerAvailable("select", true));
-            lg.setCheckable(false);
+            layers = new Vector();
+            layerdata = new Hashtable<String, String[]>();
+
+          /*  String[][] datas = new String[][]{
+                setupEnvironmentalLayers(),
+                setupContextualLayers()
+            };
+
+            lbenvlayers.setItemRenderer(new ListitemRenderer() {
+
+                @Override
+                public void render(Listitem li, Object data) {
+                    try {
+                        String layername = (String) data;
+                        li.setWidth(null);
+                        Listcell lc = new Listcell(layername);
+                        lc.setParent(li);
+
+                        // onclick event for popup content update
+                        lc.addEventListener("onClick", new EventListener() {
+
+                            @Override
+                            public void onEvent(Event event) throws Exception {
+                                showLayerExtents(event.getTarget());
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace(System.out);
+                    }
+                }
+            });
+            groupLabels = new String[]{"Environmental", "Contextual"};
+            if (datas != null) {
+                lbenvlayers.setModel(new SimpleGroupsModel(datas, groupLabels));
+            }
+
+            // need to renderAll() as being a group list
+            // items hidden initially weren't being selected
+            // when selecting all layers without scrolling
+            lbenvlayers.renderAll();
+
+            // disable the checkboxes for the groups
+            List groups = lbenvlayers.getGroups();
+            Iterator<Listgroup> itGroups = groups.iterator();
+            while (itGroups.hasNext()) {
+                Listgroup lg = itGroups.next();
+                //System.out.println("ListGroup: " + lg.getLabel() + " - " + lg.isListenerAvailable("select", true));
+                lg.setCheckable(false);
+            }*/
+
+            lbListLayers.init(mc, satServer, false);
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -308,26 +316,22 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbenvsel = new StringBuffer();
 
-            if (lbenvlayers.getSelectedCount() > 0) {
-                Iterator it = lbenvlayers.getSelectedItems().iterator();
+            String [] selectedLayers = lbListLayers.getSelectedLayers();
+            if (selectedLayers.length > 0) {
                 int i = 0;
-                while (it.hasNext()) {
-                    Listitem li = (Listitem) it.next();
-
-                    if (li.getLabel() == null) {
+                for(i=0;i<selectedLayers.length;i++){
+                    if (selectedLayers[i] == null) {
                         // seems to be null, shouldn't be, but let's ignore it
                         continue;
-                    } else if (ArrayUtils.contains(groupLabels, li.getLabel())) {
+                    }/* else if (ArrayUtils.contains(groupLabels, selectedLayers[i])) {
                         // this must be the group header, let's ignore it
                         continue;
-                    }
+                    }*/
 
-                    sbenvsel.append(li.getLabel());
-                    if (it.hasNext()) {
+                    sbenvsel.append(selectedLayers[i]);
+                    if (i < selectedLayers.length-1) {
                         sbenvsel.append(":");
                     }
-                    i++;
-
                 }
                 if (i == 0) {
                     sbenvsel.append("none");
@@ -476,19 +480,21 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbenvsel = new StringBuffer();
 
-            if (lbenvlayers.getSelectedCount() > 0) {
-                Iterator it = lbenvlayers.getSelectedItems().iterator();
+             String [] selectedLayers = lbListLayers.getSelectedLayers();
+            if (selectedLayers.length > 0) {
                 int i = 0;
-                while (it.hasNext()) {
-                    Listitem li = (Listitem) it.next();
+                for(i=0;i<selectedLayers.length;i++){
+                    if (selectedLayers[i] == null) {
+                        // seems to be null, shouldn't be, but let's ignore it
+                        continue;
+                    }/* else if (ArrayUtils.contains(groupLabels, selectedLayers[i])) {
+                        // this must be the group header, let's ignore it
+                        continue;
+                    }*/
 
-                    if (!li.getLabel().equals("Environmental")
-                            && !li.getLabel().equals("Contextual")) {
-                        sbenvsel.append(li.getLabel());
-                        if (it.hasNext()) {
-                            sbenvsel.append(":");
-                        }
-                        i++;
+                    sbenvsel.append(selectedLayers[i]);
+                    if (i < selectedLayers.length-1) {
+                        sbenvsel.append(":");
                     }
                 }
                 if (i == 0) {
@@ -548,19 +554,21 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbenvsel = new StringBuffer();
 
-            if (lbenvlayers.getSelectedCount() > 0) {
-                Iterator it = lbenvlayers.getSelectedItems().iterator();
+             String [] selectedLayers = lbListLayers.getSelectedLayers();
+            if (selectedLayers.length > 0) {
                 int i = 0;
-                while (it.hasNext()) {
-                    Listitem li = (Listitem) it.next();
+                for(i=0;i<selectedLayers.length;i++){
+                    if (selectedLayers[i] == null) {
+                        // seems to be null, shouldn't be, but let's ignore it
+                        continue;
+                    }/* else if (ArrayUtils.contains(groupLabels, selectedLayers[i])) {
+                        // this must be the group header, let's ignore it
+                        continue;
+                    }*/
 
-                    if (!li.getLabel().equals("Environmental")
-                            && !li.getLabel().equals("Contextual")) {
-                        sbenvsel.append(li.getLabel());
-                        if (it.hasNext()) {
-                            sbenvsel.append(":");
-                        }
-                        i++;
+                    sbenvsel.append(selectedLayers[i]);
+                    if (i < selectedLayers.length-1) {
+                        sbenvsel.append(":");
                     }
                 }
                 if (i == 0) {
@@ -799,15 +807,7 @@ public class SamplingWCController extends UtilityComposer {
 
         /* set as selected each envctx layer found */
         if (layers != null) {
-            List<Listitem> lis = lbenvlayers.getItems();
-            for (int i = 0; i < lis.size(); i++) {
-                for (int j = 0; j < layers.length; j++) {
-                    if (lis.get(i).getLabel().equalsIgnoreCase(layers[j])) {
-                        lbenvlayers.addItemToSelection(lis.get(i));
-                        break;
-                    }
-                }
-            }
+            lbListLayers.selectLayers(layers);
         }
 
         /*//an area always exists;  validate the area box presence, check if area updated
