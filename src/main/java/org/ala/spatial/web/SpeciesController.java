@@ -216,11 +216,13 @@ public class SpeciesController {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/lsid/{lsid}/geojson", method = RequestMethod.POST)
+    @RequestMapping(value = "/lsid/{lsid}/geojson", method = RequestMethod.GET)
     public
     @ResponseBody
     String getSamplesListAsGeoJSON(@PathVariable String lsid, HttpServletRequest req) {
         TabulationSettings.load();
+
+        long start = System.currentTimeMillis();
 
         try {
 
@@ -230,13 +232,20 @@ public class SpeciesController {
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             //String currentPath = TabulationSettings.base_output_dir;
             long currTime = System.currentTimeMillis();
-            String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator + currTime + File.separator;
+            //String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator + currTime + File.separator;
+            String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
 
-            String gjsonFile = SamplingService.getLSIDAsGeoJSON(lsid, fDir);
+            Integer partsCount = 0;
+            String gjsonFile = SamplingService.getLSIDAsGeoJSONIntoParts(lsid, fDir,partsCount);
 
-            return "output/sampling/" + currTime + "/" + gjsonFile;
+            long end = System.currentTimeMillis();
+            System.out.println("get species by lsid geojson: " + (end - start) + "ms");
+
+
+            //return "output/sampling/" + currTime + "/" + gjsonFile;
+            return "output/sampling/" + gjsonFile + "\n" + partsCount.intValue();
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -501,7 +510,7 @@ public class SpeciesController {
 
             long end = System.currentTimeMillis();
 
-            System.out.println("cluster/species: datapoints=" + (timePoints - start) + "ms total=" + (end - start) + "ms");
+            System.out.println("cluster/species/area: datapoints=" + (timePoints - start) + "ms total=" + (end - start) + "ms");
 
             return data;
 
@@ -610,10 +619,14 @@ public class SpeciesController {
                 double[] coords = {r.getLongitude(), r.getLatitude()};
                 geometry.put("coordinates", coords);
 
+                Hashtable properties = new Hashtable();
+                properties.put("cluster", cluster);
+                properties.put("count", cluster.size());
+
                 Map cFeature = new HashMap();
                 cFeature.put("type", "Feature"); // feature.getType().getName().toString()
                 cFeature.put("id", "occurrences." + i + 1);
-                cFeature.put("properties", cluster);
+                cFeature.put("properties", properties);
                 cFeature.put("geometry_name", "the_geom");
                 cFeature.put("geometry", geometry);
 

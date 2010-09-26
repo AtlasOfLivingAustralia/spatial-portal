@@ -27,6 +27,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
 
     final public static String LAYER_DISTANCE_FILE = "layerDistances.dat";
     final public static String LAYER_DISTANCE_FILE_CSV = "layerDistances.csv";
+    final public static String LAYER_DISTANCE_FILE_CSV_RAWNAMES = "layerDistancesRawNames.csv";
     
     double [][] min;
     double [][] max;
@@ -128,7 +129,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
             e.printStackTrace();
         }
 
-        //csv output, lower asymetric
+        //csv output, lower asymetric, layer display names
         try{
             FileWriter fw = new FileWriter(
                     TabulationSettings.index_path
@@ -141,6 +142,28 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
             for(int i=1;i<measures.length;i++){
                 fw.append("\r\n");
                 fw.append(layers[i].display_name);
+                for(int j=0;j<i;j++){
+                    fw.append(",").append(String.valueOf(measures[i][j]));
+                }
+            }
+            fw.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        //csv output, lower asymetric, layer names
+        try{
+            FileWriter fw = new FileWriter(
+                    TabulationSettings.index_path
+                    + LAYER_DISTANCE_FILE_CSV_RAWNAMES);
+
+            fw.append(",");
+            for(int i=0;i<measures.length-1;i++){
+                fw.append(layers[i].name).append(",");
+            }
+            for(int i=1;i<measures.length;i++){
+                fw.append("\r\n");
+                fw.append(layers[i].name);
                 for(int j=0;j<i;j++){
                     fw.append(",").append(String.valueOf(measures[i][j]));
                 }
@@ -223,6 +246,13 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
             }
         }
     }
+
+    static public void main(String [] args){
+        TabulationSettings.load();
+
+        LayerDistanceIndex ldi = new LayerDistanceIndex();
+        ldi.occurancesUpdate();
+    }
 }
 
 
@@ -243,6 +273,7 @@ class CalculateDistanceThread implements Runnable {
         layers = layers_;
 
         t = new Thread(this);
+        t.setPriority(Thread.MIN_PRIORITY);
         t.start();
     }
 

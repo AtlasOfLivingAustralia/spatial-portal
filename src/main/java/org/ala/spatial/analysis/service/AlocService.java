@@ -12,7 +12,6 @@ import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
 import org.ala.spatial.util.AnalysisJobAloc;
-import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
@@ -77,7 +76,7 @@ public class AlocService {
 
             /* outputs */
             for (i = 0; i < means.length; i++) {
-                fw.append(String.valueOf(i+1));
+                fw.append(String.valueOf(i + 1));
                 fw.append(",");
                 fw.append(String.valueOf(colours[i][0]));
                 fw.append(",");
@@ -99,13 +98,13 @@ public class AlocService {
         }
     }
 
-    static void exportMetadata(String filename, int numberOfGroups,  Layer[] layers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy) {
+    static void exportMetadata(String filename, int numberOfGroups, Layer[] layers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy) {
         try {
             FileWriter fw = new FileWriter(filename);
             int i, j;
 
             fw.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"> <html> <head> <meta http-equiv=\"Content-Type\" content=\"text/html; charset=MacRoman\"> <title>Layer information</title> <link rel=\"stylesheet\" href=\"/alaspatial/styles/style.css\" type=\"text/css\" media=\"all\" /> </head> ");
-            
+
             fw.append("<body>");
             fw.append("<h1>").append("Classification").append("</h1>");
 
@@ -118,27 +117,33 @@ public class AlocService {
             fw.append("</p>");
 
             fw.append("<p> <span class=\"title\">Layers:</span> <br /> ");
-            for(i=0;i<layers.length;i++){
+            for (i = 0; i < layers.length; i++) {
                 fw.append(layers[i].display_name);
-                if(i < layers.length-1){
+                if (i < layers.length - 1) {
                     fw.append(", ");
                 }
             }
             fw.append("</p>");
 
-            fw.append("<p> <span class=\"title\">Extent:</span> <br /> ");
-            fw.append("width=").append(String.valueOf(width)).append("<br />");
-            fw.append("height=").append(String.valueOf(height)).append("<br />");
-            fw.append(String.valueOf(minx)).append(",").append(String.valueOf(miny)).append(";");
-            fw.append(String.valueOf(maxx)).append(",").append(String.valueOf(maxy));
+            fw.append("<p> <a href=\"" + TabulationSettings.alaspatial_path + "layers/analysis/inter_layer_association.pdf\" >");
+            fw.append("<span class=\"title\">Inter-layer dissimilarity matrix (pdf)</span>  ");
+            fw.append("</a>");
             fw.append("</p>");
+
+            //fw.append("<p> <span class=\"title\">Extent:</span> <br /> ");
+            //fw.append("width=").append(String.valueOf(width)).append("<br />");
+            //fw.append("height=").append(String.valueOf(height)).append("<br />");
+            //fw.append(String.valueOf(minx)).append(",").append(String.valueOf(miny)).append(";");
+            //fw.append(String.valueOf(maxx)).append(",").append(String.valueOf(maxy));
+            //fw.append("</p>");
 
             fw.append("<p> <span class=\"title\">Area:</span> <br /> ");
             fw.append(area);
             fw.append("</p>");
 
-            fw.append("<p> <span class=\"title\">Initial group colours and means:</span> <br /> ");
-            fw.append("<a href=\"" + coloursAndMeansUrl + "\">(right click and save as csv)</a>");
+            fw.append("<p> <a href=\"" + coloursAndMeansUrl + "\">");
+            fw.append("<span class=\"title\">Group means and colours (csv)</span>  ");
+            fw.append("</a>");
             fw.append("</p>");
 
             fw.append("</body> </html> ");
@@ -230,10 +235,12 @@ public class AlocService {
     public static int[] run(String filename, Layer[] layers, int numberOfGroups, SimpleRegion region, LayerFilter[] envelope, String name, AnalysisJobAloc job) {
         TabulationSettings.load();
 
-        if(job != null) job.log("start ALOC");
+        if (job != null) {
+            job.log("start ALOC");
+        }
 
         /* get data, remove missing values, restrict by optional region */
-        int i, j;        
+        int i, j;
         j = 0;
         int width = 0, height = 0;
         String layerPath = TabulationSettings.environmental_data_path;
@@ -242,14 +249,18 @@ public class AlocService {
         }
         //TODO: # piecies decided by memory available / memory required / threadcount
         int pieces = TabulationSettings.analysis_threads * 4;
-        ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
+        ArrayList<Object> data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope, job);
 
         //number of pieces may have changed
-        pieces = data_pieces.size()-2;
+        pieces = data_pieces.size() - 2;
 
-        if(job != null) job.setCells(((int[][])data_pieces.get(data_pieces.size() - 2)).length);
+        if (job != null) {
+            job.setCells(((int[][]) data_pieces.get(data_pieces.size() - 2)).length);
+        }
 
-        if(job != null) job.log("set cells length");
+        if (job != null) {
+            job.log("set cells length");
+        }
 
         double[] extents = (double[]) data_pieces.get(data_pieces.size() - 1);
         width = (int) extents[0];
@@ -258,12 +269,12 @@ public class AlocService {
 
         /* run aloc
          * Note: requested number of groups may not always equal request
-         */        
+         */
         //long start = System.currentTimeMillis();
         //int[] groups0 = Aloc.runGowerMetricThreaded(data_pieces, numberOfGroups, layers.length, pieces, job);
         //long middle = System.currentTimeMillis();
         //long one = middle - start;
-        
+
         //reset data
         //data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
         //start = System.currentTimeMillis();
@@ -275,11 +286,13 @@ public class AlocService {
         //data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
         //start  = System.currentTimeMillis();
         int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, job);
-        if(job != null && job.isCancelled()) return null;
+        if (job != null && job.isCancelled()) {
+            return null;
+        }
         //middle = System.currentTimeMillis();
         //long three = middle -start;
 
-       /* pieces = 1;
+        /* pieces = 1;
         data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
         int[] groups3 = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, job);
 
@@ -290,19 +303,21 @@ public class AlocService {
         int count2 = 0;
         int count3 = 0;
         for(i=0;i<groups.length;i++){
-            //if(groups[i] != groups1[i]){
-//                count++;
-  //          }
-            if(groups[i] != groups3[i]){
-                count3++;
-            }
-          //  if(groups[i] != groups0[i]){
-          //      count2++;
-          //  }
+        //if(groups[i] != groups1[i]){
+        //                count++;
+        //          }
+        if(groups[i] != groups3[i]){
+        count3++;
+        }
+        //  if(groups[i] != groups0[i]){
+        //      count2++;
+        //  }
         }
         System.out.println("end check: (a-b)" + (count / (double)groups.length) + " (a-c)" + (count2 / (double)groups.length)  + " (c-d)" + (count3) + " of " + groups.length);
-*/
-        if(job != null) job.log("identified groups");
+         */
+        if (job != null) {
+            job.log("identified groups");
+        }
 
         (new SpatialLogger()).log("done gower metric");
 
@@ -334,7 +349,7 @@ public class AlocService {
             }
         }
 
-        double [][] group_means_copy = new double[group_means.length][group_means[0].length];
+        double[][] group_means_copy = new double[group_means.length][group_means[0].length];
         for (i = 0; i < group_means.length; i++) {
             for (j = 0; j < group_means[i].length; j++) {
                 if (group_counts[i][j] > 0) {
@@ -344,26 +359,32 @@ public class AlocService {
             }
         }
 
-        if(job != null) job.log("determined group means");
+        if (job != null) {
+            job.log("determined group means");
+        }
 
         /* get RGB for colouring group means via PCA */
         int[][] colours = Pca.getColours(group_means_copy);
-        if(job != null) job.log("determined group colours");
+        if (job != null) {
+            job.log("determined group colours");
+        }
 
 
         /* export means + colours */
         exportMeansColours(filename + ".csv", group_means, colours, layers);
-        if(job != null) job.log("exported group means and colours");
+        if (job != null) {
+            job.log("exported group means and colours");
+        }
 
-        /* export metadata html */        
+        /* export metadata html */
         String pth = "output" + File.separator + "aloc" + File.separator;
         int pos = filename.indexOf(pth);
         String f = filename.substring(pos + pth.length());
         String urlpth = TabulationSettings.alaspatial_path + "output/aloc/" + f.replace("\\", "/");
         exportMetadata(filename + ".html", numberOfGroups, layers,
-                (job != null)?job.getName() : "",
-                 urlpth + ".csv",
-                (job != null)?job.area : "",
+                (job != null) ? job.getName() : "",
+                urlpth + ".csv",
+                (job != null) ? job.area : "",
                 width, height, extents[2], extents[3], extents[4], extents[5]);
 
         /* export geoserver sld file for legend */
@@ -407,10 +428,14 @@ public class AlocService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        if(job != null) job.log("saved image");
 
-        if(job != null) job.log("finished ALOC");
+        if (job != null) {
+            job.log("saved image");
+        }
+
+        if (job != null) {
+            job.log("finished ALOC");
+        }
 
         return groups;
     }

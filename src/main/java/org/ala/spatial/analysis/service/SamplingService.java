@@ -777,6 +777,79 @@ public class SamplingService {
 
     }
 
+    public static String getLSIDAsGeoJSONIntoParts(String lsid, File outputpath, Integer partCount) {
+        int i;
+
+        /* get samples records from records indexes */
+        String[][] samples = (new SamplingService()).sampleSpecies(lsid, null, null, null, TabulationSettings.MAX_RECORD_COUNT, null);
+
+        int max_parts_size = 2000;
+
+        int count = 0;
+
+        //-1 on samples.length for header
+        partCount = (int)Math.ceil((samples.length-1) / (double)max_parts_size);
+
+        //test for filename, return if it exists
+        File file;
+        String filename = outputpath + File.separator + lsid.replace(":", "_").replace(".","_");
+        try{
+            file = new File(filename + "_" + (partCount-1));
+            if(file.exists()){
+                return lsid.replace(":", "_").replace(".","_") + "\n" + partCount;
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        for(int j=1;j<samples.length;j+= max_parts_size){
+
+            StringBuffer sbGeoJSON = new StringBuffer();
+            sbGeoJSON.append("{");
+            sbGeoJSON.append("\"type\": \"FeatureCollection\",");
+            sbGeoJSON.append("\"features\": [");
+            int len = j + max_parts_size;
+            if(len > samples.length){
+                len = samples.length;
+            }
+            for (i = j; i < len; i++) {
+                String s = getRecordAsGeoJSON(samples,i);
+                if(s != null){
+                    sbGeoJSON.append(s);
+                    if (i<samples.length-1) sbGeoJSON.append(",");
+                }
+            }
+            sbGeoJSON.append("],");
+            sbGeoJSON.append("\"crs\": {");
+            sbGeoJSON.append("\"type\": \"EPSG\",");
+            sbGeoJSON.append("\"properties\": {");
+            sbGeoJSON.append("\"code\": \"4326\"");
+            sbGeoJSON.append("}");
+            sbGeoJSON.append("}");
+            sbGeoJSON.append("}");
+
+            /* write samples to a file */
+            try {
+                //File temporary_file = java.io.File.createTempFile("filter_sample", ".csv", outputpath);
+                FileWriter fw = new FileWriter(
+                        filename + "_" + count);
+                count++;
+
+                fw.write(sbGeoJSON.toString());
+
+                fw.close();
+
+                //return temporary_file.getName();	//return location of temp file
+
+            } catch (Exception e) {
+                (new SpatialLogger()).log("SamplingService: getLSIDAsGeoJSON()", e.toString());
+                e.printStackTrace();
+            }
+        }
+        return lsid.replace(":", "_").replace(".","_") + "\n" + partCount;
+
+    }
+
     private static String getRecordAsGeoJSON(String [][] rec, int rw) {
         //String[] recdata = rec.split(",");
 

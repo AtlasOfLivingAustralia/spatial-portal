@@ -14,8 +14,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Hashtable;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -97,7 +95,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             sbSpecies.append(System.getProperty("line.separator"));
             while ((nextLine = reader.readNext()) != null) {
                 // nextLine[] is an array of values from the line
-                System.out.println(nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1] + "etc...");
+                //System.out.println(nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1] + "etc...");
                 sbSpecies.append("species, " + nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1]);
                 sbSpecies.append(System.getProperty("line.separator"));
             }
@@ -148,32 +146,31 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
             Hashtable htProcess = new Hashtable();
 
-            String [] imgExtensions = {".png","_only.png","_only_thumb.png","_thumb.png"};
+            String[] imgExtensions = {".png", "_only.png", "_only_thumb.png", "_thumb.png"};
 
             if (isCancelled()) {
                 //
             } else if (exitValue == 0) {
                 // rename the env filenames to their display names
                 String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
-                String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator ;
+                String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator;
                 for (int ei = 0; ei < envnameslist.length; ei++) {
-                    readReplace(pth + "species.html", envpathlist[ei], envnameslist[ei].replace(" ","_"));
-                    for(int j=0;j<imgExtensions.length;j++){
-                        try{
-                        FileUtils.moveFile(
-                                new File(pth_plots + "species_" + envpathlist[ei] + imgExtensions[j]),
-                                new File(pth_plots + "species_" + envnameslist[ei].replace(" ","_") + imgExtensions[j]));
-                        }catch(Exception ex){
-                        
+                    readReplace(pth + "species.html", envpathlist[ei], envnameslist[ei].replace(" ", "_"));
+                    for (int j = 0; j < imgExtensions.length; j++) {
+                        try {
+                            FileUtils.moveFile(
+                                    new File(pth_plots + "species_" + envpathlist[ei] + imgExtensions[j]),
+                                    new File(pth_plots + "species_" + envnameslist[ei].replace(" ", "_") + imgExtensions[j]));
+                        } catch (Exception ex) {
                         }
                     }
                 }
 
                 //remove species image path in output species.html
-                readReplace(pth + "species.html", "species.png", "");
-                readReplace(pth + "species.html", "<a href = \"plots/\"> <img src=\"plots/\" width=600></a>","see map window");
-                readReplace(pth + "species.html", "plots\\\\","plots/");
-                readReplace(pth + "species.html", "<a href=species_explain.bat type=application/bat>here<a>","<i>not available</i>");
+                readReplaceBetween(pth + "species.html", "<HR><H2>Pictures of the model", "<HR>","<HR>");
+                readReplace(pth + "species.html", "<a href = \"plots/\"> <img src=\"plots/\" width=600></a>", "see map window");
+                readReplace(pth + "species.html", "plots\\\\", "plots/");
+                
                 //delete image
                 FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
 
@@ -239,16 +236,16 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         if (stage <= 1) { //running; 0.2 to 0.9            
             t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
-            t2 = t2 + progTime - stageTimes[1];
+            if(stage == 1) t2 = t2 + progTime - stageTimes[1];
         }
         if (stage > 1) { //data export + done
             t3 += 5000 * TabulationSettings.maxent_timing_2; //default
-            t3 = t3 + progTime - stageTimes[2];
+            if(stage == 2) t3 = t3 + progTime - stageTimes[2];
         }
 
         timeRemaining = t1 + t2 + t3;
 
-        return smoothEstimate(timeRemaining);
+        return timeRemaining; //smoothEstimate(timeRemaining);
     }
 
     @Override
@@ -264,7 +261,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
     }
 
     @Override
-    public double getProgress(){
+    public double getProgress() {
         //return expected progress since cannot track internals
 
         long currentTime = System.currentTimeMillis();
@@ -280,24 +277,32 @@ public class AnalysisJobMaxent extends AnalysisJob {
         //progress is [time passed] / [time expected]
         if (stage <= 0) { //data load; 0 to 0.2
             t1 += (cells * TabulationSettings.maxent_timing_0) * layers.length; //default
-            d1 = (currentTime - stageTimes[0]) / (double)t1;
-            if(d1 > 0.9) d1 = 0.9;
+            d1 = (currentTime - stageTimes[0]) / (double) t1;
+            if (d1 > 0.9) {
+                d1 = 0.9;
+            }
             d1 *= 0.2; //range limit
-        }else {
+        } else {
             d1 = 0.2;
         }
         if (stage <= 1) { //running; 0.2 to 0.9
             t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
-            d2 = (currentTime - stageTimes[1]) /(double) t2;
-            if(d2 > 0.9) d2 = 0.9;
+            if(stage == 1) d2 = (currentTime - stageTimes[1]) / (double) t2;
+            else d2 = 0;
+            if (d2 > 0.9) {
+                d2 = 0.9;
+            }
             d2 *= 0.7; //range limit
         } else {
             d2 = 0.7;
         }
         if (stage > 1) { //data export + done
             t3 += 5000 * TabulationSettings.maxent_timing_2; //default
-            d3 = (currentTime - stageTimes[2]) / (double)t3;
-            if(d3 > 0.9) d3 = 0.9;
+            if(stage == 2) d3 = (currentTime - stageTimes[2]) / (double) t3;
+            else d3 = 0;
+            if(d3 > 0.9) {
+                d3 = 0.9;
+            }
             d3 *= 0.1; //range limit
         } else {
             d3 = 0.1;
@@ -371,6 +376,31 @@ public class AnalysisJobMaxent extends AnalysisJob {
             while ((line = reader.readLine()) != null) {
                 line = line.replaceAll(oldPattern, replPattern);
                 sb.append(line + "\n");
+            }
+            reader.close();
+            BufferedWriter out = new BufferedWriter(new FileWriter(fname));
+            out.write(sb.toString());
+            out.close();
+        } catch (Throwable e) {
+            System.err.println("*** exception ***");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void readReplaceBetween(String fname, String startOldText, String endOldText, String replText) {
+        String line;
+        StringBuffer sb = new StringBuffer();
+        try {
+            FileInputStream fis = new FileInputStream(fname);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+            while ((line = reader.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            int start, end;
+            start = sb.indexOf(startOldText);
+            if(start >= 0){
+                end = sb.indexOf(endOldText,start+1);
+                sb.replace(start, end + endOldText.length(), replText);
             }
             reader.close();
             BufferedWriter out = new BufferedWriter(new FileWriter(fname));

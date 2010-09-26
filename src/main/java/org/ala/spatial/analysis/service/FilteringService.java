@@ -537,6 +537,16 @@ public class FilteringService implements Serializable {
         return output;
     }
 
+    /**
+     * TODO:
+     * 1. split data into _0 to n
+     * 2. add # pieces onto end
+     *
+     * @param session_id_
+     * @param region
+     * @param outputpath
+     * @return
+     */
     public static String getSamplesListAsGeoJSON(String session_id_, SimpleRegion region, File outputpath) {
         int[] records;
         int i;
