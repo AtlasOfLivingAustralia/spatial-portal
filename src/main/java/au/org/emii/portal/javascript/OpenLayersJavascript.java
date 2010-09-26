@@ -46,7 +46,7 @@ public interface OpenLayersJavascript {
      * @param mapLayer
      * @return
      */
-    public String activateMapLayer(MapLayer mapLayer, boolean recursive);
+    public String activateMapLayer(MapLayer mapLayer, boolean recursive, boolean alternativeScript);
 
     /**
      * As activeateMapLayer but executes immediately

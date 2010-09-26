@@ -67,6 +67,7 @@ import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
+import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -175,6 +176,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Slider blueSlider;
     private Slider sizeSlider;
     private Checkbox chkUncertaintySize;
+    private Checkbox chkPointsCluster;
     private Div uncertainty;
     private Label redLabel;
     private Label greenLabel;
@@ -230,8 +232,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * Logout service spring bean - autowired
      */
     private LogoutService logoutService = null;
-
-    /*
+    
+   /*
      * User data object to allow for the saving of maps and searches
      */
     private UserDataDao userDataManager = null;
@@ -270,6 +272,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     //private HtmlMacroComponent ff;
     //private HtmlMacroComponent sf;
     public Textbox tbxPrintHack;
+
+    /*
+     * for capturing layer loaded events signaling listeners
+     */
+    public Textbox tbxLayerLoaded;
+    HashMap<String, EventListener> layerLoadedChangeEvents = new HashMap<String,EventListener>();
 
     public UserDataDao getUserDataManager() {
         if (userDataManager == null) {
@@ -715,13 +723,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             // iframe in another id-space so can't be auto wired
             Iframe iframe = getExternalContentIframe();
             iframe.setSrc(uri);
-
+            
+            //for the 'reset window' button
+            ((ExternalContentComposer)externalContentWindow).src = uri;
+            
             // use the link description as the popup caption
             ((Caption) externalContentWindow.getFellow("caption")).setLabel(
                     label);
             externalContentWindow.setPosition("center");
             externalContentWindow.doOverlapped();
-
         }
     }
 
@@ -2773,7 +2783,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer = remoteMap.createGeoJSONLayer(label, uri);
                 if (mapLayer == null) {
                     // fail
-                    showMessage("No mappable features available");
+                    //hide error, might be clustering zoom in; showMessage("No mappable features available");
                     logger.info("adding GEOJSON layer failed ");
                 } else {
                     mapLayer.setDisplayable(true);
@@ -2820,7 +2830,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer = remoteMap.createGeoJSONLayer(label, uri);
                 if (mapLayer == null) {
                     // fail
-                    showMessage("No mappable features available");
+                    //hide error, might be clustering zoom in; showMessage("No mappable features available");
                     logger.info("adding GEOJSON layer failed ");
                 } else {
                     mapLayer.setDisplayable(true);
@@ -2841,7 +2851,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     mapLayer = remoteMap.createGeoJSONLayer(label, uri);
                     if (mapLayer == null) {
                         // fail
-                        showMessage("No mappable features available");
+                        //hide error, might be clustering zoom in; showMessage("No mappable features available");
                         logger.info("adding GEOJSON layer failed ");
                     } else {
                         mapLayer.setDisplayable(true);
@@ -2867,6 +2877,104 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
             }
         }
+
+        return mapLayer;
+    }
+
+    public void addGeoJSONLayerProgressBar(String label, String uri, String params, boolean forceReload, int partsCount, String lsid) {
+        //start the progress bar...
+        SpeciesPointsProgress window = (SpeciesPointsProgress) Executions.createComponents("WEB-INF/zul/SpeciesPointsProgress.zul", this, null);
+        window.start(label, uri, params, forceReload, partsCount, lsid);
+        try{window.doModal();
+        }catch(Exception e){}
+    }
+    public String getJson(String uri){
+        return remoteMap.getJson(uri);
+    }
+    public MapLayer addGeoJSONLayerProgressBarReady(String label, String uri, String params, boolean forceReload,String json, String lsid, int partsCount){
+        MapLayer mapLayer = null;
+
+        if (safeToPerformMapAction()) {
+            MapLayer gjLayer = getMapLayer(label);
+            if (label.equalsIgnoreCase("Species in Active area") || forceReload) {
+                if (gjLayer != null) {
+                    System.out.println("removing existing layer: " + gjLayer.getName());
+                    openLayersJavascript.setAdditionalScript(
+                            openLayersJavascript.removeMapLayer(gjLayer));
+                } //else {
+                mapLayer = remoteMap.createGeoJSONLayerWithGeoJSON(label, uri, json);
+                if (mapLayer == null) {
+                    // fail
+                   //hide error, might be clustering zoom in;  showMessage("No mappable features available");
+                    logger.info("adding GEOJSON layer failed ");
+                } else {
+                    mapLayer.setDisplayable(true);
+                    mapLayer.setOpacity((float) 0.4);
+                    mapLayer.setQueryable(true);
+                    mapLayer.setDynamicStyle(true);
+
+                    activateLayer(mapLayer, true, true);
+
+                    // we must tell any future tree menus that the map layer is already
+                    // displayed as we didn't use changeSelection()
+                    mapLayer.setListedInActiveLayers(true);
+                }
+                //}
+            } else {
+                //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+                if (getMapLayer(label) == null) {
+                    mapLayer = remoteMap.createGeoJSONLayerWithGeoJSON(label, uri, json);
+                    if (mapLayer == null) {
+                        // fail
+                       //hide error, might be clustering zoom in;  showMessage("No mappable features available");
+                        logger.info("adding GEOJSON layer failed ");
+                    } else {
+                        mapLayer.setDisplayable(true);
+                        mapLayer.setOpacity((float) 0.4);
+                        mapLayer.setQueryable(true);
+                        mapLayer.setDynamicStyle(true);
+
+                        activateLayer(mapLayer, true, true);
+
+                        // we must tell any future tree menus that the map layer is already
+                        // displayed as we didn't use changeSelection()
+                        mapLayer.setListedInActiveLayers(true);
+                    }
+                } else {
+                    //need to cleanup any additional scripts outstanding
+                    openLayersJavascript.useAdditionalScript();
+
+                    // fail
+                    //showMessage("GeoJSON layer already exists");
+                    logger.info(
+                            "refusing to add a new layer with URI " + uri
+                            + " because it already exists in the menu");
+                }
+            }
+        }
+
+        if(lsid != null){
+            MapLayer ml = getMapLayer(label);
+            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", lsid);
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(infoUrl + "\n" + label);
+            md.setSpeciesLsid(lsid);
+            md.setPartsCount(partsCount);
+        }
+
+        return mapLayer;
+    }
+
+    public MapLayer appendGeoJSONLayerProgressBarReady(String label, String uri, int part, String params, boolean forceReload,String json, String lsid){
+        MapLayer mapLayer = null;
+
+        Clients.evalJavaScript(
+                "window.mapFrame.appendJsonUrlToMap('" + uri + "_" + part + "','" + uri + "_0','" + label + "');"
+                );
 
         return mapLayer;
     }
@@ -3082,45 +3190,53 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             System.out.println("checking reload layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS() + " -> type: " + ml.getType() + "," + ml.getGeometryType());
             if (ml.getType() == LayerUtilitiesImpl.GEOJSON) {
-                //addGeoJSONLayer(ml.getName(), ml.getUri() + "?" + tbxReloadLayers.getValue(), "", true);
-                String baseuri = ml.getUri();
-                if (baseuri.indexOf("?z=") > -1) {
-                    baseuri = baseuri.substring(0, baseuri.indexOf("?z="));
+                if(ml.getGeoJSON() != null && ml.getGeoJSON().length() > 0){
+                    //addGeoJSONLayer(ml.getName(), ml.getUri() + "?" + tbxReloadLayers.getValue(), "", true);
+                    String baseuri = ml.getUri();
+                    if (baseuri.indexOf("?z=") > -1) {
+                        baseuri = baseuri.substring(0, baseuri.indexOf("?z="));
+                    }
+                    //ml.setUri(ml.getUri() + "?" + tbxReloadLayers.getValue());
+
+                    String reqUri = "";
+
+
+                    StringBuffer sbProcessUrl = new StringBuffer();
+                    try {
+                        if(ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null){
+                            String lsid = ml.getMapLayerMetadata().getSpeciesLsid();
+                            lsid = StringUtils.replace(lsid, ".", "__");
+                            lsid = URLEncoder.encode(lsid, "UTF-8");
+                            sbProcessUrl.append("/species");
+                            sbProcessUrl.append("/cluster/").append(lsid);
+                            sbProcessUrl.append("/area/").append(URLEncoder.encode(getViewArea(), "UTF-8"));
+                            reqUri = satServer + "/alaspatial/" +
+                                sbProcessUrl.toString() +
+                                "?" + tbxReloadLayers.getValue();
+                        } else {
+                            reqUri = ml.getUri() + "?" + tbxReloadLayers.getValue();
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Unabled to set sp.cluster url");
+                        e.printStackTrace(System.out);
+                    }
+
+                    try {
+                        
+                        HttpClient client = new HttpClient();
+                        GetMethod post = new GetMethod(reqUri);
+                        post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+                        int result = client.executeMethod(post);
+                        String slist = post.getResponseBodyAsString();
+                        ml.setGeoJSON(slist);
+                    } catch (Exception e) {
+                        System.out.println("error loading new geojson:");
+                        e.printStackTrace(System.out);
+                    }
+
+                    reloadScript += openLayersJavascript.reloadMapLayer(ml);
                 }
-                //ml.setUri(ml.getUri() + "?" + tbxReloadLayers.getValue());
-
-                StringBuffer sbProcessUrl = new StringBuffer();
-                try {
-                    String lsid = ml.getMapLayerMetadata().getSpeciesLsid();
-                    lsid = StringUtils.replace(lsid, ".", "__");
-                    lsid = URLEncoder.encode(lsid, "UTF-8");
-                    sbProcessUrl.append("/species");
-                    sbProcessUrl.append("/cluster/").append(lsid);
-                    sbProcessUrl.append("/area/").append(URLEncoder.encode(getViewArea(), "UTF-8"));
-                } catch (Exception e) {
-                    System.out.println("Unabled to set sp.cluster url");
-                    e.printStackTrace(System.out);
-                }
-
-                try {
-                    
-                    String reqUri = satServer + "/alaspatial/" + 
-                            sbProcessUrl.toString() +
-                            "?" + tbxReloadLayers.getValue();
-
-                    HttpClient client = new HttpClient();
-                    GetMethod post = new GetMethod(reqUri);
-                    post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-                    int result = client.executeMethod(post);
-                    String slist = post.getResponseBodyAsString();
-                    ml.setGeoJSON(slist);
-                } catch (Exception e) {
-                    System.out.println("error loading new geojson:");
-                    e.printStackTrace(System.out);
-                }
-
-                reloadScript += openLayersJavascript.reloadMapLayer(ml);
             }
             processedLayers.add(ml.getName());
             //} catch (Exception e) {
@@ -3162,6 +3278,31 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } catch (SuspendNotAllowedException ex) {
             Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     * watch for layer loaded signals
+     */
+    public void onChange$tbxLayerLoaded() {
+        for (EventListener el : layerLoadedChangeEvents.values()) {
+            try {
+                el.onEvent(null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    public String getLayerLoaded(){
+        return tbxLayerLoaded.getValue();
+    }
+
+    public void addLayerLoadedEventListener(String eventName, EventListener eventListener) {
+        layerLoadedChangeEvents.put(eventName, eventListener);
+    }
+
+    public void removeLayerLoadedEventListener(String eventName) {
+        layerLoadedChangeEvents.remove(eventName);
     }
 
     public void updateUserMapList() {
@@ -3345,6 +3486,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public MapLayer mapSpeciesByLsid(String lsid, String species) {
+        if(chkPointsCluster.isChecked()){
+            return mapSpeciesByLsidCluster(lsid, species);
+        }else{
+            return mapSpeciesByLsidPoints(lsid,species);
+        }
+    }
+    MapLayer mapSpeciesByLsidCluster(String lsid, String species) {
         try {
             String satServer = settingsSupplementary.getValue(SAT_URL);//"http://spatial-dev.ala.org.au";
 
@@ -3354,59 +3502,57 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String area = getViewArea();
 
             StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append("/species");
-//            sbProcessUrl.append("/lsid/").append(lsid);
-//            sbProcessUrl.append("/geojson");
-//
-//            HttpClient client = new HttpClient();
-//            PostMethod post = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
-//            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//
-//            int result = client.executeMethod(post);
-//            String slist = post.getResponseBodyAsString();
-//
-//            System.out.println(slist);
-//
-//            getMapComposer().addGeoJSONLayer(species, satServer + "/alaspatial/" + slist);
 
-            sbProcessUrl.append("/species");
+            //for plotting species by clustering
+            sbProcessUrl.append("species");
             sbProcessUrl.append("/cluster/").append(lsid);
             sbProcessUrl.append("/area/").append(URLEncoder.encode(area, "UTF-8"));
-            addGeoJSONLayer(species, satServer + "/alaspatial/" + sbProcessUrl.toString());
+            MapLayer ml = addGeoJSONLayer(species, satServer + "/alaspatial/" + sbProcessUrl.toString());
 
-            MapLayer ml = getMapLayer(species);
-            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", lsid);
-            MapLayerMetadata md = ml.getMapLayerMetadata();
-            if (md == null) {
-                md = new MapLayerMetadata();
-                ml.setMapLayerMetadata(md);
+            if(ml != null){
+                String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", lsid);
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(infoUrl + "\n" + species);
+                md.setSpeciesLsid(lsid);
             }
-            md.setMoreInfo(infoUrl + "\n" + species);
-            md.setSpeciesLsid(lsid);
+        
+        } catch (Exception ex) {
+            //logger.debug(ex.getMessage());
+            System.out.println("Opps error in mapsSpeciesByLsid");
+            ex.printStackTrace(System.out);
+        }
+        return null;
+    }
 
-            /*
-            if (StringUtils.isNotBlank(slist) && !slist.equalsIgnoreCase("[]")) {
-            JSONArray ja = JSONArray.fromObject(slist);
-            
-            JSONObject jo = ja.getJSONObject(0);
-            System.out.println(jo.size());
-            String sn = (String) jo.get("scientificname");
-            String tr = (String) jo.get("rankstring");
-            
-            if (tr.equalsIgnoreCase("species")) {
-            tr = "scientificname";
-            }
-            System.out.println("sending to map: " + tr + " = " + sn);
-            openLayersJavascript.setAdditionalScript(
-            "window.mapFrame.zoomBoundsGeoJSON('" + sn.replaceAll("'", "\\'") + "');"
-            + openLayersJavascript.getAdditionalScript());
-            return mapSpeciesByNameRank(sn, tr, null);
-            } else {
-            Messagebox.show("No occurrence data found for LSID: " + URLDecoder.decode(StringUtils.replace(lsid, "__", "."), "UTF-8"));
-            }
-             *
-             */
+    MapLayer mapSpeciesByLsidPoints(String lsid, String species) {
+        try {
+            String satServer = settingsSupplementary.getValue(SAT_URL);//"http://spatial-dev.ala.org.au";
 
+            lsid = StringUtils.replace(lsid, ".", "__");
+            lsid = URLEncoder.encode(lsid, "UTF-8");
+
+            String area = getViewArea();
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+
+            //for plotting species by points
+            sbProcessUrl.append("species");
+            sbProcessUrl.append("/lsid/").append(lsid);
+            sbProcessUrl.append("/geojson");
+            HttpClient client = new HttpClient();
+            //PostMethod post = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
+            //post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            GetMethod post = new GetMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
+            String [] results = slist.split("\n");
+            //getMapComposer().addGeoJSONLayer(species, satServer + "/alaspatial/" + slist);
+            addGeoJSONLayerProgressBar(species, satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), lsid);//set progress bar with maximum
         } catch (Exception ex) {
             //logger.debug(ex.getMessage());
             System.out.println("Opps error in mapsSpeciesByLsid");
@@ -3802,5 +3948,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
 
         return wkt;
+    }
+
+    public Session getSession() {
+        return Sessions.getCurrent();
     }
 }

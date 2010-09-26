@@ -12,6 +12,28 @@
             vertical-align: middle;
             }
         </style>
+
+        <style>
+         .envlist .z-list-header-cnt input, .z-list-group-inner div input {
+         display: none;
+         }
+
+         .envlist div.z-list-cell-cnt {
+         font-size: 10px;
+         }
+
+         .lcRed {
+         background: #bb2222;
+         }
+         .lcYellow {
+         background: #ffff22;
+         }
+         .lcGreen {
+         background: #22aa22;
+         }
+
+        </style>
+
 <!--
         <div sclass="highlighted" visible="false">
             <vbox>
@@ -38,10 +60,11 @@
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
                 </hbox>
-                <listbox id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
+                <listbox sclass="envlist" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
                     <listhead>
-                        <!-- listheader label="catagory" width="120px" / -->
-                        <listheader label="name" width="" />
+                        <listheader label="catagory" width="190px" />
+                        <listheader label="name" width="190px" />
+                        <listheader label=" " width="20px" />
                         <listheader label=" " width="10px" />
                     </listhead>
                  </listbox>

@@ -172,7 +172,7 @@ public class LayersUtil {
      * @param lsid LSID of the species 
      * @return 
      */
-    public boolean isPestSpecies(String lsid) {
+    static public boolean isPestSpecies(String lsid) {
 
         String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
 

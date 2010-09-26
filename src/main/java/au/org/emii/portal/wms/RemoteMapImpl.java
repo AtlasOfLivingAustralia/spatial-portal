@@ -398,6 +398,97 @@ public class RemoteMapImpl implements RemoteMap {
         return geoJSON;
     }
 
+    public String getJson(String uri){
+        return geoJSONUtilities.getJson(uri);
+    }
+
+    @Override
+    public MapLayer createGeoJSONLayerWithGeoJSON(String label, String uri, String geojson) {
+        MapLayer geoJSON = new MapLayer();
+
+        geoJSON.setName(label);
+
+        geoJSON.setId(uri);
+        geoJSON.setLayer(label);
+        
+        if (uri.indexOf("?") == -1) {
+            geoJSON.setUri(uri);
+        } else {
+            geoJSON.setUri(uri.substring(0, uri.lastIndexOf("?")));
+        }
+
+        logger.debug(uri);
+
+        //get a random colour
+        //Random rand = new java.util.Random();
+        //int r = rand.nextInt(255);
+        //int g = rand.nextInt(255);
+        //int b = rand.nextInt(255);
+
+        //get colour as label hash
+        //TODO: when SPECIES use hash of ID instead of name
+        int hash = Math.abs(label.hashCode());
+        int r = (hash >> 16) % 255;
+        int g = (hash >> 8) % 255;
+        int b = (hash) % 255;
+
+        geoJSON.setBlueVal(b);
+        geoJSON.setGreenVal(g);
+        geoJSON.setRedVal(r);
+
+        geoJSON.setSizeVal(4); //TODO: default point size
+        geoJSON.setSizeUncertain(false);
+
+        //Color c =new Color(r,g,b);
+        //String hexColour = Integer.toHexString( c.getRGB() & 0x00ffffff );
+
+        String rgbColour = "rgb(" + String.valueOf(r) + "," + String.valueOf(g) + "," + String.valueOf(b) + ")";
+
+        geoJSON.setEnvColour(rgbColour);
+
+        geoJSON.setType(layerUtilities.GEOJSON);
+        System.out.println("getting json .... " + uri);
+
+        //geoJSON.setGeoJSON(geojson);//geoJSONUtilities.getJson(uri));
+
+        //lets parse the json to find out what type of feature it is
+        //JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
+        //int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
+
+        // set the metadata
+        // first check if its a species by looking for
+        // 'taxonconceptid'
+        /*
+        if (jo.containsKey("taxonconceptid")) {
+        System.out.println("species.metadata");
+        jo.
+        }
+        geoJSON.getMapLayerMetadata().setMoreInfo("");
+         *
+         */
+        //if (geoJSON.getMapLayerMetadata() == null) {
+        //    geoJSON.setMapLayerMetadata(new MapLayerMetadata());
+        //}
+        //String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);
+        //if (!taxonconceptid.equals("")) {
+         //   System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
+          //  geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid + "\n" + label);
+        //} else {
+         //   System.out.println("not species");
+          //  geoJSON.getMapLayerMetadata().setMoreInfo("");
+        //}
+
+        //if (geomTypeCheck >= 0) {
+            geoJSON.setGeometryType(geoJSONUtilities.POINT);
+            geoJSON.setQueryable(true);
+            geoJSON.setDynamicStyle(true);
+        //} else {
+          //  geoJSON = null;
+        //}
+
+        return geoJSON;
+    }
+
     /**
      * Create a MapLayer instance and test that an image can be read from
      * the URI.

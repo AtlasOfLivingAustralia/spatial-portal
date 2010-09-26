@@ -48,7 +48,7 @@ public class VisibilityToggleEventListener implements EventListener {
 					
 				openLayersJavascript.execute(
 						openLayersJavascript.iFrameReferences +
-						openLayersJavascript.activateMapLayer(layer) +
+						openLayersJavascript.activateMapLayer(layer,false,true) +
 						openLayersJavascript.updateMapLayerIndexes(
 								portalSession.getActiveLayers()
 						)

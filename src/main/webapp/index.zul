@@ -225,6 +225,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             }
 
             function reloadSpecies() {
+          //  return;
+            
             var tbxReloadLayers = $e('${tbxReloadLayers.uuid}');
         var currentTime = new Date();
         tbxReloadLayers.value = "z=" + map.zoom;
@@ -245,9 +247,14 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         function showInfo(curr) {
             window.mapFrame.showInfo(curr); 
         }
+
+        function showInfoOne() {
+            window.mapFrame.showInfoOne();
+        }
         </script>
 
         <textbox id="tbxPrintHack" visible="false"/>
+        <textbox id="tbxLayerLoaded" visible="false"/>
         
         <!-- external content (Links) popup -->
         <window id="externalContentWindow" visible="false" width="80%"
@@ -255,9 +262,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 use="au.org.emii.portal.composer.ExternalContentComposer"
                 apply="au.org.emii.portal.composer.ExternalContentComposer">
             <caption id="caption">
+                <toolbarbutton id="reset" label="Reset Window" />
                 <toolbarbutton id="breakout" label="Open in new Window" />
                 <toolbarbutton id="hide" label="Close" />
             </caption>
+            <separator />
             <iframe id="externalContentIframe" width="100%" height="100%" />
         </window>
 
@@ -722,6 +731,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                                     <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
+                                                    <separator />
+                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="true" />
                                                 </vbox>
 
                                                 <html>
@@ -1065,6 +1076,25 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     window.mapFrame.loadBaseMap();
                 }
 
+                 map.signalLayerLoaded = function (layerName) {
+
+                        var tbx = $e('${tbxLayerLoaded.uuid}');
+                        tbx.value = layerName;
+
+                        if (document.createEvent) {
+                        var evt = document.createEvent('HTMLEvents');
+                        evt.initEvent( 'blur', false, false);
+                        tbx.dispatchEvent(evt);
+
+                        var evt2 = document.createEvent('HTMLEvents');
+                        evt2.initEvent( 'change', false, false);
+                        tbx.dispatchEvent(evt2);
+                        } else if (document.createEventObject) {
+                        tbx.fireEvent('onblur');
+                        tbx.fireEvent('onchange');
+                        }
+                    }
+
             };
 
             jQuery('.hidden_image :hidden').show();
@@ -1111,6 +1141,8 @@ function changeBaseLayer(type) {
         map.setBaseLayer(bLayer);
     }
 }
+
+           
 
 
             ]]>

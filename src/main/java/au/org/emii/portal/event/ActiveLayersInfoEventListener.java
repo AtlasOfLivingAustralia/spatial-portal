@@ -27,7 +27,7 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
                 //System.out.println("activeLayer.metdata: " + activeLayer.getMapLayerMetadata().getMoreInfo());
                 if (activeLayer.getMapLayerMetadata() != null && activeLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
                     // send the user to the BIE page for the species
-                    System.out.println("attempting to open metadata in new window:" + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
+                    //System.out.println("attempting to open metadata in new window:" + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
                     /*Clients.evalJavaScript("window.open('"
                             + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__",".")
                             + "', 'metadataWindow');");

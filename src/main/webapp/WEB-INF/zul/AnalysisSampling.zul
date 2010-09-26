@@ -4,6 +4,11 @@
     <window id="samplingwindow" use="org.ala.spatial.analysis.web.SamplingWCController"
             apply="org.ala.spatial.analysis.web.SamplingWCController">
 
+        <style>
+            .ctxenvlist div.z-list-cell-cnt {
+                font-size: 10px;
+             }
+        </style>
         <div sclass="highlighted" visible="false" >
             <vbox>
                 <label value="Step 1: Restrict area" />
@@ -39,12 +44,19 @@
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
                 </hbox>
-                <listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="90%" >
+                <!-- listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="90%" >
                     <listhead>
                         <listheader label="Select layers" />
                     </listhead>
 
-                </listbox>
+                </listbox -->
+                <listbox sclass="ctxenvlist" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
+                    <listhead>
+                        <listheader label="catagory" width="190px" />
+                        <listheader label="name" width="190px" />
+                        <listheader label=" " width="20px" />
+                    </listhead>
+                 </listbox>
             </vbox>
         </tabpanel>
         <tabpanel>
