@@ -237,15 +237,14 @@ public class SpeciesController {
             File fDir = new File(outputpath);
             fDir.mkdir();
 
-            Integer partsCount = 0;
-            String gjsonFile = SamplingService.getLSIDAsGeoJSONIntoParts(lsid, fDir,partsCount);
+            String gjsonFile = SamplingService.getLSIDAsGeoJSONIntoParts(lsid, fDir);
 
             long end = System.currentTimeMillis();
             System.out.println("get species by lsid geojson: " + (end - start) + "ms");
 
 
             //return "output/sampling/" + currTime + "/" + gjsonFile;
-            return "output/sampling/" + gjsonFile + "\n" + partsCount.intValue();
+            return "output/sampling/" + gjsonFile;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

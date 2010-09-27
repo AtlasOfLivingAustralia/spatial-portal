@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
+import java.util.Vector;
+import org.ala.spatial.analysis.cluster.Record;
 
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
@@ -542,111 +544,84 @@ public class FilteringService implements Serializable {
      * 1. split data into _0 to n
      * 2. add # pieces onto end
      *
-     * @param session_id_
-     * @param region
+     * @param session_id_ must be 'none'
+     * @param region SimpleRegion
      * @param outputpath
      * @return
      */
     public static String getSamplesListAsGeoJSON(String session_id_, SimpleRegion region, File outputpath) {
-        int[] records;
         int i;
 
         /* check for "none" session */
+        Vector dataRecords = null;
         if (session_id_.equals("none")) {
-            /* TODO: fix this up when no longer using ArrayList
-            in getSpeciesBitset */
-            records = OccurrencesIndex.getRecordsInside(region);
-            System.out.println("region:" + records);
-
+            dataRecords = OccurrencesIndex.sampleSpeciesForClustering(null,region,TabulationSettings.MAX_RECORD_COUNT);
         } else {
-            /* load session */
-            FilteringService fs = FilteringService.getSession(session_id_);
-
-            /* get top speciesrecord */
-            ArrayList<Integer> rk = fs.getTopSpeciesRecord();
-
-            /* get record indexes */
-            if (rk.size() == 0) {
-                return "";	//no records to return;
-            }
-            records = new int[rk.size()];
-            int p = 0;
-
-            if (region == null) {
-                /* no defined region, use all */
-                for (i = 0; i < rk.size(); i++) {
-                    records[p++] = rk.get(i);
-                }
-            } else {
-                /* restrict by region */
-
-                /* TODO: check, could be faster to use
-                 * OccurrencesIndex.getRecordsInside(region)
-                 */
-                for (i = 0; i < rk.size(); i++) {
-                    if (OccurrencesIndex.inRegion(rk.get(i), region)) {
-                        records[p++] = rk.get(i);
-                    }
-                }
-                if (p > 0) {
-                    int[] records_tmp = java.util.Arrays.copyOf(records, p);
-                    records = records_tmp;
-                } else {
-                    return "";	//no records to return
-                }
-            }
+            return null;    //not supported right now
         }
 
-        //test for no records
-        if (records == null || records.length == 0) {
-            return "";
-        }
-
-        /* get samples records from records indexes */
-        String[] samples = OccurrencesIndex.getSortedRecords(records);
         double[][] bbox = region.getBoundingBox();
+        int max_parts_size = 2000;
+        int count = 0;
 
-        StringBuffer sbGeoJSON = new StringBuffer();
-        sbGeoJSON.append("{");
-        sbGeoJSON.append("  \"type\": \"FeatureCollection\",");
-        sbGeoJSON.append("  \"features\": [");
-        for (i = 0; i < samples.length; i++) {
-            sbGeoJSON.append(getRecordAsGeoJSON(samples[i]));
-            if (i<samples.length-1) sbGeoJSON.append(","); 
-            //sbGeoJSON.append("\r\n");
-        }
-        sbGeoJSON.append("  ],");
-        sbGeoJSON.append("  \"crs\": {");
-        sbGeoJSON.append("    \"type\": \"EPSG\",");
-        sbGeoJSON.append("    \"properties\": {");
-        sbGeoJSON.append("      \"code\": \"4326\"");
-        sbGeoJSON.append("    }");
-        sbGeoJSON.append("  },");
-        sbGeoJSON.append("  \"bbox\": [");
-        sbGeoJSON.append("    ").append(bbox[0][0]).append(",").append(bbox[0][1]).append(",").append(bbox[1][0]).append(",").append(bbox[1][1]);
-        sbGeoJSON.append("  ]");
-        sbGeoJSON.append("}");
+        //-1 on samples.length for header
+        int partCount = (int)Math.ceil((dataRecords.size()) / (double)max_parts_size);
 
-        /* write samples to a file */
-        try {
-            SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
-            String sdate = date.format(new Date());
-
-            File temporary_file = java.io.File.createTempFile("Sample_" + sdate + "_", ".csv", outputpath);
-            FileWriter fw = new FileWriter(temporary_file);
-
-            fw.write(sbGeoJSON.toString());
-
-            fw.close();
-
-            return temporary_file.getName();	//return location of temp file
-
-        } catch (Exception e) {
-            (new SpatialLogger()).log("FilteringService: getSamplesListAsGeoJSON()", e.toString());
+        //test for filename, return if it exists
+        String name = "area_" + String.valueOf(System.currentTimeMillis());
+        File file;
+        String filename = outputpath + File.separator + name;
+        try{
+            file = new File(filename + "_" + (partCount-1));
+            if(file.exists()){
+                return name + "\n" + partCount;
+            }
+        }catch(Exception e){
             e.printStackTrace();
         }
-        return "";
 
+        for(int j=1;j<dataRecords.size();j+=max_parts_size){
+
+            StringBuffer sbGeoJSON = new StringBuffer();
+            sbGeoJSON.append("{");
+            sbGeoJSON.append("\"type\": \"FeatureCollection\",");
+            sbGeoJSON.append("\"features\": [");
+            int len = j + max_parts_size;
+            if(len > dataRecords.size()){
+                len = dataRecords.size();
+            }
+            for (i = j; i < len; i++) {
+                String s = getRecordAsGeoJSON((Record)dataRecords.get(i));
+                if(s != null){
+                    sbGeoJSON.append(s);
+                    if (i<len-1) sbGeoJSON.append(",");
+                }
+            }
+            sbGeoJSON.append("],");
+            sbGeoJSON.append("\"crs\": {");
+            sbGeoJSON.append("\"type\": \"EPSG\",");
+            sbGeoJSON.append("\"properties\": {");
+            sbGeoJSON.append("\"code\": \"4326\"");
+            sbGeoJSON.append("}");
+            sbGeoJSON.append("}");
+            sbGeoJSON.append("}");
+
+            /* write samples to a file */
+            try {
+                FileWriter fw = new FileWriter(
+                        filename + "_" + count);
+                count++;
+
+                fw.write(sbGeoJSON.toString());
+
+                fw.close();
+
+            } catch (Exception e) {
+                (new SpatialLogger()).log("FilteringService: getSamplesListAsGeoJSON()", e.toString());
+                e.printStackTrace();
+            }
+        }
+        return name + "\n" + partCount;
     }
 
     private static String getRecordAsGeoJSON(String rec) {
@@ -802,4 +777,34 @@ public class FilteringService implements Serializable {
         System.out.println("getFilters:" + fs.layerfilters.size() + " " + lf.length);
         return lf;
     }
+
+    private static String getRecordAsGeoJSON(Record record) {
+        StringBuffer sbRec = new StringBuffer();
+        sbRec.append("{");
+        sbRec.append("  \"type\":\"Feature\",");
+        StringBuffer append = sbRec.append("  \"id\":\"occurrences.data.").append(record.getId()).append("\",");
+        sbRec.append("  \"geometry\":{");
+        sbRec.append("      \"type\":\"Point\",");
+        sbRec.append("      \"coordinates\":[\"").append(record.getLongitude()).append("\",\"").append(record.getLatitude()).append("\"]");
+        sbRec.append("   },");
+        sbRec.append("  \"geometry_name\":\"the_geom\",");
+        sbRec.append("  \"properties\":{");
+
+            sbRec.append("      \"").append("u")
+                    .append("\":\"").append(record.getUncertainity())
+                    .append("\"");
+                sbRec.append(",");
+
+            sbRec.append("      \"").append("oi")
+                    .append("\":\"").append(record.getId())
+                    .append("\"");
+
+        sbRec.append("  }");
+        sbRec.append("}");
+
+        return sbRec.toString();
+
+    }
+
+
 }

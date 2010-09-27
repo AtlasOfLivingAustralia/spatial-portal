@@ -218,6 +218,13 @@ public class TabulationSettings {
     public static int [] geojson_property_fields;
 
     /**
+     * for sensitive coordinate handling
+     */
+    public static String occurrences_id_field;
+    public static String occurrences_sen_long_field;
+    public static String occurrences_sen_lat_field;
+
+    /**
      * loads settings form name of the appropriate xml resource file
      *
      * @param filename name xml resource file to load
@@ -455,6 +462,10 @@ public class TabulationSettings {
         }
         
         process_estimate_smoothing = Integer.parseInt(xr.getValue("process_estimate_smoothing"));
+
+        occurrences_id_field = xr.getValue("occurrences_id_field");
+        occurrences_sen_long_field = xr.getValue("occurrences_sen_long_field");
+        occurrences_sen_lat_field = xr.getValue("occurrences_sen_lat_field");
     }
 
     static public String getPath(String layerName) {

@@ -413,7 +413,7 @@ public class FilteringWSController {
      * @param req
      * @return
      */
-    @RequestMapping(value = "/apply/pid/{pid}/samples/geojson", method = RequestMethod.POST)
+    @RequestMapping(value = "/apply/pid/{pid}/samples/geojson", method = RequestMethod.GET)
     public
     @ResponseBody
     String getSamplesListAsGeoJSON(@PathVariable String pid, HttpServletRequest req) {
@@ -435,15 +435,14 @@ public class FilteringWSController {
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
-            //String currentPath = TabulationSettings.base_output_dir;
-            long currTime = System.currentTimeMillis();
-            String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator + currTime + File.separator;
+            String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
             
             String gjsonFile = FilteringService.getSamplesListAsGeoJSON(pid, region, fDir);
 
-            return "output/filtering/" + currTime + "/" + gjsonFile;
+            System.out.println("getSamplesListAsGeoJSON:" + gjsonFile);
+            return "output/filtering/" + gjsonFile;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
