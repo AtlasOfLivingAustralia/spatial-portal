@@ -85,18 +85,13 @@ public class AnalysisJobMaxent extends AnalysisJob {
             setProgress(0, "dumping species data");
 
             SamplingService ss = new SamplingService();
-            String speciesfile = ss.sampleSpecies(taxon, null);
-            CSVReader reader = new CSVReader(new FileReader(speciesfile));
+            double [] points = ss.sampleSpeciesPointsSensitive(taxon, region, null);
             StringBuffer sbSpecies = new StringBuffer();
-            String[] nextLine;
             // get the header
-            nextLine = reader.readNext();
             sbSpecies.append("species, longitude, latitude");
             sbSpecies.append(System.getProperty("line.separator"));
-            while ((nextLine = reader.readNext()) != null) {
-                // nextLine[] is an array of values from the line
-                //System.out.println(nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1] + "etc...");
-                sbSpecies.append("species, " + nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1]);
+            for(int i=0;i<points.length;i+=2){
+                sbSpecies.append("species, " + points[i] + ", " + points[i+1]);
                 sbSpecies.append(System.getProperty("line.separator"));
             }
 

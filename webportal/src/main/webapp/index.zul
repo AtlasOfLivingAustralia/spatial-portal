@@ -732,7 +732,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
                                                     <separator />
-                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="true" />
+                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="false" visible="false" />
                                                 </vbox>
 
                                                 <html>

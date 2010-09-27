@@ -73,37 +73,17 @@ public class MaxentWSController {
 
             // dump the species data to a file
             System.out.println("dumping species data");
+
             SamplingService ss = new SamplingService();
-
-            /*
-             * // Adam has changed the code to return a file rather than an array
-            String[] csvdata = ss.sampleSpecies(taxon, null).split("\n");
+            double [] points = ss.sampleSpeciesPointsSensitive(taxon, null, null);
             StringBuffer sbSpecies = new StringBuffer();
-            for (int i = 0; i < csvdata.length; i++) {
-            String[] recdata = csvdata[i].split(",");
-            sbSpecies.append("species, " + recdata[recdata.length - 2] + ", " + recdata[recdata.length - 1]);
-            }
-             *
-             */
-
-            String speciesfile = ss.sampleSpecies(taxon, null);
-            CSVReader reader = new CSVReader(new FileReader(speciesfile));
-
-            StringBuffer sbSpecies = new StringBuffer();
-            String[] nextLine;
-
             // get the header
-            nextLine = reader.readNext();
             sbSpecies.append("species, longitude, latitude");
             sbSpecies.append(System.getProperty("line.separator"));
-
-            while ((nextLine = reader.readNext()) != null) {
-                // nextLine[] is an array of values from the line
-                System.out.println(nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1] + "etc...");
-                sbSpecies.append("species, " + nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1]);
+            for(int i=0;i<points.length;i+=2){
+                sbSpecies.append("species, " + points[i] + ", " + points[i+1]);
                 sbSpecies.append(System.getProperty("line.separator"));
             }
-
 
             String envlist = req.getParameter("envlist");
             String[] envnameslist = envlist.split(":");
@@ -236,31 +216,6 @@ public class MaxentWSController {
 
             String taxon = req.getParameter("taxonid");
 
-            ssets = new SpatialSettings();
-
-            // dump the species data to a file
-            System.out.println("dumping species data");
-            SamplingService ss = new SamplingService();
-
-            String speciesfile = ss.sampleSpecies(taxon, null);
-            CSVReader reader = new CSVReader(new FileReader(speciesfile));
-
-            StringBuffer sbSpecies = new StringBuffer();
-            String[] nextLine;
-
-            // get the header
-            nextLine = reader.readNext();
-            sbSpecies.append("species, longitude, latitude");
-            sbSpecies.append(System.getProperty("line.separator"));
-
-            while ((nextLine = reader.readNext()) != null) {
-                // nextLine[] is an array of values from the line
-                System.out.println(nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1] + "etc...");
-                sbSpecies.append("species, " + nextLine[nextLine.length - 2] + ", " + nextLine[nextLine.length - 1]);
-                sbSpecies.append(System.getProperty("line.separator"));
-            }
-
-
             String envlist = req.getParameter("envlist");
             String[] envnameslist = envlist.split(":");
             String[] envpathlist = getEnvFiles(envlist);
@@ -278,8 +233,22 @@ public class MaxentWSController {
             String cutDataPath = ssets.getEnvDataPath();
             Layer [] layers = getEnvFilesAsLayers(req.getParameter("envlist"));
             cutDataPath = GridCutter.cut(layers, region, filter, null);
-            
+
             System.out.println("CUTDATAPATH: " + region + " " + cutDataPath);
+
+            ssets = new SpatialSettings();
+            // dump the species data to a file
+            System.out.println("dumping species data");
+            SamplingService ss = new SamplingService();
+            double [] points = ss.sampleSpeciesPointsSensitive(taxon, region, null);
+            StringBuffer sbSpecies = new StringBuffer();
+            // get the header
+            sbSpecies.append("species, longitude, latitude");
+            sbSpecies.append(System.getProperty("line.separator"));
+            for(int i=0;i<points.length;i+=2){
+                sbSpecies.append("species, " + points[i] + ", " + points[i+1]);
+                sbSpecies.append(System.getProperty("line.separator"));
+            }
 
             MaxentSettings msets = new MaxentSettings();
             msets.setMaxentPath(ssets.getMaxentCmd());

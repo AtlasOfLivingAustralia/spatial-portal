@@ -520,202 +520,202 @@
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
                         <environmental_data_file>
-                <environmental_data_file_name>bdensity</environmental_data_file_name>
+                <environmental_data_file_name>substrate_bdensity</environmental_data_file_name>
                 <environmental_data_file_display_name>Bulk density</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>calcrete</environmental_data_file_name>
+                <environmental_data_file_name>substrate_calcrete</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil calcrete</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>clay</environmental_data_file_name>
+                <environmental_data_file_name>substrate_clay</environmental_data_file_name>
                 <environmental_data_file_display_name>Clay Percent</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>coarse</environmental_data_file_name>
+                <environmental_data_file_name>substrate_coarse</environmental_data_file_name>
                 <environmental_data_file_display_name>Soils coarse</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>corg0</environmental_data_file_name>
+                <environmental_data_file_name>substrate_corg0</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil carbon store pre-European</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>datasupt</environmental_data_file_name>
+                <environmental_data_file_name>substrate_datasupt</environmental_data_file_name>
                 <environmental_data_file_display_name>Substrate data reliability</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>distanywater</environmental_data_file_name>
+                <environmental_data_file_name>substrate_distanywater</environmental_data_file_name>
                 <environmental_data_file_display_name>Distance to any water (weighted)</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>distcoast</environmental_data_file_name>
+                <environmental_data_file_name>substrate_distcoast</environmental_data_file_name>
                 <environmental_data_file_display_name>Distance to coast</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>distnonpermw</environmental_data_file_name>
+                <environmental_data_file_name>substrate_distnonpermw</environmental_data_file_name>
                 <environmental_data_file_display_name>Distance to non-permanent water (weighted)</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>distpermwat</environmental_data_file_name>
+                <environmental_data_file_name>substrate_distpermwat</environmental_data_file_name>
                 <environmental_data_file_display_name>Distance to permanent water (weighted)</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>erosional</environmental_data_file_name>
+                <environmental_data_file_name>substrate_erosional</environmental_data_file_name>
                 <environmental_data_file_display_name>Proportion of erosional surfaces</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>fert</environmental_data_file_name>
+                <environmental_data_file_name>substrate_fert</environmental_data_file_name>
                 <environmental_data_file_display_name>Lithology fertility</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>geollmeanage</environmental_data_file_name>
+                <environmental_data_file_name>substrate_geollmeanage</environmental_data_file_name>
                 <environmental_data_file_display_name>Lithology mean age (log)</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>geollrngeage</environmental_data_file_name>
+                <environmental_data_file_name>substrate_geollrngeage</environmental_data_file_name>
                 <environmental_data_file_display_name>Lithology mean age range (log)</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>geolmeanage</environmental_data_file_name>
+                <environmental_data_file_name>substrate_geolmeanage</environmental_data_file_name>
                 <environmental_data_file_display_name>Lithology mean age</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>geolrngeage</environmental_data_file_name>
+                <environmental_data_file_name>substrate_geolrngeage</environmental_data_file_name>
                 <environmental_data_file_display_name>Lithology age range</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>gravity</environmental_data_file_name>
+                <environmental_data_file_name>substrate_gravity</environmental_data_file_name>
                 <environmental_data_file_display_name>Bouger gravity anamalies</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>hpedality</environmental_data_file_name>
+                <environmental_data_file_name>substrate_hpedality</environmental_data_file_name>
                 <environmental_data_file_display_name>Hydrological score of pedality</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>ksat</environmental_data_file_name>
+                <environmental_data_file_name>substrate_ksat</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil average saturated hydrologic conductivity</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>ks_err</environmental_data_file_name>
+                <environmental_data_file_name>substrate_ks_err</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil Saturated hydrological conductivity uncertainty</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>magnetics</environmental_data_file_name>
+                <environmental_data_file_name>substrate_magnetics</environmental_data_file_name>
                 <environmental_data_file_display_name>Magnetic anomalies</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>mrrtf</environmental_data_file_name>
+                <environmental_data_file_name>substrate_mrrtf</environmental_data_file_name>
                 <environmental_data_file_display_name>Ridge top flatness</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>mrvbf</environmental_data_file_name>
+                <environmental_data_file_name>substrate_mrvbf</environmental_data_file_name>
                 <environmental_data_file_display_name>Valley bottom flatness index</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>nmnlconcn0</environmental_data_file_name>
+                <environmental_data_file_name>substrate_nmnlconcn0</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil nitrogen concentration pre-European</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>nmnln0</environmental_data_file_name>
+                <environmental_data_file_name>substrate_nmnln0</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil nitrogen store pre-European</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>ntotn0</environmental_data_file_name>
+                <environmental_data_file_name>substrate_ntotn0</environmental_data_file_name>
                 <environmental_data_file_display_name>Plant-available soil nitrogen pre-European</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>nutrients</environmental_data_file_name>
+                <environmental_data_file_name>substrate_nutrients</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil nutrient status</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>pedality</environmental_data_file_name>
+                <environmental_data_file_name>substrate_pedality</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil pedality</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>pmnlconcn0</environmental_data_file_name>
+                <environmental_data_file_name>substrate_pmnlconcn0</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil phosphorus pre-European</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>pmnln0</environmental_data_file_name>
+                <environmental_data_file_name>substrate_pmnln0</environmental_data_file_name>
                 <environmental_data_file_display_name>Plant-available soil mineral phosphorus pre-European</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>ptotn0</environmental_data_file_name>
+                <environmental_data_file_name>substrate_ptotn0</environmental_data_file_name>
                 <environmental_data_file_display_name>Plant-available total soil phosphorus pre-European</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>relief</environmental_data_file_name>
+                <environmental_data_file_name>substrate_relief</environmental_data_file_name>
                 <environmental_data_file_display_name>Topographic relief</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>ridgetopflat</environmental_data_file_name>
+                <environmental_data_file_name>substrate_ridgetopflat</environmental_data_file_name>
                 <environmental_data_file_display_name>Proportion of ridge top flatness</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>roughness</environmental_data_file_name>
+                <environmental_data_file_name>substrate_roughness</environmental_data_file_name>
                 <environmental_data_file_display_name>Topographic roughness</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>slope</environmental_data_file_name>
+                <environmental_data_file_name>substrate_slope</environmental_data_file_name>
                 <environmental_data_file_display_name>Topographic slope</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>soldepth</environmental_data_file_name>
+                <environmental_data_file_name>substrate_soldepth</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil depth</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>solpawhc</environmental_data_file_name>
+                <environmental_data_file_name>substrate_solpawhc</environmental_data_file_name>
                 <environmental_data_file_display_name>Plant-available water holding capacity</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>twi</environmental_data_file_name>
+                <environmental_data_file_name>substrate_twi</environmental_data_file_name>
                 <environmental_data_file_display_name>Topographic wetness index</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>valleybottom</environmental_data_file_name>
+                <environmental_data_file_name>substrate_valleybottom</environmental_data_file_name>
                 <environmental_data_file_display_name>Valley bottom Percent</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
             <environmental_data_file>
-                <environmental_data_file_name>wr_unr</environmental_data_file_name>
+                <environmental_data_file_name>substrate_wr_unr</environmental_data_file_name>
                 <environmental_data_file_display_name>Soil unreliable water retention parameters</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
@@ -1216,7 +1216,7 @@
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file-->
 <environmental_data_file>
-                <environmental_data_file_name>slope2</environmental_data_file_name>
+                <environmental_data_file_name>slope</environmental_data_file_name>
                 <environmental_data_file_display_name>Slope</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
@@ -1358,10 +1358,28 @@
     <occurances_csv_field_settings>0,1,1,2,2,2,2,0,2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
     <occurances_csv_fields_lookups>dataProviderId,dataResourceId,institutionCode,collectionCode</occurances_csv_fields_lookups-->
 
-    <occurances_csv_fields>occurrenceId,kingdomConceptId,phylumConceptId,classConceptId,orderConceptId,familyConceptId,genusConceptId,speciesConceptId,taxonConceptId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataProviderUid,dataProviderName,dataResourceUid,dataResourceDisplayName,institutionUid,institutionCode,institutionName,collectionUid,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
-    <occurances_csv_field_settings>0,1,1,2,2,2,2,2,2,0,0,0,0,0,0,0,0,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
-    <occurances_csv_fields_lookups>dataProviderUid,dataResourceUid,institutionUid,institutionCode,collectionUid,collectionCode</occurances_csv_fields_lookups>
-    <occurances_csv_field_pairs>classConceptId,class,orderConceptId,order,familyConceptId,family,genusConceptId,genus,speciesConceptId,species,taxonConceptId,scientificName</occurances_csv_field_pairs>
+    <occurances_csv_fields>id,kingdom_lsid,phylum_lsid,class_lsid,order_lsid,family_lsid,genus_lsid,species_lsid,taxon_concept_lsid,kingdom,phylum,class,order,family,genus,species,taxon_name,latitude,longitude,data_provider_uid,data_provider,data_resource_uid,data_resource,institution_code_uid,institution_code,institution_code_name,collection_code_uid,collection_code,catalogue_number,rank,country_code,lat_long_precision,altitudeMetres,depthCentimetres,year,month,occurrence_date,basis_of_record</occurances_csv_fields>
+    <occurances_csv_field_settings>0,1,1,2,2,2,2,2,2,0,0,0,0,0,0,0,0,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
+    <occurances_csv_fields_lookups>data_provider_uid,data_resource_uid,institution_code_uid,institution_code,collection_code_uid,collection_code</occurances_csv_fields_lookups>
+    <occurances_csv_field_pairs>class_lsid,class,order_lsid,order,family_lsid,family,genus_lsid,genus,species_lsid,species,taxon_concept_lsid,taxon_name</occurances_csv_field_pairs>
+
+    <!--
+        for sensitive data handling
+
+        1. occurrences_id_field must also appear in <occurances_csv_fields>
+        2. sensitive longitude and sensitive latitude must NOT
+            appear in <occurances_csv_fields>.
+
+        For analysis functions sensitive longitude and latitude coordinates are
+        used, if available.
+
+        For mapping functions <occurances_csv_field_settings> (4) and (3)
+        value columns are used.
+
+        -->
+    <occurrences_id_field>id</occurrences_id_field>
+    <occurrences_sen_long_field>sensitive_longitude</occurrences_sen_long_field>
+    <occurrences_sen_lat_field>sensitive_latitude</occurrences_sen_lat_field>
 
     <!--
         autocomplete friendly names for 1's & 2's (type names)
@@ -1386,13 +1404,13 @@
 
           -->
     <geojson_id>8</geojson_id>
-    <geojson_longitude>37</geojson_longitude>
-    <geojson_latitude>38</geojson_latitude>
+    <geojson_longitude>36</geojson_longitude>
+    <geojson_latitude>37</geojson_latitude>
     <!-- actual column names geojson_property_names>
-    kingdom,kingdomconceptid,family,familyconceptid,occurrenceid,scientificname,occurrenceDate,coordinateUncertaintyInMeters,taxonconceptid,dataprovideruid,dataprovidername,latitude,longitude
+    id, lat_long_precision
     </geojson_property_names -->
-    <geojson_property_names>k,ki,f,fi,oi,s,d,u,ti,pi,p,la,lo</geojson_property_names>
-    <geojson_property_fields>9,0,13,4,8,16,35,30,7,17,18,38,37</geojson_property_fields>
+    <geojson_property_names>oi,u</geojson_property_names>
+    <geojson_property_fields>8,29</geojson_property_fields>
     
     <!--
         column for inclusion as the first column in species list exports.
@@ -1407,7 +1425,7 @@ species name, common name.
 
 if not csv, then tab delimited
 -->
-    <common_names_csv>d:\mnt\ala\data\commonnames\common_names_ranks.txt</common_names_csv>
+    <common_names_csv>d:\mnt\ala\data\commonnames\common_names_harvested.txt</common_names_csv>
     <!--common_names_csv>/Users/ajay/projects/ala/data/archive-ala/occurrences/output4.csv</common_names_csv-->
 
 
@@ -1516,7 +1534,7 @@ if not csv, then tab delimited
             2 = data formatting/conversion
             -->
         <maxent_timing_0>0.002</maxent_timing_0>
-        <maxent_timing_1>0.00005</maxent_timing_1>
+        <maxent_timing_1>0.002</maxent_timing_1>
         <maxent_timing_2>20</maxent_timing_2>
     </processing_estimates>
 
