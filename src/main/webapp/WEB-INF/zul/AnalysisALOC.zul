@@ -60,11 +60,11 @@
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
                 </hbox>
-                <listbox sclass="envlist" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
-                    <listhead>
-                        <listheader label="catagory" width="190px" />
-                        <listheader label="name" width="190px" />
-                        <listheader label=" " width="20px" />
+                <listbox sclass="envlist" id="lbListLayers" fixedLayout="false" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
+                    <listhead sizable="true" >
+                        <listheader label="catagory"  />
+                        <listheader label="name" />
+                        <listheader label=" "  />
                         <listheader label=" " width="10px" />
                     </listhead>
                  </listbox>

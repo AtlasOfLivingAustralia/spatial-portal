@@ -83,11 +83,11 @@
                                 </listhead>
 
                             </listbox -->
-                            <listbox sclass="envlist" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
-                    <listhead>
-                        <listheader label="catagory" width="190px" />
-                        <listheader label="name" width="190px" />
-                        <listheader label=" " width="20px" />
+                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
+                    <listhead sizable="false">
+                        <listheader label="catagory"  />
+                        <listheader label="name" />
+                        <listheader label=" "  />
                         <listheader label=" " width="10px" />
                     </listhead>
                  </listbox>

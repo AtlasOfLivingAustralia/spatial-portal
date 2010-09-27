@@ -62,7 +62,7 @@
                         <separator />
                         <hbox>
                             <button label="Show species list preview" id="refreshButton2" visible="true" sclass="goButton"/>
-                            <button label="Map all species in active area" id="mapspecies" visible="false" sclass="goButton"/>
+                            <button label="Map all species occurrences in Active Area" id="mapspecies" visible="false" sclass="goButton"/>
                         </hbox>
                         <separator />
                         <label style="font-weight: bold" id="results_label" visible="false" />

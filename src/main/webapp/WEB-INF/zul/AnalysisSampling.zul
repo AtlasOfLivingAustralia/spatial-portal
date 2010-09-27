@@ -50,11 +50,11 @@
                     </listhead>
 
                 </listbox -->
-                <listbox sclass="ctxenvlist" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
-                    <listhead>
-                        <listheader label="catagory" width="190px" />
-                        <listheader label="name" width="190px" />
-                        <listheader label=" " width="20px" />
+                <listbox sclass="ctxenvlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
+                    <listhead sizable="true" >
+                        <listheader label="catagory"  />
+                        <listheader label="name" />
+                        <listheader label=" " />
                     </listhead>
                  </listbox>
             </vbox>

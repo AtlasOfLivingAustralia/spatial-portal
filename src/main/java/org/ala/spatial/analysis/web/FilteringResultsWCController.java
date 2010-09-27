@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.Writer;
@@ -337,23 +338,24 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            /*sbProcessUrl.append("/filtering/apply");
-            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-            sbProcessUrl.append("/samples/geojson");
-            String geojsonfile = postInfo(sbProcessUrl.toString());
-            //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
-            getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString(),"",false,results_count_occurrences,null);
-             */
-
             String area = getMapComposer().getViewArea();
 
-            sbProcessUrl.append("species");
-            sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area,"UTF-8"));
-            getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());            
-
-            //results_label_extra.setValue("");
-
+            StringBuffer sbProcessUrl = new StringBuffer();
+            if(!getMapComposer().useClustering()){
+                sbProcessUrl.append("/filtering/apply");
+                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+                sbProcessUrl.append("/samples/geojson");
+                sbProcessUrl.append("?area=").append(URLEncoder.encode(area,"UTF-8"));
+                String slist = getInfo(sbProcessUrl.toString());
+                //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);                               
+                System.out.println("onMapSpecies: " + slist);
+                String [] results = slist.split("\n");
+                getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
+            }else{                
+                sbProcessUrl.append("species");
+                sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area,"UTF-8"));
+                getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

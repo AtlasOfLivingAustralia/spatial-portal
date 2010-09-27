@@ -2963,6 +2963,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             md.setMoreInfo(infoUrl + "\n" + label);
             md.setSpeciesLsid(lsid);
+        }
+        if(partsCount > 0){
+            MapLayer ml = getMapLayer(label);
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
             md.setPartsCount(partsCount);
         }
 
@@ -3952,5 +3960,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public Session getSession() {
         return Sessions.getCurrent();
+    }
+
+    public boolean useClustering() {
+        return chkPointsCluster.isChecked();
     }
 }
