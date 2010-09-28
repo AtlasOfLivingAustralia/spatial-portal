@@ -314,37 +314,29 @@ public class OccurrencesIndex implements AnalysisIndexService {
         /* order is important */
         System.out.println("loading occurrences");
 
-        //occurrencesParts();
-        CountDownLatch cdl = new CountDownLatch(1);
-        class makingThread extends Thread {
-            public CountDownLatch cdl;
-
-            @Override
-            public void run(){
-                Vector<String[]> vsensitive_coordinates = OccurrencesIndex.getVSensitiveCoordinates(null);
-                try{
-                    cdl.await();
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-                exportFieldIndexes();
-                makeSortedLineStarts();
-                loadClusterRecords();
-                OccurrencesIndex.makeSensitiveCoordinates(vsensitive_coordinates);
-            }
-        };
-        makingThread mt = new makingThread();
-        mt.cdl = cdl;
-        mt.start();
-
         //begin here
         makePartsThreaded();
         mergeParts();
         exportSortedGEOPoints();
         exportSortedGridPoints();
 
-        //ok to proceed with sampling and filtering index builds while the thread continues
-        cdl.countDown();
+        //run these functions at the same time as other build_all requests
+        class makingThread extends Thread {
+            public CountDownLatch cdl;
+
+            @Override
+            public void run(){
+                exportFieldIndexes();
+                makeSortedLineStarts();
+                loadClusterRecords();
+                OccurrencesIndex.makeSensitiveCoordinates(null);
+            }
+        };
+        makingThread mt = new makingThread();
+        mt.start();
+
+        System.out.println("END of OCCURRENCES INDEX");
+        
     }
     TreeMap<String, Integer>[] columnKeys;
     int[] columnKeysToOccurrencesOrder;
@@ -358,6 +350,30 @@ public class OccurrencesIndex implements AnalysisIndexService {
             numberOfParts++;
         }
 
+        //merge sensitive coordinates parts
+        int i;
+        try{
+            FileWriter fw = new FileWriter(
+                    TabulationSettings.index_path
+                    + SENSITIVE_COORDINATES + ".csv");
+
+            for(i=0;i<numberOfParts;i++){
+                BufferedReader r = new BufferedReader(new FileReader(
+                        TabulationSettings.index_path
+                        + SENSITIVE_COORDINATES
+                        + i));
+                String s;
+                while((s=r.readLine()) != null){
+                    fw.append(s).append("\n");
+                }
+                r.close();
+            }
+
+            fw.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
         //TODO: move existing joined output to *_(numberOfParts+1) for inclusion
 
         String[] lines = new String[numberOfParts];
@@ -368,7 +384,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         try {
             //open output streams (points + sorted data)
-            int i;
             for (i = 0; i < numberOfParts; i++) {
                 reader[i] = new BufferedReader(new FileReader(
                         TabulationSettings.index_path + SORTED_FILENAME
@@ -931,6 +946,34 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
             throw new Error("occurrences file has no column: " + msg.toString());
         }
+    }
+
+    int[] getSensitiveColumnPositions(String [] line){
+        int[] sensitive_column_positions = new int[3];
+        int j;
+
+        for (j = 0; j < line.length; j++) {
+            if (TabulationSettings.occurrences_id_field.equalsIgnoreCase(line[j])) {
+                    sensitive_column_positions[0] = j;
+            }else if (TabulationSettings.occurrences_sen_lat_field.equalsIgnoreCase(line[j])) {
+                    sensitive_column_positions[2] = j;
+            }else if (TabulationSettings.occurrences_sen_long_field.equalsIgnoreCase(line[j])) {
+                    sensitive_column_positions[1] = j;
+            }
+        }
+
+        if(sensitive_column_positions[0] == -1
+                || sensitive_column_positions[1] == -1
+                || sensitive_column_positions[2] == -1){
+            System.out.println("cannot find column for one of: "
+                    + TabulationSettings.occurrences_id_field
+                    + ", " + TabulationSettings.occurrences_sen_long_field
+                    + ", " + TabulationSettings.occurrences_sen_lat_field);
+
+            return null;
+        }
+
+        return sensitive_column_positions;
     }
 
     /**
@@ -2950,6 +2993,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
 
         int countOccurrences = 0;
+        int errorCount = 0;
 
         for (i = 0; i < cells.length; i++) {
             int start = grid_key[cells[i][1]][cells[i][0]];
@@ -2974,6 +3018,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                         countOccurrences++;
                     }
+                   // }else{
+                   //     errorCount++;
+                   // }
                 }
             } else {
                 for (j = start; j < end; j++) {
@@ -2982,18 +3029,23 @@ public class OccurrencesIndex implements AnalysisIndexService {
                             bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                             countOccurrences++;
                         }
+                     //   }else{
+                     //       errorCount++;
+                     //   }
                     }
                 }
             }
         }
 
         int speciesCount = 0;
-        for (i = 0; i < bitset.size(); i++) {
+        int len = bitset.length();
+        for (i = 0; i < len; i++) {
             if (bitset.get(i)) {
                 speciesCount++;
             }
         }
 
+        System.out.println("errorCount=" + errorCount);
         int[] ret = new int[2];
         ret[0] = speciesCount;
         ret[1] = countOccurrences;
@@ -3611,6 +3663,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         return lbq;
     }
 
+    int [] sensitive_column_positions;
     /**
      * read header of occurrences file and setup for column positions
      */
@@ -3645,6 +3698,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             getColumnPositions(sa);
 
+            sensitive_column_positions = getSensitiveColumnPositions(sa);
+
             br.close();
         }catch(Exception e){
             e.printStackTrace();
@@ -3661,7 +3716,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         MakeOccurrenceParts [] threads = new MakeOccurrenceParts[TabulationSettings.analysis_threads];
         for(int i=0;i<threads.length;i++){
-            threads[i] = new MakeOccurrenceParts(lbq, cdl, column_positions);
+            threads[i] = new MakeOccurrenceParts(lbq, cdl, column_positions, sensitive_column_positions);
             threads[i].start();
         }
         try {
@@ -3686,88 +3741,15 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         (new SpatialLogger()).log("SensitiveCoordinates: start");
         try{
-            BufferedReader br = new BufferedReader(new FileReader(TabulationSettings.occurances_csv));
+            BufferedReader br = new BufferedReader(new FileReader(
+                    TabulationSettings.index_path
+                    + SENSITIVE_COORDINATES + ".csv"));
             String s;
             String [] sa;
 
-            long progress = 0;
-            int max_columns = 0;
-
-            int id_column_idx = -1;
-            int slong_column_idx = -1;
-            int slat_column_idx = -1;
-
             while((s = br.readLine()) != null){
-                //check for continuation line
-                while(s != null && s.length() > 0 && s.charAt(s.length()-1) == '\\'){
-                    String spart = br.readLine();
-                    if(spart == null){  //same as whole line is null
-                        break;
-                    }else{
-                        s.replace('\\', ' ');   //new line is same as 'space'
-                        s += spart;
-                    }
-                }//repeat as necessary
-
-                progress++;
-
-                //identify columns for "id, sensitive longitude, sensitive latitude"
-                sa = s.split(",");
-
-                /* handlers for the text qualifiers and ',' in the middle */
-                if (sa != null && max_columns == 0) {
-                    max_columns = sa.length;
-                }
-                if (sa != null && sa.length > max_columns) {
-                    sa = OccurrencesIndex.split(s);
-                }
-
-                /* remove quotes and commas from terms */
-                for (int i = 0; i < sa.length; i++) {
-                    if (sa[i].length() > 0) {
-                        sa[i] = sa[i].replace("\"", "");
-                        sa[i] = sa[i].replace(",", " ");
-                    }
-                }
-
-                if(progress == 1){ //first line
-                    int j;
-
-                    for (j = 0; j < sa.length; j++) {
-                        if (TabulationSettings.occurrences_id_field.equalsIgnoreCase(sa[j])) {
-                                id_column_idx = j;
-                        }else if (TabulationSettings.occurrences_sen_lat_field.equalsIgnoreCase(sa[j])) {
-                                slat_column_idx = j;
-                        }else if (TabulationSettings.occurrences_sen_long_field.equalsIgnoreCase(sa[j])) {
-                                slong_column_idx = j;
-                        }
-                    }
-
-                    if(id_column_idx == -1
-                            || slat_column_idx == -1
-                            || slong_column_idx == -1){
-                        System.out.println("cannot find column for one of: "
-                                + TabulationSettings.occurrences_id_field
-                                + ", " + TabulationSettings.occurrences_sen_long_field
-                                + ", " + TabulationSettings.occurrences_sen_lat_field);
-                        System.out.println("in: " + s);
-                        if(cdl != null) cdl.countDown();
-                        return null;
-                    }
-                }else {
-                    if(slat_column_idx >= sa.length
-                            || slong_column_idx >= sa.length
-                            || id_column_idx >= sa.length){
-                        System.out.println(s);
-                    }else if(sa[slong_column_idx] != null && sa[slong_column_idx].length() > 0
-                            && sa[slat_column_idx] != null && sa[slat_column_idx].length() > 0){
-                        String [] ns = new String[3];
-                        ns[0] = sa[id_column_idx];
-                        ns[1] = sa[slong_column_idx];
-                        ns[2] = sa[slat_column_idx];
-                        vsensitive_coordinates.add(ns);
-                    }
-                }
+                //id, longitude, latitude
+                vsensitive_coordinates.add(s.split(","));
             }
             br.close();
         }catch(Exception e){
@@ -3803,11 +3785,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             sensitiveCoordinates[i][1] = -1;
         }
 
-        int count_finds = 0;
-
         //read in OCC_SORTED.csv.  order sensitive_coordinates by id appearance
-        Vector<String[]> sorted_id_record = new Vector<String[]>(15000000);
-        String [] ir;
         try {
             BufferedReader br = new BufferedReader(
                     new FileReader(
@@ -3821,14 +3799,28 @@ public class OccurrencesIndex implements AnalysisIndexService {
             int idColumn = (new OccurrencesFieldsUtil()).onetwoCount;
 
             String [] search_for = new String[3];
+            int pos;
 
             while ((s = br.readLine()) != null) {
                 sa = s.split(",");
+                
+                search_for[0] = sa[idColumn];
+                pos = java.util.Collections.binarySearch(vsensitive_coordinates,
+                        search_for,
+                        new Comparator<String[]>(){
+                    public int compare(String[] c1, String[] c2){
+                        return c1[0].compareTo(c2[0]);
+                    }
+                });
 
-                ir = new String[2];
-                ir[0] = sa[idColumn];
-                ir[1] = String.valueOf(recordpos);
-                sorted_id_record.add(ir);
+                if(pos >= 0 && pos < vsensitive_coordinates.size()){
+                    try{
+                        sensitiveCoordinates[recordpos][0] = Double.parseDouble(
+                                vsensitive_coordinates.get(pos)[0]);
+                        sensitiveCoordinates[recordpos][1] = Double.parseDouble(
+                                vsensitive_coordinates.get(pos)[1]);
+                    }catch(Exception e){}
+                }
 
                 recordpos++;
             }
@@ -3836,41 +3828,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
             e.printStackTrace();
         }
 
-        (new SpatialLogger()).log("SensitiveCoordinates: extracted id vs recordpos");
+        (new SpatialLogger()).log("SensitiveCoordinates: matched with id vs recordpos");
 
-        //merge
-        int sorted_pos = 0;
-        int vsen_pos = 0;
-        String sorted_s;
-        String vsen_s;
-        int p,c;
-        int merged_count = 0;
-        while(sorted_pos < sorted_id_record.size()
-                && vsen_pos < vsensitive_coordinates.size()){
-            sorted_s = sorted_id_record.get(sorted_pos)[0];
-            vsen_s = sorted_id_record.get(vsen_pos)[0];
-
-            c = sorted_s.compareTo(vsen_s);
-
-            if(c == 0){
-                p = Integer.parseInt(sorted_id_record.get(sorted_pos)[1]);
-                try{
-                    sensitiveCoordinates[p][0] = Double.parseDouble(
-                            vsensitive_coordinates.get(vsen_pos)[0]);
-                    sensitiveCoordinates[p][1] = Double.parseDouble(
-                            vsensitive_coordinates.get(vsen_pos)[1]);
-                    merged_count++;
-                }catch(Exception e){}
-                vsen_pos++;
-                sorted_pos++;
-            } else if(c < 0){
-                sorted_pos++;
-            } else {
-                vsen_pos++;
-            }
-        }
-
-        (new SpatialLogger()).log("SensitiveCoordinates: merged count=" + merged_count);
 
         //output
         try {
@@ -4023,6 +3982,7 @@ class MakeOccurrenceParts extends Thread {
      * fields
      */
     int[] column_positions;
+    int[] sensitive_column_positions;
     /**
      * for column_keys write buffer to take some load off sorting
      */
@@ -4038,11 +3998,12 @@ class MakeOccurrenceParts extends Thread {
     LinkedBlockingQueue<String[]> lbq;
     CountDownLatch cdl;
 
-    public MakeOccurrenceParts(LinkedBlockingQueue<String[]> lbq_, CountDownLatch cdl_, int [] column_positions_){
+    public MakeOccurrenceParts(LinkedBlockingQueue<String[]> lbq_, CountDownLatch cdl_, int [] column_positions_, int[] sensitive_column_positions_){
         setPriority(Thread.MIN_PRIORITY);
         lbq = lbq_;
         cdl = cdl_;
         column_positions = column_positions_;
+        sensitive_column_positions = sensitive_column_positions_;
     }
 
     public void run(){
@@ -4068,6 +4029,10 @@ class MakeOccurrenceParts extends Thread {
 
         occurrences = new HashMap<Integer, Object>();
 
+        int id_column_idx = sensitive_column_positions[0];
+        int slong_column_idx = sensitive_column_positions[1];
+        int slat_column_idx = sensitive_column_positions[2];
+
         /* read occurances_csv */
         try {
             BufferedReader br = new BufferedReader(
@@ -4075,6 +4040,10 @@ class MakeOccurrenceParts extends Thread {
 
             FileWriter fwExcluded = new FileWriter(TabulationSettings.index_path
                     + OccurrencesIndex.EXCLUDED_FILENAME + part_number);
+
+            FileWriter fws = new FileWriter(
+                    TabulationSettings.index_path
+                    + OccurrencesIndex.SENSITIVE_COORDINATES + part_number);
 
             String s;
             String[] sa;
@@ -4159,6 +4128,16 @@ class MakeOccurrenceParts extends Thread {
 
                 progress++;
 
+                //export for sensitive coordinates
+                if(slat_column_idx >= sa.length
+                        || slong_column_idx >= sa.length
+                        || id_column_idx >= sa.length){
+                    System.out.println(s);
+                }else if(sa[slong_column_idx] != null && sa[slong_column_idx].length() > 0
+                        && sa[slat_column_idx] != null && sa[slat_column_idx].length() > 0){
+                    fws.append(sa[id_column_idx]).append(",").append(sa[slong_column_idx]).append(",").append(sa[slat_column_idx]).append("\n");
+                }
+
                 {
                     /*ignore records with no species or longitude or
                      * latitude */
@@ -4236,6 +4215,8 @@ class MakeOccurrenceParts extends Thread {
 
             fwExcluded.close();
             br.close();
+
+            fws.close();
 
             (new SpatialLogger()).log("loadOccurances done: " + part_number);
         } catch (Exception e) {

@@ -268,7 +268,7 @@ public class SimpleRegion extends Object implements Serializable {
                 return true;
             case 1:
                 /* return for bounding box */
-                return (longitude <= points[1][0] && longitude >= points[0][1]
+                return (longitude <= points[1][0] && longitude >= points[0][0]
                         && latitude <= points[1][1] && latitude >= points[0][1]);
             case 2:
                 /* TODO: fix to use radius units m not degrees */
@@ -791,8 +791,38 @@ public class SimpleRegion extends Object implements Serializable {
             }
         }
 
-        simpleregion.setPolygon(points);
+        //test for box
+        //  get min/max long/lat
+        //  each point has only one identical lat or long to previous point
+        //  4 or 5 points (start and end points may be identical)
+        if((points.length == 4
+            || (points.length == 5 && points[0][0] == points[4][0]
+                && points[0][1] == points[4][1]))){
 
+            //get min/max long/lat
+            double minlong = 0, minlat = 0, maxlong = 0, maxlat = 0;
+            for(int i=0; i<points.length;i++){
+                if(i == 0 || minlong > points[i][0]) minlong = points[i][0];
+                if(i == 0 || maxlong < points[i][0]) maxlong = points[i][0];
+                if(i == 0 || minlat > points[i][1]) minlat = points[i][1];
+                if(i == 0 || maxlat < points[i][1]) maxlat = points[i][1];
+            }
+
+            //  each point has only one identical lat or long to previous point
+            int prev_idx = 3;
+            for(int i=0;i<4;i++){
+                if((points[i][0] == points[prev_idx][0])
+                        == (points[i][1] == points[prev_idx][1])){
+                    break;
+                }
+                prev_idx = i;
+            }
+            //it is a box if no 'break' occurred
+            if(prev_idx == 3){
+                simpleregion.setBox(minlong, minlat, maxlong, maxlat);
+                return simpleregion;
+            }
+        }
         return simpleregion;
     }
 

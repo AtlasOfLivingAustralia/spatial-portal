@@ -67,7 +67,10 @@ public class SamplingIndex implements AnalysisIndexService {
     @Override
     public void occurancesUpdate() {
 
-        OccurrencesIndex.loadIndexes();
+        //OccurrencesIndex.loadIndexes();
+
+        TabulationSettings.load();
+        OccurrencesIndex.getPointsPairs();
 
         /*
          * for grid files

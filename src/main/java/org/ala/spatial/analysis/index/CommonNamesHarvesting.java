@@ -58,6 +58,10 @@ public class CommonNamesHarvesting {
             e.printStackTrace();
         }
 
+        for(int i=0;i<harvesters.length;i++){
+            harvesters[i].interrupt();
+        }
+
         System.out.println("exporting lsid vs common names");
 
         try {
@@ -131,17 +135,17 @@ class CommonNamesHarvester extends Thread {
 
                 nextCommonName(lsid);
 
-                cdl.countDown();
-
                 this.outputFilePiece.flush();
 
                 if (lbq.size() % 100 == 0) {
                     System.out.println(lbq.size());
                 }
             }
+        } catch(InterruptedException e){
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("closing harvester");
     }
 
     private void nextCommonName(String lsid) {
@@ -194,8 +198,12 @@ class CommonNamesHarvester extends Thread {
                     while (jp.nextToken() != JsonToken.END_ARRAY);
                 }
             }
+
+            cdl.countDown();
+            
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.out.println("retry:" + lsid);
 
             //put it back if there was an error
             try {
