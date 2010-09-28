@@ -107,7 +107,7 @@ function loadEnd() {
 }
 
 function toggleLoadingImage(display) {
-    var div = document.getElementById("loader");
+   /*var div = document.getElementById("loader");
     if (div != null) {
         if (display == "none") {
             jQuery("#loader").hide(2000);
@@ -119,7 +119,7 @@ function toggleLoadingImage(display) {
                 }
             }, 2000);
         }
-    }
+    }*/
 }
 
 function checkLibraryLoaded() {
