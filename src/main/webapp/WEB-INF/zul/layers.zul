@@ -2,7 +2,10 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window style="text-align: left" use="au.org.emii.portal.composer.LayerListComposer" apply="au.org.emii.portal.composer.LayerListComposer">
-        <label value="Browse layers via categories" style="font-weight: bold;" />
+        <vbox>
+            <label value="Browse layers via categories" style="font-weight: bold;" />
+            <label value="Click on the name to add the layer" style="color: gray" />
+        </vbox>
         <tree id="tree" multiple="false" checkmark="false">
             <treecols>
                 <treecol />
@@ -10,6 +13,17 @@
                 <treecol width="16px" />
             </treecols>
         </tree>
+
+        <popup id="pupLayerAction">
+            <vbox>
+                <toolbarbutton id="llAdd" label="Add to map"
+                image="/img/add.png" />
+                <toolbarbutton id="llInfo" label="Metadata about this layer"
+                image="/img/information.png" />
+                <!-- <toolbarbutton id="llClose" label="Cancel" onclick="this.close()"
+                image="/img/information.png" /> -->
+            </vbox>
+        </popup>
         
         <!--
         <tree id="tree" width="100%">

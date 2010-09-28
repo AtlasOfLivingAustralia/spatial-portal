@@ -21,8 +21,10 @@ import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.util.Clients;
+import org.zkoss.zul.Popup;
 import org.zkoss.zul.SimpleTreeModel;
 import org.zkoss.zul.SimpleTreeNode;
+import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Tree;
 import org.zkoss.zul.Treecell;
 import org.zkoss.zul.Treeitem;
@@ -36,14 +38,15 @@ import org.zkoss.zul.Treerow;
 public class LayerListComposer extends UtilityComposer {
 
     private Tree tree;
+    private Popup pupLayerAction;
+    private Toolbarbutton llAdd;
+    private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
-
     private final String SAT_URL = "sat_url";
     private static final String GEOSERVER_URL = "geoserver_url";
     private String satServer = "http://spatial-dev.ala.org.au"; // "http://localhost:8080"
     private String geoServer = "";
-
     SettingsSupplementary settingsSupplementary;
 
     @Override
@@ -63,14 +66,20 @@ public class LayerListComposer extends UtilityComposer {
 
         System.out.print("Settings.Suppl:");
         SettingsSupplementary settingsSupplementary = mc.getSettingsSupplementary();
-        if (settingsSupplementary == null) System.out.println(" is bad");
-        else System.out.println(" is good");
+        if (settingsSupplementary == null) {
+            System.out.println(" is bad");
+        } else {
+            System.out.println(" is good");
+        }
         System.out.print("mc.geoserver:" + mc.geoServer);
 
         System.out.print("Settings.Global:");
         Settings settings = mc.getSettings();
-        if (settingsSupplementary == null) System.out.println(" is bad");
-        else System.out.println(" is good");
+        if (settingsSupplementary == null) {
+            System.out.println(" is bad");
+        } else {
+            System.out.println(" is good");
+        }
 
 
         System.out.println("Loading the LayerListComposer");
@@ -80,6 +89,7 @@ public class LayerListComposer extends UtilityComposer {
         //System.out.println("with:\n" + layerlist);
 
     }
+
     private MapComposer getThisMapComposer() {
 
         MapComposer mapComposer = null;
@@ -89,13 +99,12 @@ public class LayerListComposer extends UtilityComposer {
         return mapComposer;
     }
 
-
     public void iterateAndLoad2() {
         try {
 
-         //   System.out.println(llist);
+            //   System.out.println(llist);
 
-            String llist = (String)Sessions.getCurrent().getAttribute("layerlist");
+            String llist = (String) Sessions.getCurrent().getAttribute("layerlist");
 
             //Object llist = Sessions.getCurrent().getAttribute("layerlist");
 
@@ -132,9 +141,8 @@ public class LayerListComposer extends UtilityComposer {
                 }
                 SimpleTreeNode stn;
                 if (classNodes.isEmpty()) {
-                     stn = new SimpleTreeNode(jo, empty);
-                }
-                else {
+                    stn = new SimpleTreeNode(jo, empty);
+                } else {
                     stn = new SimpleTreeNode(jo, classNodes);
                 }
                 addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
@@ -179,33 +187,33 @@ public class LayerListComposer extends UtilityComposer {
             String classes = get.getResponseBodyAsString();
 
             //JSONObject joClasses = JSONObject.fromObject(classes);
-           // System.out.println("CLASSES JSON:" + classes);
-            classes = classes.replace("\"","").replace("{","").replace("}", "");
+            // System.out.println("CLASSES JSON:" + classes);
+            classes = classes.replace("\"", "").replace("{", "").replace("}", "");
 
             String classAttribute = classes.split(":")[0];
             classList = Arrays.asList(classes.split(":")[1].split(","));
-           // System.out.println("KEY:" + classAttribute);
-           // classList = Arrays.asList((jo.getString(classAttribute)).split(","));
-            
+            // System.out.println("KEY:" + classAttribute);
+            // classList = Arrays.asList((jo.getString(classAttribute)).split(","));
+
             for (String classVal : classList) {
-                   //     System.out.println("CLASS:"+(String)classVal);
-                        if (!classVal.contentEquals("none")) {
-                            String info = "{displayname:'"
-                                     + classVal
-                                     + "',type:'class',displaypath:'"
-                                     + joLayer.getString("displaypath")
-                                     + "',uid:'"
-                                     + joLayer.getString("uid")
-                                     + "',classname:'"
-                                     + classAttribute
-                                     + "',layername:'"
-                                     + layerDisplayName
-                                     + "'}";
-                 //           System.out.println(info);
-                            JSONObject joClass = JSONObject.fromObject(info);
-                            classNodes.add(new SimpleTreeNode(joClass,empty));
-                        }
-                    }
+                //     System.out.println("CLASS:"+(String)classVal);
+                if (!classVal.contentEquals("none")) {
+                    String info = "{displayname:'"
+                            + classVal
+                            + "',type:'class',displaypath:'"
+                            + joLayer.getString("displaypath")
+                            + "',uid:'"
+                            + joLayer.getString("uid")
+                            + "',classname:'"
+                            + classAttribute
+                            + "',layername:'"
+                            + layerDisplayName
+                            + "'}";
+                    //           System.out.println(info);
+                    JSONObject joClass = JSONObject.fromObject(info);
+                    classNodes.add(new SimpleTreeNode(joClass, empty));
+                }
+            }
             return classNodes;
         } catch (Exception e) {
             System.out.println("Failure to get contextual classes.");
@@ -255,25 +263,25 @@ public class LayerListComposer extends UtilityComposer {
             //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
             //System.out.println("\t=======================" + stnCat2);
             boolean found = false;
-            for (int i=0; i<alCat1.size(); i++) {
-               // System.out.print("\t\t " + alCat1.get(i));
+            for (int i = 0; i < alCat1.size(); i++) {
+                // System.out.print("\t\t " + alCat1.get(i));
                 if (stnCat2.toString().equals(alCat1.get(i).toString())) {
-              //      System.out.println(": found");
+                    //      System.out.println(": found");
                     found = true;
                     break;
                 } else {
-              //      System.out.println(": not this");
+                    //      System.out.println(": not this");
                 }
             }
             if (!found) {
                 alCat1.add(stnCat2);
-            } 
+            }
             //System.out.println("\t=======================");
-            
+
             if (!htCat1.containsKey(cat1)) {
                 htCat1.put(cat1, alCat1);
             } else {
-              //  System.out.println("\thad existing");
+                //  System.out.println("\thad existing");
             }
 
         }
@@ -304,6 +312,11 @@ public class LayerListComposer extends UtilityComposer {
                     tr.getChildren().clear();
                 }
 
+                String displayname = joLayer.getString("displayname");
+                displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
+                Treecell tcName = new Treecell(displayname);
+                //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
+
                 Treecell tcAdd = new Treecell();
                 Treecell tcInfo = new Treecell();
 
@@ -322,59 +335,68 @@ public class LayerListComposer extends UtilityComposer {
 
                     // set the layer data for the row
                     tr.setAttribute("lyr", joLayer);
+
+                    //item.setPopup(pupLayerAction);
+
+
                 } else {
+                    //tcAdd.setLabel(displayname);
+                    //tcInfo.setLabel("");
+                    //tcName.setLabel("");
                 }
 
                 if (joLayer.getString("type").equals("class")) {
                     tcAdd.setImage("/img/add.png");
                 }
 
-                String displayname = joLayer.getString("displayname");
-                displayname = (displayname.contains(">"))? displayname.split(">")[1]:displayname;
-                Treecell tcName = new Treecell(displayname);
-                //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
 
 
                 // Attach onclick events:
                 if (!joLayer.getString("type").equals("node")) {
 
-                    tcAdd.addEventListener("onClick", new EventListener() {
+                    /*
+                    tcName.addEventListener("onClick", new EventListener() {
+
+                    @Override
+                    public void onEvent(Event event) throws Exception {
+                    Treecell tc = (Treecell) event.getTarget();
+                    tc.setPopup(pupLayerAction);
+
+                    }
+
+                    });
+                     * 
+                     */
+
+                    // tcAdd
+                    tr.addEventListener("onClick", new EventListener() {
 
                         @Override
                         public void onEvent(Event event) throws Exception {
-                            Object o = event.getTarget().getId();
-                            Treecell tc = (Treecell) event.getTarget();
-                            JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
+                            //Object o = event.getTarget().getId();
+                            //Treecell tc = (Treecell) event.getTarget();
+                            //JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
+                            JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
                             if (!joLayer.getString("type").contentEquals("class")) {
-                //            System.out.println("Loading layer: " + joLayer.getString("displayname") + " from " + joLayer.getString("displaypath"));
 
-//                            String metadata = joLayer.getString("metadatapath");
-//                            if (metadata.equals("")) {
-//                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
-//                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
-//                                metadata += "Source: " + joLayer.getString("source") + "\n";
-//                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
-//                            }
+                                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                            String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
-
-                            mc.addWMSLayer(joLayer.getString("displayname"),
-                                    joLayer.getString("displaypath"),
-                                    (float) 0.75, metadata);
-                            }
-                            else {
+                                mc.addWMSLayer(joLayer.getString("displayname"),
+                                        joLayer.getString("displaypath"),
+                                        (float) 0.75, metadata);
+                            } else {
                                 String classAttribute = joLayer.getString("classname");
                                 String classValue = joLayer.getString("displayname");
                                 String layer = joLayer.getString("layername");
                                 String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
                                 //Filtered requests don't work on
-                                displaypath = displaypath.replace("gwc/service/","");
-                               // Messagebox.show(displaypath);
+                                displaypath = displaypath.replace("gwc/service/", "");
+                                // Messagebox.show(displaypath);
                                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
                                 mc.addWMSLayer(layer + " - " + classValue,
-                                    displaypath,
-                                    (float) 0.75, metadata);
+                                        displaypath,
+                                        (float) 0.75, metadata);
                             }
                         }
                     });
@@ -388,23 +410,22 @@ public class LayerListComposer extends UtilityComposer {
                             Object o = event.getTarget().getId();
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
-                            
-                             String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+
+                            String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 //                                Clients.evalJavaScript("window.open('"
 //                                        + metadata
 //                                        + "', 'metadataWindow');");
 
                             mc.activateLink(metadata, "Metadata", false);
-                          
-                        }
 
+                        }
                     });
                 }
 
                 //Attach treecells to treerow
+                //tcAdd.setParent(tr);
+                //tcInfo.setParent(tr);
                 tcName.setParent(tr);
-                tcAdd.setParent(tr);
-                tcInfo.setParent(tr);
                 item.setOpen(false);
             }
         });
