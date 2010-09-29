@@ -39,6 +39,7 @@
 
         <system-config>
             <disable-event-thread/>
+            <id-generator-class>zk.extra.IdGeneratorImpl</id-generator-class>
         </system-config>
 
 </zk>
