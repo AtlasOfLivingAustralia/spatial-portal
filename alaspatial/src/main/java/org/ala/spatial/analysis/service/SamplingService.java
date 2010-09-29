@@ -895,7 +895,7 @@ public class SamplingService {
                 String s = getRecordAsGeoJSON(samples,i);
                 if(s != null){
                     sbGeoJSON.append(s);
-                    if (i<samples.length-1) sbGeoJSON.append(",");
+                    if (i<len-1) sbGeoJSON.append(",");
                 }
             }
             sbGeoJSON.append("],");
