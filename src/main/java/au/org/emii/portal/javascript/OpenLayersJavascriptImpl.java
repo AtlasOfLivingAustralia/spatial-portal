@@ -7,9 +7,15 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.util.ArrayList;
 import java.util.List;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
+import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.util.Clients;
 
@@ -171,7 +177,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + ".transform("
                         + "  new OpenLayers.Projection('EPSG:4326'),"
                         + "  map.getProjectionObject()));";
-            } else {
+            } 
+            else {
+
                 script = "window.mapFrame.loadBaseMap();";
             }
         } else {
@@ -684,13 +692,14 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
         //extend to add ogc filter
-
-
+         List<Double> bbox =  layerUtilities.getBBoxIndex(layer.getUri());
+        layer.getMapLayerMetadata().setBbox(bbox);
         String script =
                 "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS("
                 + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS().replace("\\/gwc\\/service","") + "', "
+                + "		'" + layer.getUriJS().replace("\\/gwc\\/service","")/*.replace("wms?service=WMS&version=1.1.0&request=GetMap&","wms\\/reflect?")*/ + "', "
                 + "		{"
+         
                 + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
@@ -699,12 +708,13 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + wmsVersionDeclaration(layer) + //","
                 "		}, "
                 + "		{ "
+                + "             " + "maxExtent: (new OpenLayers.Bounds("+bbox.get(0) +","+bbox.get(1)+","+bbox.get(2) + "," + bbox.get(3) +")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
                 + "			isBaseLayer: " + layer.isBaseLayer() + ", "
                 + "			opacity: " + layer.getOpacity() + ", "
                 + "			queryable: " + layer.isQueryable() + ", "
-                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
+//                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
                 + "			gutter: " + gutter + ", "
-                + "			wrapDateLine: true"
+                + "			wrapDateLine: false"
                 + "		}  "
                 + "	); "
                 + // decorate with getFeatureInfoBuffer field - do not set buffer
@@ -729,6 +739,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         return wrapWithSafeToProceed(script);
     }
 
+    
     /**
      * Return a String to decorate a layer declaration with
      * metadata fields if the layer supports it.  If the layer
