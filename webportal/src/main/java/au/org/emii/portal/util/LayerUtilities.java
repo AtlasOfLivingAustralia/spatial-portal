@@ -292,4 +292,6 @@ public interface LayerUtilities {
     public String getWmsVersion(MapLayer mapLayer);
 
     public List<Double> getBBox(String uri);
+
+    public List<Double> getBBoxIndex(String uri);
 }
