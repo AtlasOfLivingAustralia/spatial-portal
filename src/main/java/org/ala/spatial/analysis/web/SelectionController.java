@@ -407,7 +407,7 @@ public class SelectionController extends UtilityComposer {
                 if (jo.getString("type").equalsIgnoreCase("contextual")) {
                     System.out.println("********" + jo.getString("name"));
                     if (mc.getMapLayer(jo.getString("displayname")) != null) {
-                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"));
+                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"), geoServer);
                         //add feature to the map as a new layer
 
                         String json = readGeoJSON(featureURI);

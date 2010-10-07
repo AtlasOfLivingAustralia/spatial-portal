@@ -7,137 +7,136 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Iterator;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 
 /**
+ * same as LayersAutoComplete with type="environmental" layers only
  *
  * @author ajay
  */
 public class EnvLayersCombobox extends Combobox {
 
+    private static String SAT_SERVER = "http://spatial-dev.ala.org.au";
     private static final String SAT_URL = "sat_url";
+    SettingsSupplementary settingsSupplementary = null;;
 
-    private String[] envLayers;
-    private SettingsSupplementary settingsSupplementary = null;
-    private String satServer = "http://localhost:8080"; // http://spatial.ala.org.au
+    public EnvLayersCombobox() {
+        refresh(""); //init the child comboitems
+    }
 
     public EnvLayersCombobox(String value) throws WrongValueException {
         super(value);
-        envLayers = setupEnvironmentalLayers();
-    }
-
-    public EnvLayersCombobox() {
-        //refresh("");
-        envLayers = setupEnvironmentalLayers();
     }
 
     @Override
-    public void setValue(String value) throws WrongValueException {
+    public void setValue(String value) {
         super.setValue(value);
-        //refresh(value);
+        //refresh(value); //refresh the child comboitems
+        //refreshJSON(value);
     }
 
-    public void onChanging(InputEvent event) {
-        if (!event.isChangingBySelectBack()) {
-            //refresh(event.getValue());
+    /** Listens what an user is entering.
+     */
+    public void onChanging(InputEvent evt) {
+        if (!evt.isChangingBySelectBack()) {
+            refresh(evt.getValue());
+            //refreshJSON(evt.getValue());
         }
     }
 
-    /**
-     * Iterate thru' the layer list setup in the @doAfterCompose method
-     * and setup the listbox
-     */
-    private String[] setupEnvironmentalLayers() {
-        String[] aslist = null;
+    private void refresh(String val) {
+
+        //TODO get this from the config file
+        if (settingsSupplementary != null) {
+            //System.out.println("setting ss.val");
+        } else if(this.getParent() != null){
+            settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
+            System.out.println("LAC got SS: " + settingsSupplementary);
+            SAT_SERVER = settingsSupplementary.getValue(SAT_URL);
+        }else{
+            return;
+        }
+
+        String baseUrl = SAT_SERVER + "/alaspatial/ws/layers/";
         try {
-            if (settingsSupplementary != null) {
-                //System.out.println("setting ss.val");
-                //satServer = settingsSupplementary.getValue(SAT_URL);
-            } else if(this.getParent() != null){
-                settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
-                System.out.println("ELC got SS: " + settingsSupplementary);
-                satServer = settingsSupplementary.getValue(SAT_URL);
-            }else{
-                return aslist;
-            }
-
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
-  
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            aslist = slist.split("\n");
-
-            //System.out.println("Loading " + aslist.length + " env.layers for ALOC... ");
-
             Iterator it = getItems().iterator();
-            for (int i = 0; i < aslist.length; i++) {
-                if (aslist[i] == null) {
-                    System.out.println("env.layer at " + i + " is null.");
+
+                String lsurl = baseUrl;
+                if (val.length() == 0) {
+                    lsurl += "list";
                 } else {
-                System.out.println(">> " + aslist[i]);
-                if (it != null && it.hasNext()) {
-                    ((Comboitem) it.next()).setLabel(aslist[i] + " (Terrestrial)");
-                } else {
-                    it = null;
-                    new Comboitem(aslist[i] + " (Terrestrial)").setParent(this);
+                    lsurl += "search/" + URLEncoder.encode(val, "UTF-8");
                 }
+
+                System.out.println("nsurl: " + lsurl);
+
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(lsurl);
+                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+                int result = client.executeMethod(get);
+                String slist = get.getResponseBodyAsString();
+
+
+                JSONArray results = JSONArray.fromObject(slist);
+                System.out.println("got " + results.size() + " layers");
+
+                Sessions.getCurrent().setAttribute("layerlist", results);
+
+                if (results.size() > 0) {
+
+                    for (int i = 0; i < results.size(); i++) {
+
+                        JSONObject jo = results.getJSONObject(i);
+
+                        if (!jo.getBoolean("enabled")) {
+                            continue;
+                        }
+
+                        String displayName = jo.getString("displayname");
+                        String type = jo.getString("type");
+
+                        if(!type.equalsIgnoreCase("environmental")){
+                            continue;
+                        }
+
+                        Comboitem myci = null;
+                        if (it != null && it.hasNext()) {
+                            myci = ((Comboitem) it.next());
+                            myci.setLabel(displayName);
+                        } else {
+                            it = null;
+                            myci = new Comboitem(displayName);
+                            myci.setParent(this);
+                        }
+                        myci.setDescription(type);
+                        myci.setDisabled(false);
+                        myci.setValue(jo);
+                    }
                 }
-            }
 
             while (it != null && it.hasNext()) {
                 it.next();
                 it.remove();
             }
 
+
         } catch (Exception e) {
-            System.out.println("error setting up env list");
+            System.out.println("Error searching for layers:");
             e.printStackTrace(System.out);
         }
-
-        return aslist;
-    }
-
-    private void refresh(String val) {
-        if(envLayers == null){
-            return;
-        }
-        int j = Arrays.binarySearch(envLayers, val);
-        if (j < 0) {
-            j = -j - 1;
-        }
-
-        Iterator it = getItems().iterator();
-        for (int cnt = 10; --cnt >= 0 && j < envLayers.length && envLayers[j].startsWith(val); ++j) {
-            if (it != null && it.hasNext()) {
-                ((Comboitem) it.next()).setLabel(envLayers[j]);
-            } else {
-                it = null;
-                new Comboitem(envLayers[j]).setParent(this);
-            }
-        }
-
-        while (it != null && it.hasNext()) {
-            it.next();
-            it.remove();
-        }
-
-    }
-
-    void setSettingsSupplementary(SettingsSupplementary ss) {
-        settingsSupplementary = ss;
     }
 
      private MapComposer getThisMapComposer() {

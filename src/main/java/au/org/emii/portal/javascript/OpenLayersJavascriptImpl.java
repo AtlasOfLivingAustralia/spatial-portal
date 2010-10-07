@@ -470,7 +470,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 break;
             case LayerUtilitiesImpl.GEOJSON:
                 //script.append("window.mapFrame.addJsonFeatureToMap('" + mapLayer.getGeoJSON() + "', '" + mapLayer.getName() + "')");
-                if(alternativeScript){
+                if(alternativeScript && mapLayer.getMapLayerMetadata().getPartsCount() > 0){
                     script.append("window.mapFrame.drawFeaturesGeoJsonUrl('" + mapLayer.getUri() + "'," + mapLayer.getMapLayerMetadata().getPartsCount() + ", '" + mapLayer.getName() + "','" + mapLayer.getEnvColour() + "', " + mapLayer.getOpacity() + "," + mapLayer.getSizeVal() + "," + mapLayer.getSizeUncertain() + ")");
                 }else{
                     script.append(defineGeoJSONMapLayer(mapLayer));

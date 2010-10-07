@@ -432,26 +432,20 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         //if so go and go build the uri
 
         if (isDynamicStyle()) {
-
-            uri = styles.get(selectedStyleIndex).getLegendUri();
-
-
-
-
-        } else {
-
-
-        if (hasStyle()) {
-            // show the selected style or default style if one wasn't set
             uri = styles.get(selectedStyleIndex).getLegendUri();
         } else {
-            /* if no styles are defined, there is likely no legend
-             * available, so dont attempt to retrieve one
-             */
-           uri = null;
-        }
+            if (hasStyle()) {
+                // show the selected style or default style if one wasn't set
+                uri = styles.get(selectedStyleIndex).getLegendUri();
+            } else {
+                /* if no styles are defined, there is likely no legend
+                 * available, so dont attempt to retrieve one
+                 */
+                uri = null;
+            }
         }
         if (uri == null) {
+            //TODO: move this into the layer creation request
             String geoserver = "http://spatial-dev.ala.org.au";
             uri = geoserver + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=" + this.layer;
         }
