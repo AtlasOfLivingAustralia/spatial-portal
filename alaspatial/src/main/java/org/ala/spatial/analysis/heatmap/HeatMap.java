@@ -94,11 +94,13 @@ public class HeatMap {
 
         //colorImage = createEvenlyDistributedGradientImage(new Dimension(
         //        84, 20), Color.WHITE, Color.RED, Color.YELLOW, Color.GREEN.darker(), Color.CYAN, Color.BLUE, new Color(0, 0, 0x33));
-        colorImage = createEvenlyDistributedGradientImage(new Dimension(
-                512, 20), Color.RED.darker(), Color.RED, Color.YELLOW.darker(),
-                Color.YELLOW, Color.GREEN.darker(), Color.GREEN, Color.CYAN,
-                Color.CYAN.darker(), Color.BLUE.darker(), Color.BLUE,
-                Color.WHITE);
+
+//        colorImage = createEvenlyDistributedGradientImage(new Dimension(
+//                512, 20), Color.RED.darker(), Color.RED, Color.YELLOW.darker(),
+//                Color.YELLOW, Color.GREEN.darker(), Color.GREEN, Color.CYAN,
+//                Color.CYAN.darker(), Color.BLUE.darker(), Color.BLUE,
+//                Color.WHITE);
+
 //        colorImage = createEvenlyDistributedGradientImage(new Dimension(
 //                512, 20), new Color(255, 63, 63), new Color(255, 79, 79),
 //                new Color(255, 95, 95), new Color(255, 111, 111),
@@ -106,13 +108,15 @@ public class HeatMap {
 //                new Color(255, 159, 159), new Color(255, 175, 175),
 //                new Color(255, 191, 191), new Color(255, 207, 207),
 //                Color.WHITE);
-//        colorImage = createEvenlyDistributedGradientImage(new Dimension(
-//                512, 20), new Color(255, 0, 0), new Color(255, 30, 0),
-//                new Color(255, 60, 0), new Color(255, 90, 0),
-//                new Color(255, 120, 0), new Color(255, 150, 0),
-//                new Color(255, 180, 0), new Color(255, 210, 0),
-//                new Color(255, 230, 0), new Color(255, 255, 0),
-//                Color.WHITE);
+        
+        colorImage = createEvenlyDistributedGradientImage(new Dimension(
+                512, 20), new Color(255, 0, 0), new Color(255, 30, 0),
+                new Color(255, 60, 0), new Color(255, 90, 0),
+                new Color(255, 120, 0), new Color(255, 150, 0),
+                new Color(255, 180, 0), new Color(255, 210, 0),
+                new Color(255, 230, 0), new Color(255, 255, 0),
+                Color.WHITE);
+        
 //        colorImage = createEvenlyDistributedGradientImage(new Dimension(
 //                512, 20), Color.RED, Color.YELLOW, Color.GREEN.darker(),
 //                Color.CYAN, Color.BLUE,
