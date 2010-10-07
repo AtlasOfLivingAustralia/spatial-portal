@@ -1540,4 +1540,5 @@ if not csv, then tab delimited
 
     <process_estimate_smoothing>20</process_estimate_smoothing>
 
+    <cluster_lookup_size>10000</cluster_lookup_size>
 </tabulation>

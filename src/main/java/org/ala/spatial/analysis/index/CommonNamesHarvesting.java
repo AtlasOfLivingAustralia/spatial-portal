@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -25,9 +26,20 @@ import org.codehaus.jackson.JsonToken;
  * @author Adam
  */
 public class CommonNamesHarvesting {
+    static final int RETRY_MAXIMUM = 3;
+
+    static boolean save_json = true;
+
+    static HashMap<String, Integer> retry_count;
+
+    public static boolean isSavingJson(){
+        return save_json;
+    }
 
     public static void main(String[] args) {
         TabulationSettings.load();
+
+        retry_count = new HashMap<String, Integer>();
 
         String[] lsids = getLSIDs();
 
@@ -48,7 +60,7 @@ public class CommonNamesHarvesting {
         CommonNamesHarvester[] harvesters = new CommonNamesHarvester[threadCount];
 
         for (int i = 0; i < harvesters.length; i++) {
-            harvesters[i] = new CommonNamesHarvester(lbq, cdl, results, url_base);
+            harvesters[i] = new CommonNamesHarvester(lbq, cdl, results, url_base, retry_count);
             harvesters[i].start();
         }
 
@@ -111,12 +123,14 @@ class CommonNamesHarvester extends Thread {
     ConcurrentHashMap<String, String> results;
     String base_url;
     FileWriter outputFilePiece;
+    HashMap<String, Integer> retry_count;
 
-    CommonNamesHarvester(LinkedBlockingQueue<String> lbq_, CountDownLatch cdl_, ConcurrentHashMap<String, String> results_, String base_url_) {
+    CommonNamesHarvester(LinkedBlockingQueue<String> lbq_, CountDownLatch cdl_, ConcurrentHashMap<String, String> results_, String base_url_,HashMap<String, Integer> retry_count_) {
         lbq = lbq_;
         cdl = cdl_;
         results = results_;
         base_url = base_url_;
+        retry_count = retry_count_;
 
         try {
             File tmpFile = File.createTempFile("commonnames", ".txt");
@@ -125,6 +139,8 @@ class CommonNamesHarvester extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        setPriority(MIN_PRIORITY);
     }
 
     @Override
@@ -145,6 +161,11 @@ class CommonNamesHarvester extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        try{
+            outputFilePiece.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
         System.out.println("closing harvester");
     }
 
@@ -160,6 +181,8 @@ class CommonNamesHarvester extends Thread {
 
             client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
+
+            if(CommonNamesHarvesting.isSavingJson()) save(lsid, slist);
 
             JsonFactory f = new JsonFactory();
             JsonParser jp = f.createJsonParser(slist);
@@ -202,18 +225,43 @@ class CommonNamesHarvester extends Thread {
             cdl.countDown();
             
         } catch (Exception e) {
-            //e.printStackTrace();
-            System.out.println("retry:" + lsid);
+            //only retry if under retry_count limit
+            synchronized(retry_count){
+                //increment count
+                Integer c = retry_count.get(lsid);
+                if(c == null){
+                    c = new Integer(1);
+                }else{
+                    c = c + 1;
+                }
+                retry_count.put(lsid, c);
 
-            //put it back if there was an error
-            try {
-                lbq.put(lsid);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                if(c >= CommonNamesHarvesting.RETRY_MAXIMUM){
+                    //report failure
+                    System.out.println("retry limit reached for:" + lsid);
+                } else {
+                    //put it back into the queue
+                    try {
+                        lbq.put(lsid);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
             }
         }
         if (count == 0) {
             results.put(lsid, "");
+        }
+    }
+
+    void save(String lsid, String json){
+        try {
+            File tmpFile = File.createTempFile("json" + lsid.replace(":","_"), ".txt");
+            FileWriter fw = new FileWriter(tmpFile);
+            fw.append(json);
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

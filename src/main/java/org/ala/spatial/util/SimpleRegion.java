@@ -3,12 +3,12 @@ package org.ala.spatial.util;
 import java.io.Serializable;
 
 /**
- * SimpleRegion enables point to shape intersections, where the shape 
+ * SimpleRegion enables point to shape intersections, where the shape
  * is stored within SimpleRegion as a circle, bounding box or polygon.
- * 
+ *
  * Other utilities include shape presence on a defined grid;
  * fully present, partially present, absent.
- * 
+ *
  * @author Adam Collins
  */
 public class SimpleRegion extends Object implements Serializable {
@@ -286,21 +286,17 @@ public class SimpleRegion extends Object implements Serializable {
      * returns true when point is within the polygon
      *
      * method:
-     * treat as segments with target long/lat in the middle:
+     * treat as segments with target long in the middle:
      *
-     *			0  |  2
-     *		  _____|_____
-     *			1  |  3
-     *			   |
      *
-     * iterate through points and sum values:
-     *				+1 for clockwise movement of one segment
-     *				-1 for anticlockwise movement of one segment
-     *				with diagonal movement, determine if target lat is higher/lower
-     *					using polygon line equation with target long
-     * resulting in:
-     *				inside when sum is +4 (clockwise) or -4 (anticlockwise)
-     *				outside when sum is 0
+     *	              __-1__|___1_
+     *			    |
+     *
+     *
+     * iterate through points and count number of latitude axis crossing where
+     * crossing is > latitude.
+     *
+     * point is inside of area when number of crossings is odd;
      *
      * if on point or on line returns true
      *
@@ -318,12 +314,9 @@ public class SimpleRegion extends Object implements Serializable {
 
             //initial segment
             if (points[0][0] > longitude) {
-                segment = 2;
+                segment = 1;
             } else {
-                segment = 0;
-            }
-            if (points[0][1] < latitude) {
-                segment++;
+                segment = -1;
             }
 
             int i;
@@ -332,122 +325,32 @@ public class SimpleRegion extends Object implements Serializable {
             int score = 0;
 
             for (i = 1; i < len; i++) {
-                /* point on point */
-                if (points[i][0] == longitude && points[i][1] == latitude) {
-                    return true;
-                }
-
                 /* determine new segment */
-                if (points[i][0] > longitude) {
-                    new_segment = 2;
+                if (points[i][0] < longitude) {
+                    new_segment = -1;
                 } else {
-                    new_segment = 0;
-                }
-                if (points[i][1] < latitude) {
-                    new_segment++;
+                    /* point on point */
+                    if (points[i][0] == longitude && points[i][1] == latitude) {
+                        return true;
+                    }
+                    new_segment = 1;
                 }
 
                 /* do nothing if segment is the same */
-                if (segment == new_segment) {
-                    continue;
-                }
+                if (segment != new_segment) {
+                    segment = new_segment;
 
-                /* split up action paths with switch statements,
-                 * see method description above for details.
-                 */
-                switch (segment) {
-                    case 0:
-                        switch (new_segment) {
-                            case 1:
-                                score--;
-                                break;
-                            case 2:
-                                score++;
-                                break;
-                            case 3:
-                                //diagonal
-                                y = lines[i - 1][0] * longitude + lines[i - 1][1];
-                                if (y > latitude) {
-                                    score += 2;
-                                } else if (y < latitude) {
-                                    score -= 2;
-                                } else {
-                                    return true;
-                                }
-                                break;
-                        }
-                        break;
-                    case 1:
-                        switch (new_segment) {
-                            case 0:
-                                score++;
-                                break;
-                            case 2:
-                                //diagonal
-                                y = lines[i - 1][0] * longitude + lines[i - 1][1];
-                                if (y > latitude) {
-                                    score += 2;
-                                } else if (y < latitude) {
-                                    score -= 2;
-                                } else {
-                                    return true;
-                                }
-                                break;
-                            case 3:
-                                score--;
-                                break;
-                        }
-                        break;
-                    case 2:
-                        switch (new_segment) {
-                            case 0:
-                                score--;
-                                break;
-                            case 1:
-                                //diagonal
-                                y = lines[i - 1][0] * longitude + lines[i - 1][1];
-                                if (y < latitude) {
-                                    score += 2;
-                                } else if (y > latitude) {
-                                    score -= 2;
-                                } else {
-                                    return true;
-                                }
-                                break;
-                            case 3:
-                                score++;
-                                break;
-                        }
-                        break;
-                    case 3:
-                        switch (new_segment) {
-                            case 0:
-                                //diagonal
-                                y = lines[i - 1][0] * longitude + lines[i - 1][1];
-                                if (y < latitude) {
-                                    score += 2;
-                                } else if (y > latitude) {
-                                    score -= 2;
-                                } else {
-                                    return true;
-                                }
-                                break;
-                            case 1:
-                                score++;
-                                break;
-                            case 2:
-                                score--;
-                                break;
-                        }
-                        break;
+                    //longtiude crossing
+                    y = lines[i - 1][0] * longitude + lines[i - 1][1];
+
+                    if (y > latitude) {
+                        score++;
+                    } else if (y == latitude) {
+                        return true;
+                    }
                 }
-                segment = new_segment;
             }
-            if (score == 0) {
-                return false;
-            } else {
-                return true;
-            }
+            return (score % 2 != 0);
         }
         return false;		//not within bounding box
     }
@@ -637,7 +540,7 @@ public class SimpleRegion extends Object implements Serializable {
                     shapeinside = false;
                 }
 
-                /* any lines cross */                
+                /* any lines cross */
                 double q;
                 int k = 0;
                 if (!shapeinside) {
@@ -663,7 +566,7 @@ public class SimpleRegion extends Object implements Serializable {
                                     break;
                                 }
                             } else {
-                            //non-vertical polygonline k cross test
+                                //non-vertical polygonline k cross test
 
                                 /* q is y-intercept of grid LHS edge with
                                  * polygon line k.  Cross=true if q is between
@@ -695,9 +598,8 @@ public class SimpleRegion extends Object implements Serializable {
                                      */
                                     if ((lines_lat[k][0] == lat1
                                             || lines_lat[k][0] == lat1)
-                                            &&
-                                            (lines_long[k][0] <= long2
-                                            && lines_long[k][1] >= long1)){
+                                            && (lines_long[k][0] <= long2
+                                            && lines_long[k][1] >= long1)) {
                                         cross = true;
                                         break;
                                     }
@@ -728,7 +630,7 @@ public class SimpleRegion extends Object implements Serializable {
                     }
 
                     if (!cross) {
-                        /* first point inside, for zero cross & therefore 
+                        /* first point inside, for zero cross & therefore
                          * box contained within shape
                          */
                         if (isWithinPolygon(long1, lat1)) {
@@ -756,7 +658,7 @@ public class SimpleRegion extends Object implements Serializable {
                 }
             }
         }
-       
+
         //output only required range
         return java.util.Arrays.copyOfRange(data, 0, p);
     }
@@ -795,34 +697,43 @@ public class SimpleRegion extends Object implements Serializable {
         //  get min/max long/lat
         //  each point has only one identical lat or long to previous point
         //  4 or 5 points (start and end points may be identical)
-        if((points.length == 4
-            || (points.length == 5 && points[0][0] == points[4][0]
-                && points[0][1] == points[4][1]))){
+        if ((points.length == 4
+                || (points.length == 5 && points[0][0] == points[4][0]
+                && points[0][1] == points[4][1]))) {
 
             //get min/max long/lat
             double minlong = 0, minlat = 0, maxlong = 0, maxlat = 0;
-            for(int i=0; i<points.length;i++){
-                if(i == 0 || minlong > points[i][0]) minlong = points[i][0];
-                if(i == 0 || maxlong < points[i][0]) maxlong = points[i][0];
-                if(i == 0 || minlat > points[i][1]) minlat = points[i][1];
-                if(i == 0 || maxlat < points[i][1]) maxlat = points[i][1];
+            for (int i = 0; i < points.length; i++) {
+                if (i == 0 || minlong > points[i][0]) {
+                    minlong = points[i][0];
+                }
+                if (i == 0 || maxlong < points[i][0]) {
+                    maxlong = points[i][0];
+                }
+                if (i == 0 || minlat > points[i][1]) {
+                    minlat = points[i][1];
+                }
+                if (i == 0 || maxlat < points[i][1]) {
+                    maxlat = points[i][1];
+                }
             }
 
             //  each point has only one identical lat or long to previous point
             int prev_idx = 3;
-            for(int i=0;i<4;i++){
-                if((points[i][0] == points[prev_idx][0])
-                        == (points[i][1] == points[prev_idx][1])){
+            for (int i = 0; i < 4; i++) {
+                if ((points[i][0] == points[prev_idx][0])
+                        == (points[i][1] == points[prev_idx][1])) {
                     break;
                 }
                 prev_idx = i;
             }
             //it is a box if no 'break' occurred
-            if(prev_idx == 3){
+            if (prev_idx == 3) {
                 simpleregion.setBox(minlong, minlat, maxlong, maxlat);
                 return simpleregion;
             }
         }
+        simpleregion.setPolygon(points);
         return simpleregion;
     }
 
