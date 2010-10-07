@@ -36,12 +36,11 @@ public class MapLayerMetadata implements Serializable {
     private List<Double> zAxisValues = new ArrayList<Double>();
     private long id;
     private long maplayerid;
-
     private boolean isSpeciesLayer = false;
     private JSONObject speciesInformation;
     private String speciesLsid;
-
-    int partsCount;
+    private double[] layerExtent;
+    private int partsCount;
 
     public boolean isIsSpeciesLayer() {
         return isSpeciesLayer;
@@ -67,6 +66,51 @@ public class MapLayerMetadata implements Serializable {
         this.speciesLsid = speciesLsid;
     }
 
+    public double[] getLayerExtent() {
+        return layerExtent;
+    }
+
+    public void setLayerExtent(double[] layerExtent) {
+        this.layerExtent = layerExtent;
+    }
+
+    /**
+     * Set the layer extent after expanding the polygon by the
+     * given percent in all directions.
+     *
+     * min longitude -= factor*Width
+     * min latitude -= factor*Height
+     * max longitude += factor*Width
+     * max latitude += factor*Height
+     *
+     * @param polygon WKT for a rectangular polygon.
+     * @param expandFactor
+     */
+    public void setLayerExtent(String polygon, double expandFactor){
+        layerExtent = polygonToExtents(polygon);
+        double fw = expandFactor * (layerExtent[2] - layerExtent[0]);
+        double fh = expandFactor * (layerExtent[3] - layerExtent[1]);
+        layerExtent[0] -= fw;
+        layerExtent[1] -= fh;
+        layerExtent[2] += fw;
+        layerExtent[3] += fh;
+    }
+
+    /**
+     * WKT bounding box as POLYGON.
+     * 
+     * @return
+     */
+    public String getLayerExtentString() {
+        if(layerExtent != null){
+            return "POLYGON((" + layerExtent[0] + " " + layerExtent[1] + ","
+                    + layerExtent[2] + " " + layerExtent[1] + ","
+                    + layerExtent[2] + " " + layerExtent[3] + ","
+                    + layerExtent[0] + " " + layerExtent[3] + ","
+                    + layerExtent[0] + " " + layerExtent[1] + "))";
+        }
+        return null;
+    }
 
     public long getMaplayerid() {
         return maplayerid;
@@ -189,7 +233,7 @@ public class MapLayerMetadata implements Serializable {
             return null;
         }
         if (bbox.size() == 0) {
-            return null; 
+            return null;
         }
         return bbox.get(0) + ","
                 + bbox.get(1) + ","
@@ -278,5 +322,32 @@ public class MapLayerMetadata implements Serializable {
 
     public void setPartsCount(int pc) {
         partsCount = pc;
+    }
+
+    public boolean isOutside(String viewArea) {
+        double [] vArea = polygonToExtents(viewArea);
+        return !(vArea[0] >= layerExtent[0] && vArea[2] <= layerExtent[2]
+                && vArea[1] >= layerExtent[1] && vArea[3] <= layerExtent[3]);
+    }
+
+    double [] polygonToExtents(String polygon){
+        try{
+            double [] extents = new double[4];
+            String s = polygon.replace("POLYGON((", "").replace("))","").replace(","," ");
+            String [] sa = s.split(" ");
+            double long1 = Double.parseDouble(sa[0]);
+            double lat1 = Double.parseDouble(sa[1]);
+            double long2 = Double.parseDouble(sa[4]);
+            double lat2 = Double.parseDouble(sa[5]);
+            extents[0] = Math.min(long1,long2);
+            extents[2] = Math.max(long1,long2);
+            extents[1] = Math.min(lat1,lat2);
+            extents[3] = Math.max(lat1,lat2);
+           return extents;
+        }catch(Exception e){
+            System.out.println("polygonToExtents: " + polygon);
+            e.printStackTrace();
+        }
+        return null;
     }
 }

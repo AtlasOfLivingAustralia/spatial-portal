@@ -3528,7 +3528,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         if (species != null) {
             IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(species);
             if (ir == null || ir.length == 0) {
-                return null;
+                return records;
             }
             int count = ir[0].record_end - ir[0].record_start + 1;
             if (max_records < count) {
@@ -3564,21 +3564,23 @@ public class OccurrencesIndex implements AnalysisIndexService {
         } else if (region != null) {
             int[] r = getRecordsInside(region);
 
-            int count = r.length;
-            if (max_records < count) {
-                count = max_records;
-            }
+            if(r != null){
+                int count = r.length;
+                if (max_records < count) {
+                    count = max_records;
+                }
 
-            for (int j = 0; j < count; j++) {
-                int i = r[j];
-                if (speciesNumberInRecordsOrder[i] >= 0) {
-                    records.add(
-                            new Record(
-                            cluster_records[i][0],
-                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
-                            all_points[i][0],
-                            all_points[i][1],
-                            cluster_records[i][1]));
+                for (int j = 0; j < count; j++) {
+                    int i = r[j];
+                    if (speciesNumberInRecordsOrder[i] >= 0) {
+                        records.add(
+                                new Record(
+                                cluster_records[i][0],
+                                occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                                all_points[i][0],
+                                all_points[i][1],
+                                cluster_records[i][1]));
+                    }
                 }
             }
         }

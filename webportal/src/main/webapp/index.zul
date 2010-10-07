@@ -229,7 +229,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             
             var tbxReloadLayers = $e('${tbxReloadLayers.uuid}');
         var currentTime = new Date();
-        tbxReloadLayers.value = "z=" + map.zoom;
+        tbxReloadLayers.value = "z=" + map.zoom + "&amp;b=" + map.getExtent().toBBOX();
 
         if (document.createEvent) {
           var evt = document.createEvent('HTMLEvents');
@@ -263,7 +263,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 apply="au.org.emii.portal.composer.ExternalContentComposer">
             <caption id="caption">
                 <toolbarbutton id="reset" label="Reset Window" />
-                <toolbarbutton id="breakout" label="Open in new Window" />
+                <toolbarbutton id="breakout" label="Open in new Window" target="_blank" />
                 <toolbarbutton id="hide" label="Close" />
             </caption>
             <separator />
@@ -732,7 +732,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
                                                     <separator />
-                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="false" visible="false" />
+                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="true" visible="true" />
                                                 </vbox>
 
                                                 <html>

@@ -29,7 +29,7 @@ public class GazetteerPointSearch {
      * @param layer geoserver layer to search
      * @return returns a link to a geojson feature in the gaz
      */
-    public static String PointSearch(String lon, String lat, String layer) {
+    public static String PointSearch(String lon, String lat, String layer, String geoserver) {
         //HttpHost targetHost = new HttpHost("localhost", 8080); // "ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com"
        // DefaultHttpClient httpclient = new DefaultHttpClient();
        // BasicHttpContext localcontext = new BasicHttpContext();
@@ -45,7 +45,7 @@ public class GazetteerPointSearch {
             //Read in the xml response
             DocumentBuilder builder = domFactory.newDocumentBuilder();
            
-            String uri = "http://spatial-dev.ala.org.au" + "/geoserver/rest/gazetteer/result.xml?point=" + lon + "," + lat +"&layer=" + layer;
+            String uri = geoserver + "/geoserver/rest/gazetteer/result.xml?point=" + lon + "," + lat +"&layer=" + layer;
             System.out.println(uri);
             Document resultDoc = builder.parse(uri);
 
@@ -57,7 +57,7 @@ public class GazetteerPointSearch {
 
             NodeList links = (NodeList) linksExpr.evaluate(resultDoc, XPathConstants.NODESET);
 
-            featureURL= "http://spatial-dev.ala.org.au" + links.item(0).getNodeValue();
+            featureURL= geoserver + links.item(0).getNodeValue();
             
 
         }

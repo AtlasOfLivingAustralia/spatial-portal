@@ -1,6 +1,11 @@
 package org.ala.spatial.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -9,17 +14,18 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Calendar;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * SimpleShapeFile is a representation of a Shape File for 
+ * SimpleShapeFile is a representation of a Shape File for
  * intersections with points
- * 
+ *
  * .shp MULTIPOLYGON only
  * .dbf can read values from String and Number columns only
- * 
+ *
  * TODO: finish serialization
- * 
+ *
  * @author Adam Collins
  */
 public class SimpleShapeFile extends Object implements Serializable {
@@ -45,6 +51,14 @@ public class SimpleShapeFile extends Object implements Serializable {
      * for balancing shape files with large numbers of shapes.
      */
     ShapesReference shapesreference;
+    /**
+     * one dbf column, for use after loading from a file
+     */
+    short[] singleColumn;
+    /**
+     * one lookup for a dbf column, for use after loading from a file
+     */
+    String[] singleLookup;
 
     /**
      * Constructor for a SimpleShapeFile, requires .dbf and .shp files present
@@ -53,7 +67,6 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @param fileprefix file path for valid files after appending .shp and .dbf
      */
     public SimpleShapeFile(String fileprefix) {
-
         /* read dbf */
         dbf = new DBF(fileprefix + ".dbf");
 
@@ -68,6 +81,92 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         /* create shapes reference for intersections */
         shapesreference = new ShapesReference(shaperecords);
+
+    }
+
+    /**
+     * Constructor for a SimpleShapeFile, requires .dbf and .shp files present
+     * on the fileprefix provided.
+     *
+     * When creating from a shape file use:
+     *      <code>intersect(double[][] points, String[] lookup, int column)</code>
+     *
+     * When creating from a previously saved SimpleShapeFile use:
+     *      <code>intersect(double[][] points, int threadcount)</code>
+     *
+     * @param fileprefix file path for valid files after appending .shp and .dbf
+     * @param isShapeFile use true if the input is a shapefile prefix, otherwise
+     * to load from a previously saved SimpleShapeFile.
+     */
+    public SimpleShapeFile(String fileprefix, boolean isShapeFile) {
+        if (isShapeFile) {
+            /* read dbf */
+            dbf = new DBF(fileprefix + ".dbf");
+
+            /* read shape header */
+            shapeheader = new ShapeHeader(fileprefix);
+
+            /* read shape records */
+            shaperecords = new ShapeRecords(fileprefix, shapeheader.getShapeType());
+
+            /* get ComplexRegion list from shape records */
+            regions = shaperecords.getRegions();
+
+            /* create shapes reference for intersections */
+            shapesreference = new ShapesReference(shaperecords);
+        } else {
+            loadRegion(fileprefix);
+        }
+    }
+
+    /**
+     * save partial file (enough to reload and use intersect function)
+     *
+     * @param filename
+     */
+    public void saveRegion(String filename, int column) {
+        try {
+            FileOutputStream fos = new FileOutputStream(filename);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            shapesreference.sr.records = null; //cleanup
+            oos.writeObject(shapesreference);
+
+            singleLookup = getColumnLookup(column);
+            oos.writeObject(singleLookup);
+
+            singleColumn = new short[regions.size()];
+            for (int i = 0; i < singleColumn.length; i++) {
+                singleColumn[i] = (short)java.util.Arrays.binarySearch(singleLookup, dbf.getValue(i, column));
+            }
+            oos.writeObject(singleColumn);
+
+
+            oos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * save partial file (enough to reload and use intersect function)
+     *
+     * @param filename
+     */
+    public void loadRegion(String filename) {
+        try {
+            FileInputStream fis = new FileInputStream(filename);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            shapesreference = (ShapesReference) ois.readObject();
+
+            singleLookup = (String[]) ois.readObject();
+
+            singleColumn = (short[]) ois.readObject();
+            ois.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -106,6 +205,8 @@ public class SimpleShapeFile extends Object implements Serializable {
     }
 
     /**
+     * use when created from a shape file
+     *
      * identifies the index within a lookup list provided
      * for each provided point, or -1 for not found.
      *
@@ -119,15 +220,85 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @return index within a lookup list provided
      * for each provided point, or -1 for not found as int []
      */
-    public int[] intersectnew(double[][] points, String[] lookup, int column) {
+    public int[] intersect(double[][] points, String[] lookup, int column) {
+        int i;
+
+        /* setup for thread count */
+        int threadcount = TabulationSettings.analysis_threads;
+        ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
+        int step = points.length / (threadcount * 10);
+        if (step % 2 != 0) {
+            step++;
+        }
+        int pos = 0;
+        for (i = 0; i < threadcount * 10; i++) {
+            threadstart.add(new Integer(pos));
+            pos += step;
+        }
+
+        LinkedBlockingQueue<Integer> lbq = new LinkedBlockingQueue(threadstart);
+        CountDownLatch cdl = new CountDownLatch(lbq.size());
+
+        IntersectionThread[] it = new IntersectionThread[threadcount];
+
+        int[] target = new int[points.length];
+
+        for (i = 0; i < threadcount; i++) {
+            it[i] = new IntersectionThread(shapesreference, points, lbq, step, target, cdl);
+        }
+
+        //wait for all parts to be finished
+        try {
+            cdl.await();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //end threads
+        for (i = 0; i < threadcount; i++) {
+            it[i].interrupt();
+        }
+
+        //transform target from shapes_idx to column_idx
+        for (i = 0; i < target.length; i++) {
+            String s = dbf.getValue(target[i], column);
+            int v = java.util.Arrays.binarySearch(lookup, s);
+            if (v < 0) {
+                v = -1;
+            }
+            target[i] = v;
+        }
+
+        return target;
+    }
+
+    /**
+     * use from saved shape file
+     *
+     * e.g
+     *
+     * <code>int[] output = (new SimpleShapeFile(filename)).intersect(points, 1);</code>
+     *
+     * identifies the index within a lookup list provided
+     * for each provided point, or -1 for not found.
+     *
+     * @param points double [n][2]
+     * where
+     * 	n is number of points
+     *  [][0] is longitude
+     *  [][1] is latitude
+     * @param lookup String [], same as output from <code>getColumnLookup(column)</code>
+     * @param column .dbf column value to use
+     * @return index within a lookup list provided
+     * for each provided point, or -1 for not found as int []
+     */
+    public int[] intersect(double[][] points, int threadcount) {
 
         Long start_time = Calendar.getInstance().getTimeInMillis();
 
         int i;
 
         /* setup for thread count */
-        //TODO: dynamic threads number
-        int threadcount = 2;
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
         int step = points.length / (threadcount * 10);
         if (step % 2 != 0) {
@@ -141,82 +312,36 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         System.out.println("parts count = " + threadstart.size());
         LinkedBlockingQueue<Integer> lbq = new LinkedBlockingQueue(threadstart);
+        CountDownLatch cdl = new CountDownLatch(lbq.size());
 
         IntersectionThread[] it = new IntersectionThread[threadcount];
 
-        int [] target = new int[points.length];
+        int[] target = new int[points.length];
 
-        System.out.println("startin threads");
         for (i = 0; i < threadcount; i++) {
-            it[i] = new IntersectionThread(shapesreference, points, lbq, step, target);
-            System.out.println("started: " + i);
+            it[i] = new IntersectionThread(shapesreference, points, lbq, step, target, cdl);
         }
 
-        //wait until it1 & it2 are done
         try {
-            boolean alive = true;
-
-            while (alive) {
-                Thread.sleep(2000);
-                alive = false;
-                for (i = 0; i < threadcount; i++) {
-                    if (it[i].isAlive()) {
-                        alive = true;
-                        break;
-                    }
-                }
-            }
+            cdl.await();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        for (i = 0; i < threadcount; i++) {
+            it[i].interrupt();
+        }
+
         //transoform target from shapes_idx to column_idx
-        for(i=0;i<target.length;i++){
-            String s = dbf.getValue(i, column);
-            int v = java.util.Arrays.binarySearch(lookup, s);
-            target[i] = v;
+        for (i = 0; i < target.length; i++) {
+            if (target[i] >= 0 && target[i] < singleColumn.length) {
+                target[i] = singleColumn[target[i]];
+            } else {
+                target[i] = -1;
+            }
         }
 
         return target;
-    }
-
-    public int[] intersect(double[][] points, String[] lookup, int column) {
-        /* record duration of intersection */
-        long start_time = Calendar.getInstance().getTimeInMillis();
-
-        int i, j, v;
-        String s;
-
-        //output object
-        int[] output = new int[points.length];
-
-        /* check for intersection with first matching shape record */
-        for (i = 0; i < points.length; i++) {
-            for (j = 0; j < regions.size(); j++) {
-                if (regions.get(j).isWithin(points[i][0], points[i][1])) {
-                    /* get output value for this point */
-                    s = dbf.getValue(j, column);
-                    v = java.util.Arrays.binarySearch(lookup, s);
-                    if (v < 0) {
-                        v = -1;
-                    }
-                    output[i] = v;
-                    break;
-                }
-            }
-            /* default to -1 if not found */
-            if (j == regions.size()) {
-                output[i] = -1;
-            }
-        }
-
-        /* end duration record */
-        long end_time = Calendar.getInstance().getTimeInMillis();
-
-        /* TODO: record duration somewhere */
-        //System.out.println("intersect time in milliseconds: " + ( end_time - start_time ));
-
-        return output;
     }
 
     /**
@@ -227,60 +352,9 @@ public class SimpleShapeFile extends Object implements Serializable {
         return shapeheader.toString();
     }
 
-    /*
-     * gets a mask filled with; GI_PARTIALLY_PRESENT, GI_FULLY_PRESENT, GI_ABSENT,
-     * @param column
-     * @param longitude1
-     * @param latitude1
-     * @param longitude2
-     * @param latitude2
-     * @param width
-     * @param height
-     * @return
-     */
-    /*public short [][] getShortMask(int column,double longitude1, double latitude1
-    , double longitude2, double latitude2, int width, int height){
-    int i,j,k,v;
-    short [][] mask = new short[height][width];
-    for(j=0;j<height;j++){
-    for(k=0;k<width;k++){
-    mask[j][k] = -1;
-    }
-    }
-
-    // get column lookup, required for values conversion
-    String [] lookup = getColumnLookup(column);
-
-    String s;
-    byte [][] map;
-
-    for(i=0;i<regions.size();i++){
-    // get 3state map for current region
-    map = new byte[height][width];
-    regions.get(i).getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, map);
-
-    s = dbf.getValue(i,column);
-    v = java.util.Arrays.binarySearch(lookup,s);
-
-    // merge on first in basis for partial cells
-    int countnone = 0;
-    int countsome = 0;
-
-    for(j=0;j<map.length;j++){
-    for(k=0;k<map[j].length;k++){
-    if(map[j][k] >0 ){ // should be only == 1 || map[j][k] == 2){
-    mask[j][k] = (short)(v);
-    countsome++;
-    }else{
-    countnone++;
-    }
-    }
-    }
-    System.out.println("obj:" + v + " " + s + " none:" + countnone + " some:" + countsome);
-    }
-    return mask;
-    }*/
     /**
+     * for use with SimpleShapeFile constructed from a Shape File
+     *
      * generates a list of 'values' per grid cell, for input grid
      * definition, from .dbf column.
      *
@@ -341,6 +415,68 @@ public class SimpleShapeFile extends Object implements Serializable {
         return tilesa;
     }
 
+    /**
+     * for use after loading previously saved SimpleShapeFile
+     *
+     * generates a list of 'values' per grid cell, for input grid
+     * definition, from .dbf column.
+     *
+     * @param longitude1 bounding box point 1 longitude
+     * @param latitude1 bounding box point 1 latitude
+     * @param longitude2 bounding box point 2 longitude
+     * @param latitude2 bounding box point 2 latitude
+     * @param width bounding box width in number of cells
+     * @param height bounding box height in number of cells
+     * @return list of (cell x, cell y, cell value) as Tile [] for at least partial cell
+     * coverage
+     */
+    public Tile[] getTileList(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height) {
+        int i, j, k, v;
+
+        String[] lookup = singleLookup;
+
+        String s;
+        Vector<Tile> tiles = new Vector<Tile>();
+        byte[][] map;
+        int m;
+
+        byte[][] mask = new byte[height][width];
+
+        for (m = 0; m < lookup.length; m++) {
+            for (i = 0; i < regions.size(); i++) {
+                if (singleColumn[i] == (short)m) {
+                    map = new byte[height][width];
+
+                    shapesreference.sr.region.get(i).getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, map);
+
+                    /* merge on first in basis for partial or complete cells */
+                    for (j = 0; j < map.length; j++) {
+                        for (k = 0; k < map[j].length; k++) {
+                            if (map[j][k] == SimpleRegion.GI_PARTIALLY_PRESENT
+                                    || map[j][k] == SimpleRegion.GI_FULLY_PRESENT) {
+                                mask[j][k] = 1;			//indicate presence
+                            }
+                        }
+                    }
+                }
+            }
+
+            /* add to tiles */
+            for (i = 0; i < height; i++) {
+                for (j = 0; j < width; j++) {
+                    if (mask[i][j] > 0) {				//from above indicated presence
+                        mask[i][j] = 0;					//reset for next region in loop
+                        tiles.add(new Tile((float) m, (height - 1 - i) * width + j));
+                    }
+                }
+            }
+        }
+
+        // return as [] instead of Vector
+        Tile[] tilesa = new Tile[tiles.size()];
+        tiles.toArray(tilesa);
+        return tilesa;
+    }
 
     /**
      * defines a region by a points string, POLYGON only
@@ -356,10 +492,9 @@ public class SimpleShapeFile extends Object implements Serializable {
         }
         pointsString = convertGeoToPoints(pointsString);
 
-        String [] polygons = pointsString.split("S");
+        String[] polygons = pointsString.split("S");
 
         System.out.println("$" + pointsString);
-        System.out.println("L" + polygons.length);
 
         if (polygons.length == 1) {
             return SimpleRegion.parseSimpleRegion(polygons[0]);
@@ -367,7 +502,6 @@ public class SimpleShapeFile extends Object implements Serializable {
             return ComplexRegion.parseComplexRegion(polygons);
         }
     }
-
 
     static String convertGeoToPoints(String geometry) {
         if (geometry == null) {
@@ -382,10 +516,10 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         //for case of more than one polygon
         while (geometry.contains(",((")) {
-            geometry = geometry.replace(",((","S");
+            geometry = geometry.replace(",((", "S");
         }
         while (geometry.contains(",(")) {
-            geometry = geometry.replace(",(","S");
+            geometry = geometry.replace(",(", "S");
         }
         return geometry;
     }
@@ -393,7 +527,7 @@ public class SimpleShapeFile extends Object implements Serializable {
 
 /**
  * represents partial shape file header structure
- * 
+ *
  * @author adam
  *
  */
@@ -524,7 +658,7 @@ class ShapeHeader extends Object implements Serializable {
 
 /**
  * collection of shape file records
- * 
+ *
  * @author adam
  *
  */
@@ -539,7 +673,6 @@ class ShapeRecords extends Object implements Serializable {
      * true if constructor was successful
      */
     boolean isvalid;
-
     ArrayList<ComplexRegion> region;
 
     /**
@@ -592,7 +725,7 @@ class ShapeRecords extends Object implements Serializable {
      * @return
      */
     public ArrayList<ComplexRegion> getRegions() {
-        if(region == null){
+        if (region == null) {
             /* object for output */
             ArrayList<ComplexRegion> sra = new ArrayList();
 
@@ -610,7 +743,7 @@ class ShapeRecords extends Object implements Serializable {
                 }
 
                 /* speed up for polygons with lots of points */
-                if(points_count > 20){	//TODO: don't use arbitary numbers
+                if (points_count > 20) {	//TODO: don't use arbitary numbers
                     /*double [][] bb = sr.getBoundingBox();
                     int width = (int)((bb[1][0] - bb[0][0])*20);
                     int height = (int)((bb[1][1] - bb[0][1])*20);
@@ -619,7 +752,7 @@ class ShapeRecords extends Object implements Serializable {
                     if(width > 3 && height > 3){
                     sr.useMask(width,height);
                     }*/
-                    sr.useMask(100,50);
+                    sr.useMask(100, 50);
                 }
 
                 sra.add(sr);
@@ -641,7 +774,7 @@ class ShapeRecords extends Object implements Serializable {
 
 /**
  * collection of shape file records
- * 
+ *
  * @author adam
  *
  */
@@ -705,9 +838,9 @@ class ShapeRecord extends Object implements Serializable {
 
 /**
  * empty shape template
- * 
+ *
  * TODO: abstract
- * 
+ *
  * @author adam
  *
  */
@@ -748,7 +881,7 @@ class Shape extends Object implements Serializable {
 
 /**
  * object for shape file POLYGON
- * 
+ *
  * @author adam
  *
  */
@@ -869,7 +1002,7 @@ class Polygon extends Shape {
 
 /**
  * .dbf file object
- * 
+ *
  * @author adam
  *
  */
@@ -953,7 +1086,7 @@ class DBF extends Object implements Serializable {
 
 /**
  * .dbf header object
- * 
+ *
  * @author adam
  *
  */
@@ -1126,7 +1259,7 @@ class DBFHeader extends Object implements Serializable {
 
 /**
  * .dbf header field object
- * 
+ *
  * @author adam
  *
  */
@@ -1235,7 +1368,7 @@ class DBFField extends Object implements Serializable {
 
 /**
  * collection of .dbf records
- * 
+ *
  * @author adam
  *
  */
@@ -1317,7 +1450,7 @@ class DBFRecords extends Object implements Serializable {
 
 /**
  * .dbf record object
- * 
+ *
  * @author adam
  *
  */
@@ -1397,11 +1530,11 @@ class DBFRecord extends Object implements Serializable {
 
 /**
  * for balancing shape files with large numbers of shapes.
- * 
+ *
  * creates a grid with each cell listing shapes that overlap with it.
- * 
+ *
  * TODO: not square dimensions
- * 
+ *
  * @author adam
  *
  */
@@ -1438,6 +1571,8 @@ class ShapesReference extends Object implements Serializable {
      * @param sr_ all shapes for this mask as ShapeRecords
      */
     public ShapesReference(ShapeRecords sr_) {
+        long t1 = System.currentTimeMillis();
+
         sr = sr_;
         boundingbox_all = new double[2][2];
 
@@ -1471,8 +1606,8 @@ class ShapesReference extends Object implements Serializable {
             first_time = false;
         }
 
-        System.out.println("boundingbox:" + boundingbox_all[0][0] + " " + boundingbox_all[0][1] +
-                " " + boundingbox_all[1][0] + " " + boundingbox_all[1][1]);
+        System.out.println("boundingbox:" + boundingbox_all[0][0] + " " + boundingbox_all[0][1]
+                + " " + boundingbox_all[1][0] + " " + boundingbox_all[1][1]);
 
         /* get intersecting cells and add */
         ArrayList<ComplexRegion> sra = sr.getRegions();
@@ -1522,7 +1657,7 @@ class ShapesReference extends Object implements Serializable {
                 /* check each potential cell */
                 for (i = 0; i < ali.size(); i++) {
                     if (sra.get(ali.get(i).intValue()).isWithin(longitude, latitude)) {
-                        return i;
+                        return ali.get(i).intValue();
                     }
                 }
             }
@@ -1541,15 +1676,16 @@ class ShapesReference extends Object implements Serializable {
 class IntersectionThread implements Runnable {
 
     Thread t;
-    ArrayList<ComplexRegion> regions;
     ShapesReference shapesreference;
     double[][] points;
     LinkedBlockingQueue<Integer> lbq;
     int step;
     int[] target;
+    CountDownLatch cdl;
 
-    public IntersectionThread(ShapesReference shapesreference_, double[][] points_, LinkedBlockingQueue<Integer> lbq_, int step_, int[] target_) {
+    public IntersectionThread(ShapesReference shapesreference_, double[][] points_, LinkedBlockingQueue<Integer> lbq_, int step_, int[] target_, CountDownLatch cdl_) {
         t = new Thread(this);
+        t.setPriority(Thread.MIN_PRIORITY);
 
         points = points_;
         shapesreference = shapesreference_;
@@ -1558,9 +1694,12 @@ class IntersectionThread implements Runnable {
 
         target = target_;
 
+        cdl = cdl_;
+
         t.start();
     }
 
+    @Override
     public void run() {
 
         int i, idx;
@@ -1569,18 +1708,13 @@ class IntersectionThread implements Runnable {
         /* get next batch */
         Integer start;
         try {
-            System.out.println("try*: ");
-            synchronized (lbq) {
-                if (lbq.size() > 0) {
-                    start = lbq.take();
-                } else {
-                    start = null;
-                }
-            }
+            //System.out.println("try*: ");
 
-            System.out.println("A*: " + start.intValue());
+            while (true) {
+                start = lbq.take();
 
-            while (start != null) {
+                //System.out.println("A*: " + start.intValue());
+
                 int end = start.intValue() + step;
                 if (end > target.length) {
                     end = target.length;
@@ -1593,24 +1727,21 @@ class IntersectionThread implements Runnable {
                     }
                 }
 
-                /* report */
-                System.out.println("*: " + start.intValue() + " to " + end + " with hits=" + hits);
+                cdl.countDown();
 
-                /* get next available */
-                synchronized (lbq) {
-                    if (lbq.size() > 0) {
-                        start = lbq.take();
-                    } else {
-                        start = null;
-                    }
-                }
+                /* report */
+                //System.out.println("*: " + start.intValue() + " to " + end + " with hits=" + hits);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
     public boolean isAlive() {
         return t.isAlive();
+    }
+
+    void interrupt() {
+        t.interrupt();
     }
 }

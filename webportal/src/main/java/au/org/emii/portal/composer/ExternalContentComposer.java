@@ -17,7 +17,10 @@ public class ExternalContentComposer extends UtilityComposer {
 	 * Breakout the external content window to be a new browser window
 	 * instead (SUBJECT TO POPUP BLOCKING!)
 	 */
-	public void onClick$breakout() {
+	/*
+         * Setting toolbarbutton.href instead.  For popup blocking.
+         * 
+         public void onClick$breakout() {
 		// find the uri from the iframe...
 		logger.debug("breakout external content");
 		String uri = externalContentIframe.getSrc();
@@ -29,7 +32,7 @@ public class ExternalContentComposer extends UtilityComposer {
 			logger.info("onBreakoutExternalContent called when there is no src set in iframe");
 		}
 		
-	}
+	}*/
 
         /**
          * resets the src of the iframe

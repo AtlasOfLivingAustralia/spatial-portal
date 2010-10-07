@@ -22,7 +22,6 @@ import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
@@ -86,7 +85,7 @@ public class FilteringWCController extends UtilityComposer {
             //TODO: error message
         }
 
-        cbEnvLayers.setSettingsSupplementary(settingsSupplementary);
+        //cbEnvLayers.setSettingsSupplementary(settingsSupplementary);
 
         layersUtil = new LayersUtil(mc, satServer);
 
@@ -123,12 +122,18 @@ public class FilteringWCController extends UtilityComposer {
 
         try {
             if (new_value.length() == 0) {
-                new_value = cbEnvLayers.getValue();
+                //new_value = cbEnvLayers.getValue();
+
+                if (cbEnvLayers.getItemCount() > 0 && cbEnvLayers.getSelectedItem() != null) {
+                    JSONObject jo = (JSONObject) cbEnvLayers.getSelectedItem().getValue();
+                    new_value = jo.getString("name");
+                    cbEnvLayers.setValue("");
+                }
+
             }
-            if (new_value.equals("") || new_value.lastIndexOf("(") < 0) {
+            if (new_value.equals("")) {
                 return;
             }
-            new_value = new_value.substring(0, new_value.lastIndexOf("(")).trim();
 
             if (selectedLayers.contains(new_value)) {
                 //not a new value to add
@@ -145,7 +150,7 @@ public class FilteringWCController extends UtilityComposer {
                     SPLFilter f = getSPLFilter(layername);
 
                     // Col 1: Add the layer name
-                    Listcell lname = new Listcell(f.layer.display_name + " (Terrestrial)");
+                    Listcell lname = new Listcell(f.layer.display_name);
                     lname.setStyle("white-space: normal;");
                     lname.setParent(li);
 
@@ -586,12 +591,15 @@ public class FilteringWCController extends UtilityComposer {
         String strCount = postInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
 
         //TODO: handle invalid counts/errors
+        try{
+            popup_filter.count = Integer.parseInt(strCount.split("\n")[0]);
+            ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount.split("\n")[0]);
 
-        popup_filter.count = Integer.parseInt(strCount);
-        ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount);
-
-        //update Species List analysis tab
-        updateSpeciesList(popup_filter.count);
+            //update Species List analysis tab
+            updateSpeciesList(popup_filter.count, Integer.parseInt(strCount.split("\n")[1]));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
      /**
@@ -599,7 +607,7 @@ public class FilteringWCController extends UtilityComposer {
      *
       * similar function in SelectionController.java
      */
-    void updateSpeciesList(int newCount) {
+    void updateSpeciesList(int newCount, int newOccurrencesCount) {
         try {
             FilteringResultsWCController win =
                     (FilteringResultsWCController) getMapComposer()
@@ -607,7 +615,7 @@ public class FilteringWCController extends UtilityComposer {
                             .getFellow("analysiswindow")
                                 .getFellow("speciesListForm")
                                     .getFellow("popup_results");
-            win.refreshCount(newCount);
+            win.refreshCount(newCount, newOccurrencesCount);
         } catch (Exception e) {
             e.printStackTrace();
         }

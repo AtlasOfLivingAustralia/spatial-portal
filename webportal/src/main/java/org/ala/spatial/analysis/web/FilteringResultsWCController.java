@@ -2,6 +2,8 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.Writer;
 import java.net.URL;
@@ -351,10 +353,23 @@ public class FilteringResultsWCController extends UtilityComposer {
                 System.out.println("onMapSpecies: " + slist);
                 String [] results = slist.split("\n");
                 getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
-            }else{                
+            }else{
+                MapLayerMetadata md = new MapLayerMetadata();
+                md.setLayerExtent(area, 0.2);
+
                 sbProcessUrl.append("species");
                 sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area,"UTF-8"));
-                getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());
+                String id = String.valueOf(System.currentTimeMillis());
+                sbProcessUrl.append("/id/").append(URLEncoder.encode(id,"UTF-8"));
+                sbProcessUrl.append("/now");
+                sbProcessUrl.append("?z=").append(String.valueOf(getMapComposer().getMapZoom()));
+                sbProcessUrl.append("&a=").append(URLEncoder.encode(md.getLayerExtentString(),"UTF-8"));
+                MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());
+
+                if(ml.getMapLayerMetadata() == null){
+                    ml.setMapLayerMetadata(new MapLayerMetadata());
+                }
+                ml.getMapLayerMetadata().setLayerExtent(area, 0.2);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -458,9 +473,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    void refreshCount(int newCount) {
+    void refreshCount(int newCount, int newOccurrencesCount) {
         //results_label_extra.setValue("    [Updating...]");
         results_count = newCount;
+        results_count_occurrences = newOccurrencesCount;
         if (results_count == 0) {
             //results_label.setValue("no species in active area");
             results_label2_species.setValue(String.valueOf(results_count));

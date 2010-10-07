@@ -175,28 +175,28 @@ public class SamplingIndex implements AnalysisIndexService {
                     && !layername.equalsIgnoreCase(TabulationSettings.environmental_data_files[i].name)) {
                 continue;
             }
-            if (points == null) {               
+            if (points == null) {
                 points = OccurrencesIndex.getPointsPairs();
             }
 
             layer = TabulationSettings.environmental_data_files[i];
-            try {               
+            try {
                 Grid grid = new Grid(
                         TabulationSettings.environmental_data_path
                         + layer.name);
 
                 float[] values = grid.getValues2(points);
-               
+
                 /* export values - RAF for writeDouble() */
                 RandomAccessFile raf = new RandomAccessFile(
                         TabulationSettings.index_path
                         + "SAM_D_" + layer.name + ".dat", "rw");
-               
-                byte[] b = new byte[values.length*4];
+
+                byte[] b = new byte[values.length * 4];
                 ByteBuffer bb = ByteBuffer.wrap(b);
 
-                for (i=0;i<values.length;i++){
-                    bb.putFloat((float)values[i]);
+                for (i = 0; i < values.length; i++) {
+                    bb.putFloat((float) values[i]);
                 }
 
                 raf.write(b);
@@ -284,9 +284,17 @@ public class SamplingIndex implements AnalysisIndexService {
 
                 int[] values = ssf.intersect(points, catagories, column_idx);
 
+                //save ssf
+                ssf.saveRegion(TabulationSettings.index_path + l.name, column_idx);
+
+                byte[] b = new byte[values.length * 2];
+                ByteBuffer bb = ByteBuffer.wrap(b);
+
                 for (i = 0; i < values.length; i++) {
-                    raf.writeShort((short) values[i]);
+                    bb.putShort((short) values[i]);
                 }
+
+                raf.write(b);
                 raf.close();
 
                 (new SpatialLogger()).log("shapefile done: " + l.name);
@@ -412,7 +420,7 @@ public class SamplingIndex implements AnalysisIndexService {
                 raf.close();
             } else if ((new File(filenameI)).exists()) {
                 String[] lookup_values = SamplingIndex.getLayerCatagories(
-                    Layers.getLayer(layer_name));
+                        Layers.getLayer(layer_name));
 
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameI, "r");

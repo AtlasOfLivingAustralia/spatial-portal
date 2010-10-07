@@ -173,7 +173,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                         TabulationSettings.index_path
                         + "SAM_D_" + layer.name + ".dat", "r");
 
-                int number_of_records = (int)(sam_d_gridfile.length() / 4); //4 bytes in float
+                int number_of_records = (int) (sam_d_gridfile.length() / 4); //4 bytes in float
                 byte[] b = new byte[(number_of_records) * 4];
                 sam_d_gridfile.read(b);
                 ByteBuffer bb = ByteBuffer.wrap(b);
@@ -192,7 +192,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                 /* load all valid values and add to records with species number and
                  * original record index
                  */
-                for(i=0;i<number_of_records;i++){
+                for (i = 0; i < number_of_records; i++) {
                     /* split up record line for extraction of:
                      *  species name (column at idx ofu.onetwoCount-1)
                      *  longitude (before last value)
@@ -282,7 +282,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                         + SamplingIndex.CATAGORICAL_PREFIX + layer.name
                         + SamplingIndex.VALUE_POSTFIX, "r");
 
-                int number_of_records = (int)(sam_i_layerfile.length() / 2); //2 bytes in short
+                int number_of_records = (int) (sam_i_layerfile.length() / 2); //2 bytes in short
                 byte[] b = new byte[(number_of_records) * 2];
                 sam_i_layerfile.read(b);
                 ByteBuffer bb = ByteBuffer.wrap(b);
@@ -299,7 +299,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 /* load all valid values and add to records with species number and
                  * original record index*/
-                for(i=0;i<number_of_records;i++){
+                for (i = 0; i < number_of_records; i++) {
 
                     /* split up record line for extraction of:
                      *  species name (2 before last value)
@@ -428,9 +428,9 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         /* is it continous (grid file) */
         File continous_file = new File(TabulationSettings.environmental_data_path
                 + layer.name + ".gri");
-        if(!continous_file.exists()){
+        if (!continous_file.exists()) {
             continous_file = new File(TabulationSettings.environmental_data_path
-                + layer.name + ".GRI");
+                    + layer.name + ".GRI");
         }
         if (continous_file.exists()) {
             /* load grid file and fill layerfilter with min/max */
@@ -1188,7 +1188,7 @@ class SPLSpeciesRecord implements Serializable {
     public int rank;
 
     /**
-     * constructor 
+     * constructor
      * @param _name as String
      * @param _rank as int
      */

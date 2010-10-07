@@ -64,14 +64,23 @@
             }
         </style>
 
-        <div sclass="highlighted">
+        <!--div sclass="highlighted">
             <vbox>
                 <label value="Add environmental layer to the filter" />
                 <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="90%" />
             </vbox>
+        </div -->
+        <div>
+            <vbox>
+                <label value="Enter a layer name or a keyword" />
+                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" >
+                    <comboitem label=""/>
+                </combobox>
+                <label sclass="exampleText">e.g. Annual Mean Temperature</label>
+            </vbox>
         </div>
 
-        <div sclass="highlighted">
+        <div>
             <label value="Active filter" />
             <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" vflex="true">
                 <listhead sizable="true">

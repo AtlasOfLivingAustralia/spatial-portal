@@ -747,7 +747,8 @@ function forceRedrawVectorLayers() {
             //layersV[i].display(true);
             //layersV[i].display(true);
             var l = layersV[i];
-            redrawFeatures(l.features, l.name, l.style.fillColor, l.style.fillOpacity, l.style.pointRadius,l.style.szUncertain)();
+            redrawFeatures(l.features, l.name, l.style.fillColor, l.style.fillOpacity, l.style.pointRadius,l.style.szUncertain);
+            updateClusterStyles(layersV[i]);
         }
     } catch (err) {
 
@@ -777,7 +778,10 @@ function showInfo(curr) {
         }
     } catch (err) {}
 
-    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+info.id+".json", function(data) {
+    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
+    alert(occ_id);
+
+    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
         var occinfo = data.occurrence;
 
         var species = occinfo.species;
@@ -829,6 +833,8 @@ function showInfo(curr) {
         if (document.getElementById("sppopup") != null) {
             document.getElementById("sppopup").innerHTML = infohtml;
         }
+
+    });
 
     });
 
@@ -901,7 +907,7 @@ function showInfoOne() {
 }
 
 function showClusterInfo(curr) {
-    var info = currFeature.attributes["cluster"][curr];
+//    var info = currFeature.attributes["cluster"][curr];
     //    if (document.getElementById("sppopup") != null) {
     //        document.getElementById("sppopup").innerHTML = "Requesting data...";
     //    }
@@ -910,18 +916,21 @@ function showClusterInfo(curr) {
     //console.log(occinfo);
     var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
-        if (currFeature.attributes["cluster"][curr+1].id != null) {
+        if (curr+1 < currFeature.attributes["count"]) {
             nextBtn = "<a href='javascript:showClusterInfo("+(curr+1)+");hidePrecision();'>next &rArr;</a>";
         }
     } catch (err) {}
     var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
-        if (currFeature.attributes["cluster"][curr-1].id != null) {
+        if (curr > 0) {
             prevBtn = "<a href='javascript:showClusterInfo("+(curr-1)+");hidePrecision();'>&lArr; previous</a>";
         }
     } catch (err) {}
 
-    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+info.id+".json", function(data) {
+    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
+
+    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
+
         var occinfo = data.occurrence;
 
         var species = occinfo.species;
@@ -948,7 +957,8 @@ function showClusterInfo(curr) {
         }
         if (!occurrencedate) occurrencedate="";
 
-        var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
+        var infohtml = "<div id='sppopup'> " +
+        "<h2>Occurrence information (" + (curr+1) + " of " + currFeature.attributes["count"] + ")</h2>" +       
         " Scientific name: " + species + " <br />" +
         " Kingdom: " + kingdom + " <br />" +
         " Family: " + family + " <br />" +
@@ -957,8 +967,8 @@ function showClusterInfo(curr) {
         " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
         " Spatial uncertainty in meters: " + uncertaintyText + " (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)<br />" +
         " Occurrence date: " + occurrencedate + " <br />" +
-        "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
-        "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+        "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occ_id + "' target='_blank'>View details</a> <br /> <br />" +
+         "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
         //        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
         //            //currFeature.geometry.getBounds().getCenterLonLat(),
@@ -976,6 +986,7 @@ function showClusterInfo(curr) {
 
     });
 
+    });
 
 //    var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
 //    " Scientific name: " + info.name + "</a> <br />" +
@@ -1255,6 +1266,8 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     //apply uncertainty to features
     vector_layer.addFeatures(applyFeatureUncertainty(features, szUncertain));
 
+    updateClusterStyles(vector_layer);
+
     ////selectionLayers[selectionLayers.length] = vector_layer;
     vector_layer.events.register("featureselected", vector_layer, selected);
     //selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
@@ -1309,6 +1322,8 @@ function addJsonUrlToMap(url, name, hexColour, radius, opacity, szUncertain) {
 
     //apply uncertainty to features
     vector_layer.addFeatures(applyFeatureUncertainty(features, szUncertain));
+
+    updateClusterStyles(vector_layer);
 
     vector_layer.events.register("featureselected", vector_layer, selected);
 
@@ -1488,6 +1503,7 @@ function redrawFeatures(feature, name, hexColour, opacity, radius, szUncertain) 
                 layer.destroyFeatures();
                 layer.style = layer_style;
                 layer.addFeatures(applyFeatureUncertainty(features,szUncertain));
+                updateClusterStyles(layer);
 
             }
         }
@@ -1559,6 +1575,7 @@ function drawFeaturesGeoJsonUrl(url, parts, name, hexColour, opacity, radius, sz
     //apply uncertainty to features
     
     vector_layer.addFeatures(applyFeatureUncertainty(features, szUncertain));
+    updateClusterStyles(vector_layer);
 
     vector_layer.events.register("featureselected", vector_layer, selected);
 
@@ -2455,16 +2472,39 @@ function applyFeatureUncertainty(features,szUncertain){
     var len = f.length;
     for(var j=0;j<len && j<f.length;j++){        
         if(f[j].geometry.toString().indexOf('POI') == 0) {
-            var u = f[j].attributes['u'];
-            if(u == '' || u == undefined || u == '0')
-                u = 10000;
-            var c = OpenLayers.Geometry.Polygon.createRegularPolygon(f[j].geometry,
-                u,20,0);
-            var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,new_style);
-            f[len + j] = fv;
+            if(szUncertain){
+                var u = f[j].attributes['u'];
+                if(u == '' || u == undefined || u == '0')
+                    u = 10000;
+                var c = OpenLayers.Geometry.Polygon.createRegularPolygon(f[j].geometry,
+                    u,20,0);
+                var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,new_style);
+                f[len + j] = fv;
+            }            
         }        
     }
     return f;
+}
+
+function updateClusterStyles(layer){
+    var f = layer.features;
+    for(var j=0;j<f.length;j++){
+        //apply radius for clusters
+        var r = f[j].attributes['radius']
+        if(r != undefined){
+            if(f[j].style.pointRadius != undefined) {
+                f[j].style.pointRadius = r;
+                f[j].style.label = f[j].attributes["count"];
+            }
+        }
+
+        //apply density for clusters
+        var d = f[j].attributes['density']
+        if(d != undefined){
+            f[j].style.fillOpacity = d * layer.style.fillOpacity;
+        }
+    }
+    layer.redraw(true);
 }
 
 function addUncertaintyFeatures(layer){
