@@ -69,6 +69,7 @@ import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -2633,6 +2634,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return uparams;
     }
 
+    public void echoMapSpeciesByLSID(Event event){
+        String lsid = (String) event.getData();
+        try{
+            mapSpeciesByLsid(lsid, lsid);
+        }catch(Exception e){
+            //try again
+            Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
+        }
+    }
+
     private MapLayer loadUrlParameters() {
         MapLayer ml = null;
         try {
@@ -2646,7 +2657,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 if (userParams.containsKey("species_lsid")) {
                     //TODO: get species name as layer name
-                    ml = mapSpeciesByLsid(userParams.get("species_lsid"), userParams.get("species_lsid"));
+                    Events.echoEvent("echoMapSpeciesByLSID", this, userParams.get("species_lsid"));
+                    //ml = mapSpeciesByLsid(userParams.get("species_lsid"), userParams.get("species_lsid"));
                     showLayerTab = true;
                 } else if (userParams.containsKey("layer")) {
                     // TODO: eventually add env/ctx layer loading code here
@@ -3519,6 +3531,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public MapLayer mapSpeciesByLsid(String lsid, String species) {
+        if(species == null || (lsid != null && species.equalsIgnoreCase(lsid))){
+            species = LayersUtil.getScientificName(lsid);
+        }
         if(chkPointsCluster.isChecked()){
             return mapSpeciesByLsidCluster(lsid, species);
         }else{
