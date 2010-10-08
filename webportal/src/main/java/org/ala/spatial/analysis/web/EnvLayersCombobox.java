@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Page;
@@ -28,8 +29,7 @@ import org.zkoss.zul.Comboitem;
  */
 public class EnvLayersCombobox extends Combobox {
 
-    private static String SAT_SERVER = "http://spatial-dev.ala.org.au";
-    private static final String SAT_URL = "sat_url";
+    private static String SAT_SERVER = null;
     SettingsSupplementary settingsSupplementary = null;;
 
     public EnvLayersCombobox() {
@@ -43,8 +43,6 @@ public class EnvLayersCombobox extends Combobox {
     @Override
     public void setValue(String value) {
         super.setValue(value);
-        //refresh(value); //refresh the child comboitems
-        //refreshJSON(value);
     }
 
     /** Listens what an user is entering.
@@ -52,19 +50,16 @@ public class EnvLayersCombobox extends Combobox {
     public void onChanging(InputEvent evt) {
         if (!evt.isChangingBySelectBack()) {
             refresh(evt.getValue());
-            //refreshJSON(evt.getValue());
         }
     }
 
     private void refresh(String val) {
-
-        //TODO get this from the config file
         if (settingsSupplementary != null) {
             //System.out.println("setting ss.val");
         } else if(this.getParent() != null){
             settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
             System.out.println("LAC got SS: " + settingsSupplementary);
-            SAT_SERVER = settingsSupplementary.getValue(SAT_URL);
+            SAT_SERVER = settingsSupplementary.getValue(CommonData.SAT_URL);
         }else{
             return;
         }

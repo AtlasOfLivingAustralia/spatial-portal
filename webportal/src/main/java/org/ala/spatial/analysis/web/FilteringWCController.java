@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Vector;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
 import org.apache.commons.httpclient.HttpClient;
@@ -44,7 +45,6 @@ import org.zkoss.zul.Window;
 public class FilteringWCController extends UtilityComposer {
 
     private static final long serialVersionUID = -26560838825366347L;
-    private static final String SAT_URL = "sat_url";
     private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
     public Div popup_continous;
@@ -80,7 +80,7 @@ public class FilteringWCController extends UtilityComposer {
         //get the current MapComposer instance
         mc = getThisMapComposer();
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         } else {
             //TODO: error message
         }

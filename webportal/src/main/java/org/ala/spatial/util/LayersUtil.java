@@ -58,10 +58,6 @@ public class LayersUtil {
     public LayersUtil(MapComposer mc_, String satServer_) {
         mc = mc_;
         satServer = satServer_;
-
-        /* do first SAT calls here for retrieving layer names */
-        getEnvironmentalLayers();
-        getContextualLayers();
     }
 
     /**
@@ -271,32 +267,9 @@ public class LayersUtil {
             return environmentalLayerNames;
         }
 
-        String[] aslist = null;
-        try {
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+        environmentalLayerNames = CommonData.getEnvironmentalLayers();
 
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            aslist = slist.split("\n");
-
-            for (int i = 0; i < aslist.length; i++) {
-                aslist[i] = aslist[i].trim();
-            }
-
-        } catch (Exception e) {
-            System.out.println("error setting up env list");
-            e.printStackTrace(System.out);
-        }
-
-        /* retain list for future calls */
-        environmentalLayerNames = aslist;
-
-        return aslist;
+        return environmentalLayerNames;
     }
 
     /**
@@ -310,58 +283,9 @@ public class LayersUtil {
         if (contextualLayerNames != null) {
             return contextualLayerNames;
         }
+        
+        contextualLayerNames = CommonData.getContextualLayers();
 
-        String[] aslist = null;
-        try {
-
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/contextual/string";
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            get.addRequestHeader("Content-type", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            aslist = slist.split("\n");
-
-            for (int i = 0; i < aslist.length; i++) {
-                aslist[i] = aslist[i].trim();
-            }
-
-        } catch (Exception e) {
-            System.out.println("error setting up ctx list");
-            e.printStackTrace(System.out);
-        }
-
-        /* retain for future calls */
-        contextualLayerNames = aslist;
-
-        return aslist;
-    }
-
-    /**
-     * Return a list of all layers available
-     *
-     * @return String list of layers
-     */
-    public String getLayerList() {
-        try {
-
-            String envurl = satServer + "/alaspatial/ws/layers/list";
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(envurl);
-            //get.addRequestHeader("Content-type", "application/json");
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-        } catch (Exception e) {
-            System.out.println("error setting up ctx list");
-            e.printStackTrace(System.out);
-        }
-        return null;
+        return contextualLayerNames;
     }
 }

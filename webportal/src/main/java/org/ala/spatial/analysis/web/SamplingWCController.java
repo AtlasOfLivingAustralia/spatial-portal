@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -44,8 +45,6 @@ import org.zkoss.zul.Tabbox;
  * @author ajay
  */
 public class SamplingWCController extends UtilityComposer {
-
-    private static final String SAT_URL = "sat_url";
     private SpeciesAutoComplete sac;
     Tabbox tabboxsampling;
    // private Listbox lbenvlayers;
@@ -74,7 +73,7 @@ public class SamplingWCController extends UtilityComposer {
         try{
             mc = getThisMapComposer();
             if (settingsSupplementary != null) {
-                satServer = settingsSupplementary.getValue(SAT_URL);
+                satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
             }
 
             layersUtil = new LayersUtil(mc, satServer);

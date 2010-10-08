@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Page;
@@ -24,8 +25,7 @@ import org.zkoss.zul.Comboitem;
  */
 public class LayersAutoComplete extends Combobox {
 
-    private static String SAT_SERVER = "http://spatial-dev.ala.org.au";
-    private static final String SAT_URL = "sat_url";
+    private static String SAT_SERVER = null;
     SettingsSupplementary settingsSupplementary = null;;
 
     public LayersAutoComplete() {
@@ -60,7 +60,7 @@ public class LayersAutoComplete extends Combobox {
         } else if(this.getParent() != null){
             settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
             System.out.println("LAC got SS: " + settingsSupplementary);
-            SAT_SERVER = settingsSupplementary.getValue(SAT_URL);
+            SAT_SERVER = settingsSupplementary.getValue(CommonData.SAT_URL);
         }else{
             return;
         }

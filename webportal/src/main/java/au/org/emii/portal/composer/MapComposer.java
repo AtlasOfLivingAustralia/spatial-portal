@@ -68,6 +68,7 @@ import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
+import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -132,9 +133,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     protected DesktopState desktopState = new DesktopState();
     private SettingsSupplementary settingsSupplementary = null;
     private static final String MENU_DEFAULT_WIDTH = "menu_default_width";
-    private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";
-    private static final String GEOSERVER_URL = "geoserver_url";
-    private static final String SAT_URL = "sat_url";
+    private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";    
     private static final String SPECIES_METADATA_URL = "species_metadata_url";
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
@@ -525,14 +524,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String link = (String) ci.getValue();
         String label = ci.getLabel();
         if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
-//        try {
-//            Messagebox.show(geoServer + link);
-//        }
-//        catch (Exception e) {}
-
+            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
             logger.debug(geoServer + link);
-
+        }else{
+            return;
         }
         //add feature to the map as a new layer
         MapLayer mapLayer = addGeoJSON(label, geoServer + link);
@@ -619,7 +614,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             metadata += "Classification1: " + jo.getString("classification1") + "\n";
             }
              */
-            metadata = settingsSupplementary.getValue(SAT_URL) + "/alaspatial/layers/" + jo.getString("uid");
+            metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + jo.getString("uid");
             addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75, metadata);
             lac.setValue("");
         }
@@ -2406,8 +2401,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     private void loadLayerTree() {
-        //String layerlist = (String)Sessions.getCurrent().getAttribute("layerlist");
-        Object llist = Sessions.getCurrent().getAttribute("layerlist");
+        //Object llist = Sessions.getCurrent().getAttribute("layerlist");
 
         ArrayList top = new ArrayList();
         ArrayList cat1 = new ArrayList();
@@ -2416,7 +2410,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Hashtable htCat1 = new Hashtable();
         Hashtable htCat2 = new Hashtable();
 
-        JSONArray layerlist = JSONArray.fromObject(llist);
+        JSONArray layerlist = CommonData.getLayerListJSONArray();//JSONArray.fromObject(llist);
         for (int i = 0; i < layerlist.size(); i++) {
             JSONObject jo = layerlist.getJSONObject(i);
 
@@ -3205,7 +3199,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }catch(Exception e){
             e.printStackTrace();
         }
-        String satServer = settingsSupplementary.getValue(SAT_URL);//"http://spatial-dev.ala.org.au";
+        String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         System.out.println("tbxReloadLayers.getValue(): " + tbxReloadLayers.getValue());
         // iterate thru' active map layers
         List udl = getPortalSession().getActiveLayers();
@@ -3533,7 +3527,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
     MapLayer mapSpeciesByLsidCluster(String lsid, String species) {
         try {
-            String satServer = settingsSupplementary.getValue(SAT_URL);//"http://spatial-dev.ala.org.au";
+            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
 
             lsid = StringUtils.replace(lsid, ".", "__");
             lsid = URLEncoder.encode(lsid, "UTF-8");
@@ -3576,7 +3570,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     MapLayer mapSpeciesByLsidPoints(String lsid, String species) {
         try {
-            String satServer = settingsSupplementary.getValue(SAT_URL);//"http://spatial-dev.ala.org.au";
+            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
 
             lsid = StringUtils.replace(lsid, ".", "__");
             lsid = URLEncoder.encode(lsid, "UTF-8");
@@ -3590,14 +3584,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             sbProcessUrl.append("/lsid/").append(lsid);
             sbProcessUrl.append("/geojson");
             HttpClient client = new HttpClient();
-            //PostMethod post = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
-            //post.addRequestHeader("Accept", "application/json, text/javascript, */*");
             GetMethod post = new GetMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
             post.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(post);
             String slist = post.getResponseBodyAsString();
             String [] results = slist.split("\n");
-            //getMapComposer().addGeoJSONLayer(species, satServer + "/alaspatial/" + slist);
+       
             addGeoJSONLayerProgressBar(species, satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), lsid);//set progress bar with maximum
         } catch (Exception ex) {
             //logger.debug(ex.getMessage());
@@ -3622,9 +3614,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String sld = "species_point";
 
         if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
         }else{
-            geoServer = "http://spatial-dev.ala.org.au";
+            return null;
         }
         uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
 
@@ -3656,9 +3648,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String sld = "species_point";
 
         if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
         }else{
-            geoServer = "http://spatial-dev.ala.org.au";
+            return null;
         }
         uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
 
@@ -3684,9 +3676,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String sld = "species_point";
 
         if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
         }else{
-            geoServer = "http://spatial-dev.ala.org.au";
+           return null;
         }
         uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
 

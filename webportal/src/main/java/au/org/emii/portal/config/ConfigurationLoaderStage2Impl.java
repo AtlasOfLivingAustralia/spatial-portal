@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.util.CommonData;
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlCursor;
 import org.springframework.beans.factory.annotation.Required;
@@ -211,6 +212,9 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
             // all good
             masterPortalSession = workingPortalSession;
         }
+
+        //geoserver/alaspatial analysis page data       
+        CommonData.init(settingsSupplementary.getValue(CommonData.SAT_URL), settingsSupplementary.getValue(CommonData.GEOSERVER_URL));
         
         cleanup();
         reloading = false;

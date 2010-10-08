@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -38,7 +39,6 @@ public class FilteringResultsWCController extends UtilityComposer {
     private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
 
 
-    private static final String SAT_URL = "sat_url";
     public Button download;
     public Button downloadsamples;
     public Button refreshButton2;
@@ -183,15 +183,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                                 lc.setParent(li);
                             }
                         }
-                    });
-            if (length < 200) {
-                //results_label.setValue("species in active area: " + length);
-                //results_label2.setValue(length + "");
-            } else {
-                //results_label.setValue("species in active area: " + length + " (first 200 listed)");
-                //results_label2.setValue(length + "");
-                //results_label_extra.setValue(" (first 200 listed)");
-            }
+                    });          
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -300,7 +292,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$downloadsamples() {
           //  results_label_extra.setValue("    [Generating download...]");
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         try {
@@ -336,7 +328,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onMapSpecies(Event event){
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         try {
@@ -378,7 +370,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     private String getInfo(String urlPart) {
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         try {
@@ -403,7 +395,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     private String postInfo(String urlPart) {
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
         try {
             HttpClient client = new HttpClient();

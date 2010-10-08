@@ -8,6 +8,7 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Component;
@@ -40,8 +41,6 @@ import org.zkoss.zul.Comboitem;
 public class MaxentWCController extends UtilityComposer {
 
     private static final long serialVersionUID = 165701023268014945L;
-    private static final String GEOSERVER_URL = "geoserver_url";
-    private static final String SAT_URL = "sat_url";
     private SpeciesAutoComplete sac;
     Tabbox tabboxmaxent;
     private Label status;
@@ -55,7 +54,7 @@ public class MaxentWCController extends UtilityComposer {
     private Textbox txtTestPercentage;
     private Window maxentInfoWindow;
     private MapComposer mc;
-    private String geoServer = "http://spatial-dev.ala.org.au";  // http://localhost:8080
+    private String geoServer = null;
     private String satServer = geoServer;
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
@@ -82,11 +81,10 @@ public class MaxentWCController extends UtilityComposer {
         super.afterCompose();
 
         try {
-            //Messagebox.show("Hello world afterCompose!");
             mc = getThisMapComposer();
             if (settingsSupplementary != null) {
-                geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
-                satServer = settingsSupplementary.getValue(SAT_URL);
+                geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
+                satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
             }
 
             layersUtil = new LayersUtil(mc, satServer);
