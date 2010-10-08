@@ -39,6 +39,7 @@ import net.opengis.wms.StyleDocument.Style;
 import net.opengis.wms.WMSCapabilitiesDocument.WMSCapabilities;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.w3c.dom.Document;
@@ -937,27 +938,19 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         List<Double> bbox = new ArrayList(4);
 
         try {
-        String layersListURL = "http://spatial-dev.ala.org.au" + "/alaspatial/ws/layers/list";
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(layersListURL);
-                //get.addRequestHeader("Content-type", "application/json");
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            JSONArray layerlist = CommonData.getLayerListJSONArray();
 
-                int result = client.executeMethod(get);
-                String llist = get.getResponseBodyAsString();
-        JSONArray layerlist = JSONArray.fromObject(llist);
+            for (int i=0;i<layerlist.size();i++) {
+                JSONObject jo = layerlist.getJSONObject(i);
+                if (jo.getString("displaypath").equals(uri)) {
+                    bbox.add(Double.parseDouble(jo.getString("minlongitude")));
+                    bbox.add(Double.parseDouble(jo.getString("minlatitude")));
+                    bbox.add(Double.parseDouble(jo.getString("maxlongitude")));
+                    bbox.add(Double.parseDouble(jo.getString("maxlatitude")));
 
-        for (int i=0;i<layerlist.size();i++) {
-            JSONObject jo = layerlist.getJSONObject(i);
-            if (jo.getString("displaypath").equals(uri)) {
-                bbox.add(Double.parseDouble(jo.getString("minlongitude")));
-                bbox.add(Double.parseDouble(jo.getString("minlatitude")));
-                bbox.add(Double.parseDouble(jo.getString("maxlongitude")));
-                bbox.add(Double.parseDouble(jo.getString("maxlatitude")));
-
-                  return bbox;
+                    return bbox;
+                }
             }
-        }
         }
         catch(Exception e) {
 

@@ -37,6 +37,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
@@ -82,8 +83,6 @@ import org.zkoss.zul.Window;
  */
 public class SelectionController extends UtilityComposer {
 
-    private static final String SAT_URL = "sat_url";
-    private static final String GEOSERVER_URL = "geoserver_url";
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
     private Textbox searchPoint;
     private Textbox selectionGeom;
@@ -105,7 +104,7 @@ public class SelectionController extends UtilityComposer {
     private Radiogroup rgAreaSelection;
     HtmlMacroComponent envelopeWindow;
     private SettingsSupplementary settingsSupplementary = null;
-    private String geoServer;// = "http://spatial-dev.ala.org.au"; // http://localhost:8080
+    private String geoServer;
     String satServer;
     String[] results = null;
     int results_pos;
@@ -147,8 +146,8 @@ public class SelectionController extends UtilityComposer {
         super.afterCompose();
 
         if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         cbAreaSelection.setSelectedItem(ciBoxCurrentView);

@@ -23,13 +23,13 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Slider;
 import java.util.ArrayList;
+import org.ala.spatial.util.CommonData;
 
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
 public class ClassificationLegend extends UtilityComposer {
 
-    private static final String SAT_URL = "sat_url";
     private SettingsSupplementary settingsSupplementary = null;
     String pid = "";
     String layerLabel = "";
@@ -54,7 +54,7 @@ public class ClassificationLegend extends UtilityComposer {
 
         mc = getThisMapComposer();
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         pid = (String) (Executions.getCurrent().getArg().get("pid"));

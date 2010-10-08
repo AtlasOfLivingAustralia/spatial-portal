@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zhtml.Messagebox;
@@ -43,9 +44,7 @@ public class LayerListComposer extends UtilityComposer {
     private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
-    private final String SAT_URL = "sat_url";
-    private static final String GEOSERVER_URL = "geoserver_url";
-    private String satServer = "http://spatial-dev.ala.org.au"; // "http://localhost:8080"
+    private String satServer = null;
     private String geoServer = "";
     SettingsSupplementary settingsSupplementary;
 
@@ -53,8 +52,8 @@ public class LayerListComposer extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        satServer = settingsSupplementary.getValue(SAT_URL);
-        geoServer = settingsSupplementary.getValue(GEOSERVER_URL);
+        satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
 
         if (tree == null) {
             System.out.println("tree is null");
@@ -104,20 +103,13 @@ public class LayerListComposer extends UtilityComposer {
 
             //   System.out.println(llist);
 
-            String llist = (String) Sessions.getCurrent().getAttribute("layerlist");
+            //String llist = (String) Sessions.getCurrent().getAttribute("layerlist");
 
             //Object llist = Sessions.getCurrent().getAttribute("layerlist");
 
-            if (llist == null) {
-                String layersListURL = satServer + "/alaspatial/ws/layers/list";
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(layersListURL);
-                //get.addRequestHeader("Content-type", "application/json");
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-                int result = client.executeMethod(get);
-                llist = get.getResponseBodyAsString();
-            }
+            //if (llist == null) {
+            //    llist = CommonData.getLayerList();
+            //}
 
             ArrayList top = new ArrayList();
 
@@ -125,7 +117,7 @@ public class LayerListComposer extends UtilityComposer {
             TreeMap htCat2 = new TreeMap();
             //System.out.println("LAYERLIST>>>>>>>>>>" + (String) llist);
 
-            JSONArray layerlist = JSONArray.fromObject(llist);
+            JSONArray layerlist = CommonData.getLayerListJSONArray();//JSONArray.fromObject(llist);
             for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
 
@@ -173,52 +165,7 @@ public class LayerListComposer extends UtilityComposer {
     }
 
     private List getContextualClasses(JSONObject joLayer) {
-        String layerName = joLayer.getString("name");
-        String layerDisplayName = joLayer.getString("displayname");
-        String classesURL = geoServer + "/geoserver/rest/gazetteer/" + layerName + ".json";
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(classesURL);
-        //get.addRequestHeader("Content-type", "application/json");
-        //get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-        List<String> classList = new ArrayList();
-        List classNodes = new ArrayList();
-        try {
-            int result = client.executeMethod(get);
-            String classes = get.getResponseBodyAsString();
-
-            //JSONObject joClasses = JSONObject.fromObject(classes);
-            // System.out.println("CLASSES JSON:" + classes);
-            classes = classes.replace("\"", "").replace("{", "").replace("}", "");
-
-            String classAttribute = classes.split(":")[0];
-            classList = Arrays.asList(classes.split(":")[1].split(","));
-            // System.out.println("KEY:" + classAttribute);
-            // classList = Arrays.asList((jo.getString(classAttribute)).split(","));
-
-            for (String classVal : classList) {
-                //     System.out.println("CLASS:"+(String)classVal);
-                if (!classVal.contentEquals("none")) {
-                    String info = "{displayname:'"
-                            + classVal
-                            + "',type:'class',displaypath:'"
-                            + joLayer.getString("displaypath")
-                            + "',uid:'"
-                            + joLayer.getString("uid")
-                            + "',classname:'"
-                            + classAttribute
-                            + "',layername:'"
-                            + layerDisplayName
-                            + "'}";
-                    //           System.out.println(info);
-                    JSONObject joClass = JSONObject.fromObject(info);
-                    classNodes.add(new SimpleTreeNode(joClass, empty));
-                }
-            }
-            return classNodes;
-        } catch (Exception e) {
-            System.out.println("Failure to get contextual classes.");
-            return classNodes;
-        }
+        return CommonData.getContextualClasses(joLayer);
     }
 
     private void addToMap2(TreeMap htCat1, TreeMap htCat2, String cat1, String cat2, SimpleTreeNode treeNode) {

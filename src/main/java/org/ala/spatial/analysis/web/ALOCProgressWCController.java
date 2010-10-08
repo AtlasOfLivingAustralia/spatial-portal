@@ -6,6 +6,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.event.Event;
@@ -21,7 +22,6 @@ import org.zkoss.zul.Timer;
  */
 public class ALOCProgressWCController extends UtilityComposer {
 
-    private static final String SAT_URL = "sat_url";
     Label jobstatus;
     Progressmeter jobprogress;
     Timer timer;
@@ -36,7 +36,7 @@ public class ALOCProgressWCController extends UtilityComposer {
         super.afterCompose();
 
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         timer.stop();

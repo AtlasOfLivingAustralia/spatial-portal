@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -45,7 +46,6 @@ import org.zkoss.zul.Window;
  */
 public class ALOCWCController extends UtilityComposer {
 
-    private static final String SAT_URL = "sat_url";
     //private Listbox lbenvlayers;
     private Combobox cbEnvLayers;
     private Intbox groupCount;
@@ -75,7 +75,7 @@ public class ALOCWCController extends UtilityComposer {
 
         mc = getThisMapComposer();
         if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(SAT_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         layersUtil = new LayersUtil(mc, satServer);
