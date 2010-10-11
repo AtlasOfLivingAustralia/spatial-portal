@@ -34,26 +34,17 @@
 
         </style>
 
-<!--
-        <div sclass="highlighted" visible="false">
-            <vbox>
-                <label value="Step 1: Restrict area" />
-                <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="onClick$btnGenerate();" />
-            </vbox>
-        </div> -->
         <tabbox id="tabboxclassification">
             <tabs>
                 <tab label="1*" />
                 <tab label="2" />
-                <tab label="Produce classification" onClick="alocwindow.produce()" visible="false"/>
             </tabs>
             <toolbar>
-                <button  label="Produce classification" onClick="alocwindow.produce()" sclass="goButton"></button>
+                <button id="btnProduce" label="Produce classification" sclass="goButton"></button>
                 <button  label="Previous classification" id="previousModel" sclass="goButton"></button>
                 </toolbar>
             <tabpanels>
-                <tabpanel>
-        
+                <tabpanel>        
             <label value="Step 1: Select two or more environmental layers" />
             <vbox>
                 <hbox>
@@ -67,50 +58,15 @@
                         <listheader label=" "  />
                         <listheader label=" " width="10px" />
                     </listhead>
-                 </listbox>
-                 
-                <listbox visible="false" id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="400px" width="90%"  >
-                    <listhead>
-                        <listheader label="Select layers" width="90%" />
-                    </listhead>
-                </listbox>
-
-                
-
-
-
-                <div visible="false">
-                    <label value="Enter a layer name or a keyword" />
-                    <checkbox id="chkAutoPreview" label="Automatically preview layer" />
-                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
-                        <comboitem label=""/>
-                    </combobox>
-                    <listbox id="lbLayers">
-                        <listhead>
-                            <listheader label="Name" />
-                            <listheader label="Type" />
-                        </listhead>
-                    </listbox>
-                    <div id="actionLinksContainer">
-                        <button id="alMap" label="Map" />
-                        <button id="alInfo" label="Info" />
-                        <button id="alDelete" label="Delete" />
-                    </div>
-                </div>
+                 </listbox>   
             </vbox>
-
         </tabpanel>
-        <tabpanel>
-        
+        <tabpanel>        
             <vbox>
                 <label value="Step 2: Enter number of groups to generate" />
                 <intbox id="groupCount" value="20"/>
             </vbox>
-
-        </tabpanel>
-        <tabpanel>
-        <button id="btnGenerate" label="Generate classification" sclass="goButton" visible="false" />
-        </tabpanel>
+        </tabpanel>        
         </tabpanels>
         </tabbox>
     </window>

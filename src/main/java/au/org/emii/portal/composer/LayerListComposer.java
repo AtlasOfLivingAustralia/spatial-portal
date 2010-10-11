@@ -5,6 +5,7 @@ import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -148,7 +149,25 @@ public class LayerListComposer extends UtilityComposer {
             while (it1.hasNext()) {
                 String catKey = (String) it1.next();
                 JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
-                SimpleTreeNode cat = new SimpleTreeNode(joCat, (ArrayList) htCat1.get(catKey));
+
+                //sort 2nd level branches
+                ArrayList sorted = (ArrayList) htCat1.get(catKey);
+                java.util.Collections.sort(sorted,new Comparator(){
+                    @Override
+                    public int compare(Object a, Object b){
+                        SimpleTreeNode sa = (SimpleTreeNode) a;
+                        SimpleTreeNode sb = (SimpleTreeNode) b;
+                        JSONObject ja = JSONObject.fromObject(sa.getData());
+                        JSONObject jb = JSONObject.fromObject(sb.getData());
+                        String na = ja.getString("displayname");
+                        String nb = jb.getString("displayname");
+                        na = (na.contains(">")) ? na.split(">")[1] : na;
+                        nb = (nb.contains(">")) ? nb.split(">")[1] : nb;
+
+                        return na.compareToIgnoreCase(nb);
+                    }
+                });
+                SimpleTreeNode cat = new SimpleTreeNode(joCat, sorted);
                 top.add(cat);
             }
 
@@ -160,6 +179,7 @@ public class LayerListComposer extends UtilityComposer {
             renderTree();
         } catch (Exception e) {
             //FIXME:
+            e.printStackTrace();
         }
 
     }

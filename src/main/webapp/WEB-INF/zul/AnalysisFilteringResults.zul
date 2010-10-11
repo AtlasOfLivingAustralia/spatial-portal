@@ -25,7 +25,7 @@
             <toolbar>
                    
                 <button label="Produce species list" id="download" sclass="goButton" />
-                <button label="Produce sample" id="downloadsamples" sclass="goButton" />
+                <button label="Produce sample" id="downloadsamplesPreview" sclass="goButton" />
 
 
             </toolbar>
@@ -61,19 +61,18 @@
                         <separator />
                         <separator />
                         <hbox>
-                            <button label="Show species list preview" id="refreshButton2" visible="true" sclass="goButton"/>
                             <button label="Map all species occurrences in Active Area" id="mapspecies" visible="false" sclass="goButton"/>
                         </hbox>
                         <separator />
                         <label style="font-weight: bold" id="results_label" visible="false" />
-                        <listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
+                        <!-- listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
                             <listhead>
                                 <listheader label="Family" ></listheader>
                                 <listheader label="Scientific name" ></listheader>
                                 <listheader label="Common name/s" ></listheader>
                                 <listheader label="Taxon rank" ></listheader>
                             </listhead>
-                        </listbox>
+                        </listbox -->
 
         <!--    <textbox
                    multiline="true"
@@ -81,7 +80,7 @@
                    -->
                         <separator/>
 
-            
+
         <!--    <div align="right">
                 <button label="close" onClick="popup_results.detach();" />
             </div> -->

@@ -12,6 +12,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+import org.ala.spatial.util.CommonData;
 import org.zkoss.zul.Comboitem;
 import org.apache.http.impl.client.*;
 import org.apache.http.HttpHost;
@@ -27,7 +28,6 @@ import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 
 public class AutoComplete extends Combobox {
-    private static final String GAZ_URL = "geoserver_url";
     private String gazServer = null;//"http://spatial.ala.org.au";
 
     public AutoComplete() {
@@ -50,7 +50,7 @@ public class AutoComplete extends Combobox {
         if(gazServer == null && this.getParent() != null){
                 SettingsSupplementary settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
                 System.out.println("AC got SS: " + settingsSupplementary);
-                gazServer = settingsSupplementary.getValue(GAZ_URL);
+                gazServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
         }        
         if(gazServer == null){
             return;
@@ -111,7 +111,7 @@ public class AutoComplete extends Combobox {
         if(gazServer == null && this.getParent() != null){
                 SettingsSupplementary settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
                 System.out.println("AC got SS: " + settingsSupplementary);
-                gazServer = settingsSupplementary.getValue(GAZ_URL);
+                gazServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
         }
         if(gazServer == null){
             return;
