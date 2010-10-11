@@ -285,7 +285,8 @@ a[rel="external"], a.external {
 }
 .z-center-body {
     background-color: #EBEBEB;
-    border: 1px solid #ccc;
+    /*removed for openlayers polygon borders in wkhtmltoimage
+    border: 1px solid #ccc;*/
 }
 
 
