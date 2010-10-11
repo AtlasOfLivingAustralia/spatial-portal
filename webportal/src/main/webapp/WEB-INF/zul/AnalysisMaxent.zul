@@ -45,7 +45,7 @@
                     <!-- <label value="Step 1: Select your species " /> -->
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 1: Select your species" /> -->
-                    
+                   
                         <label value="Step 1: Select your species" />
                         <vbox>
                             <label>Enter a scientific or common name</label>
@@ -93,15 +93,15 @@
                  </listbox>
                         </vbox>
                         <!-- </groupbox> -->
-                   
+
                 </tabpanel>
 
                 <tabpanel>
                     <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
-
+                    
         <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
             <caption label="Step 3: Select your optional parameters" /> -->
-                    
+
                         Step 3: Select your optional paramters here. You can leave the following
                         options as defaults.
                     <separator />

@@ -7,7 +7,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -16,28 +15,19 @@ import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.util.Clients;
-import org.zkoss.zkmax.zul.Filedownload;
-import org.zkoss.zul.Checkbox;
+import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Label;
-import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listitem;
-import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Popup;
-import org.zkoss.zul.Listgroup;
 import org.zkoss.zul.Row;
-import org.zkoss.zul.SimpleGroupsModel;
 import org.zkoss.zul.Tabbox;
 
 /**
@@ -204,7 +194,7 @@ public class SamplingWCController extends UtilityComposer {
 
     private boolean isEnvironmental(String layername) {
         layername = layername.trim();
-        String[] layernames = (String[]) layerdata.get("Environmental");
+        String[] layernames = CommonData.getEnvironmentalLayers();
         if (layernames != null) {
             for (int i = 0; i < layernames.length; i++) {
                 if (layernames[i].trim().equals(layername)) {
@@ -217,7 +207,7 @@ public class SamplingWCController extends UtilityComposer {
 
     private boolean isContextual(String layername) {
         layername = layername.trim();
-        String[] layernames = (String[]) layerdata.get("Contextual");
+        String[] layernames = CommonData.getContextualLayers();
         if (layernames != null) {
             for (int i = 0; i < layernames.length; i++) {
                 if (layernames[i].trim().equals(layername)) {
@@ -614,7 +604,9 @@ public class SamplingWCController extends UtilityComposer {
                 Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
             } else {
                 System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist);
-                Filedownload.save(new URL(satServer + "/alaspatial" + slist), "application/zip");
+
+                URL url = new URL(satServer + "/alaspatial" + slist);
+                Filedownload.save(url.openStream(), "application/zip",url.getFile());
             }
 
         } catch (Exception e) {
@@ -650,7 +642,8 @@ public class SamplingWCController extends UtilityComposer {
                 }
 
                 System.out.println("Sending file to user: " + satServer + "/alaspatial" + pth);
-                Filedownload.save(new URL(satServer + "/alaspatial" + pth), "application/zip");
+                URL url = new URL(satServer + "/alaspatial" + pth);
+                Filedownload.save(url.openStream(), "application/zip",url.getFile());
             }
         } catch (Exception e) {
             e.printStackTrace();

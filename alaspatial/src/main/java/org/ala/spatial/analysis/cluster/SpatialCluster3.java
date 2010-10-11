@@ -24,9 +24,8 @@ public class SpatialCluster3 {
     private int map_zoom = 21;
     private int map_offset = 268435456; // half the Earth's circumference at zoom level 21
     private double map_radius = map_offset / Math.PI;
-
+    double meters_per_pixel = 78271.5170; //at zoom level 1
     int current_zoom = 0;
-
     Vector global_clusters;
     private int current_min_distance;
 
@@ -44,8 +43,16 @@ public class SpatialCluster3 {
                 / (1 - Math.sin(lat * Math.PI / 180))) / 2);
     }
 
-    public double convertPixelToLat(int px){
-        return Math.asin((Math.pow(Math.E,((map_offset - px) / map_radius * 2)) - 1) / (1 + Math.pow(Math.E,((map_offset - px) / map_radius * 2)))) * 180 / Math.PI;
+    public double convertPixelToLat(int px) {
+        return Math.asin((Math.pow(Math.E, ((map_offset - px) / map_radius * 2)) - 1) / (1 + Math.pow(Math.E, ((map_offset - px) / map_radius * 2)))) * 180 / Math.PI;
+    }
+
+    public double convertMetersToPixels(double meters, double latitude, int zoom) {
+        return meters / ((Math.cos(latitude * Math.PI / 180.0) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom)));
+    }
+
+    public double convertPixelsToMeters(int pixels, double latitude, int zoom) {
+        return ((Math.cos(latitude * Math.PI / 180.0) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom))) * pixels;
     }
 
     public int planeDistance(double lat1, double lng1, double lat2, double lng2, int zoom) {
@@ -69,7 +76,7 @@ public class SpatialCluster3 {
     }
 
     public Vector cluster(Vector<Record> datapoints, int cluster_distance, int zoom, int min_radius) {
-        if(datapoints.size() == 0){
+        if (datapoints.size() == 0) {
             return null;
         }
         current_zoom = zoom;
@@ -79,7 +86,7 @@ public class SpatialCluster3 {
         // a given zoom level into a cluster.
 
         Vector<Vector> clusters = new Vector();
-        boolean [] removed = new boolean[datapoints.size()];
+        boolean[] removed = new boolean[datapoints.size()];
 
         for (int i = datapoints.size() - 1; i > -1; i--) {
             if (removed[i]) {
@@ -118,23 +125,27 @@ public class SpatialCluster3 {
         return clusters;
     }
 
-    void setupAttributes(Vector clusters){
+    void setupAttributes(Vector clusters) {
         global_clusters = clusters;
 
         makeCentroids();
         makeRadius();
         makeDensity();
     }
+    double[] global_radius;
+    double[] global_density;
+    double[][] global_centroids;
+    double[] global_uncertainty;
 
-    double [] global_radius;
-    double [] global_density;
-    double [][] global_centroids;
-
-    public double getRadius(int i){
+    public double getRadius(int i) {
         return global_radius[i];
     }
 
-    public double getDensity(int i){
+    public double getUncertainty(int i) {
+        return global_uncertainty[i];
+    }
+
+    public double getDensity(int i) {
         return global_density[i];
     }
 
@@ -146,44 +157,44 @@ public class SpatialCluster3 {
      * @param i
      * @return
      */
-    public double[] getCentroid(int i){
-        double [] d = {global_centroids[i][0], global_centroids[i][1]};
+    public double[] getCentroid(int i) {
+        double[] d = {global_centroids[i][0], global_centroids[i][1]};
         return d;
     }
 
-    void makeCentroids(){
+    void makeCentroids() {
         global_centroids = new double[global_clusters.size()][2];
-        for(int i = 0;i<global_clusters.size();i++){
+        for (int i = 0; i < global_clusters.size(); i++) {
             Vector cluster = (Vector) global_clusters.get(i);
 
-            if(cluster.size() == 1){
-                global_centroids[i][0] = ((Record)cluster.get(0)).getLongitude();
-                global_centroids[i][1] = ((Record)cluster.get(0)).getLatitude();
+            if (cluster.size() == 1) {
+                global_centroids[i][0] = ((Record) cluster.get(0)).getLongitude();
+                global_centroids[i][1] = ((Record) cluster.get(0)).getLatitude();
             } else {
-                double [] extents = getExtents(cluster);
+                double[] extents = getExtents(cluster);
 
-                if(convertLngToPixel(extents[0]) == convertLngToPixel(extents[2])
-                        && convertLatToPixel(extents[1]) == convertLatToPixel(extents[3])){
-                    global_centroids[i][0] = ((Record)cluster.get(0)).getLongitude();
-                    global_centroids[i][1] = ((Record)cluster.get(0)).getLatitude();
+                if (convertLngToPixel(extents[0]) == convertLngToPixel(extents[2])
+                        && convertLatToPixel(extents[1]) == convertLatToPixel(extents[3])) {
+                    global_centroids[i][0] = ((Record) cluster.get(0)).getLongitude();
+                    global_centroids[i][1] = ((Record) cluster.get(0)).getLatitude();
                 }
 
                 //get furthest point for each quarter of the extents box
-                double longitude = convertPixelToLng((int)((convertLngToPixel(extents[2]) + convertLngToPixel(extents[0])) / 2.0));
-                double latitude = convertPixelToLat((int)((convertLatToPixel(extents[3]) + convertLatToPixel(extents[1])) / 2.0));
-                double [] qlong = new double[4];
-                double [] qlat = new double[4];
-                double [] qradius = new double[4];
-                for(int k=0;k<4;k++){
+                double longitude = convertPixelToLng((int) ((convertLngToPixel(extents[2]) + convertLngToPixel(extents[0])) / 2.0));
+                double latitude = convertPixelToLat((int) ((convertLatToPixel(extents[3]) + convertLatToPixel(extents[1])) / 2.0));
+                double[] qlong = new double[4];
+                double[] qlat = new double[4];
+                double[] qradius = new double[4];
+                for (int k = 0; k < 4; k++) {
                     qlong[k] = longitude;
                     qlat[k] = latitude;
                 }
-                for(int k=0;k<cluster.size();k++){
-                    Record o2 = (Record)cluster.get(k);
-                    double dist = planeDistance(latitude, longitude,o2.getLatitude(), o2.getLongitude(), current_zoom);
-                    int q = ((latitude < o2.getLatitude())? 1 : 0)
-                            + ((longitude < o2.getLongitude())? 2 : 0);
-                    if(dist > qradius[q]){
+                for (int k = 0; k < cluster.size(); k++) {
+                    Record o2 = (Record) cluster.get(k);
+                    double dist = planeDistance(latitude, longitude, o2.getLatitude(), o2.getLongitude(), current_zoom);
+                    int q = ((latitude < o2.getLatitude()) ? 1 : 0)
+                            + ((longitude < o2.getLongitude()) ? 2 : 0);
+                    if (dist > qradius[q]) {
                         qlong[q] = o2.getLongitude();
                         qlat[q] = o2.getLatitude();
                         qradius[q] = dist;
@@ -195,10 +206,10 @@ public class SpatialCluster3 {
                 //find largest distance between the quarter points found
                 int maxk = 2, maxj = 3;
                 double maxdist = planeDistance(qlat[2], qlong[2], qlat[3], qlong[3], current_zoom);
-                for(int k=0;k<2;k++){
-                    for(int j=k+1;j<4;j++){
+                for (int k = 0; k < 2; k++) {
+                    for (int j = k + 1; j < 4; j++) {
                         double dist = planeDistance(qlat[k], qlong[k], qlat[j], qlong[j], current_zoom);
-                        if(dist > maxdist){
+                        if (dist > maxdist) {
                             maxk = k;
                             maxj = j;
                             maxdist = dist;
@@ -206,14 +217,14 @@ public class SpatialCluster3 {
                     }
                 }
 
-                int [] large = new int[2];
+                int[] large = new int[2];
                 large[0] = maxk;
                 large[1] = maxj;
 
-                int [] small = new int[2];
+                int[] small = new int[2];
                 int p = 0;
-                for(int k=0;k<4;k++){
-                    if(large[0] != k && large[1] != k){
+                for (int k = 0; k < 4; k++) {
+                    if (large[0] != k && large[1] != k) {
                         small[p] = k;
                         p++;
                     }
@@ -221,8 +232,8 @@ public class SpatialCluster3 {
                 double largedist = maxdist;
 
                 //furthest point from middle
-                longitude = convertPixelToLng((int)((convertLngToPixel(qlong[large[0]]) + convertLngToPixel(qlong[large[1]])) / 2.0));
-                latitude = convertPixelToLat((int)((convertLatToPixel(qlat[large[0]]) + convertLatToPixel(qlat[large[1]])) / 2.0));
+                longitude = convertPixelToLng((int) ((convertLngToPixel(qlong[large[0]]) + convertLngToPixel(qlong[large[1]])) / 2.0));
+                latitude = convertPixelToLat((int) ((convertLatToPixel(qlat[large[0]]) + convertLatToPixel(qlat[large[1]])) / 2.0));
                 int r0 = planeDistance(qlat[small[0]], qlong[small[0]], latitude, longitude, current_zoom);
                 int r1 = planeDistance(qlat[small[1]], qlong[small[1]], latitude, longitude, current_zoom);
                 int rlarge;
@@ -230,19 +241,19 @@ public class SpatialCluster3 {
                 //assign a centre
                 global_centroids[i][0] = longitude;
                 global_centroids[i][1] = latitude;
-                if(r0 < largedist/2 && r1 < largedist/2){
+                if (r0 < largedist / 2 && r1 < largedist / 2) {
                     //is this one ok?
                     continue;
-                }else if(r0 > r1){
+                } else if (r0 > r1) {
                     rlarge = small[0];
-                }else{
+                } else {
                     rlarge = small[1];
                 }
 
                 //centre from large[0], large[1] and rlarge
-                long [] ilong = new long[4];
-                long [] ilat = new long[4];
-                for(int k=0;k<4;k++){
+                long[] ilong = new long[4];
+                long[] ilat = new long[4];
+                for (int k = 0; k < 4; k++) {
                     ilong[k] = convertLngToPixel(qlong[k]);
                     ilat[k] = convertLatToPixel(qlat[k]);
                 }
@@ -252,94 +263,144 @@ public class SpatialCluster3 {
                 //long y = ((ilat[a]*ilat[a] + ilong[a]*ilong[a])*(ilong[c]-ilong[b]) + (ilat[b]*ilat[b] + ilong[b]*ilong[b])*(ilong[a] - ilong[c]) + (ilat[c]*ilat[c] + ilong[c]*ilong[c])*(ilong[b] - ilong[a])) / d;
                 //global_centroids[i][0] = convertPixelToLng((int)x);
                 //global_centroids[i][1] = convertPixelToLat((int)y);
-                
-                try{
+
+                try {
                     //line ab and tangent at midpoint
-                    double m1 = (ilat[a] - ilat[b]) / (double)(ilong[a] - ilong[b]);
+                    double m1 = (ilat[a] - ilat[b]) / (double) (ilong[a] - ilong[b]);
                     double b1 = ilat[a] - m1 * ilong[a];
-                    double t1x = (ilong[a] + ilong[b])/2.0;
-                    double t1y = (ilat[a] + ilat[b])/2.0;
+                    double t1x = (ilong[a] + ilong[b]) / 2.0;
+                    double t1y = (ilat[a] + ilat[b]) / 2.0;
                     double m2 = -1 / m1;
                     double b2 = t1y - m2 * t1x;
 
                     //line ac and tangent at midpoint
-                    double m3 = (ilat[a] - ilat[c]) / (double)(ilong[a] - ilong[c]);
+                    double m3 = (ilat[a] - ilat[c]) / (double) (ilong[a] - ilong[c]);
                     double b3 = ilat[a] - m3 * ilong[a];
-                    double t2x = (ilong[a] + ilong[c])/2.0;
-                    double t2y = (ilat[a] + ilat[c])/2.0;
+                    double t2x = (ilong[a] + ilong[c]) / 2.0;
+                    double t2y = (ilat[a] + ilat[c]) / 2.0;
                     double m4 = -1 / m3;
                     double b4 = t2y - m4 * t2x;
 
                     //intercept
                     double cx = (b4 - b2) / (m2 - m4);
                     double cy = m2 * cx + b2;
-                
+
                     //test if within extents
-                    longitude = convertPixelToLng((int)cx);
-                    latitude = convertPixelToLat((int)cy);
-                    if(longitude <= extents[2] && longitude >= extents[0]
-                            && latitude <= extents[3] && latitude >= extents[1]){
+                    longitude = convertPixelToLng((int) cx);
+                    latitude = convertPixelToLat((int) cy);
+                    if (longitude <= extents[2] && longitude >= extents[0]
+                            && latitude <= extents[3] && latitude >= extents[1]) {
                         global_centroids[i][0] = longitude;
-                        global_centroids[i][1] = latitude;                
+                        global_centroids[i][1] = latitude;
                     }//else already assigned
-                }catch(Exception e){
+                } catch (Exception e) {
                     //centre already assigned
                 }
             }
         }
     }
 
-    void makeRadius(){
+    void makeRadius() {
         global_radius = new double[global_clusters.size()];
-        for(int i = 0;i<global_clusters.size();i++){
+        global_uncertainty = new double[global_clusters.size()];
+        for (int i = 0; i < global_clusters.size(); i++) {
             Vector cluster = (Vector) global_clusters.get(i);
 
             //get radius
             double radius = 0;
+            double uncertainty = -1;
+            double u = 0;
             for (Object o : cluster) {
-                double dist = planeDistance(global_centroids[i][1], global_centroids[i][0], ((Record)o).getLatitude(), ((Record)o).getLongitude(), current_zoom);
+                double dist = planeDistance(global_centroids[i][1], global_centroids[i][0], ((Record) o).getLatitude(), ((Record) o).getLongitude(), current_zoom);
                 if (dist > radius) {
                     radius = dist;
                 }
+                try {
+                    u = Integer.parseInt(((Record) o).getUncertainity());
+                } catch (Exception e) {
+                    u = 10000;
+                }
+                if (u <= 0) {
+                    u = 10000;
+                }
+                u = dist + convertMetersToPixels(u, ((Record) o).getLatitude(), current_zoom) + 1; //adjustment trunc in planeDistance
+                if (u > uncertainty) {
+                    uncertainty = u;
+                }
             }
-            if(radius < 1){
-                radius = 1;
+            if (radius < current_min_distance) {
+                radius = current_min_distance;
             }
+            if(uncertainty < radius){
+                uncertainty = radius;
+            }
+            
+            //adjustment for top lat
+            /*
+            int px = convertLatToPixel(global_centroids[i][1]);
+            double r = radius;
+            px -= ((int)r) << (map_zoom - current_zoom);
+            double lat = convertPixelToLat(px);
+            int dist = planeDistance(global_centroids[i][1], 0, lat, 0, current_zoom);
+            while(dist <= radius){
+                px -= 1 << (map_zoom - current_zoom);
+                r++;
+                lat = convertPixelToLat(px);
+                dist = planeDistance(global_centroids[i][1], 0, lat, 0, current_zoom);
+            }
+
+            px = convertLngToPixel(global_centroids[i][0]);
+            px -= ((int)r) << (map_zoom - current_zoom);
+            double lng = convertPixelToLng(px);
+            dist = planeDistance(lat, global_centroids[i][0], lat, lng, current_zoom);
+            while(dist <= radius){
+                px -= 1 << (map_zoom - current_zoom);
+                r++;
+                lng = convertPixelToLng(px);
+                dist = planeDistance(lat, global_centroids[i][0], lat, lng, current_zoom);
+            }
+            if(uncertainty < dist){
+                uncertainty = dist;
+            }
+
+            double m1 = convertPixelsToMeters((int) Math.ceil(uncertainty+1), lat, current_zoom);
+            double m2 = convertPixelsToMeters((int) Math.ceil(r+1), lat, current_zoom);
+*/
             global_radius[i] = radius;
+            global_uncertainty[i] = convertPixelsToMeters((int) Math.ceil(uncertainty+1), global_centroids[i][1], current_zoom);//Math.max(m1,m2);;
         }
     }
 
-    void makeDensity(){
+    void makeDensity() {
         double max_density = Double.MIN_VALUE;
         double min_density = Double.MAX_VALUE;
         global_density = new double[global_clusters.size()];
-        for(int i=0;i<global_clusters.size();i++){
-            Vector v = (Vector) global_clusters.get(i);            
+        for (int i = 0; i < global_clusters.size(); i++) {
+            Vector v = (Vector) global_clusters.get(i);
             double radius = global_radius[i];
-            if(radius < current_min_distance){
-                radius = current_min_distance;
+            double density = (v.size() / (Math.PI * radius * radius));
+            if (max_density < density) {
+                max_density = density;
             }
-            double density =  (v.size() / (Math.PI * radius * radius));
-            if(max_density < density) max_density = density;
-            if(min_density > density) min_density = density;
+            if (min_density > density) {
+                min_density = density;
+            }
             global_density[i] = density;
         }
         double range_density = max_density - min_density;
-        
-        if(range_density == 0){
+
+        if (range_density == 0) {
             //single value, 1
-            for(int i=0;i<global_density.length;i++){
+            for (int i = 0; i < global_density.length; i++) {
                 global_density[i] = 1;
             }
-        }else{
+        } else {
             //scale between 0 and 1, linear
-            for(int i=0;i<global_density.length;i++){
+            for (int i = 0; i < global_density.length; i++) {
                 global_density[i] = (global_density[i] - min_density) / range_density;
             }
         }
     }
-
-
 
     public static void main(String[] args) {
         try {
@@ -425,17 +486,25 @@ public class SpatialCluster3 {
     }
 
     private double[] getExtents(Vector<Record> datapoints) {
-        double [] extents = new double[4]; //long1, lat1, long2, lat2
+        double[] extents = new double[4]; //long1, lat1, long2, lat2
         extents[0] = datapoints.get(0).getLongitude();
         extents[2] = extents[0];
         extents[1] = datapoints.get(0).getLatitude();
         extents[3] = extents[1];
 
-        for(Record r : datapoints){
-            if(extents[0] > r.getLongitude()) extents[0] = r.getLongitude();
-            if(extents[2] < r.getLongitude()) extents[2] = r.getLongitude();
-            if(extents[1] > r.getLatitude()) extents[1] = r.getLatitude();
-            if(extents[3] < r.getLatitude()) extents[3] = r.getLatitude();
+        for (Record r : datapoints) {
+            if (extents[0] > r.getLongitude()) {
+                extents[0] = r.getLongitude();
+            }
+            if (extents[2] < r.getLongitude()) {
+                extents[2] = r.getLongitude();
+            }
+            if (extents[1] > r.getLatitude()) {
+                extents[1] = r.getLatitude();
+            }
+            if (extents[3] < r.getLatitude()) {
+                extents[3] = r.getLatitude();
+            }
         }
 
         return extents;

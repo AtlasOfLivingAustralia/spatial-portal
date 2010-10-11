@@ -404,7 +404,7 @@ public class FilteringWCController extends UtilityComposer {
         Listcell lc = (Listcell) o;
         Listitem li = (Listitem) lc.getParent();
         layername = ((Listcell) li.getChildren().get(0)).getLabel();
-        layername = (layername.equals("")) ? "" : layername.substring(0, layername.lastIndexOf("(")).trim();
+        //layername = (layername.equals("")) ? "" : layername.substring(0, layername.lastIndexOf("(")).trim();
 
         popup_filter = getSPLFilter(layername);
         popup_idx.setValue(layername);

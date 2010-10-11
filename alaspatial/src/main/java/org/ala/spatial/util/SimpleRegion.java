@@ -697,7 +697,7 @@ public class SimpleRegion extends Object implements Serializable {
         //  get min/max long/lat
         //  each point has only one identical lat or long to previous point
         //  4 or 5 points (start and end points may be identical)
-        if ((points.length == 4
+        if (((points.length == 4 && (points[0][0] != points[3][0] || points[0][1] != points[3][1]))
                 || (points.length == 5 && points[0][0] == points[4][0]
                 && points[0][1] == points[4][1]))) {
 
@@ -720,7 +720,8 @@ public class SimpleRegion extends Object implements Serializable {
 
             //  each point has only one identical lat or long to previous point
             int prev_idx = 3;
-            for (int i = 0; i < 4; i++) {
+            int i = 0;
+            for (i = 0; i < 4; i++) {
                 if ((points[i][0] == points[prev_idx][0])
                         == (points[i][1] == points[prev_idx][1])) {
                     break;
@@ -728,7 +729,7 @@ public class SimpleRegion extends Object implements Serializable {
                 prev_idx = i;
             }
             //it is a box if no 'break' occurred
-            if (prev_idx == 3) {
+            if (i == 4) {
                 simpleregion.setBox(minlong, minlat, maxlong, maxlat);
                 return simpleregion;
             }

@@ -45,13 +45,9 @@ import org.zkoss.zul.Window;
  * @author ajay
  */
 public class ALOCWCController extends UtilityComposer {
-
-    //private Listbox lbenvlayers;
-    private Combobox cbEnvLayers;
+    
     private Intbox groupCount;
     Tabbox tabboxclassification;
-    //Checkbox useArea;
-    private List<String> selectedLayers;
     private MapComposer mc;
     private String satServer = "";
     private SettingsSupplementary settingsSupplementary = null;
@@ -62,12 +58,8 @@ public class ALOCWCController extends UtilityComposer {
     String layerLabel;
     String legendPath;
     LayersUtil layersUtil;
-    //String previousArea = "";
-    private LayersAutoComplete lac;
-    private Listbox lbLayers;
-    private Checkbox chkAutoPreview;
-    private List<JSONObject> selectedLayers2;
     EnvironmentalList lbListLayers;
+    Button btnProduce;
 
     @Override
     public void afterCompose() {
@@ -80,179 +72,18 @@ public class ALOCWCController extends UtilityComposer {
 
         layersUtil = new LayersUtil(mc, satServer);
 
-        //setupEnvironmentalLayers();
-
-        selectedLayers = new Vector<String>();
-        selectedLayers2 = new Vector<JSONObject>();
-
         lbListLayers.init(mc, satServer, true);
     }
 
-    /**
-     * Iterate thru' the layer list setup in the @doAfterCompose method
-     * and setup the listbox
-     *
-    private void setupEnvironmentalLayers() {
-    try {
-    String[] aslist = layersUtil.getEnvironmentalLayers();
-
-    if (aslist.length > 0) {
-
-    lbenvlayers.setItemRenderer(new ListitemRenderer() {
-
-    @Override
-    public void render(Listitem li, Object data) {
-    li.setWidth(null);
-    new Listcell((String) data).setParent(li);
-    }
-    });
-
-    lbenvlayers.setModel(new SimpleListModel(aslist));
-    }
-
-    } catch (Exception e) {
-    System.out.println("error setting up env list");
-    e.printStackTrace(System.out);
-    }
-    }*/
-    public void onChange$cbEnvLayers(Event event) {
-        String new_value = "";
-
-        new_value = cbEnvLayers.getValue();
-        if (new_value.equals("")) {
-            return;
-        }
-        new_value = (new_value.equals("")) ? "" : new_value.substring(0, new_value.indexOf("(")).trim();
-        System.out.println("new value: " + new_value);
-
-        if (selectedLayers.contains(new_value)) {
-            System.out.println("is not new");
-            return;
-        } else {
-            System.out.println("is new");
-            selectedLayers.add(new_value);
-        }
-    }
-
-    public void onChange$lac(Event event) {
-
-        JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
-
-        selectedLayers2.add(jo);
-
-        //System.out.println("Adding: " + (String)lac.getSelectedItem().getLabel() + " - " + (String)lac.getSelectedItem().getDescription() + " - " + lac.getValue());
-
-        /* apply something to line onclick in lb */
-        lbLayers.setItemRenderer(new ListitemRenderer() {
-
-            @Override
-            public void render(Listitem li, Object data) {
-                JSONObject jo = (JSONObject) data;
-
-                // Col 1: Add the layer name
-                Listcell lname = new Listcell(jo.getString("displayname"));
-                lname.setStyle("white-space: normal;");
-                lname.setParent(li);
-
-                // Col 2: Add the layer type
-                Listcell ltype = new Listcell(jo.getString("type"));
-                ltype.setStyle("white-space: normal;");
-                ltype.setParent(li);
-
-                // Col 3: Add the scale
-                //Listcell lscale = new Listcell(jo.getString("scale"));
-                //lscale.setStyle("white-space: normal;");
-                //lscale.setParent(li);
-
-            }
-        });
-
-        lbLayers.setModel(new SimpleListModel(selectedLayers2));
-        lbLayers.setSelectedIndex(selectedLayers2.size() - 1);
-
-        lac.setValue("");
-
-        // check if we need to automatically load the layer
-        if (chkAutoPreview.isChecked()) {
-            mc.addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75);
-        }
-    }
-
-    public void onClick$alMap(Event event) {
-        try {
-
-            JSONObject jo = (JSONObject) lbLayers.getModel().getElementAt(lbLayers.getSelectedIndex());
-
-            if (jo == null) {
-                Messagebox.show("Unable to display map for the selected layer");
-            } else {
-                mc.addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75);
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error clicking button alInfo");
-            e.printStackTrace(System.out);
-        }
-    }
-
-    public void onClick$alInfo(Event event) {
-        try {
-
-            JSONObject jo = (JSONObject) lbLayers.getModel().getElementAt(lbLayers.getSelectedIndex());
-
-            if (jo == null) {
-                Messagebox.show("Unable to display information for the selected layer");
-            } else {
-                String info = "";
-                info += "Name: " + "\n";
-                info += jo.getString("displayname") + "\n";
-                info += "Description: " + "\n";
-                info += jo.getString("description") + "\n";
-                info += "Scale: " + "\n";
-                info += jo.getString("scale");
-
-                info += "test1\ntest2<br />test3";
-
-                Messagebox.show(info);
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error clicking button alInfo");
-            e.printStackTrace(System.out);
-        }
-    }
-
-    public void onClick$alDelete(Event event) {
-        try {
-
-            JSONObject jo = (JSONObject) lbLayers.getModel().getElementAt(lbLayers.getSelectedIndex());
-
-            if (jo == null) {
-                Messagebox.show("Unable to delete the selected layer");
-            } else {
-                selectedLayers2.remove(lbLayers.getSelectedIndex());
-                lbLayers.setModel(new SimpleListModel(selectedLayers2));
-                lbLayers.setSelectedIndex(selectedLayers2.size() - 1);
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error clicking button alInfo");
-            e.printStackTrace(System.out);
-        }
+    public void onClick$btnProduce(Event event){
+        produce();
     }
 
     public void onDoInit(Event event) throws Exception {
         runclassification();
-        //Clients.showBusy("", false);
     }
 
     public void produce() {
-        onClick$btnGenerate(null);
-    }
-
-    public void onClick$btnGenerate(Event event) {
-        //Clients.showBusy("Classification running...", true);
-        //Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
         try {
             onDoInit(null);
         } catch (Exception e) {
@@ -405,20 +236,7 @@ public class ALOCWCController extends UtilityComposer {
         /* set as selected each envctx layer found */
         if (layers != null) {
             lbListLayers.selectLayers(layers);
-        }
-
-        /* an area is always present; validate the area box presence, check if area updated
-        String currentArea = mc.getSelectionArea();
-        if (currentArea.length() > 0) {
-        useArea.setDisabled(false);
-        if (!currentArea.equalsIgnoreCase(previousArea)) {
-        useArea.setChecked(true);
-        }
-        } else {
-        useArea.setDisabled(true);
-        useArea.setChecked(false);
-        }
-        previousArea = currentArea;*/
+        }     
     }
 
     double[] getExtents() {

@@ -75,7 +75,7 @@ public class SpeciesPointsProgress extends UtilityComposer {
 
         timer.start();
 
-        jobstatus.setValue("loading data for: " + label);
+        jobstatus.setValue("getting part " + (parts_count) + " of " + (partsCount));
 
         start = System.currentTimeMillis();
 

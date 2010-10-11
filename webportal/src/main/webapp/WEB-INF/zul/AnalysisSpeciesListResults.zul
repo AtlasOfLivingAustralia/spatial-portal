@@ -1,0 +1,33 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+   
+    <window id="specieslistresultswindow" title="Species List Results Preview" border="normal"
+    use="org.ala.spatial.analysis.web.SpeciesListResults"
+            apply="org.ala.spatial.analysis.web.SpeciesListResults"
+            closable="true" mode="embedded" width="90%" height="90%">
+
+             <separator />
+            <label id="results_label" value=""/>
+            <separator />
+            <separator />
+            <listbox id="popup_listbox_results" width="95%" fixedLayout="false" rows="15" height="80%">
+                            <listhead sizable="true" >
+                                <listheader label="Family" ></listheader>
+                                <listheader label="Scientific name" ></listheader>
+                                <listheader label="Common name/s" ></listheader>
+                                <listheader label="Taxon rank" ></listheader>
+                            </listhead>
+                        </listbox>
+
+            <hbox>
+                <hbox>
+                    <separator/>
+                    <separator/>
+                    <button id="btnDownload" label="Download" sclass="goButton" />
+                </hbox>
+                <separator/>
+                <separator/>
+                <div align="right"><button label="Close" onClick="specieslistresultswindow.detach()" sclass="goButton" /> </div>
+            </hbox>
+    </window>
+</zk>

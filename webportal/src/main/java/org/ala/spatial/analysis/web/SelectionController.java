@@ -403,7 +403,7 @@ public class SelectionController extends UtilityComposer {
 
             for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
-                if (jo.getString("type").equalsIgnoreCase("contextual")) {
+                if (jo != null && jo.getString("type") != null && jo.getString("type").equalsIgnoreCase("contextual")) {
                     System.out.println("********" + jo.getString("name"));
                     if (mc.getMapLayer(jo.getString("displayname")) != null) {
                         String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"), geoServer);
@@ -562,13 +562,13 @@ public class SelectionController extends UtilityComposer {
     public void showSpecies(Event event) throws Exception {
         String geomData = (String) event.getData();
         wfsQueryBBox(geomData);
-        Clients.showBusy("", false);
+//        Clients.showBusy("", false);
     }
 
     public void showSpeciesPoly(Event event) throws Exception {
         String geomData = (String) event.getData();
         wfsQueryPolygon(geomData);
-        Clients.showBusy("", false);
+  //      Clients.showBusy("", false);
     }
 
     /**

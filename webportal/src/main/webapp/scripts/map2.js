@@ -778,8 +778,7 @@ function showInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
-    alert(occ_id);
+    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {    
 
     $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
         var occinfo = data.occurrence;
@@ -1211,8 +1210,7 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
         fillOpacity: opacity,
         strokeOpacity: 1,
         strokeWidth: 2,
-        strokeColor: hexColour,
-        label: "${count}"
+        strokeColor: hexColour
     },
     OpenLayers.Feature.Vector.style["new"]));
 
@@ -1223,6 +1221,7 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     layer_style.pointRadius = radius;
     layer_style.fillOpacity = opacity;
     layer_style.szUncertain = szUncertain;
+    layer_style.fontWeight = "bold";
     
    /*
    var layer_style = new OpenLayers.Style({
@@ -1312,6 +1311,7 @@ function addJsonUrlToMap(url, name, hexColour, radius, opacity, szUncertain) {
     layer_style.pointRadius = radius;
     layer_style.fillOpacity = opacity;
     layer_style.szUncertain = szUncertain;
+    layer_style.fontWeight = "bold";
 
     var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
     var vector_layer = new OpenLayers.Layer.Vector(name);
@@ -1491,6 +1491,7 @@ function redrawFeatures(feature, name, hexColour, opacity, radius, szUncertain) 
     layer_style.fillOpacity = opacity;
     layer_style.pointRadius = radius;
     layer_style.szUncertain = szUncertain;
+    layer_style.fontWeight = "bold";
     
     for (key in gjLayers) {
 
@@ -1536,6 +1537,7 @@ function drawFeaturesGeoJsonUrl(url, parts, name, hexColour, opacity, radius, sz
     layer_style.pointRadius = radius;
     layer_style.fillOpacity = opacity;
     layer_style.szUncertain = szUncertain;
+    layer_style.fontWeight = "bold";
 
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
@@ -2467,17 +2469,18 @@ function applyFeatureUncertainty(features,szUncertain){
     if(!szUncertain) return features;
     var new_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     new_style.fillOpacity = 0;
-    new_style.strokeColor = 'white';
+    new_style.strokeColor = 'black';
+    new_style.strokeWidth = 2;
     var f = features;
     var len = f.length;
     for(var j=0;j<len && j<f.length;j++){        
         if(f[j].geometry.toString().indexOf('POI') == 0) {
             if(szUncertain){
                 var u = f[j].attributes['u'];
-                if(u == '' || u == undefined || u == '0')
+                if(u == '' || u == undefined || u == '0' || u == '-1')
                     u = 10000;
                 var c = OpenLayers.Geometry.Polygon.createRegularPolygon(f[j].geometry,
-                    u,20,0);
+                    u,40,0);
                 var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,new_style);
                 f[len + j] = fv;
             }            
@@ -2488,20 +2491,28 @@ function applyFeatureUncertainty(features,szUncertain){
 
 function updateClusterStyles(layer){
     var f = layer.features;
+    var c = layer.style.fillColor.replace("rgb(","").replace(")","");
+    var rgb = c.split(",");
+    var v = 1 - ((rgb[0]*2 + rgb[1]*4 + rgb[2]*1) / (255*7.0));
     for(var j=0;j<f.length;j++){
-        //apply radius for clusters
-        var r = f[j].attributes['radius']
-        if(r != undefined){
-            if(f[j].style.pointRadius != undefined) {
-                f[j].style.pointRadius = r;
-                f[j].style.label = f[j].attributes["count"];
+        if(f[j].geometry.toString().indexOf('POI') == 0) {
+            //apply density for clusters
+            var d = f[j].attributes['density']
+            if(d != undefined){
+                f[j].style.fillOpacity = d * layer.style.fillOpacity;
             }
-        }
 
-        //apply density for clusters
-        var d = f[j].attributes['density']
-        if(d != undefined){
-            f[j].style.fillOpacity = d * layer.style.fillOpacity;
+            //apply radius for clusters
+            var r = f[j].attributes['radius']
+            if(r != undefined){
+                if(f[j].style.pointRadius != undefined) {
+                    f[j].style.pointRadius = r;
+                    f[j].style.label = f[j].attributes["count"];
+                    //colour brightness (v) <= 0.3, black, else white
+                    var vf = f[j].style.fillOpacity * v ;
+                    if(vf > 0.3) f[j].style.fontColor = "white";
+                }
+            }
         }
     }
     layer.redraw(true);
@@ -2511,6 +2522,7 @@ function addUncertaintyFeatures(layer){
     var new_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     new_style.fillOpacity = 0;
     new_style.strokeColor = 'white';
+    new_style.strokeWidth = 2;
     var f = layer.features;
     var fadd;
     var len = f.length;
@@ -2519,7 +2531,7 @@ function addUncertaintyFeatures(layer){
         if(u == '' || u == undefined || u == '0')
             u = 10000;
         var c = OpenLayers.Geometry.Polygon.createRegularPolygon(f[j].geometry,
-            u,20,0);
+            u,40,0);
         var fv = new OpenLayers.Feature.Vector(c,f[j].attributes,new_style);
         fadd[j] = fv;
     }

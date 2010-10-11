@@ -1,9 +1,15 @@
 package org.ala.spatial.web.services;
 
+import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.RandomAccessFile;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -154,9 +160,12 @@ public class FilteringWSController {
 
                     String filenamepart = file.getName();
                     filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf("."));
+                    //CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
+                    //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
+                    //        String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
                     CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
-                            String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
-                            String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
+                            String.valueOf((154-122) / 252.0), "-" + String.valueOf((-9 - (-44)) / 210.0),
+                            String.valueOf(112), String.valueOf(-9));
                     String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
                     return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
                 }
@@ -262,9 +271,12 @@ public class FilteringWSController {
 
                     String filenamepart = file.getName();
                     filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf(".")); 
+                    //CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
+                    //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
+                    //        String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
                     CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
-                            String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
-                            String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
+                            String.valueOf((154-122) / 252.0), "-" + String.valueOf((-9 - (-44)) / 210.0),
+                            String.valueOf(112), String.valueOf(-9));
                     String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
                     return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
                 }
@@ -380,7 +392,7 @@ public class FilteringWSController {
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
-            String filepath = FilteringService.getSamplesList(pid, region);
+            String filepath = FilteringService.getSamplesList(pid, region,TabulationSettings.MAX_RECORD_COUNT);
 
             /* zipping */
             String[] files = new String[1];
@@ -398,6 +410,66 @@ public class FilteringWSController {
             Zipper.zipFiles(files, outfile);
 
             return "output/filtering/" + "Sample_" + sdate + "_" + currTime + ".zip";
+
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return "";
+    }
+
+     /**
+     * Returns string of samples preview
+     *
+     * @param pid
+     * @param shape
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/apply/pid/{pid}/samples/list/preview", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String getSamplesListPreview(@PathVariable String pid, HttpServletRequest req) {
+        TabulationSettings.load();
+
+        try {
+            String shape = req.getParameter("area");
+            if (shape == null) {
+                shape = "none";
+            } else {
+                shape = URLDecoder.decode(shape, "UTF-8");
+            }
+            if (shape.equals("none") && pid.equals("none")) {
+                return "";  //error
+            }
+
+            System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
+
+            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
+
+            String filepath = FilteringService.getSamplesList(pid, region, 20);
+
+            //read in file
+            StringBuffer sbResults = new StringBuffer();
+            try{
+                CSVReader reader = new CSVReader(new FileReader(filepath));
+                List<String[]> contents = reader.readAll();
+                for (int i = 0; i < contents.size(); i++) {
+                    String [] results = contents.get(i);
+                    for (int j = 0; j < results.length; j++) {
+                        if (results[j] != null) {
+                            sbResults.append(results[j]);
+                        }
+                        if (j < results.length - 1) {
+                            sbResults.append("~");
+                        }
+                    }
+                    sbResults.append(";");
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+            return sbResults.toString();
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -432,14 +504,22 @@ public class FilteringWSController {
 
             System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
 
-            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
+            SimpleRegion region = null;
+            ArrayList<Integer> records = null;
+            shape = URLDecoder.decode(shape, "UTF-8");
+            if (shape != null && shape.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(shape);
+            } else {
+                region = SimpleShapeFile.parseWKT(shape);
+            }
 
+            
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
             
-            String gjsonFile = FilteringService.getSamplesListAsGeoJSON(pid, region, fDir);
+            String gjsonFile = FilteringService.getSamplesListAsGeoJSON(pid, region, records, fDir);
 
             System.out.println("getSamplesListAsGeoJSON:" + gjsonFile);
             return "output/filtering/" + gjsonFile;

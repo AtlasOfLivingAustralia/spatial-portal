@@ -59,6 +59,8 @@ public class CommonData {
         //Common
         satServer = satServer_;
         geoServer = geoServer_;
+
+        //TODO: allow for data refresh
         
         //(1) for LayersUtil
         getEnvironmentalLayers();
@@ -166,70 +168,72 @@ public class CommonData {
     }
 
     static public void initEnvironmentalOnlyList() {
-        try{
-            //environmental only
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/layers/analysis/inter_layer_association_rawnames.csv");
+        if (layerNamesEnv == null) {
+            try {
+                //environmental only
+                StringBuffer sbProcessUrl = new StringBuffer();
+                sbProcessUrl.append(satServer + "/alaspatial/layers/analysis/inter_layer_association_rawnames.csv");
 
-            System.out.println(sbProcessUrl.toString());
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
+                System.out.println(sbProcessUrl.toString());
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(sbProcessUrl.toString());
 
-            get.addRequestHeader("Accept", "text/plain");
+                get.addRequestHeader("Accept", "text/plain");
 
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
+                int result = client.executeMethod(get);
+                String slist = get.getResponseBodyAsString();
 
-            String[] rows = slist.split("\n");
+                String[] rows = slist.split("\n");
 
-            //got a csv, put into column names, etc
-            layerNamesEnv = new String[rows.length]; //last row is empty
-            distances = new float[rows.length - 1][rows.length - 1];
+                //got a csv, put into column names, etc
+                layerNamesEnv = new String[rows.length]; //last row is empty
+                distances = new float[rows.length - 1][rows.length - 1];
 
-            String[] line = rows[0].split(",");
-            layerNamesEnv[0] = line[1];
-            for (int i = 1; i < rows.length; i++) {   //last row is empty
-                line = rows[i].split(",");
-                layerNamesEnv[i] = line[0];
-                for (int j = 1; j < line.length; j++) {
-                    try {
-                        distances[i - 1][j - 1] = Float.parseFloat(line[j]);
-                    } catch (Exception e) {
-                    }
-                }
-            }
-
-            listEntriesEnv = new ArrayList<ListEntry>();
-            initLayerCatagories(listEntriesEnv, true);
-
-            //match up listEntries
-            for (int i = 0; i < listEntriesEnv.size(); i++) {
-                String entryName = listEntriesEnv.get(i).name;
-                for (int j = 0; j < layerNamesEnv.length; j++) {
-                    if (layerNamesEnv[j].equalsIgnoreCase(entryName)) {
-                        listEntriesEnv.get(i).row_in_distances = j;
-                        break;
+                String[] line = rows[0].split(",");
+                layerNamesEnv[0] = line[1];
+                for (int i = 1; i < rows.length; i++) {   //last row is empty
+                    line = rows[i].split(",");
+                    layerNamesEnv[i] = line[0];
+                    for (int j = 1; j < line.length; j++) {
+                        try {
+                            distances[i - 1][j - 1] = Float.parseFloat(line[j]);
+                        } catch (Exception e) {
+                        }
                     }
                 }
 
-                //remove if missing
-                if (listEntriesEnv.get(i).row_in_distances < 0) {
-                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
-                    listEntriesEnv.remove(i);
-                    i--;
-                } else {
-                    listEntriesEnv.get(i).row_in_list = i;
+                listEntriesEnv = new ArrayList<ListEntry>();
+                initLayerCatagories(listEntriesEnv, true);
+
+                //match up listEntries
+                for (int i = 0; i < listEntriesEnv.size(); i++) {
+                    String entryName = listEntriesEnv.get(i).name;
+                    for (int j = 0; j < layerNamesEnv.length; j++) {
+                        if (layerNamesEnv[j].equalsIgnoreCase(entryName)) {
+                            listEntriesEnv.get(i).row_in_distances = j;
+                            break;
+                        }
+                    }
+
+                    //remove if missing
+                    if (listEntriesEnv.get(i).row_in_distances < 0) {
+                        //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
+                        listEntriesEnv.remove(i);
+                        i--;
+                    } else {
+                        listEntriesEnv.get(i).row_in_list = i;
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }catch(Exception e){
-            e.printStackTrace();
         }
     }
 
     static void initLayerCatagories(ArrayList<ListEntry> listEntries, boolean environmentalOnly) {
-        try {            
+        try {
             String llist = getLayerList();
-            
+
             JSONArray layerlist = getLayerListJSONArray();
             JSONArray.fromObject(llist);
             for (int i = 0; i < layerlist.size(); i++) {
@@ -275,46 +279,49 @@ public class CommonData {
                 return c;
             }
         });
+
     }
 
     static public void initEnvironmentalAllList() {
-        //contextual and environmental
-        try {
-            String[] ctx = getContextualLayers();
-            String[] env = getEnvironmentalLayers();
+        if(layerNamesAll == null){
+            //contextual and environmental
+            try {
+                String[] ctx = getContextualLayers();
+                String[] env = getEnvironmentalLayers();
 
-            layerNamesAll = new String[ctx.length + env.length];
-            for (int i = 0; i < env.length; i++) {
-                layerNamesAll[i] = env[i];
-            }
-            for (int i = 0; i < ctx.length; i++) {
-                layerNamesAll[i + env.length] = ctx[i];
-            }
+                layerNamesAll = new String[ctx.length + env.length];
+                for (int i = 0; i < env.length; i++) {
+                    layerNamesAll[i] = env[i];
+                }
+                for (int i = 0; i < ctx.length; i++) {
+                    layerNamesAll[i + env.length] = ctx[i];
+                }
 
-            listEntriesAll = new ArrayList<ListEntry>();
-            initLayerCatagories(listEntriesAll, false);
+                listEntriesAll = new ArrayList<ListEntry>();
+                initLayerCatagories(listEntriesAll, false);
 
-            //match up listEntries
-            for (int i = 0; i < listEntriesAll.size(); i++) {
-                String entryName = listEntriesAll.get(i).name;
-                for (int j = 0; j < layerNamesAll.length; j++) {
-                    if (layerNamesAll[j].equalsIgnoreCase(entryName)) {
-                        listEntriesAll.get(i).row_in_distances = j;
-                        break;
+                //match up listEntries
+                for (int i = 0; i < listEntriesAll.size(); i++) {
+                    String entryName = listEntriesAll.get(i).name;
+                    for (int j = 0; j < layerNamesAll.length; j++) {
+                        if (layerNamesAll[j].equalsIgnoreCase(entryName)) {
+                            listEntriesAll.get(i).row_in_distances = j;
+                            break;
+                        }
+                    }
+
+                    //remove if missing
+                    if (listEntriesAll.get(i).row_in_distances < 0) {
+                        //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
+                        listEntriesAll.remove(i);
+                        i--;
+                    } else {
+                        listEntriesAll.get(i).row_in_list = i;
                     }
                 }
-
-                //remove if missing
-                if (listEntriesAll.get(i).row_in_distances < 0) {
-                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
-                    listEntriesAll.remove(i);
-                    i--;
-                } else {
-                    listEntriesAll.get(i).row_in_list = i;
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -354,19 +361,23 @@ public class CommonData {
     }
 
     static void initContextualClasses(){
-        contextualClasses = new HashMap<JSONObject, List>();
+        if(contextualClasses == null){
+            getLayerListJSONArray();
 
-        for (int i = 0; i < layerlistJSON.size(); i++) {
-            JSONObject jo = layerlistJSON.getJSONObject(i);
+            contextualClasses = new HashMap<JSONObject, List>();
 
-            if (!jo.getBoolean("enabled")) {
-                continue;
-            }
+            for (int i = 0; i < layerlistJSON.size(); i++) {
+                JSONObject jo = layerlistJSON.getJSONObject(i);
 
-            List classNodes = new ArrayList();
-            if (jo.getString("type").equalsIgnoreCase("Contextual")) {
-                classNodes = getContextualClassesInit(jo);
-                contextualClasses.put(jo, classNodes);
+                if (!jo.getBoolean("enabled")) {
+                    continue;
+                }
+
+                List classNodes = new ArrayList();
+                if (jo.getString("type").equalsIgnoreCase("Contextual")) {
+                    classNodes = getContextualClassesInit(jo);
+                    contextualClasses.put(jo, classNodes);
+                }
             }
         }
     }
