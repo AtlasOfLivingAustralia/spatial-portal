@@ -52,7 +52,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class SpeciesController {
 
     private final int DEFAULT_PIXEL_DISTANCE = 80;
-    private final int DEFAULT_MIN_RADIUS = 7;
+    private final int DEFAULT_MIN_RADIUS = 8;
     private final int DEFAULT_MAP_ZOOM = 4;
     private SpeciesDAO speciesDao;
 
@@ -287,7 +287,7 @@ public class SpeciesController {
             System.out.println("req.z: " + zoom);
             System.out.println("req.d: " + pdist);
            
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, null, TabulationSettings.MAX_RECORD_COUNT);
+            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, null, null, null, TabulationSettings.MAX_RECORD_COUNT);
 
             long timePoints = System.currentTimeMillis();
 
@@ -356,6 +356,7 @@ public class SpeciesController {
 
             int zoom = DEFAULT_MAP_ZOOM;
             int pdist = DEFAULT_PIXEL_DISTANCE;
+            int min_radius = DEFAULT_MIN_RADIUS;
 
             species = URLDecoder.decode(species, "UTF-8");
             species = species.replaceAll("__", ".");
@@ -374,15 +375,13 @@ public class SpeciesController {
             } catch (Exception e) {
                 pdist = DEFAULT_PIXEL_DISTANCE;
             }
-
-//            String area = req.getParameter("area");
-//            ArrayList<Integer> records = null;
-//            SimpleRegion region = null;
-//            if (area != null && area.startsWith("ENVELOPE")) {
-//                records = FilteringService.getRecords(req.getParameter("area"));
-//            } else {
-//                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
-//            }
+            try {
+                if (req.getParameter("m") != null) {
+                    min_radius = Integer.parseInt(req.getParameter("m"));
+                }
+            } catch (Exception e) {
+                min_radius = DEFAULT_MIN_RADIUS;
+            }
 
             SimpleRegion region = SimpleShapeFile.parseWKT(URLDecoder.decode(area, "UTF-8"));
 
@@ -391,7 +390,7 @@ public class SpeciesController {
             System.out.println("req.z: " + zoom);
             System.out.println("req.d: " + pdist);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, region, TabulationSettings.MAX_RECORD_COUNT);
+            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, region, null, null, TabulationSettings.MAX_RECORD_COUNT);
 
             long timePoints = System.currentTimeMillis();
 
@@ -399,16 +398,9 @@ public class SpeciesController {
             // SpatialCluster3 stuff start
             SpatialCluster3 scluster = new SpatialCluster3();
 
-            Vector<Vector<Record>> clustered = scluster.cluster(dataPoints, pdist, zoom, DEFAULT_MIN_RADIUS);
+            Vector<Vector<Record>> clustered = scluster.cluster(dataPoints, pdist, zoom, min_radius);
             
             for (int i = 0; clustered != null && i < clustered.size(); i++) {
-                //System.out.println(i + "> " + clustered.get(i).toString());
-
-                double radius = scluster.getRadius(i);
-                if (radius < DEFAULT_MIN_RADIUS) {
-                    radius = DEFAULT_MIN_RADIUS;
-                }
-
                 Vector<Record> cluster = clustered.get(i);
 
                 Hashtable geometry = new Hashtable();
@@ -419,7 +411,8 @@ public class SpeciesController {
                 Hashtable properties = new Hashtable();
                 //properties.put("cluster", cluster);
                 properties.put("count", cluster.size());
-                properties.put("radius", radius);
+                properties.put("radius", scluster.getRadius(i));
+                properties.put("u", scluster.getUncertainty(i));
                 properties.put("gid", id);
                 properties.put("cid", i);
 
@@ -496,8 +489,18 @@ public class SpeciesController {
 
             int zoom = DEFAULT_MAP_ZOOM;
             int pdist = DEFAULT_PIXEL_DISTANCE;
+            int min_radius = DEFAULT_MIN_RADIUS;
 
-            SimpleRegion region = SimpleShapeFile.parseWKT(URLDecoder.decode(area, "UTF-8"));
+            SimpleRegion region = null;
+            ArrayList<Integer> records = null;
+            area = URLDecoder.decode(area, "UTF-8");
+            if (area != null && area.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(area);
+            } else {
+                region = SimpleShapeFile.parseWKT(area);
+            }
+
+            SimpleRegion regionViewport = null;
 
             try {
                 if (req.getParameter("z") != null) {
@@ -515,27 +518,17 @@ public class SpeciesController {
             }
             try {
                 if (req.getParameter("a") != null) {
-                    SimpleRegion r2 = SimpleShapeFile.parseWKT(URLDecoder.decode(req.getParameter("a"),"UTF-8"));
-
-                    //region to use is where region and r2 overlap
-                    double [][] b1 = region.getBoundingBox();
-                    double [][] b2 = r2.getBoundingBox();
-                    double [] b = new double[4];
-                    b[0] = Math.max(b1[0][0], b2[0][0]);    //lower long bound
-                    b[1] = Math.max(b1[0][1], b2[0][1]);    //lower lat bound
-                    b[2] = Math.min(b1[1][0], b2[1][0]);    //upper long bound
-                    b[3] = Math.min(b1[1][1], b2[1][1]);    //upper lat bound
-
-                    //prevent negative region
-                    if(b[0] > b[2]) b[2] = b[0];
-                    if(b[1] > b[3]) b[3] = b[1];
-
-                    region = new SimpleRegion();
-                    region.setBox(b[0],b[1],b[2],b[3]);
-
+                    regionViewport = SimpleShapeFile.parseWKT(URLDecoder.decode(req.getParameter("a"),"UTF-8"));
                     System.out.println("a: " + req.getParameter("a"));
                 }
             } catch (Exception e) {
+            }
+            try {
+                if (req.getParameter("m") != null) {
+                    min_radius = Integer.parseInt(req.getParameter("m"));
+                }
+            } catch (Exception e) {
+                min_radius = DEFAULT_MIN_RADIUS;
             }
 
             System.out.println("req.a: " + area);
@@ -544,22 +537,15 @@ public class SpeciesController {
 
             System.out.println("area: " + area);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(null, region, TabulationSettings.MAX_RECORD_COUNT);
+            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(null, region, regionViewport, records, TabulationSettings.MAX_RECORD_COUNT);
 
             long timePoints = System.currentTimeMillis();
 
             Vector allFeatures = new Vector();
             // SpatialCluster3 stuff start
             SpatialCluster3 scluster = new SpatialCluster3();
-            Vector<Vector<Record>> clustered = scluster.cluster(dataPoints, pdist, zoom, DEFAULT_MIN_RADIUS);
+            Vector<Vector<Record>> clustered = scluster.cluster(dataPoints, pdist, zoom, min_radius);
             for (int i = 0; clustered != null && i < clustered.size(); i++) {
-                //System.out.println(i + "> " + clustered.get(i).toString());
-
-                double radius = scluster.getRadius(i);
-                if (radius < DEFAULT_MIN_RADIUS) {
-                    radius = DEFAULT_MIN_RADIUS;
-                }
-
                 Vector<Record> cluster = clustered.get(i);
 
                 Hashtable geometry = new Hashtable();
@@ -570,7 +556,8 @@ public class SpeciesController {
                 Hashtable properties = new Hashtable();
                 //properties.put("cluster", cluster);
                 properties.put("count", cluster.size());
-                properties.put("radius", radius);
+                properties.put("radius", scluster.getRadius(i));
+                properties.put("u", scluster.getUncertainty(i));
                 properties.put("gid", id);
                 properties.put("cid", i);
 

@@ -766,7 +766,7 @@ public class SamplingService {
 
             System.out.println("Limiting sampling to : " + max_rows);
 
-            String[][] results = sampleSpecies(species, layers, region, null, max_rows);
+            String[][] results = sampleSpecies(species, layers, region, records, max_rows);
             StringBuilder sbResults = new StringBuilder();
 
             for (int i = 0; i < results.length; i++) {

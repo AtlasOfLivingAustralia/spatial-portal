@@ -300,6 +300,8 @@ public class FilteringService implements Serializable {
                 return ret;
             }
 
+            occurrencesCount = rk.size();
+
             /* make list of species, for inside region filter */
             species = OccurrencesIndex.getSpeciesBitset(rk, region, occurrencesCount); //new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
         }
@@ -365,9 +367,10 @@ public class FilteringService implements Serializable {
      * gets samples records from a session and filtered region
      * @param session_id_ session id as String
      * @param region filtered region as SimpleRegion or null for none
+     * @param max_records maximum record number as int
      * @return Samples records in a csv in the filename returned as String
      */
-    static public String getSamplesList(String session_id_, SimpleRegion region) {
+    static public String getSamplesList(String session_id_, SimpleRegion region, int maximum_records) {
         int[] records;
         int i;
 
@@ -420,6 +423,10 @@ public class FilteringService implements Serializable {
         //test for no records
         if (records == null || records.length == 0) {
             return "";
+        }
+
+        if(records.length > maximum_records){
+            records = java.util.Arrays.copyOf(records, maximum_records);
         }
 
         /* get samples records from records indexes */
@@ -549,13 +556,13 @@ public class FilteringService implements Serializable {
      * @param outputpath
      * @return
      */
-    public static String getSamplesListAsGeoJSON(String session_id_, SimpleRegion region, File outputpath) {
+    public static String getSamplesListAsGeoJSON(String session_id_, SimpleRegion region, ArrayList<Integer> records, File outputpath) {
         int i;
 
         /* check for "none" session */
         Vector dataRecords = null;
         if (session_id_.equals("none")) {
-            dataRecords = OccurrencesIndex.sampleSpeciesForClustering(null,region,TabulationSettings.MAX_RECORD_COUNT);
+            dataRecords = OccurrencesIndex.sampleSpeciesForClustering(null,region, null, records, TabulationSettings.MAX_RECORD_COUNT);
         } else {
             return null;    //not supported right now
         }
