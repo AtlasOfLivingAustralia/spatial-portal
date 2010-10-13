@@ -196,6 +196,7 @@ public class GazetteerConfig {
         catch(Exception e)
         {
             //FIXME
+            return "none";
         }
         return idAttribute;
     }

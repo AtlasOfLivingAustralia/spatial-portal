@@ -109,8 +109,11 @@ public class GazetteerIndex implements InitializingBean {
                                 featureDoc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
                             }
 
-                            if (feature.getProperty(gc.getClassAttributeName(layerName)).getValue() != null) {
-                                classNames.add(feature.getProperty(gc.getClassAttributeName(layerName)).getValue().toString());
+                            if (!gc.getClassAttributeName(layerName).contentEquals("none")) {
+                                //building a set of classes for this layer - indexed separately
+                                if (feature.getProperty(gc.getClassAttributeName(layerName)).getValue() != null) {
+                                    classNames.add(feature.getProperty(gc.getClassAttributeName(layerName)).getValue().toString());
+                                }
                             }
 
                             featureDoc.add(new Field("type", layerName, Store.YES, Index.ANALYZED));
@@ -139,16 +142,21 @@ public class GazetteerIndex implements InitializingBean {
 
                     }
                     dataStore.dispose();
-                    Document classDoc = new Document();
+
+                    //indexing classes with layer name
+                    
                     Iterator iter = classNames.iterator();
                     StringBuilder sb = new StringBuilder();
-                    sb.append(iter.next());
-                    while (iter.hasNext()) {
-                        sb.append(",").append(iter.next());
+                    if (iter.hasNext()) {
+                        sb.append(iter.next());
+                        while (iter.hasNext()) {
+                            sb.append(",").append(iter.next());
+                        }
+                        Document classDoc = new Document();
+                        classDoc.add(new Field("layer",layerName,Store.YES,Index.ANALYZED));
+                        classDoc.add(new Field(gc.getClassAttributeName(layerName),sb.toString(),Store.YES,Index.NO));
+                        classIndex.addDocument(classDoc);
                     }
-                    classDoc.add(new Field("layer",layerName,Store.YES,Index.ANALYZED));
-                    classDoc.add(new Field("classes",sb.toString(),Store.YES,Index.NO));
-                    classIndex.addDocument(classDoc);
                 }
                 featureIndex.close();
                 classIndex.close();
