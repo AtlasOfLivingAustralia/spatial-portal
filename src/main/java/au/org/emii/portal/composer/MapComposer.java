@@ -2047,7 +2047,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else {
                     legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
                     sizeChooser.setVisible(true);
-                    uncertainty.setVisible(true);
+                    if(m.getGeoJSON() != null && m.getGeoJSON().length() > 0){
+                        uncertainty.setVisible(false);
+                    }else{
+                        uncertainty.setVisible(true);
+                    }
                 }
                 legendImg.setVisible(true);
                 legendLabel.setVisible(true);
@@ -2364,7 +2368,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
             sizeChooser.setVisible(true);
-            uncertainty.setVisible(true);
+            if(selectedLayer.getGeoJSON() != null && selectedLayer.getGeoJSON().length() > 0){
+                uncertainty.setVisible(false); //hide uncertianty for clusters
+            }else{
+                uncertainty.setVisible(true);
+            }
+            
         }
     }
 
@@ -3569,11 +3578,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if(species == null || (lsid != null && species.equalsIgnoreCase(lsid))){
             species = LayersUtil.getScientificName(lsid);
         }
-        if(chkPointsCluster.isChecked()){
+        //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
+        if(countOfLsid(lsid) > 5000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)){
             return mapSpeciesByLsidCluster(lsid, species);
         }else{
             return mapSpeciesByLsidPoints(lsid,species);
         }
+    }
+    int countOfLsid(String lsid){
+        int count = 0;
+         //get bounding box for lsid
+        try{
+            //cluster, must have an lsid
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(settingsSupplementary.getValue(CommonData.SAT_URL));
+            sbProcessUrl.append("/alaspatial/species/lsid/").append(lsid);
+            sbProcessUrl.append("/count");
+            HttpClient client = new HttpClient();
+            GetMethod post = new GetMethod(sbProcessUrl.toString());
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
+            count = Integer.parseInt(slist);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return count;
     }
     MapLayer mapSpeciesByLsidCluster(String lsid, String species) {
         try {
@@ -3609,6 +3639,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 md.setMoreInfo(infoUrl + "\n" + species);
                 md.setSpeciesLsid(lsid);
                 md.setLayerExtent(area, 0.2);
+
+                addLsidBoundingBoxToMetadata(md,lsid);
             }
         
         } catch (Exception ex) {
@@ -3617,6 +3649,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ex.printStackTrace(System.out);
         }
         return null;
+    }
+
+    void addLsidBoundingBoxToMetadata(MapLayerMetadata md, String lsid){
+        //get bounding box for lsid
+        try{
+            //cluster, must have an lsid
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(settingsSupplementary.getValue(CommonData.SAT_URL));
+            sbProcessUrl.append("/alaspatial/species/cluster/lsid/").append(lsid);
+            sbProcessUrl.append("/bb");
+            HttpClient client = new HttpClient();
+            GetMethod post = new GetMethod(sbProcessUrl.toString());
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
+            List<Double> bb = new ArrayList<Double>();
+            String [] sa = slist.split(",");
+            for(int i=0;i<sa.length;i++){
+                bb.add(Double.parseDouble(sa[i]));
+            }
+            md.setBbox(bb);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     MapLayer mapSpeciesByLsidPoints(String lsid, String species) {

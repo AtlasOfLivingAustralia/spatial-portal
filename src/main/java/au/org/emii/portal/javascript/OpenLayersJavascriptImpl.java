@@ -161,7 +161,16 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public String zoomGeoJsonExtent(MapLayer ml) {
-        String script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName().replaceAll("'", "\\'") + "')";
+        String script = "";
+        if(ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getBboxString() != null){
+            //cluster
+            script = "window.mapFrame.map.zoomToExtent(new OpenLayers.Bounds.fromString('"
+                    + ml.getMapLayerMetadata().getBboxString()
+                    + "').transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()))";
+        }else {
+            script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName().replaceAll("'", "\\'") + "')";
+        }
+
         return script;
 
     }

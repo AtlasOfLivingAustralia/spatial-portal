@@ -30,7 +30,8 @@ import org.zkoss.zul.Comboitem;
 public class EnvLayersCombobox extends Combobox {
 
     private static String SAT_SERVER = null;
-    SettingsSupplementary settingsSupplementary = null;;
+    SettingsSupplementary settingsSupplementary = null;
+    String [] validLayers = null;;
 
     public EnvLayersCombobox() {
         refresh(""); //init the child comboitems
@@ -54,6 +55,9 @@ public class EnvLayersCombobox extends Combobox {
     }
 
     private void refresh(String val) {
+        if(validLayers == null){
+            makeValidLayers();
+        }
         if (settingsSupplementary != null) {
             //System.out.println("setting ss.val");
         } else if(this.getParent() != null){
@@ -107,6 +111,10 @@ public class EnvLayersCombobox extends Combobox {
                             continue;
                         }
 
+                        if(!isValidLayer(jo.getString("name"))){
+                            continue;
+                        }
+
                         Comboitem myci = null;
                         if (it != null && it.hasNext()) {
                             myci = ((Comboitem) it.next());
@@ -142,4 +150,22 @@ public class EnvLayersCombobox extends Combobox {
 
         return mapComposer;
     }
+
+     void makeValidLayers(){
+         String [] ctx = CommonData.getContextualLayers();
+         String [] env = CommonData.getEnvironmentalLayers();
+         validLayers = new String[ctx.length + env.length];
+         for(int i=0;i<env.length;i++){
+             validLayers[i] = env[i];
+         }
+         for(int i=0;i<ctx.length;i++){
+             validLayers[i+env.length] = ctx[i];
+         }
+         java.util.Arrays.sort(validLayers);
+     }
+
+     boolean isValidLayer(String name){
+         int pos = java.util.Arrays.binarySearch(validLayers, name);
+         return (pos >= 0 && pos < validLayers.length);
+     }
 }
