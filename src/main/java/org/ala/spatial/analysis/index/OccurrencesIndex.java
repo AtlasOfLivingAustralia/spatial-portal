@@ -3931,6 +3931,31 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         return d;
     }
+
+    //TODO: bounding box hashmap cleanup
+    static HashMap<String, String> lsidBoundingBox = new HashMap<String,String>();
+    static public String getLsidBoundingBox(String lsid){
+        String bb = lsidBoundingBox.get(lsid);
+        if(bb == null){
+            IndexedRecord [] ir = filterSpeciesRecords(lsid);
+            if(ir != null && ir.length > 0){
+                double minx = all_points[ir[0].record_start][0];
+                double miny = all_points[ir[0].record_start][1];
+                double maxx = all_points[ir[0].record_start][0];
+                double maxy = all_points[ir[0].record_start][1];
+                for(int i=ir[0].record_start;i<=ir[0].record_end;i++){
+                   if(minx > all_points[i][0]) minx = all_points[i][0];
+                   if(maxx < all_points[i][0]) maxx = all_points[i][0];
+                   if(miny > all_points[i][1]) miny = all_points[i][1];
+                   if(maxy < all_points[i][1]) maxy = all_points[i][1];
+                }
+                StringBuffer sb = new StringBuffer();
+                sb.append(minx).append(",").append(miny).append(",").append(maxx).append(",").append(maxy);
+                lsidBoundingBox.put(lsid,sb.toString());
+            }
+        }
+        return bb;
+    }
 }
 
 /**

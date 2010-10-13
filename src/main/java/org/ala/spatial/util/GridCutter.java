@@ -334,8 +334,8 @@ public class GridCutter {
         //determine outer bounds of layers
         double xmin = Double.MAX_VALUE;
         double ymin = Double.MAX_VALUE;
-        double xmax = Double.MIN_VALUE;
-        double ymax = Double.MIN_VALUE;
+        double xmax = Double.MAX_VALUE*-1;
+        double ymax = Double.MAX_VALUE*-1;
         for (Layer l : layers) {
             Grid g = Grid.getGrid(TabulationSettings.getPath(l.name));
             if (xmin > g.xmin) {
@@ -538,8 +538,8 @@ public class GridCutter {
         //determine outer bounds of layers
         double xmin = Double.MAX_VALUE;
         double ymin = Double.MAX_VALUE;
-        double xmax = Double.MIN_VALUE;
-        double ymax = Double.MIN_VALUE;
+        double xmax = Double.MAX_VALUE*-1;
+        double ymax = Double.MAX_VALUE*-1;
         if(envelopes != null){
             for (LayerFilter lf : envelopes) {
                 Grid g = new Grid(TabulationSettings.getPath(lf.layer.name));

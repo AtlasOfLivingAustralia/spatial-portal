@@ -146,7 +146,7 @@ public class Pca {
 			double [] topeigval = new double[3];
 			int [] topeigcol = new int[3];
 			for(j=0;j<3;j++){
-				topeigval[j] = Double.MIN_VALUE;
+				topeigval[j] = Double.MAX_VALUE*-1;
 				/* get first valid point */
 				for(i=0;i<eigval.length;i++){
 					if((j==0 || eigval[i]<topeigval[j-1])){					

@@ -19,6 +19,7 @@ import org.ala.spatial.analysis.cluster.ClusterLookup;
 import org.ala.spatial.analysis.cluster.Record;
 //import org.ala.spatial.analysis.cluster.SpatialCluster;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
+import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.FilteringService;
 
@@ -469,6 +470,49 @@ public class SpeciesController {
         }
         System.out.println("returning null");
         return null;
+    }
+
+    @RequestMapping(value = "/cluster/lsid/{lsid}/bb", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getBoundingBox(@PathVariable("lsid") String lsid, HttpServletRequest req) {
+        try {
+            SpatialSettings ssets = new SpatialSettings();
+
+            lsid = URLDecoder.decode(lsid, "UTF-8");
+            lsid = lsid.replaceAll("__", ".");
+
+            return OccurrencesIndex.getLsidBoundingBox(lsid);
+        } catch (Exception e) {
+            System.out.println("getOccurrenceId.error: ");
+            e.printStackTrace(System.out);
+        }
+        System.out.println("returning null");
+        return null;
+    }
+
+    @RequestMapping(value = "/lsid/{lsid}/count", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getLsidCount(@PathVariable("lsid") String lsid, HttpServletRequest req) {
+        try {
+            SpatialSettings ssets = new SpatialSettings();
+
+            lsid = URLDecoder.decode(lsid, "UTF-8");
+            lsid = lsid.replaceAll("__", ".");
+
+            IndexedRecord [] ir =  OccurrencesIndex.filterSpeciesRecords(lsid);
+            int count = 0;
+            if(ir != null && ir.length > 0){
+                count = ir[0].record_end - ir[0].record_start + 1;
+            }
+            return String.valueOf(count);
+        } catch (Exception e) {
+            System.out.println("getOccurrenceId.error: ");
+            e.printStackTrace(System.out);
+        }
+        System.out.println("returning null");
+        return "0";
     }
 
     /**

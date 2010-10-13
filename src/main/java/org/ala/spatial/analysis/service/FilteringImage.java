@@ -28,12 +28,12 @@ public class FilteringImage implements Serializable {
     /**
      * todo: dynamic width
      */
-    final int WIDTH = 252;
+    final int WIDTH = 1008;//252;
     
     /**
      * todo: dynamic height
      */
-    final int HEIGHT = 210;
+    final int HEIGHT = 840;//210;
     
     /**
      * value of transparent image cell

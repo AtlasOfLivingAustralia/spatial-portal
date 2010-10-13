@@ -372,7 +372,7 @@ public class SpatialCluster3 {
     }
 
     void makeDensity() {
-        double max_density = Double.MIN_VALUE;
+        double max_density = Double.MAX_VALUE*-1;
         double min_density = Double.MAX_VALUE;
         global_density = new double[global_clusters.size()];
         for (int i = 0; i < global_clusters.size(); i++) {
