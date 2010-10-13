@@ -49,7 +49,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
         for(int i=0;i<min.length;i++) {
             for(int j=0;j<min[i].length;j++) {
                 min[i][j] = Double.MAX_VALUE;
-                max[i][j] = Double.MIN_VALUE;
+                max[i][j] = Double.MAX_VALUE*-1;
                 range[i][j] = Double.NaN;
             }
         }
@@ -66,7 +66,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
         }
         for(int i=0;i<min.length;i++){
             for(int j=0;j<min[i].length;j++){
-                if(max[i][j] != Double.MIN_VALUE) {
+                if(max[i][j] != Double.MAX_VALUE*-1) {
                     range[i][j] = max[i][j] - min[i][j];
                 } else {
                     range[i][j] = 0;

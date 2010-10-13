@@ -164,7 +164,7 @@ public class FilteringWSController {
                     //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
                     //        String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
                     CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
-                            String.valueOf((154-122) / 252.0), "-" + String.valueOf((-9 - (-44)) / 210.0),
+                            String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
                             String.valueOf(112), String.valueOf(-9));
                     String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
                     return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
@@ -275,7 +275,7 @@ public class FilteringWSController {
                     //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
                     //        String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
                     CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
-                            String.valueOf((154-122) / 252.0), "-" + String.valueOf((-9 - (-44)) / 210.0),
+                            String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
                             String.valueOf(112), String.valueOf(-9));
                     String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
                     return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);

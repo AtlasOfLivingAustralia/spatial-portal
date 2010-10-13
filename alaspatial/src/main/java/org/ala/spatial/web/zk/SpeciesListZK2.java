@@ -454,7 +454,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	        String req1 = "removeImageLayer('filterlayer_" + getSelectedFilters().length + "');";			
 			String img = satServer + "output/filtering/" + service_pid + "/" + slist;			
 	        String client_request = "addImageLayer('" + img 
-	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-44,252,210);";// + req1;
+	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-44,1008,840);";// + req1;
 	       
 	        System.out.println("evaljavascript: " + client_request);                      
 	        Clients.evalJavaScript(client_request);	
@@ -578,7 +578,7 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 	        String req1 = "removeImageLayer('filterlayer_" + getSelectedFilters().length + "');";			
 			String img = satServer + "output/filtering/" + service_pid + "/" + slist;			
 	        String client_request = "addImageLayer('" + img 
-	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-44,252,210);";// + req1;
+	        		+ "','filterlayer_" + getSelectedFilters().length + "',112,-9,154,-44,1008,840);";// + req1;
 	        System.out.println("evaljavascript: " + client_request);                      
 	        Clients.evalJavaScript(client_request);	
 	        

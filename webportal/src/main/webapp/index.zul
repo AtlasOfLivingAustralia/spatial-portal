@@ -732,7 +732,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
                                                     <separator />
-                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="true" visible="true" />
+                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="true" visible="false" />
                                                 </vbox>
 
                                                 <html>
@@ -1099,7 +1099,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             jQuery('.hidden_image :hidden').show();
 
-            if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
+            if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
                 jQuery('.z-north').show();
                 jQuery('.z-south').show();
             }

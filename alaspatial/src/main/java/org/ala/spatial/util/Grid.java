@@ -379,7 +379,7 @@ public class Grid { //  implements Serializable
      */
     void writeGrid(String newfilename, double[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
         int size, i, length = dfiltered.length, pos;
-        double maxvalue = Double.MIN_VALUE;
+        double maxvalue = Double.MAX_VALUE*-1;
         double minvalue = Double.MAX_VALUE;
        
         //write data as whole file
@@ -421,7 +421,7 @@ public class Grid { //  implements Serializable
 
     void writeGrid(String newfilename, float[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
         int size, i, length = dfiltered.length, pos;
-        double maxvalue = Double.MIN_VALUE;
+        double maxvalue = Double.MAX_VALUE*-1;
         double minvalue = Double.MAX_VALUE;
 
         //write data as whole file

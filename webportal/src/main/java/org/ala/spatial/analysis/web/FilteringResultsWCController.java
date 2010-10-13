@@ -9,8 +9,10 @@ import java.io.Writer;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
@@ -328,7 +330,6 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             String slist = postInfo(sbProcessUrl.toString());
 
-
             String[] aslist = slist.split(";");
             System.out.println("Result count: " + aslist.length);
             int count = 0;
@@ -395,17 +396,9 @@ public class FilteringResultsWCController extends UtilityComposer {
             String area = getMapComposer().getSelectionArea();
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            if(!getMapComposer().useClustering()){
-                sbProcessUrl.append("/filtering/apply");
-                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-                sbProcessUrl.append("/samples/geojson");
-                sbProcessUrl.append("?area=").append(URLEncoder.encode(area,"UTF-8"));
-                String slist = getInfo(sbProcessUrl.toString());
-                //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);                               
-                System.out.println("onMapSpecies: " + slist);
-                String [] results = slist.split("\n");
-                getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
-            }else{
+            //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
+            if(results_count_occurrences > 5000 || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)){
+                //clustering
                 MapLayerMetadata md = new MapLayerMetadata();
                 md.setLayerExtent(getMapComposer().getViewArea(), 0.2);
 
@@ -423,6 +416,32 @@ public class FilteringResultsWCController extends UtilityComposer {
                     ml.setMapLayerMetadata(new MapLayerMetadata());
                 }
                 ml.getMapLayerMetadata().setLayerExtent(area, 0.2);
+
+                //get bounding box for active area
+                try{
+                    MapLayerMetadata md2 = new MapLayerMetadata();
+                    md2.setLayerExtent(area, 0);
+                    double [] d = md2.getLayerExtent();
+
+                    List<Double> bb = new ArrayList<Double>();
+                    for(int i=0;i<d.length;i++){
+                        bb.add(d[i]);
+                    }
+                    md.setBbox(bb);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }else{
+                //points
+                sbProcessUrl.append("/filtering/apply");
+                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+                sbProcessUrl.append("/samples/geojson");
+                sbProcessUrl.append("?area=").append(URLEncoder.encode(area,"UTF-8"));
+                String slist = getInfo(sbProcessUrl.toString());
+                //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
+                System.out.println("onMapSpecies: " + slist);
+                String [] results = slist.split("\n");
+                getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
             }
         } catch (Exception e) {
             e.printStackTrace();

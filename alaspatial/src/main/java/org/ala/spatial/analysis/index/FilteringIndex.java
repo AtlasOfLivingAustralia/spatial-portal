@@ -771,8 +771,8 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         double longitude_end = 154;
         double latitude_start = -44;//-44;
         double latitude_end = -9;
-        int height = 210; //210 42/210
-        int width = 252; //252
+        int height = 840; //210 42/210
+        int width = 1008; //252
 
         int i, j;
 

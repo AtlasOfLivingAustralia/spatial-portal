@@ -63,7 +63,7 @@ public class Indexing {
                     ldi.occurancesUpdate();
                 }else {
 
-                    
+
 			/* print usage */
 			String [] usage = {
 				"usage:",

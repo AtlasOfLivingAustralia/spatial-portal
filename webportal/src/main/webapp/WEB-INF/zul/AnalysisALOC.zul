@@ -53,7 +53,7 @@
                 </hbox>
                 <listbox sclass="envlist" id="lbListLayers" fixedLayout="false" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
                     <listhead sizable="true" >
-                        <listheader label="catagory"  />
+                        <listheader label="category"  />
                         <listheader label="name" />
                         <listheader label=" "  />
                         <listheader label=" " width="10px" />

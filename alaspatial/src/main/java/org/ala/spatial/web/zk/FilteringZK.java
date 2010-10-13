@@ -8,8 +8,8 @@ import java.awt.image.*;
 
 public class FilteringZK extends Window {
 
-	final int WIDTH = 252;
-	final int HEIGHT = 210;
+	final int WIDTH = 1008;
+	final int HEIGHT = 840;
 
 	// List _resorts = new ArrayList();
 	List _layers = new ArrayList();
