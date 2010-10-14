@@ -107,7 +107,7 @@ public class RemoteRequestServlet implements HttpRequestHandler {
 
                 // proxying should have already been setup in the System
                 // class by ConfigurationLoader
-                if (allowed(hostname) || true) {
+                if (allowed(hostname)) {
                     // ok - we are allowed to access this host, now
                     // we can grab the other parameters and append
                     // them to the url
