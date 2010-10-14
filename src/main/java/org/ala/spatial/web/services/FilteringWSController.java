@@ -163,11 +163,12 @@ public class FilteringWSController {
                     //CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
                     //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
                     //        String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
-                    CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
-                            String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
-                            String.valueOf(112), String.valueOf(-9));
-                    String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
-                    return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
+                    //CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
+                     //       String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
+                     //       String.valueOf(112), String.valueOf(-9));
+                    //String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
+                    //return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
+                    return file.getName();
                 }
             }
 
@@ -269,7 +270,7 @@ public class FilteringWSController {
 
                     //return file.getName();
 
-                    String filenamepart = file.getName();
+                    /*String filenamepart = file.getName();
                     filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf(".")); 
                     //CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
                     //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
@@ -279,6 +280,9 @@ public class FilteringWSController {
                             String.valueOf(112), String.valueOf(-9));
                     String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
                     return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
+                     * *
+                     */
+                    return file.getName();
                 }
             }
 
