@@ -333,12 +333,20 @@ public class MapLayerMetadata implements Serializable {
     double [] polygonToExtents(String polygon){
         try{
             double [] extents = new double[4];
-            String s = polygon.replace("POLYGON((", "").replace("))","").replace(","," ");
+            String s = polygon.replace("POLYGON((", "").replace("))","").replace(","," ").replace("MULTI(","").replace(")","").replace("(","");
             String [] sa = s.split(" ");
             double long1 = Double.parseDouble(sa[0]);
             double lat1 = Double.parseDouble(sa[1]);
-            double long2 = Double.parseDouble(sa[4]);
-            double lat2 = Double.parseDouble(sa[5]);
+            double long2 = Double.parseDouble(sa[0]);
+            double lat2 = Double.parseDouble(sa[1]);
+            for(int i=0;i<sa.length;i+=2){
+                double lng = Double.parseDouble(sa[i]);
+                double lat = Double.parseDouble(sa[i+1]);
+                if(lng < long1) long1 = lng;
+                if(lng > long2) long2 = lng;
+                if(lat < lat1) lat1 = lat;
+                if(lat > lat2) lat2 = lat;
+            }
             extents[0] = Math.min(long1,long2);
             extents[2] = Math.max(long1,long2);
             extents[1] = Math.min(lat1,lat2);

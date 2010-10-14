@@ -3269,7 +3269,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 continue;
             }
             System.out.println("checking reload layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS() + " -> type: " + ml.getType() + "," + ml.getGeometryType());
-            if (ml.getType() == LayerUtilitiesImpl.GEOJSON) {
+            if (ml.getType() == LayerUtilitiesImpl.GEOJSON
+                    && ml.getGeometryType() == GeoJSONUtilities.POINT
+                    && ml.getMapLayerMetadata() != null) {
                 if(ml.getGeoJSON() != null && ml.getGeoJSON().length() > 0){
                     //addGeoJSONLayer(ml.getName(), ml.getUri() + "?" + tbxReloadLayers.getValue(), "", true);
                     String baseuri = ml.getUri();
