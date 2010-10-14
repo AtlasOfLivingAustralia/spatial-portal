@@ -778,7 +778,7 @@ function showInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {    
+    $.get(proxy_script + "http://spatial.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {    
 
     $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
         var occinfo = data.occurrence;
@@ -926,7 +926,7 @@ function showClusterInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
+    $.get(proxy_script + "http://spatial.ala.org.au/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
 
     $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
 
@@ -1196,13 +1196,10 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
 }
 var myVector;
 function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncertain) {
-    //    alert(name);
     var in_options = {
         'internalProjection': map.baseLayer.projection,
         'externalProjection': new OpenLayers.Projection("EPSG:4326")
     };
-
-
     
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
@@ -1222,34 +1219,6 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     layer_style.fillOpacity = opacity;
     layer_style.szUncertain = szUncertain;
     layer_style.fontWeight = "bold";
-    
-   /*
-   var layer_style = new OpenLayers.Style({
-       pointRadius: "${radius}",
-       fillColor: hexColour,
-       fillOpacity: opacity,
-       strokeColor: hexColour,
-       lable: "${label}",
-       szUncertain: szUncertain
-   },{
-       context: {
-           radius: function (feature) {
-               return Math.min(feature.attributes["count"], 7) + 3;
-           },
-           lable: function (feature) {
-               var c = feature.attributes["count"];
-               return (c>1)?c:"";
-           }
-       }
-   });
-   var styleMap = new OpenLayers.StyleMap({
-       "default": layer_style,
-       "select": {
-           fillColor: "#8aeeef",
-           strokeColor: "#32a8a9"
-       }
-   });
-   */
 
     var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
     var vector_layer = new OpenLayers.Layer.Vector(name,{
@@ -1266,18 +1235,8 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     vector_layer.addFeatures(applyFeatureUncertainty(features, szUncertain));
 
     updateClusterStyles(vector_layer);
-
-    ////selectionLayers[selectionLayers.length] = vector_layer;
     vector_layer.events.register("featureselected", vector_layer, selected);
-    //selectControl = new OpenLayers.Control.SelectFeature(vector_layer);
-    //map.addControl(selectControl);
-    //selectControl.activate();
 
-    //setTimeout('setVectorLayersSelectable()',2000);
-
-    //addToSelectControl(vector_layer);
-
-    // need to do it this way due to passing an object.. closures :)
     window.setTimeout(function(){
         //addToSelectControl(vector_layer);
         setVectorLayersSelectable();
@@ -2495,7 +2454,7 @@ function updateClusterStyles(layer){
     var rgb = c.split(",");
     var v = 1 - ((rgb[0]*2 + rgb[1]*4 + rgb[2]*1) / (255*7.0));
     for(var j=0;j<f.length;j++){
-        if(f[j].geometry.toString().indexOf('POI') == 0) {
+        if(f[j].geometry.toString() != null && f[j].geometry.toString().indexOf('POI') == 0) {
             //apply density for clusters
             var d = f[j].attributes['density']
             if(d != undefined){

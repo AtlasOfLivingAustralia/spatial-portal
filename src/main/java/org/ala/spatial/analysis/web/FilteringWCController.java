@@ -313,8 +313,7 @@ public class FilteringWCController extends UtilityComposer {
 
         getInfo(sbProcessUrl.toString());
 
-        mc.removeLayer(label);
-        //mc.getOpenLayersJavascript().removeMapLayerNow(mc.getMapLayer(label));
+        mc.removeLayer(getSPLFilter(label).layer.display_name);
 
         selectedLayers.remove(label);
 
@@ -412,7 +411,7 @@ public class FilteringWCController extends UtilityComposer {
         popup_cell = lc;
         popup_item = li;
 
-        label_continous.setValue("edit filter: " + layername);
+        label_continous.setValue("edit envelope for: " + getSPLFilter(layername).layer.display_name);
         String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
         popup_range.setValue(csv);
 
@@ -425,7 +424,7 @@ public class FilteringWCController extends UtilityComposer {
         int mincursor = (int) ((popup_filter.minimum_value - popup_filter.minimum_initial)
                 / (range) * 100);
 
-        doApplyFilter(pid, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
+        doApplyFilter(pid, getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
 
         popup_slider_min.setCurpos(mincursor);
         popup_slider_max.setCurpos(maxcursor);
@@ -443,9 +442,7 @@ public class FilteringWCController extends UtilityComposer {
         popup_cell = lc;
         popup_item = li;
 
-
-
-        label_continous.setValue("edit filter: " + layername);
+        label_continous.setValue("edit envelope for: " + getSPLFilter(layername).layer.display_name);
 
         String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
         popup_range.setValue(csv);
@@ -459,7 +456,7 @@ public class FilteringWCController extends UtilityComposer {
         int mincursor = (int) ((popup_filter.minimum_value - popup_filter.minimum_initial)
                 / (range) * 100);
 
-        doApplyFilter(pid, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
+        doApplyFilter(pid, getSPLFilter(layername).layer.display_name, layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), false);
 
         popup_slider_min.setCurpos(mincursor);
         popup_slider_max.setCurpos(maxcursor);
@@ -468,10 +465,10 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     private void serverFilter(boolean commit) {
-        doApplyFilter(pid, popup_filter.layer.display_name, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
+        doApplyFilter(pid, popup_filter.layer.display_name, popup_filter.layername, "environmental", Double.toString(popup_filter.minimum_value), Double.toString(popup_filter.maximum_value), commit);
     }
 
-    private void doApplyFilter(String pid, String layername, String type, String val1, String val2, boolean commit) {
+    private void doApplyFilter(String pid, String layerdisplayname, String layername, String type, String val1, String val2, boolean commit) {
         try {
             String urlPart = "";
             if (commit) {
@@ -487,7 +484,7 @@ public class FilteringWCController extends UtilityComposer {
             urlPart += "/depth/" + lbSelLayers.getItemCount();
 
             String imagefilepath = getInfo(urlPart);
-            loadMap(imagefilepath);
+            loadMap(imagefilepath, layerdisplayname);
         } catch (Exception e) {
             //TODO: error message
             e.printStackTrace(System.out);
@@ -645,9 +642,9 @@ public class FilteringWCController extends UtilityComposer {
         return null;
     }
 
-    private void loadMap(String filename) {
-        String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
-        label = selectedLayers.get(selectedLayers.size() - 1);
+    private void loadMap(String filename, String layername) {
+        //String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
+        //label = selectedLayers.get(selectedLayers.size() - 1);
         String uri = satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
         float opacity = Float.parseFloat("0.75");
 
@@ -661,7 +658,7 @@ public class FilteringWCController extends UtilityComposer {
         //bbox.add(17143201.58216413);
         //bbox.add(-1006021.0627551343);
 
-        mc.addImageLayer(pid, label, uri, opacity, bbox);
+        mc.addImageLayer(pid, layername, uri, opacity, bbox);
 
     }
 
@@ -697,7 +694,7 @@ public class FilteringWCController extends UtilityComposer {
         String layer = layersUtil.getFirstEnvLayer();
 
         if (layer != null) {
-            doAdd(layer + " (Terrestrial)");
+         //   doAdd(layer);
         }
     }
 }

@@ -228,8 +228,8 @@ public class MaxentWCController extends UtilityComposer {
                 tabboxmaxent.setSelectedIndex(1);
                 return;
             }
-            if(lbListLayers.getSelectedCount() > 100){
-                Messagebox.show(lbListLayers.getSelectedCount() + " layers selected.  Please select fewer than 100 environmental layers in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+            if(lbListLayers.getSelectedCount() > 50){
+                Messagebox.show(lbListLayers.getSelectedCount() + " layers selected.  Please select fewer than 50 environmental layers in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 tabboxmaxent.setSelectedIndex(1);
                 return;
             }
@@ -433,6 +433,10 @@ public class MaxentWCController extends UtilityComposer {
 
         infourl.setValue("/output/maxent/" + pid + "/species.html");
         btnInfo.setVisible(true);*/
+    }
+
+     public void onClick$btnClearSelection(Event event){
+        lbListLayers.clearSelection();
     }
 
     public void onClick$btnInfo(Event event) {
@@ -659,5 +663,7 @@ public class MaxentWCController extends UtilityComposer {
             useArea.setChecked(false);
         }
         previousArea = currentArea;*/
+
+        lbListLayers.updateDistances();
     }
 }

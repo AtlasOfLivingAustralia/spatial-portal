@@ -36,8 +36,8 @@ public class SpeciesAutoComplete extends Combobox {
     private static final String SAT_URL = "sat_url";
     //private static final String cnUrl = "data.ala.org.au";
     //private static final String commonSearch = "/search/commonNames/";
-    private String cnUrl = "http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=_query_";
-    private String satServer = "http://spatial-dev.ala.org.au"; // http://localhost:8080
+    private String cnUrl = null;//"http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=_query_";
+    private String satServer = null; // http://localhost:8080
     private boolean bSearchCommon = false;
     private SettingsSupplementary settingsSupplementary = null;
 

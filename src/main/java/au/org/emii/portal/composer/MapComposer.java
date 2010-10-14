@@ -1447,6 +1447,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (safeToPerformMapAction()) {
             if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
                 MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
+                String geoserver = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
+                uri = geoserver + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=" + mapLayer.getLayer();
+                mapLayer.setDefaultStyleLegendUri(uri);
                 if (mapLayer == null) {
                     // fail
                     errorMessageBrokenWMSLayer(imageTester);
@@ -2783,7 +2786,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public MapLayer addGeoJSON(String labelValue, String uriValue) {
         if (safeToPerformMapAction()) {
 
-            return this.addGeoJSONLayer(labelValue, uriValue);
+            return this.addGeoJSONLayer(labelValue, uriValue, false);
 
         } else {
             return null;
@@ -2831,7 +2834,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (safeToPerformMapAction()) {
             //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
             if (getMapLayer(label) == null) {
-                mapLayer = remoteMap.createGeoJSONLayer(label, uri);
+                mapLayer = remoteMap.createGeoJSONLayer(label, uri, false);
                 if (mapLayer == null) {
                     // fail
                     //hide error, might be clustering zoom in; showMessage("No mappable features available");
@@ -2863,11 +2866,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return mapLayer;
     }
 
-    public MapLayer addGeoJSONLayer(String label, String uri) {
-        return addGeoJSONLayer(label, uri, "", false);
+    public MapLayer addGeoJSONLayer(String label, String uri, boolean points_type) {
+        return addGeoJSONLayer(label, uri, "", false, points_type);
     }
 
-    public MapLayer addGeoJSONLayer(String label, String uri, String params, boolean forceReload) {
+    public MapLayer addGeoJSONLayer(String label, String uri, String params, boolean forceReload, boolean points_type) {
         MapLayer mapLayer = null;
 
         if (safeToPerformMapAction()) {
@@ -2878,7 +2881,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     openLayersJavascript.setAdditionalScript(
                             openLayersJavascript.removeMapLayer(gjLayer));
                 } //else {
-                mapLayer = remoteMap.createGeoJSONLayer(label, uri);
+                mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type);
                 if (mapLayer == null) {
                     // fail
                     //hide error, might be clustering zoom in; showMessage("No mappable features available");
@@ -2899,7 +2902,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else {
                 //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
                 if (getMapLayer(label) == null) {
-                    mapLayer = remoteMap.createGeoJSONLayer(label, uri);
+                    mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type);
                     if (mapLayer == null) {
                         // fail
                         //hide error, might be clustering zoom in; showMessage("No mappable features available");
@@ -3627,7 +3630,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             sbProcessUrl.append("/now");
             sbProcessUrl.append("?z=").append(String.valueOf(mapZoomLevel));
             sbProcessUrl.append("&m=").append(String.valueOf(8));
-            MapLayer ml = addGeoJSONLayer(species, satServer + "/alaspatial/" + sbProcessUrl.toString());
+            MapLayer ml = addGeoJSONLayer(species, satServer + "/alaspatial/" + sbProcessUrl.toString(), true);
 
             if(ml != null){
                 String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", lsid);

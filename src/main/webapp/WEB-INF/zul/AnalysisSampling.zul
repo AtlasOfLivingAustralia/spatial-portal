@@ -50,6 +50,7 @@
                     </listhead>
 
                 </listbox -->
+                <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
                 <listbox sclass="ctxenvlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
                     <listhead sizable="true" >
                         <listheader label="category"  />

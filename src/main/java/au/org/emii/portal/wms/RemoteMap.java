@@ -49,7 +49,7 @@ public interface RemoteMap {
 
     MapLayer createAndTestWMSLayer(String label, String uri, float opacity, boolean queryable);
 
-    MapLayer createGeoJSONLayer(String label, String uri);
+    MapLayer createGeoJSONLayer(String label, String uri, boolean points_type);
 
     String getJson(String uri);
 

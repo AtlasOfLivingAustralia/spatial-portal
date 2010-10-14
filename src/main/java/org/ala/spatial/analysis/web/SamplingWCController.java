@@ -125,6 +125,10 @@ public class SamplingWCController extends UtilityComposer {
         }
     }
 
+    public void onClick$btnClearSelection(Event event){
+        lbListLayers.clearSelection();
+    }
+
     private void showLayerExtents(Object o) {
         Listcell lc = (Listcell) o;
 
@@ -814,5 +818,7 @@ public class SamplingWCController extends UtilityComposer {
         useArea.setChecked(false);
         }
         previousArea = currentArea;*/
+
+        lbListLayers.updateDistances();
     }
 }

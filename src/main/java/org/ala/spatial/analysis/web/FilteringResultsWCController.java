@@ -410,7 +410,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 sbProcessUrl.append("?z=").append(String.valueOf(getMapComposer().getMapZoom()));
                 sbProcessUrl.append("&a=").append(URLEncoder.encode(md.getLayerExtentString(),"UTF-8"));
                 sbProcessUrl.append("&m=").append(String.valueOf(8));
-                MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString());
+                MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString(), true);
 
                 if(ml.getMapLayerMetadata() == null){
                     ml.setMapLayerMetadata(new MapLayerMetadata());
