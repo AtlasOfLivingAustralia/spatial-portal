@@ -1444,9 +1444,9 @@ if not csv, then tab delimited
         <password>password</password>
     </geoserver>
 
-    <geoserver_url>http://ec2-175-41-187-11.ap-southeast-1.compute.amazonaws.com/geoserver</geoserver_url>
+    <geoserver_url>http://spatial.ala.org.au/geoserver</geoserver_url>
     <geoserver_username>admin</geoserver_username>
-    <geoserver_password>password</geoserver_password>
+    <geoserver_password>at1as0f0z</geoserver_password>
 
     <gdal_apps_dir>c:\progra~2\fwtool~1.7\bin\</gdal_apps_dir>
     <!--gdal_apps_dir>/mnt/utils/gdal-1.7.2/apps/</gdal_apps_dir-->

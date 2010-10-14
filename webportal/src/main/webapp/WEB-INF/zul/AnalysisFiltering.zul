@@ -51,7 +51,7 @@
     </panel>
 
     <window id="filteringwindow" apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController">
-        <style>
+        <!-- style>
             .z-loading {
             top: 50% !important;
             left: 45% !important;
@@ -62,7 +62,7 @@
             white-space: normal;
             width: 70px;
             }
-        </style>
+        </style -->
 
         <!--div sclass="highlighted">
             <vbox>
@@ -72,7 +72,7 @@
         </div -->
         <div>
             <vbox>
-                <label value="Enter a layer name or a keyword" />
+                <label value="Add a layer: Enter a layer name or a keyword" />
                 <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" >
                     <comboitem label=""/>
                 </combobox>
@@ -80,13 +80,12 @@
             </vbox>
         </div>
 
-        <div>
-            <label value="Active filter" />
+        <div>           
             <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" vflex="true">
                 <listhead sizable="true">
                     <listheader label="Layer" width="40%" ></listheader>
                     <listheader>
-                        <label value="Filter range" width="40%"></label>
+                        <label value="Envelope extent" width="40%"></label>
                     </listheader>
                     <listheader width="20%">
                         <vbox>
@@ -98,16 +97,15 @@
 
                 <listfoot>
                     <listfooter span="3">
-                        <div id="popup_continous" visible="false" width="90%" sclass="highlighted">
+                        <div id="popup_continous" visible="false" width="100%" >
 
                             <label sclass="word-wrap"
                                    style="white-space: normal; font-weight:bold"
-                                   value="edit filter for this layer" id="label_continous"
-                                   multiline="true"/>
-                            <div style="float: right"><button label="remove this layer" id="remove_continous"/> </div>
-
-                            <separator sclass="hr" height="2px" />
-                            <vbox><label value="full range"/><label id="popup_range"/>
+                                   value="edit envelope for this layer" id="label_continous"
+                                   multiline="true"/>                            
+                            
+                            <vbox width="100%">
+                                <hbox><label value="Full layer extent"/><label id="popup_range"/></hbox>
                                 <hbox>
                                     <slider id="popup_slider_min" slidingtext="">
                                     </slider>
@@ -121,16 +119,22 @@
                                     <textbox id="popup_idx" width="1px" visible="false"></textbox>
                                 </hbox>
                                 <hbox>
-                                    <div style="float: right"><button label="Apply filter" id="apply_continous"/></div>
+                                    <button label="Update species count" id="apply_continous" sclass="goButton" />
+                                    <button label="Remove" id="remove_continous" sclass="goButton" />
                                     <button label="preview results" id="preview_continous" visible="false"/>
                                 </hbox>
                             </vbox>
                         </div>
-
                     </listfooter>
                 </listfoot>
             </listbox>
-        </div>
-        <div style="float: right" width="95%"><button label="Done" id="filter_done"/></div>
+            <separator />
+            <separator />
+            <div align="left"><button label="Use this envelope as the Active Area" id="filter_done" sclass="goButton"/></div>
+            <separator />
+            <separator />
+            <separator bar="true" />
+            <separator />
+        </div>        
     </window>
 </zk>

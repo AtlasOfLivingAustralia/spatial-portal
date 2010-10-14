@@ -90,11 +90,15 @@ public class ALOCWCController extends UtilityComposer {
         }
     }
 
+    public void onClick$btnClearSelection(Event event){
+        lbListLayers.clearSelection();
+    }
+
     public void runclassification() {
         try {
             StringBuffer sbenvsel = new StringBuffer();
             String[] selectedLayers = lbListLayers.getSelectedLayers();
-            if (selectedLayers.length > 1 && selectedLayers.length <= 100) {
+            if (selectedLayers.length > 1 && selectedLayers.length <= 50) {
                 int i = 0;
                 for (i = 0; i < selectedLayers.length; i++) {
                     sbenvsel.append(selectedLayers[i]);
@@ -106,7 +110,7 @@ public class ALOCWCController extends UtilityComposer {
                 if (selectedLayers.length <= 0) {
                     Messagebox.show("Please select two or more environmental layers in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 } else {
-                    Messagebox.show(selectedLayers.length + " layers selected.  Please select fewer than 100 environmental layers in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                    Messagebox.show(selectedLayers.length + " layers selected.  Please select fewer than 50 environmental layers in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 }
                 //highlight step 1
                 tabboxclassification.setSelectedIndex(0);
@@ -236,7 +240,8 @@ public class ALOCWCController extends UtilityComposer {
         /* set as selected each envctx layer found */
         if (layers != null) {
             lbListLayers.selectLayers(layers);
-        }     
+        }
+        lbListLayers.updateDistances();
     }
 
     double[] getExtents() {

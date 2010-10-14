@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.spatial.analysis.cluster.SpatialCluster3;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
@@ -799,8 +800,8 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
         /* process all layers */
         for (i = 0; i < size; i++) {
-            makeScaledShortImageFromGrid(all_layers[i], longitude_start, longitude_end, latitude_start, latitude_end, width, height);
-            //makeScaledShortImageFromGridToMetresGrid(all_layers[i], longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+            //makeScaledShortImageFromGrid(all_layers[i], longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+            makeScaledShortImageFromGridToMetresGrid(all_layers[i], longitude_start, longitude_end, latitude_start, latitude_end, width, height);
             i++;
         }
     }
@@ -1058,25 +1059,27 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         /* make points to interrogate */
         double[][] points = new double[longitude_steps * latitude_steps][2];
 
-        //TODO: fix projection test
-        double[] latproj = {-9, -13.75, -18.56, -23.505, -28.45, -32.595, -36.74, -40.64, -44};
+        //get latproj and longproj between display projection and data projection
+        SpatialCluster3 sc = new SpatialCluster3();
+        int [] px_boundary = new int[4];
+        px_boundary[0] = sc.convertLngToPixel(longitude_start);
+        px_boundary[2] = sc.convertLngToPixel(longitude_end);
+        px_boundary[1] = sc.convertLngToPixel(latitude_start);
+        px_boundary[3] = sc.convertLngToPixel(latitude_end);
 
-        int[] pixel_proj = {0, latitude_steps * 1 / 8, latitude_steps * 2 / 8, latitude_steps * 3 / 8, latitude_steps * 4 / 8, latitude_steps * 5 / 8, latitude_steps * 6 / 8, latitude_steps * 7 / 8, latitude_steps};
-
-        int latidx = 0;
+        double [] latproj = new double[latitude_steps];
+        double [] longproj = new double[longitude_steps];
+        for(int i=0;i<latproj.length;i++){
+            latproj[i] = sc.convertPixelToLat((int)(px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) latproj.length)));
+        }
+        for(int i=0;i<longproj.length;i++){
+            longproj[i] = sc.convertPixelToLng((int)(px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) longproj.length)));
+        }     
 
         for (int j = 0; j < latitude_steps; j++) {
             for (int i = 0; i < longitude_steps; i++) {
-                points[j * longitude_steps + i][0] = longitude_start
-                        + i / (double) (longitude_steps - 1) * (longitude_end - longitude_start);
-
-                //project latitude
-                if (latidx < 7 && j >= pixel_proj[latidx]) {
-                    latidx++;
-                }
-                points[j * longitude_steps + i][1] = latproj[latidx]
-                        - (pixel_proj[latidx] - j) / (double) (latitude_steps / 8 - 1)
-                        * (latproj[latidx + 1] - latproj[latidx]);
+                points[j * longitude_steps + i][0] = longproj[i];
+                points[j * longitude_steps + i][1] = latproj[j];
             }
         }
 

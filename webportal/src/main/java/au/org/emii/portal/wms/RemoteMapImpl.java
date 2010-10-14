@@ -311,7 +311,7 @@ public class RemoteMapImpl implements RemoteMap {
 
     }
 
-    public MapLayer createGeoJSONLayer(String label, String uri) {
+    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type) {
         MapLayer geoJSON = new MapLayer();
 
         geoJSON.setName(label);
@@ -359,44 +359,38 @@ public class RemoteMapImpl implements RemoteMap {
        
         geoJSON.setGeoJSON(geoJSONUtilities.getJson(uri));
 
-        //lets parse the json to find out what type of feature it is
-        JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
-        int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
-
-        // set the metadata
-        // first check if its a species by looking for
-        // 'taxonconceptid'
-        /*
-        if (jo.containsKey("taxonconceptid")) {
-        System.out.println("species.metadata");
-        jo.
-        }
-        geoJSON.getMapLayerMetadata().setMoreInfo("");
-         *
-         */
         if (geoJSON.getMapLayerMetadata() == null) {
             geoJSON.setMapLayerMetadata(new MapLayerMetadata());
         }
 
-        //do this at the add level
-        //String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);
-        //if (!taxonconceptid.equals("")) {
-        //    System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
-        //    geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid + "\n" + label);
-        //} else {
-        //    System.out.println("not species");
-        //    geoJSON.getMapLayerMetadata().setMoreInfo("");
-        //}
-
-        //skip checking since initial geojson may be empty (restricted by view extent)
-        //if (geomTypeCheck >= 0) {
+        if(points_type){
             geoJSON.setGeometryType(geoJSONUtilities.POINT);    //for clustering only
             geoJSON.setQueryable(true);
             geoJSON.setDynamicStyle(true);
-        //} else {
-//            geoJSON = null;
-  //      }
+        }else{
+            //lets parse the json to find out what type of feature it is
+            JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
+            int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
 
+            //do this at the add level
+            //String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);
+            //if (!taxonconceptid.equals("")) {
+            //    System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
+             //   geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid + "\n" + label);
+            //} else {
+                System.out.println("not species");
+                geoJSON.getMapLayerMetadata().setMoreInfo("");
+            //}
+
+            //skip checking since initial geojson may be empty (restricted by view extent)
+            if (geomTypeCheck >= 0) {
+                geoJSON.setGeometryType(geomTypeCheck);
+                geoJSON.setQueryable(true);
+                geoJSON.setDynamicStyle(true);
+            } else {
+                geoJSON = null;
+            }
+        }
         return geoJSON;
     }
 
