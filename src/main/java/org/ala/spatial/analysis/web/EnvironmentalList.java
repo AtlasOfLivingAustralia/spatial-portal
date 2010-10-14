@@ -45,6 +45,7 @@ public class EnvironmentalList extends Listbox {
                 distances = CommonData.getDistances();
                 layerNames = CommonData.getLayerNamesEnv();
             } else {
+                distances = null;
                 listEntries = CommonData.getListEntriesAll();
                 layerNames = CommonData.getLayerNamesAll();
             }
@@ -117,6 +118,9 @@ public class EnvironmentalList extends Listbox {
     }
 
     public void updateDistances() {
+        if(distances == null)
+            return;
+        
         for (ListEntry le : listEntries) {
             le.value = 1;
         }
