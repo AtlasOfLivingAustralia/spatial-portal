@@ -608,6 +608,9 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     visibility : hidden;
 }
 
+.olFramedCloudPopupContent {
+    height: 250px;
+}
 
 
 

@@ -186,8 +186,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                         + ".transform("
                         + "  new OpenLayers.Projection('EPSG:4326'),"
                         + "  map.getProjectionObject()));";
-            } 
-            else {
+            } else {
 
                 script = "window.mapFrame.loadBaseMap();";
             }
@@ -274,7 +273,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + // register for loading images...
                 "registerLayer(mapLayers['" + mapLayer.getUniqueIdJS() + "']);";
 
-              
+
 
         return wrapWithSafeToProceed(script);
 
@@ -479,9 +478,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 break;
             case LayerUtilitiesImpl.GEOJSON:
                 //script.append("window.mapFrame.addJsonFeatureToMap('" + mapLayer.getGeoJSON() + "', '" + mapLayer.getName() + "')");
-                if(alternativeScript && mapLayer.getMapLayerMetadata().getPartsCount() > 0){
+                if (alternativeScript && mapLayer.getMapLayerMetadata().getPartsCount() > 0) {
                     script.append("window.mapFrame.drawFeaturesGeoJsonUrl('" + mapLayer.getUri() + "'," + mapLayer.getMapLayerMetadata().getPartsCount() + ", '" + mapLayer.getName() + "','" + mapLayer.getEnvColour() + "', " + mapLayer.getOpacity() + "," + mapLayer.getSizeVal() + "," + mapLayer.getSizeUncertain() + ")");
-                }else{
+                } else {
                     script.append(defineGeoJSONMapLayer(mapLayer));
                 }
                 okToAddLayer = true;
@@ -538,7 +537,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
         String test = wrapWithSafeToProceed(getAdditionalScript() + script.toString());
-             //   System.out.println("EXECUTING - " + test);
+        //   System.out.println("EXECUTING - " + test);
 
         return wrapWithSafeToProceed(getAdditionalScript() + script.toString());
     }
@@ -578,9 +577,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
     public void redrawFeatures(MapLayer selectedLayer) {
         String script;
-        if(selectedLayer.getGeoJSON() == null || selectedLayer.getGeoJSON().length() == 0){
+        if (selectedLayer.getGeoJSON() == null || selectedLayer.getGeoJSON().length() == 0) {
             script = "window.mapFrame.redrawFeaturesGeoJsonUrl('" + selectedLayer.getUri() + "'," + selectedLayer.getMapLayerMetadata().getPartsCount() + ", '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
-        }else {
+        } else {
             script = "window.mapFrame.redrawFeatures('" + selectedLayer.getGeoJSON() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + "," + selectedLayer.getSizeUncertain() + ")";
         }
         //String script = "window.mapFrame.redrawUrlFeatures('" + selectedLayer.getUri() + "', '" + selectedLayer.getName() + "','" + selectedLayer.getEnvColour() + "', " + selectedLayer.getOpacity() + "," + selectedLayer.getSizeVal() + ")";
@@ -612,13 +611,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
          */
 
         String script;
-        if(layer.getGeoJSON() != null && layer.getGeoJSON().length() > 0){
+        if (layer.getGeoJSON() != null && layer.getGeoJSON().length() > 0) {
             script = ""
-                + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");"
-                + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
-                + "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);"
-                ;
-        }else{
+                    + "var vector_layer = window.mapFrame.addJsonFeatureToMap('" + layer.getGeoJSON() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");"
+                    + "mapLayers['" + layer.getUniqueIdJS() + "'] = vector_layer;"
+                    + "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+        } else {
             script = "window.mapFrame.addJsonUrlToMap('" + layer.getUri() + "','" + layer.getNameJS() + "','" + layer.getEnvColour() + "'," + layer.getSizeVal() + ", " + layer.getOpacity() + "," + layer.getSizeUncertain() + ");";
         }
 
@@ -701,14 +699,24 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
         //extend to add ogc filter
-         List<Double> bbox =  layerUtilities.getBBoxIndex(layer.getUri());
-        layer.getMapLayerMetadata().setBbox(bbox);
+        List<Double> bbox = layerUtilities.getBBoxIndex(layer.getUri());
+        if (bbox == null) {
+            bbox = new ArrayList(4);
+            double[] box = layer.getMapLayerMetadata().getLayerExtent();
+            bbox.add(box[0]);
+            bbox.add(box[1]);
+            bbox.add(box[2]);
+            bbox.add(box[3]);
+        }
+        if (bbox != null && layer.getMapLayerMetadata() != null) {
+            layer.getMapLayerMetadata().setBbox(bbox);
+        }
+        
         String script =
                 "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS("
                 + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS().replace("\\/gwc\\/service","")/*.replace("wms?service=WMS&version=1.1.0&request=GetMap&","wms\\/reflect?")*/ + "', "
+                + "		'" + layer.getUriJS().replace("\\/gwc\\/service", "")/*.replace("wms?service=WMS&version=1.1.0&request=GetMap&","wms\\/reflect?")*/ + "', "
                 + "		{"
-         
                 + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
@@ -717,11 +725,11 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + wmsVersionDeclaration(layer) + //","
                 "		}, "
                 + "		{ "
-                + "             " + "maxExtent: (new OpenLayers.Bounds("+bbox.get(0) +","+bbox.get(1)+","+bbox.get(2) + "," + bbox.get(3) +")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
+                + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
                 + "			isBaseLayer: " + layer.isBaseLayer() + ", "
                 + "			opacity: " + layer.getOpacity() + ", "
                 + "			queryable: " + layer.isQueryable() + ", "
-//                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
+                //                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
                 + "			gutter: " + gutter + ", "
                 + "			wrapDateLine: false"
                 + "		}  "
@@ -748,7 +756,6 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         return wrapWithSafeToProceed(script);
     }
 
-    
     /**
      * Return a String to decorate a layer declaration with
      * metadata fields if the layer supports it.  If the layer
@@ -846,12 +853,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
      */
     @Override
     public String reloadMapLayer(MapLayer mapLayer) {
-        if(mapLayer.getGeoJSON() == null && mapLayer.getType() == LayerUtilitiesImpl.GEOJSON){
+        if (mapLayer.getGeoJSON() == null && mapLayer.getType() == LayerUtilitiesImpl.GEOJSON) {
             return removeMapLayer(mapLayer)
-                + activateMapLayer(mapLayer, false, true);
-        }else {
+                    + activateMapLayer(mapLayer, false, true);
+        } else {
             return removeMapLayer(mapLayer)
-                + activateMapLayer(mapLayer);
+                    + activateMapLayer(mapLayer);
         }
 
     }

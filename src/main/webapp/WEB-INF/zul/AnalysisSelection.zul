@@ -119,6 +119,7 @@ An area can be defined by any of the options below. Once defined, the area can b
         </div>
 
         <textbox id="searchPoint" visible="false"/>
+        <textbox id="searchSpeciesPoint" visible="false"/>
         <textbox id="selectionGeom" visible="false"/>
         <textbox id="boxGeom" visible="false"/>
         <script type="text/javascript">
@@ -140,6 +141,27 @@ An area can be defined by any of the options below. Once defined, the area can b
                 } else if (document.createEventObject) {
                     tbxSearchPoint.fireEvent('onblur');
                     tbxSearchPoint.fireEvent('onchange');
+                }
+            }
+
+            function setSpeciesSearchPointAnalysis(point) {
+                // transform the point from Google Projection to EPSG:4326
+                var mapObj = window.frames.mapFrame.map;
+                point.transform(mapObj.projection, mapObj.displayProjection);
+                var tbxSpeciesSearchPoint = $e('${searchSpeciesPoint.uuid}');
+                tbxSpeciesSearchPoint.value = point.lon + "," + point.lat;
+
+                if (document.createEvent) {
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent( 'blur', false, false);
+                    tbxSpeciesSearchPoint.dispatchEvent(evt);
+
+                    var evt2 = document.createEvent('HTMLEvents');
+                    evt2.initEvent( 'change', false, false);
+                    tbxSpeciesSearchPoint.dispatchEvent(evt2);
+                } else if (document.createEventObject) {
+                    tbxSpeciesSearchPoint.fireEvent('onblur');
+                    tbxSpeciesSearchPoint.fireEvent('onchange');
                 }
             }
 

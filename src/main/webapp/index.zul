@@ -107,6 +107,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 }
             }
 
+             function setSpeciesSearchPoint(lonlat) {
+                if (setSpeciesSearchPointAnalysis != undefined) {
+                    setSpeciesSearchPointAnalysis(lonlat)
+                }
+            }
+
             function setExtent() {
 
 
@@ -1142,6 +1148,9 @@ function changeBaseLayer(type) {
     }
 }
 
+function showSpeciesInfo(occids, lon, lat) {
+    window.mapFrame.showSpeciesInfo(occids, lon, lat); 
+}
            
 
 
