@@ -43,7 +43,7 @@ var currentBaseLayer = null;
 var selectionLayers = new Array();
 
 var mapClickControl;
-var polygonControl = null;
+var polyControl = null;
 var radiusControl = null;  //for deactivate after drawing
 var boxControl = null;	//for deactivate after drawing
 var areaSelectControl = null;
@@ -345,7 +345,7 @@ function buildMapReal() {
 
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
-        //parent.reloadSpecies();
+        parent.reloadSpecies();
         Event.stop(e);
     });
 
@@ -427,6 +427,11 @@ function createBoxDrawingTool() {
         style : layer_style
     });
 
+    if(mapControl != null){
+        map.removeControl(mapControl);
+        boxControl.destroy();
+        boxControl = null;
+    }
     boxControl = new OpenLayers.Control.DrawFeature(boxLayer,OpenLayers.Handler.Box,{
         'featureAdded':regionAdded,
         'displayClass':"olControlDrawFeatureItemActive"
@@ -470,6 +475,8 @@ function addFeatureSelectionTool() {
     //    areaSelectControl.activate();
     removeAreaSelection();
     areaSelectOn = true;
+    mapClickControl = null;
+    
     //    clickEventHandler = new OpenLayers.Handler.Click({
     //        'map': map
     //    }, {
@@ -482,6 +489,7 @@ function addFeatureSelectionTool() {
     //    clickEventHandler.fallThrough = false;
     //    alert("here");
 
+/*
     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
         defaultHandlerOptions: {
             'single': true,
@@ -519,6 +527,8 @@ function addFeatureSelectionTool() {
     });
     featureSelectLayer.setVisibility(true);
     map.addLayer(featureSelectLayer);
+
+    */
 }
 
 function pointSearch(e) {
@@ -613,6 +623,12 @@ function addRadiusDrawingTool() {
     });
     radiusLayer.setVisibility(true);
     map.addLayer(radiusLayer);
+
+    if(radiusControl != null){
+        map.removeControl(radiusControl);
+        radiusControl.destroy();
+        radiusControl = null;
+    }
     radiusControl = new OpenLayers.Control.DrawFeature(radiusLayer,OpenLayers.Handler.RegularPolygon,{
         'featureAdded':radiusAdded,
         handlerOptions:radiusOptions
@@ -627,12 +643,17 @@ function addPolygonDrawingTool() {
     var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = "red";
     layer_style.strokeColor = "red";	
-	
+
     polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer", {
         style: layer_style
     });
     polygonLayer.setVisibility(true);
     map.addLayer(polygonLayer);
+    if(polyControl != null){
+        map.removeControl(polyControl);
+        polyControl.destroy();
+        polyControl = null;
+    }
     polyControl = new OpenLayers.Control.DrawFeature(polygonLayer,OpenLayers.Handler.Polygon,{
         'featureAdded':polygonAdded
     });
@@ -698,7 +719,7 @@ function removeAreaSelection() {
     if(boxLayer != null) {
         boxLayer.destroy();
         boxLayer = null;
-        boxControl.deactivate();
+        boxControl.deactivate();        
     }
     if(radiusLayer != null){
         radiusLayer.destroy();
@@ -767,12 +788,13 @@ function addBoxDrawingTool() {
 
 function featureSelected(feature) {
     //alert(feature.geometry.CLASS_NAME)
-   
-    areaSelectOn = false;
-    setVectorLayersSelectable();
-    parent.setPolygonGeometry(feature.geometry.components[0]);
 
+    //parent.setPolygonGeometry(feature.geometry.components[0]);
+    parent.setLayerGeometry(feature.layer.name);
+    areaSelectOn = false;    
     removeAreaSelection();
+    setVectorLayersSelectable();
+    
 
 // featureSelectLayer.addFeatures([new OpenLayers.Feature.Vector(feature.geometry)]);
 //  polygonAddedGlobal(new OpenLayers.Feature.Vector(feature.geometry));
@@ -785,8 +807,7 @@ function featureSelected(feature) {
 function radiusAdded(feature) {
     
     removeAreaSelection();
-    // addWKTFeatureToMap(feature.geometry,"Test",'blue');
-    radiusControl.deactivate();
+    // addWKTFeatureToMap(feature.geometry,"Test",'blue');    
     setVectorLayersSelectable();
     parent.setPolygonGeometry(feature.geometry);
 }
@@ -809,8 +830,7 @@ function regionAdded(feature) {
     //    });
     //    boxLayer.setVisibility(true);
     //    map.addLayer(boxLayer);
-    //    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);
-    boxControl.deactivate();
+    //    boxLayer.addFeatures([new OpenLayers.Feature.Vector(geoBounds.toGeometry())]);    
     setVectorLayersSelectable();
     parent.setRegionGeometry(geoBounds.toGeometry());
 
@@ -822,10 +842,7 @@ function regionAdded(feature) {
 function polygonAdded(feature) {
     removeAreaSelection();
     parent.setPolygonGeometry(feature.geometry);
-   
-    polyControl.deactivate();
     setVectorLayersSelectable();
-  
 }
 //// Copy for Sampling, ALOC, Filtering, This function passes the geometry up to javascript in index.zul which can then send it to the server.
 //function polygonAddedSampling(feature) {
@@ -844,6 +861,12 @@ function polygonAdded(feature) {
 function setVectorLayersSelectable() {
     try {
         var layersV = map.getLayersByClass('OpenLayers.Layer.Vector');
+        if(selectControl != null){
+            selectControl.deactivate();
+            map.removeControl(selectControl);
+            selectControl.destroy();
+            selectControl = null;
+        }
         selectControl = new OpenLayers.Control.SelectFeature(layersV);
         map.addControl(selectControl);
         selectControl.activate();
@@ -1128,7 +1151,9 @@ function selected (evt) {
     currFeature = feature; 
     
     if (areaSelectOn) {
+        currFeature = null;
         featureSelected(feature);
+        return;
     }
     else {
         //test to see if its occurrence data
@@ -1347,6 +1372,8 @@ function addJsonFeatureToMap(feature, name, hexColour, radius, opacity, szUncert
     vector_layer.isFixed = false;
     features = geojson_format.read(feature);
 
+    fixAttributes(features, feature);
+
     //apply uncertainty to features
     vector_layer.addFeatures(applyFeatureUncertainty(features, szUncertain));
 
@@ -1395,6 +1422,8 @@ function addJsonUrlToMap(url, name, hexColour, radius, opacity, szUncertain) {
         vector_layer.isFixed = false;
         features = geojson_format.read(feature);
 
+        fixAttributes(features, feature);
+
         //apply uncertainty to features
         vector_layer.addFeatures(applyFeatureUncertainty(features, szUncertain));
 
@@ -1433,6 +1462,8 @@ function appendJsonUrlToMap(url, original_url, name) {
 
         var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
         features = geojson_format.read(feature);
+
+        fixAttributes(features, feature)
     
         //apply uncertainty to features
         vector_layer.addFeatures(applyFeatureUncertainty(features, vector_layer.style.szUncertain));
@@ -1491,7 +1522,9 @@ function removeFromSelectControl(lyrname) {
 
 
     var isActive = selectControl.active;
-    selectControl.unselectAll();
+    try{
+        selectControl.unselectAll();
+    }catch(err){}
     selectControl.deactivate();
     if(selectControl.layers) {
         selectControl.layer.destroy();
@@ -1559,6 +1592,8 @@ function redrawFeatures(feature, name, hexColour, opacity, radius, szUncertain) 
     var gjLayers = map.getLayersByName(name);
     var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
     features = geojson_format.read(feature);
+
+    fixAttributes(features, feature);
 
     var layer_style = OpenLayers.Util.extend({},OpenLayers.Feature.Vector.style['default']);
     layer_style.fillColor = hexColour;
@@ -1648,6 +1683,7 @@ function drawFeaturesGeoJsonUrl(url, parts, name, hexColour, opacity, radius, sz
         var geojson_format = new OpenLayers.Format.GeoJSON(in_options);
     
         features = geojson_format.read(feature);
+        fixAttributes(features, feature);
 
         //apply uncertainty to features
     
@@ -2647,4 +2683,26 @@ function showPrecision(precision) {
 function hidePrecision() {
     if (precisionLayer)
         map.removeLayer(precisionLayer);
+}
+
+function fixAttributes(features, feature){
+    //add feature (geojson string) properties to all features attributes
+    //when first object (geometry) in features (geometry array) has no attributes
+    //occurs when geojson type is GeometryCollection instead of Feature
+    try{
+        if(features.length > 0){
+            var f = features[0];
+            var i = 0;
+            for(key in f.attributes) i++;
+            if(i == 0){
+                var json_format = new OpenLayers.Format.JSON();
+                var json = json_format.read(feature);
+                if(json.properties != undefined){
+                    for(i=0;i<features.length;i++) {
+                        features[i].attributes = json.properties;
+                    }
+                }
+            }
+        }
+    }catch(err){}
 }

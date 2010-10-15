@@ -544,6 +544,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ((SelectionController) sf.getFellow("selectionwindow")).getGeom();
     }
 
+    public String getSelectionAreaPolygon() {
+        String area = getSelectionArea();
+        if(area.startsWith("LAYER(")){
+            String layername = area.substring(6,area.lastIndexOf(','));
+            return getLayerGeoJsonAsWkt(layername);
+        } else if(area.startsWith("ENVELOPE(")){
+            return getViewArea();
+        }
+        return area;
+    }
+
     public void onClick$closeLayerControls() {
         layerControls.setVisible(false);
         activeLayersList.clearSelection();
@@ -1605,7 +1616,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // check if layer already present
         List udl = getPortalSession().getActiveLayers();
         Iterator iudl = udl.iterator();
-        System.out.println("session active layers: " + udl.size());
+        System.out.println("session active layers: " + udl.size() + " looking for: " + label);
         while (iudl.hasNext()) {
             MapLayer ml = (MapLayer) iudl.next();
             System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
@@ -3608,8 +3619,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }else{
         //return mapSpeciesByLsidPoints(lsid,species);
         return mapSpeciesByLsidFilter(lsid, species, rank);
-        }
-         * 
+    }
+         *
          */
     }
 
@@ -4235,6 +4246,42 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (speciesfilters != null) {
             speciesfilters.remove(species);
             getSession().setAttribute("speciesfilters", speciesfilters);
+        }
+    }
+
+    
+    /**
+     * get Active Area as WKT string, from a layer name
+     *
+     * @param layer name of layer as String
+     * @param register_shape true to register the shape with alaspatial shape register
+     * @return
+     */
+    String getLayerGeoJsonAsWkt(String layer) {
+        try {
+            //class_name is same as layer name
+            return wktFromJSON(getMapLayer(layer).getGeoJSON());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return getViewArea();
+    }
+
+    private String wktFromJSON(String json) {
+        try {
+            JSONObject obj = JSONObject.fromObject(json);
+
+            String coords = obj.getJSONArray("geometries").getJSONObject(0).getString("coordinates");
+
+            if (obj.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("multipolygon")) {
+                String wkt = coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
+                return wkt;
+            } else {
+                String wkt = coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))");
+                return wkt;
+            }
+        } catch (Exception e) {
+            return "none";
         }
     }
 }

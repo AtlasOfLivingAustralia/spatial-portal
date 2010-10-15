@@ -123,7 +123,9 @@ An area can be defined by any of the options below. Once defined, the area can b
         <textbox id="selectionGeom" visible="false"/>
         <textbox id="boxGeom" visible="false"/>
         <script type="text/javascript">
-            function setSearchPointAnalysis(point) {
+            function setSearchPointAnalysis(point_orig) {
+                var point = point_orig.clone();
+                
                 // transform the point from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 point.transform(mapObj.projection, mapObj.displayProjection);
@@ -144,7 +146,9 @@ An area can be defined by any of the options below. Once defined, the area can b
                 }
             }
 
-            function setSpeciesSearchPointAnalysis(point) {
+            function setSpeciesSearchPointAnalysis(point_orig) {
+                var point = point_orig.clone();
+
                 // transform the point from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 point.transform(mapObj.projection, mapObj.displayProjection);
@@ -165,7 +169,9 @@ An area can be defined by any of the options below. Once defined, the area can b
                 }
             }
 
-            function setSelectionGeometry(geometry) {
+            function setSelectionGeometry(geometry_orig) {
+                var geometry = geometry_orig.clone();
+                
                 // transform the geometry from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 geometry.transform(mapObj.projection, mapObj.displayProjection);
@@ -186,7 +192,30 @@ An area can be defined by any of the options below. Once defined, the area can b
                 }
             }
 
-            function setBoxGeometry(geometry) {
+            function setSelectionLayerGeometry(geometry_orig) {            
+                var geometry = geometry_orig;
+
+                var mapObj = window.frames.mapFrame.map;
+                var tbxSelectionGeom = $e('${selectionGeom.uuid}');
+                tbxSelectionGeom.value = "LAYER(" + geometry + ")";
+
+                if (document.createEvent) {
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent( 'blur', false, false);
+                    tbxSelectionGeom.dispatchEvent(evt);
+
+                    var evt2 = document.createEvent('HTMLEvents');
+                    evt2.initEvent( 'change', false, false);
+                    tbxSelectionGeom.dispatchEvent(evt2);
+                } else if (document.createEventObject) {
+                    tbxSelectionGeom.fireEvent('onblur');
+                    tbxSelectionGeom.fireEvent('onchange');
+                }
+            }
+
+            function setBoxGeometry(geometry_orig) {
+                var geometry = geometry_orig.clone();
+                
                 // transform the geometry from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 geometry.transform(mapObj.projection, mapObj.displayProjection);
