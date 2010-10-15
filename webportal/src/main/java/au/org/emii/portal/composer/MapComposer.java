@@ -2888,7 +2888,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     logger.info("adding GEOJSON layer failed ");
                 } else {
                     mapLayer.setDisplayable(true);
-                    mapLayer.setOpacity((float) 0.4);
+                    mapLayer.setOpacity((float) 0.6);
                     mapLayer.setQueryable(true);
                     mapLayer.setDynamicStyle(true);
 
@@ -2909,7 +2909,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         logger.info("adding GEOJSON layer failed ");
                     } else {
                         mapLayer.setDisplayable(true);
-                        mapLayer.setOpacity((float) 0.4);
+                        mapLayer.setOpacity((float) 0.6);
                         mapLayer.setQueryable(true);
                         mapLayer.setDynamicStyle(true);
 
