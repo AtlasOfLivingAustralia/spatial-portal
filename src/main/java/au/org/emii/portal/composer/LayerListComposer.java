@@ -1,31 +1,24 @@
 package au.org.emii.portal.composer;
 
-import au.org.emii.portal.config.xmlbeans.Supplementary;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.util.Clients;
+import org.zkoss.zul.Image;
+import org.zkoss.zul.Label;
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.SimpleTreeModel;
 import org.zkoss.zul.SimpleTreeNode;
+import org.zkoss.zul.Space;
 import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Tree;
 import org.zkoss.zul.Treecell;
@@ -152,9 +145,10 @@ public class LayerListComposer extends UtilityComposer {
 
                 //sort 2nd level branches
                 ArrayList sorted = (ArrayList) htCat1.get(catKey);
-                java.util.Collections.sort(sorted,new Comparator(){
+                java.util.Collections.sort(sorted, new Comparator() {
+
                     @Override
-                    public int compare(Object a, Object b){
+                    public int compare(Object a, Object b) {
                         SimpleTreeNode sa = (SimpleTreeNode) a;
                         SimpleTreeNode sb = (SimpleTreeNode) b;
                         JSONObject ja = JSONObject.fromObject(sa.getData());
@@ -281,7 +275,28 @@ public class LayerListComposer extends UtilityComposer {
 
                 String displayname = joLayer.getString("displayname");
                 displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
-                Treecell tcName = new Treecell(displayname);
+                Treecell tcName = new Treecell();
+                if (!joLayer.getString("type").equals("node")) {
+                    Image img = new Image();
+                    img.setSrc("/img/information.png");
+                    img.addEventListener("onClick", new EventListener() {
+
+                        @Override
+                        public void onEvent(Event event) throws Exception {                            
+                            JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
+                            String s = jo.getString("uid");
+                            String metadata = satServer + "/alaspatial/layers/" + s;
+                            mc.activateLink(metadata, "Metadata", false);
+                        }
+                    });
+                    img.setParent(tcName);
+
+                    Space sp = new Space();
+                    sp.setParent(tcName);
+                }
+                Label lbl = new Label(displayname);
+                lbl.setParent(tcName);
+
                 //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
 
                 Treecell tcAdd = new Treecell();

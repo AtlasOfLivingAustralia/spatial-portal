@@ -812,11 +812,11 @@ public class SelectionController extends UtilityComposer {
                             .getFellow("analysiswindow")
                                 .getFellow("speciesListForm")
                                     .getFellow("popup_results");
-            if (!populateSpeciesList) {
+            //if (!populateSpeciesList) {
                 win.refreshCount();
-            } else {
-                win.onClick$refreshButton2();
-            }
+            //} else {
+            //    win.onClick$refreshButton2();
+           // }
         } catch (Exception e) {
             e.printStackTrace();
         }
