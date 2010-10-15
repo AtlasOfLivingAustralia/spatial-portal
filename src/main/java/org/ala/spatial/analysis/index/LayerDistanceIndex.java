@@ -75,7 +75,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
         }
 
         //do distance calculations in blocks to reduce grids being loaded
-        (new SpatialLogger()).log("calculating distances");
+        SpatialLogger.log("calculating distances");
         ArrayList<int[]> comparisons = new ArrayList<int[]>();
         int inc = TabulationSettings.max_grids_load - TabulationSettings.analysis_threads;
         for (int span = 0; span < layers.length; span += inc){
@@ -114,7 +114,7 @@ public class LayerDistanceIndex  implements AnalysisIndexService {
             e.printStackTrace();
         }
 
-        (new SpatialLogger()).log("finsihed calculating distances");
+        SpatialLogger.log("finsihed calculating distances");
 
         //object output
         try{

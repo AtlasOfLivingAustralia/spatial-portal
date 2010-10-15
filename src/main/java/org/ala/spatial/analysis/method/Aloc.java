@@ -63,7 +63,7 @@ public class Aloc {
         while (seedidxsize != nNoOfGroups && count < 30) {
             seedidxsize = 1;
 
-            (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups);
+            SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups);
 
             for (i = 0; i < nRows; i++) {
                 for (j = 0; j < seedidxsize; j++) {
@@ -149,7 +149,7 @@ public class Aloc {
         int[] min_groups = new int[nRows];
         float[] min_dists = new float[nRows];
         while (movement != 0 && iteration < 100) {
-            (new SpatialLogger()).log("moving (" + iteration + ") > moved " + movement);
+            SpatialLogger.log("moving (" + iteration + ") > moved " + movement);
 
             movement = 0;
 
@@ -420,11 +420,11 @@ public class Aloc {
 
             if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
             if(job != null && job.isCancelled()) return null;
-            (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+            SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         if(job != null && job.isCancelled()) return null;
-        (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+        SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
 
         if(job != null) job.setStage(2); //iterations
 
@@ -500,7 +500,7 @@ public class Aloc {
         int iteration = 0;
         int movement = -1;
         while (movement != 0 && iteration < 100) {
-            (new SpatialLogger()).log("moving (" + iteration + ") > moved " + movement);
+            SpatialLogger.log("moving (" + iteration + ") > moved " + movement);
 
             //preserve first element from each group
             //- ok for first iteration since centroid movement occurs at end
@@ -850,11 +850,11 @@ public class Aloc {
 
             if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
             if(job != null && job.isCancelled()) return null;
-            (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+            SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         if(job != null && job.isCancelled()) return null;
-        (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+        SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
 
         if(job != null) job.setStage(2); //iterations
 
@@ -930,7 +930,7 @@ public class Aloc {
         int iteration = 0;
         int movement = -1;
         while (movement != 0 && iteration < 100) {
-            (new SpatialLogger()).log("moving (" + iteration + ") > moved " + movement);
+            SpatialLogger.log("moving (" + iteration + ") > moved " + movement);
 
             //preserve first element from each group
             //- ok for first iteration since centroid movement occurs at end
@@ -1316,11 +1316,11 @@ public class Aloc {
 
             if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
             if(job != null && job.isCancelled()) return null;
-            (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+            SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         }
         if(job != null) job.setProgress(count / 25.0,"seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
         if(job != null && job.isCancelled()) return null;
-        (new SpatialLogger()).log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
+        SpatialLogger.log("seeding (" + count + ") " + seedidxsize + " != " + nNoOfGroups + " radius:" + radius);
 
         if(job != null) job.setStage(2); //iterations
 
@@ -1410,7 +1410,7 @@ public class Aloc {
         int iteration = 0;
         int movement = -1;
         while (movement != 0 && iteration < 100) {
-            (new SpatialLogger()).log("moving (" + iteration + ") > moved " + movement);
+            SpatialLogger.log("moving (" + iteration + ") > moved " + movement);
 
             //preserve first element from each group
             //- ok for first iteration since centroid movement occurs at end

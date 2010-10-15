@@ -44,8 +44,6 @@ public class IniReader{
 	 * @param filename file to load into document object
 	 */
 	private void loadFile(String filename){
-		SpatialLogger sl = new SpatialLogger();
-		
 		try{
 			BufferedReader in = new BufferedReader(new FileReader(filename));
 			String currentSection = "";
@@ -78,7 +76,7 @@ public class IniReader{
 			}			
 		}catch(Exception e){
 			//log error
-			sl.log("IniReader",e.toString());
+			SpatialLogger.log("IniReader",e.toString());
 		}		 
 	}
 	

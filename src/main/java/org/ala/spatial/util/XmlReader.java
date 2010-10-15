@@ -38,15 +38,14 @@ public class XmlReader {
 	 * @param filename filename of file to load as String
 	 */
 	public XmlReader(String filename) {
-		SpatialLogger sl = new SpatialLogger();
 		document = null;
 		try {			
 			document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(filename);
 		} catch (Exception e) {
-			sl.log("XmlReader",e.toString());			
+			SpatialLogger.log("XmlReader",e.toString());
 		}
 		if (document == null) {
-			sl.log("XmlReader","failed to read " + filename);
+			SpatialLogger.log("XmlReader","failed to read " + filename);
 		}
 	}
 
@@ -94,7 +93,6 @@ public class XmlReader {
 	 * contain <code>pairs_count</code> records
 	 */
 	public String getValue(String [] reference, int [] idx, int pairs_count) {
-		SpatialLogger sl = new SpatialLogger();
 		Node node;
 		int [] indices;
 		
@@ -102,7 +100,7 @@ public class XmlReader {
 				|| reference == null || pairs_count > reference.length
 				|| idx == null || pairs_count > idx.length
 				|| pairs_count < 1) {
-			sl.log("XmlReader","invalid getValue request");
+			SpatialLogger.log("XmlReader","invalid getValue request");
 			return null;
 		}
 		

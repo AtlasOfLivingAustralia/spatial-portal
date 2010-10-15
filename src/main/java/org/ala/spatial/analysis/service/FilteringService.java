@@ -117,7 +117,7 @@ public class FilteringService implements Serializable {
 
             return rka;
         } catch (Exception e) {
-            (new SpatialLogger()).log("FilteringService: getTopSpeciesRecord()", e.toString());
+            SpatialLogger.log("FilteringService: getTopSpeciesRecord()", e.toString());
         }
 
         return null;
@@ -139,7 +139,7 @@ public class FilteringService implements Serializable {
             oos.writeObject(speciesrecord);
             oos.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("FilteringService: saveTopeSpeciesRecord()", e.toString());
+            SpatialLogger.log("FilteringService: saveTopeSpeciesRecord()", e.toString());
         }
     }
 
@@ -463,7 +463,7 @@ public class FilteringService implements Serializable {
             return temporary_file.getPath();	//return location of temp file
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("FilteringService: getSamplesList()", e.toString());
+            SpatialLogger.log("FilteringService: getSamplesList()", e.toString());
             e.printStackTrace();
         }
 
@@ -624,7 +624,7 @@ public class FilteringService implements Serializable {
                 fw.close();
 
             } catch (Exception e) {
-                (new SpatialLogger()).log("FilteringService: getSamplesListAsGeoJSON()", e.toString());
+                SpatialLogger.log("FilteringService: getSamplesListAsGeoJSON()", e.toString());
                 e.printStackTrace();
             }
         }
@@ -719,7 +719,7 @@ public class FilteringService implements Serializable {
                 }
                 return fs;
             } catch (Exception e) {
-                (new SpatialLogger()).log("FilteringService: getSession(" + session_id_ + ")", e.toString());
+                SpatialLogger.log("FilteringService: getSession(" + session_id_ + ")", e.toString());
             }
             return null;
         }
@@ -746,7 +746,7 @@ public class FilteringService implements Serializable {
             oos.writeObject(this);
             oos.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("FilteringService: save()", e.toString());
+            SpatialLogger.log("FilteringService: save()", e.toString());
         }
     }
 

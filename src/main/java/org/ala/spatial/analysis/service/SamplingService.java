@@ -840,7 +840,7 @@ public class SamplingService {
             return temporary_file.getName();	//return location of temp file
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("SamplingService: getLSIDAsGeoJSON()", e.toString());
+            SpatialLogger.log("SamplingService: getLSIDAsGeoJSON()", e.toString());
             e.printStackTrace();
         }
         return "";
@@ -921,7 +921,7 @@ public class SamplingService {
                 //return temporary_file.getName();	//return location of temp file
 
             } catch (Exception e) {
-                (new SpatialLogger()).log("SamplingService: getLSIDAsGeoJSON()", e.toString());
+                SpatialLogger.log("SamplingService: getLSIDAsGeoJSON()", e.toString());
                 e.printStackTrace();
             }
         }

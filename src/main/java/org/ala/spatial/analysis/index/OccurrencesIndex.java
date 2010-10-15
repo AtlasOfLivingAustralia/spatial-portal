@@ -663,9 +663,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
             fwExcluded.close();
             br.close();
 
-            (new SpatialLogger()).log("loadOccurances done");
+            SpatialLogger.log("loadOccurances done");
         } catch (Exception e) {
-            (new SpatialLogger()).log("loadoccurances", e.toString());
+            SpatialLogger.log("loadoccurances", e.toString());
             e.printStackTrace();
         }
     }
@@ -728,9 +728,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
             points.write(b);
             points.close();
 
-            (new SpatialLogger()).log("exportSortedPoints done");
+            SpatialLogger.log("exportSortedPoints done");
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportSortedPoints", e.toString());
+            SpatialLogger.log("exportSortedPoints", e.toString());
             e.printStackTrace();
         }
     }
@@ -1126,7 +1126,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             br.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportFieldIndexes, read", e.toString());
+            SpatialLogger.log("exportFieldIndexes, read", e.toString());
             e.printStackTrace();
         }
 
@@ -1211,9 +1211,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
                 fw.close();
             }
-            (new SpatialLogger()).log("exportFieldIndexes done");
+            SpatialLogger.log("exportFieldIndexes done");
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportFieldIndexes, write", e.toString());
+            SpatialLogger.log("exportFieldIndexes, write", e.toString());
         }
 
         //this will fail on the occurances_csv_fields_pairs... loads
@@ -1530,9 +1530,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     }
                 }
             }
-            (new SpatialLogger()).log("loadIndexes done");
+            SpatialLogger.log("loadIndexes done");
         } catch (Exception e) {
-            (new SpatialLogger()).log("loadIndexes", e.toString());
+            SpatialLogger.log("loadIndexes", e.toString());
             e.printStackTrace();
         }
 
@@ -1984,7 +1984,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             br.close();
             System.out.println("filepos = " + filepos);
         } catch (Exception e) {
-            (new SpatialLogger()).log("getSortedRecords", e.toString());
+            SpatialLogger.log("getSortedRecords", e.toString());
             e.printStackTrace();
         }
 
@@ -2012,7 +2012,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 sortedLineStarts = (long[]) ois.readObject();
                 ois.close();
             } catch (Exception e) {
-                (new SpatialLogger()).log("getSortedRecords", e.toString());
+                SpatialLogger.log("getSortedRecords", e.toString());
                 e.printStackTrace();
             }
         }
@@ -2099,7 +2099,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             return lines;
         } catch (Exception e) {
-            (new SpatialLogger()).log("getSortedRecords", e.toString());
+            SpatialLogger.log("getSortedRecords", e.toString());
             e.printStackTrace();
         }
 
@@ -2127,7 +2127,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             return (new String(data)).split("\n");		//convert to string
         } catch (Exception e) {
-            (new SpatialLogger()).log("getSortedRecords", e.toString());
+            SpatialLogger.log("getSortedRecords", e.toString());
             e.printStackTrace();
         }
 
@@ -2155,7 +2155,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             return (new String(data));		//convert to string
         } catch (Exception e) {
-            (new SpatialLogger()).log("getSortedRecords", e.toString());
+            SpatialLogger.log("getSortedRecords", e.toString());
             System.out.println(file_start + " to " + file_end);
             e.printStackTrace();
         }
@@ -2193,7 +2193,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPoints(" + recordstart + "," + recordend, e.toString());
+            SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
         }
 
         return d;
@@ -2237,7 +2237,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 d[i][1] = bb.getDouble();
             }
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPointsPairs", e.toString());
+            SpatialLogger.log("getPointsPairs", e.toString());
         }
 
         /* store for next time */
@@ -2282,7 +2282,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 d[i][1] = bb.getDouble();
             }
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPointsPairs", e.toString());
+            SpatialLogger.log("getPointsPairs", e.toString());
         }
 
         return d;
@@ -2334,7 +2334,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             raf.write(b);
             raf.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportSortedGEOPoints", e.toString());
+            SpatialLogger.log("exportSortedGEOPoints", e.toString());
         }
 
         //export lookup for idx/record reference
@@ -2350,7 +2350,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             raf.write(b);
             raf.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportSortedGEOPoints", e.toString());
+            SpatialLogger.log("exportSortedGEOPoints", e.toString());
         }
     }
 
@@ -2388,7 +2388,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPointsPairsGEO", e.toString());
+            SpatialLogger.log("getPointsPairsGEO", e.toString());
         }
 
         return d;
@@ -2424,7 +2424,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             points.close();
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPointsPairsGEOidx", e.toString());
+            SpatialLogger.log("getPointsPairsGEOidx", e.toString());
         }
 
         return d;
@@ -2495,7 +2495,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             raf.write(b);
             raf.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportSortedGridPoints", e.toString());
+            SpatialLogger.log("exportSortedGridPoints", e.toString());
         }
 
         //export lookup for idx/record reference
@@ -2526,7 +2526,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             raf.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportSortedGridPoints", e.toString());
+            SpatialLogger.log("exportSortedGridPoints", e.toString());
         }
 
         //export lookup for idx/record reference
@@ -2575,7 +2575,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     if (list[i][j] == -1) {
                         list[i][j] = last_cell;
                     } else if (last_cell < list[i][j]) {
-                        (new SpatialLogger()).log("exportSortedGridPoints, order err");
+                        SpatialLogger.log("exportSortedGridPoints, order err");
                     }
                     last_cell = list[i][j];
                 }
@@ -2591,7 +2591,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             raf.write(b);
             raf.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportSortedGridPoints", e.toString());
+            SpatialLogger.log("exportSortedGridPoints", e.toString());
         }
     }
 
@@ -2635,7 +2635,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPointsPairsGrid", e.toString());
+            SpatialLogger.log("getPointsPairsGrid", e.toString());
         }
 
         //load idx as well
@@ -2705,7 +2705,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             points.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPointsPairsGrididx", e.toString());
+            SpatialLogger.log("getPointsPairsGrididx", e.toString());
         }
 
         grid_points_idx_rev = d1;
@@ -2750,7 +2750,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             points.close();
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPointsPairsGridKey", e.toString());
+            SpatialLogger.log("getPointsPairsGridKey", e.toString());
         }
 
         grid_key = d;
@@ -3332,7 +3332,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
     br.close();
     } catch (Exception e) {
-    (new SpatialLogger()).log("cluster records, build", e.toString());
+    SpatialLogger.log("cluster records, build", e.toString());
     e.printStackTrace();
     }
 
@@ -3489,7 +3489,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             br.close();
         } catch (Exception e) {
-            (new SpatialLogger()).log("cluster records, build", e.toString());
+            SpatialLogger.log("cluster records, build", e.toString());
             e.printStackTrace();
         }
         /*
@@ -3715,7 +3715,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
     }
 
     void makePartsThreaded() {
-        (new SpatialLogger()).log("MAKE PARTS THREADED: START");
+        SpatialLogger.log("MAKE PARTS THREADED: START");
 
         LinkedBlockingQueue<String[]> lbq = getPartsPositions();
         CountDownLatch cdl = new CountDownLatch(lbq.size());
@@ -3740,13 +3740,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
         }
 
-        (new SpatialLogger()).log("MAKE PARTS THREADED: FINISHED");
+        SpatialLogger.log("MAKE PARTS THREADED: FINISHED");
     }
 
     static private Vector<String[]> getVSensitiveCoordinates(CountDownLatch cdl) {
         Vector<String[]> vsensitive_coordinates = new Vector<String[]>(1000000);
 
-        (new SpatialLogger()).log("SensitiveCoordinates: start");
+        SpatialLogger.log("SensitiveCoordinates: start");
         try {
             BufferedReader br = new BufferedReader(new FileReader(
                     TabulationSettings.index_path
@@ -3763,7 +3763,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             e.printStackTrace();
         }
 
-        (new SpatialLogger()).log("SensitiveCoordinates: got points len=" + vsensitive_coordinates.size());
+        SpatialLogger.log("SensitiveCoordinates: got points len=" + vsensitive_coordinates.size());
 
         if (cdl != null) {
             cdl.countDown();
@@ -3784,7 +3784,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 return c1[0].compareTo(c2[0]);
             }
         });
-        (new SpatialLogger()).log("SensitiveCoordinates: sorted");
+        SpatialLogger.log("SensitiveCoordinates: sorted");
 
         int recordCount = getPointsPairs().length;   //for number of records
         sensitiveCoordinates = new double[recordCount][2]; //[][0] long, [][1] lat
@@ -3839,7 +3839,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             e.printStackTrace();
         }
 
-        (new SpatialLogger()).log("SensitiveCoordinates: matched with id vs recordpos");
+        SpatialLogger.log("SensitiveCoordinates: matched with id vs recordpos");
 
         //output
         try {
@@ -3854,7 +3854,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             e.printStackTrace();
         }
 
-        (new SpatialLogger()).log("SensitiveCoordinates: exported & done");
+        SpatialLogger.log("SensitiveCoordinates: exported & done");
     }
 
     static void loadSensitiveCoordinates() {
@@ -3903,7 +3903,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 d[i] = bb.getDouble();
             }
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPoints(" + recordstart + "," + recordend, e.toString());
+            SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
         }
 
         double[] dsensitive = new double[(recordend - recordstart + 1) * 2];
@@ -3918,7 +3918,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 dsensitive[i + 1] = sensitiveCoordinates[i / 2][1];
             }
         } catch (Exception e) {
-            (new SpatialLogger()).log("getPoints(" + recordstart + "," + recordend, e.toString());
+            SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
         }
 
         //merge sensitive and regular points, if not missing (-1)
@@ -4254,9 +4254,9 @@ class MakeOccurrenceParts extends Thread {
 
             fws.close();
 
-            (new SpatialLogger()).log("loadOccurances done: " + part_number);
+            SpatialLogger.log("loadOccurances done: " + part_number);
         } catch (Exception e) {
-            (new SpatialLogger()).log("loadoccurances", e.toString());
+            SpatialLogger.log("loadoccurances", e.toString());
             e.printStackTrace();
         }
     }
@@ -4319,9 +4319,9 @@ class MakeOccurrenceParts extends Thread {
             points.write(b);
             points.close();
 
-            (new SpatialLogger()).log("exportSortedPoints done");
+            SpatialLogger.log("exportSortedPoints done");
         } catch (Exception e) {
-            (new SpatialLogger()).log("exportSortedPoints", e.toString());
+            SpatialLogger.log("exportSortedPoints", e.toString());
             e.printStackTrace();
         }
     }
