@@ -124,7 +124,7 @@ public class EnvLayersCombobox extends Combobox {
                             myci = new Comboitem(displayName);
                             myci.setParent(this);
                         }
-                        myci.setDescription(type);
+                        myci.setDescription(jo.getString("classification1") + ": " + jo.getString("classification2") + ": " + type);
                         myci.setDisabled(false);
                         myci.setValue(jo);
                     }

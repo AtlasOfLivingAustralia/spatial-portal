@@ -25,6 +25,7 @@ import org.ala.spatial.analysis.service.FilteringService;
 
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.analysis.service.ShapeLookup;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.ValidTaxonName;
 import org.ala.spatial.util.SimpleRegion;
@@ -649,6 +650,26 @@ public class SpeciesController {
             e.printStackTrace(System.out);
         }
         System.out.println("returning null");
+        return null;
+    }
+
+    @RequestMapping(value = "/shape/register", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String registerShape(HttpServletRequest req) {
+        try {
+            String shape = req.getParameter("area");
+            shape = URLDecoder.decode(shape, "UTF-8");
+            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
+
+            String id = String.valueOf(System.currentTimeMillis());
+
+            ShapeLookup.addShape(id, region);
+
+            return id;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
         return null;
     }
 

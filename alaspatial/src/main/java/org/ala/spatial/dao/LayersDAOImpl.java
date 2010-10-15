@@ -35,7 +35,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayers() {
-        return hibernateTemplate.find("from LayerInfo order by displayname ");
+        return hibernateTemplate.find("from LayerInfo order by  classification1, classification2, displayname ");
     }
 
     /**
@@ -62,7 +62,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByName(String name) {
-        return hibernateTemplate.find("from LayerInfo where lower(displayname) like ? order by classification1, classification1, displayname ", ("%" + name.toLowerCase() + "%"));
+        return hibernateTemplate.find("from LayerInfo where lower(displayname) like ? order by  classification1, classification2, displayname ", ("%" + name.toLowerCase() + "%"));
     }
 
     /**
@@ -73,7 +73,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByType(String type) {
-        return hibernateTemplate.find("from LayerInfo where lower(type) = ? order by classification1, classification1, displayname ", type.toLowerCase());
+        return hibernateTemplate.find("from LayerInfo where lower(type) = ? order by  classification1, classification2, displayname ", type.toLowerCase());
     }
 
     /**
@@ -84,7 +84,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersBySource(String source) {
-        return hibernateTemplate.find("from LayerInfo where lower(source) = ? order by classification1, classification1, displayname ", source.toLowerCase());
+        return hibernateTemplate.find("from LayerInfo where lower(source) = ? order by  classification1, classification2, displayname ", source.toLowerCase());
     }
 
     /**
@@ -106,7 +106,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByEnabled(boolean enabled) {
-        return hibernateTemplate.find("from LayerInfo where enabled = ? order by classification1, classification1, displayname ", enabled);
+        return hibernateTemplate.find("from LayerInfo where enabled = ? order by  classification1, classification2, displayname ", enabled);
     }
 
     /**
@@ -117,7 +117,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByNotes(String notes) {
-        return hibernateTemplate.find("from LayerInfo where lower(notes) like ? order by classification1, classification1, displayname ", ("%" + notes.toLowerCase() + "%"));
+        return hibernateTemplate.find("from LayerInfo where lower(notes) like ? order by  classification1, classification2, displayname ", ("%" + notes.toLowerCase() + "%"));
         // AND enabled=true 
     }
 
@@ -135,7 +135,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
         //sql += " or lower(type) like ? ";
         sql += " or lower(name) like ? ";
         sql += "  AND enabled=true ";
-        sql += " order by classification1, classification1, displayname ";
+        sql += " order by classification1, classification2, displayname ";
 
         keywords = "%" + keywords.toLowerCase() + "%";
 

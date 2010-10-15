@@ -1064,22 +1064,28 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         int [] px_boundary = new int[4];
         px_boundary[0] = sc.convertLngToPixel(longitude_start);
         px_boundary[2] = sc.convertLngToPixel(longitude_end);
-        px_boundary[1] = sc.convertLngToPixel(latitude_start);
-        px_boundary[3] = sc.convertLngToPixel(latitude_end);
+        px_boundary[1] = sc.convertLatToPixel(latitude_start);
+        px_boundary[3] = sc.convertLatToPixel(latitude_end);
 
         double [] latproj = new double[latitude_steps];
         double [] longproj = new double[longitude_steps];
         for(int i=0;i<latproj.length;i++){
-            latproj[i] = sc.convertPixelToLat((int)(px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) latproj.length)));
+            latproj[i] = sc.convertPixelToLat((int)(px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) (latproj.length - 1))));
         }
         for(int i=0;i<longproj.length;i++){
-            longproj[i] = sc.convertPixelToLng((int)(px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) longproj.length)));
-        }     
+            longproj[i] = sc.convertPixelToLng((int)(px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) (longproj.length - 1))));
+        }
+
+        //fix up first and last values
+        latproj[0] = latitude_start;
+        latproj[latproj.length-1] = latitude_end;
+        longproj[0] = longitude_start;
+        longproj[longproj.length-1] = longitude_end;
 
         for (int j = 0; j < latitude_steps; j++) {
             for (int i = 0; i < longitude_steps; i++) {
                 points[j * longitude_steps + i][0] = longproj[i];
-                points[j * longitude_steps + i][1] = latproj[j];
+                points[j * longitude_steps + i][1] = latproj[latitude_steps - 1 - j];
             }
         }
 
@@ -1111,6 +1117,13 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         }
 
         return null;
+    }
+
+    static public void main(String [] args){
+        TabulationSettings.load();
+
+        FilteringIndex speciesListIndex = new FilteringIndex();
+        speciesListIndex.occurancesUpdate();
     }
 
     /**

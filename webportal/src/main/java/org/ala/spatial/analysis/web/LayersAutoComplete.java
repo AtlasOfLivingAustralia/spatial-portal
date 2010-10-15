@@ -109,6 +109,7 @@ public class LayersAutoComplete extends Combobox {
                 //System.out.println("Response: \n" + slist);
 
                 JSONArray results = JSONArray.fromObject(slist);
+
                 System.out.println("got " + results.size() + " layers");
 
                 Sessions.getCurrent().setAttribute("layerlist", results);
@@ -135,7 +136,7 @@ public class LayersAutoComplete extends Combobox {
                             myci = new Comboitem(displayName);
                             myci.setParent(this);
                         }
-                        myci.setDescription(type);
+                        myci.setDescription(jo.getString("classification1") + ": " + jo.getString("classification2") + ": " + type);
                         myci.setDisabled(false);
                         myci.setValue(jo);
                     }

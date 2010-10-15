@@ -16,6 +16,7 @@ import java.util.Vector;
 import java.util.Calendar;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.spatial.analysis.service.ShapeLookup;
 
 /**
  * SimpleShapeFile is a representation of a Shape File for
@@ -490,6 +491,13 @@ public class SimpleShapeFile extends Object implements Serializable {
         if (pointsString == null) {
             return null;
         }
+        
+        if (pointsString != null && pointsString.startsWith("LAYER")) {
+            String s = pointsString.substring(pointsString.lastIndexOf(',')+1,pointsString.length()-1);
+            return ShapeLookup.getShape(s);
+        }
+
+
         pointsString = convertGeoToPoints(pointsString);
 
         String[] polygons = pointsString.split("S");

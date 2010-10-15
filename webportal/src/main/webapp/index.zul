@@ -127,79 +127,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             if (setSelectionGeometry != undefined) {
             setSelectionGeometry(geometry);
             }
-
-
             }
 
-            function setPolygonGeometrySampling(geometry) {
-            var tbxPolyGeom = $e('${polyGeom.uuid}');
-            tbxPolyGeom.value = geometry;
-
-            if (document.createEvent) {
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent( 'blur', false, false);
-            tbxPolyGeom.dispatchEvent(evt);
-
-            var evt2 = document.createEvent('HTMLEvents');
-            evt2.initEvent( 'change', false, false);
-            tbxPolyGeom.dispatchEvent(evt2);
-            }
-            else if (document.createEventObject) {
-            tbxPolyGeom.fireEvent('onblur');
-            tbxPolyGeom.fireEvent('onchange');
-            }
-
-            if (setSelectionGeometrySampling != undefined) {
-            setSelectionGeometrySampling(geometry);
+            function setLayerGeometry(geometry) {
+            if (setSelectionLayerGeometry != undefined) {
+            setSelectionLayerGeometry(geometry);
             }
             }
-            function setPolygonGeometryALOC(geometry) {
-            var tbxPolyGeom = $e('${polyGeom.uuid}');
-            tbxPolyGeom.value = geometry;
-
-            if (document.createEvent) {
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent( 'blur', false, false);
-            tbxPolyGeom.dispatchEvent(evt);
-
-            var evt2 = document.createEvent('HTMLEvents');
-            evt2.initEvent( 'change', false, false);
-            tbxPolyGeom.dispatchEvent(evt2);
-            }
-            else if (document.createEventObject) {
-            tbxPolyGeom.fireEvent('onblur');
-            tbxPolyGeom.fireEvent('onchange');
-            }
-
-            if (setSelectionGeometryALOC != undefined) {
-            setSelectionGeometryALOC(geometry);
-            }
-            }
-            function setPolygonGeometryFiltering(geometry) {
-            var tbxPolyGeom = $e('${polyGeom.uuid}');
-            tbxPolyGeom.value = geometry;
-
-            if (document.createEvent) {
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent( 'blur', false, false);
-            tbxPolyGeom.dispatchEvent(evt);
-
-            var evt2 = document.createEvent('HTMLEvents');
-            evt2.initEvent( 'change', false, false);
-            tbxPolyGeom.dispatchEvent(evt2);
-            }
-            else if (document.createEventObject) {
-            tbxPolyGeom.fireEvent('onblur');
-            tbxPolyGeom.fireEvent('onchange');
-            }
-
-            if (setSelectionGeometryFiltering != undefined) {
-            setSelectionGeometryFiltering(geometry);
-            }
-            }
-
-
-
 
             function setRegionGeometry(geometry) {
             if (setBoxGeometry != undefined) {

@@ -8,13 +8,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.io.gml2.GMLWriter;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import java.lang.String;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -40,31 +38,25 @@ import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.SAXException;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
-
-
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
-
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Label;
-
 import org.zkoss.zul.Listbox;
-
-
 import org.zkoss.zul.Popup;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -397,13 +389,15 @@ public class SelectionController extends UtilityComposer {
         JSONArray layerlist = JSONArray.fromObject(llist);
         MapComposer mc = getThisMapComposer();
 
-            for (int i = 0; i < layerlist.size(); i++) {
-                JSONObject jo = layerlist.getJSONObject(i);
-                if (jo != null && jo.getString("type") != null && jo.getString("type").equalsIgnoreCase("contextual")) {
-                    System.out.println("********" + jo.getString("name"));
-                    if (mc.getMapLayer(jo.getString("displayname")) != null) {
-                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"), geoServer);
-                        //add feature to the map as a new layer
+        for (int i = 0; i < layerlist.size(); i++) {
+            JSONObject jo = layerlist.getJSONObject(i);
+            if (jo != null && jo.getString("type") != null
+                    && jo.getString("type").length() > 0
+                    && jo.getString("type").equalsIgnoreCase("contextual")) {
+                System.out.println("********" + jo.getString("name"));
+                if (mc.getMapLayer(jo.getString("displayname")) != null) {
+                    String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"), geoServer);
+                    //add feature to the map as a new layer
 
                     String json = readGeoJSON(featureURI);
                     String wkt = wktFromJSON(json);
@@ -439,21 +433,21 @@ public class SelectionController extends UtilityComposer {
                 return;
             }
 
-            String lsidtypes  = "";
-            String lsids  = "";
+            String lsidtypes = "";
+            String lsids = "";
             Iterator it = speciesfilters.keySet().iterator();
-            while(it.hasNext()) {
-                String lt = (String)it.next();
-                String li = (String)speciesfilters.get(lt);
+            while (it.hasNext()) {
+                String lt = (String) it.next();
+                String li = (String) speciesfilters.get(lt);
                 li = li.split("=")[1];
                 li = li.replaceAll("'", "");
 
-                lsidtypes += "type="+lt;
+                lsidtypes += "type=" + lt;
                 if (it.hasNext()) {
                     lsidtypes += "&";
                 }
 
-                lsids += "lsid="+URLEncoder.encode(li, "UTF-8");
+                lsids += "lsid=" + URLEncoder.encode(li, "UTF-8");
                 if (it.hasNext()) {
                     lsids += "&";
                 }
@@ -469,22 +463,22 @@ public class SelectionController extends UtilityComposer {
             //reqUri += "&"+lsidtypes;
             reqUri += "&lon=" + lon + "&lat=" + lat;
 
-        StringBuffer wkt = new StringBuffer();
-        wkt.append("POLYGON((");
-        wkt.append((lon-BUFFER_DISTANCE)).append(" ").append((lat-BUFFER_DISTANCE)).append(",");
-        wkt.append((lon-BUFFER_DISTANCE)).append(" ").append((lat+BUFFER_DISTANCE)).append(",");
-        wkt.append((lon+BUFFER_DISTANCE)).append(" ").append((lat+BUFFER_DISTANCE)).append(",");
-        wkt.append((lon+BUFFER_DISTANCE)).append(" ").append((lat-BUFFER_DISTANCE)).append(",");
-        wkt.append((lon-BUFFER_DISTANCE)).append(" ").append((lat-BUFFER_DISTANCE)).append("))");
+            StringBuffer wkt = new StringBuffer();
+            wkt.append("POLYGON((");
+            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append(",");
+            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat + BUFFER_DISTANCE)).append(",");
+            wkt.append((lon + BUFFER_DISTANCE)).append(" ").append((lat + BUFFER_DISTANCE)).append(",");
+            wkt.append((lon + BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append(",");
+            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append("))");
 
             reqUri = "http://spatial.ala.org.au/alaspatial";
             //reqUri += "/filtering/apply/pid/none/samples/geojson";
             reqUri += "/species/info/now";
-            reqUri += "?area="+URLEncoder.encode(wkt.toString(), "UTF-8");
+            reqUri += "?area=" + URLEncoder.encode(wkt.toString(), "UTF-8");
             reqUri += "&" + lsids;
 
 
-            System.out.println("locfeat calling: " + reqUri); 
+            System.out.println("locfeat calling: " + reqUri);
 
             HttpClient client = new HttpClient();
             GetMethod post = new GetMethod(reqUri);
@@ -499,7 +493,7 @@ public class SelectionController extends UtilityComposer {
         }
 
         //response = "alert('"+response+"'); ";
-        response = "showSpeciesInfo('"+response+"',"+lon+","+lat+"); ";
+        response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
         Clients.evalJavaScript(response);
     }
 
@@ -509,8 +503,13 @@ public class SelectionController extends UtilityComposer {
 
             String coords = obj.getJSONArray("geometries").getJSONObject(0).getString("coordinates");
 
-            String wkt = coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))");
-            return wkt;
+            if (obj.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("multipolygon")) {
+                String wkt = coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
+                return wkt;
+            } else {
+                String wkt = coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))");
+                return wkt;
+            }
         } catch (JSONException e) {
             return "none";
         }
@@ -547,11 +546,21 @@ public class SelectionController extends UtilityComposer {
         System.out.println("onchange$selectiongeom");
         setInstructions(null, null);
         try {
+            String wkt = "";
             if (selectionGeom.getValue().contains("NaN NaN")) {
                 displayGeom.setValue(DEFAULT_AREA);
                 lastTool = null;
+            } else if (selectionGeom.getValue().startsWith("LAYER(")) {
+                //get WKT from this feature
+                String v = selectionGeom.getValue().replace("LAYER(", "");
+                //FEATURE(table name if known, class name)
+                v = v.substring(0, v.length() - 1);
+                wkt = getLayerGeoJsonAsWkt(v, true);
+                displayGeom.setValue(wkt);
+                wkt = getLayerGeoJsonAsWkt(v, false);
             } else {
-                displayGeom.setValue(selectionGeom.getValue());
+                wkt = selectionGeom.getValue();
+                displayGeom.setValue(wkt);
             }
             updateComboBoxText();
             updateSpeciesList(false); // true
@@ -560,12 +569,16 @@ public class SelectionController extends UtilityComposer {
             MapComposer mc = getThisMapComposer();
 
             //add feature to the map as a new layer
-            MapLayer mapLayer = mc.addWKTLayer(selectionGeom.getValue(), "Active Area");
+            if (wkt.length() > 0) {
+                MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+            }
             rgAreaSelection.getSelectedItem().setChecked(false);
 
         } catch (Exception e) {//FIXME
         }
 
+        //reset selectionGeom for next set (could be the same)
+        selectionGeom.setValue("");
     }
 
     void updateComboBoxText() {
@@ -646,7 +659,7 @@ public class SelectionController extends UtilityComposer {
     public void showSpeciesPoly(Event event) throws Exception {
         String geomData = (String) event.getData();
         wfsQueryPolygon(geomData);
-  //      Clients.showBusy("", false);
+        //      Clients.showBusy("", false);
     }
 
     /**
@@ -886,10 +899,10 @@ public class SelectionController extends UtilityComposer {
             FilteringResultsWCController win =
                     (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("speciesListForm").getFellow("popup_results");
             //if (!populateSpeciesList) {
-                win.refreshCount();
+            win.refreshCount();
             //} else {
             //    win.onClick$refreshButton2();
-           // }
+            // }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -928,5 +941,40 @@ public class SelectionController extends UtilityComposer {
                 wInstructions.detach();
             }
         }
+    }
+
+    /**
+     * get Active Area as WKT string, from a layer name
+     *
+     * @param layer name of layer as String
+     * @param register_shape true to register the shape with alaspatial shape register
+     * @return
+     */
+    String getLayerGeoJsonAsWkt(String layer, boolean register_shape) {
+        String wkt = DEFAULT_AREA;
+        try {
+            //class_name is same as layer name
+            wkt = wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
+
+            if (!register_shape) {
+                return wkt;
+            }
+
+            //register wkt with alaspatial and use LAYER(layer name, id)
+            HttpClient client = new HttpClient();
+            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(satServer + "/alaspatial/species/shape/register");
+            get.addParameter("area", wkt);
+            get.addRequestHeader("Accept", "text/plain");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            System.out.println("register wkt shape with alaspatial: " + slist);
+
+            wkt = "LAYER(" + layer + "," + slist + ")";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + wkt);
+        return wkt;
     }
 }

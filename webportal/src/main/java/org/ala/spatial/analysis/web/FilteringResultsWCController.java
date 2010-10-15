@@ -108,7 +108,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                     // refresh count may be required if area is
                     // not an envelope.
                     String area = getMapComposer().getSelectionArea();
-                    if (!area.contains("ENVELOPE(")) {
+                    if (!area.startsWith("ENVELOPE(") && !area.startsWith("LAYER(")) {
                         refreshCount();
                     }
                 }
@@ -394,6 +394,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             //String area = getMapComposer().getViewArea();
             String area = getMapComposer().getSelectionArea();
+            String polygon = getMapComposer().getSelectionAreaPolygon();
 
             StringBuffer sbProcessUrl = new StringBuffer();
             //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
@@ -415,12 +416,13 @@ public class FilteringResultsWCController extends UtilityComposer {
                 if(ml.getMapLayerMetadata() == null){
                     ml.setMapLayerMetadata(new MapLayerMetadata());
                 }
-                ml.getMapLayerMetadata().setLayerExtent(area, 0.2);
+
+                ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
 
                 //get bounding box for active area
                 try{
                     MapLayerMetadata md2 = new MapLayerMetadata();
-                    md2.setLayerExtent(area, 0);
+                    md2.setLayerExtent(polygon, 0);
                     double [] d = md2.getLayerExtent();
 
                     List<Double> bb = new ArrayList<Double>();
