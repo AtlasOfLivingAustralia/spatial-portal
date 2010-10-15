@@ -239,14 +239,12 @@ public class TabulationSettings {
             loaded = true;
         }
 
-        SpatialLogger sl = new SpatialLogger();
-
         String filename = "";
 
         try {
             filename = TabulationSettings.class.getResource("/tabulation_settings.xml").getFile();
         } catch (Exception e) {
-            sl.log("Tabulation Settings", e.toString());
+            SpatialLogger.log("Tabulation Settings", e.toString());
 
         }
 

@@ -203,7 +203,7 @@ public class SamplingIndex implements AnalysisIndexService {
                 raf.close();
 
             } catch (Exception e) {
-                (new SpatialLogger()).log("intersectGrid writing", e.toString());
+                SpatialLogger.log("intersectGrid writing", e.toString());
             }
         }
 
@@ -235,7 +235,7 @@ public class SamplingIndex implements AnalysisIndexService {
             if (points == null) {
                 points = OccurrencesIndex.getPointsPairs();
 
-                (new SpatialLogger()).log("intersectCatagories, points> " + points.length);
+                SpatialLogger.log("intersectCatagories, points> " + points.length);
             }
 
             String query = "";
@@ -248,7 +248,7 @@ public class SamplingIndex implements AnalysisIndexService {
                 SimpleShapeFile ssf = new SimpleShapeFile(
                         TabulationSettings.environmental_data_path
                         + l.name);
-                (new SpatialLogger()).log("shapefile open: " + l.name);
+                SpatialLogger.log("shapefile open: " + l.name);
 
                 /* export catagories
                  * TODO: operate on more than one field and remove assumption
@@ -264,7 +264,7 @@ public class SamplingIndex implements AnalysisIndexService {
 
                 /* column not found, log and substitute first column */
                 if (column_idx < 0) {
-                    (new SpatialLogger()).log("intersectCatagories, missing col:" + fieldname + " in " + l.name);
+                    SpatialLogger.log("intersectCatagories, missing col:" + fieldname + " in " + l.name);
                 }
 
                 String[] catagories = ssf.getColumnLookup(column_idx);
@@ -280,7 +280,7 @@ public class SamplingIndex implements AnalysisIndexService {
                         + CATAGORICAL_PREFIX + tablename + VALUE_POSTFIX, "rw");
 
                 //repeat for each point
-                (new SpatialLogger()).log("intersectCatagories, begin intersect: " + points.length);
+                SpatialLogger.log("intersectCatagories, begin intersect: " + points.length);
 
                 int[] values = ssf.intersect(points, catagories, column_idx);
 
@@ -297,9 +297,9 @@ public class SamplingIndex implements AnalysisIndexService {
                 raf.write(b);
                 raf.close();
 
-                (new SpatialLogger()).log("shapefile done: " + l.name);
+                SpatialLogger.log("shapefile done: " + l.name);
             } catch (Exception e) {
-                (new SpatialLogger()).log("intersectCatagories",
+                SpatialLogger.log("intersectCatagories",
                         e.toString() + "\r\n>query=" + query + "\r\n>i=" + i
                         + "\r\n>longitude, latitude=" + longitude + "," + latitude);
                 e.printStackTrace();
@@ -372,7 +372,7 @@ public class SamplingIndex implements AnalysisIndexService {
 
             return output;
         } catch (Exception e) {
-            (new SpatialLogger()).log("getRecords", e.toString());
+            SpatialLogger.log("getRecords", e.toString());
             e.printStackTrace();
         }
 
@@ -442,7 +442,7 @@ public class SamplingIndex implements AnalysisIndexService {
                 return str;
             }
         } catch (Exception e) {
-            (new SpatialLogger()).log("getRecords", e.toString());
+            SpatialLogger.log("getRecords", e.toString());
         }
 
         return null;
@@ -481,7 +481,7 @@ public class SamplingIndex implements AnalysisIndexService {
                 String[] lines = str.split("\n");
                 return lines;
             } catch (Exception e) {
-                (new SpatialLogger()).log("getLayerExtents(" + layer.name + "), catagorical",
+                SpatialLogger.log("getLayerExtents(" + layer.name + "), catagorical",
                         e.toString());
             }
         }

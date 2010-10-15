@@ -156,7 +156,7 @@ public class Layers {
 					return new String(data);
 
 				}catch(Exception e){
-					(new SpatialLogger()).log("getLayerMetaData(" + layer_name + ")",
+					SpatialLogger.log("getLayerMetaData(" + layer_name + ")",
 						e.toString());
 				}
 			}

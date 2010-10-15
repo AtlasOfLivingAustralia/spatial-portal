@@ -123,7 +123,7 @@ public class UploadSpatialResource {
             }
         	call = post;
         } else {
-        	(new SpatialLogger()).log("UploadSpatialResource","invalid type: " + type);
+        	SpatialLogger.log("UploadSpatialResource","invalid type: " + type);
         	return output;
         }
         
@@ -133,7 +133,7 @@ public class UploadSpatialResource {
             
             output += result;             
         } catch (Exception e) {
-        	(new SpatialLogger()).log("UploadSpatialResource","failed upload to: " + url);
+        	SpatialLogger.log("UploadSpatialResource","failed upload to: " + url);
         } finally {
             // Release current connection to the connection pool once you are done 
             call.releaseConnection();

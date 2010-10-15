@@ -319,7 +319,7 @@ public class AlocService {
             job.log("identified groups");
         }
 
-        (new SpatialLogger()).log("done gower metric");
+        SpatialLogger.log("done gower metric");
 
         /* recalculate group counts */
         int newNumberOfGroups = 0;

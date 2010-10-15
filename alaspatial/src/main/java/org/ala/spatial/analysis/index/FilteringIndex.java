@@ -249,10 +249,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                 outputvalues.close();
                 outputrecords.close();
 
-                (new SpatialLogger()).log("makeSPL_GRID writing done > " + layer.name);
+                SpatialLogger.log("makeSPL_GRID writing done > " + layer.name);
 
             } catch (Exception e) {
-                (new SpatialLogger()).log("makeSPL_GRID writing", ">" + layer.name + "> " + e.toString());
+                SpatialLogger.log("makeSPL_GRID writing", ">" + layer.name + "> " + e.toString());
             }
         }
 
@@ -377,10 +377,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 sam_i_layerfile.close();
 
-                (new SpatialLogger()).log("makeSPL_CATAGORIES writing done > " + layer.name);
+                SpatialLogger.log("makeSPL_CATAGORIES writing done > " + layer.name);
 
             } catch (Exception e) {
-                (new SpatialLogger()).log("makeSPL_CATAGORIES writing", ">" + layer.name + "> " + e.toString());
+                SpatialLogger.log("makeSPL_CATAGORIES writing", ">" + layer.name + "> " + e.toString());
             }
         }
     }
@@ -485,7 +485,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                 return new LayerFilter(layer, catagories, catagory_names, 0, 0);
 
             } catch (Exception e) {
-                (new SpatialLogger()).log("getLayerExtents(" + layer.name + "), catagorical",
+                SpatialLogger.log("getLayerExtents(" + layer.name + "), catagorical",
                         e.toString());
             }
         }
@@ -574,7 +574,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 return output.toString().replace("\r\n", "<br>\r\n");
             } catch (Exception e) {
-                (new SpatialLogger()).log("getLayerExtents(" + layer_name + "), catagorical",
+                SpatialLogger.log("getLayerExtents(" + layer_name + "), catagorical",
                         e.toString());
             }
         }
@@ -704,7 +704,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
             raf.close();
 
         } catch (Exception e) {
-            (new SpatialLogger()).log("apply continous species list file",
+            SpatialLogger.log("apply continous species list file",
                     "layer:" + filter.layername
                     + "> " + e.toString());
         }
@@ -749,7 +749,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                     set = newset;
                 }
             } catch (Exception e) {
-                (new SpatialLogger()).log("apply catagory species list file",
+                SpatialLogger.log("apply catagory species list file",
                         "layer:" + filter.layername + " cat:" + value
                         + ": species_mask_layer len:"
                         + " : " + k + ">" + e.toString());
