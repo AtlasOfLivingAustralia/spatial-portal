@@ -546,10 +546,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public String getSelectionAreaPolygon() {
         String area = getSelectionArea();
-        if(area.startsWith("LAYER(")){
-            String layername = area.substring(6,area.lastIndexOf(','));
+        if (area.startsWith("LAYER(")) {
+            String layername = area.substring(6, area.lastIndexOf(','));
             return getLayerGeoJsonAsWkt(layername);
-        } else if(area.startsWith("ENVELOPE(")){
+        } else if (area.startsWith("ENVELOPE(")) {
             return getViewArea();
         }
         return area;
@@ -3610,18 +3610,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             species = LayersUtil.getScientificName(lsid);
         }
 
-        return mapSpeciesByLsidFilter(lsid, species, rank);
-
-        /*
         //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
-        if(countOfLsid(lsid) > 5000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)){
-        return mapSpeciesByLsidCluster(lsid, species);
-        }else{
-        //return mapSpeciesByLsidPoints(lsid,species);
-        return mapSpeciesByLsidFilter(lsid, species, rank);
-    }
-         *
-         */
+        if (countOfLsid(lsid) > 5000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
+            return mapSpeciesByLsidCluster(lsid, species);
+        } else {
+            //return mapSpeciesByLsidPoints(lsid,species);
+            return mapSpeciesByLsidFilter(lsid, species, rank);
+        }
     }
 
     int countOfLsid(String lsid) {
@@ -3807,7 +3802,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         try {
             if (safeToPerformMapAction()) {
-                boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.4, "", envString);
+                boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
                 if (addedOk) {
                     MapLayer ml = getMapLayer(label);
                     ml.setDynamicStyle(true);
@@ -3818,7 +3813,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     ml.setGreenVal(g);
                     ml.setRedVal(r);
                     ml.setSizeVal(8);
-                    ml.setOpacity((float) 0.4);
+                    ml.setOpacity((float) 0.8);
 
                     return ml;
                 }
@@ -4249,7 +4244,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    
     /**
      * get Active Area as WKT string, from a layer name
      *
