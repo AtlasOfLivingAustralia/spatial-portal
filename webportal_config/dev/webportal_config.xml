@@ -203,7 +203,7 @@
      <print_server_url>http://spatial-dev.ala.org.au/webportal/</print_server_url>
     <!-- url to species metadata.  _lsid_ is replaced with actual lsid -->
      <species_metadata_url>http://bie.ala.org.au/species/_lsid_</species_metadata_url>
-
+     <help_url>http://test.ala.org.au</help_url>
     </tns:supplementary>
   </tns:settings>
   <!--Menu
