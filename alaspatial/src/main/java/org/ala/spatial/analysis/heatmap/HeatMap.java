@@ -61,10 +61,10 @@ public class HeatMap {
     private double minY = 0;
     private double maxX = 0;
     private double maxY = 0;
-    private double bMinX = 112.911;
-    private double bMinY = -54.778;
-    private double bMaxX = 159.113;
-    private double bMaxY = -9.221;
+    private double bMinX = 112.911; //112.911;
+    private double bMinY = -50.778; //-54.778;
+    private double bMaxX = 158.113; //159.113;
+    private double bMaxY = -9.221; //-9.221;
     private File baseDir;
     private String baseFile;
 
