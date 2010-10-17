@@ -30,30 +30,24 @@
         <tabbox id="analysisOptsTabbox" zindex="600" style="border:0px!important; border: solid 0px white;" width="95%"> <!-- mold="accordion-lite"  zclass="menuswitch"  -->
             <tabs>
                 <!-- species list -->
-                <tab id="speciesListTab" label="Species List" selected="true" />
+                <tab id="speciesListTab" label="Species List" selected="true" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-species-tab/&quot;)" />
 
                 <!--  sampling  -->
-                <tab id="samplingTab" label="Sampling" />
+                <tab id="samplingTab" label="Sampling" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-sampling-tab/&quot;)" />
 
                 <!--  maxent -->
-                <tab id="maxentTab" label="Prediction" />
+                <tab id="maxentTab" label="Prediction" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-prediction-tab/&quot;)" />
 
                 <!--  aloc -->
-                <tab id="alocTab" label="Classification"  />
+                <tab id="alocTab" label="Classification" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
             </tabs>
             <toolbar>
-                <toolbarbutton image="/img/help.png" sclass="helpButton">
-                    <attribute name="onClick">{
-                        if (analysisOptsTabbox.getSelectedTab().getIndex() == 0) {
-                        helpSpeciesList.open=(helpSpeciesList.open) ? false:true;
-                        } else if (analysisOptsTabbox.getSelectedTab().getIndex() == 1) {
-                        helpSampling.open=(helpSampling.open) ? false:true;
-                        } else if (analysisOptsTabbox.getSelectedTab().getIndex() == 2) {
-                        helpPrediction.open=(helpPrediction.open) ? false:true;
-                        } else if (analysisOptsTabbox.getSelectedTab().getIndex() == 3) {
-                        helpAloc.open=(helpAloc.open) ? false:true;
-                        }
-                    }</attribute>
+                <toolbarbutton id="analysisCXHelp"
+                    image="/img/help.png"
+                    sclass="helpButton"
+                    tooltiptext="ALA Spatial Portal Help"
+                    forward="onClick=onActivateLink()" >
+                        <custom-attributes link="${settingsSupplementary.values.help_url}/spatial-portal-help/analysis-species-tab/" />
                 </toolbarbutton>
             </toolbar>
             <tabpanels>

@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.zkoss.zk.ui.Page;
@@ -13,6 +14,7 @@ import org.zkoss.zul.Window;
 import org.ala.spatial.analysis.web.SamplingWCController;
 import org.ala.spatial.analysis.web.MaxentWCController;
 import org.ala.spatial.analysis.web.ALOCWCController;
+import org.zkoss.zk.ui.event.ForwardEvent;
 
 /**
  * Controller class for the Analysis tab
@@ -27,6 +29,8 @@ public class AnalysisController extends UtilityComposer {
     private static final String MENU_MAX_WIDTH = "100%";
 
     private Session sess = (Session) Sessions.getCurrent();
+
+    private SettingsSupplementary settingsSupplementary = null;
 
     private HtmlMacroComponent speciesListForm;
     private HtmlMacroComponent asf;
@@ -46,9 +50,26 @@ public class AnalysisController extends UtilityComposer {
         super.afterCompose();
         try {
             //Messagebox.show("hello SAT world!!");
+            if (settingsSupplementary == null) {
+                System.out.println("1.settingsSupplementary is null, setting it...");
+                if (getMapComposer() != null) {
+                    settingsSupplementary = getMapComposer().getSettingsSupplementary(); 
+                }
+            } else {
+                System.out.println("1.settingsSupplementary is already set");
+            }
+
+            if (settingsSupplementary == null) {
+                System.out.println("2.settingsSupplementary is still null");
+            }
+
         } catch (Exception ex) {
             Logger.getLogger(AnalysisController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void onActivateLink(ForwardEvent event) {
+        getMapComposer().onActivateLink(event);
     }
 
     public void onSelect$speciesListTab() {
