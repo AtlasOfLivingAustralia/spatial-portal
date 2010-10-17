@@ -329,7 +329,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                            tooltiptext="ALA Spatial Portal Help" 
                                            forward="onClick=onActivateLink()" >
                                 <!--<custom-attributes link="http://emii1.its.utas.edu.au/drupal/" />-->
-                                    <custom-attributes link="http://test.ala.org.au/explore/species-maps/species-maps-help/" />
+                                    <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/species-maps-help/" />
                                     <custom-attributes label="Help" />
                                 </toolbarbutton>
                                 <toolbarbutton
@@ -608,34 +608,17 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <separator bar="true"/>
                                 <tabbox id="mapOptsTabbox" width="95%"><!-- height="300px" mold="accordion-lite" -->
                                     <tabs>
-                                        <tab label="Species" />
-                                        <tab label="Locations" />
-                                        <tab label="Layers" />
+                                        <tab label="Species" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-species-tab/&quot;)" />
+                                        <tab label="Locations" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-locations-tab/&quot;)" />
+                                        <tab label="Layers" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-layers-tab/&quot;)" />
             <!-- <tab id="realtimeTab" label="Layers" if="${! settings.disableRealtime}" visible="false" /> -->
             <!-- <tab label="Map WMS layer" visible="false" /> -->
                                     </tabs>
                                     <toolbar>
-                                        <toolbarbutton image="/img/help.png">
-                                            <attribute name="onClick">{
-                                            if (mapOptsTabbox.getSelectedTab().getIndex() == 0) {
-                                            helpSpecies.open=(helpSpecies.open) ? false:true;
-                                            } else if (mapOptsTabbox.getSelectedTab().getIndex() == 1) {
-                                            helpLocation.open=(helpLocation.open) ? false:true;
-                                            } else if (mapOptsTabbox.getSelectedTab().getIndex() == 2) {
-                                            helpLayers.open=(helpLayers.open) ? false:true;
-                                            }
-/*
-                                            function loadHelpLink(theUrl) {
-                                                // iframe in another id-space so can't be auto wired
-            Iframe iframe = getExternalContentIframe();
-            iframe.setSrc(theUrl);
-
-            externalContentWindow.setPosition("center");
-            externalContentWindow.doOverlapped();
-                                            }
-*/
-                                        }
-                                            </attribute>
+                                        <toolbarbutton id="mapCXHelp"
+                                            image="/img/help.png"
+                                            forward="onClick=onActivateLink()" >
+                                                <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/map-tab-species-tab/" />
                                         </toolbarbutton>
                                     </toolbar>
                                     <tabpanels>
