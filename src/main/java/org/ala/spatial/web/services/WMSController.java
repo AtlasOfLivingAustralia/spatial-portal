@@ -189,7 +189,7 @@ public class WMSController {
                 } else {
                     System.out.println("Starting out search for: " + institution_code);
                     //msg = "generating density insitution code map for: " + institution_code;
-                    int[] recs = OccurrencesIndex.lookup("institutionCode", institution_code);
+                    int[] recs = OccurrencesIndex.lookup("institution_code_uid", institution_code); // institutionCode
 
                     if (recs != null) {
 
@@ -201,7 +201,7 @@ public class WMSController {
                         if (collection_code != null) {
                             for (int i = 0; i < collection_code.length; i++) {
                                 //msg = "generating density insitution/collection code map for: " + institution_code + "/" + collection_code[i];
-                                int[] recs2 = OccurrencesIndex.lookup("collectionCode", collection_code[i]);
+                                int[] recs2 = OccurrencesIndex.lookup("collection_code_uid", collection_code[i]); // collectionCode
                                 if (recs2 != null) {
                                     System.out.println("Got recs2.length: " + recs2.length);
                                     if (finalRecs != null) {
@@ -241,15 +241,15 @@ public class WMSController {
                             System.out.println("Sending out: " + msg);
 
                         } else {
-                            msg = "base/mapaus1_white.png";
+                            msg = baseOutUrl + "base/mapaus1_white.png";
                         }
 
                     } else {
-                        msg = "base/mapaus1_white.png";
+                        msg = baseOutUrl + "base/mapaus1_white.png";
                     }
                 }
             } else if (data_provider_id != null) {
-                msg = baseOutUrl + process(baseDir, "dataProviderId", data_provider_id);
+                msg = baseOutUrl + process(baseDir, "data_provider_uid", data_provider_id); // dataProviderId
                 /*
                 String outputfile = baseDir + File.separator + data_provider_id + ".png";
                 System.out.println("Checking if already present: " + outputfile);
@@ -287,7 +287,7 @@ public class WMSController {
                  * 
                  */
             } else if (dataset_id != null) {
-                msg = baseOutUrl + process(baseDir, "dataResourceId", dataset_id);
+                msg = baseOutUrl + process(baseDir, "data_resource_uid", dataset_id); // dataResourceId
                 /*
                 String outputfile = baseDir + File.separator + dataset_id + ".png";
                 System.out.println("Checking if already present: " + outputfile);
@@ -374,7 +374,7 @@ public class WMSController {
                         System.out.println("Sending out: " + msg);
 
                     } else {
-                        msg = "base/mapaus1_white.png";
+                        msg = baseOutUrl + "base/mapaus1_white.png";
                         System.out.println("Empty filter species");
                     }
 
