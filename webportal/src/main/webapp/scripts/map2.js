@@ -382,14 +382,25 @@ function showSpeciesInfo(occids, lon, lat) {
         occlist.push(occids);
     }
 
-    popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-        new OpenLayers.LonLat(lon, lat),
-        new OpenLayers.Size(100,150),
-        "<div id='sppopup' style='width: 350px; height: 220px;'>" + occlist.length + " occurrences found in this location <br /> Retrieving data... </div>"
-        ,
-        null, true, onPopupClose);
+    if(occlist != null && occlist.length > 0 && occlist[0] != null && occlist[0].length > 0){
+        var lonlat = new OpenLayers.LonLat(lon, lat).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject());
 
-    iterateSpeciesInfo(0);
+        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+            lonlat,
+            new OpenLayers.Size(100,150),
+            "<div id='sppopup' style='width: 350px; height: 220px;'>" + occlist.length + " occurrences found in this location <br /> Retrieving data... </div>"
+            ,
+            null, true, onPopupClose);
+
+        iterateSpeciesInfo(0);
+        
+        var feature = popup;
+        feature.popup = popup;
+        popup.feature = feature;
+        map.addPopup(popup, true);
+    }
 }
 
 function iterateSpeciesInfo(curr) {
@@ -406,7 +417,7 @@ function iterateSpeciesInfo(curr) {
         }
     } catch (err) {}
 
-    var occ_id = occlist[curr]; 
+    var occ_id = occlist[curr];
     $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
         displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
     });
@@ -914,7 +925,7 @@ function showInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {    
+    $.get(proxy_script + "http://spatial.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
 
         $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
             var occinfo = data.occurrence;
@@ -1126,7 +1137,7 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
     " Spatial uncertainty in meters: " + uncertaintyText + " (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)<br />" +
     " Occurrence date: " + occurrencedate + " <br />" +
-    "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occ_id + "' target='_blank'>View details</a> <br /> <br />" +
+    "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occinfo.id + "' target='_blank'>View details</a> <br /> <br />" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
     //        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
