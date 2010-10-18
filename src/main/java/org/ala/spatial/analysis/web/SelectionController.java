@@ -457,7 +457,7 @@ public class SelectionController extends UtilityComposer {
             //lsidtypes = URLEncoder.encode(lsidtypes, "UTF-8");
 
             // /geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=topp%3Atasmania_state_boundaries,topp%3Atasmania_roads,topp%3Atasmania_cities,topp%3Atasmania_water_bodies&QUERY_LAYERS=topp%3Atasmania_state_boundaries,topp%3Atasmania_roads,topp%3Atasmania_cities,topp%3Atasmania_water_bodies&STYLES=,,,&BBOX=140.5315%2C-44.423%2C151.7815%2C-38.798&FEATURE_COUNT=10&HEIGHT=256&WIDTH=512&FORMAT=image%2Fgif&INFO_FORMAT=text%2Fhtml&SRS=EPSG%3A4326&X=306&Y=134
-            geoServer = "http://localhost:8080";
+            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
             String reqUri = geoServer + "/geoserver/rest/occurrences/features.json?";
             reqUri += lsids;
             //reqUri += "&"+lsidtypes;
@@ -471,7 +471,7 @@ public class SelectionController extends UtilityComposer {
             wkt.append((lon + BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append(",");
             wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append("))");
 
-            reqUri = "http://spatial.ala.org.au/alaspatial";
+            reqUri = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial";
             //reqUri += "/filtering/apply/pid/none/samples/geojson";
             reqUri += "/species/info/now";
             reqUri += "?area=" + URLEncoder.encode(wkt.toString(), "UTF-8");
@@ -487,6 +487,7 @@ public class SelectionController extends UtilityComposer {
             int result = client.executeMethod(post);
             String slist = post.getResponseBodyAsString();
             response = slist;
+            System.out.println("locfeat data: " + slist);
         } catch (Exception e) {
             System.out.println("error loading new geojson:");
             e.printStackTrace(System.out);
