@@ -567,7 +567,7 @@ public class FilteringService implements Serializable {
             return null;    //not supported right now
         }
 
-        double[][] bbox = region.getBoundingBox();
+        //double[][] bbox = region.getBoundingBox();
         int max_parts_size = 2000;
         int count = 0;
 
