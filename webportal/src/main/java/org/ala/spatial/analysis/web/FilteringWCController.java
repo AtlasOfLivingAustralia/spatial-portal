@@ -43,6 +43,7 @@ import org.zkoss.zul.Window;
  * @author ajay
  */
 public class FilteringWCController extends UtilityComposer {
+    public static final String LAYER_PREFIX = "Envelope: ";
 
     private static final long serialVersionUID = -26560838825366347L;
     private EnvLayersCombobox cbEnvLayers;
@@ -60,6 +61,7 @@ public class FilteringWCController extends UtilityComposer {
     public Button apply_continous;
     String[] results = null;
     private List<String> selectedLayers;
+    private List<String> selectedLayersUrl;
     private Map<String, SPLFilter> selectedSPLFilterLayers;
     private String pid = "";
     private MapComposer mc;
@@ -90,8 +92,9 @@ public class FilteringWCController extends UtilityComposer {
         layersUtil = new LayersUtil(mc, satServer);
 
         selectedLayers = new Vector<String>();
+        selectedLayersUrl = new Vector<String>();
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
-
+        
         // init the session on the server and get a pid (process_id)
         pid = getInfo("/filtering/init");
     }
@@ -139,6 +142,7 @@ public class FilteringWCController extends UtilityComposer {
                 //not a new value to add
             } else {
                 selectedLayers.add(new_value);
+                selectedLayersUrl.add(null);
             }
 
             /* apply something to line onclick in lb */
@@ -148,7 +152,7 @@ public class FilteringWCController extends UtilityComposer {
                 public void render(Listitem li, Object data) {
                     String layername = (String) data;
                     SPLFilter f = getSPLFilter(layername);
-
+                    
                     // Col 1: Add the layer name
                     Listcell lname = new Listcell(f.layer.display_name);
                     lname.setStyle("white-space: normal;");
@@ -238,6 +242,10 @@ public class FilteringWCController extends UtilityComposer {
             selectedSPLFilterLayers.put(layername, splf);
         }
 
+        if(layername != splf.layer.name){
+            splf = getSPLFilter(splf.layer.name);
+        }
+
         return splf;
 
     }
@@ -313,15 +321,31 @@ public class FilteringWCController extends UtilityComposer {
 
         getInfo(sbProcessUrl.toString());
 
-        mc.removeLayer(getSPLFilter(label).layer.display_name);
+        //not executing, echo
+        //mc.removeLayer(getSPLFilter(label).layer.display_name);
+        Events.echoEvent("removeLayer", this, getSPLFilter(label).layer.display_name);
 
         selectedLayers.remove(label);
+        selectedLayersUrl.remove(idx);
 
         li.detach();
 
         showAdjustPopup(null);
 
         listFix();
+    }
+
+    public void removeLayer(Event event){
+        String all = (String) event.getData();
+        String layername = all;
+        int p = layername.indexOf('|');
+        if(p > 0){
+            Events.echoEvent("removeLayer", this, layername.substring(p+1));
+            layername = layername.substring(0,p);
+        }
+        if(mc.getMapLayer(LAYER_PREFIX + layername) != null){
+            mc.removeLayer(LAYER_PREFIX + layername);
+        }
     }
 
     public void listFix() {
@@ -405,14 +429,14 @@ public class FilteringWCController extends UtilityComposer {
         layername = ((Listcell) li.getChildren().get(0)).getLabel();
         //layername = (layername.equals("")) ? "" : layername.substring(0, layername.lastIndexOf("(")).trim();
 
-        popup_filter = getSPLFilter(layername);
+        popup_filter = getSPLFilter(layername);        
         popup_idx.setValue(layername);
 
         popup_cell = lc;
         popup_item = li;
 
         label_continous.setValue("edit envelope for: " + getSPLFilter(layername).layer.display_name);
-        String csv = String.format("%.4f", (float) popup_filter.minimum_value) + " - " + String.format("%.4f", (float) popup_filter.maximum_value);
+        String csv = String.format("%.4f", (float) popup_filter.minimum_initial) + " - " + String.format("%.4f", (float) popup_filter.maximum_initial);
         popup_range.setValue(csv);
 
         popup_minimum.setValue((float) (popup_filter.minimum_value));
@@ -485,6 +509,9 @@ public class FilteringWCController extends UtilityComposer {
 
             String imagefilepath = getInfo(urlPart);
             loadMap(imagefilepath, layerdisplayname);
+
+            selectedLayersUrl.set(lbSelLayers.getItemCount()-1, imagefilepath);
+
         } catch (Exception e) {
             //TODO: error message
             e.printStackTrace(System.out);
@@ -658,7 +685,7 @@ public class FilteringWCController extends UtilityComposer {
         //bbox.add(17143201.58216413);
         //bbox.add(-1006021.0627551343);
 
-        mc.addImageLayer(pid, layername, uri, opacity, bbox);
+        mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox);
 
     }
 
@@ -696,5 +723,56 @@ public class FilteringWCController extends UtilityComposer {
         if (layer != null) {
          //   doAdd(layer);
         }
+    }
+
+    boolean state_visible = true;
+
+    /**
+     * Remove all selected layers from the map.
+     *
+     * For use when disabling Environmental Envelope in Active Layers.
+     */
+    public void removeAllSelectedLayers(){
+        if(state_visible){
+            state_visible = false;
+            StringBuffer sb = new StringBuffer();
+            for(int i=0;i<selectedLayers.size();i++){
+                String label = selectedLayers.get(i);
+                sb.append(getSPLFilter(label).layer.display_name);
+                if(i < selectedLayers.size()-1){
+                    sb.append("|");
+                }
+            }
+            if(selectedLayers.size() > 0){
+                Events.echoEvent("removeLayer", this, sb.toString());
+            }
+        }
+    }
+
+    public void showAllSelectedLayers(){
+        state_visible = true;
+        StringBuffer sb = new StringBuffer();
+        for(int i=0;i<selectedLayers.size();i++){
+            String label = selectedLayers.get(i);
+            sb.append(String.valueOf(i));
+            if(i < selectedLayers.size()-1){
+                sb.append("|");
+            }
+        }
+        if(selectedLayers.size() > 0){
+            Events.echoEvent("showLayer", this, sb.toString());
+        }
+    }
+
+    public void showLayer(Event event){
+        String all = (String) event.getData();
+        String idx = all;
+        int p = idx.indexOf('|');
+        if(p > 0){
+            Events.echoEvent("showLayer", this, idx.substring(p+1));
+            idx = idx.substring(0,p);
+        }
+        int i = Integer.parseInt(idx);
+        loadMap(selectedLayersUrl.get(i), getSPLFilter(selectedLayers.get(i)).layer.display_name);
     }
 }

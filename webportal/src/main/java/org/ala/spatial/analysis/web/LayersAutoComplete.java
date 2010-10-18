@@ -26,7 +26,9 @@ import org.zkoss.zul.Comboitem;
 public class LayersAutoComplete extends Combobox {
 
     private static String SAT_SERVER = null;
-    SettingsSupplementary settingsSupplementary = null;;
+    SettingsSupplementary settingsSupplementary = null;
+
+    ;
 
     public LayersAutoComplete() {
         refresh(""); //init the child comboitems
@@ -57,11 +59,11 @@ public class LayersAutoComplete extends Combobox {
         //TODO get this from the config file
         if (settingsSupplementary != null) {
             //System.out.println("setting ss.val");
-        } else if(this.getParent() != null){
+        } else if (this.getParent() != null) {
             settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
             System.out.println("LAC got SS: " + settingsSupplementary);
             SAT_SERVER = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }else{
+        } else {
             return;
         }
 
@@ -74,82 +76,86 @@ public class LayersAutoComplete extends Combobox {
             Iterator it = getItems().iterator();
             /*
             if (val.length() == 0) {
-                Comboitem myci = null;
-                if (it != null && it.hasNext()) {
-                    myci = ((Comboitem) it.next());
-                    myci.setLabel("Please start by typing in a layer name or keyword...");
-                } else {
-                    it = null;
-                    myci = new Comboitem("Please start by typing in a layer name or keyword...");
-                    myci.setParent(this);
-                }
-                myci.setDescription("");
-                myci.setDisabled(true);
+            Comboitem myci = null;
+            if (it != null && it.hasNext()) {
+            myci = ((Comboitem) it.next());
+            myci.setLabel("Please start by typing in a layer name or keyword...");
+            } else {
+            it = null;
+            myci = new Comboitem("Please start by typing in a layer name or keyword...");
+            myci.setParent(this);
+            }
+            myci.setDescription("");
+            myci.setDisabled(true);
             } else {
              *
              */
-                String lsurl = baseUrl;
-                if (val.length() == 0) {
-                    lsurl += "list";
-                } else {
-                    lsurl += "search/" + URLEncoder.encode(val, "UTF-8");
-                }
+            String lsurl = baseUrl;
+            if (val.length() == 0) {
+                lsurl += "list";
+            } else {
+                lsurl += "search/" + URLEncoder.encode(val, "UTF-8");
+            }
 
-                System.out.println("nsurl: " + lsurl);
+            System.out.println("nsurl: " + lsurl);
 
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(lsurl);
-                //get.addRequestHeader("Content-type", "application/json");
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(lsurl);
+            //get.addRequestHeader("Content-type", "application/json");
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
 
-                //System.out.println("Response status code: " + result);
-                //System.out.println("Response: \n" + slist);
+            //System.out.println("Response status code: " + result);
+            //System.out.println("Response: \n" + slist);
 
-                JSONArray results = JSONArray.fromObject(slist);
+            JSONArray results = JSONArray.fromObject(slist);
 
-                System.out.println("got " + results.size() + " layers");
+            System.out.println("got " + results.size() + " layers");
 
-                Sessions.getCurrent().setAttribute("layerlist", results);
+            Sessions.getCurrent().setAttribute("layerlist", results);
 
-                if (results.size() > 0) {
+            if (results.size() > 0) {
 
-                    for (int i = 0; i < results.size(); i++) {
+                for (int i = 0; i < results.size(); i++) {
 
-                        JSONObject jo = results.getJSONObject(i);
+                    JSONObject jo = results.getJSONObject(i);
 
-                        if (!jo.getBoolean("enabled")) {
-                            continue;
-                        }
-
-                        String displayName = jo.getString("displayname");
-                        String type = jo.getString("type");
-
-                        Comboitem myci = null;
-                        if (it != null && it.hasNext()) {
-                            myci = ((Comboitem) it.next());
-                            myci.setLabel(displayName);
-                        } else {
-                            it = null;
-                            myci = new Comboitem(displayName);
-                            myci.setParent(this);
-                        }
-                        myci.setDescription(jo.getString("classification1") + ": " + jo.getString("classification2") + ": " + type);
-                        myci.setDisabled(false);
-                        myci.setValue(jo);
+                    if (!jo.getBoolean("enabled")) {
+                        continue;
                     }
-                }
-                /*else {
-                if (it != null && it.hasNext()) {
-                ((Comboitem) it.next()).setLabel("No species found.");
-                } else {
-                it = null;
-                new Comboitem("No species found.").setParent(this);
-                }
 
-                }*/
+                    String displayName = jo.getString("displayname");
+                    String type = jo.getString("type");
+
+                    Comboitem myci = null;
+                    if (it != null && it.hasNext()) {
+                        myci = ((Comboitem) it.next());
+                        myci.setLabel(displayName);
+                    } else {
+                        it = null;
+                        myci = new Comboitem(displayName);
+                        myci.setParent(this);
+                    }
+                    String c2 = "";
+                    if (!jo.getString("classification2").equals("null")) {
+                        c2 = jo.getString("classification2") + ": ";
+                    }
+                    myci.setDescription(jo.getString("classification1") + ": " + c2 + type);
+                    myci.setDisabled(false);
+                    myci.setValue(jo);
+                }
+            }
+            /*else {
+            if (it != null && it.hasNext()) {
+            ((Comboitem) it.next()).setLabel("No species found.");
+            } else {
+            it = null;
+            new Comboitem("No species found.").setParent(this);
+            }
+
+            }*/
 
             ///}
             while (it != null && it.hasNext()) {
@@ -164,7 +170,7 @@ public class LayersAutoComplete extends Combobox {
         }
     }
 
-     private MapComposer getThisMapComposer() {
+    private MapComposer getThisMapComposer() {
 
         MapComposer mapComposer = null;
         Page page = getPage();

@@ -119,7 +119,7 @@
                                     <textbox id="popup_idx" width="1px" visible="false"></textbox>
                                 </hbox>
                                 <hbox>
-                                    <button label="Update species count" id="apply_continous" sclass="goButton" />
+                                    <button label="Submit layer values" id="apply_continous" sclass="goButton" />
                                     <button label="Remove" id="remove_continous" sclass="goButton" />
                                     <button label="preview results" id="preview_continous" visible="false"/>
                                 </hbox>

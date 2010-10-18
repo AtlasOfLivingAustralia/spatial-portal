@@ -523,7 +523,7 @@ public class FilteringWSController {
             File fDir = new File(outputpath);
             fDir.mkdir();
             
-            String gjsonFile = FilteringService.getSamplesListAsGeoJSON(pid, region, records, fDir);
+            String gjsonFile = FilteringService.getSamplesListAsGeoJSON("none" /*TODO: allow pid here*/ , region, records, fDir);
 
             System.out.println("getSamplesListAsGeoJSON:" + gjsonFile);
             return "output/filtering/" + gjsonFile;

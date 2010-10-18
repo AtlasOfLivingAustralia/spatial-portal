@@ -206,6 +206,8 @@ public class SelectionController extends UtilityComposer {
         cbAreaSelection.setText("Box - Current View");
         updateSpeciesList(false);
 
+        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers();
+
         lastTool = null;
     }
 
@@ -217,6 +219,7 @@ public class SelectionController extends UtilityComposer {
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         mc.removeFromList(mc.getMapLayer("Active Area"));
+        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers();
         lastTool = null;
     }
 
@@ -339,6 +342,9 @@ public class SelectionController extends UtilityComposer {
         areaInfo.setVisible(true);
         envelopeInfo.setVisible(true);
         polygonInfo.setVisible(false);
+
+        //redraw filter layers
+        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).showAllSelectedLayers();
     }
 
     void showPolygonInfo() {
@@ -936,7 +942,8 @@ public class SelectionController extends UtilityComposer {
 
     public void checkForAreaRemoval() {
         MapLayer ml = getMapComposer().getMapLayer("Active Area");
-        if (ml == null && cbAreaSelection.getSelectedItem() != ciBoxCurrentView) {
+        if (ml == null && cbAreaSelection.getSelectedItem() != ciBoxCurrentView
+                && !cbAreaSelection.getText().contains("envelope")) {
             onClick$btnClearSelection(null);
             if (wInstructions != null) {
                 wInstructions.detach();
