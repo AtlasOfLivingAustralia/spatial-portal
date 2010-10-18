@@ -3787,9 +3787,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int b = (hash) % 255;
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
-        String envString = "color:" + hexColour + ";name:circle;size:8;opacity:0.4";
+        String envString = "color:" + hexColour + ";name:circle;size:8;opacity:0.8";
 
-        geoServer = "http://spatial-dev.ala.org.au";
         //uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
         //geoServer = "http://localhost:8080";
         uri = geoServer + "/geoserver/wms?";

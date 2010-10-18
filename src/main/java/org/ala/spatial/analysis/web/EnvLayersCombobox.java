@@ -31,7 +31,9 @@ public class EnvLayersCombobox extends Combobox {
 
     private static String SAT_SERVER = null;
     SettingsSupplementary settingsSupplementary = null;
-    String [] validLayers = null;;
+    String[] validLayers = null;
+
+    ;
 
     public EnvLayersCombobox() {
         refresh(""); //init the child comboitems
@@ -55,16 +57,16 @@ public class EnvLayersCombobox extends Combobox {
     }
 
     private void refresh(String val) {
-        if(validLayers == null){
+        if (validLayers == null) {
             makeValidLayers();
         }
         if (settingsSupplementary != null) {
             //System.out.println("setting ss.val");
-        } else if(this.getParent() != null){
+        } else if (this.getParent() != null) {
             settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
             System.out.println("LAC got SS: " + settingsSupplementary);
             SAT_SERVER = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }else{
+        } else {
             return;
         }
 
@@ -72,63 +74,67 @@ public class EnvLayersCombobox extends Combobox {
         try {
             Iterator it = getItems().iterator();
 
-                String lsurl = baseUrl;
-                if (val.length() == 0) {
-                    lsurl += "list";
-                } else {
-                    lsurl += "search/" + URLEncoder.encode(val, "UTF-8");
-                }
+            String lsurl = baseUrl;
+            if (val.length() == 0) {
+                lsurl += "list";
+            } else {
+                lsurl += "search/" + URLEncoder.encode(val, "UTF-8");
+            }
 
-                System.out.println("nsurl: " + lsurl);
+            System.out.println("nsurl: " + lsurl);
 
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(lsurl);
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(lsurl);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
 
 
-                JSONArray results = JSONArray.fromObject(slist);
-                System.out.println("got " + results.size() + " layers");
+            JSONArray results = JSONArray.fromObject(slist);
+            System.out.println("got " + results.size() + " layers");
 
-                Sessions.getCurrent().setAttribute("layerlist", results);
+            Sessions.getCurrent().setAttribute("layerlist", results);
 
-                if (results.size() > 0) {
+            if (results.size() > 0) {
 
-                    for (int i = 0; i < results.size(); i++) {
+                for (int i = 0; i < results.size(); i++) {
 
-                        JSONObject jo = results.getJSONObject(i);
+                    JSONObject jo = results.getJSONObject(i);
 
-                        if (!jo.getBoolean("enabled")) {
-                            continue;
-                        }
-
-                        String displayName = jo.getString("displayname");
-                        String type = jo.getString("type");
-
-                        if(!type.equalsIgnoreCase("environmental")){
-                            continue;
-                        }
-
-                        if(!isValidLayer(jo.getString("name"))){
-                            continue;
-                        }
-
-                        Comboitem myci = null;
-                        if (it != null && it.hasNext()) {
-                            myci = ((Comboitem) it.next());
-                            myci.setLabel(displayName);
-                        } else {
-                            it = null;
-                            myci = new Comboitem(displayName);
-                            myci.setParent(this);
-                        }
-                        myci.setDescription(jo.getString("classification1") + ": " + jo.getString("classification2") + ": " + type);
-                        myci.setDisabled(false);
-                        myci.setValue(jo);
+                    if (!jo.getBoolean("enabled")) {
+                        continue;
                     }
+
+                    String displayName = jo.getString("displayname");
+                    String type = jo.getString("type");
+
+                    if (!type.equalsIgnoreCase("environmental")) {
+                        continue;
+                    }
+
+                    if (!isValidLayer(jo.getString("name"))) {
+                        continue;
+                    }
+
+                    Comboitem myci = null;
+                    if (it != null && it.hasNext()) {
+                        myci = ((Comboitem) it.next());
+                        myci.setLabel(displayName);
+                    } else {
+                        it = null;
+                        myci = new Comboitem(displayName);
+                        myci.setParent(this);
+                    }
+                    String c2 = "";
+                    if (!jo.getString("classification2").equals("null")) {
+                        c2 = jo.getString("classification2") + ": ";
+                    }
+                    myci.setDescription(jo.getString("classification1") + ": " + c2 + type);
+                    myci.setDisabled(false);
+                    myci.setValue(jo);
                 }
+            }
 
             while (it != null && it.hasNext()) {
                 it.next();
@@ -142,7 +148,7 @@ public class EnvLayersCombobox extends Combobox {
         }
     }
 
-     private MapComposer getThisMapComposer() {
+    private MapComposer getThisMapComposer() {
 
         MapComposer mapComposer = null;
         Page page = getPage();
@@ -151,21 +157,21 @@ public class EnvLayersCombobox extends Combobox {
         return mapComposer;
     }
 
-     void makeValidLayers(){
-         String [] ctx = CommonData.getContextualLayers();
-         String [] env = CommonData.getEnvironmentalLayers();
-         validLayers = new String[ctx.length + env.length];
-         for(int i=0;i<env.length;i++){
-             validLayers[i] = env[i];
-         }
-         for(int i=0;i<ctx.length;i++){
-             validLayers[i+env.length] = ctx[i];
-         }
-         java.util.Arrays.sort(validLayers);
-     }
+    void makeValidLayers() {
+        String[] ctx = CommonData.getContextualLayers();
+        String[] env = CommonData.getEnvironmentalLayers();
+        validLayers = new String[ctx.length + env.length];
+        for (int i = 0; i < env.length; i++) {
+            validLayers[i] = env[i];
+        }
+        for (int i = 0; i < ctx.length; i++) {
+            validLayers[i + env.length] = ctx[i];
+        }
+        java.util.Arrays.sort(validLayers);
+    }
 
-     boolean isValidLayer(String name){
-         int pos = java.util.Arrays.binarySearch(validLayers, name);
-         return (pos >= 0 && pos < validLayers.length);
-     }
+    boolean isValidLayer(String name) {
+        int pos = java.util.Arrays.binarySearch(validLayers, name);
+        return (pos >= 0 && pos < validLayers.length);
+    }
 }
