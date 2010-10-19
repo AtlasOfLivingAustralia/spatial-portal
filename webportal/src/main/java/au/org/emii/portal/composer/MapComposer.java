@@ -870,6 +870,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param itemToRemove
      */
     public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive) {
+        deactiveLayer(itemToRemove, updateMapAndLayerControls, recursive, true);
+    }
+
+    public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive, boolean updateOnly) {
         if (itemToRemove != null) {
             boolean deListedInActiveLayers = false;
 
@@ -919,8 +923,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             if (updateMapAndLayerControls) {
-                // tell openlayers to kill the layer
-                openLayersJavascript.removeMapLayerNow(itemToRemove);
+                if (!updateOnly) {
+                    // tell openlayers to kill the layer
+                    openLayersJavascript.removeMapLayerNow(itemToRemove);
+
+                }
                 updateLayerControls();
                 removeFromSession(itemToRemove.getName());
             }
@@ -2056,6 +2063,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 blueSlider.setCurpos(blue);
                 sizeSlider.setCurpos(size); //size scale
                 chkUncertaintySize.setChecked(sizeUncertain);
+                //chkPointsCluster.setChecked(currentSelection.isClustered());
 
                 blueLabel.setValue(String.valueOf(blue));
                 redLabel.setValue(String.valueOf(red));
@@ -2409,6 +2417,36 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onCheck$chkUncertaintySize() {
         updateLegendImage();
         onClick$applyChange();
+    }
+
+    public void onCheck$chkPointsCluster() {
+        MapLayer selectedLayer = this.getActiveLayersSelection(true);
+        MapLayerMetadata md = selectedLayer.getMapLayerMetadata();
+        if (md != null) {
+            String species = md.getSpeciesDisplayName();
+            String rank = md.getSpeciesRank();
+            String lsid = md.getSpeciesLsid();
+
+            //removeLayer(species);
+            openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
+                    + openLayersJavascript.removeMapLayer(selectedLayer));
+
+            if (selectedLayer.isClustered()) {
+                System.out.println("calling lsidfilter with:");
+                System.out.println("lsid: " + lsid);
+                System.out.println("species: " + species);
+                System.out.println("rank: " + rank);
+                mapSpeciesByLsidFilter(lsid, species, rank);
+            } else {
+                System.out.println("calling lsidcluster with:");
+                System.out.println("lsid: " + lsid);
+                System.out.println("species: " + species);
+                mapSpeciesByLsidCluster(lsid, species, rank);
+            }
+
+            deactiveLayer(selectedLayer, true, false);
+
+        }
     }
 
     public void onScroll$blueSlider() {
@@ -2920,7 +2958,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //}
             } else {
                 //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-                if (getMapLayer(label) == null) {
+                boolean okToAdd = false;
+                MapLayer mlExisting = getMapLayer(label);
+                if (mlExisting == null) {
+                    System.out.println("okToAdd.1 true");
+                    okToAdd = true;
+                } else if (!mlExisting.getUri().equals(uri)) {
+                    // check if it's a different url
+                    // if it is, then it is ok to add
+                    // and assume the previous is removed.
+                    //System.out.println("mlExisting.getUri(): " + mlExisting.getUri());
+                    //System.out.println("mlExisting.newUri:   " + uri);
+                    System.out.println("okToAdd.2 true");
+                    okToAdd = true;
+                } else {
+                    System.out.println("okToAdd.3 false");
+                }
+
+                if (okToAdd) {
                     mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type);
                     if (mapLayer == null) {
                         // fail
@@ -3611,12 +3666,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
+        MapLayer ml = null;
         if (countOfLsid(lsid) > 5000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
-            return mapSpeciesByLsidCluster(lsid, species);
+            ml = mapSpeciesByLsidCluster(lsid, species, rank);
         } else {
             //return mapSpeciesByLsidPoints(lsid,species);
-            return mapSpeciesByLsidFilter(lsid, species, rank);
+            ml = mapSpeciesByLsidFilter(lsid, species, rank);
         }
+
+        MapLayerMetadata md = ml.getMapLayerMetadata();
+        if (md == null) {
+            md = new MapLayerMetadata();
+            ml.setMapLayerMetadata(md);
+        }
+        md.setSpeciesLsid(lsid);
+        md.setSpeciesDisplayName(species);
+        md.setSpeciesRank(rank);
+
+        return ml;
     }
 
     int countOfLsid(String lsid) {
@@ -3641,9 +3708,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     MapLayer mapSpeciesByLsidCluster(String lsid, String species) {
+        return mapSpeciesByLsidCluster(lsid, species, "species");
+    }
+
+    MapLayer mapSpeciesByLsidCluster(String lsid, String species, String rank) {
         try {
             String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
 
+            String speciesLsid = lsid;
             lsid = StringUtils.replace(lsid, ".", "__");
             lsid = URLEncoder.encode(lsid, "UTF-8");
 
@@ -3672,11 +3744,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     ml.setMapLayerMetadata(md);
                 }
                 md.setMoreInfo(infoUrl + "\n" + species);
-                md.setSpeciesLsid(lsid);
+                md.setSpeciesLsid(speciesLsid);
+                md.setSpeciesDisplayName(species);
+                md.setSpeciesRank(rank);
                 md.setLayerExtent(area, 0.2);
 
                 addLsidBoundingBoxToMetadata(md, lsid);
+
+                ml.setClustered(true);
+
+                chkPointsCluster.setChecked(false);
+                chkPointsCluster.setLabel(" Display species as points");
             }
+
+            return ml;
 
         } catch (Exception ex) {
             //logger.debug(ex.getMessage());
@@ -3742,14 +3823,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank) {
-        /*
-        if (chkPointsCluster.isChecked()) {
-        return mapSpeciesByLsidCluster(lsid, species);
-        } else {
-        return mapSpeciesByLsidPoints(lsid, species);
-        }
-         */
-
         String filter = rank + "conceptid='" + lsid + "'";
         //filter = rank+"='"+species+"'";
         MapLayer ml = mapSpeciesWMSByFilter(species, filter);
@@ -3765,6 +3838,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             md.setMoreInfo(infoUrl + "\n" + species);
             md.setSpeciesLsid(lsid);
+            md.setSpeciesDisplayName(species);
+            md.setSpeciesRank(rank);
+
+            ml.setClustered(false);
+            chkPointsCluster.setLabel(" Display species as clusters");
+            chkPointsCluster.setChecked(false);
         }
 
         return ml;

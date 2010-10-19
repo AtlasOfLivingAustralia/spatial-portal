@@ -785,6 +785,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     public void activateMapLayerNow(MapLayer layer) {
         execute(
                 iFrameReferences
+                + getAdditionalScript()
                 + activateMapLayer(layer));
     }
 

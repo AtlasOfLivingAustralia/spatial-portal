@@ -466,7 +466,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <div align="right" style="padding-top:0px">
                                                         <label id="sizeLabel" />
                                                     </div>
-                                                </hbox>                                                
+                                                </hbox>
                                             </div>
                                             <div id="colourChooser" visible="false">
 
@@ -518,12 +518,20 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     </hbox>
                                                     <separator />
                                                     <hbox width="100%">
-                                                    <div id="uncertainty" align="left" style="padding-top:0px">
-                                                        <checkbox id="chkUncertaintySize" label="Display spatial uncertainty as a circle" />
+                                                        <div id="uncertainty" align="left" style="padding-top:0px">
+                                                            <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
+                                                            <separator />
+                                                        </div>
                                                         <separator />
-                                                    </div>
+                                                    </hbox>
                                                     <separator />
-                                                </hbox>
+                                                    <hbox width="100%">
+                                                        <div id="cluserpoints" align="left" style="padding-top:0px">
+                                                            <checkbox id="chkPointsCluster" label="Display species in clusters" checked="false" />
+                                                            <separator />
+                                                        </div>
+                                                        <separator />
+                                                    </hbox>
                                                 </vbox>
 
                                             </div>
@@ -564,7 +572,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
                                         <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
 
-                                        <button id="removeAllLayers" label="Remove All Layers" sclass="goButton" />                                       
+                                        <button id="removeAllLayers" label="Remove All Layers" sclass="goButton" />
                                     </div>
 
                                     <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">
@@ -618,7 +626,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <toolbarbutton id="mapCXHelp"
                                             image="/img/help.png"
                                             forward="onClick=onActivateLink()" >
-                                                <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/map-tab-species-tab/" />
+                                            <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/map-tab-species-tab/" />
                                         </toolbarbutton>
                                     </toolbar>
                                     <tabpanels>
@@ -654,8 +662,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                                     <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
-                                                    <separator />
-                                                    <checkbox id="chkPointsCluster" label="Display species in clusters" checked="true" visible="false" />
                                                 </vbox>
 
                                                 <html>
@@ -683,7 +689,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
                                         </tabpanel>
-                                        <tabpanel> <!--  style="height: 800px; overflow: scroll" --> 
+                                        <tabpanel> <!--  style="height: 800px; overflow: scroll" -->
                                             <panel id="helpLocation" border="normal" open="false" style="padding: 5px" >
                                                 <panelchildren>
                                                     <div align="right">
@@ -1083,7 +1089,7 @@ function showSpeciesInfo(occids, lon, lat) {
        pageTracker._initData();
        pageTracker._trackPageview();
        ]]>
-       </script>
+        </script>
 
     </window>
 
