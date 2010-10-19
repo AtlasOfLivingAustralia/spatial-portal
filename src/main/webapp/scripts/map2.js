@@ -387,13 +387,7 @@ function showSpeciesInfo(occids, lon, lat) {
             new OpenLayers.Projection("EPSG:4326"),
             map.getProjectionObject());
 
-        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-            lonlat,
-            new OpenLayers.Size(100,150),
-            "<div id='sppopup' style='width: 350px; height: 220px;'>" + occlist.length + " occurrences found in this location <br /> Retrieving data... </div>"
-            ,
-            null, true, onPopupClose);
-
+        setupPopup(occlist.length, lonlat); 
         iterateSpeciesInfo(0);
         
         var feature = popup;
@@ -488,17 +482,17 @@ function addFeatureSelectionTool() {
     areaSelectOn = true;
     mapClickControl = null;
     
-    //    clickEventHandler = new OpenLayers.Handler.Click({
-    //        'map': map
-    //    }, {
-    //        'click': function(e) {
-    //            getpointInfo(e);
-    //            mkpopup(e);
-    //        }
-    //    });
-    //    clickEventHandler.activate();
-    //    clickEventHandler.fallThrough = false;
-    //    alert("here");
+//    clickEventHandler = new OpenLayers.Handler.Click({
+//        'map': map
+//    }, {
+//        'click': function(e) {
+//            getpointInfo(e);
+//            mkpopup(e);
+//        }
+//    });
+//    clickEventHandler.activate();
+//    clickEventHandler.fallThrough = false;
+//    alert("here");
 
 /*
     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
@@ -1099,6 +1093,20 @@ function showClusterInfo(curr) {
 //    }
 }
 
+function setupPopup(count, centerlonlat) {
+    var waitmsg = count + " occurrences found in this location <br /> Retrieving data... ";
+    if (count == 1) {
+        waitmsg = count + " occurrence found in this location <br /> Retrieving data... ";
+    }
+    popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+        centerlonlat,
+        new OpenLayers.Size(100,150),
+        "<div id='sppopup' style='width: 350px; height: 220px;'>" + waitmsg + "</div>"
+        ,
+        null, true, onPopupClose);
+
+}
+
 function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     var occinfo = data.occurrence;
 
@@ -1126,9 +1134,14 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     }
     if (!occurrencedate) occurrencedate="";
 
+    var heading = "<h2>Occurrence information (" + (curr+1) + " of " + total + ")</h2>";
+    if (total==1) {
+        heading = "<h2>Occurrence information (1 occurrence)</h2>";
+    }
+
     var infohtml = "<div id='sppopup'> " +
     //"<h2>Occurrence information (" + (curr+1) + " of " + currFeature.attributes["count"] + ")</h2>" +
-    "<h2>Occurrence information (" + (curr+1) + " of " + total + ")</h2>" +
+    heading +
     " Scientific name: " + species + " <br />" +
     " Kingdom: " + kingdom + " <br />" +
     " Family: " + family + " <br />" +
@@ -1251,13 +1264,7 @@ function selected (evt) {
             //                ,
             //                null, true, onPopupClose);
 
-            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-                feature.geometry.getBounds().getCenterLonLat(),
-                new OpenLayers.Size(100,150),
-                "<div id='sppopup' style='width: 350px; height: 220px;'>" + attrs["count"] + " occurrences found in this location <br /> Retrieving data... </div>"
-                ,
-                null, true, onPopupClose);
-
+            setupPopup(attrs["count"], feature.geometry.getBounds().getCenterLonLat());
             showClusterInfo(0);
 
 
