@@ -210,6 +210,8 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     private boolean sizeUncertain;
 
+    private boolean clustered;
+
     public int getBlueVal() {
         return blueVal;
     }
@@ -248,6 +250,14 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     public void setSizeUncertain(boolean sizeUncertain){
         this.sizeUncertain = sizeUncertain;
+    }
+
+    public boolean isClustered() {
+        return clustered;
+    }
+
+    public void setClustered(boolean clustered) {
+        this.clustered = clustered;
     }
 
 
