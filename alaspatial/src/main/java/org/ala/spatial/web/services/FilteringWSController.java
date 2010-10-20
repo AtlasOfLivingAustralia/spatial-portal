@@ -2,9 +2,7 @@ package org.ala.spatial.web.services;
 
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.RandomAccessFile;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,7 +16,6 @@ import org.ala.spatial.analysis.service.FilteringImage;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.FilteringIndex;
-import org.ala.spatial.util.CoordinateTransformer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -164,14 +161,54 @@ public class FilteringWSController {
                     //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
                     //        String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
                     //CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
-                     //       String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
-                     //       String.valueOf(112), String.valueOf(-9));
+                    //       String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
+                    //       String.valueOf(112), String.valueOf(-9));
                     //String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
                     //return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
                     return file.getName();
                 }
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    @RequestMapping(value = "/merge/pid/{pid}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String merge(@PathVariable String pid,
+            HttpServletRequest req) {
+        FilteringImage filteringImage2;
+        try {
+            HttpSession session = req.getSession(true);
+
+            File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
+
+            File file = File.createTempFile("spl", ".png", workingDir);
+
+            //setup for accumulative image
+            filteringImage2 = new FilteringImage(file.getPath(), 0x00000000);
+
+            // apply the filters by iterating thru' the layers from client, make spl, should be one layer
+            LayerFilter [] lf = FilteringService.getFilters(pid);
+            for (int i = 0; i < lf.length; i++) {  
+                if (lf[i].getLayer().type.equalsIgnoreCase("environmental")) {
+                    filteringImage2.applyFilterAccumulative(lf[i].getLayer().name, lf[i].getMinimum_value(), lf[i].getMaximum_value());
+                } else {
+                    if (lf[i].getCatagories().length > 0) {
+                        filteringImage2.applyFilterAccumulative(lf[i].getLayer().name, lf[i].getCatagories());
+                    }
+                }
+            }
+
+            String boundingBoxString = filteringImage2.writeImageAccumulative(0xFFFF0000); //red
+
+            String filenamepart = file.getName();
+            filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf("."));
+            return file.getName() + "\n" + boundingBoxString;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -276,8 +313,8 @@ public class FilteringWSController {
                     //        String.valueOf(TabulationSettings.grd_xdiv), "-" + String.valueOf(TabulationSettings.grd_ydiv),
                     //        String.valueOf(TabulationSettings.grd_xmin), String.valueOf(TabulationSettings.grd_ymin));
                     CoordinateTransformer.generateWorldFiles(workingDir.getAbsolutePath(), filenamepart,
-                            String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
-                            String.valueOf(112), String.valueOf(-9));
+                    String.valueOf((154-122) / 1008.0), "-" + String.valueOf((-9 - (-44)) / 840.0),
+                    String.valueOf(112), String.valueOf(-9));
                     String outputfile = CoordinateTransformer.transformToGoogleMercator(file.getAbsolutePath());
                     return outputfile.substring(outputfile.lastIndexOf(File.separator)+1);
                      * *
@@ -313,7 +350,7 @@ public class FilteringWSController {
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
-            int [] counts = FilteringService.getSpeciesCount(pid, region);
+            int[] counts = FilteringService.getSpeciesCount(pid, region);
             String count = String.valueOf(counts[0] + "\n" + counts[1]);
 
             long endtime = System.currentTimeMillis();
@@ -396,7 +433,7 @@ public class FilteringWSController {
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
-            String filepath = FilteringService.getSamplesList(pid, region,TabulationSettings.MAX_RECORD_COUNT);
+            String filepath = FilteringService.getSamplesList(pid, region, TabulationSettings.MAX_RECORD_COUNT);
 
             /* zipping */
             String[] files = new String[1];
@@ -421,7 +458,7 @@ public class FilteringWSController {
         return "";
     }
 
-     /**
+    /**
      * Returns string of samples preview
      *
      * @param pid
@@ -454,11 +491,11 @@ public class FilteringWSController {
 
             //read in file
             StringBuffer sbResults = new StringBuffer();
-            try{
+            try {
                 CSVReader reader = new CSVReader(new FileReader(filepath));
                 List<String[]> contents = reader.readAll();
                 for (int i = 0; i < contents.size(); i++) {
-                    String [] results = contents.get(i);
+                    String[] results = contents.get(i);
                     for (int j = 0; j < results.length; j++) {
                         if (results[j] != null) {
                             sbResults.append(results[j]);
@@ -469,7 +506,7 @@ public class FilteringWSController {
                     }
                     sbResults.append(";");
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -517,13 +554,13 @@ public class FilteringWSController {
                 region = SimpleShapeFile.parseWKT(shape);
             }
 
-            
+
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
-            
-            String gjsonFile = FilteringService.getSamplesListAsGeoJSON("none" /*TODO: allow pid here*/ , region, records, fDir);
+
+            String gjsonFile = FilteringService.getSamplesListAsGeoJSON("none" /*TODO: allow pid here*/, region, records, fDir);
 
             System.out.println("getSamplesListAsGeoJSON:" + gjsonFile);
             return "output/filtering/" + gjsonFile;
@@ -532,5 +569,4 @@ public class FilteringWSController {
         }
         return "";
     }
-
 }

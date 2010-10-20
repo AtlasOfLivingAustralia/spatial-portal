@@ -79,7 +79,8 @@
                 <label sclass="exampleText">e.g. Annual Mean Temperature</label>
             </vbox>
         </div>
-
+        <separator />
+        <div width="50px" > <button id="btnClearSelection" label="Clear layers"  sclass="goButton" /> </div>
         <div>           
             <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" vflex="true">
                 <listhead sizable="true">

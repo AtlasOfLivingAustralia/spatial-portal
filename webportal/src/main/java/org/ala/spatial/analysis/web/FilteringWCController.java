@@ -3,6 +3,8 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import org.ala.spatial.util.LayersUtil;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -43,8 +45,8 @@ import org.zkoss.zul.Window;
  * @author ajay
  */
 public class FilteringWCController extends UtilityComposer {
-    public static final String LAYER_PREFIX = "Envelope: ";
 
+    public static final String LAYER_PREFIX = "";//"Envelope: ";
     private static final long serialVersionUID = -26560838825366347L;
     private EnvLayersCombobox cbEnvLayers;
     private Listbox lbSelLayers;
@@ -74,6 +76,9 @@ public class FilteringWCController extends UtilityComposer {
     SPLFilter popup_filter;
     Listcell popup_cell;
     Listitem popup_item;
+    String activeAreaUrl = null;
+    String activeAreaExtent = null;
+    String activeAreaMetadata = null;
 
     @Override
     public void afterCompose() {
@@ -94,7 +99,7 @@ public class FilteringWCController extends UtilityComposer {
         selectedLayers = new Vector<String>();
         selectedLayersUrl = new Vector<String>();
         selectedSPLFilterLayers = new Hashtable<String, SPLFilter>();
-        
+
         // init the session on the server and get a pid (process_id)
         pid = getInfo("/filtering/init");
     }
@@ -117,6 +122,7 @@ public class FilteringWCController extends UtilityComposer {
         serverFilter(false);
 
     }
+
     public void onChange$popup_maximum(Event event) {
         serverFilter(false);
     }
@@ -152,7 +158,7 @@ public class FilteringWCController extends UtilityComposer {
                 public void render(Listitem li, Object data) {
                     String layername = (String) data;
                     SPLFilter f = getSPLFilter(layername);
-                    
+
                     // Col 1: Add the layer name
                     Listcell lname = new Listcell(f.layer.display_name);
                     lname.setStyle("white-space: normal;");
@@ -242,7 +248,7 @@ public class FilteringWCController extends UtilityComposer {
             selectedSPLFilterLayers.put(layername, splf);
         }
 
-        if(layername != splf.layer.name){
+        if (layername != splf.layer.name) {
             splf = getSPLFilter(splf.layer.name);
         }
 
@@ -335,16 +341,68 @@ public class FilteringWCController extends UtilityComposer {
         listFix();
     }
 
-    public void removeLayer(Event event){
+    public void onClick$btnClearSelection(Event event) {
+        Listitem li;
+        String label;
+
+        popup_continous.setVisible(false);
+
+        //change to get last item
+        int count = lbSelLayers.getItemCount();
+        li = (Listitem) lbSelLayers.getItemAtIndex(count - 1);
+
+        int idx = li.getIndex();
+
+        label = selectedLayers.get(idx);
+
+        StringBuffer sbProcessUrl = new StringBuffer();
+        sbProcessUrl.append("/filtering/apply4");
+        sbProcessUrl.append("/pid/" + pid);
+        sbProcessUrl.append("/layers/none");
+        sbProcessUrl.append("/types/none");
+        sbProcessUrl.append("/val1s/none");
+        sbProcessUrl.append("/val2s/none");
+        sbProcessUrl.append("/depth/" + lbSelLayers.getItemCount());
+
+        getInfo(sbProcessUrl.toString());
+
+        //not executing, echo
+        //mc.removeLayer(getSPLFilter(label).layer.display_name);
+        Events.echoEvent("removeLayerClearSelected", this, getSPLFilter(label).layer.display_name);
+
+        selectedLayers.remove(label);
+        selectedLayersUrl.remove(idx);
+
+        li.detach();
+
+        if(selectedLayers.size() == 0){
+            showAdjustPopup(null);
+            listFix();
+        }
+    }
+
+    public void removeLayerClearSelected(Event event) {
+        String layername = (String) event.getData();
+        if (selectedLayers.size() > 0) {
+            Events.echoEvent("onClick$btnClearSelection", this, null);
+        }
+        if (mc.getMapLayer(LAYER_PREFIX + layername) != null) {
+            mc.removeLayer(LAYER_PREFIX + layername);
+        }
+    }
+
+    public void removeLayer(Event event) {
         String all = (String) event.getData();
         String layername = all;
         int p = layername.indexOf('|');
-        if(p > 0){
-            Events.echoEvent("removeLayer", this, layername.substring(p+1));
-            layername = layername.substring(0,p);
+        if (p > 0) {
+            Events.echoEvent("removeLayer", this, layername.substring(p + 1));
+            layername = layername.substring(0, p);
         }
-        if(mc.getMapLayer(LAYER_PREFIX + layername) != null){
+        if (mc.getMapLayer(LAYER_PREFIX + layername) != null) {
             mc.removeLayer(LAYER_PREFIX + layername);
+        } else if(layername.equalsIgnoreCase("Active Area")){
+            showActiveArea();
         }
     }
 
@@ -429,7 +487,7 @@ public class FilteringWCController extends UtilityComposer {
         layername = ((Listcell) li.getChildren().get(0)).getLabel();
         //layername = (layername.equals("")) ? "" : layername.substring(0, layername.lastIndexOf("(")).trim();
 
-        popup_filter = getSPLFilter(layername);        
+        popup_filter = getSPLFilter(layername);
         popup_idx.setValue(layername);
 
         popup_cell = lc;
@@ -510,7 +568,7 @@ public class FilteringWCController extends UtilityComposer {
             String imagefilepath = getInfo(urlPart);
             loadMap(imagefilepath, layerdisplayname);
 
-            selectedLayersUrl.set(lbSelLayers.getItemCount()-1, imagefilepath);
+            selectedLayersUrl.set(lbSelLayers.getItemCount() - 1, imagefilepath);
 
         } catch (Exception e) {
             //TODO: error message
@@ -526,11 +584,46 @@ public class FilteringWCController extends UtilityComposer {
         //       .getParent() //div to hide
         //            .setVisible(false);
 
+        try {
+            String urlPart = "/filtering/merge";
+            urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
+
+            String[] imagefilepath = getInfo(urlPart).split("\n");
+
+            activeAreaUrl = imagefilepath[0];
+            activeAreaExtent = imagefilepath[1];
+
+            //make the metadata?
+            activeAreaMetadata = "Environmental Envelope";
+
+            removeAllSelectedLayers(true);  //this also shows active area
+
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
         updateActiveArea(true);
     }
 
+    void showActiveArea() {
+        if(activeAreaUrl != null){
+            loadMap(activeAreaUrl, "Active Area");
+            MapLayer ml = mc.getMapLayer("Active Area");
+            if (ml.getMapLayerMetadata() == null) {
+                ml.setMapLayerMetadata(new MapLayerMetadata());
+            }
+            List<Double> bb = new ArrayList<Double>(4);
+            String[] bs = activeAreaExtent.split(",");
+            for (int i = 0; i < 4; i++) {
+                bb.add(Double.parseDouble(bs[i]));
+            }
+            ml.getMapLayerMetadata().setBbox(bb);
+            ml.getMapLayerMetadata().setMoreInfo(activeAreaMetadata);
+        }
+    }
+
     void updateActiveArea(boolean hide) {
-    //trigger update to 'active area'
+        //trigger update to 'active area'
         Component c = getParent().getParent();
         while (c != null && !c.getId().equals("selectionwindow")) {
             c = c.getParent();
@@ -607,7 +700,7 @@ public class FilteringWCController extends UtilityComposer {
     private void applyFilterEvented() {
         popup_filter.minimum_value = (popup_minimum.getValue());
         popup_filter.maximum_value = (popup_maximum.getValue());
-        
+
         ((Listcell) popup_item.getChildren().get(1)).setLabel(popup_filter.getFilterString());
 
         serverFilter(true);
@@ -615,30 +708,26 @@ public class FilteringWCController extends UtilityComposer {
         String strCount = postInfo("/filtering/apply/pid/" + pid + "/species/count?area=none");
 
         //TODO: handle invalid counts/errors
-        try{
+        try {
             popup_filter.count = Integer.parseInt(strCount.split("\n")[0]);
             ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount.split("\n")[0]);
 
             //update Species List analysis tab
             updateSpeciesList(popup_filter.count, Integer.parseInt(strCount.split("\n")[1]));
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-     /**
+    /**
      * updates species list analysis tab with refreshCount
      *
-      * similar function in SelectionController.java
+     * similar function in SelectionController.java
      */
     void updateSpeciesList(int newCount, int newOccurrencesCount) {
         try {
             FilteringResultsWCController win =
-                    (FilteringResultsWCController) getMapComposer()
-                        .getFellow("leftMenuAnalysis")
-                            .getFellow("analysiswindow")
-                                .getFellow("speciesListForm")
-                                    .getFellow("popup_results");
+                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("speciesListForm").getFellow("popup_results");
             win.refreshCount(newCount, newOccurrencesCount);
         } catch (Exception e) {
             e.printStackTrace();
@@ -677,8 +766,8 @@ public class FilteringWCController extends UtilityComposer {
 
         List<Double> bbox = new ArrayList<Double>();
         bbox.add(112.0);
-        bbox.add(-44.0000000007);
-        bbox.add(154.00000000084);
+        bbox.add(-44.0);
+        bbox.add(154.0);
         bbox.add(-9.0);
         //bbox.add(12467782.96884664);
         //bbox.add(-5465442.183322753);
@@ -721,10 +810,9 @@ public class FilteringWCController extends UtilityComposer {
         String layer = layersUtil.getFirstEnvLayer();
 
         if (layer != null) {
-         //   doAdd(layer);
+            //   doAdd(layer);
         }
     }
-
     boolean state_visible = true;
 
     /**
@@ -732,47 +820,66 @@ public class FilteringWCController extends UtilityComposer {
      *
      * For use when disabling Environmental Envelope in Active Layers.
      */
-    public void removeAllSelectedLayers(){
-        if(state_visible){
+    public void removeAllSelectedLayers(boolean showActiveArea) {
+        //if (state_visible) {
             state_visible = false;
             StringBuffer sb = new StringBuffer();
-            for(int i=0;i<selectedLayers.size();i++){
-                String label = selectedLayers.get(i);
-                sb.append(getSPLFilter(label).layer.display_name);
-                if(i < selectedLayers.size()-1){
+            if (activeAreaUrl != null && showActiveArea) {
+                sb.append("Active Area");
+                if (selectedLayers.size() > 0) {
                     sb.append("|");
                 }
             }
-            if(selectedLayers.size() > 0){
+            for (int i = 0; i < selectedLayers.size(); i++) {
+                String label = selectedLayers.get(i);
+                sb.append(getSPLFilter(label).layer.display_name);
+                if (i < selectedLayers.size() - 1) {
+                    sb.append("|");
+                }
+            }
+            if (selectedLayers.size() > 0) {
                 Events.echoEvent("removeLayer", this, sb.toString());
             }
-        }
+        //}
     }
 
-    public void showAllSelectedLayers(){
+    public void showAllSelectedLayers() {
         state_visible = true;
         StringBuffer sb = new StringBuffer();
-        for(int i=0;i<selectedLayers.size();i++){
+        if (selectedLayers.size() > 0) {
+            sb.append("hideActive Area|");
+        }
+        for (int i = 0; i < selectedLayers.size(); i++) {
             String label = selectedLayers.get(i);
+            sb.append("show");
             sb.append(String.valueOf(i));
-            if(i < selectedLayers.size()-1){
+            if (i < selectedLayers.size() - 1) {
                 sb.append("|");
             }
         }
-        if(selectedLayers.size() > 0){
+        if (selectedLayers.size() > 0) {
             Events.echoEvent("showLayer", this, sb.toString());
         }
     }
 
-    public void showLayer(Event event){
+    public void showLayer(Event event) {
         String all = (String) event.getData();
         String idx = all;
         int p = idx.indexOf('|');
-        if(p > 0){
-            Events.echoEvent("showLayer", this, idx.substring(p+1));
-            idx = idx.substring(0,p);
+        if (p > 0) {
+            Events.echoEvent("showLayer", this, idx.substring(p + 1));
+            idx = idx.substring(0, p);
         }
-        int i = Integer.parseInt(idx);
-        loadMap(selectedLayersUrl.get(i), getSPLFilter(selectedLayers.get(i)).layer.display_name);
+        //is it show or hide?
+        //show + idx to show
+        //hide + layername to hide
+        if (idx.startsWith("show")) {
+            int i = Integer.parseInt(idx.substring(4));
+            loadMap(selectedLayersUrl.get(i), getSPLFilter(selectedLayers.get(i)).layer.display_name);
+        } else { //"hide"
+            if (mc.getMapLayer(LAYER_PREFIX + idx.substring(4)) != null) {
+                mc.removeLayer(LAYER_PREFIX + idx.substring(4));
+            }
+        }
     }
 }
