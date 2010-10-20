@@ -84,8 +84,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                 <div style="float: right">
                     <button id="zoomtoextent" image="/img/zoom_in.png"
                         tooltiptext="zoom to extent"/>
-                    <button image="/img/information.png"
-                        onClick="areaInfo.setVisible(!areaInfo.isVisible());"
+                    <button id="btnMetadata" image="/img/information.png"
                         tooltiptext="more information"/>
                     <button image="/img/util_garbage.png" 
                         id="btnClearSelection" visible="true" />

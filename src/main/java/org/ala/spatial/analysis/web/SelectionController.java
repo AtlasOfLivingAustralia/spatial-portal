@@ -49,7 +49,6 @@ import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
@@ -206,7 +205,7 @@ public class SelectionController extends UtilityComposer {
         cbAreaSelection.setText("Box - Current View");
         updateSpeciesList(false);
 
-        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers();
+        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers(false);
 
         lastTool = null;
     }
@@ -219,7 +218,7 @@ public class SelectionController extends UtilityComposer {
         MapComposer mc = getThisMapComposer();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         mc.removeFromList(mc.getMapLayer("Active Area"));
-        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers();
+        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers(false);
         lastTool = null;
     }
 
@@ -292,7 +291,8 @@ public class SelectionController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
             setInstructions(null, null);
             cbAreaSelection.setText("Defining environmental envelope");
-            Events.echoEvent("showEnvelopeInfoEvent", this, null);
+            //Events.echoEvent("showEnvelopeInfoEvent", this, null);
+            this.showEnvelopeInfo();
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
             setInstructions(null, null);
             showPolygonInfo();
@@ -380,6 +380,19 @@ public class SelectionController extends UtilityComposer {
             }
             return "Failed";
         }
+
+    }
+
+    public void onClick$btnMetadata(Event event){
+        //do something specific for environmental envelope
+        if(cbAreaSelection.getText().contains("envelope")) {
+            if(areaInfo.isVisible()){
+                ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers(true);
+            } else {
+                ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).showAllSelectedLayers();
+            }
+        }
+        areaInfo.setVisible(!areaInfo.isVisible());
 
     }
 

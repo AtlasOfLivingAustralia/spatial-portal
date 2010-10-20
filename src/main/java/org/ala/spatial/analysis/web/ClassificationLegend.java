@@ -82,7 +82,7 @@ public class ClassificationLegend extends UtilityComposer {
             String slist = get.getResponseBodyAsString();
 
             // retrieve legend file
-            String[] slista = slist.split("\r\n");
+            String[] slista = slist.split("\n");
 
             client = new HttpClient();
             get = new GetMethod(satServer + "/alaspatial/" + slista[1]);
