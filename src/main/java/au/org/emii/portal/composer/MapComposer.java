@@ -870,7 +870,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * @param itemToRemove
      */
     public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive) {
-        deactiveLayer(itemToRemove, updateMapAndLayerControls, recursive, true);
+        deactiveLayer(itemToRemove, updateMapAndLayerControls, recursive, false);
     }
 
     public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive, boolean updateOnly) {
@@ -2444,7 +2444,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapSpeciesByLsidCluster(lsid, species, rank);
             }
 
-            deactiveLayer(selectedLayer, true, false);
+            deactiveLayer(selectedLayer, true, false, true);
 
         }
     }

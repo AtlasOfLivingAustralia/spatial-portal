@@ -21,7 +21,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     <html><![CDATA[
             <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
             <link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
-            <link rel="stylesheet" href="css/alastyles.css" type="text/css" media="screen" />
+            <!-- <link rel="stylesheet" href="css/alastyles.css" type="text/css" media="screen" /> -->
         ]]>
     </html>
 
