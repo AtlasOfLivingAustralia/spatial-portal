@@ -80,9 +80,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         int threadcount = TabulationSettings.analysis_threads;
         ArrayList<String> layers = new ArrayList();
         int i;
-        for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
-            layers.add(TabulationSettings.geo_tables[i].name);
-        }
+//no need for contextual layers here
+//        for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
+//            layers.add(TabulationSettings.geo_tables[i].name);
+//        }
         for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
             layers.add(TabulationSettings.environmental_data_files[i].name);
         }
@@ -1070,17 +1071,21 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         double [] latproj = new double[latitude_steps];
         double [] longproj = new double[longitude_steps];
         for(int i=0;i<latproj.length;i++){
-            latproj[i] = sc.convertPixelToLat((int)(px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) (latproj.length - 1))));
+            latproj[i] = sc.convertPixelToLat((int)(px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) (latproj.length))));
         }
         for(int i=0;i<longproj.length;i++){
-            longproj[i] = sc.convertPixelToLng((int)(px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) (longproj.length - 1))));
+            longproj[i] = sc.convertPixelToLng((int)(px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) (longproj.length))));
         }
-
-        //fix up first and last values
-        latproj[0] = latitude_start;
-        latproj[latproj.length-1] = latitude_end;
-        longproj[0] = longitude_start;
-        longproj[longproj.length-1] = longitude_end;
+        
+        //add half cell for sample center
+        double latoffset = (latproj[1] - latproj[0])/2.0;
+        for(int i=0;i<latproj.length;i++){
+            latproj[i] += latoffset;
+        }
+        double longoffset = (longproj[1] - longproj[0])/2.0;
+        for(int i=0;i<longproj.length;i++){
+            longproj[i] += longoffset;
+        }
 
         for (int j = 0; j < latitude_steps; j++) {
             for (int i = 0; i < longitude_steps; i++) {
