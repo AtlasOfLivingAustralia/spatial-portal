@@ -712,3 +712,10 @@ closebox a.helpButtonMain:hover {
 .z-tree-body {
     text-align: left; 
 }
+/*
+* hide the north and south panels as the site will now be wrapped
+* within an iframe via the test.ala.org.au
+*/
+.z-north, .z-south {
+  display: none;
+}
