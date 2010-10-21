@@ -272,6 +272,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     //private HtmlMacroComponent sf;
     public Textbox tbxPrintHack;
     int mapZoomLevel = 4;
+    private Hashtable activeLayerMapProperties;
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -564,7 +565,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * Adds the currently selected gazetteer feature to the map
      */
-    public void onClick$gazSearch() {
+    //public void onClick$gazSearch() {
+    public void onChange$gazetteerAuto() {
 
         Comboitem ci = gazetteerAuto.getSelectedItem();
         String link = (String) ci.getValue();
@@ -2146,8 +2148,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 hideLayerControls(null);
             }
             layerControls.setVisible(true);
+            layerControls.setAttribute("activeLayerName", currentSelection.getName()); 
         } else {
             hideLayerControls(null);
+        }
+    }
+
+    public void toggleLayerControls() {
+        MapLayer activeLayer = getActiveLayersSelection(false);
+        String attrLayerName = (String)layerControls.getAttribute("activeLayerName");
+        if (isLayerControlVisible()) {
+            if (activeLayer.getName().equals(attrLayerName)) {
+                hideLayerControls(activeLayer);
+            } else {
+                MapLayer previousLayer = getMapLayer(attrLayerName);
+                hideLayerControls(previousLayer);
+                setupLayerControls(activeLayer);
+            }
+        } else {
+            setupLayerControls(activeLayer);
         }
     }
 
@@ -2427,24 +2446,51 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String rank = md.getSpeciesRank();
             String lsid = md.getSpeciesLsid();
 
+            int red = selectedLayer.getRedVal();
+            int green = selectedLayer.getGreenVal();
+            int blue = selectedLayer.getBlueVal();
+            int size = selectedLayer.getSizeVal();
+            float opacity = selectedLayer.getOpacity();
+            String envParams = selectedLayer.getEnvParams();
+            String envName = selectedLayer.getEnvName();
+            String envColour = selectedLayer.getEnvColour();
+            String envSize = selectedLayer.getEnvSize();
+
+            if (activeLayerMapProperties == null) {
+                activeLayerMapProperties = new Hashtable();
+            }
+            activeLayerMapProperties.put("red", red);
+            activeLayerMapProperties.put("blue", blue);
+            activeLayerMapProperties.put("green", green);
+            activeLayerMapProperties.put("size", size);
+            activeLayerMapProperties.put("opacity", opacity);
+            activeLayerMapProperties.put("envColour", envColour);
+
             //removeLayer(species);
             openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
                     + openLayersJavascript.removeMapLayer(selectedLayer));
 
+            MapLayer convLayer = null;
             if (selectedLayer.isClustered()) {
                 System.out.println("calling lsidfilter with:");
                 System.out.println("lsid: " + lsid);
                 System.out.println("species: " + species);
                 System.out.println("rank: " + rank);
-                mapSpeciesByLsidFilter(lsid, species, rank);
+                convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
             } else {
                 System.out.println("calling lsidcluster with:");
                 System.out.println("lsid: " + lsid);
                 System.out.println("species: " + species);
-                mapSpeciesByLsidCluster(lsid, species, rank);
+                convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
             }
 
             deactiveLayer(selectedLayer, true, false, true);
+
+            // reopen the layer controls
+            setupLayerControls(convLayer);
+
+            // now remove the colour settings
+            activeLayerMapProperties = null;
 
         }
     }
@@ -2976,7 +3022,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
 
                 if (okToAdd) {
-                    mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type);
+                    mapLayer = remoteMap.createGeoJSONLayer(label, uri, points_type, activeLayerMapProperties);
                     if (mapLayer == null) {
                         // fail
                         //hide error, might be clustering zoom in; showMessage("No mappable features available");
@@ -3864,9 +3910,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int r = (hash >> 16) % 255;
         int g = (hash >> 8) % 255;
         int b = (hash) % 255;
+        
+        int size = 8;        
+        float opacity = (float)0.8;
+
+        if (activeLayerMapProperties != null) {
+            r = ((Integer)activeLayerMapProperties.get("red")).intValue();
+            b = ((Integer)activeLayerMapProperties.get("blue")).intValue();
+            g = ((Integer)activeLayerMapProperties.get("green")).intValue();
+            size = ((Integer)activeLayerMapProperties.get("size")).intValue();
+            opacity = ((Float)activeLayerMapProperties.get("opacity")).floatValue();
+        }
+
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
-        String envString = "color:" + hexColour + ";name:circle;size:8;opacity:0.8";
+        String envString = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity + "";
 
         //uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
         //geoServer = "http://localhost:8080";
@@ -3891,7 +3949,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     ml.setGreenVal(g);
                     ml.setRedVal(r);
                     ml.setSizeVal(8);
-                    ml.setOpacity((float) 0.8);
+                    ml.setOpacity(opacity);
 
                     return ml;
                 }
