@@ -2148,7 +2148,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 hideLayerControls(null);
             }
             layerControls.setVisible(true);
-            layerControls.setAttribute("activeLayerName", currentSelection.getName()); 
+            layerControls.setAttribute("activeLayerName", currentSelection.getName());
         } else {
             hideLayerControls(null);
         }
@@ -2156,7 +2156,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void toggleLayerControls() {
         MapLayer activeLayer = getActiveLayersSelection(false);
-        String attrLayerName = (String)layerControls.getAttribute("activeLayerName");
+        String attrLayerName = (String) layerControls.getAttribute("activeLayerName");
         if (isLayerControlVisible()) {
             if (activeLayer.getName().equals(attrLayerName)) {
                 hideLayerControls(activeLayer);
@@ -2459,12 +2459,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (activeLayerMapProperties == null) {
                 activeLayerMapProperties = new Hashtable();
             }
+            if (envColour == null) {
+                envColour = "rgb(" + String.valueOf(red) + "," + String.valueOf(green) + "," + String.valueOf(blue) + ")";
+            }
+            if (envParams == null) {
+                Color c = new Color(red, green, blue);
+                String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
+                envParams = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity + "";
+            }
             activeLayerMapProperties.put("red", red);
             activeLayerMapProperties.put("blue", blue);
             activeLayerMapProperties.put("green", green);
             activeLayerMapProperties.put("size", size);
             activeLayerMapProperties.put("opacity", opacity);
             activeLayerMapProperties.put("envColour", envColour);
+            activeLayerMapProperties.put("envParams", envParams);
 
             //removeLayer(species);
             openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
@@ -2487,6 +2496,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             deactiveLayer(selectedLayer, true, false, true);
 
             // reopen the layer controls
+            refreshActiveLayer(convLayer);
             setupLayerControls(convLayer);
 
             // now remove the colour settings
@@ -3910,16 +3920,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int r = (hash >> 16) % 255;
         int g = (hash >> 8) % 255;
         int b = (hash) % 255;
-        
-        int size = 8;        
-        float opacity = (float)0.8;
+
+        int size = 8;
+        float opacity = (float) 0.8;
 
         if (activeLayerMapProperties != null) {
-            r = ((Integer)activeLayerMapProperties.get("red")).intValue();
-            b = ((Integer)activeLayerMapProperties.get("blue")).intValue();
-            g = ((Integer)activeLayerMapProperties.get("green")).intValue();
-            size = ((Integer)activeLayerMapProperties.get("size")).intValue();
-            opacity = ((Float)activeLayerMapProperties.get("opacity")).floatValue();
+            r = ((Integer) activeLayerMapProperties.get("red")).intValue();
+            b = ((Integer) activeLayerMapProperties.get("blue")).intValue();
+            g = ((Integer) activeLayerMapProperties.get("green")).intValue();
+            size = ((Integer) activeLayerMapProperties.get("size")).intValue();
+            opacity = ((Float) activeLayerMapProperties.get("opacity")).floatValue();
         }
 
         Color c = new Color(r, g, b);
