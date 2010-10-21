@@ -62,10 +62,10 @@ public class WMSController {
             @RequestParam(value = "genus_lsid", required = false, defaultValue = "") String genus_lsid,
             @RequestParam(value = "species_lsid", required = false, defaultValue = "") String species_lsid,
             @RequestParam(value = "subspecies_lsid", required = false, defaultValue = "") String subspecies_lsid,
-            @RequestParam(value = "institution_code", required = false, defaultValue = "") String institution_code,
-            @RequestParam(value = "collection_code", required = false, defaultValue = "") String collection_code[],
-            @RequestParam(value = "data_provider_id", required = false, defaultValue = "") String data_provider_id,
-            @RequestParam(value = "dataset_id", required = false, defaultValue = "") String dataset_id,
+            @RequestParam(value = "institutionUid", required = false, defaultValue = "") String institutionUid,
+            @RequestParam(value = "collectionUid", required = false, defaultValue = "") String collectionUid,
+            @RequestParam(value = "dataProviderUid", required = false, defaultValue = "") String dataProviderUid,
+            @RequestParam(value = "dataResourceUid", required = false, defaultValue = "") String dataResourceUid,
             HttpServletRequest request, HttpServletResponse response) {
 
         String msg = "";
@@ -104,36 +104,24 @@ public class WMSController {
             String currentPath = TabulationSettings.base_output_dir;
             File baseDir = new File(currentPath + "output" + File.separator + "sampling" + File.separator);
             if (!lsid.equalsIgnoreCase("")) {
-                String outputfile = baseDir + File.separator + lsid.replace(":","_") + ".png";
+                String outputfile = baseDir + File.separator + lsid.replace(":", "_") + ".png";
                 System.out.println("Checking if already present: " + outputfile);
                 File imgFile = new File(outputfile);
                 if (imgFile.exists()) {
-                    System.out.println("File already present, sending that: " + baseOutUrl + lsid.replace(":","_") + ".png");
-                    msg = baseOutUrl + lsid.replace(":","_") + ".png";
+                    System.out.println("File already present, sending that: " + baseOutUrl + lsid.replace(":", "_") + ".png");
+                    msg = baseOutUrl + lsid.replace(":", "_") + ".png";
                 } else {
                     System.out.println("Starting out search for: " + lsid);
 
-                    //List<ValidTaxonName> l = speciesDao.findById(lsid);
-                    //System.out.println("re-returning " + l.size() + " records");
-                    //msg += "\nre-returning " + l.size() + " records";
-                    //if (l.size() > 0) {
-
-                    //    ValidTaxonName vtn = l.get(0);
-                        //msg += "\n" + vtn.getScientificname() + " - " + vtn.getRankstring();
-
-                   //     System.out.println("Have: " + vtn.getScientificname() + " - " + vtn.getRankstring());
-
-                        //File baseDir = new File("/Users/ajay/projects/tmp/heatmap/web/");
-
-                   //     IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(vtn.getScientificname());
-                        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
-                    if(ir != null){
+                    //     IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(vtn.getScientificname());
+                    IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
+                    if (ir != null) {
                         if (ir != null) {
                             double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
 
                             System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
                             //HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());
-                            HeatMap hm = new HeatMap(baseDir, lsid.replace(":","_"));
+                            HeatMap hm = new HeatMap(baseDir, lsid.replace(":", "_"));
                             if ((points.length / 2) < 500) {
                                 hm.generatePoints(points);
                                 hm.drawOuput(outputfile, false);
@@ -143,187 +131,26 @@ public class WMSController {
                             }
 
 
-                            msg = baseOutUrl + lsid.replace(":","_") + ".png";
+                            msg = baseOutUrl + lsid.replace(":", "_") + ".png";
                             System.out.println("Sending out: " + msg);
 
                         } else {
                             //msg = "No species";
-                            msg = "base/mapaus1_white.png";
+                            msg = baseOutUrl + "base/mapaus1_white.png";
                             System.out.println("Empty filter species");
                         }
-                    } else {
-                        msg = "base/mapaus1_white.png";
-                    }
-                }
-            } else if (institution_code != null) {
-                // check if there is a collection code too.
-                String baseFilename = institution_code;
-                if (collection_code != null) {
-
-                    /*
-                     * Enable comma-delimited support if necessary
-                     * by uncommenting this part of the code
-                     *
-                    // check if collection_code is seperated by commas (,)
-                    // this should only happen if there is one collection_code
-                    // as if several, then we can assume its fine
-                    if (collection_code.length == 1) {
-                    String[] tmpCollCode = collection_code[0].split(",");
-
-                    // now copy it back into collection_code itself
-                    collection_code = tmpCollCode;
-                    }
-                     *
-                     */
-
-                    for (int i = 0; i < collection_code.length; i++) {
-                        baseFilename += "_" + collection_code[i];
-                    }
-                }
-                String outputfile = baseDir + File.separator + baseFilename + ".png";
-                System.out.println("Checking if already present: " + outputfile);
-                File imgFile = new File(outputfile);
-                if (imgFile.exists()) {
-                    System.out.println("File already present, sending that: " + baseOutUrl + baseFilename + ".png");
-                    msg = baseOutUrl + baseFilename + ".png";
-                } else {
-                    System.out.println("Starting out search for: " + institution_code);
-                    //msg = "generating density insitution code map for: " + institution_code;
-                    int[] recs = OccurrencesIndex.lookup("institution_code_uid", institution_code); // institutionCode
-
-                    if (recs != null) {
-
-                        System.out.println("Got recs.length: " + recs.length);
-
-                        int[] finalRecs = null;
-                        //writeToFile(baseDir.getAbsolutePath() + "/inst_"+institution_code+".txt", recs);
-
-                        if (collection_code != null) {
-                            for (int i = 0; i < collection_code.length; i++) {
-                                //msg = "generating density insitution/collection code map for: " + institution_code + "/" + collection_code[i];
-                                int[] recs2 = OccurrencesIndex.lookup("collection_code_uid", collection_code[i]); // collectionCode
-                                if (recs2 != null) {
-                                    System.out.println("Got recs2.length: " + recs2.length);
-                                    if (finalRecs != null) {
-                                        finalRecs = joinIntArrays(finalRecs, getMatchingRecs(recs, recs2));
-                                    } else {
-                                        finalRecs = getMatchingRecs(recs, recs2);
-                                    }
-
-                                    //writeToFile(baseDir.getAbsolutePath() + "/coll" + collection_code[i] + ".txt", recs2);
-                                }
-                            }
-                        } else {
-                            finalRecs = recs;
-                        }
-
-                        if (finalRecs != null) {
-                            System.out.println("Got finalRecs.length: " + finalRecs.length);
-
-                            double[][] pts = OccurrencesIndex.getPointsPairs();
-                            double[] points = new double[finalRecs.length * 2];
-                            for (int i = 0; i < finalRecs.length * 2; i += 2) {
-                                points[i] = pts[finalRecs[i / 2]][0];
-                                points[i + 1] = pts[finalRecs[i / 2]][1];
-                            }
-                            System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
-                            HeatMap hm = new HeatMap(baseDir, baseFilename);
-                            if ((points.length / 2) < 500) {
-                                hm.generatePoints(points);
-                                hm.drawOuput(outputfile, false);
-                            } else {
-                                hm.generateClasses(points);
-                                hm.drawOuput(outputfile, true);
-                            }
-
-
-                            msg = baseOutUrl + baseFilename + ".png";
-                            System.out.println("Sending out: " + msg);
-
-                        } else {
-                            msg = baseOutUrl + "base/mapaus1_white.png";
-                        }
-
                     } else {
                         msg = baseOutUrl + "base/mapaus1_white.png";
                     }
                 }
-            } else if (data_provider_id != null) {
-                msg = baseOutUrl + process(baseDir, "data_provider_uid", data_provider_id); // dataProviderId
-                /*
-                String outputfile = baseDir + File.separator + data_provider_id + ".png";
-                System.out.println("Checking if already present: " + outputfile);
-                File imgFile = new File(outputfile);
-                if (imgFile.exists()) {
-                System.out.println("File already present, sending that: " + baseOutUrl + data_provider_id + ".png");
-                msg = baseOutUrl + data_provider_id + ".png";
-                } else {
-                System.out.println("Starting out search for: " + data_provider_id);
-                msg = "generating density data_provider_id map for: " + data_provider_id;
-                int[] recs = OccurrencesIndex.lookup("dataProviderId", data_provider_id);
-
-                int[] finalRecs = recs;
-
-                double[][] pts = OccurrencesIndex.getPointsPairs();
-                double[] points = new double[finalRecs.length * 2];
-                for (int i = 0; i < finalRecs.length * 2; i += 2) {
-                points[i] = pts[finalRecs[i / 2]][0];
-                points[i + 1] = pts[finalRecs[i / 2]][1];
-                }
-                System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
-                HeatMap hm = new HeatMap(baseDir, data_provider_id);
-                if ((points.length / 2) < 500) {
-                hm.generatePoints(points);
-                hm.drawOuput(outputfile, false);
-                } else {
-                hm.generateClasses(points);
-                hm.drawOuput(outputfile, true);
-                }
-
-
-                msg = baseOutUrl + data_provider_id + ".png";
-                System.out.println("Sending out: " + msg);
-                }
-                 * 
-                 */
-            } else if (dataset_id != null) {
-                msg = baseOutUrl + process(baseDir, "data_resource_uid", dataset_id); // dataResourceId
-                /*
-                String outputfile = baseDir + File.separator + dataset_id + ".png";
-                System.out.println("Checking if already present: " + outputfile);
-                File imgFile = new File(outputfile);
-                if (imgFile.exists()) {
-                System.out.println("File already present, sending that: " + baseOutUrl + dataset_id + ".png");
-                msg = baseOutUrl + dataset_id + ".png";
-                } else {
-                System.out.println("Starting out search for: " + dataset_id);
-                msg = "generating density data_provider_id map for: " + dataset_id;
-                int[] recs = OccurrencesIndex.lookup("dataResourceId", dataset_id);
-
-                int[] finalRecs = recs;
-
-                double[][] pts = OccurrencesIndex.getPointsPairs();
-                double[] points = new double[finalRecs.length * 2];
-                for (int i = 0; i < finalRecs.length * 2; i += 2) {
-                points[i] = pts[finalRecs[i / 2]][0];
-                points[i + 1] = pts[finalRecs[i / 2]][1];
-                }
-                System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
-                HeatMap hm = new HeatMap(baseDir, dataset_id);
-                if ((points.length / 2) < 500) {
-                hm.generatePoints(points);
-                hm.drawOuput(outputfile, false);
-                } else {
-                hm.generateClasses(points);
-                hm.drawOuput(outputfile, true);
-                }
-
-
-                msg = baseOutUrl + dataset_id + ".png";
-                System.out.println("Sending out: " + msg);
-                }
-                 * 
-                 */
+            } else if (institutionUid != null) {
+                msg = baseOutUrl + process(baseDir, "institution_code_uid", institutionUid); 
+            } else if (collectionUid != null) {
+                msg = baseOutUrl + process(baseDir, "collection_code_uid", collectionUid); 
+            } else if (dataProviderUid != null) {
+                msg = baseOutUrl + process(baseDir, "data_provider_uid", dataProviderUid); 
+            } else if (dataResourceUid != null) {
+                msg = baseOutUrl + process(baseDir, "data_resource_uid", dataResourceUid);                 
             } else if (tcid != null) {
                 msg = baseOutUrl + process(baseDir, "taxonConceptId", tcid);
             } else if (spname != null) {
@@ -353,13 +180,13 @@ public class WMSController {
                     List<Species> species = speciesDao.getRecordsById(spname);
 
                     if (species != null) {
-                        double[] points = new double[species.size()*2];
-                        int pi=0;
+                        double[] points = new double[species.size() * 2];
+                        int pi = 0;
                         for (Species sp : species) {
                             System.out.println("sp: " + sp.getSpecies() + " at " + sp.getLongitude() + ", " + sp.getLatitude());
                             points[pi] = Double.parseDouble(sp.getLongitude());
-                            points[pi+1] = Double.parseDouble(sp.getLatitude());
-                            pi+=2;
+                            points[pi + 1] = Double.parseDouble(sp.getLatitude());
+                            pi += 2;
                         }
                         HeatMap hm = new HeatMap(baseDir, spname);
                         if ((points.length / 2) < 500) {
@@ -505,6 +332,37 @@ public class WMSController {
                     + request.getServerName() + ":" + request.getServerPort()
                     + request.getContextPath();
         }
+    }
+
+    private String generateOutput(String mapUrl, String legUrl, boolean heatmap) {
+
+        StringBuffer output = new StringBuffer();
+
+        output.append("{");
+
+        // the map image url
+        output.append("mapUrl:");
+        output.append("'").append(mapUrl).append("'");
+
+        output.append(",");
+
+        // the legend image url
+        output.append("legendUrl:");
+        output.append("'").append(legUrl).append("'");
+
+        output.append(",");
+
+        output.append("type:");
+        if (heatmap) {
+            output.append("'heatmap'");
+        } else {
+            output.append("'points'");
+        }
+
+        output.append("}");
+
+
+        return output.toString();
     }
 
     public String generateMapLSID(String lsid) {
