@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.heatmap;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -42,6 +43,7 @@ public class HeatMap {
 
     private static String DOT_PATH = "/Users/ajay/projects/ala/code/alageospatialportal/alaspatial/target/ala-spatial-1.0-SNAPSHOT/images/bullet_blue.png";
     private static BufferedImage backgroundImage;
+    private static BufferedImage legendImage;
     private int radius = 8;
     private int numColours = 10;
     private BufferedImage dotImage; /// createFadedCircleImage(radius);
@@ -77,6 +79,7 @@ public class HeatMap {
         System.err.println("Got base dir in initimages: " + baseDir.getAbsolutePath()); 
         try {
             backgroundImage = ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/mapaus1_white.png"));
+            legendImage = ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/heatmap_key.png"));
             dotImage = getDotImageFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -460,7 +463,7 @@ public class HeatMap {
                 }
             }
 
-            getScale(dPoints, maxValue);
+            generateLegend(maxValue);
         } catch (Exception e) {
             System.out.println("Error generating log scale circle:");
             e.printStackTrace(System.out);
@@ -588,50 +591,63 @@ public class HeatMap {
         }
     }
 
-    private void getScale(int dPoints[][], int maxValue) {
+    private void generateLegend(int maxValue) {
 
-        System.out.println("generating scale...");
+        System.out.println("generating legend...");
 
         int scale[] = new int[numColours - 1];
         scale[0] = maxValue;
         for (int i = 1; i < scale.length - 1; i++) {
             scale[i] = (int) Math.pow(Math.E, ((numColours - i) * (Math.log((double) maxValue) / numColours)));
-            //scale[i] = (int)Math.pow(Math.E,  scale[i]);
         }
         scale[scale.length - 1] = 0;
 
-//        String sdata = "";
-//        int slength = colorImage.getWidth();
-//
-//        for (int j = 0; j < scale.length; j++) {
-//            System.out.println(j + " - " + scale[j]);
-//            //sdata += "    " + scale[j] + "    ";
-//            sdata += "";
-//        }
-//
-//        System.out.println("Displaying scale: " + sdata);
-
         try {
             File ciOut = new File(baseDir.getAbsolutePath() + "/legend_" + baseFile + ".png");
-            Graphics cg = colorImage.getGraphics();
+            Graphics cg = legendImage.getGraphics();
             cg.setColor(Color.BLACK);
+            cg.setFont(new Font("Arial", Font.PLAIN, 12));
             String sdata = "";
-            int slength = colorImage.getWidth();
+            int width = legendImage.getWidth();
+            int height = legendImage.getHeight();
+            int padding = 10; // 10px padding around the image
+            int keyHeight = 30; // 30px key height
 
-            for (int j = 0; j < scale.length; j++) {
-                System.out.println(j + " - " + scale[j]);
-                //sdata += "    " + scale[j] + "    ";
-                //System.out.println("writing ");
-                cg.drawChars(Integer.toString(scale[j]).toCharArray(), 0, sdata.length(), slength - j, 10);
-            }
-            //cg.drawChars(sdata.toCharArray(), 0, sdata.length(), 5, 10);
-            ImageIO.write(colorImage, "png", ciOut);
-            System.out.println("scale generated"); 
+            width -= padding*2;
+            height -= padding*2;
+
+            int scaleLength = scale.length;
+            String value = (scale[scaleLength-1]+1) + "-" + (scale[scaleLength-3]);
+            int left = padding + width/2;
+            int top = padding + (keyHeight/2);
+            cg.drawString(value, left, top);
+
+            value = (scale[scaleLength-3]+1) + "-" + (scale[scaleLength-5]);
+            top = padding + (keyHeight/2) + keyHeight;
+            cg.drawString(value, left, top);
+
+            value = (scale[scaleLength-5]+1) + "-" + (scale[scaleLength-6]);
+            top = padding + (keyHeight/2) + (keyHeight*2);
+            cg.drawString(value, left, top);
+
+            value = (scale[scaleLength-6]+1) + "-" + (scale[scaleLength-7]);
+            top = padding + (keyHeight/2) + (keyHeight*3);
+            cg.drawString(value, left, top);
+
+            value = (scale[scaleLength-7]+1) + "-" + (scale[scaleLength-8]);
+            top = padding + (keyHeight/2) + (keyHeight*4);
+            cg.drawString(value, left, top);
+
+            value = (scale[scaleLength-8]+1) + "+";
+            top = padding + (keyHeight/2) + (keyHeight*5);
+            cg.drawString(value, left, top);
+
+            ImageIO.write(legendImage, "png", ciOut);
+            System.out.println("legend generated");
         } catch (Exception e) {
-            System.out.println("Unable to write colorImage:");
+            System.out.println("Unable to write legendImage:");
             e.printStackTrace(System.out);
         }
-
 
     }
 
