@@ -4,9 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.LinearGradientPaint;
 import java.awt.MultipleGradientPaint;
@@ -14,27 +11,23 @@ import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.Shape;
 import java.awt.Toolkit;
-import java.awt.Transparency;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ByteLookupTable;
-import java.awt.image.ColorModel;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
-import java.awt.image.IndexColorModel;
 import java.awt.image.LookupOp;
 import java.awt.image.LookupTable;
 import java.awt.image.RGBImageFilter;
 import java.awt.image.Raster;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
@@ -61,10 +54,10 @@ public class HeatMap {
     private double minY = 0;
     private double maxX = 0;
     private double maxY = 0;
-    private double bMinX = 112.911; //112.911;
-    private double bMinY = -50.778; //-54.778;
-    private double bMaxX = 158.113; //159.113;
-    private double bMaxY = -9.221; //-9.221;
+    private double bMinX = 110.911; //112.911; //112.911;
+    private double bMinY = -44.778; //-50.778; //-54.778;
+    private double bMaxX = 156.113; //158.113; //159.113;
+    private double bMaxY = -9.221; //-9.221; //-9.221;
     private File baseDir;
     private String baseFile;
 
@@ -338,7 +331,7 @@ public class HeatMap {
         Shape circle = new Ellipse2D.Float(p.x - radius, p.y - radius, radius, radius);
         //g.drawImage(dotImage, null, p.x - circleRadius, p.y - circleRadius);
         g.draw(circle);
-        g.setPaint(Color.red);
+        g.setPaint(Color.blue);
         g.fill(circle);
     }
 
@@ -467,7 +460,7 @@ public class HeatMap {
                 }
             }
 
-            /////getScale(dPoints, maxValue);
+            getScale(dPoints, maxValue);
         } catch (Exception e) {
             System.out.println("Error generating log scale circle:");
             e.printStackTrace(System.out);
@@ -619,7 +612,7 @@ public class HeatMap {
 //        System.out.println("Displaying scale: " + sdata);
 
         try {
-            File ciOut = new File(baseDir.getAbsolutePath() + "/../output/legend_" + baseFile + ".png");
+            File ciOut = new File(baseDir.getAbsolutePath() + "/legend_" + baseFile + ".png");
             Graphics cg = colorImage.getGraphics();
             cg.setColor(Color.BLACK);
             String sdata = "";
@@ -633,6 +626,7 @@ public class HeatMap {
             }
             //cg.drawChars(sdata.toCharArray(), 0, sdata.length(), 5, 10);
             ImageIO.write(colorImage, "png", ciOut);
+            System.out.println("scale generated"); 
         } catch (Exception e) {
             System.out.println("Unable to write colorImage:");
             e.printStackTrace(System.out);
@@ -689,10 +683,35 @@ public class HeatMap {
         return "#" + str.substring(str.length() - 6); //$NON-NLS-1$
     }
 
+    private void msgLog(String title, String msg) {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter("/data/logs/heatmap.log", true));
+
+            int maxValue = 0;
+
+//            for (int mi = 0; mi < width; mi++) {
+//                for (int mj = 0; mj < height; mj++) {
+//                    if (maxValue < dPoints[mi][mj]) {
+//                        maxValue = dPoints[mi][mj];
+//                    }
+//                }
+//            }
+
+
+
+            out.write("aString");
+            out.close();
+        } catch (Exception e) {
+            System.out.println("error in msgLog");
+            e.printStackTrace(System.out); 
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("Generating HeaMap");
 
         File baseDataDir = new File("/Users/ajay/projects/tmp/heatmap/data/");
+        /*
         File[] datafiles = baseDataDir.listFiles();
         for (File datafile : datafiles) {
             if (datafile.isDirectory()) {
@@ -707,6 +726,7 @@ public class HeatMap {
             hm.loadData(datafile);
             hm.drawOuput(fname, true);
         }
+        */
 
 
 //        System.out.println("0x33: " + toRgbText(0x33));
