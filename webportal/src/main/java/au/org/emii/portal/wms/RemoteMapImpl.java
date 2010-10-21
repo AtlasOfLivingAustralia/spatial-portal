@@ -12,6 +12,7 @@ import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.util.GeoJSONUtilities;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 import net.sf.json.JSONObject;
@@ -312,7 +313,19 @@ public class RemoteMapImpl implements RemoteMap {
     }
 
     public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type) {
+        return createGeoJSONLayer(label, uri, points_type,null);
+    }
+
+    public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties) {
         MapLayer geoJSON = new MapLayer();
+
+        // just check if properties is null,
+        // if so, just create an empty object
+        // and this won't throw any errors.
+        // probably ugly, but should work
+        if (properties == null) {
+            properties = new Hashtable();
+        }
 
         geoJSON.setName(label);
 
@@ -340,6 +353,7 @@ public class RemoteMapImpl implements RemoteMap {
         int g = (hash >> 8) % 255;
         int b = (hash) % 255;
 
+        /*
         geoJSON.setBlueVal(b);
         geoJSON.setGreenVal(g);
         geoJSON.setRedVal(r);
@@ -353,6 +367,40 @@ public class RemoteMapImpl implements RemoteMap {
         String rgbColour = "rgb(" + String.valueOf(r) + "," + String.valueOf(g) + "," + String.valueOf(b) + ")";
 
         geoJSON.setEnvColour(rgbColour);
+        */
+        geoJSON.setSizeUncertain(false);
+        String rgbColour = "rgb(" + String.valueOf(r) + "," + String.valueOf(g) + "," + String.valueOf(b) + ")";
+        if (properties.containsKey("blue")) {
+            int blue = ((Integer)properties.get("blue")).intValue();
+            geoJSON.setBlueVal(blue);
+        } else {
+            geoJSON.setBlueVal(b);
+        }
+        if (properties.containsKey("green")) {
+            int green = ((Integer)properties.get("green")).intValue();
+            geoJSON.setGreenVal(green);
+        } else {
+            geoJSON.setGreenVal(g);
+        }
+        if (properties.containsKey("red")) {
+            int red = ((Integer)properties.get("red")).intValue();
+            geoJSON.setRedVal(red);
+        } else {
+            geoJSON.setRedVal(r);
+        }
+        if (properties.containsKey("size")) {
+            int size = ((Integer)properties.get("size")).intValue();
+            geoJSON.setSizeVal(size);
+        } else {
+            geoJSON.setSizeVal(4);
+        }
+        if (properties.containsKey("envColour")) {
+            String envColour = (String)properties.get("envColour");
+            geoJSON.setEnvColour(envColour);
+        } else {
+            geoJSON.setEnvColour(rgbColour);
+        }
+        
 
         geoJSON.setType(layerUtilities.GEOJSON);
         System.out.println("getting json .... " + uri);

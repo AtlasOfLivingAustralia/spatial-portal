@@ -10,6 +10,7 @@ import au.org.emii.portal.config.xmlbeans.BaseLayer;
 import au.org.emii.portal.config.xmlbeans.Discovery;
 import au.org.emii.portal.config.xmlbeans.Service;
 import au.org.emii.portal.lang.LanguagePack;
+import java.util.Hashtable;
 
 /**
  *
@@ -50,6 +51,7 @@ public interface RemoteMap {
     MapLayer createAndTestWMSLayer(String label, String uri, float opacity, boolean queryable);
 
     MapLayer createGeoJSONLayer(String label, String uri, boolean points_type);
+    MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties);
 
     String getJson(String uri);
 

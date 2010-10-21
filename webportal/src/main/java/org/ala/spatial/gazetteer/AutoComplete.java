@@ -43,9 +43,10 @@ public class AutoComplete extends Combobox {
     @Override
     public void setValue(String value) {
         super.setValue(value);
-        refresh(value); //refresh the child comboitems
+        //refresh(value); //refresh the child comboitems
     }
 
+    /*
     public void onSelect(Event event) {
         if(gazServer == null && this.getParent() != null){
                 SettingsSupplementary settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
@@ -83,6 +84,8 @@ public class AutoComplete extends Combobox {
             //add feature to the map as a new layer
             mapLayer = mc.addGeoJSON(item.getLabel(), gazServer + label);
     }
+     * 
+     */
     
      /**
      * Gets the main pages controller so we can add a
@@ -102,7 +105,9 @@ public class AutoComplete extends Combobox {
      * @param evt
      */
     public void onChanging(InputEvent evt) {
-        refresh(evt.getValue());
+        if (!evt.isChangingBySelectBack()) {
+            refresh(evt.getValue());
+        }
     }
 
     /** Refresh comboitem based on the specified value.
