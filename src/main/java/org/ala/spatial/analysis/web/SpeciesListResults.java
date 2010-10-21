@@ -118,7 +118,7 @@ public class SpeciesListResults extends UtilityComposer {
 
     public void onClick$btnDownload() {
         StringBuffer sb = new StringBuffer();
-        sb.append("Family Name,Scientific Name,Common name\\s,Taxon rank\r\n");
+        sb.append("Family Name,Scientific Name,Common name/s,Taxon rank\r\n");
         for (String s : results) {
             sb.append("\"");
             sb.append(s.replaceAll("\\*", "\",\""));
