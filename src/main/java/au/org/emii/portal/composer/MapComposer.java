@@ -2075,14 +2075,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
                     legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
                     sizeChooser.setVisible(false);
-                    uncertainty.setVisible(false);
+                    //uncertainty.setVisible(false);
                 } else {
                     legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
                     sizeChooser.setVisible(true);
                     if (m.getGeoJSON() != null && m.getGeoJSON().length() > 0) {
-                        uncertainty.setVisible(false);
+                        //uncertainty.setVisible(false);
                     } else {
-                        uncertainty.setVisible(true);
+                        //uncertainty.setVisible(true);
                     }
                 }
                 legendImg.setVisible(true);
@@ -2413,14 +2413,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (selectedLayer.getGeometryType() != GeoJSONUtilities.POINT) {
             legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
             sizeChooser.setVisible(false);
-            uncertainty.setVisible(false);
+            //uncertainty.setVisible(false);
         } else {
             legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
             sizeChooser.setVisible(true);
             if (selectedLayer.getGeoJSON() != null && selectedLayer.getGeoJSON().length() > 0) {
-                uncertainty.setVisible(false); //hide uncertianty for clusters
+                //uncertainty.setVisible(false); //hide uncertianty for clusters
             } else {
-                uncertainty.setVisible(true);
+                //uncertainty.setVisible(true);
             }
 
         }
@@ -3723,7 +3723,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
         MapLayer ml = null;
-        if (countOfLsid(lsid) > 5000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
+        if (countOfLsid(lsid) > 20000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
             ml = mapSpeciesByLsidCluster(lsid, species, rank);
         } else {
             //return mapSpeciesByLsidPoints(lsid,species);
