@@ -518,7 +518,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     </hbox>
                                                     <separator />
                                                     <hbox width="100%">
-                                                        <div id="uncertainty" align="left" style="padding-top:0px">
+                                                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
                                                             <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
                                                             <separator />
                                                         </div>
