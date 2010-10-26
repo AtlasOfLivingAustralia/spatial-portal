@@ -16,6 +16,7 @@ import org.ala.spatial.analysis.service.FilteringImage;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.FilteringIndex;
+import org.ala.spatial.util.CitationService;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -435,9 +436,16 @@ public class FilteringWSController {
 
             String filepath = FilteringService.getSamplesList(pid, region, TabulationSettings.MAX_RECORD_COUNT);
 
+            String citationpath = CitationService.generateCitationDataProviders(filepath);
+
             /* zipping */
-            String[] files = new String[1];
+            String[] files = new String[2];
             files[0] = filepath;
+            files[1] = citationpath;
+
+            String[] filenames = new String[2];
+            filenames[0] = "samples.csv";
+            filenames[1] = "citation.csv";
 
             String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             //String currentPath = TabulationSettings.base_output_dir;
@@ -448,7 +456,7 @@ public class FilteringWSController {
             SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
             String sdate = date.format(new Date());
             String outfile = fDir.getAbsolutePath() + File.separator + "Sample_" + sdate + "_" + currTime + ".zip";
-            Zipper.zipFiles(files, outfile);
+            Zipper.zipFiles(files, filenames, outfile);
 
             return "output/filtering/" + "Sample_" + sdate + "_" + currTime + ".zip";
 

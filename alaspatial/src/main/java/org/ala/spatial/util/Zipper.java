@@ -44,11 +44,12 @@ public class Zipper {
 
     /**
      * zipFiles method to zip a bunch of files. Output filename to be provided.
-     * 
+     *
      * @param infiles Input files to be zipped
+     * @param filenames Human-readable filenames 
      * @param outfile Output zipped filename
      */
-    public static void zipFiles(String[] infiles, String outfile) {
+    public static void zipFiles(String[] infiles, String[] filenames, String outfile) {
         byte[] buf = new byte[1024];
         try {
             // Create the ZIP file
@@ -56,9 +57,18 @@ public class Zipper {
             // Compress the files
             for (int i = 0; i < infiles.length; i++) {
                 File f = new File(infiles[i]);
-                FileInputStream in = new FileInputStream(f); 
+                FileInputStream in = new FileInputStream(f);
                 // Add ZIP entry to output stream.
-                out.putNextEntry(new ZipEntry(f.getName()));
+                String fname = f.getName();
+                if (filenames != null) {
+                    if (filenames.length == infiles.length) {
+                        if (!filenames[i].trim().equalsIgnoreCase("")) {
+                            fname = filenames[i]; 
+                        }
+                    }
+                    
+                }
+                out.putNextEntry(new ZipEntry(fname));
                 // Transfer bytes from the file to the ZIP file
                 int len;
                 while ((len = in.read(buf)) > 0) {
@@ -72,7 +82,17 @@ public class Zipper {
             out.close();
         } catch (IOException e) {
         }
+        
+    }
 
+    /**
+     * zipFiles method to zip a bunch of files. Output filename to be provided.
+     * 
+     * @param infiles Input files to be zipped
+     * @param outfile Output zipped filename
+     */
+    public static void zipFiles(String[] infiles, String outfile) {
+        zipFiles(infiles, null, outfile);
     }
 
     /**
