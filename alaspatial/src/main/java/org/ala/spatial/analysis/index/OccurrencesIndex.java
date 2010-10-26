@@ -712,10 +712,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
                 sa = s.split(",");
 
-                if (s.contains(",Acacia")) {
-                    int q = 4;
-                }
-
                 progress++;
 
                 //updated = false;
@@ -723,26 +719,32 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
                     //conceptid vs names
                     for (i = 0; i < idnamesIdx.length; i += 2) {
-                        //append 2 spaces for ordering
-                        String joined = sa[idnamesIdx[i + 1]].toLowerCase() + "  |  " + sa[idnamesIdx[i]].toLowerCase();
-                        idnames.put(joined, sa[idnamesIdx[i]].toLowerCase());
+                        //valid id's only
+                        if(sa[idnamesIdx[i]].length() > 0) {
+                            //append 2 spaces for ordering
+                            String joined = sa[idnamesIdx[i + 1]].toLowerCase() + "  |  " + sa[idnamesIdx[i]].toLowerCase();
+                            idnames.put(joined, sa[idnamesIdx[i]].toLowerCase());
+                        }
                     }
 
                     //add current record to extra_indexes
                     for (i = 0; i < extra_indexes.length; i++) {
-                        current_key[i] = sa[ofu.extraIndexes[i]];
-                        if (current_key[i].equals(prev_key[i]) && obj[i] != null) {
-                            obj[i].add(new Integer(recordpos));
-                        } else {
-                            prev_key[i] = current_key[i];
+                        //only non-empty values
+                        if(sa[ofu.extraIndexes[i]].length() > 0) {
+                            current_key[i] = sa[ofu.extraIndexes[i]];
+                            if (current_key[i].equals(prev_key[i]) && obj[i] != null) {
+                                obj[i].add(new Integer(recordpos));
+                            } else {
+                                prev_key[i] = current_key[i];
 
-                            obj[i] = (ArrayList<Integer>) extra_indexes[i].get(current_key[i]);
+                                obj[i] = (ArrayList<Integer>) extra_indexes[i].get(current_key[i]);
 
-                            if (obj[i] == null) {
-                                obj[i] = new ArrayList<Integer>();
-                                extra_indexes[i].put(current_key[i], obj[i]);
+                                if (obj[i] == null) {
+                                    obj[i] = new ArrayList<Integer>();
+                                    extra_indexes[i].put(current_key[i], obj[i]);
+                                }
+                                obj[i].add(new Integer(recordpos));
                             }
-                            obj[i].add(new Integer(recordpos));
                         }
                     }
 
@@ -750,10 +752,8 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         if (recordpos != 0 && !last_value[i].equalsIgnoreCase(sa[i])) {
                             fw_maps[i].put(last_value[i],
                                     new IndexedRecord(last_value[i].toLowerCase(),
-                                    //lastfilepos,
                                     last_position[i],
                                     filepos,
-                                    //lastrecordpos,
                                     last_record[i],
                                     recordpos - 1, (byte) i));
 
@@ -2621,7 +2621,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
     public static void main(String[] args) {
         TabulationSettings.load();
         OccurrencesIndex oi = new OccurrencesIndex();
-        oi.makeSensitiveCoordinates(null);
+        oi.exportFieldIndexes();
 
         //SimpleRegion sr = SimpleShapeFile.parseWKT("POLYGON((116.0 -44.0,116.0 -9.0,117.0 -9.0,117.0 -44.0,116.0 -44.0))");
         //getSpeciesInside(sr);
