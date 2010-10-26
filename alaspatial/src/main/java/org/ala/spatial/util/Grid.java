@@ -39,7 +39,7 @@ public class Grid { //  implements Serializable
     public double xres, yres;
     public String datatype;
     // properties
-    public float minval, maxval;
+    public double minval, maxval;
     byte nbytes;
     String filename;
     float [] grid_data = null;
