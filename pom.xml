@@ -149,7 +149,7 @@
         <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zkspring</artifactId>
-            <version>1.2.0-RC.a</version>
+            <version>1.2.0-RC-2010-05-20</version>
         </dependency>
 
         <dependency>
