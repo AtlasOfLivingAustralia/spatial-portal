@@ -349,6 +349,9 @@ public class FilteringWCController extends UtilityComposer {
 
         //change to get last item
         int count = lbSelLayers.getItemCount();
+        if (count == 0) {
+            return;
+        }
         li = (Listitem) lbSelLayers.getItemAtIndex(count - 1);
 
         int idx = li.getIndex();
@@ -375,7 +378,7 @@ public class FilteringWCController extends UtilityComposer {
 
         li.detach();
 
-        if(selectedLayers.size() == 0){
+        if (selectedLayers.size() == 0) {
             showAdjustPopup(null);
             listFix();
         }
@@ -401,7 +404,7 @@ public class FilteringWCController extends UtilityComposer {
         }
         if (mc.getMapLayer(LAYER_PREFIX + layername) != null) {
             mc.removeLayer(LAYER_PREFIX + layername);
-        } else if(layername.equalsIgnoreCase("Active Area")){
+        } else if (layername.equalsIgnoreCase("Active Area")) {
             showActiveArea();
         }
     }
@@ -606,7 +609,7 @@ public class FilteringWCController extends UtilityComposer {
     }
 
     void showActiveArea() {
-        if(activeAreaUrl != null){
+        if (activeAreaUrl != null) {
             loadMap(activeAreaUrl, "Active Area");
             MapLayer ml = mc.getMapLayer("Active Area");
             if (ml.getMapLayerMetadata() == null) {
@@ -822,24 +825,24 @@ public class FilteringWCController extends UtilityComposer {
      */
     public void removeAllSelectedLayers(boolean showActiveArea) {
         //if (state_visible) {
-            state_visible = false;
-            StringBuffer sb = new StringBuffer();
-            if (activeAreaUrl != null && showActiveArea) {
-                sb.append("Active Area");
-                if (selectedLayers.size() > 0) {
-                    sb.append("|");
-                }
-            }
-            for (int i = 0; i < selectedLayers.size(); i++) {
-                String label = selectedLayers.get(i);
-                sb.append(getSPLFilter(label).layer.display_name);
-                if (i < selectedLayers.size() - 1) {
-                    sb.append("|");
-                }
-            }
+        state_visible = false;
+        StringBuffer sb = new StringBuffer();
+        if (activeAreaUrl != null && showActiveArea) {
+            sb.append("Active Area");
             if (selectedLayers.size() > 0) {
-                Events.echoEvent("removeLayer", this, sb.toString());
+                sb.append("|");
             }
+        }
+        for (int i = 0; i < selectedLayers.size(); i++) {
+            String label = selectedLayers.get(i);
+            sb.append(getSPLFilter(label).layer.display_name);
+            if (i < selectedLayers.size() - 1) {
+                sb.append("|");
+            }
+        }
+        if (selectedLayers.size() > 0) {
+            Events.echoEvent("removeLayer", this, sb.toString());
+        }
         //}
     }
 
