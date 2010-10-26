@@ -403,9 +403,9 @@ public class TabulationSettings {
         try {
             MAX_RECORD_COUNT = Integer.parseInt(xr.getValue("max_record_count"));
         } catch (NumberFormatException nfe) {
-            MAX_RECORD_COUNT = 100000;
+            MAX_RECORD_COUNT = 15000;
         } catch (Exception e) {
-            MAX_RECORD_COUNT = 100000;
+            MAX_RECORD_COUNT = 15000;
         }
 
 
