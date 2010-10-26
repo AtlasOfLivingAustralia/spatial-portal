@@ -1382,6 +1382,14 @@
     <occurrences_sen_lat_field>sensitive_latitude</occurrences_sen_lat_field>
 
     <!--
+        for retrieving the citation details
+        need to send data_provider_uid
+    -->
+    <occurrences_dp_uid>data_provider_uid</occurrences_dp_uid>
+
+    <citation_url_data_provider>http://collections.ala.org.au/lookup/citation</citation_url_data_provider>
+
+    <!--
         autocomplete friendly names for 1's & 2's (type names)
         -->
     <occurances_csv_twos_names>kingdom,phylum,class,order,family,genus,species,scientific name</occurances_csv_twos_names>

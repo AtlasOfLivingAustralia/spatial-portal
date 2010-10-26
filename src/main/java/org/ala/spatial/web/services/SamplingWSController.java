@@ -18,6 +18,7 @@ import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.AnalysisQueue;
+import org.ala.spatial.util.CitationService;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
@@ -78,11 +79,18 @@ public class SamplingWSController {
             SamplingService ss = new SamplingService();
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"));
 
+            String citationpath = CitationService.generateCitationDataProviders(datafile);
+
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);
+            vFiles.add(citationpath);
 
             String[] files = (String[]) vFiles.toArray(new String[vFiles.size()]);
 
+            String[] filenames = new String[2];
+            filenames[0] = "samples.csv";
+            filenames[1] = "citation.csv";
+            
             //String[] files = new String[vFiles.size()];
             Iterator it = vFiles.iterator();
             while (it.hasNext()) {
@@ -97,7 +105,7 @@ public class SamplingWSController {
             File fDir = new File(outputpath);
             fDir.mkdir();
             String outfile = fDir.getAbsolutePath() + File.separator + speciesName.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
-            Zipper.zipFiles(files, outfile);
+            Zipper.zipFiles(files, filenames, outfile);
 
             return "/output/sampling/" + speciesName.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
 

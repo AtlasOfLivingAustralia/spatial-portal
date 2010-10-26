@@ -226,6 +226,9 @@ public class TabulationSettings {
 
     public static int cluster_lookup_size;
 
+    public static String citation_url_data_provider;
+    public static String occurrences_dp_uid;
+
     /**
      * loads settings form name of the appropriate xml resource file
      *
@@ -468,6 +471,9 @@ public class TabulationSettings {
         occurrences_sen_lat_field = xr.getValue("occurrences_sen_lat_field");
 
         cluster_lookup_size = Integer.parseInt(xr.getValue("cluster_lookup_size"));
+
+        citation_url_data_provider = xr.getValue("citation_url_data_provider");
+        occurrences_dp_uid = xr.getValue("occurrences_dp_uid"); 
     }
 
     static public String getPath(String layerName) {
