@@ -39,7 +39,7 @@ public class Grid { //  implements Serializable
     public double xres, yres;
     public String datatype;
     // properties
-    public double minval, maxval;
+    public float minval, maxval;
     byte nbytes;
     String filename;
     float [] grid_data = null;
@@ -260,8 +260,8 @@ public class Grid { //  implements Serializable
 
         setdatatype(ir.getStringValue("Data", "DataType"));
         //System.out.println("grd datatype=" + datatype);
-        maxval = ir.getDoubleValue("Data", "MaxValue");
-        minval = ir.getDoubleValue("Data", "MinValue");
+        maxval = (float)ir.getDoubleValue("Data", "MaxValue");
+        minval = (float)ir.getDoubleValue("Data", "MinValue");
         ncols = ir.getIntegerValue("GeoReference", "Columns");
         nrows = ir.getIntegerValue("GeoReference", "Rows");
         xmin = ir.getDoubleValue("GeoReference", "MinX");
@@ -672,48 +672,19 @@ public class Grid { //  implements Serializable
         grid_data = ret;
         return ret;
     }
-/*
-    float[] getValues2(double xmin, double xmax, double ymin, double ymax) {
-        int xrange = (int) Math.ceil((xmax - xmin) / TabulationSettings.grd_xdiv);
-        int yrange = (int) Math.ceil((ymax - ymin) / TabulationSettings.grd_ydiv);
 
-        //init output structure
-        int len = xrange * yrange;
-        float[] ret = new float[len];
-        for(int i=0;i<len;i++){
-            ret[i] = Float.NaN;
+    public void printMinMax(){
+        float min = Float.MAX_VALUE;
+        float max = -1 * Float.MAX_VALUE;
+        float [] data = this.getGrid();
+        for(float d : data){
+            if(d < min) min = d;
+            if(d > max) max = d;
         }
-
-        if(xmin < this.xmin){
-            istart = 0;
-            xoff = (int) Math.ceil((xmax - xmin) / TabulationSettings.grd_xdiv)
+        if(min != this.minval || max != this.maxval){
+            System.out.println(this.filename + "header(" + this.minval + " " + this.maxval + ") actual(" + min + " " + max + ")");
+        }else{
+            System.out.println(this.filename + " OK");
         }
-        int x,y;
-        for(int j=0;j<yrange;j++){
-            y = ?;
-            for(int i=0;i<xrange;i++){
-                ret[y++] = grid[i];
-            }
-        }
-
-        //load whole grid
-        float[] grid = getGrid();
-
-        int length = points.length;
-        int i, pos;
-
-        System.out.println(filename + ", " + datatype + ":" + points.length);
-
-        //points loop
-        for (i = 0; i < length; i++) {
-            pos = getcellnumber(points[i][0], points[i][1]);
-            if (pos >= 0) {
-                ret[i] = grid[pos];
-            } else {
-                ret[i] = Float.NaN;
-            }
-        }
-
-        return ret;
-    }*/
+    }
 }
