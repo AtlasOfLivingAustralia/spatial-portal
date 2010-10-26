@@ -2154,10 +2154,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         // TODO: fix the points/cluster toggle for active area
-        if (m.getName().equalsIgnoreCase("Species in Active area")) {
-            chkPointsCluster.setVisible(false);
-        } else {
-            chkPointsCluster.setVisible(true);
+        if (m != null) {
+            if (m.getName().equalsIgnoreCase("Species in Active area")) {
+                chkPointsCluster.setVisible(false);
+            } else {
+                chkPointsCluster.setVisible(true);
+            }
         }
     }
 
