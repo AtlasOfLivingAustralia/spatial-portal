@@ -244,7 +244,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 
 
-                    <label sclass="tmpHeader" value="Explore the Spatial Portal" />
+                    <label sclass="tmpHeader" value="Explore the Spatial Portal" visible="false" />
 
 
                     <div sclass="highlighted spaced" visible="false" >
@@ -1028,7 +1028,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             jQuery('.hidden_image :hidden').show();
 
-            if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
+            if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
                 jQuery('.z-north').show();
                 jQuery('.z-south').show();
             }
