@@ -719,3 +719,16 @@ closebox a.helpButtonMain:hover {
 .z-north, .z-south {
   display: none;
 }
+
+.z-tabs-cnt {
+    color: #fff;
+}
+
+.z-tab .z-tab-text {
+    color: #fff;
+}
+
+.z-tabs-left-scroll, .z-tabs-right-scroll, .z-tab-seld .z-tab-text  {
+    color: #01716e;
+}
+
