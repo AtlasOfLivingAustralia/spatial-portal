@@ -606,19 +606,20 @@ public class HeatMap {
             File ciOut = new File(baseDir.getAbsolutePath() + "/legend_" + baseFile + ".png");
             Graphics cg = legendImage.getGraphics();
             cg.setColor(Color.BLACK);
-            cg.setFont(new Font("Arial", Font.PLAIN, 12));
+            cg.setFont(new Font("Arial", Font.PLAIN, 10));
             String sdata = "";
             int width = legendImage.getWidth();
             int height = legendImage.getHeight();
             int padding = 10; // 10px padding around the image
             int keyHeight = 30; // 30px key height
+            int keyWidth = 25; // 30px key width
 
             width -= padding*2;
             height -= padding*2;
 
             int scaleLength = scale.length;
             String value = (scale[scaleLength-1]+1) + "-" + (scale[scaleLength-3]);
-            int left = padding + width/2;
+            int left = padding*2 + keyWidth; // padding + width/2;
             int top = padding + (keyHeight/2);
             cg.drawString(value, left, top);
 
