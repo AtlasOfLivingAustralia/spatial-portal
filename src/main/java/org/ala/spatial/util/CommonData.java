@@ -30,22 +30,33 @@ public class CommonData {
     //common parameters
     static public final String SAT_URL = "sat_url";
     static public final String GEOSERVER_URL = "geoserver_url";
-
     //(1) for LayersUtil
+    static Object oLayersUtilLock = new Object();
     static String[] environmentalLayerNames = null;
     static String[] contextualLayerNames = null;
-
+    static String[] copy_environmentalLayerNames = null;
+    static String[] copy_contextualLayerNames = null;
     //(2) for EnvironmentalList
+    static Object oEnvironmentalListLock = new Object();
     static ArrayList<ListEntry> listEntriesAll;
     static String[] layerNamesAll;
     static ArrayList<ListEntry> listEntriesEnv;
     static String[] layerNamesEnv;
     static float[][] distances;
-
+    static ArrayList<ListEntry> copy_listEntriesAll;
+    static String[] copy_layerNamesAll;
+    static ArrayList<ListEntry> copy_listEntriesEnv;
+    static String[] copy_layerNamesEnv;
+    static float[][] copy_distances;
     //(3) for layer list json
+    static Object oLayerListJsonLock = new Object();
     static String layerlist = null;
     static JSONArray layerlistJSON = null;
-
+    static HashMap<JSONObject, List> contextualClasses = null;
+    static private ArrayList empty = new ArrayList();
+    static String copy_layerlist = null;
+    static JSONArray copy_layerlistJSON = null;
+    static HashMap<JSONObject, List> copy_contextualClasses = null;
     //Common
     static String satServer;
     static String geoServer;
@@ -55,24 +66,66 @@ public class CommonData {
      */
     static public void init(String satServer_, String geoServer_) {
         System.out.println("CommonData.init(" + satServer_ + "," + geoServer_);
-        
+
         //Common
         satServer = satServer_;
         geoServer = geoServer_;
 
         //TODO: allow for data refresh
-        
-        //(1) for LayersUtil
-        getEnvironmentalLayers();
-        getContextualLayers();
 
-        //(2) for EnvironmentalList
+        //(1) for LayersUtil        
+        initEnvironmentalLayers();
+        initContextualLayers();
+
+        //(3) for layer list json        
+        initLayerList();
+        initContextualClasses();
+
+        //(2) for EnvironmentalList - uses layer list json, so run after        
         initEnvironmentalOnlyList();
         initEnvironmentalAllList();
 
-        //(3) for layer list json
-        getLayerList();
-        initContextualClasses();
+        synchronized (oLayersUtilLock) {
+            synchronized (oEnvironmentalListLock) {
+                synchronized (oLayersUtilLock) {
+                    //(1) for LayersUtil
+                    if (copy_environmentalLayerNames != null) {
+                        environmentalLayerNames = copy_environmentalLayerNames;
+                    }
+                    if (copy_contextualLayerNames != null) {
+                        contextualLayerNames = copy_contextualLayerNames;
+                    }
+
+                    //(2) for EnvironmentalList
+                    if (copy_listEntriesAll != null) {
+                        listEntriesAll = copy_listEntriesAll;
+                    }
+                    if (copy_layerNamesAll != null) {
+                        layerNamesAll = copy_layerNamesAll;
+                    }
+                    if (copy_listEntriesEnv != null) {
+                        listEntriesEnv = copy_listEntriesEnv;
+                    }
+                    if (copy_layerNamesEnv != null) {
+                        layerNamesEnv = copy_layerNamesEnv;
+                    }
+                    if (copy_distances != null) {
+                        distances = copy_distances;
+                    }
+
+                    //(3) for layer list json
+                    if (copy_layerlist != null) {
+                        layerlist = copy_layerlist;
+                    }
+                    if (copy_layerlistJSON != null) {
+                        layerlistJSON = copy_layerlistJSON;
+                    }
+                    if (copy_contextualClasses != null) {
+                        contextualClasses = copy_contextualClasses;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -82,35 +135,38 @@ public class CommonData {
      * @return environmental layer names as String[] or null on error
      */
     static public String[] getEnvironmentalLayers() {
-        /* return previously generated list if available */
-        if (environmentalLayerNames == null) {
-            String[] aslist = null;
-            try {
-                String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+        synchronized (oLayersUtilLock) {
+            return environmentalLayerNames;
+        }
+    }
 
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(envurl);
-                get.addRequestHeader("Content-type", "text/plain");
+    static void initEnvironmentalLayers() {
+        System.out.println("CommonData::initEnvironmentalLayers");
+        String[] aslist = null;
+        try {
+            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
 
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(envurl);
+            get.addRequestHeader("Content-type", "text/plain");
 
-                aslist = slist.split("\n");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
 
-                for (int i = 0; i < aslist.length; i++) {
-                    aslist[i] = aslist[i].trim();
-                }
+            aslist = slist.split("\n");
 
-            } catch (Exception e) {
-                System.out.println("error setting up env list");
-                e.printStackTrace(System.out);
+            for (int i = 0; i < aslist.length; i++) {
+                aslist[i] = aslist[i].trim();
             }
 
-            /* retain list for future calls */
-            environmentalLayerNames = aslist;
+        } catch (Exception e) {
+            System.out.println("error setting up env list");
+            aslist = null;
+            e.printStackTrace(System.out);
         }
 
-        return environmentalLayerNames;
+        /* retain list for future calls */
+        copy_environmentalLayerNames = aslist;
     }
 
     /**
@@ -120,121 +176,140 @@ public class CommonData {
      * @return contextual layer names as String[] or null on error
      */
     static public String[] getContextualLayers() {
-        /* return previously generated list if available */
-        if (contextualLayerNames == null) {
-            String[] aslist = null;
-            try {
-                String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/contextual/string";
+        synchronized (oLayersUtilLock) {
+            return contextualLayerNames;
+        }
+    }
 
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(envurl);
-                get.addRequestHeader("Content-type", "text/plain");
+    static void initContextualLayers() {
+        System.out.println("CommonData::initContextualLayers()");
+        String[] aslist = null;
+        try {
+            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/contextual/string";
 
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(envurl);
+            get.addRequestHeader("Content-type", "text/plain");
 
-                aslist = slist.split("\n");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
 
-                for (int i = 0; i < aslist.length; i++) {
-                    aslist[i] = aslist[i].trim();
-                }
+            aslist = slist.split("\n");
 
-            } catch (Exception e) {
-                System.out.println("error setting up ctx list");
-                e.printStackTrace(System.out);
+            for (int i = 0; i < aslist.length; i++) {
+                aslist[i] = aslist[i].trim();
             }
 
-            /* retain for future calls */
-            contextualLayerNames = aslist;
+        } catch (Exception e) {
+            System.out.println("error setting up ctx list");
+            aslist = null;
+            e.printStackTrace(System.out);
         }
 
-        return contextualLayerNames;
+        /* retain for future calls */
+        copy_contextualLayerNames = aslist;
     }
-   
-    static public ArrayList<ListEntry> getListEntriesAll(){
-        return listEntriesAll;
+
+    static public ArrayList<ListEntry> getListEntriesAll() {
+        synchronized (oEnvironmentalListLock) {
+            return listEntriesAll;
+        }
     }
-    static public String[] getLayerNamesAll(){
-        return layerNamesAll;
+
+    static public String[] getLayerNamesAll() {
+        synchronized (oEnvironmentalListLock) {
+            return layerNamesAll;
+        }
     }
-    static public ArrayList<ListEntry> getListEntriesEnv(){
-        return listEntriesEnv;
+
+    static public ArrayList<ListEntry> getListEntriesEnv() {
+        synchronized (oEnvironmentalListLock) {
+            return listEntriesEnv;
+        }
     }
-    static public String[] getLayerNamesEnv(){
-        return layerNamesEnv;
+
+    static public String[] getLayerNamesEnv() {
+        synchronized (oEnvironmentalListLock) {
+            return layerNamesEnv;
+        }
     }
-    static public float[][] getDistances(){
-        return distances;
+
+    static public float[][] getDistances() {
+        synchronized (oEnvironmentalListLock) {
+            return distances;
+        }
     }
 
     static public void initEnvironmentalOnlyList() {
-        if (layerNamesEnv == null) {
-            try {
-                //environmental only
-                StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(satServer + "/alaspatial/layers/analysis/inter_layer_association_rawnames.csv");
+        System.out.println("CommonData::initEnvironmentalOnlyList()");
+        try {
+            //environmental only
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/layers/analysis/inter_layer_association_rawnames.csv");
 
-                System.out.println(sbProcessUrl.toString());
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(sbProcessUrl.toString());
+            System.out.println(sbProcessUrl.toString());
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
 
-                get.addRequestHeader("Accept", "text/plain");
+            get.addRequestHeader("Accept", "text/plain");
 
-                int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
 
-                String[] rows = slist.split("\n");
+            String[] rows = slist.split("\n");
 
-                //got a csv, put into column names, etc
-                layerNamesEnv = new String[rows.length]; //last row is empty
-                distances = new float[rows.length - 1][rows.length - 1];
+            //got a csv, put into column names, etc
+            copy_layerNamesEnv = new String[rows.length]; //last row is empty
+            copy_distances = new float[rows.length - 1][rows.length - 1];
 
-                String[] line = rows[0].split(",");
-                layerNamesEnv[0] = line[1];
-                for (int i = 1; i < rows.length; i++) {   //last row is empty
-                    line = rows[i].split(",");
-                    layerNamesEnv[i] = line[0];
-                    for (int j = 1; j < line.length; j++) {
-                        try {
-                            distances[i - 1][j - 1] = Float.parseFloat(line[j]);
-                        } catch (Exception e) {
-                        }
+            String[] line = rows[0].split(",");
+            copy_layerNamesEnv[0] = line[1];
+            for (int i = 1; i < rows.length; i++) {   //last row is empty
+                line = rows[i].split(",");
+                copy_layerNamesEnv[i] = line[0];
+                for (int j = 1; j < line.length; j++) {
+                    try {
+                        copy_distances[i - 1][j - 1] = Float.parseFloat(line[j]);
+                    } catch (Exception e) {
                     }
                 }
-
-                listEntriesEnv = new ArrayList<ListEntry>();
-                initLayerCatagories(listEntriesEnv, true);
-
-                //match up listEntries
-                for (int i = 0; i < listEntriesEnv.size(); i++) {
-                    String entryName = listEntriesEnv.get(i).name;
-                    for (int j = 0; j < layerNamesEnv.length; j++) {
-                        if (layerNamesEnv[j].equalsIgnoreCase(entryName)) {
-                            listEntriesEnv.get(i).row_in_distances = j;
-                            break;
-                        }
-                    }
-
-                    //remove if missing
-                    if (listEntriesEnv.get(i).row_in_distances < 0) {
-                        //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
-                        listEntriesEnv.remove(i);
-                        i--;
-                    } else {
-                        listEntriesEnv.get(i).row_in_list = i;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+
+            copy_listEntriesEnv = new ArrayList<ListEntry>();
+            initLayerCatagories(copy_listEntriesEnv, true);
+
+            //match up listEntries
+            for (int i = 0; i < copy_listEntriesEnv.size(); i++) {
+                String entryName = copy_listEntriesEnv.get(i).name;
+                for (int j = 0; j < copy_layerNamesEnv.length; j++) {
+                    if (copy_layerNamesEnv[j].equalsIgnoreCase(entryName)) {
+                        copy_listEntriesEnv.get(i).row_in_distances = j;
+                        break;
+                    }
+                }
+
+                //remove if missing
+                if (copy_listEntriesEnv.get(i).row_in_distances < 0) {
+                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
+                    copy_listEntriesEnv.remove(i);
+                    i--;
+                } else {
+                    copy_listEntriesEnv.get(i).row_in_list = i;
+                }
+            }
+        } catch (Exception e) {
+            copy_layerNamesEnv = null;
+            copy_distances = null;
+
+            e.printStackTrace();
         }
     }
 
     static void initLayerCatagories(ArrayList<ListEntry> listEntries, boolean environmentalOnly) {
         try {
-            String llist = getLayerList();
+            String llist = copy_layerlist;
 
-            JSONArray layerlist = getLayerListJSONArray();
+            JSONArray layerlist = copy_layerlistJSON;
             JSONArray.fromObject(llist);
             for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
@@ -282,92 +357,94 @@ public class CommonData {
 
     }
 
-    static public void initEnvironmentalAllList() {
-        if(layerNamesAll == null){
-            //contextual and environmental
-            try {
-                String[] ctx = getContextualLayers();
-                String[] env = getEnvironmentalLayers();
+    static void initEnvironmentalAllList() {
+        System.out.println("CommonData::initEnvironmentalAllList()");
+        //contextual and environmental
+        try {
+            String[] ctx = copy_contextualLayerNames;
+            ;
+            String[] env = copy_environmentalLayerNames;
 
-                layerNamesAll = new String[ctx.length + env.length];
-                for (int i = 0; i < env.length; i++) {
-                    layerNamesAll[i] = env[i];
-                }
-                for (int i = 0; i < ctx.length; i++) {
-                    layerNamesAll[i + env.length] = ctx[i];
-                }
-
-                listEntriesAll = new ArrayList<ListEntry>();
-                initLayerCatagories(listEntriesAll, false);
-
-                //match up listEntries
-                for (int i = 0; i < listEntriesAll.size(); i++) {
-                    String entryName = listEntriesAll.get(i).name;
-                    for (int j = 0; j < layerNamesAll.length; j++) {
-                        if (layerNamesAll[j].equalsIgnoreCase(entryName)) {
-                            listEntriesAll.get(i).row_in_distances = j;
-                            break;
-                        }
-                    }
-
-                    //remove if missing
-                    if (listEntriesAll.get(i).row_in_distances < 0) {
-                        //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
-                        listEntriesAll.remove(i);
-                        i--;
-                    } else {
-                        listEntriesAll.get(i).row_in_list = i;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            copy_layerNamesAll = new String[ctx.length + env.length];
+            for (int i = 0; i < env.length; i++) {
+                copy_layerNamesAll[i] = env[i];
             }
+            for (int i = 0; i < ctx.length; i++) {
+                copy_layerNamesAll[i + env.length] = ctx[i];
+            }
+
+            copy_listEntriesAll = new ArrayList<ListEntry>();
+            initLayerCatagories(copy_listEntriesAll, false);
+
+            //match up listEntries
+            for (int i = 0; i < copy_listEntriesAll.size(); i++) {
+                String entryName = copy_listEntriesAll.get(i).name;
+                for (int j = 0; j < copy_layerNamesAll.length; j++) {
+                    if (copy_layerNamesAll[j].equalsIgnoreCase(entryName)) {
+                        copy_listEntriesAll.get(i).row_in_distances = j;
+                        break;
+                    }
+                }
+
+                //remove if missing
+                if (copy_listEntriesAll.get(i).row_in_distances < 0) {
+                    //        System.out.println("absent from layers assoc mx: " + listEntries.get(i).name);
+                    copy_listEntriesAll.remove(i);
+                    i--;
+                } else {
+                    copy_listEntriesAll.get(i).row_in_list = i;
+                }
+            }
+        } catch (Exception e) {
+            copy_layerNamesAll = null;
+            copy_listEntriesAll = null;
+            e.printStackTrace();
         }
     }
 
     public static String getLayerList() {
-        if(layerlist == null){
-            try{
-                String layersListURL = satServer + "/alaspatial/ws/layers/list";
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(layersListURL);
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-                int result = client.executeMethod(get);
-                layerlist = get.getResponseBodyAsString();
-            }catch(Exception e){
-                e.printStackTrace();
-            }
+        synchronized (oLayerListJsonLock) {
+            return layerlist;
         }
-        return layerlist;
     }
 
+    static void initLayerList() {
+        try {
+            String layersListURL = satServer + "/alaspatial/ws/layers/list";
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(layersListURL);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
-    static public JSONArray getLayerListJSONArray(){
-        if(layerlistJSON == null){
-            layerlistJSON = JSONArray.fromObject(getLayerList());
+            int result = client.executeMethod(get);
+            copy_layerlist = get.getResponseBodyAsString();
+            copy_layerlistJSON = JSONArray.fromObject(copy_layerlist);
+        } catch (Exception e) {
+            copy_layerlist = null;
+            copy_layerlistJSON = null;
+            e.printStackTrace();
         }
-        return layerlistJSON;
     }
 
-    static HashMap<JSONObject, List> contextualClasses = null;
-    static private ArrayList empty = new ArrayList();
+    static public JSONArray getLayerListJSONArray() {
+        synchronized (oLayerListJsonLock) {
+            return layerlistJSON;
+        }
+    }
 
     static public List getContextualClasses(JSONObject layer) {
-        if(contextualClasses == null){
-            initContextualClasses();
+        synchronized (oLayerListJsonLock) {
+            return contextualClasses.get(layer);
         }
-        return contextualClasses.get(layer);
     }
 
-    static void initContextualClasses(){
-        if(contextualClasses == null){
-            getLayerListJSONArray();
+    static void initContextualClasses() {
+        System.out.println("CommonData::initContextualClasses()");
 
-            contextualClasses = new HashMap<JSONObject, List>();
+        try {
+            copy_contextualClasses = new HashMap<JSONObject, List>();
 
-            for (int i = 0; i < layerlistJSON.size(); i++) {
-                JSONObject jo = layerlistJSON.getJSONObject(i);
+            for (int i = 0; i < copy_layerlistJSON.size(); i++) {
+                JSONObject jo = copy_layerlistJSON.getJSONObject(i);
 
                 if (!jo.getBoolean("enabled")) {
                     continue;
@@ -376,11 +453,15 @@ public class CommonData {
                 List classNodes = new ArrayList();
                 if (jo.getString("type").equalsIgnoreCase("Contextual")) {
                     classNodes = getContextualClassesInit(jo);
-                    contextualClasses.put(jo, classNodes);
+                    copy_contextualClasses.put(jo, classNodes);
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            copy_contextualClasses = null;
         }
     }
+
     static List getContextualClassesInit(JSONObject joLayer) {
         String layerName = joLayer.getString("name");
         String layerDisplayName = joLayer.getString("displayname");

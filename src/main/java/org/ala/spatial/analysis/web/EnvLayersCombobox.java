@@ -171,7 +171,7 @@ public class EnvLayersCombobox extends Combobox {
     }
 
     boolean isValidLayer(String name) {
-        int pos = java.util.Arrays.binarySearch(validLayers, name);
+        int pos = java.util.Arrays.binarySearch(validLayers, name.toLowerCase());
         return (pos >= 0 && pos < validLayers.length);
     }
 }
