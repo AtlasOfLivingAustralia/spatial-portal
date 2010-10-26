@@ -1471,7 +1471,7 @@ if not csv, then tab delimited
     <base_output_dir>/Users/ajay/Sites/ala/</base_output_dir>
     <base_output_url>http://localhost/~ajay/ala/</base_output_url>
 
-    <max_record_count>100000</max_record_count>
+    <max_record_count>15000</max_record_count>
 
     <alaspatial_url>http://localhost:8084/alaspatial/</alaspatial_url>
 
