@@ -15,37 +15,37 @@
 
             <ul>
                 <li>
-                    ¤  Map the distribution a species
+                      Map the distribution a species
                 </li>
                 <li>
-                    ¤  Identify what species live in an area (and export the list)
+                      Identify what species live in an area (and export the list)
                 </li>
                 <li>
-                    ¤  Map and list all occurrences of all species within an area (and export the full data records)
+                      Map and list all occurrences of all species within an area (and export the full data records)
                 </li>
                 <li>
-                    ¤  Sample environmental and contextual data values at the locations of species occurrences
+                      Sample environmental and contextual data values at the locations of species occurrences
                 </li>
                 <li>
-                    ¤  Predict where a species could occur
+                      Predict where a species could occur
                 </li>
                 <li>
-                    ¤  Map any formally named geographic features (gazetteer features)
+                      Map any formally named geographic features (gazetteer features)
                 </li>
                 <li>
-                    ¤  Map environmental (gridded) and contextual (polygonal) data layers
+                      Map environmental (gridded) and contextual (polygonal) data layers
                 </li>
                 <li>
-                    ¤  Classify the environments in an area (environmental domains)
+                      Classify the environments in an area (environmental domains)
                 </li>
                 <li>
-                    ¤  Modify and manage the appearance of mapped data using Active Layers
+                      Modify and manage the appearance of mapped data using Active Layers
                 </li>
                 <li>
-                    ¤  Define the Active Area in one of eight ways (the default being the displayed map area)
+                      Define the Active Area in one of eight ways (the default being the displayed map area)
                 </li>
                 <li>
-                    ¤  Print maps in a range of formats.
+                      Print maps in a range of formats.
                 </li>
             </ul>
             ]]>
