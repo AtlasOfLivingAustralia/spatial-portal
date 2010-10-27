@@ -35,7 +35,6 @@ public class LayersController {
     private final String LAYERS_LIST = "/ws/layers/list";
     private final String LAYERS_ASSOCIATIONS = "/layers/analysis/inter_layer_association.csv";
     private final String LAYERS_ASSOCIATIONS_RAWNAMES = "/layers/analysis/inter_layer_association_rawnames.csv";
-    
     private LayersDAO layersDao;
 
     @Autowired
@@ -146,13 +145,13 @@ public class LayersController {
     @RequestMapping(value = LAYERS_BASE + "/{uid}", method = RequestMethod.GET)
     public ModelAndView getLayerByUId(@PathVariable String uid) {
         System.out.print("retriving layer list by id: " + uid);
-            LayerInfo layer = layersDao.getLayerById(uid);
+        LayerInfo layer = layersDao.getLayerById(uid);
 
-            ModelMap m = new ModelMap();
-            m.addAttribute("layer", layer);
+        ModelMap m = new ModelMap();
+        m.addAttribute("layer", layer);
 
-            return new ModelAndView("layers/view", m);
-        }
+        return new ModelAndView("layers/view", m);
+    }
 
     /**
      * Action call to get a layer info based on it's ID
@@ -169,12 +168,38 @@ public class LayersController {
     }
 
     /**
+     * Action call to get layer citations based on the UID/s
+     *
+     * @param id
+     * @return LayerInfo layer
+     */
+    @RequestMapping(value = LAYERS_BASE + "/citation", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    LayerInfo getLayerCitation(HttpServletRequest req) {
+        System.out.println("retriving layer citation: ");
+        try {
+            BufferedReader in = new BufferedReader(req.getReader());
+            String uidList;
+            while ((uidList = in.readLine()) != null) {
+                System.out.println(uidList);
+            }
+            in.close();
+        } catch (Exception e) {
+            System.out.println("Error reading in post content");
+            e.printStackTrace(System.out);
+        }
+
+        return layersDao.getLayerById("890");
+    }
+
+    /**
      * 
      * @param keywords
      * @return
      */
     @RequestMapping(value = LAYERS_BASE_WS + "/search/{keywords}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     List<LayerInfo> searchLayersByCriteria(@PathVariable String keywords) {
         try {
@@ -193,17 +218,17 @@ public class LayersController {
     String getLayerAssociations(HttpServletRequest req) {
         //layer associations file named "layerDistances.csv" under index directory
         StringBuffer sb = new StringBuffer();
-        try{
+        try {
             BufferedReader br = new BufferedReader(
                     new FileReader(TabulationSettings.index_path
                     + "layerDistances.csv"));
 
             String line;
-            while((line=br.readLine()) != null){
+            while ((line = br.readLine()) != null) {
                 sb.append(line).append("\n");
             }
             br.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return sb.toString();
@@ -215,17 +240,17 @@ public class LayersController {
     String getLayerAssociationsRawNames(HttpServletRequest req) {
         //layer associations file named "layerDistances.csv" under index directory
         StringBuffer sb = new StringBuffer();
-        try{
+        try {
             BufferedReader br = new BufferedReader(
                     new FileReader(TabulationSettings.index_path
                     + "layerDistancesRawNames.csv"));
 
             String line;
-            while((line=br.readLine()) != null){
+            while ((line = br.readLine()) != null) {
                 sb.append(line).append("\n");
             }
             br.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return sb.toString();
