@@ -8,14 +8,18 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 
-Resource name\tCitation\tRights\tMore information\n
+<%= out.print("Name\tDescription\tDource\tSource information\tLicence\tLicence information\n") %>
+
 <c:forEach items="${layerList}" var="layer" varStatus="status">
     <c:choose>
         <c:when test="${layer != null}">
-${layer.description}\t
-Accessed via the ALA website.\t
-${layer.license_notes}\t
-For more information: http://spatial.ala.org.au/alaspatial/layers/{layer.uid}\n
+${layer.name}<%=out.print("\t")%>
+${layer.name}<%=out.print("\t")%>
+${layer.description}<%=out.print("\t")%>
+${source}<%=out.print("\t")%>
+${source_link}<%=out.print("\t")%>
+${license_notes}<%=out.print("\t")%>
+${license_link}<%=out.print("\n")%>
         </c:when>
         <c:otherwise>
             Layer citation data is not available
