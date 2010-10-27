@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Vector;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 /**
  * Connects to the appropriate citation service and gets
@@ -41,8 +43,10 @@ public class CitationService {
             Iterator it = rows.iterator();
 
             // remove the header by calling it.next();
-            if (it.hasNext()) it.next();
-            
+            if (it.hasNext()) {
+                it.next();
+            }
+
             for (; it.hasNext();) {
                 String[] row = (String[]) it.next();
 
@@ -53,18 +57,18 @@ public class CitationService {
             }
 
             System.out.println("retrieving citation for: ");
-            System.out.println(dpList); 
+            System.out.println(dpList);
 
             citation = generateCitationDataProviders(dpList);
-            
-            String citationpath = file.substring(0,file.lastIndexOf(".csv")) + "_citation.csv"; 
 
-            File temporary_file = new File(citationpath); 
+            String citationpath = file.substring(0, file.lastIndexOf(".csv")) + "_citation.csv";
+
+            File temporary_file = new File(citationpath);
             FileWriter fw = new FileWriter(temporary_file);
             fw.write(citation);
             fw.close();
 
-            return citationpath; 
+            return citationpath;
 
         } catch (Exception e) {
             System.out.println("Unable to read the samples file to retrieve citation details:");
@@ -104,7 +108,7 @@ public class CitationService {
             System.out.println("url: " + url);
             System.out.println("params: " + dpList.toString());
 
-            String result = postInfo(url, params);
+            String result = postInfo(url, params, true);
 
             return result;
 
@@ -116,7 +120,7 @@ public class CitationService {
         return citation;
     }
 
-    private static String postInfo(String url, Map params) {
+    private static String postInfo(String url, Map params, boolean asBody) {
         try {
 
             HttpClient client = new HttpClient();
@@ -127,10 +131,24 @@ public class CitationService {
 
             // add the post params
             if (params != null) {
-                for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext();) {
-                    String key = (String) ekeys.next();
-                    String value = (String) params.get(key);
-                    post.addParameter(key, URLEncoder.encode(value, "UTF-8"));
+                if (!asBody) {
+
+                    for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext();) {
+                        String key = (String) ekeys.next();
+                        String value = (String) params.get(key);
+                        post.addParameter(key, URLEncoder.encode(value, "UTF-8"));
+                    }
+                } else {
+                    StringBuilder sbParams = new StringBuilder();
+
+                    for (Iterator ekeys = params.keySet().iterator(); ekeys.hasNext();) {
+                        String key = (String) ekeys.next();
+                        String value = (String) params.get(key);
+                        sbParams.append(value); 
+                    }
+
+                    RequestEntity entity = new StringRequestEntity(sbParams.toString(),"text/plain", "UTF-8");
+                    post.setRequestEntity(entity);
                 }
             }
 
