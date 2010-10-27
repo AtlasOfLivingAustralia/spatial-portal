@@ -118,7 +118,7 @@ public class LayerInfo {
     private String licence_notes;
 
     @Column(name="source_link")
-    private String source_link;
+    private String sourcelink;
 
     public LayerInfo() {
     }
@@ -384,12 +384,12 @@ public class LayerInfo {
         this.resppartyrole = resppartyrole;
     }
 
-    public String getSource_link() {
-        return source_link;
+    public String getSourcelink() {
+        return sourcelink;
     }
 
-    public void setSource_link(String source_link) {
-        this.source_link = source_link;
+    public void setSourcelink(String sourcelink) {
+        this.sourcelink = sourcelink;
     }
 
 }
