@@ -10,26 +10,44 @@
             <h2>The Spatial Portal</h2>
 
             <p>
-                The Spatial Portal addresses two issues, where do these
-                organisms occur, and what organisms occur in this area.
-                Specifically-
+                With the Spatial Portal you can:
             </p>
 
-            <ol>
+            <ul>
                 <li>
-                    The Map Tab maps organisms, places or environmental layers
-                    and allows modifications to what is displayed on the map
+                    ¤  Map the distribution a species
                 </li>
                 <li>
-                    The Analysis Tab can define a geographic area of interest
-                    in 5 ways. A defined area can then be used to find what
-                    organisms occur there (including observations of those
-                    species with associated environmental data). It could also
-                    be used in the prediction of where organisms could occur.
-                    The area can also apply to a classification of environmental
-                    data (environmental domains).
+                    ¤  Identify what species live in an area (and export the list)
                 </li>
-            </ol>
+                <li>
+                    ¤  Map and list all occurrences of all species within an area (and export the full data records)
+                </li>
+                <li>
+                    ¤  Sample environmental and contextual data values at the locations of species occurrences
+                </li>
+                <li>
+                    ¤  Predict where a species could occur
+                </li>
+                <li>
+                    ¤  Map any formally named geographic features (gazetteer features)
+                </li>
+                <li>
+                    ¤  Map environmental (gridded) and contextual (polygonal) data layers
+                </li>
+                <li>
+                    ¤  Classify the environments in an area (environmental domains)
+                </li>
+                <li>
+                    ¤  Modify and manage the appearance of mapped data using Active Layers
+                </li>
+                <li>
+                    ¤  Define the Active Area in one of eight ways (the default being the displayed map area)
+                </li>
+                <li>
+                    ¤  Print maps in a range of formats.
+                </li>
+            </ul>
             ]]>
 
         </html>
