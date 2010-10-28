@@ -28,7 +28,7 @@ import org.codehaus.jackson.JsonToken;
 public class CommonNamesHarvesting {
     static final int RETRY_MAXIMUM = 3;
 
-    static boolean save_json = true;
+    static boolean save_json = false;
 
     static HashMap<String, Integer> retry_count;
 
