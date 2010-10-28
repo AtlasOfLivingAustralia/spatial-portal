@@ -26,9 +26,9 @@
             <hbox width="100%">
                 <label value="Image format" />
                 <div style="float:right"><combobox id="cbFormat" autodrop="true">
-                    <comboitem label="png"/>
                     <comboitem label="jpg"/>
                     <comboitem label="pdf"/>
+                    <comboitem label="png"/>
                 </combobox></div>
             </hbox>
 
