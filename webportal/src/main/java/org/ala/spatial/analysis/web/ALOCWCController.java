@@ -27,6 +27,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Listbox;
@@ -343,7 +344,11 @@ public class ALOCWCController extends UtilityComposer {
             if (md == null) {
                 md = new MapLayerMetadata();
             }
-            md.setMoreInfo(satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output");
+
+            String infoUrl = satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output";
+            md.setMoreInfo(infoUrl);
+            
+            Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
         }
     }
 }

@@ -53,12 +53,12 @@ public class Aloc {
 
         int min_movement = -1;
         int[] min_groups = new int[nRowsTotal];
-        float[] min_dists = new float[nRowsTotal];
+        double[] min_dists = new double[nRowsTotal];
 
         //range standardize columns 0-1
         float[] col_min = new float[nCols];
         float[] col_max = new float[nCols];
-        float[] col_range = new float[nCols];
+        double[] col_range = new double[nCols];
         int seedidxsize = 0;
         int i, j, k;
         for (i = 0; i < nCols; i++) {
@@ -88,20 +88,20 @@ public class Aloc {
             for (i = 0; i < nCols; i++) {
                 nRows = data.length / nCols;
                 for (j = 0; j < nRows; j++) {
-                    data[i + j * nCols] = (data[i + j * nCols] - col_min[i]) / col_range[i];
+                    data[i + j * nCols] = (float)((data[i + j * nCols] - col_min[i]) / col_range[i]);
                 }
             }
         }
 
         //1. determine correct # of groups by varying radius
-        float start_radius = 1;
-        float radius = start_radius;
-        float step = radius / 2.0f;
+        double start_radius = 1;
+        double radius = start_radius;
+        double step = radius / 2.0f;
 
         int count = 0;
         int[] seedidx = new int[nNoOfGroups + 1000]; //TODO: check on upper limit for number of groups
-        float[] seeds = new float[nCols * (1000 + nNoOfGroups)]; //space for an extra 1000 groups during seeding
-        float[] oldSeeds = new float[nCols * (1000 + nNoOfGroups)];
+        double[] seeds = new double[nCols * (1000 + nNoOfGroups)]; //space for an extra 1000 groups during seeding
+        double[] oldSeeds = new double[nCols * (1000 + nNoOfGroups)];
         int[] oldCount = new int[nCols * (1000 + nNoOfGroups)];
 
 
@@ -125,13 +125,13 @@ public class Aloc {
                 for (i = 0; i < nRows; i++, rowPos++) {
                     for (j = 0; j < seedidxsize; j++) {
                         //calc dist between obj(i) & obj(seedidx(j))
-                        float dist = 0;
+                        double dist = 0;
                         int missing = 0;
                         for (k = 0; k < nCols; k++) {
-                            float v1 = data[i * nCols + k];
-                            float v2 = seeds[j * nCols + k];
+                            double v1 = data[i * nCols + k];
+                            double v2 = seeds[j * nCols + k];
 
-                            if (Float.isNaN(v1) || Float.isNaN(v2) || col_range[k] == 0) {
+                            if (Double.isNaN(v1) || Double.isNaN(v2) || col_range[k] == 0) {
                                 missing++;
                             } else {
                                 dist += java.lang.Math.abs(v1 - v2);
@@ -144,7 +144,7 @@ public class Aloc {
                             missing--;
                         }
 
-                        dist = dist / (float) (nCols - missing);
+                        dist = dist / (double) (nCols - missing);
                         if (dist < radius) {
                             break;
                         }
@@ -208,16 +208,16 @@ public class Aloc {
             int rowcount = ((float[]) data_pieces.get(i)).length / nCols;
             apdList.add(new AlocPieceData(
                     (float[]) data_pieces.get(i),
-                    new float[rowcount * seedidxsize],
+                    new double[rowcount * seedidxsize],
                     new short[rowcount],
-                    new float[rowcount]));
+                    new double[rowcount]));
         }
         
         //setup shared data
         seeds = java.util.Arrays.copyOf(seeds, seedidxsize * nCols);
         int [] seedgroup_nonmissingvalues = new int[seedidxsize * nCols];
-        float [] otherGroupMovement = new float[seedidxsize];
-        float [] groupMovement = new float[seedidxsize];
+        double [] otherGroupMovement = new double[seedidxsize];
+        double [] groupMovement = new double[seedidxsize];
         AlocSharedData asd = new AlocSharedData(
                     otherGroupMovement,
                     groupMovement,
@@ -245,7 +245,7 @@ public class Aloc {
         for(i=0;i<threadcount;i++){
             atdArray[i] = new AlocThreadData(
                     new int[seedidxsize], new int[seedidxsize * nCols],
-            new float[seedidxsize * nCols]
+            new double[seedidxsize * nCols]
                     );
         }
 
@@ -351,11 +351,11 @@ public class Aloc {
             movement = 0;
             for (i = 0; i < threadcount; i++) {
                 movement += atdArray[i].movement;
-                float[] seed_adj = atdArray[i].seeds_adjustment;
+                double[] seed_adj = atdArray[i].seeds_adjustment;
                 int[] seed_nmv_adj = atdArray[i].seeds_nmv_adjustment;
 
                 for (j = 0; j < seedidxsize * nCols; j++) {
-                    if (Float.isNaN(seeds[j])
+                    if (Double.isNaN(seeds[j])
                             && seed_adj[j] != 0) {
                         seeds[j] = seed_adj[j];
                     } else {
@@ -435,8 +435,8 @@ public class Aloc {
             }
 
             //calc max movement (for reducing distance checks)
-            float mov;
-            float maxmov = Float.MIN_VALUE;
+            double mov;
+            double maxmov = -1 * Double.MAX_VALUE;
             for(i=0;i<seedidxsize;i++){
                 mov = 0;
                 int nmissing = 0;
@@ -479,7 +479,7 @@ public class Aloc {
                 k = 0;
                 for(i=0;i<pieces;i++){
                     short [] grps = ((AlocPieceData)apdList.get(i)).groups;
-                    float [] dist = ((AlocPieceData)apdList.get(i)).rowDist;
+                    double [] dist = ((AlocPieceData)apdList.get(i)).rowDist;
                     for(j=0;j<grps.length;j++,k++){
                         min_groups[k] = grps[j];
                         min_dists[k] = dist[j];
@@ -513,7 +513,7 @@ public class Aloc {
             for (i = 0; i < nCols; i++) {
                 nRows = data.length / nCols;
                 for (j = 0; j < nRows; j++) {
-                    data[i + j * nCols] = (data[i + j * nCols] * col_range[i]) + col_min[i];
+                    data[i + j * nCols] = (float)((data[i + j * nCols] * col_range[i]) + col_min[i]);
                 }
             }
         }
@@ -583,29 +583,29 @@ class AlocInnerLoop3 extends Thread {
 
     private void alocInnerLoop(AlocPieceData apd) {
         float[] data = apd.data;
-        float[] distances = apd.distances;
+        double[] distances = apd.distances;
         short[] groups = apd.groups;
 
-        final float[] groupMovement = alocSharedData.groupMovement;
+        final double[] groupMovement = alocSharedData.groupMovement;
         final int nCols = alocSharedData.nCols;
-        final float [] col_range = alocSharedData.col_range;
+        final double [] col_range = alocSharedData.col_range;
         final int seedidxsize = alocSharedData.seedidxsize;
-        final float[] seeds = alocSharedData.seeds;
+        final double[] seeds = alocSharedData.seeds;
         final int[] seedgroup_nonmissingvalues = alocSharedData.seedgroup_nonmissingvalues;
 
         int i, j, k;
-        float min_dist_value = 0.00001f;
+        double min_dist_value = 0.00001f;
         int min_idx = 0;
-        float dist;
+        double dist;
         int missing;
-        float v2;
-        float v1;
+        double v2;
+        double v1;
 
-        float min_dist;
+        double min_dist;
         
         int nRows = data.length / nCols;
         int rws;
-        float gm;
+        double gm;
         int grp;
         //int skips = 0;
 
@@ -617,7 +617,7 @@ class AlocInnerLoop3 extends Thread {
                 distances[rws + grp] += groupMovement[grp]+min_dist_value;
                 gm = distances[rws + grp];
                 min_idx = groups[i];
-                if(Float.isNaN(gm)){
+                if(Double.isNaN(gm)){
                     gm = Float.MAX_VALUE;
                 }
             }
@@ -634,7 +634,7 @@ class AlocInnerLoop3 extends Thread {
                     for (k = 0; k < nCols; k++) {
                         v1 = data[i * nCols + k];
                         v2 = seeds[j * nCols + k];
-                        if (Float.isNaN(v1) || Float.isNaN(v2) || col_range[k] == 0) {
+                        if (Double.isNaN(v1) || Double.isNaN(v2) || col_range[k] == 0) {
                             missing++;
                         } else {
                             if (seedgroup_nonmissingvalues[j * nCols + k] > 0) {
@@ -643,7 +643,7 @@ class AlocInnerLoop3 extends Thread {
                             dist += java.lang.Math.abs(v1 - v2);//range == 1 (standardized 0-1); / (float) col_range[k];
                         }
                     }
-                    dist = dist / (float) (nCols - missing);
+                    dist = dist / (double) (nCols - missing);
                     if (min_dist > dist) {
                         min_dist = dist;
                         min_idx = j;
@@ -724,14 +724,14 @@ class AlocInnerLoop3 extends Thread {
 
 class AlocPieceData {
     public float [] data;
-    public float [] distances;
+    public double [] distances;
     public short[] groups;
-    public float[] rowDist;
+    public double[] rowDist;
 
     public AlocPieceData(float [] data_,
-    float [] distances_,
+    double [] distances_,
     short[] groups_,
-    float[] rowDist_){
+    double[] rowDist_){
         data = data_;
         distances = distances_;
         groups = groups_;
@@ -742,11 +742,11 @@ class AlocPieceData {
 class AlocThreadData {
     public int[] groupsize;
     public int[] seeds_nmv_adjustment;
-    public float[] seeds_adjustment;
+    public double[] seeds_adjustment;
     public int movement;
 
     public AlocThreadData(int[] groupsize_, int [] seeds_nvm_adjustment_,
-            float[] seeds_adjustment_){
+            double[] seeds_adjustment_){
         groupsize = groupsize_;
         seeds_nmv_adjustment = seeds_nvm_adjustment_;
         seeds_adjustment = seeds_adjustment_;
@@ -755,21 +755,21 @@ class AlocThreadData {
 }
 
 class AlocSharedData {
-    public float[] otherGroupMovement;
-    public float[] groupMovement;
+    public double[] otherGroupMovement;
+    public double[] groupMovement;
     public int nCols;
-    public float[] col_range;
+    public double[] col_range;
     public int seedidxsize;
-    public float[] seeds;
+    public double[] seeds;
     public int[] seedgroup_nonmissingvalues;
     
     public AlocSharedData(
-    float[] otherGroupMovement_,
-    float[] groupMovement_,
+    double[] otherGroupMovement_,
+    double[] groupMovement_,
     int nCols_,
-    float[] col_range_,
+    double[] col_range_,
     int seedidxsize_,
-    float[] seeds_,
+    double[] seeds_,
     int[] seedgroup_nonmissingvalues_
     ){
         otherGroupMovement = otherGroupMovement_;
