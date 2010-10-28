@@ -152,6 +152,27 @@ public class SimpleShapeFile extends Object implements Serializable {
     /**
      * save partial file (enough to reload and use intersect function)
      *
+     * for each unique value in the shape file
+     *
+     * @param filename
+     */
+    public void saveEachRegion(String filename, int column) {
+        for(int j=0;j<shapesreference.sr.region.size();j++){
+            try {
+                FileOutputStream fos = new FileOutputStream(filename + "_" + j);
+                BufferedOutputStream bos = new BufferedOutputStream(fos);
+                ObjectOutputStream oos = new ObjectOutputStream(bos);
+                oos.writeObject(shapesreference.sr.region.get(j));
+                oos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * save partial file (enough to reload and use intersect function)
+     *
      * @param filename
      */
     public void loadRegion(String filename) {
@@ -168,6 +189,25 @@ public class SimpleShapeFile extends Object implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * save partial file (enough to reload and use intersect function)
+     *
+     * @param filename
+     */
+    static public ComplexRegion loadShapeInRegion(String filename, int idx) {
+        ComplexRegion cr = null;
+        try {
+            FileInputStream fis = new FileInputStream(filename + "_" + idx);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            cr = (ComplexRegion) ois.readObject();
+            ois.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return cr;
     }
 
     /**
@@ -502,7 +542,7 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         String[] polygons = pointsString.split("S");
 
-        System.out.println("$" + pointsString);
+        //System.out.println("$" + pointsString);
 
         if (polygons.length == 1) {
             return SimpleRegion.parseSimpleRegion(polygons[0]);

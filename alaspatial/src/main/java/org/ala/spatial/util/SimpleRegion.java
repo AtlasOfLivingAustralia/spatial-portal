@@ -1,6 +1,7 @@
 package org.ala.spatial.util;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * SimpleRegion enables point to shape intersections, where the shape
@@ -109,6 +110,11 @@ public class SimpleRegion extends Object implements Serializable {
      *
      */
     double radius;
+
+    /**
+     * misc attributes
+     */
+    HashMap<String, Object> attributes;
 
     /**
      * Constructor for a SimpleRegion with no shape
@@ -744,5 +750,23 @@ public class SimpleRegion extends Object implements Serializable {
 
     public double getHeight() {
         return bounding_box[1][1] - bounding_box[0][1];
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setAttribute(String name, Object value){
+        if(attributes == null){
+            attributes = new HashMap<String, Object>();
+        }
+        attributes.put(name, value);
+    }
+
+    public Object getAttribute(String name){
+        if(attributes != null){
+            return attributes.get(name);
+        }
+        return null;
     }
 }

@@ -682,9 +682,9 @@ public class Grid { //  implements Serializable
             if(d > max) max = d;
         }
         if(min != this.minval || max != this.maxval){
-            System.out.println(this.filename + "header(" + this.minval + " " + this.maxval + ") actual(" + min + " " + max + ")");
+            System.out.println(this.filename + " ERR header(" + this.minval + " " + this.maxval + ") actual(" + min + " " + max + ")");
         }else{
-            System.out.println(this.filename + " OK");
+            System.out.println(this.filename + " OK header(" + this.minval + " " + this.maxval + ")");
         }
     }
 }

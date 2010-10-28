@@ -286,6 +286,7 @@ public class SamplingIndex implements AnalysisIndexService {
 
                 //save ssf
                 ssf.saveRegion(TabulationSettings.index_path + l.name, column_idx);
+                ssf.saveEachRegion(TabulationSettings.index_path + l.name, column_idx);
 
                 byte[] b = new byte[values.length * 2];
                 ByteBuffer bb = ByteBuffer.wrap(b);

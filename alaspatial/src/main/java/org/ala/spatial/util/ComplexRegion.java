@@ -126,6 +126,8 @@ public class ComplexRegion extends SimpleRegion {
         if (simpleregions.size() == 1 || boundingbox_all[1][1] < bb[1][1]) {
             boundingbox_all[1][1] = bb[1][1];
         }
+
+        bounding_box = boundingbox_all;
     }
 
     /**
