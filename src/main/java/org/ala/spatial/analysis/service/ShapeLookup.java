@@ -13,7 +13,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.ala.spatial.analysis.index.FilteringIndex;
+import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.analysis.index.SamplingIndex;
+import org.ala.spatial.util.ComplexRegion;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.TabulationSettings;
 
 /**
@@ -40,7 +46,7 @@ public class ShapeLookup {
     }
 
     private static void freeShapes() {
-        if (shapes.size() > 200){//TabulationSettings.cluster_lookup_size) {
+        if (shapes.size() > 80){//TabulationSettings.cluster_lookup_size) {
             Long time_min = new Long(0);
             Long time_max = new Long(0);
             String key = null;
@@ -114,5 +120,27 @@ public class ShapeLookup {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static boolean addShape(String id, String table, String value) {
+        LayerFilter lf = FilteringIndex.getLayerFilter(table);
+        int pos = java.util.Arrays.binarySearch(lf.catagory_names, value);
+
+        //does it exist?
+        if(pos >= 0 && pos < lf.catagory_names.length){
+            ComplexRegion cr = SimpleShapeFile.loadShapeInRegion(
+                    TabulationSettings.index_path + table, pos);
+
+            //attach species points to this region
+            lf.catagories = new int[1];
+            lf.catagories[0] = pos;
+            cr.setAttribute("species_records",FilteringIndex.getCatagorySampleSet(lf));
+
+            addShape(id,cr);
+
+            return true;
+        }
+
+        return false;
     }
 }

@@ -720,7 +720,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     //conceptid vs names
                     for (i = 0; i < idnamesIdx.length; i += 2) {
                         //valid id's only
-                        if(sa[idnamesIdx[i]].length() > 0) {
+                        if (sa[idnamesIdx[i]].length() > 0) {
                             //append 2 spaces for ordering
                             String joined = sa[idnamesIdx[i + 1]].toLowerCase() + "  |  " + sa[idnamesIdx[i]].toLowerCase();
                             idnames.put(joined, sa[idnamesIdx[i]].toLowerCase());
@@ -730,7 +730,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     //add current record to extra_indexes
                     for (i = 0; i < extra_indexes.length; i++) {
                         //only non-empty values
-                        if(sa[ofu.extraIndexes[i]].length() > 0) {
+                        if (sa[ofu.extraIndexes[i]].length() > 0) {
                             current_key[i] = sa[ofu.extraIndexes[i]];
                             if (current_key[i].equals(prev_key[i]) && obj[i] != null) {
                                 obj[i].add(new Integer(recordpos));
@@ -907,7 +907,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 System.out.println("ERROR2: " + occurances_csv_field_pairs_ConceptId[i] + " : " + occurances_csv_field_pairs_Name[i]);
             } else {
                 //duplicates exist in single_index
-                while(i > 0 && single_index[occurances_csv_field_pairs_ToSingleIndex[i-1]].equals(occurances_csv_field_pairs_ConceptId[i])){
+                while (i > 0 && single_index[occurances_csv_field_pairs_ToSingleIndex[i - 1]].equals(occurances_csv_field_pairs_ConceptId[i])) {
                     i--;
                 }
             }
@@ -986,7 +986,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         String[] matches_array = null;
 
         /* starts with comparator, get first (pos) and last (upperpos) */
-        if (!filter.contains("*")) {   
+        if (!filter.contains("*")) {
             /* adjust/limit positions found for non-exact matches */
             if (pos < 0) { //don't care if it is the insertion point
                 pos = pos * -1;
@@ -2439,15 +2439,25 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @return true iff record is in region
      */
     static public boolean inRegion(int record, SimpleRegion r) {
-        /* init */
-        getPointsPairsGrid();
-        getPointsPairsGrididx();
+        ArrayList<Integer> ali = (ArrayList<Integer>) r.getAttribute("species_records");
+        if (ali != null) {
+            int pos = java.util.Collections.binarySearch(ali, new Integer(record));
+            if (pos >= 0 && pos < ali.size()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            /* init */
+            getPointsPairsGrid();
+            getPointsPairsGrididx();
 
-        /* transate off grid */
-        int i = grid_points_idx_rev[record];
+            /* transate off grid */
+            int i = grid_points_idx_rev[record];
 
-        /* test */
-        return r.isWithin(grid_points[i][0], grid_points[i][1]);
+            /* test */
+            return r.isWithin(grid_points[i][0], grid_points[i][1]);
+        }
     }
 
     /**
@@ -2459,6 +2469,18 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @return records indexes as int []
      */
     static public int[] getRecordsInside(SimpleRegion r) {
+        ArrayList<Integer> ali = (ArrayList<Integer>) r.getAttribute("species_records");
+        if (ali != null) {
+            int[] output = new int[ali.size()];
+            int p = 0;
+            for (int k = 0; k < ali.size(); k++, p++) {
+                if (ali.get(k) >= 0) {
+                    output[p] = ali.get(k);
+                }
+            }
+            output = java.util.Arrays.copyOf(output, p);
+            return output;
+        }
 
         /* init */
         getPointsPairsGridKey();
@@ -2537,10 +2559,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
         /* init */
         loadIndexes();
 
-        /* make overlay grid from this region */
-        byte[][] mask = new byte[720][720];
-        int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
-
         int i, j;
 
         /* for matching cells, test each record within  */
@@ -2552,34 +2570,47 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         long t2 = System.currentTimeMillis();
 
-        for (i = 0; i < cells.length; i++) {
-            int start = grid_key[cells[i][1]][cells[i][0]];
-            int end = start;
-
-            if (cells[i][0] < (720 - 1)) {
-                // not last record on a grid_key row, use limit on next line
-                end = grid_key[cells[i][1]][cells[i][0] + 1];
-            } else if (cells[i][1] < (720 - 1)) {
-                // must be last record on a grid key row,
-                // also not on last row, use next row, first cell grid key
-                end = grid_key[cells[i][1] + 1][0];
-            } else {
-                // must be at end of grid_key file, use all
-                end = grid_points.length;
-            }
-
-            //test each potential match, otherwise add
-            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
-                for (j = start; j < end; j++) {
-                    if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
-                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
-                    }
+        ArrayList<Integer> ali = (ArrayList<Integer>) r.getAttribute("species_records");
+        if (ali != null) {
+            for (int k = 0; k < ali.size(); k++) {
+                if (speciesNumberInRecordsOrder[ali.get(k)] >= 0) {
+                    bitset.set(speciesNumberInRecordsOrder[ali.get(k)]);
                 }
-            } else {
-                for (j = start; j < end; j++) {
-                    if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+            }
+        } else {
+            /* make overlay grid from this region */
+            byte[][] mask = new byte[720][720];
+            int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
+
+            for (i = 0; i < cells.length; i++) {
+                int start = grid_key[cells[i][1]][cells[i][0]];
+                int end = start;
+
+                if (cells[i][0] < (720 - 1)) {
+                    // not last record on a grid_key row, use limit on next line
+                    end = grid_key[cells[i][1]][cells[i][0] + 1];
+                } else if (cells[i][1] < (720 - 1)) {
+                    // must be last record on a grid key row,
+                    // also not on last row, use next row, first cell grid key
+                    end = grid_key[cells[i][1] + 1][0];
+                } else {
+                    // must be at end of grid_key file, use all
+                    end = grid_points.length;
+                }
+
+                //test each potential match, otherwise add
+                if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
+                    for (j = start; j < end; j++) {
                         if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
                             bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                        }
+                    }
+                } else if (r.getType() == SimpleRegion.BOUNDING_BOX || mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+                    for (j = start; j < end; j++) {
+                        if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                            if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
+                                bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                            }
                         }
                     }
                 }
@@ -2647,12 +2678,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @return number of species found as int[0], number of occurrences as int[1]
      */
     static public int[] getSpeciesCountInside(SimpleRegion r) {
+
         /* init */
         loadIndexes();
-
-        /* make overlay grid from this region */
-        byte[][] mask = new byte[720][720];
-        int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
 
         int i, j;
 
@@ -2662,43 +2690,58 @@ public class OccurrencesIndex implements AnalysisIndexService {
         int countOccurrences = 0;
         int errorCount = 0;
 
-        for (i = 0; i < cells.length; i++) {
-            int start = grid_key[cells[i][1]][cells[i][0]];
-            int end = start;
-
-            if (cells[i][0] < (720 - 1)) {
-                // not last record on a grid_key row, use limit on next line
-                end = grid_key[cells[i][1]][cells[i][0] + 1];
-            } else if (cells[i][1] < (720 - 1)) {
-                // must be last record on a grid key row,
-                // also not on last row, use next row, first cell grid key
-                end = grid_key[cells[i][1] + 1][0];
-            } else {
-                // must be at end of grid_key file, use all
-                end = grid_points.length;
-            }
-
-            //test each potential match, otherwise add
-            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
-                for (j = start; j < end; j++) {
-                    if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
-                        bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
-                        countOccurrences++;
-                    }
-                    // }else{
-                    //     errorCount++;
-                    // }
+        ArrayList<Integer> ali = (ArrayList<Integer>) r.getAttribute("species_records");
+        if (ali != null) {
+            for (int k = 0; k < ali.size(); k++) {
+                if (speciesNumberInRecordsOrder[ali.get(k)] >= 0) {
+                    bitset.set(speciesNumberInRecordsOrder[ali.get(k)]);
                 }
-            } else {
-                for (j = start; j < end; j++) {
-                    if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                countOccurrences++;
+            }
+        } else {
+            /* make overlay grid from this region */
+            byte[][] mask = new byte[720][720];
+            int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
+
+            for (i = 0; i < cells.length; i++) {
+                int start = grid_key[cells[i][1]][cells[i][0]];
+                int end = start;
+
+                if (cells[i][0] < (720 - 1)) {
+                    // not last record on a grid_key row, use limit on next line
+                    end = grid_key[cells[i][1]][cells[i][0] + 1];
+                } else if (cells[i][1] < (720 - 1)) {
+                    // must be last record on a grid key row,
+                    // also not on last row, use next row, first cell grid key
+                    end = grid_key[cells[i][1] + 1][0];
+                } else {
+                    // must be at end of grid_key file, use all
+                    end = grid_points.length;
+                }
+
+                //test each potential match, otherwise add
+                if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_FULLY_PRESENT) {
+                    for (j = start; j < end; j++) {
                         if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
                             bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                             countOccurrences++;
                         }
-                        //   }else{
-                        //       errorCount++;
-                        //   }
+                        // }else{
+                        //     errorCount++;
+                        // }
+                    }
+                } else if (r.getType() == SimpleRegion.BOUNDING_BOX || mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+                    //TODO: actually make a mask for bounding boxes
+                    for (j = start; j < end; j++) {
+                        if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
+                            if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
+                                bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
+                                countOccurrences++;
+                            }
+                            //   }else{
+                            //       errorCount++;
+                            //   }
+                        }
                     }
                 }
             }
@@ -2807,30 +2850,34 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
             }
         } else {
-            /* not used */
-            spos = 0;
-            i = 0;
-            while (i < records.size()) {
-                //TODO: work out when best to use binary searching instead of seeking
-                int r = records.get(i);
-                while (spos < speciesSortByRecordNumber.length
-                        && r > speciesSortByRecordNumber[spos].record_end) {   //seek to next species+1
-                    spos++;
-                }
-                i++; //next record
-                if (spos < speciesSortByRecordNumber.length
-                        && OccurrencesIndex.inRegion(spos, region)) {
+            //TODO: better handling when species_records attribute is present
+            // in region
+            {
+                /* not used */
+                spos = 0;
+                i = 0;
+                while (i < records.size()) {
+                    //TODO: work out when best to use binary searching instead of seeking
+                    int r = records.get(i);
+                    while (spos < speciesSortByRecordNumber.length
+                            && r > speciesSortByRecordNumber[spos].record_end) {   //seek to next species+1
+                        spos++;
+                    }
+                    i++; //next record
+                    if (spos < speciesSortByRecordNumber.length
+                            && OccurrencesIndex.inRegion(spos, region)) {
 
-                    species.set(speciesSortByRecordNumberOrder[spos]);
-                    ocount++;
+                        species.set(speciesSortByRecordNumberOrder[spos]);
+                        ocount++;
 
-                    spos++; //inc
+                        spos++; //inc
 
-                    //seek to next
-                    if (spos < speciesSortByRecordNumber.length) {
-                        while (i < records.size()
-                                && records.get(i) < speciesSortByRecordNumber[spos].record_start) {
-                            i++;
+                        //seek to next
+                        if (spos < speciesSortByRecordNumber.length) {
+                            while (i < records.size()
+                                    && records.get(i) < speciesSortByRecordNumber[spos].record_start) {
+                                i++;
+                            }
                         }
                     }
                 }
@@ -3071,16 +3118,16 @@ public class OccurrencesIndex implements AnalysisIndexService {
         //check for existing file, load if it exists
         try {
             /*File f = new File(TabulationSettings.index_path
-                    + "CLUSTER_RECORDS.dat");
+            + "CLUSTER_RECORDS.dat");
             if (f.exists()) {
-                FileInputStream fis = new FileInputStream(
-                        TabulationSettings.index_path
-                        + "CLUSTER_RECORDS.dat");
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                ObjectInputStream ois = new ObjectInputStream(bis);
-                cluster_records = (String[][]) ois.readObject();
-                ois.close();
-                return;
+            FileInputStream fis = new FileInputStream(
+            TabulationSettings.index_path
+            + "CLUSTER_RECORDS.dat");
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            cluster_records = (String[][]) ois.readObject();
+            ois.close();
+            return;
             }*/
 
             File f = new File(TabulationSettings.index_path
@@ -3166,29 +3213,29 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             fw.close();
             br.close();
-/*
+            /*
             //read in csv to then export dat
             cluster_records = new String[all_points.length][2];
             br = new BufferedReader(
-                    new FileReader(
-                    TabulationSettings.index_path
-                    + "CLUSTER_RECORDS.csv"));
+            new FileReader(
+            TabulationSettings.index_path
+            + "CLUSTER_RECORDS.csv"));
             int pos = 0;
             while ((s = br.readLine()) != null) {
-                cluster_records[pos][0] = s;
-                cluster_records[pos][1] = br.readLine();
-                pos++;
+            cluster_records[pos][0] = s;
+            cluster_records[pos][1] = br.readLine();
+            pos++;
             }
             try {
-                FileOutputStream fos = new FileOutputStream(
-                        TabulationSettings.index_path
-                        + "CLUSTER_RECORDS.dat");
-                BufferedOutputStream bos = new BufferedOutputStream(fos);
-                ObjectOutputStream oos = new ObjectOutputStream(bos);
-                oos.writeObject(cluster_records);
-                oos.close();
+            FileOutputStream fos = new FileOutputStream(
+            TabulationSettings.index_path
+            + "CLUSTER_RECORDS.dat");
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(cluster_records);
+            oos.close();
             } catch (Exception e) {
-                e.printStackTrace();
+            e.printStackTrace();
             }*/
         } catch (Exception e) {
             SpatialLogger.log("cluster records, build", e.toString());
@@ -3889,9 +3936,9 @@ class MakeOccurrenceParts extends Thread {
                         try {
                             //if no lsid at the lowest level, take the name as lsid
                             /*if (sa.length >= columnsSettings.length
-                                && sa[column_positions[ofu.speciesColumn]].length() == 0) {
-	                        sa[column_positions[ofu.speciesColumn]] = " " + sa[species_name_column];
-	                    }*/
+                            && sa[column_positions[ofu.speciesColumn]].length() == 0) {
+                            sa[column_positions[ofu.speciesColumn]] = " " + sa[species_name_column];
+                            }*/
                             //parse long & lat, failure makes record skipped
                             Double.parseDouble(sa[column_positions[ofu.longitudeColumn]]);
                             Double.parseDouble(sa[column_positions[ofu.latitudeColumn]]);

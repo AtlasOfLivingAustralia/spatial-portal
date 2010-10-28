@@ -659,15 +659,47 @@ public class SpeciesController {
     String registerShape(HttpServletRequest req) {
         try {
             String shape = req.getParameter("area");
-            shape = URLDecoder.decode(shape, "UTF-8");
+            if (shape.length() > 200) {
+                System.out.println("registering shape: " + shape.substring(0, 200) + "...");
+            } else {
+                System.out.println("registering shape: " + shape);
+            }
+            //shape = URLDecoder.decode(shape, "UTF-8");
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String id = String.valueOf(System.currentTimeMillis());
 
             ShapeLookup.addShape(id, region);
 
+            System.out.println("successfully registered shape: " + id);
+
             return id;
-        }catch(Exception e){
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/shape/lookup", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String lookupShape(HttpServletRequest req) {
+        try {
+            String table = req.getParameter("table");
+            String value = req.getParameter("value").replace("_", " ");
+            System.out.println("lookup shape: " + table + " " + value);
+
+            //prevents duplication of this table + value in the shapes list
+            String id = table + "_" + value; //String.valueOf(System.currentTimeMillis());
+
+            boolean ret = ShapeLookup.addShape(id, table, value);
+
+            System.out.println("successfully registered shape: " + id);
+
+            if (ret) {
+                return id;
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -713,16 +745,18 @@ public class SpeciesController {
                 String lsid = lsids[i];
                 System.out.println("Looking for species info: " + lsid);
                 IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
-                System.out.println("ir.length: " + ir.length); 
+                System.out.println("ir.length: " + ir.length);
                 dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT));
             }
 
             StringBuffer sbInfo = new StringBuffer();
-            for (int i=0; i<dataPoints.size(); i++) {
-                Record r = (Record)dataPoints.get(i);
+            for (int i = 0; i < dataPoints.size(); i++) {
+                Record r = (Record) dataPoints.get(i);
                 //sbInfo.append(r.getId() + ", " + r.getLongitude() + ", " + r.getLatitude());
-                
-                if (i>0) sbInfo.append(",");
+
+                if (i > 0) {
+                    sbInfo.append(",");
+                }
                 sbInfo.append(r.getId());
             }
 
@@ -740,7 +774,7 @@ public class SpeciesController {
 //            //return "output/filtering/" + gjsonFile;
 //            return null;
 
-            System.out.println("species info at location: " + spcount); 
+            System.out.println("species info at location: " + spcount);
             return sbInfo.toString();
 
         } catch (Exception e) {

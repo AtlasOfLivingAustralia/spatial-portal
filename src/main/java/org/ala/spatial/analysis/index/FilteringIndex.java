@@ -80,10 +80,9 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         int threadcount = TabulationSettings.analysis_threads;
         ArrayList<String> layers = new ArrayList();
         int i;
-//no need for contextual layers here
-//        for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
-//            layers.add(TabulationSettings.geo_tables[i].name);
-//        }
+        for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
+            layers.add(TabulationSettings.geo_tables[i].name);
+        }
         for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
             layers.add(TabulationSettings.environmental_data_files[i].name);
         }
