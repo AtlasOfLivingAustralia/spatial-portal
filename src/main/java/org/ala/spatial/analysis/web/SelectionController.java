@@ -383,10 +383,10 @@ public class SelectionController extends UtilityComposer {
 
     }
 
-    public void onClick$btnMetadata(Event event){
+    public void onClick$btnMetadata(Event event) {
         //do something specific for environmental envelope
-        if(cbAreaSelection.getText().contains("envelope")) {
-            if(areaInfo.isVisible()){
+        if (cbAreaSelection.getText().contains("envelope")) {
+            if (areaInfo.isVisible()) {
                 ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers(true);
             } else {
                 ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).showAllSelectedLayers();
@@ -577,6 +577,8 @@ public class SelectionController extends UtilityComposer {
                 v = v.substring(0, v.length() - 1);
                 wkt = getLayerGeoJsonAsWkt(v, true);
                 displayGeom.setValue(wkt);
+
+                //for display
                 wkt = getLayerGeoJsonAsWkt(v, false);
             } else {
                 wkt = selectionGeom.getValue();
@@ -973,6 +975,39 @@ public class SelectionController extends UtilityComposer {
      */
     String getLayerGeoJsonAsWkt(String layer, boolean register_shape) {
         String wkt = DEFAULT_AREA;
+
+        if (!register_shape) {
+            return wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
+        }
+
+        try {
+            //try to get table name from uri like gazetteer/aus1/Queensland.json
+            String uri = getMapComposer().getMapLayer(layer).getUri();
+            String gaz = "gazetteer/";
+            int i1 = uri.indexOf(gaz);
+            int i2 = uri.indexOf("/", i1 + gaz.length() + 1);
+            int i3 = uri.lastIndexOf(".json");
+            String table = uri.substring(i1 + gaz.length(), i2);
+            String value = uri.substring(i2 + 1, i3);
+            //test if available in alaspatial
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(satServer + "/alaspatial/species/shape/lookup");
+            get.addParameter("table", table);
+            get.addParameter("value", value);
+            get.addRequestHeader("Accept", "text/plain");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            System.out.println("register table and value with alaspatial: " + slist);
+
+            if (slist != null) {
+                wkt = "LAYER(" + layer + "," + slist + ")";
+
+                return wkt;
+            }
+        } catch (Exception e) {
+            System.out.println("no alaspatial shape for layer: " + layer);
+            e.printStackTrace();
+        }
         try {
             //class_name is same as layer name
             wkt = wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
