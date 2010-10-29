@@ -1383,11 +1383,14 @@
 
     <!--
         for retrieving the citation details
-        need to send data_provider_uid
+        need to send data_resource_uid
     -->
-    <occurrences_dp_uid>data_provider_uid</occurrences_dp_uid>
+    <occurrences_dr_uid>data_resource_uid</occurrences_dr_uid>
 
     <citation_url_data_provider>http://collections.ala.org.au/lookup/citation</citation_url_data_provider>
+    <citation_url_layer_provider>http://spatial.ala.org.au/alaspatial/layers/citation</citation_url_layer_provider>
+    <ala_logger_url>http://logger.ala.org.au/service/logger/</ala_logger_url>
+    <spatial_logger_url>http://spatial.ala.org.au/alaspatial/logger/</spatial_logger_url>
 
     <!--
         autocomplete friendly names for 1's & 2's (type names)
@@ -1479,7 +1482,8 @@ if not csv, then tab delimited
     <base_output_dir>/Users/ajay/Sites/ala/</base_output_dir>
     <base_output_url>http://localhost/~ajay/ala/</base_output_url>
 
-    <max_record_count>15000</max_record_count>
+    <max_record_count_download>15000</max_record_count_download>
+    <max_record_count_cluster>1000000</max_record_count_cluster>
 
     <alaspatial_url>http://localhost:8084/alaspatial/</alaspatial_url>
 

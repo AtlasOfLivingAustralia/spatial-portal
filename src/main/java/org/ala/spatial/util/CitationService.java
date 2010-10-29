@@ -27,35 +27,8 @@ public class CitationService {
         String citation = "";
 
         try {
-            Vector dpList = new Vector();
-
-            OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
-            String[] cols = ofu.getOutputColumnNames();
-            int i = 0;
-            for (i = 0; i < cols.length; i++) {
-                if (cols[i].equalsIgnoreCase(TabulationSettings.occurrences_dp_uid)) {
-                    break;
-                }
-            }
-
-            CSVReader reader = new CSVReader(new FileReader(file));
-            List rows = reader.readAll();
-            Iterator it = rows.iterator();
-
-            // remove the header by calling it.next();
-            if (it.hasNext()) {
-                it.next();
-            }
-
-            for (; it.hasNext();) {
-                String[] row = (String[]) it.next();
-
-                if (!dpList.contains(row[i])) {
-                    dpList.add(row[i]);
-                }
-
-            }
-
+            Vector dpList = getDataResources(file, TabulationSettings.occurrences_dr_uid);
+            
             System.out.println("retrieving citation for: ");
             System.out.println(dpList);
 
@@ -120,7 +93,48 @@ public class CitationService {
         return citation;
     }
 
-    private static String postInfo(String url, Map params, boolean asBody) {
+    public static Vector getDataResources(String file, String columnName) {
+        try {
+            Vector dpList = new Vector();
+
+            OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
+            String[] cols = ofu.getOutputColumnNames();
+            int i = 0;
+            for (i = 0; i < cols.length; i++) {
+                if (cols[i].equalsIgnoreCase(columnName)) {
+                    break;
+                }
+            }
+
+            CSVReader reader = new CSVReader(new FileReader(file));
+            List rows = reader.readAll();
+            Iterator it = rows.iterator();
+
+            // remove the header by calling it.next();
+            if (it.hasNext()) {
+                it.next();
+            }
+
+            for (; it.hasNext();) {
+                String[] row = (String[]) it.next();
+
+                if (!dpList.contains(row[i])) {
+                    dpList.add(row[i]);
+                }
+
+            }
+
+            return dpList; 
+
+        } catch (Exception e) {
+            System.out.println("Error parsing for data resources:");
+            e.printStackTrace(System.out); 
+        }
+
+        return null; 
+    }
+
+    public static String postInfo(String url, Map params, boolean asBody) {
         try {
 
             HttpClient client = new HttpClient();

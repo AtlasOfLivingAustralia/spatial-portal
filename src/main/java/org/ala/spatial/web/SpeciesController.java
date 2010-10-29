@@ -289,7 +289,7 @@ public class SpeciesController {
             System.out.println("req.z: " + zoom);
             System.out.println("req.d: " + pdist);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, null, null, null, TabulationSettings.MAX_RECORD_COUNT);
+            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, null, null, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
 
             long timePoints = System.currentTimeMillis();
 
@@ -392,7 +392,7 @@ public class SpeciesController {
             System.out.println("req.z: " + zoom);
             System.out.println("req.d: " + pdist);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, region, null, null, TabulationSettings.MAX_RECORD_COUNT);
+            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, region, null, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
 
             long timePoints = System.currentTimeMillis();
 
@@ -582,7 +582,7 @@ public class SpeciesController {
 
             System.out.println("area: " + area);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(null, region, regionViewport, records, TabulationSettings.MAX_RECORD_COUNT);
+            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(null, region, regionViewport, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
 
             long timePoints = System.currentTimeMillis();
 
@@ -746,7 +746,7 @@ public class SpeciesController {
                 System.out.println("Looking for species info: " + lsid);
                 IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
                 System.out.println("ir.length: " + ir.length);
-                dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT));
+                dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
             }
 
             StringBuffer sbInfo = new StringBuffer();

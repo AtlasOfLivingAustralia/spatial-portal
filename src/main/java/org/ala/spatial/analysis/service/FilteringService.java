@@ -455,7 +455,7 @@ public class FilteringService implements Serializable {
                 fw.append("\r\n");
                 
                 // exit if MAX_RECORD_COUNT reached
-                if (i==TabulationSettings.MAX_RECORD_COUNT-1) break;
+                if (i==TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD-1) break;
             }
 
             fw.close();
@@ -562,7 +562,7 @@ public class FilteringService implements Serializable {
         /* check for "none" session */
         Vector dataRecords = null;
         if (session_id_.equals("none")) {
-            dataRecords = OccurrencesIndex.sampleSpeciesForClustering(null,region, null, records, TabulationSettings.MAX_RECORD_COUNT);
+            dataRecords = OccurrencesIndex.sampleSpeciesForClustering(null,region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
         } else {
             return null;    //not supported right now
         }
