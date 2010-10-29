@@ -41,8 +41,6 @@ import org.zkoss.zul.Row;
 public class FilteringResultsWCController extends UtilityComposer {
 
     private static Logger logger = Logger.getLogger(FilteringResultsWCController.class);
-
-
     public Button download;
     public Button downloadsamples;
     //public Button refreshButton2;
@@ -59,10 +57,8 @@ public class FilteringResultsWCController extends UtilityComposer {
     String shape;
     private String satServer;
     private SettingsSupplementary settingsSupplementary = null;
-
     Row rowUpdating;
     Row rowCounts;
-
     int results_count = 0;
     int results_count_occurrences = 0;
 
@@ -72,29 +68,13 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         // onClick$refreshButton2();
 
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("{\"eventTypeId\": 123,");
-        sb.append("\"comment\": \"For doing some research with..\",");
-        sb.append("\"userEmail\" : \"waiman.mok@csiro.au\",");
-        sb.append("\"recordCounts\" : {");
-        sb.append("\"dp123\": 32,");
-        sb.append("\"dr143\": 22,");
-        sb.append("\"ins322\": 55 } }");
-        logger.debug(sb.toString());
-        //logger.warn(sb.toString());
-        //logger.info(sb.toString());
-
-        //log to remote ala-logger
-        //logger.d;
-
     }
     boolean addedListener = false;
 
     @Override
     public void redraw(Writer out) throws java.io.IOException {
         super.redraw(out);
-        
+
         //results_label_extra.setValue("    [Updating...]");
         setUpdatingCount(true);
 
@@ -116,10 +96,10 @@ public class FilteringResultsWCController extends UtilityComposer {
             getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
 
         }
-            //results_label_extra.setValue("");
+        //results_label_extra.setValue("");
     }
 
-    void setUpdatingCount(boolean set){
+    void setUpdatingCount(boolean set) {
         rowUpdating.setVisible(set);
         rowCounts.setVisible(!set);
     }
@@ -157,38 +137,38 @@ public class FilteringResultsWCController extends UtilityComposer {
             if (results.length > 200) {
                 tmp = java.util.Arrays.copyOf(results, 200);
                 //results_label.setValue("preview of first 200 species found");
-            }else {
+            } else {
                 //results_label.setValue("preview of all " + results.length + " species found");
             }
 
             /*popup_listbox_results.setModel(new ListModelArray(tmp, false));
             popup_listbox_results.setItemRenderer(
-                    new ListitemRenderer() {
+            new ListitemRenderer() {
 
-                        public void render(Listitem li, Object data) {
-                            String s = (String) data;
-                            String[] ss = s.split("[*]");
+            public void render(Listitem li, Object data) {
+            String s = (String) data;
+            String[] ss = s.split("[*]");
 
 
-                            Listcell lc = new Listcell(ss[0]);
-                            lc.setParent(li);
+            Listcell lc = new Listcell(ss[0]);
+            lc.setParent(li);
 
-                            if (ss.length > 1) {
-                                lc = new Listcell(ss[1]);
-                                lc.setParent(li);
-                            }
+            if (ss.length > 1) {
+            lc = new Listcell(ss[1]);
+            lc.setParent(li);
+            }
 
-                            if (ss.length > 2) {
-                                lc = new Listcell(ss[2]);
-                                lc.setParent(li);
-                            }
+            if (ss.length > 2) {
+            lc = new Listcell(ss[2]);
+            lc.setParent(li);
+            }
 
-                            if (ss.length > 3) {
-                                lc = new Listcell(ss[3]);
-                                lc.setParent(li);
-                            }
-                        }
-                    });          */
+            if (ss.length > 3) {
+            lc = new Listcell(ss[3]);
+            lc.setParent(li);
+            }
+            }
+            });          */
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -216,7 +196,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         if (!isTabOpen() || !updateParameters()) {
             return;
         }
-        
+
         //results_label2.setValue("    [Updating...]");
         setUpdatingCount(true);
         Events.echoEvent("onRefreshCount", this, null);
@@ -229,7 +209,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/species/count");
 
-            String []out = postInfo(sbProcessUrl.toString()).split("\n");
+            String[] out = postInfo(sbProcessUrl.toString()).split("\n");
 
             results_count = Integer.parseInt(out[0]);
             results_count_occurrences = Integer.parseInt(out[1]);
@@ -251,7 +231,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             //results_label.setValue("species in active area: " + results_count);
             //results_label2.setValue(results_count + " (" + results_count_occurrences + " occurrences)");
             results_label2_species.setValue(String.valueOf(results_count));
-            results_label2_occurrences.setValue(String.valueOf(results_count_occurrences));            
+            results_label2_occurrences.setValue(String.valueOf(results_count_occurrences));
 
             //hide results list, show 'preview list' button
             //popup_listbox_results.setVisible(false);
@@ -272,9 +252,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$download() {
         //preview species list
         SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", this, null);
-        try{
+        try {
             window.doModal();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -300,11 +280,12 @@ public class FilteringResultsWCController extends UtilityComposer {
             String sdate = date.format(new Date());
 
             String spid = pid;
-            if(spid == null || spid.equals("none")){
+            if (spid == null || spid.equals("none")) {
                 spid = String.valueOf(System.currentTimeMillis());
             }
 
             Filedownload.save(u.openStream(), "application/zip", u.getFile());
+            getMapComposer().updateUserLogAnalysis("Sampling", "", "", u.getFile(), pid, "Sampling download");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -317,7 +298,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         //validate with 'occurrences count'
-        if( results_count_occurrences > 15000){
+        if (results_count_occurrences > 15000) {
             getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area.  Cannot produce sample for more than 15000 occurrences.");
             return;
         }
@@ -379,14 +360,14 @@ public class FilteringResultsWCController extends UtilityComposer {
             e.printStackTrace();
         }
     }
-   
+
     public void onClick$mapspecies() {
-            //results_label_extra.setValue("    [Mapping...]");
-            //Events.echoEvent("onMapSpecies", this, null);
+        //results_label_extra.setValue("    [Mapping...]");
+        //Events.echoEvent("onMapSpecies", this, null);
         onMapSpecies(null);
     }
 
-    public void onMapSpecies(Event event){
+    public void onMapSpecies(Event event) {
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
@@ -398,53 +379,54 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
-            if(results_count_occurrences > 5000 || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)){
+            if (results_count_occurrences > 5000 || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)) {
                 //clustering
                 MapLayerMetadata md = new MapLayerMetadata();
                 md.setLayerExtent(getMapComposer().getViewArea(), 0.2);
 
                 sbProcessUrl.append("species");
-                sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area,"UTF-8"));
+                sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area, "UTF-8"));
                 String id = String.valueOf(System.currentTimeMillis());
-                sbProcessUrl.append("/id/").append(URLEncoder.encode(id,"UTF-8"));
+                sbProcessUrl.append("/id/").append(URLEncoder.encode(id, "UTF-8"));
                 sbProcessUrl.append("/now");
                 sbProcessUrl.append("?z=").append(String.valueOf(getMapComposer().getMapZoom()));
-                sbProcessUrl.append("&a=").append(URLEncoder.encode(md.getLayerExtentString(),"UTF-8"));
+                sbProcessUrl.append("&a=").append(URLEncoder.encode(md.getLayerExtentString(), "UTF-8"));
                 sbProcessUrl.append("&m=").append(String.valueOf(8));
                 MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString(), true);
 
-                if(ml.getMapLayerMetadata() == null){
+                if (ml.getMapLayerMetadata() == null) {
                     ml.setMapLayerMetadata(new MapLayerMetadata());
                 }
 
                 ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
 
                 //get bounding box for active area
-                try{
+                try {
                     MapLayerMetadata md2 = new MapLayerMetadata();
                     md2.setLayerExtent(polygon, 0);
-                    double [] d = md2.getLayerExtent();
+                    double[] d = md2.getLayerExtent();
 
                     List<Double> bb = new ArrayList<Double>();
-                    for(int i=0;i<d.length;i++){
+                    for (int i = 0; i < d.length; i++) {
                         bb.add(d[i]);
                     }
                     md.setBbox(bb);
-                }catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }else{
+            } else {
                 //points
                 sbProcessUrl.append("/filtering/apply");
                 sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
                 sbProcessUrl.append("/samples/geojson");
-                sbProcessUrl.append("?area=").append(URLEncoder.encode(area,"UTF-8"));
+                sbProcessUrl.append("?area=").append(URLEncoder.encode(area, "UTF-8"));
                 String slist = getInfo(sbProcessUrl.toString());
                 //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
                 System.out.println("onMapSpecies: " + slist);
-                String [] results = slist.split("\n");
+                String[] results = slist.split("\n");
                 getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
             }
+            getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -504,21 +486,20 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     /*public void onClick$refreshButton2() {
-        if (!isTabOpen()) {
-            return;
-        }
-        if (updateParameters()
-                //|| !popup_listbox_results.isVisible()
-                ) {
-            populateList();
+    if (!isTabOpen()) {
+    return;
+    }
+    if (updateParameters()
+    //|| !popup_listbox_results.isVisible()
+    ) {
+    populateList();
 
-            //show update list if count > 0
-            //refreshButton2.setVisible(false);
-            //popup_listbox_results.setVisible(true);
-            //results_label.setVisible(true);
-        }
+    //show update list if count > 0
+    //refreshButton2.setVisible(false);
+    //popup_listbox_results.setVisible(true);
+    //results_label.setVisible(true);
+    }
     }*/
-
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
         String area = getMapComposer().getSelectionArea();
@@ -568,10 +549,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         setUpdatingCount(false);
 
         //hide results list, show 'preview list' button
-       //popup_listbox_results.setVisible(false);
+        //popup_listbox_results.setVisible(false);
         //results_label.setVisible(false);
         //refreshButton2.setVisible(true);
-        
+
         // toggle the map button
         if (results_count > 0 && results_count_occurrences <= 15000) {
             mapspecies.setVisible(true);

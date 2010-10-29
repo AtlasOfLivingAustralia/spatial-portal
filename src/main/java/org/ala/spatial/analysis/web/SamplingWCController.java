@@ -534,6 +534,7 @@ public class SamplingWCController extends UtilityComposer {
             window.parent = this;
             window.start(pid);
             window.doModal();
+            mc.updateUserLogAnalysis("Sampling", "Species: " + taxon + ";area: " + area, sbenvsel.toString(), sbProcessUrl.toString(), pid, "Sampling starting file download for pid: " + pid);
         } catch (Exception e) {
             System.out.println("Exception calling sampling.download:");
             e.printStackTrace(System.out);
@@ -611,6 +612,7 @@ public class SamplingWCController extends UtilityComposer {
 
                 URL url = new URL(satServer + "/alaspatial" + slist);
                 Filedownload.save(url.openStream(), "application/zip",url.getFile());
+                mc.updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
             }
 
         } catch (Exception e) {
@@ -648,6 +650,8 @@ public class SamplingWCController extends UtilityComposer {
                 System.out.println("Sending file to user: " + satServer + "/alaspatial" + pth);
                 URL url = new URL(satServer + "/alaspatial" + pth);
                 Filedownload.save(url.openStream(), "application/zip",url.getFile());
+                
+                mc.updateUserLogAnalysis("Sampling", "", "", url.getFile(), pid, "Sampling download file for pid: " + pid + " from " + satServer + "/alaspatial" + pth);
             }
         } catch (Exception e) {
             e.printStackTrace();
