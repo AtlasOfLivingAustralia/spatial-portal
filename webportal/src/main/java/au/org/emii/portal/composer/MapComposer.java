@@ -623,10 +623,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         System.out.println("searchSpeciesAuto.getSelectedItem().getDescription(): " + searchSpeciesAuto.getSelectedItem().getDescription());
 
         String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
-        if (spVal.trim().startsWith("species: ")) {
+        if (spVal.trim().contains(": ")) {  // spVal.trim().startsWith("species: ")
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
-            rank = "species";
+            rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
             //    mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
@@ -636,7 +636,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         mapSpeciesByLsid((String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
 
 
-        System.out.println(">>>>> " + taxon + " <<<<<");
+        System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
 
         // check if its a common name, if so, grab the scientific name
         //if (rdoCommonSearch.isChecked()) {
