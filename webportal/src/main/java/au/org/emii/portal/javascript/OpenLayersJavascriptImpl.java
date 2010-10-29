@@ -715,23 +715,24 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         String script =
                 "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS("
                 + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS().replace("\\/gwc\\/service", "")/*.replace("wms?service=WMS&version=1.1.0&request=GetMap&","wms\\/reflect?")*/ + "', "
+                + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&","wms\\/reflect?") + "', "
                 + "		{"
                 + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
+                + "                     srs: 'epsg:900913', "
                 + "			transparent: true," //+ (!layer.isBaseLayer()) + ", "
                 + "			" + params
                 + wmsVersionDeclaration(layer) + //","
                 "		}, "
                 + "		{ "
-                + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
+          //      + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
                 + "			isBaseLayer: " + layer.isBaseLayer() + ", "
                 + "			opacity: " + layer.getOpacity() + ", "
                 + "			queryable: " + layer.isQueryable() + ", "
                 //                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
                 + "			gutter: " + gutter + ", "
-                + "			wrapDateLine: false"
+                + "			wrapDateLine: " + (layer.getName().contains("WorldClim") || layer.getName().contains("_cars")) //set cars layers wrap=true FIXME: this is hack - should actually check the extents
                 + "		}  "
                 + "	); "
                 + // decorate with getFeatureInfoBuffer field - do not set buffer
