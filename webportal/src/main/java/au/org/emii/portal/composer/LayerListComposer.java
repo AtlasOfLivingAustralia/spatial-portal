@@ -380,6 +380,8 @@ public class LayerListComposer extends UtilityComposer {
                                         displaypath,
                                         (float) 0.75, metadata);
                             }
+
+                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
                         }
                     });
 
@@ -399,6 +401,8 @@ public class LayerListComposer extends UtilityComposer {
 //                                        + "', 'metadataWindow');");
 
                             mc.activateLink(metadata, "Metadata", false);
+
+                            mc.updateUserLogMapLayer("env - tree - info", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
 
                         }
                     });

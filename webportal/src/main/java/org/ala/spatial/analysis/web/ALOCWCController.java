@@ -162,6 +162,7 @@ public class ALOCWCController extends UtilityComposer {
 
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
 
+            mc.updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
 
             //loadMap();
 

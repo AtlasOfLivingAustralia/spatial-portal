@@ -6,8 +6,9 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -18,12 +19,7 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Label;
-import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listitem;
-import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
@@ -63,7 +59,6 @@ public class MaxentWCController extends UtilityComposer {
 
     //Checkbox useArea;
     //String previousArea = "";
-
     @Override
     public void doAfterCompose(Component component) throws Exception {
         super.doAfterCompose(component);
@@ -90,7 +85,7 @@ public class MaxentWCController extends UtilityComposer {
             layersUtil = new LayersUtil(mc, satServer);
 
             //setupEnvironmentalLayers();
-            lbListLayers.init(mc, satServer,true);
+            lbListLayers.init(mc, satServer, true);
 
         } catch (Exception e) {
             System.out.println("opps in after compose");
@@ -103,39 +98,39 @@ public class MaxentWCController extends UtilityComposer {
      * and setup the listbox
      *
     private void setupEnvironmentalLayers() {
-        try {
-            String[] aslist = layersUtil.getEnvironmentalLayers();
+    try {
+    String[] aslist = layersUtil.getEnvironmentalLayers();
 
-            if (aslist.length > 0) {
+    if (aslist.length > 0) {
 
-                lbenvlayers.setItemRenderer(new ListitemRenderer() {
+    lbenvlayers.setItemRenderer(new ListitemRenderer() {
 
-                    public void render(Listitem li, Object data) {
-                        li.setWidth(null);
-                        new Listcell((String) data).setParent(li);
-                    }
-                });
+    public void render(Listitem li, Object data) {
+    li.setWidth(null);
+    new Listcell((String) data).setParent(li);
+    }
+    });
 
-                lbenvlayers.setModel(new SimpleListModel(aslist));
-            }
+    lbenvlayers.setModel(new SimpleListModel(aslist));
+    }
 
 
-        } catch (Exception e) {
-            System.out.println("error setting up env list");
-            e.printStackTrace(System.out);
-        }
+    } catch (Exception e) {
+    System.out.println("error setting up env list");
+    e.printStackTrace(System.out);
+    }
     }*/
-/*
+    /*
     public void onCheck$rdoCommonSearch() {
-        sac.setSearchCommon(true);
-        sac.getItems().clear();
+    sac.setSearchCommon(true);
+    sac.getItems().clear();
     }
 
     public void onCheck$rdoScientificSearch() {
-        sac.setSearchCommon(false);
-        sac.getItems().clear();
+    sac.setSearchCommon(false);
+    sac.getItems().clear();
     }
-*/
+     */
     public void onChange$sac(Event event) {
         loadSpeciesOnMap();
     }
@@ -161,41 +156,39 @@ public class MaxentWCController extends UtilityComposer {
      * @param event The event attached to the component
      */
     /*public void onChanging$tbenvfilter(InputEvent event) {
-        String filter = event.getValue().toLowerCase();
-        System.out.println("checking for: " + filter);
-        System.out.print("Number of list items to iterate thru: ");
-        System.out.println(lbenvlayers.getItems().size());
-        for (Listitem li : (List<Listitem>) lbenvlayers.getItems()) {
-            if (li.getLabel().toLowerCase().contains(filter)) {
-                if (!li.isVisible()) {
-                    li.setVisible(true);
-                }
-            } else {
-                if (li.isVisible()) {
-                    li.setVisible(false);
-                }
-            }
-        }
+    String filter = event.getValue().toLowerCase();
+    System.out.println("checking for: " + filter);
+    System.out.print("Number of list items to iterate thru: ");
+    System.out.println(lbenvlayers.getItems().size());
+    for (Listitem li : (List<Listitem>) lbenvlayers.getItems()) {
+    if (li.getLabel().toLowerCase().contains(filter)) {
+    if (!li.isVisible()) {
+    li.setVisible(true);
+    }
+    } else {
+    if (li.isVisible()) {
+    li.setVisible(false);
+    }
+    }
+    }
     }*/
-
     /**
      * Clear the filter text box
      *
      * @param event The event attached to the component
      */
     /*public void onClick$btenvfilterclear(Event event) {
-        try {
-            tbenvfilter.setValue("");
-            for (Listitem li : (List<Listitem>) lbenvlayers.getItems()) {
-                li.setVisible(true);
-            }
-            //Messagebox.show("Cleared env list");
-        } catch (Exception ex) {
-            Logger.getLogger(MaxentWCController.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Clicked on clear env list button");
-        }
+    try {
+    tbenvfilter.setValue("");
+    for (Listitem li : (List<Listitem>) lbenvlayers.getItems()) {
+    li.setVisible(true);
+    }
+    //Messagebox.show("Cleared env list");
+    } catch (Exception ex) {
+    Logger.getLogger(MaxentWCController.class.getName()).log(Level.SEVERE, null, ex);
+    System.out.println("Clicked on clear env list button");
+    }
     }*/
-
     public void onDoInit(Event event) throws Exception {
         runmaxent();
         //Clients.showBusy("", false);
@@ -208,13 +201,16 @@ public class MaxentWCController extends UtilityComposer {
     public void onClick$startmaxent(Event event) {
         //Clients.showBusy("Maxent running...", true);
         //Events.echoEvent("onDoInit", this, (event==null)? null : event.toString());
-        try{onDoInit(null);}catch(Exception e){}
+        try {
+            onDoInit(null);
+        } catch (Exception e) {
+        }
     }
 
     public void runmaxent() {
         try {
             String taxon = cleanTaxon();
-            
+
             if (taxon == null || taxon.equals("")) {
                 Messagebox.show("Please select a species in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 //highlight step 1
@@ -228,14 +224,14 @@ public class MaxentWCController extends UtilityComposer {
                 tabboxmaxent.setSelectedIndex(1);
                 return;
             }
-            if(lbListLayers.getSelectedCount() > 50){
+            if (lbListLayers.getSelectedCount() > 50) {
                 Messagebox.show(lbListLayers.getSelectedCount() + " layers selected.  Please select fewer than 50 environmental layers in step 2.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 tabboxmaxent.setSelectedIndex(1);
                 return;
             }
 
-            if(LayersUtil.isPestSpecies(taxon)){
-                Messagebox.show("arning: Invasive species will rarely be in equilibrium with the environment at their observed locations so modelling distributions should only be attempted by experienced analysts.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+            if (LayersUtil.isPestSpecies(taxon)) {
+                Messagebox.show("Warning: Invasive species will rarely be in equilibrium with the environment at their observed locations so modelling distributions should only be attempted by experienced analysts.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
             }
 
 
@@ -246,13 +242,13 @@ public class MaxentWCController extends UtilityComposer {
             status.setValue("Status: Running Maxent, please wait... ");
             btnInfo.setVisible(false);
 
-            String [] selectedLayers = lbListLayers.getSelectedLayers();
+            String[] selectedLayers = lbListLayers.getSelectedLayers();
             if (selectedLayers.length > 0) {
                 envsel = new String[selectedLayers.length];
                 msg = "Selected " + selectedLayers.length + " items \n ";
-                for(int i=0;i<selectedLayers.length;i++){
+                for (int i = 0; i < selectedLayers.length; i++) {
                     sbenvsel.append(selectedLayers[i]);
-                    if (i < selectedLayers.length -1) {
+                    if (i < selectedLayers.length - 1) {
                         sbenvsel.append(":");
                     }
                 }
@@ -271,7 +267,7 @@ public class MaxentWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/processgeoq?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".","__"), "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
@@ -302,8 +298,8 @@ public class MaxentWCController extends UtilityComposer {
             HttpClient client = new HttpClient();
             //GetMethod get = new GetMethod(sbProcessUrl.toString());
             PostMethod get = new PostMethod(sbProcessUrl.toString());
-            get.addParameter("area",area);
-          //  get.addRequestHeader("Content-type", "application/json");
+            get.addParameter("area", area);
+            //  get.addRequestHeader("Content-type", "application/json");
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
@@ -312,6 +308,26 @@ public class MaxentWCController extends UtilityComposer {
 
             openProgressBar();
 
+            StringBuffer sbParams = new StringBuffer();
+            sbParams.append("Species: " + taxon);
+            sbParams.append("Jackknife: " + chkJackknife.isChecked());
+            sbParams.append(";Response curves: " + chkRCurves.isChecked());
+            sbParams.append(";Test per: " + txtTestPercentage.getValue());
+
+
+            Map attrs = new HashMap();
+            attrs.put("actionby", "user");
+            attrs.put("actiontype", "analysis");
+            attrs.put("lsid", taxon);
+            attrs.put("useremail", "spatialuser");
+            attrs.put("processid", pid);
+            attrs.put("sessionid", "");
+            attrs.put("layers", sbenvsel.toString());
+            attrs.put("method", "maxent");
+            attrs.put("params", sbParams.toString());
+            attrs.put("downloadfile", "");
+            mc.updateUserLog(attrs, "analysis result: " + satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html");
+
             //Messagebox.show(msg, "Maxent", Messagebox.OK, Messagebox.INFORMATION);
         } catch (Exception e) {
             System.out.println("Maxent error: ");
@@ -319,7 +335,8 @@ public class MaxentWCController extends UtilityComposer {
         }
     }
     Window wInputBox;
-    public void previousModel(){
+
+    public void previousModel() {
         wInputBox = new Window("Enter reference number", "normal", false);
         wInputBox.setWidth("300px");
         wInputBox.setClosable(true);
@@ -330,13 +347,14 @@ public class MaxentWCController extends UtilityComposer {
         Button b = new Button();
         b.setLabel("Ok");
         b.addEventListener("onClick", new EventListener() {
-                public void onEvent(Event event) throws Exception {
-                    pid = ((Textbox)wInputBox.getFellow("txtBox")).getValue();
-                    taxon = "";
-                    openProgressBar();
-                    wInputBox.detach();
-                }
-            });
+
+            public void onEvent(Event event) throws Exception {
+                pid = ((Textbox) wInputBox.getFellow("txtBox")).getValue();
+                taxon = "";
+                openProgressBar();
+                wInputBox.detach();
+            }
+        });
         b.setParent(wInputBox);
         wInputBox.setParent(getMapComposer().getFellow("mapIframe").getParent());
         wInputBox.setPosition("top,center");
@@ -347,16 +365,16 @@ public class MaxentWCController extends UtilityComposer {
         }
     }
 
-    void openProgressBar(){
-        if(maxentInfoWindow != null){
+    void openProgressBar() {
+        if (maxentInfoWindow != null) {
             maxentInfoWindow.detach();
         }
         MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
         window.parent = this;
         window.start(pid);
-        try{
+        try {
             window.doModal();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -382,7 +400,7 @@ public class MaxentWCController extends UtilityComposer {
         return "";
     }
 
-    public void loadMap(Event event){
+    public void loadMap(Event event) {
 
         String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
@@ -395,21 +413,21 @@ public class MaxentWCController extends UtilityComposer {
 
         //get job inputs
         String speciesName = "";
-        try{
-            for(String s : getJob("inputs").split(";")) {
-                if(s.startsWith("scientificName")){
+        try {
+            for (String s : getJob("inputs").split(";")) {
+                if (s.startsWith("scientificName")) {
                     speciesName = s.split(":")[1];
-                    if(speciesName != null && speciesName.length() > 1){
-                        speciesName = speciesName.substring(0,1).toUpperCase() + speciesName.substring(1);
+                    if (speciesName != null && speciesName.length() > 1) {
+                        speciesName = speciesName.substring(0, 1).toUpperCase() + speciesName.substring(1);
                     }
                     break;
                 }
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if(taxon == null){
+        if (taxon == null) {
             taxon = "species";
         }
 
@@ -418,7 +436,7 @@ public class MaxentWCController extends UtilityComposer {
         MapLayer ml = mc.getMapLayer(layername);
         String infoUrl = satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
-        if(md == null){
+        if (md == null) {
             md = new MapLayerMetadata();
             ml.setMapLayerMetadata(md);
         }
@@ -435,7 +453,7 @@ public class MaxentWCController extends UtilityComposer {
         btnInfo.setVisible(true);*/
     }
 
-     public void onClick$btnClearSelection(Event event){
+    public void onClick$btnClearSelection(Event event) {
         lbListLayers.clearSelection();
     }
 
@@ -458,12 +476,12 @@ public class MaxentWCController extends UtilityComposer {
         Map args = new Hashtable();
         args.put("url", satServer + "/alaspatial" + url);
         if (maxentInfoWindow == null) {
-            maxentInfoWindow = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/AnalysisMaxentInfo.zul", this, args);
+        maxentInfoWindow = (Window) Executions.createComponents(
+        "/WEB-INF/zul/AnalysisMaxentInfo.zul", this, args);
         } else {
-            maxentInfoWindow.detach();
-            maxentInfoWindow = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/AnalysisMaxentInfo.zul", this, args);
+        maxentInfoWindow.detach();
+        maxentInfoWindow = (Window) Executions.createComponents(
+        "/WEB-INF/zul/AnalysisMaxentInfo.zul", this, args);
         }
 
         maxentInfoWindow.setId(java.util.UUID.randomUUID().toString());
@@ -510,64 +528,65 @@ public class MaxentWCController extends UtilityComposer {
             //mc.mapSpeciesByName(taxon);
             //mc.mapSpeciesByNameRank(taxon, rank, null);
         }
-        mc.mapSpeciesByLsid((String)(sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
+        mc.mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
     }
-/*
+    /*
     private String getScientificName() {
-        String taxon = "";
-        try {
+    String taxon = "";
+    try {
 
-            String nuri = "http://data.ala.org.au/search/commonNames/" + URLEncoder.encode(sac.getValue(), "UTF-8") + "/json";
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(nuri);
-            get.addRequestHeader("Content-type", "application/json");
+    String nuri = "http://data.ala.org.au/search/commonNames/" + URLEncoder.encode(sac.getValue(), "UTF-8") + "/json";
+    HttpClient client = new HttpClient();
+    GetMethod get = new GetMethod(nuri);
+    get.addRequestHeader("Content-type", "application/json");
 
-            int result = client.executeMethod(get);
-            String snlist = get.getResponseBodyAsString();
+    int result = client.executeMethod(get);
+    String snlist = get.getResponseBodyAsString();
 
-            TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
-            JsonConfig jsonConfig = new JsonConfig();
-            jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
-            jsonConfig.setJavaPropertyFilter(new PropertyFilter() {
+    TaxaCommonSearchSummary tss = new TaxaCommonSearchSummary();
+    JsonConfig jsonConfig = new JsonConfig();
+    jsonConfig.setRootClass(TaxaCommonSearchSummary.class);
+    jsonConfig.setJavaPropertyFilter(new PropertyFilter() {
 
-                @Override
-                public boolean apply(Object source, String name, Object value) {
-                    if ("result".equals(name)) {
-                        return true;
-                    }
-                    return false;
-                }
-            });
-
-            JSONObject jo = JSONObject.fromObject(snlist);
-
-            tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
-
-            if (tss.getRecordsReturned() > 1) {
-
-                JSONArray joResult = jo.getJSONArray("result");
-
-                JsonConfig jsonConfigResult = new JsonConfig();
-                jsonConfigResult.setRootClass(TaxaCommonSearchResult.class);
-
-                for (int i = 0; i < joResult.size(); i++) {
-                    TaxaCommonSearchResult tr = (TaxaCommonSearchResult) JSONSerializer.toJava(joResult.getJSONObject(i), jsonConfigResult);
-                    tss.addResult(tr);
-                }
-            }
-
-            //taxon = tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")";
-            taxon = tss.getResultList().get(0).getScientificName();
-            //status.setValue("Got: " + tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")");
-
-        } catch (Exception e) {
-            System.out.println("Oopps, error getting scientific name from common name");
-            e.printStackTrace(System.out);
-        }
-
-        return taxon;
+    @Override
+    public boolean apply(Object source, String name, Object value) {
+    if ("result".equals(name)) {
+    return true;
     }
-*/
+    return false;
+    }
+    });
+
+    JSONObject jo = JSONObject.fromObject(snlist);
+
+    tss = (TaxaCommonSearchSummary) JSONSerializer.toJava(jo, jsonConfig);
+
+    if (tss.getRecordsReturned() > 1) {
+
+    JSONArray joResult = jo.getJSONArray("result");
+
+    JsonConfig jsonConfigResult = new JsonConfig();
+    jsonConfigResult.setRootClass(TaxaCommonSearchResult.class);
+
+    for (int i = 0; i < joResult.size(); i++) {
+    TaxaCommonSearchResult tr = (TaxaCommonSearchResult) JSONSerializer.toJava(joResult.getJSONObject(i), jsonConfigResult);
+    tss.addResult(tr);
+    }
+    }
+
+    //taxon = tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")";
+    taxon = tss.getResultList().get(0).getScientificName();
+    //status.setValue("Got: " + tss.getResultList().get(0).getScientificName() + " (" + tss.getResultList().get(0).getCommonName() + ")");
+
+    } catch (Exception e) {
+    System.out.println("Oopps, error getting scientific name from common name");
+    e.printStackTrace(System.out);
+    }
+
+    return taxon;
+    }
+     */
+
     /**
      * get rid of the common name if present
      * 2 conditions here
@@ -584,15 +603,15 @@ public class MaxentWCController extends UtilityComposer {
      */
     private String cleanTaxon() {
 
-        if(sac.getSelectedItem() == null && sac.getValue() != null){
+        if (sac.getSelectedItem() == null && sac.getValue() != null) {
             sac.refresh(sac.getValue());
         }
-        
+
         // make the sac.getValue() a selected value if it appears in the list
         // - fix for common names entered but not selected
         if (sac.getSelectedItem() == null) {
             List list = sac.getItems();
-            for (int i=0;i<list.size();i++) {
+            for (int i = 0; i < list.size(); i++) {
                 Comboitem ci = (Comboitem) list.get(i);
                 if (ci.getLabel().equalsIgnoreCase(sac.getValue())) {
                     System.out.println("cleanTaxon: set selected item");
@@ -601,31 +620,31 @@ public class MaxentWCController extends UtilityComposer {
                 }
             }
         }
-        
-/*        if (StringUtils.isNotBlank(taxon)) {
 
-            // check for condition 1
-            System.out.println("Checking for cond.1: " + taxon);
-            if (taxon.contains(" (")) {
-                taxon = StringUtils.substringBefore(taxon, " (");
-            }
-            System.out.println("After checking for cond.1: " + taxon);
+        /*        if (StringUtils.isNotBlank(taxon)) {
 
-            // check for condition 2
-            if (sac.getSelectedItem() != null) {
-                String spVal = sac.getSelectedItem().getDescription();
-                System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
-                if (spVal.trim().startsWith("Scientific name")) {
-                    //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
-                    taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
-                }
-                System.out.println("After checking for cond.2: " + taxon);
-            }
+        // check for condition 1
+        System.out.println("Checking for cond.1: " + taxon);
+        if (taxon.contains(" (")) {
+        taxon = StringUtils.substringBefore(taxon, " (");
+        }
+        System.out.println("After checking for cond.1: " + taxon);
+
+        // check for condition 2
+        if (sac.getSelectedItem() != null) {
+        String spVal = sac.getSelectedItem().getDescription();
+        System.out.println("Checking for cond.2: " + taxon + " -- " + spVal);
+        if (spVal.trim().startsWith("Scientific name")) {
+        //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+        taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+        }
+        System.out.println("After checking for cond.2: " + taxon);
+        }
 
         }*/
 
-        if(sac.getSelectedItem() != null && sac.getSelectedItem().getAnnotatedProperties() != null){
-            taxon = (String)sac.getSelectedItem().getAnnotatedProperties().get(0);
+        if (sac.getSelectedItem() != null && sac.getSelectedItem().getAnnotatedProperties() != null) {
+            taxon = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 
         return taxon;
@@ -654,13 +673,13 @@ public class MaxentWCController extends UtilityComposer {
         /*//an area always exists;  validate the area box presence, check if area updated
         String currentArea = mc.getSelectionArea();
         if (currentArea.length() > 0) {
-            useArea.setDisabled(false);
-            if (!currentArea.equalsIgnoreCase(previousArea)) {
-                useArea.setChecked(true);
-            }
+        useArea.setDisabled(false);
+        if (!currentArea.equalsIgnoreCase(previousArea)) {
+        useArea.setChecked(true);
+        }
         } else {
-            useArea.setDisabled(true);
-            useArea.setChecked(false);
+        useArea.setDisabled(true);
+        useArea.setChecked(false);
         }
         previousArea = currentArea;*/
 

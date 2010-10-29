@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -73,9 +72,9 @@ import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.MDC;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
@@ -580,6 +579,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //add feature to the map as a new layer
         MapLayer mapLayer = addGeoJSON(label, geoServer + link);
 
+        updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
+
         //String pName = placeName.getValue();
         //searchGazetteer(pName);
 
@@ -663,6 +664,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + jo.getString("uid");
             addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75, metadata);
             lac.setValue("");
+
+            updateUserLogMapLayer("env - search - add", jo.getString("uid") + "|" + jo.getString("displayname"));
         }
 
     }
@@ -3748,6 +3751,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         md.setSpeciesDisplayName(species);
         md.setSpeciesRank(rank);
 
+        updateUserLogMapSpecies(lsid);
+
         return ml;
     }
 
@@ -3909,6 +3914,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ml.setClustered(false);
             chkPointsCluster.setLabel(" Display species as clusters");
             chkPointsCluster.setChecked(false);
+
+            addLsidBoundingBoxToMetadata(md, lsid);
         }
 
         return ml;
@@ -4310,6 +4317,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     Filedownload.save(new File(pp.getImageFilename()), "image/jpeg");
                 }
             }
+
+
+            StringBuffer sbParams = new StringBuffer();
+            sbParams.append("header: " + header);
+            sbParams.append("grid: " + grid);
+            sbParams.append("format: " + format);
+            sbParams.append("resolution: " + resolution);
+            sbParams.append("preview: " + preview);
+            Map attrs = new HashMap();
+            attrs.put("actionby", "user");
+            attrs.put("actiontype", "print");
+            attrs.put("lsid", "");
+            attrs.put("useremail", "spatialuser");
+            attrs.put("processid", "");
+            attrs.put("sessionid", jsessionid);
+            attrs.put("layers", "");
+            attrs.put("method", "print");
+            attrs.put("params", sbParams.toString());
+            attrs.put("downloadfile", pp.getImageFilename());
+            updateUserLog(attrs, "print");
+
             return pp;
         } catch (Exception e) {
             e.printStackTrace();
@@ -4397,6 +4425,81 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             speciesfilters.remove(species);
             getSession().setAttribute("speciesfilters", speciesfilters);
         }
+    }
+
+    public void updateUserLogMapSpecies(String lsid) {
+        Map attrs = new HashMap();
+        attrs.put("actionby", "user");
+        attrs.put("actiontype", "map");
+        attrs.put("lsid", lsid);
+        attrs.put("useremail", "spatialuser");
+        attrs.put("processid", "");
+        attrs.put("sessionid", "");
+        attrs.put("layers", "");
+        attrs.put("method", "");
+        attrs.put("params", "");
+        attrs.put("downloadfile", "");
+        updateUserLog(attrs, "species");
+    }
+
+    public void updateUserLogMapLayer(String layers) {
+        updateUserLogMapLayer("", layers);
+    }
+
+    public void updateUserLogMapLayer(String type, String layers) {
+        Map attrs = new HashMap();
+        attrs.put("actionby", "user");
+        attrs.put("actiontype", "map");
+        attrs.put("lsid", "");
+        attrs.put("useremail", "spatialuser");
+        attrs.put("processid", "");
+        attrs.put("sessionid", "");
+        attrs.put("layers", layers);
+        attrs.put("method", "");
+        attrs.put("params", "");
+        attrs.put("downloadfile", "");
+        updateUserLog(attrs, "layer: " + type);
+    }
+
+    public void updateUserLogAnalysis(String method, String params) {
+        updateUserLogAnalysis(method, params, "");
+    }
+
+    public void updateUserLogAnalysis(String method, String params, String layers) {
+        updateUserLogAnalysis(method, params, layers, "");
+    }
+
+    public void updateUserLogAnalysis(String method, String params, String layers, String msg) {
+        updateUserLogAnalysis(method, params, layers, "", "", msg);
+    }
+
+    public void updateUserLogAnalysis(String method, String params, String layers, String download, String pid, String msg) {
+        Map attrs = new HashMap();
+        attrs.put("actionby", "user");
+        attrs.put("actiontype", "analysis");
+        attrs.put("lsid", "");
+        attrs.put("useremail", "spatialuser");
+        attrs.put("processid", pid);
+        attrs.put("sessionid", "");
+        attrs.put("layers", layers);
+        attrs.put("method", method);
+        attrs.put("params", params);
+        attrs.put("downloadfile", download);
+        updateUserLog(attrs, "analysis: " + msg);
+    }
+
+    public void updateUserLog(Map attrs) {
+        updateUserLog(attrs, "");
+    }
+
+    public void updateUserLog(Map attrs, String msg) {
+        Iterator it = attrs.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String) it.next();
+            MDC.put(key, attrs.get(key));
+        }
+        logger.info(msg);
+        MDC.clear();
     }
 
     /**

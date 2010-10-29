@@ -5,6 +5,8 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -135,6 +137,8 @@ public class SpeciesListResults extends UtilityComposer {
         String sdate = date.format(new Date());
 
         Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
+
+        getMapComposer().updateUserLogAnalysis("species list", getMapComposer().getSelectionArea(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
 
         detach();
     }
