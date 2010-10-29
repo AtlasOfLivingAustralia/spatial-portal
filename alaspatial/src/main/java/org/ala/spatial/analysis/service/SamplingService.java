@@ -803,7 +803,7 @@ public class SamplingService {
         int i;
 
         /* get samples records from records indexes */
-        String[][] samples = (new SamplingService()).sampleSpecies(lsid, null, null, null, TabulationSettings.MAX_RECORD_COUNT, null);
+        String[][] samples = (new SamplingService()).sampleSpecies(lsid, null, null, null, TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD, null);
 
         StringBuffer sbGeoJSON = new StringBuffer();
         sbGeoJSON.append("{");
@@ -860,7 +860,7 @@ public class SamplingService {
         int i;
 
         /* get samples records from records indexes */
-        String[][] samples = (new SamplingService()).sampleSpecies(lsid, null, null, null, TabulationSettings.MAX_RECORD_COUNT, null);
+        String[][] samples = (new SamplingService()).sampleSpecies(lsid, null, null, null, TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD, null);
 
         int max_parts_size = 2000;
 

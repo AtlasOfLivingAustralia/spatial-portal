@@ -434,7 +434,7 @@ public class FilteringWSController {
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
-            String filepath = FilteringService.getSamplesList(pid, region, TabulationSettings.MAX_RECORD_COUNT);
+            String filepath = FilteringService.getSamplesList(pid, region, TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD);
 
             String citationpath = CitationService.generateCitationDataProviders(filepath);
 

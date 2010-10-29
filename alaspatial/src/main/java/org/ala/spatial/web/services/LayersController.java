@@ -3,6 +3,7 @@ package org.ala.spatial.web.services;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.dao.LayersDAO;
@@ -176,21 +177,33 @@ public class LayersController {
     @RequestMapping(value = LAYERS_BASE + "/citation", method = RequestMethod.POST)
     public
     @ResponseBody
-    LayerInfo getLayerCitation(HttpServletRequest req) {
+    List<LayerInfo> getLayerCitation(HttpServletRequest req) {
         System.out.println("retriving layer citation: ");
         try {
             BufferedReader in = new BufferedReader(req.getReader());
-            String uidList;
-            while ((uidList = in.readLine()) != null) {
-                System.out.println(uidList);
+            String uids;
+            while ((uids = in.readLine()) != null) {
+                System.out.println(uids);
             }
             in.close();
+            uids = uids.replaceAll("[", "");
+            uids = uids.replaceAll("]", "");
+
+            String[] uidList = uids.split(",");
+
+            List<LayerInfo> layers = new ArrayList<LayerInfo>();
+            for (String uid : uidList) {
+                layers.add(layersDao.getLayerById(uid));
+            }
+
+            return layers; 
+            
         } catch (Exception e) {
             System.out.println("Error reading in post content");
             e.printStackTrace(System.out);
         }
 
-        return layersDao.getLayerById("890");
+        return null;
     }
 
     /**

@@ -139,7 +139,8 @@ public class TabulationSettings {
     /**
      * Maximum number of records to dump
      */
-    public static int MAX_RECORD_COUNT;
+    public static int MAX_RECORD_COUNT_CLUSTER;
+    public static int MAX_RECORD_COUNT_DOWNLOAD;
     /**
      * common grid definition
      */
@@ -226,8 +227,11 @@ public class TabulationSettings {
 
     public static int cluster_lookup_size;
 
+    public static String occurrences_dr_uid;
     public static String citation_url_data_provider;
-    public static String occurrences_dp_uid;
+    public static String citation_url_layer_provider;
+    public static String ala_logger_url;
+    public static String spatial_logger_url;
 
     /**
      * loads settings form name of the appropriate xml resource file
@@ -404,13 +408,20 @@ public class TabulationSettings {
         System.out.println("base_output_dir: " + base_output_dir + " at " + base_output_url);
 
         try {
-            MAX_RECORD_COUNT = Integer.parseInt(xr.getValue("max_record_count"));
+            MAX_RECORD_COUNT_DOWNLOAD = Integer.parseInt(xr.getValue("max_record_count_download"));
         } catch (NumberFormatException nfe) {
-            MAX_RECORD_COUNT = 15000;
+            MAX_RECORD_COUNT_DOWNLOAD = 15000;
         } catch (Exception e) {
-            MAX_RECORD_COUNT = 15000;
+            MAX_RECORD_COUNT_DOWNLOAD = 15000;
         }
 
+        try {
+            MAX_RECORD_COUNT_CLUSTER = Integer.parseInt(xr.getValue("max_record_count_cluster"));
+        } catch (NumberFormatException nfe) {
+            MAX_RECORD_COUNT_CLUSTER = 1000000;
+        } catch (Exception e) {
+            MAX_RECORD_COUNT_CLUSTER = 1000000;
+        }
 
         maxent_cmdpth = xr.getValue("cmdpth");
         System.out.println("maxent_cmdpth:" + maxent_cmdpth);
@@ -472,8 +483,11 @@ public class TabulationSettings {
 
         cluster_lookup_size = Integer.parseInt(xr.getValue("cluster_lookup_size"));
 
+        occurrences_dr_uid = xr.getValue("occurrences_dr_uid");
         citation_url_data_provider = xr.getValue("citation_url_data_provider");
-        occurrences_dp_uid = xr.getValue("occurrences_dp_uid"); 
+        citation_url_layer_provider = xr.getValue("citation_url_layer_provider");
+        ala_logger_url = xr.getValue("ala_logger_url");
+        spatial_logger_url = xr.getValue("spatial_logger_url");
     }
 
     static public String getPath(String layerName) {
