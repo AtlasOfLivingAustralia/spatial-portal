@@ -192,6 +192,7 @@ public class ALOCWCController extends UtilityComposer {
 
             public void onEvent(Event event) throws Exception {
                 pid = ((Textbox) wInputBox.getFellow("txtBox")).getValue();
+                pid = pid.trim(); 
                 openProgressBar();
                 wInputBox.detach();
             }

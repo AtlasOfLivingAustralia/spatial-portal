@@ -74,7 +74,7 @@ public class ALOCProgressWCController extends UtilityComposer {
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
             Events.echoEvent("loadMap",parent, null);
-            showReferenceNumber();
+            //showReferenceNumber();
             this.detach();
         } else if(s.equals("FAILED")) {
             timer.stop();
