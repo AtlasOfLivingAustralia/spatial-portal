@@ -350,6 +350,7 @@ public class MaxentWCController extends UtilityComposer {
 
             public void onEvent(Event event) throws Exception {
                 pid = ((Textbox) wInputBox.getFellow("txtBox")).getValue();
+                pid = pid.trim();
                 taxon = "";
                 openProgressBar();
                 wInputBox.detach();

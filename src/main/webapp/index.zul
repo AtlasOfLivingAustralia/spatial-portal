@@ -743,7 +743,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
                                                         <comboitem label=""/>
                                                     </combobox>
-                                                    <label sclass="exampleText">e.g. Annual Mean Temperature</label>
+                                                    <label sclass="exampleText">e.g. Temperature</label>
                                                 </vbox>
                                             </div>
 
