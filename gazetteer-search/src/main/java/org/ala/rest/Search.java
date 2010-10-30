@@ -68,12 +68,14 @@ public class Search {
                 List<Fieldable> fields = doc.getFields();
                 results.add(new SearchResultItem(fields,true));
             }
+            is.close();
         } catch (IOException e1) {
             //FIXME: Log error - return http error code?
             System.out.println(e1.getMessage());
         } catch (ParseException e3) {
             //FIXME
         }
+
     }
 
     public Search(String searchTerms) {
@@ -96,6 +98,7 @@ public class Search {
                 List<Fieldable> fields = doc.getFields();
                 results.add(new SearchResultItem(fields,true));
             }
+            is.close();
         } catch (IOException e1) {
             //FIXME: Log error - return http error code?
             System.out.println(e1.getMessage());
