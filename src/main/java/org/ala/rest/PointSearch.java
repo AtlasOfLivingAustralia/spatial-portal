@@ -74,26 +74,13 @@ public class PointSearch {
         Catalog catalog = gs.getCatalog();
         System.out.println("+++++++++" + lon + "," + lat + "," + layerName);
         try {
-
-           // for (String layerName : gc.getLayerNames()) {
                 LayerInfo layerInfo = catalog.getLayerByName(layerName);
                 Map params = layerInfo.getResource().getStore().getConnectionParameters();
 
                 DataStore dataStore = DataStoreUtils.acquireDataStore(params, sc);//DataStoreFinder.getDataStore(params);
                 FeatureSource layer = dataStore.getFeatureSource(layerName);
                 System.out.println("++++++++++Searching " + layerName);
-//                Coordinate point = new Coordinate(Float.parseFloat(lat),Float.parseFloat(lon));
-//
-//                FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
-//                Filter filter = ff.contains(ff.property("POLYGON"), ff.literal(lon + ", " +lat));
-//                System.out.println(filter.toString());
 
-//                String cql = gc.getIdAttribute1Name(layerName) + "='" + id1.replace('_',' ');
-//                if (id2 != null)
-//                    cql += "' AND " +  gc.getIdAttribute2Name(layerName) + "='" + id2.replace('_',' ') + "'";
-//                else
-//                    cql += "'";
-                //System.out.println(cql);
                 FeatureIterator features = layer.getFeatures(CQL.toFilter("CONTAINS(the_geom,POINT(" + lon + " " +lat +"))")).features();
 
                 if (features.hasNext()) {
@@ -104,7 +91,7 @@ public class PointSearch {
                         results.add(new SearchResultItem(layerName,id));
                     }
                 }
-          //  }
+                features.close();
         }
     catch (IOException e1) {
             //FIXME: Log error - return http error code?
