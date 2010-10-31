@@ -239,7 +239,7 @@ public class LayersUtil {
             JSONObject jo = JSONObject.fromObject(slist);
             String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
             String rank = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("rankString");
-            return scientficName + "|" + rank;
+            return scientficName + "," + rank;
         } catch (Exception e) {
             System.out.println("Error getting scientific name");
             e.printStackTrace(System.out);
