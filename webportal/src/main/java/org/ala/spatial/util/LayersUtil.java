@@ -224,6 +224,31 @@ public class LayersUtil {
         return null;
     }
 
+    static public String getScientificNameRank(String lsid) {
+
+        String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
+
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(snUrl);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            JSONObject jo = JSONObject.fromObject(slist);
+            String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
+            String rank = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("rankString");
+            return scientficName + "|" + rank;
+        } catch (Exception e) {
+            System.out.println("Error getting scientific name");
+            e.printStackTrace(System.out);
+        }
+
+
+        return null;
+    }
+
 
     /**
      * tests if a String is an environmental layer name
