@@ -97,9 +97,9 @@ public class SamplingWSController {
                 System.out.println("Adding to download: " + it.next());
             }
 
-            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             //TabulationSettings.load();
-            //String currentPath = TabulationSettings.base_output_dir;
+            String currentPath = TabulationSettings.base_output_dir;
             long currTime = System.currentTimeMillis();
             String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);
@@ -144,7 +144,8 @@ public class SamplingWSController {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             } */
 
-            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            String currentPath = TabulationSettings.base_output_dir;
 
             String pid = Long.toString(System.currentTimeMillis());
             AnalysisJobSampling ajs = new AnalysisJobSampling(pid, currentPath, species, req.getParameter("envlist"), area);
@@ -185,9 +186,9 @@ public class SamplingWSController {
                 System.out.println("Adding to download: " + it.next());
             }
 
-            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             //TabulationSettings.load();
-            //String currentPath = TabulationSettings.base_output_dir;
+            String currentPath = TabulationSettings.base_output_dir;
             long currTime = System.currentTimeMillis();
             String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);

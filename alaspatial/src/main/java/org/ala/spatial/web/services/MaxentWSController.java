@@ -64,8 +64,8 @@ public class MaxentWSController {
             HttpSession session = req.getSession(true);
             long currTime = System.currentTimeMillis();
 
-            String currentPath = session.getServletContext().getRealPath("/");
-            //String currentPath = TabulationSettings.base_output_dir;
+            //String currentPath = session.getServletContext().getRealPath("/");
+            String currentPath = TabulationSettings.base_output_dir;
 
             String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
 
@@ -211,8 +211,8 @@ public class MaxentWSController {
             HttpSession session = req.getSession(true);
             long currTime = System.currentTimeMillis();
 
-            String currentPath = session.getServletContext().getRealPath("/");
-            //String currentPath = TabulationSettings.base_output_dir;
+            //String currentPath = session.getServletContext().getRealPath("/");
+            String currentPath = TabulationSettings.base_output_dir;
 
             String taxon = req.getParameter("taxonid");
 
@@ -368,7 +368,8 @@ public class MaxentWSController {
             HttpSession session = req.getSession(true);
             long currTime = System.currentTimeMillis();
 
-            String currentPath = session.getServletContext().getRealPath("/");
+            //String currentPath = session.getServletContext().getRealPath("/");
+            String currentPath = TabulationSettings.base_output_dir;
             String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
             String area = req.getParameter("area");
             String envlist = req.getParameter("envlist");

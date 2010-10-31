@@ -64,9 +64,9 @@ public class LayerImgWSController {
         try {
             pid = req.getParameter("pid");
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            //String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
             //TabulationSettings.load();
-            //String currentPath = TabulationSettings.base_output_dir;
+            String currentPath = TabulationSettings.base_output_dir;
             String outputpath = /* currentPath + */ "output/layers/" + pid + "/";
             String layerimage = outputpath + "img.png";            
             String layerlegend = outputpath + "legend.txt";
@@ -92,9 +92,9 @@ public class LayerImgWSController {
             String green = req.getParameter("green");	// 0-255
             String blue = req.getParameter("blue");		// 0-255
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            //String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
             //TabulationSettings.load();
-            //String currentPath = TabulationSettings.base_output_dir;
+            String currentPath = TabulationSettings.base_output_dir;
             String outputpath = currentPath + "output" + File.separator + "layers" + File.separator + pid + File.separator;
             String layerimage = outputpath + "img.png";
             
