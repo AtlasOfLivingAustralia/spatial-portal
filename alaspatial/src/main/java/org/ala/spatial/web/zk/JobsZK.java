@@ -117,7 +117,7 @@ public class JobsZK extends GenericForwardComposer {
         if(imgsrc == null) imgsrc = "";
         //jobimage.setSrc(TabulationSettings.alaspatial_path + imgsrc);
         imgpth.setText(imgsrc);
-        jobimage.setSrc("http://spatial-dev.ala.org.au/alaspatial/" + imgsrc);
+        jobimage.setSrc(TabulationSettings.base_output_url + "/" + imgsrc);
     }
 
     String get(String type) {
