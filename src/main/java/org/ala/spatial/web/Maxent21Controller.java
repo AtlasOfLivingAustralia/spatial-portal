@@ -243,8 +243,8 @@ public class Maxent21Controller extends GenericForwardComposer {
             System.out.println(">> " + s);
         }
 
-        String currentPath = Sessions.getCurrent().getWebApp().getRealPath(File.separator);
-        //String currentPath = TabulationSettings.base_output_dir;
+        //String currentPath = Sessions.getCurrent().getWebApp().getRealPath(File.separator);
+        String currentPath = TabulationSettings.base_output_dir;
 
 
         // dump the species data to a file
@@ -345,8 +345,8 @@ public class Maxent21Controller extends GenericForwardComposer {
             System.out.println(">> " + s);
         }
 
-        String currentPath = Sessions.getCurrent().getWebApp().getRealPath("/");
-        //String currentPath = TabulationSettings.base_output_dir;
+        //String currentPath = Sessions.getCurrent().getWebApp().getRealPath("/");
+        String currentPath = TabulationSettings.base_output_dir;
 
 
         // dump the species data to a file

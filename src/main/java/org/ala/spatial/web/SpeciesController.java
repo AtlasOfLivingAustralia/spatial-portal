@@ -180,6 +180,7 @@ public class SpeciesController {
     @ResponseBody
     List<ValidTaxonName> getTaxonByLsid(@PathVariable("lsid") String lsid) {
         try {
+            
             lsid = URLDecoder.decode(lsid, "UTF-8");
             lsid = lsid.replaceAll("__", ".");
             System.out.println("Starting out search for: " + lsid);
@@ -233,8 +234,8 @@ public class SpeciesController {
             lsid = URLDecoder.decode(lsid, "UTF-8");
             lsid = lsid.replaceAll("__", ".");
 
-            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
-            //String currentPath = TabulationSettings.base_output_dir;
+            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            String currentPath = TabulationSettings.base_output_dir;
             long currTime = System.currentTimeMillis();
             //String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator + currTime + File.separator;
             String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;

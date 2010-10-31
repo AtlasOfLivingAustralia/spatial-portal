@@ -61,8 +61,8 @@ public class MaxentController {
 
         HttpSession session = req.getSession(false);
 
-        String currentPath = session.getServletContext().getRealPath("/");
-        //String currentPath = TabulationSettings.base_output_dir;
+        //String currentPath = session.getServletContext().getRealPath("/");
+        String currentPath = TabulationSettings.base_output_dir;
         String sessionPath = currentPath + "sessiondata/" + session.getId() + "/";
 
         String query = (String) req.getParameter("spdata");

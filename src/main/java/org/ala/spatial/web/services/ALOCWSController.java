@@ -43,8 +43,8 @@ public class ALOCWSController {
 
             long currTime = System.currentTimeMillis();
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
-            //String currentPath = TabulationSettings.base_output_dir;
+            //String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            String currentPath = TabulationSettings.base_output_dir;
             String outputpath = currentPath + "output" + File.separator + "aloc" + File.separator + currTime + File.separator;
             String outputfile = outputpath + "aloc.png";
             String outputfile_orig = outputfile;
@@ -138,7 +138,8 @@ public class ALOCWSController {
 
             long currTime = System.currentTimeMillis();
 
-            String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            //String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
+            String currentPath = TabulationSettings.base_output_dir;
            
             ssets = new SpatialSettings();
 

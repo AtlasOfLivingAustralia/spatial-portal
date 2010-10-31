@@ -52,8 +52,8 @@ public class FilteringWSController {
 
             HttpSession session = req.getSession(true);
 
-            File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + File.separator));
-            //File workingDir = new File(TabulationSettings.base_output_dir + outputpath);
+            //File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + File.separator));
+            File workingDir = new File(TabulationSettings.base_output_dir + outputpath + currTime + File.separator);
             workingDir.mkdirs();
 
             return pid;
@@ -129,8 +129,8 @@ public class FilteringWSController {
 
                     HttpSession session = req.getSession(true);
 
-                    File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
-                    //File workingDir = new File(TabulationSettings.base_output_dir + outputpath);
+                    //File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
+                    File workingDir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "filtering" + File.separator + pid + File.separator);
 
                     File file = File.createTempFile("spl", ".png", workingDir);
                     //File file = new File(workingDir + "/filtering.png");
@@ -186,7 +186,8 @@ public class FilteringWSController {
         try {
             HttpSession session = req.getSession(true);
 
-            File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
+            //File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
+            File workingDir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "filtering" + File.separator + pid + File.separator);
 
             File file = File.createTempFile("spl", ".png", workingDir);
 
@@ -281,8 +282,8 @@ public class FilteringWSController {
 
                     HttpSession session = req.getSession(true);
 
-                    File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
-                    //File workingDir = new File(TabulationSettings.base_output_dir + outputpath);
+                    //File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
+                    File workingDir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "filtering" + File.separator + pid + File.separator);
 
                     File file = File.createTempFile("spl", ".png", workingDir);
                     //File file = new File(workingDir + "/filtering.png");
@@ -447,8 +448,8 @@ public class FilteringWSController {
             filenames[0] = "samples.csv";
             filenames[1] = "citation.csv";
 
-            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
-            //String currentPath = TabulationSettings.base_output_dir;
+            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            String currentPath = TabulationSettings.base_output_dir;
             long currTime = System.currentTimeMillis();
             String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);
@@ -563,7 +564,8 @@ public class FilteringWSController {
             }
 
 
-            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
+            String currentPath = TabulationSettings.base_output_dir;
             String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
