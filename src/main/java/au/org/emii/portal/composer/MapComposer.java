@@ -3730,7 +3730,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public MapLayer mapSpeciesByLsid(String lsid, String species, String rank) {
         if (species == null || (lsid != null && species.equalsIgnoreCase(lsid))) {
-            species = LayersUtil.getScientificName(lsid);
+            //species = LayersUtil.getScientificNameRank(lsid);
+            String speciesrank = LayersUtil.getScientificNameRank(lsid);
+            species = speciesrank.split("|")[0];
+            rank = speciesrank.split("|")[1];
         }
 
         //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
