@@ -23,7 +23,7 @@ public class EnvironmentalList extends Listbox {
     ArrayList<ListEntry> listEntries;
     float[][] distances;
     String[] layerNames;
-    float[] threasholds = {0.2f, 0.4f, 1.0f};
+    float[] threasholds = {0.1f, 0.3f, 1.0f};
     SimpleListModel listModel;
     MapComposer mapComposer;
     String satServer;
