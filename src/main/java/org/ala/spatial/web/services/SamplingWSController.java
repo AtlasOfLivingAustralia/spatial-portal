@@ -77,7 +77,7 @@ public class SamplingWSController {
             }
             
             SamplingService ss = new SamplingService();
-            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"));
+            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"));
 
             String citationpath = CitationService.generateCitationDataProviders(datafile);
 
@@ -173,7 +173,7 @@ public class SamplingWSController {
 
             /*
             SamplingService ss = new SamplingService();
-            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"));
+            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"));
 
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);
