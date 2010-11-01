@@ -53,7 +53,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping("/species")
 public class SpeciesController {
 
-    private final int DEFAULT_PIXEL_DISTANCE = 80;
+    private final int DEFAULT_PIXEL_DISTANCE = 50;
     private final int DEFAULT_MIN_RADIUS = 8;
     private final int DEFAULT_MAP_ZOOM = 4;
     private SpeciesDAO speciesDao;
@@ -137,36 +137,10 @@ public class SpeciesController {
             for (String s : aslist) {
                 slist.append(s).append("\n");
             }
-
-            //System.out.println(">>>>> dumping out s.names <<<<<<<<<<");
-            //System.out.println(slist);
-            //System.out.println(">>>>> dumping out c.names <<<<<<<<<<");
-//long t1 = System.currentTimeMillis();
-/*
-            List<CommonName> clist = speciesDao.getCommonNames(name);
-            Iterator<CommonName> it = clist.iterator();
-            String previousScientificName = "";
-            while (it.hasNext()) {
-            CommonName cn = it.next();
-            //System.out.println("> " + cn.getCommonname() + " -- " + cn.getScientificname());
-
-            //only add if different from previous (query is sorted by scientificName)
-            if (!previousScientificName.equals(cn.getScientificname())) {
-            int records = OccurrencesService.getSpeciesCount(cn.getScientificname());
-            slist.append(cn.getCommonname()).append(" / Scientific name: ").append(cn.getScientificname()).append(" / found ").append(records).append("\n");
-            previousScientificName = cn.getScientificname();
-            }
-            }*/
-//long t2 = System.currentTimeMillis();
-
+     
             String s = OccurrencesIndex.getCommonNames(name, aslist);
             slist.append(s);
 
-//long t3 = System.currentTimeMillis();
-
-//System.out.println("timings: DAO=" + (t2 - t1) + "ms; OI=" + (t3-t2) + "ms");
-
-            //System.out.println(">>>>> done <<<<<<<<<<");
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -186,24 +160,6 @@ public class SpeciesController {
             System.out.println("Starting out search for: " + lsid);
             List l = speciesDao.findById(lsid);
             System.out.println("re-returning " + l.size() + " records");
-
-            /*
-            int[] recs = OccurrencesIndex.lookup("institutionCode","WAM");
-            int[] recs2 = OccurrencesIndex.lookup("collectionCode","MAMM");
-            int[] recs3 = OccurrencesIndex.lookup("collectionCode","ARACH");
-
-            int[] recs23 = recs2+recs3;
-            sort(recs);
-            sort(recs23);
-            int[] finalRecs = removeNotInList(recs,recs23);
-
-            double[][] pts = OccurrencesIndex.getPointsPairs();
-            for (i=0;i<finalRecs.length;i++) {
-            pts[finalRecs[i]][0];
-            pts[finalRecs[i]][1];
-            }
-             */
-
 
             return l;
         } catch (UnsupportedEncodingException ex) {
