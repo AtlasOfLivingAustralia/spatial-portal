@@ -2628,7 +2628,7 @@ function updateClusterStyles(layer){
             //apply density for clusters
             var d = f[j].attributes['density']
             if(d != undefined){
-                f[j].style.fillOpacity = d * layer.style.fillOpacity;
+                f[j].style.fillOpacity = layer.style.fillOpacity * (d * 0.5 + 0.5);
             }
 
             //apply radius for clusters
