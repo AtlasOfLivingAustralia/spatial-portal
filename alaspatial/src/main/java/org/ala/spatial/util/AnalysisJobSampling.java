@@ -69,7 +69,7 @@ public class AnalysisJobSampling extends AnalysisJob {
             ssets = new SpatialSettings();
 
             SamplingService ss = new SamplingService();
-            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count"), this);
+            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"), this);
 
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);

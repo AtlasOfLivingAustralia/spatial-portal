@@ -454,7 +454,7 @@ public class FilteringService implements Serializable {
                 fw.append(samples[i]);
                 fw.append("\r\n");
                 
-                // exit if MAX_RECORD_COUNT reached
+                // exit if MAX_RECORD_COUNT_DOWNLOAD reached
                 if (i==TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD-1) break;
             }
 
