@@ -576,32 +576,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             return;
         }
+        
+        //FIXME: this is a hack, gaz should probably return links to metadata
+        String uid = "897";
+        if (link.contains("aus1"))
+            uid = "22";
+        if (link.contains("aus2"))
+            uid = "23";
+         if (link.contains("imcra"))
+            uid = "21";
+         if (link.contains("ibra"))
+            uid = "20";
+         if (link.contains("all_gaz"))
+            uid = "897";
+
         //add feature to the map as a new layer
+        String metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + uid;
         MapLayer mapLayer = addGeoJSON(label, geoServer + link);
+        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
+        mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);
+
 
         updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
 
-        //String pName = placeName.getValue();
-        //searchGazetteer(pName);
-
-//        Session session = (Session) Sessions.getCurrent();
-//        session.setAttribute("searchGazetteerTerm", pName);
-
-
-
-//        if (gazetteerSearchWindow == null) {
-//            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
-//                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
-//        } else {
-//            gazetteerSearchWindow.detach();
-//            gazetteerSearchWindow = (GazetteerSearchController) Executions.createComponents(
-//                    "/WEB-INF/zul/GazetteerSearchResults.zul", null, null);
-//        }
-//
-//        gazetteerSearchWindow.setId(java.util.UUID.randomUUID().toString());
-//        gazetteerSearchWindow.setMaximizable(true);
-//        gazetteerSearchWindow.setPosition("center");
-//        gazetteerSearchWindow.doOverlapped();
+     
 
     }
 
