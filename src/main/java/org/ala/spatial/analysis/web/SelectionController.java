@@ -999,7 +999,7 @@ public class SelectionController extends UtilityComposer {
             String slist = get.getResponseBodyAsString();
             System.out.println("register table and value with alaspatial: " + slist);
 
-            if (slist != null) {
+            if (slist != null && result == 200) {
                 wkt = "LAYER(" + layer + "," + slist + ")";
 
                 return wkt;
