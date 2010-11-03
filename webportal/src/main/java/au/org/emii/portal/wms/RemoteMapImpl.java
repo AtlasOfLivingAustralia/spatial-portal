@@ -392,7 +392,7 @@ public class RemoteMapImpl implements RemoteMap {
             int size = ((Integer)properties.get("size")).intValue();
             geoJSON.setSizeVal(size);
         } else {
-            geoJSON.setSizeVal(4);
+            geoJSON.setSizeVal(8);
         }
         if (properties.containsKey("envColour")) {
             String envColour = (String)properties.get("envColour");

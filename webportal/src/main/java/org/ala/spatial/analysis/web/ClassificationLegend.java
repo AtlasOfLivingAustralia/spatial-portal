@@ -4,10 +4,13 @@ import au.org.emii.portal.composer.MapComposer;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 import java.awt.Color;
 import java.net.URLDecoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ala.spatial.util.LegendMaker;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -60,7 +63,11 @@ public class ClassificationLegend extends UtilityComposer {
         pid = (String) (Executions.getCurrent().getArg().get("pid"));
         System.out.println("PID:" + pid);
         layerLabel = (String) (Executions.getCurrent().getArg().get("layer"));
-        layerLabel = URLDecoder.decode(layerLabel);
+        try {
+            layerLabel = URLDecoder.decode(layerLabel, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(ClassificationLegend.class.getName()).log(Level.SEVERE, null, ex);
+        }
         System.out.println("layer:" + layerLabel);
 
         buildLegend();
