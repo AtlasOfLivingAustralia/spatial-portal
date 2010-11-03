@@ -565,7 +565,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * Adds the currently selected gazetteer feature to the map
      */
     //public void onClick$gazSearch() {
-    public void onChange$gazetteerAuto() {
+     public void onChange$gazetteerAuto() {
 
         Comboitem ci = gazetteerAuto.getSelectedItem();
         String link = (String) ci.getValue();
@@ -576,7 +576,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             return;
         }
-        
+
         //FIXME: this is a hack, gaz should probably return links to metadata
         String uid = "897";
         if (link.contains("aus1"))
@@ -599,7 +599,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
 
-     
+
 
     }
 
@@ -4535,6 +4535,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         } catch (Exception e) {
             return "none";
+        }
+    }
+
+    public void selectColour(Object obj){
+        Div div = (Div) obj;
+        String style = div.getStyle();
+        String background_color = "background-color";
+        int a = style.indexOf(background_color);
+        if(a >= 0){
+            String colour = style.substring(a + background_color.length() + 2, a + background_color.length() + 8);
+            int r = Integer.parseInt(colour.substring(0,2),16);
+            int g = Integer.parseInt(colour.substring(2,4),16);
+            int b = Integer.parseInt(colour.substring(4,6),16);
+
+            redSlider.setCurpos(r);
+            greenSlider.setCurpos(g);
+            blueSlider.setCurpos(b);
+            redLabel.setValue(String.valueOf(r));
+            greenLabel.setValue(String.valueOf(g));
+            blueLabel.setValue(String.valueOf(b));
+
+            updateLegendImage();
+            onClick$applyChange();
         }
     }
 }

@@ -470,7 +470,74 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </div>
                                             <div id="colourChooser" visible="false">
 
-                                                <vbox>
+                                               <hbox>
+                                                <label value="Colours:" sclass="h3" />
+                                                <style dynamic="true">
+
+			<!-- cut/hide the vertical borders in the grid rows -->
+                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell,div.z-grid
+{
+border: none;
+overflow: hidden;
+zoom: 1;
+background: white;
+border-top: none;
+border-left: none;
+border-right: none;
+border-bottom: none;
+}
+    
+            </style>
+                <grid id="cpGrid" width="280px" sclass="noborder" >
+                    <rows>
+                        <row>
+                            <div style="background-color:#8b0000" height="12px" onClick="mapPortalPage.selectColour(self)" />
+                            <div style="background-color:#FF0000" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#CD5C5C" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#E9967A" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+
+                            <div style="background-color:#8B4513" height="12px" onClick="mapPortalPage.selectColour(self)" />
+                            <div style="background-color:#D2691E" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#F4A460" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#FFA500" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+
+                            <div style="background-color:#006400" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#008000" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#00FF00" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#90EE90" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+
+                            <div style="background-color:#191970" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#0000FF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#9999FF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#B0CFDE" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                        </row>
+                        <row>
+                            <div style="background-color:#4682B4" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#5F9EA0" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#00FFFF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#B0E0E6" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+
+                            <div style="background-color:#556B2F" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#BDB76B" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#FFFF00" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#FFE4B5" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+
+                            <div style="background-color:#4B0082" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#800080" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#FF00FF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#DDA0DD" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+
+                            <div style="background-color:#000000" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#777777" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#BBBBBB" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                            <div style="background-color:#FFFFFF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
+                        </row>
+                    </rows>
+                </grid>
+                <separator height="20px" />
+                                               </hbox>
+
+                                                <vbox >
                                                     <hbox>
 
                                                         <div style="padding-top:0px" width="60px">
