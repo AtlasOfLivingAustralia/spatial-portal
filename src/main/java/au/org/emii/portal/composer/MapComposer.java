@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
@@ -3046,7 +3047,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 boolean okToAdd = false;
                 MapLayer mlExisting = getMapLayer(label);
                 if (mlExisting == null) {
-                    System.out.println("okToAdd.1 true");
                     okToAdd = true;
                 } else if (!mlExisting.getUri().equals(uri)) {
                     // check if it's a different url
@@ -3054,10 +3054,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     // and assume the previous is removed.
                     //System.out.println("mlExisting.getUri(): " + mlExisting.getUri());
                     //System.out.println("mlExisting.newUri:   " + uri);
-                    System.out.println("okToAdd.2 true");
                     okToAdd = true;
                 } else {
-                    System.out.println("okToAdd.3 false");
                 }
 
                 if (okToAdd) {
@@ -4518,6 +4516,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String key = (String) it.next();
             MDC.put(key, attrs.get(key));
         }
+        ServletRequest htreq = (ServletRequest)Executions.getCurrent().getNativeRequest();
+        //MDC.put("userip", Executions.getCurrent().getRemoteAddr());
+        MDC.put("userip", htreq.getRemoteAddr());
+        System.out.println("MapComposer.OnCreate.ClientIP.NativeRequest: " + htreq.getRemoteAddr() + " - " + htreq.getRemoteHost());
+        System.out.println("header names: ");
+        Iterator it2 = Executions.getCurrent().getHeaderNames();
+        while (it2.hasNext()) {
+            String name = (String)it2.next();
+            System.out.println(name + "== " + Executions.getCurrent().getHeader(name));
+        }
+        System.out.println("MapComposer.OnCreate.ClientIP.NativeRequest.attrs: ");
+        Enumeration e = htreq.getAttributeNames();
+        while (e.hasMoreElements()) {
+            String name = (String)e.nextElement();
+            System.out.println(name + "== " + htreq.getAttribute(name));
+        }
+
         logger.info(msg);
         MDC.clear();
     }
