@@ -121,7 +121,7 @@ public class WMSController {
                     //msg = baseOutUrl + lsid.replace(":", "_") + ".png";
 
                     // output = generateOutput(baseOutUrl + lsid.replace(":", "_") + ".png", baseOutUrl + "legend_" + lsid.replace(":", "_") + ".png", isHeatmap);
-                    generateOutput(lsid.replace(":", "_") + ".png", "legend_" + lsid.replace(":", "_") + ".png", "");
+                    output = generateOutput(lsid.replace(":", "_") + ".png", "legend_" + lsid.replace(":", "_") + ".png", "");
 
                 } else {
                     System.out.println("Starting out search for: " + lsid);
@@ -386,10 +386,10 @@ public class WMSController {
             File legFile = new File(legfile);
             if (legFile.exists()) {
                 legUrl = "";
-                type = "points";
+                type = "heatmap";
             } else {
                 legUrl = baseOutUrl + legUrl;
-                type = "heatmap";
+                type = "points";
             }
         }
 
