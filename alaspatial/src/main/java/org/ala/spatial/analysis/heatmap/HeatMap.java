@@ -76,7 +76,7 @@ public class HeatMap {
 
     private void initImages() {
         System.out.println("Got base dir in initimages: " + baseDir.getAbsolutePath());
-        System.err.println("Got base dir in initimages: " + baseDir.getAbsolutePath()); 
+        System.err.println("Got base dir in initimages: " + baseDir.getAbsolutePath());
         try {
             backgroundImage = ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/mapaus1_white.png"));
             legendImage = ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/heatmap_key.png"));
@@ -104,7 +104,7 @@ public class HeatMap {
 //                new Color(255, 159, 159), new Color(255, 175, 175),
 //                new Color(255, 191, 191), new Color(255, 207, 207),
 //                Color.WHITE);
-        
+
         colorImage = createEvenlyDistributedGradientImage(new Dimension(
                 512, 20), new Color(255, 0, 0), new Color(255, 30, 0),
                 new Color(255, 60, 0), new Color(255, 90, 0),
@@ -112,7 +112,7 @@ public class HeatMap {
                 new Color(255, 180, 0), new Color(255, 210, 0),
                 new Color(255, 230, 0), new Color(255, 255, 0),
                 Color.WHITE);
-        
+
 //        colorImage = createEvenlyDistributedGradientImage(new Dimension(
 //                512, 20), Color.RED, Color.YELLOW, Color.GREEN.darker(),
 //                Color.CYAN, Color.BLUE,
@@ -132,17 +132,17 @@ public class HeatMap {
 
         /*
         try {
-            File ciOut = new File(baseDir.getAbsolutePath() + "/colorImage.png");
-            ImageIO.write(colorImage, "png", ciOut);
+        File ciOut = new File(baseDir.getAbsolutePath() + "/colorImage.png");
+        ImageIO.write(colorImage, "png", ciOut);
 
-            File miOut = new File(baseDir.getAbsolutePath() + "/monochromeImage.png");
-            ImageIO.write(monochromeImage, "png", miOut);
+        File miOut = new File(baseDir.getAbsolutePath() + "/monochromeImage.png");
+        ImageIO.write(monochromeImage, "png", miOut);
 
-            File bgOut = new File(baseDir.getAbsolutePath() + "/backgroundImage.png");
-            ImageIO.write(backgroundImage, "png", bgOut);
+        File bgOut = new File(baseDir.getAbsolutePath() + "/backgroundImage.png");
+        ImageIO.write(backgroundImage, "png", bgOut);
         } catch (Exception e) {
-            System.out.println("Unable to write monochromeImage:");
-            e.printStackTrace(System.out);
+        System.out.println("Unable to write monochromeImage:");
+        e.printStackTrace(System.out);
         }
          * 
          */
@@ -331,7 +331,8 @@ public class HeatMap {
         //int circleRadius = dotImage.getWidth() / 2;
         Graphics2D g = (Graphics2D) monochromeImage.getGraphics();
         float radius = 10f;
-        Shape circle = new Ellipse2D.Float(p.x - radius, p.y - radius, radius, radius);
+
+        Shape circle = new Ellipse2D.Float(p.x - (radius/2), p.y - (radius/2), radius, radius);
         //g.drawImage(dotImage, null, p.x - circleRadius, p.y - circleRadius);
         g.draw(circle);
         g.setPaint(Color.blue);
@@ -425,6 +426,23 @@ public class HeatMap {
             e.printStackTrace(System.out);
         }
         return null;
+    }
+
+    private void generateWMSRequest(String baseUrl, String lsid) {
+        try {
+
+            Color c = new Color(0, 0, 255);
+            String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
+            baseUrl = "http://spatial.ala.org.au/geoserver/wms?";
+            baseUrl += "service=WMS&version=1.1.0&request=GetMap&styles=&format=image/png";
+            baseUrl += "&layers=ALA:occurrences";
+            baseUrl += "&transparent=true"; //
+            baseUrl += "&env=color:" + hexColour + ";name:circle;size:8;opacity:1";
+            baseUrl += "&CQL_FILTER=";
+
+
+        } catch (Exception e) {
+        }
     }
 
     private void generateLogScaleCircle(int dPoints[][]) {
@@ -614,33 +632,33 @@ public class HeatMap {
             int keyHeight = 30; // 30px key height
             int keyWidth = 25; // 30px key width
 
-            width -= padding*2;
-            height -= padding*2;
+            width -= padding * 2;
+            height -= padding * 2;
 
             int scaleLength = scale.length;
-            String value = (scale[scaleLength-1]+1) + "-" + (scale[scaleLength-3]);
-            int left = padding*2 + keyWidth; // padding + width/2;
-            int top = padding + (keyHeight/2);
+            String value = (scale[scaleLength - 1] + 1) + "-" + (scale[scaleLength - 3]);
+            int left = padding * 2 + keyWidth; // padding + width/2;
+            int top = padding + (keyHeight / 2);
             cg.drawString(value, left, top);
 
-            value = (scale[scaleLength-3]+1) + "-" + (scale[scaleLength-5]);
-            top = padding + (keyHeight/2) + keyHeight;
+            value = (scale[scaleLength - 3] + 1) + "-" + (scale[scaleLength - 5]);
+            top = padding + (keyHeight / 2) + keyHeight;
             cg.drawString(value, left, top);
 
-            value = (scale[scaleLength-5]+1) + "-" + (scale[scaleLength-6]);
-            top = padding + (keyHeight/2) + (keyHeight*2);
+            value = (scale[scaleLength - 5] + 1) + "-" + (scale[scaleLength - 6]);
+            top = padding + (keyHeight / 2) + (keyHeight * 2);
             cg.drawString(value, left, top);
 
-            value = (scale[scaleLength-6]+1) + "-" + (scale[scaleLength-7]);
-            top = padding + (keyHeight/2) + (keyHeight*3);
+            value = (scale[scaleLength - 6] + 1) + "-" + (scale[scaleLength - 7]);
+            top = padding + (keyHeight / 2) + (keyHeight * 3);
             cg.drawString(value, left, top);
 
-            value = (scale[scaleLength-7]+1) + "-" + (scale[scaleLength-8]);
-            top = padding + (keyHeight/2) + (keyHeight*4);
+            value = (scale[scaleLength - 7] + 1) + "-" + (scale[scaleLength - 8]);
+            top = padding + (keyHeight / 2) + (keyHeight * 4);
             cg.drawString(value, left, top);
 
-            value = (scale[scaleLength-8]+1) + "+";
-            top = padding + (keyHeight/2) + (keyHeight*5);
+            value = (scale[scaleLength - 8] + 1) + "+";
+            top = padding + (keyHeight / 2) + (keyHeight * 5);
             cg.drawString(value, left, top);
 
             ImageIO.write(legendImage, "png", ciOut);
@@ -720,7 +738,7 @@ public class HeatMap {
             out.close();
         } catch (Exception e) {
             System.out.println("error in msgLog");
-            e.printStackTrace(System.out); 
+            e.printStackTrace(System.out);
         }
     }
 
@@ -731,19 +749,19 @@ public class HeatMap {
         /*
         File[] datafiles = baseDataDir.listFiles();
         for (File datafile : datafiles) {
-            if (datafile.isDirectory()) {
-                continue;
-            }
-            // "/Users/ajay/projects/tmp/heatmap/occurrencesMacropusRufus.csv"
-            String pfname = datafile.getName();
-            pfname = pfname.substring(0, pfname.lastIndexOf(".")) + ".png";
-            String fname = baseDataDir.getAbsolutePath() + "/../output/" + pfname;
-            System.out.println("Generating heatmap for : " + datafile.getName());
-            HeatMap hm = new HeatMap(baseDataDir, datafile.getName());
-            hm.loadData(datafile);
-            hm.drawOuput(fname, true);
+        if (datafile.isDirectory()) {
+        continue;
         }
-        */
+        // "/Users/ajay/projects/tmp/heatmap/occurrencesMacropusRufus.csv"
+        String pfname = datafile.getName();
+        pfname = pfname.substring(0, pfname.lastIndexOf(".")) + ".png";
+        String fname = baseDataDir.getAbsolutePath() + "/../output/" + pfname;
+        System.out.println("Generating heatmap for : " + datafile.getName());
+        HeatMap hm = new HeatMap(baseDataDir, datafile.getName());
+        hm.loadData(datafile);
+        hm.drawOuput(fname, true);
+        }
+         */
 
 
 //        System.out.println("0x33: " + toRgbText(0x33));
