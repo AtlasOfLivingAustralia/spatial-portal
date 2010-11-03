@@ -568,6 +568,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      public void onChange$gazetteerAuto() {
 
         Comboitem ci = gazetteerAuto.getSelectedItem();
+
+        //when no item selected find an exact match from listed items
+        if(ci == null){            
+            String txt = gazetteerAuto.getText();
+            for(Object o : gazetteerAuto.getItems()){
+                Comboitem c = (Comboitem) o;
+                if(c.getLabel().equalsIgnoreCase(txt)){
+                    gazetteerAuto.setSelectedItem(c);
+                    ci = c;
+                    break;
+                }
+            }
+        }
+
+        //exit if no match found
+        if(ci == null){
+            return;
+        }
+        
         String link = (String) ci.getValue();
         String label = ci.getLabel();
         if (settingsSupplementary != null) {
