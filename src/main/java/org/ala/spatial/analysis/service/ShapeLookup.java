@@ -134,7 +134,16 @@ public class ShapeLookup {
             //attach species points to this region
             lf.catagories = new int[1];
             lf.catagories[0] = pos;
-            cr.setAttribute("species_records",FilteringIndex.getCatagorySampleSet(lf));
+            if(cr.getAttribute("species_records") == null){
+                cr.setAttribute("species_records",FilteringIndex.getCatagorySampleSet(lf));
+            }
+            /*if(cr.getAttribute("cells") == null){
+                cr.setAttribute("cells",cr.getOverlapGridCells(
+                        TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
+                        TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
+                        TabulationSettings.grd_ncols, TabulationSettings.grd_nrows,
+                        null));
+            }*/
 
             addShape(id,cr);
 

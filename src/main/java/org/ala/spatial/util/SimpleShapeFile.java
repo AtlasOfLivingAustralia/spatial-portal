@@ -2,6 +2,7 @@ package org.ala.spatial.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -138,10 +139,9 @@ public class SimpleShapeFile extends Object implements Serializable {
 
             singleColumn = new short[regions.size()];
             for (int i = 0; i < singleColumn.length; i++) {
-                singleColumn[i] = (short)java.util.Arrays.binarySearch(singleLookup, dbf.getValue(i, column));
+                singleColumn[i] = (short) java.util.Arrays.binarySearch(singleLookup, dbf.getValue(i, column));
             }
             oos.writeObject(singleColumn);
-
 
             oos.close();
         } catch (Exception e) {
@@ -154,18 +154,35 @@ public class SimpleShapeFile extends Object implements Serializable {
      *
      * for each unique value in the shape file
      *
+     * Note: excludes regions that share the same column value as another.
+     *
      * @param filename
      */
     public void saveEachRegion(String filename, int column) {
-        for(int j=0;j<shapesreference.sr.region.size();j++){
-            try {
-                FileOutputStream fos = new FileOutputStream(filename + "_" + j);
-                BufferedOutputStream bos = new BufferedOutputStream(fos);
-                ObjectOutputStream oos = new ObjectOutputStream(bos);
-                oos.writeObject(shapesreference.sr.region.get(j));
-                oos.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+        int m, i;
+        for (m = 0; m < singleLookup.length; m++) {
+            for (i = 0; i < regions.size(); i++) {
+                if (singleColumn[i] == (short) m) {
+                    //check that no other column has this 'm' value
+                    int j=0;
+                    for(j=0;j<singleColumn.length;j++){
+                        if(i!=j && singleColumn[i] == singleColumn[j]){
+                            break;
+                        }
+                    }
+                    if(j == singleColumn.length) {
+                        try {
+                            FileOutputStream fos = new FileOutputStream(filename + "_" + m);
+                            BufferedOutputStream bos = new BufferedOutputStream(fos);
+                            ObjectOutputStream oos = new ObjectOutputStream(bos);
+                            ComplexRegion cr = shapesreference.sr.region.get(i);
+                            oos.writeObject(cr);
+                            oos.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
         }
     }
@@ -208,6 +225,100 @@ public class SimpleShapeFile extends Object implements Serializable {
             e.printStackTrace();
         }
         return cr;
+    }
+
+    /**
+     * loads a complex region, adds cells (used in GridCutter), save region
+     *
+     * @param filename
+     */
+    static public void addCellsToShapeRegion(String filename) {
+        SpatialLogger.log("addCellsToShapeRegion(" + filename + ") start");
+
+        int idx = 0;
+        LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>();
+        while (idx < 100000){
+            if(new File(filename + "_" + idx).exists()) {
+                lbq.add(filename + "_" + idx);
+            }
+            idx++;
+        }
+        CountDownLatch cdl = new CountDownLatch(idx);
+
+        //run these functions at the same time as other build_all requests
+        class AddCellsThread extends Thread {
+
+            public CountDownLatch cdl;
+            public LinkedBlockingQueue<String> lbq;
+
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        String filename = lbq.take();
+                        int p = filename.lastIndexOf('_');
+                        ComplexRegion cr = loadShapeInRegion(filename.substring(0, p), Integer.parseInt(filename.substring(p + 1)));
+                        cr.setAttribute("cells", cr.getOverlapGridCells(
+                                TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
+                                TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
+                                TabulationSettings.grd_ncols, TabulationSettings.grd_nrows,
+                                null));
+
+                        FileOutputStream fos = new FileOutputStream(filename);
+                        BufferedOutputStream bos = new BufferedOutputStream(fos);
+                        ObjectOutputStream oos = new ObjectOutputStream(bos);
+                        oos.writeObject(cr);
+                        oos.close();
+                        cdl.countDown();
+                    }
+                } catch (InterruptedException e){
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        AddCellsThread[] adc = new AddCellsThread[TabulationSettings.analysis_threads];
+        for (int i = 0; i < adc.length; i++) {
+            adc[i] = new AddCellsThread();
+            adc[i].cdl = cdl;
+            adc[i].lbq = lbq;
+            adc[i].start();
+        }
+
+        try {
+            cdl.await();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //end threads
+        for (int i = 0; i < adc.length; i++) {
+            adc[i].interrupt();
+        }
+
+        SpatialLogger.log("addCellsToShapeRegion(" + filename + ") end");
+    }
+
+    static public void main(String[] args) {
+        TabulationSettings.load();
+
+        if(args.length > 0){
+            SimpleShapeFile.addCellsToShapeRegion(
+                TabulationSettings.index_path
+                + args[0]);
+        }
+        /*
+        SimpleShapeFile.addCellsToShapeRegion(
+                TabulationSettings.index_path
+                + "aus2");
+        SimpleShapeFile.addCellsToShapeRegion(
+                TabulationSettings.index_path
+                + "imcra4_pb");
+        SimpleShapeFile.addCellsToShapeRegion(
+                TabulationSettings.index_path
+                + "ibra_reg_shape");
+        */
     }
 
     /**
@@ -485,7 +596,7 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         for (m = 0; m < lookup.length; m++) {
             for (i = 0; i < regions.size(); i++) {
-                if (singleColumn[i] == (short)m) {
+                if (singleColumn[i] == (short) m) {
                     map = new byte[height][width];
 
                     shapesreference.sr.region.get(i).getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, map);
@@ -531,9 +642,9 @@ public class SimpleShapeFile extends Object implements Serializable {
         if (pointsString == null) {
             return null;
         }
-        
+
         if (pointsString != null && pointsString.startsWith("LAYER")) {
-            String s = pointsString.substring(pointsString.lastIndexOf(',')+1,pointsString.length()-1);
+            String s = pointsString.substring(pointsString.lastIndexOf(',') + 1, pointsString.length() - 1);
             return ShapeLookup.getShape(s);
         }
 
@@ -1127,6 +1238,35 @@ class DBF extends Object implements Serializable {
         /* convert to sorted [] */
         String[] sa = new String[ts.size()];
         ts.toArray(sa);
+
+        return sa;
+    }
+
+    /**
+     * lists values that are occur on more than one row
+     *
+     * @param column index of column values to return
+     * @return sorted set of duplicated values in the column as String[]
+     */
+    public String[] getColumnMultipleValues(int column) {
+        int i, len;
+        TreeSet<String> ts = new TreeSet<String>();
+        TreeSet<String> dup = new TreeSet<String>();
+
+        /* build set */
+        len = dbfheader.getNumberOfRecords();
+        for (i = 0; i < len; i++) {
+            String v = getValue(i, column);
+            if (ts.contains(v)) {
+                dup.add(v);
+            } else {
+                ts.add(v);
+            }
+        }
+
+        /* convert to sorted [] */
+        String[] sa = new String[dup.size()];
+        dup.toArray(sa);
 
         return sa;
     }
