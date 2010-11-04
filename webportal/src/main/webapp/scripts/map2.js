@@ -494,7 +494,7 @@ function addFeatureSelectionTool() {
 //    clickEventHandler.fallThrough = false;
 //    alert("here");
 
-/*
+
     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
         defaultHandlerOptions: {
             'single': true,
@@ -522,24 +522,34 @@ function addFeatureSelectionTool() {
     map.addControl(mapClickControl);
     mapClickControl.activate();
     ///////////////////
-    //  setVectorLayersSelectable();
-    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-    layer_style.fillColor = "red";
-    layer_style.strokeColor = "red";
+//    //  setVectorLayersSelectable();
+//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+//    layer_style.fillColor = "red";
+//    layer_style.strokeColor = "red";
 
-    featureSelectLayer = new OpenLayers.Layer.Vector("Selected Feature Layer", {
-        style: layer_style
-    });
-    featureSelectLayer.setVisibility(true);
-    map.addLayer(featureSelectLayer);
+//    featureSelectLayer = new OpenLayers.Layer.Vector("Selected Feature Layer", {
+//        style: layer_style
+//    });
+//    featureSelectLayer.setVisibility(true);
+//    map.addLayer(featureSelectLayer);
 
-    */
+    
 }
 
+
 function pointSearch(e) {
- 
+    //alert("point search");
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
     parent.setSearchPoint(lonlat);
+}
+
+function removePointSearch() {
+    //remove the point search map click control
+    mapClickControl.deactivate();
+    map.removeControl(mapClickControl);
+    mapClickControl = null;
+    //reload the species click control
+    registerSpeciesClick();
 }
 
 function pointSpeciesSearch(e) {
@@ -1350,6 +1360,8 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
 
     wktLayer.isFixed = false;
     selectionLayers[selectionLayers.length] = wktLayer;
+
+    removePointSearch();
 
     return wktLayer;
 }

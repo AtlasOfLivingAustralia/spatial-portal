@@ -404,10 +404,10 @@ public class SelectionController extends UtilityComposer {
     public void onChange$searchPoint(Event event) {
         String lon = searchPoint.getValue().split(",")[0];
         String lat = searchPoint.getValue().split(",")[1];
-        Object llist = Sessions.getCurrent().getAttribute("layerlist");
+        Object llist = CommonData.getLayerListJSONArray();
         JSONArray layerlist = JSONArray.fromObject(llist);
         MapComposer mc = getThisMapComposer();
-
+        
         for (int i = 0; i < layerlist.size(); i++) {
             JSONObject jo = layerlist.getJSONObject(i);
             if (jo != null && jo.getString("type") != null
@@ -416,20 +416,27 @@ public class SelectionController extends UtilityComposer {
                 System.out.println("********" + jo.getString("name"));
                 if (mc.getMapLayer(jo.getString("displayname")) != null) {
                     String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"), geoServer);
+                    System.out.println(featureURI);
                     //add feature to the map as a new layer
 
                     String json = readGeoJSON(featureURI);
                     String wkt = wktFromJSON(json);
                     if (wkt.contentEquals("none")) {
+                       
                         break;
                     } else {
                         displayGeom.setValue(wkt);
+                   //     mc.removeFromList(mc.getMapLayer("Active Area"));
                         MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+                      
                         break;
                     }
                 }
             }
         }
+      //  String script = "window.mapFrame.removePointSearch();";
+       // mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        
     }
 
     /**
@@ -520,16 +527,21 @@ public class SelectionController extends UtilityComposer {
     private String wktFromJSON(String json) {
         try {
             JSONObject obj = JSONObject.fromObject(json);
+            JSONArray geometries = obj.getJSONArray("geometries");
+            String wkt = "";
+            for(int i=0;i<geometries.size();i++) {
+                String coords = geometries.getJSONObject(i).getString("coordinates");
 
-            String coords = obj.getJSONArray("geometries").getJSONObject(0).getString("coordinates");
-
-            if (obj.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("multipolygon")) {
-                String wkt = coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-                return wkt;
-            } else {
-                String wkt = coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))");
-                return wkt;
+                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
+                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
+                    
+                } else {
+                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))");
+                }
+               // if (i<geometries.size()-1)
+                    wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
             }
+            return wkt;
         } catch (JSONException e) {
             return "none";
         }
