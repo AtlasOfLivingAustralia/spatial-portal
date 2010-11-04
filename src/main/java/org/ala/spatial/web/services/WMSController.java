@@ -385,10 +385,10 @@ public class WMSController {
             String legfile = baseDir + File.separator + "legend_" + mapUrl;
             File legFile = new File(legfile);
             if (legFile.exists()) {
-                legUrl = "";
+                //legUrl = baseOutUrl + legUrl;
                 type = "heatmap";
             } else {
-                legUrl = baseOutUrl + legUrl;
+                legUrl = "";
                 type = "points";
             }
         }
@@ -397,8 +397,8 @@ public class WMSController {
 //            type = "points";
 //        }
         Map output = new HashMap();
-        output.put("mapUrl", mapUrl);
-        output.put("legendUrl", legUrl);
+        output.put("mapUrl", baseOutUrl + mapUrl);
+        output.put("legendUrl", baseOutUrl + legUrl);
         output.put("type", type);
 
         return output;
