@@ -76,6 +76,21 @@ public class LayersUtil {
     }
 
     /**
+     * gets first species layer found from active layers list
+     *
+     * @return species name found as String or null if none found
+     */
+    public String getFirstSpeciesLsidLayer() {
+        List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
+        for (MapLayer ml : activeLayers) {
+            if (ml.isDisplayed() && isSpeciesName(ml.getName())) {
+                return ml.getName() + "," + ml.getMapLayerMetadata().getSpeciesLsid();
+            }
+        }
+        return null;
+    }
+
+    /**
      * gets whole list of environmental or contextual layers
      * that appear in the active layers list
      *

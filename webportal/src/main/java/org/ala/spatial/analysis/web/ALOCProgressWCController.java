@@ -98,6 +98,7 @@ public class ALOCProgressWCController extends UtilityComposer {
 
             get.addRequestHeader("Accept", "text/plain");
 
+            client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
             

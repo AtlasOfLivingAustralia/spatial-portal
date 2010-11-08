@@ -9,6 +9,7 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Label;
@@ -98,6 +99,7 @@ public class MaxentProgressWCController extends UtilityComposer {
 
             get.addRequestHeader("Accept", "text/plain");
 
+            client.getHttpConnectionManager().getParams().setSoTimeout(timer.getDelay());
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
             return slist;
