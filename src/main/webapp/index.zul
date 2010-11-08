@@ -13,6 +13,7 @@
 <?page id="MapZul" title="${portalNaming.portalName}" cacheable="false"
 language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
 <?link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"?>
+<?meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" ?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:h="http://www.w3.org/1999/xhtml"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

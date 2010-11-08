@@ -638,30 +638,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String taxon = searchSpeciesAuto.getValue();
         String rank = "";
 
-        System.out.println("searchSpeciesAuto.getSelectedItem().getDescription(): " + searchSpeciesAuto.getSelectedItem().getDescription());
-
         String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
-        if (spVal.trim().contains(": ")) {  // spVal.trim().startsWith("species: ")
-            //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+        if (spVal.trim().contains(": ")) {  
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
-            //    mapSpeciesByName(taxon, searchSpeciesAuto.getValue());
+            
+            if (rank.equalsIgnoreCase("scientific name")) {
+                rank = "taxon"; 
+            }
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
-//            mapSpeciesByNameRank(taxon, rank, null);
         }
         mapSpeciesByLsid((String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
 
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
-
-        // check if its a common name, if so, grab the scientific name
-        //if (rdoCommonSearch.isChecked()) {
-        //    taxon = getScientificName();
-        //}
-        //taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
-        //mapSpeciesByName(taxon);
 
     }
 
@@ -4516,22 +4508,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String key = (String) it.next();
             MDC.put(key, attrs.get(key));
         }
-        ServletRequest htreq = (ServletRequest)Executions.getCurrent().getNativeRequest();
         //MDC.put("userip", Executions.getCurrent().getRemoteAddr());
-        MDC.put("userip", htreq.getRemoteAddr());
-        System.out.println("MapComposer.OnCreate.ClientIP.NativeRequest: " + htreq.getRemoteAddr() + " - " + htreq.getRemoteHost());
-        System.out.println("header names: ");
-        Iterator it2 = Executions.getCurrent().getHeaderNames();
-        while (it2.hasNext()) {
-            String name = (String)it2.next();
-            System.out.println(name + "== " + Executions.getCurrent().getHeader(name));
+        String userip = Executions.getCurrent().getHeader("x-forwarded-for");
+        if (StringUtils.isBlank(userip)) {
+            userip = ""; 
         }
-        System.out.println("MapComposer.OnCreate.ClientIP.NativeRequest.attrs: ");
-        Enumeration e = htreq.getAttributeNames();
-        while (e.hasMoreElements()) {
-            String name = (String)e.nextElement();
-            System.out.println(name + "== " + htreq.getAttribute(name));
-        }
+        MDC.put("userip", userip);
 
         logger.info(msg);
         MDC.clear();

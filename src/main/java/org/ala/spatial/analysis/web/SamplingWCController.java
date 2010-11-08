@@ -53,6 +53,7 @@ public class SamplingWCController extends UtilityComposer {
     LayersUtil layersUtil;
     private String pid;
     private String species;
+    private String taxon; 
 
     EnvironmentalList lbListLayers;
 
@@ -711,6 +712,7 @@ public class SamplingWCController extends UtilityComposer {
         String taxon = sac.getValue();
 
         String rank = "";
+        /*
         String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().startsWith("Scientific name")) {
             //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
@@ -725,6 +727,22 @@ public class SamplingWCController extends UtilityComposer {
         taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1);
         //mc.mapSpeciesByName(taxon);
         mc.mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
+         *
+         */
+        String spVal = sac.getSelectedItem().getDescription();
+        if (spVal.trim().contains(": ")) {
+            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
+            rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
+
+            if (rank.equalsIgnoreCase("scientific name")) {
+                rank = "taxon";
+            }
+        } else {
+            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+        }
+        System.out.println("mapping rank and species: " + rank + " - " + taxon);
+        mc.mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
+
     }
 
     /**
@@ -745,6 +763,11 @@ public class SamplingWCController extends UtilityComposer {
         String taxon = null;
 
         if(sac.getSelectedItem() == null && sac.getValue() != null){
+            String taxValue = sac.getValue();
+            if (taxValue.contains(" (")) {
+                taxValue = StringUtils.substringBefore(taxValue, " (");
+            }
+            sac.refresh(taxValue);
             sac.refresh(sac.getValue());
         }
 
@@ -796,13 +819,28 @@ public class SamplingWCController extends UtilityComposer {
      */
     public void callPullFromActiveLayers() {
         //get top species and list of env/ctx layers
-        String species = layersUtil.getFirstSpeciesLayer();
+        //String species = layersUtil.getFirstSpeciesLayer();
+        String speciesandlsid = layersUtil.getFirstSpeciesLsidLayer();
+        String species = null; 
+        String lsid = null;
+        if (StringUtils.isNotBlank(speciesandlsid)) {
+            species = speciesandlsid.split(",")[0];
+            lsid = speciesandlsid.split(",")[1];
+        }
+        if (StringUtils.isNotBlank(lsid)) {
+            taxon = lsid;
+        }
         String[] layers = layersUtil.getActiveEnvCtxLayers();
 
 
         /* set species from layer selector */
         if (species != null) {
             sac.setValue(species);
+            String tmpSpecies = species;
+            if (species.contains(" (")) {
+                tmpSpecies = StringUtils.substringBefore(species, " (");
+            }
+            sac.refresh(tmpSpecies);
         }
 
         /* set as selected each envctx layer found */
