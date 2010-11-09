@@ -431,6 +431,7 @@ public class SelectionController extends UtilityComposer {
                         displayGeom.setValue(feature_text);
                    //     mc.removeFromList(mc.getMapLayer("Active Area"));
                         MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+                        updateSpeciesList(false);
                       
                         break;
                     }
