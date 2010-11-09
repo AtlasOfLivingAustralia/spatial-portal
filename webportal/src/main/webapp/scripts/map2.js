@@ -79,6 +79,11 @@ var selecteFeature;
 // check if the Google Layer automatically got
 // switched between normal and hybrid around zoom level 16
 var autoBaseLayerSwitch = false;
+// 0 = normal
+// 1 = user-switch
+// 2 = auto-switch 
+var baseLayerSwitchStatus = 0;
+
 
 
 function stopCheckingLibraryLoaded() {
@@ -355,15 +360,22 @@ function buildMapReal() {
         //parent.reloadSpecies();
 
         if (map.zoom > 15) {
-            autoBaseLayerSwitch = true
+            autoBaseLayerSwitch = true;
+            if (baseLayerSwitchStatus != 1) {
+                baseLayerSwitchStatus = 2; 
+            }
             changeBaseLayer('hybrid');
         }
-    //        else {
-    //            if (autoBaseLayerSwitch) {
-    //                changeBaseLayer('normal');
-    //                autoBaseLayerSwitch = false;
-    //            }
-    //        }
+        else {
+            //if (autoBaseLayerSwitch) {
+            //    changeBaseLayer('normal');
+            //    autoBaseLayerSwitch = false;
+            //}
+            if (baseLayerSwitchStatus == 2) {
+                changeBaseLayer('normal');
+                baseLayerSwitchStatus = 0;
+            }
+        }
     });
 
 
@@ -482,17 +494,17 @@ function addFeatureSelectionTool() {
     areaSelectOn = true;
     mapClickControl = null;
     
-//    clickEventHandler = new OpenLayers.Handler.Click({
-//        'map': map
-//    }, {
-//        'click': function(e) {
-//            getpointInfo(e);
-//            mkpopup(e);
-//        }
-//    });
-//    clickEventHandler.activate();
-//    clickEventHandler.fallThrough = false;
-//    alert("here");
+    //    clickEventHandler = new OpenLayers.Handler.Click({
+    //        'map': map
+    //    }, {
+    //        'click': function(e) {
+    //            getpointInfo(e);
+    //            mkpopup(e);
+    //        }
+    //    });
+    //    clickEventHandler.activate();
+    //    clickEventHandler.fallThrough = false;
+    //    alert("here");
 
 
     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
@@ -521,7 +533,7 @@ function addFeatureSelectionTool() {
     mapClickControl = new OpenLayers.Control.Click();
     map.addControl(mapClickControl);
     mapClickControl.activate();
-    ///////////////////
+///////////////////
 //    //  setVectorLayersSelectable();
 //    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
 //    layer_style.fillColor = "red";
