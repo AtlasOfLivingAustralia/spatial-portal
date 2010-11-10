@@ -566,16 +566,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * Adds the currently selected gazetteer feature to the map
      */
     //public void onClick$gazSearch() {
-     public void onChange$gazetteerAuto() {
+    public void onChange$gazetteerAuto() {
 
         Comboitem ci = gazetteerAuto.getSelectedItem();
 
         //when no item selected find an exact match from listed items
-        if(ci == null){            
+        if (ci == null) {
             String txt = gazetteerAuto.getText();
-            for(Object o : gazetteerAuto.getItems()){
+            for (Object o : gazetteerAuto.getItems()) {
                 Comboitem c = (Comboitem) o;
-                if(c.getLabel().equalsIgnoreCase(txt)){
+                if (c.getLabel().equalsIgnoreCase(txt)) {
                     gazetteerAuto.setSelectedItem(c);
                     ci = c;
                     break;
@@ -584,10 +584,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         //exit if no match found
-        if(ci == null){
+        if (ci == null) {
             return;
         }
-        
+
         String link = (String) ci.getValue();
         String label = ci.getLabel();
         if (settingsSupplementary != null) {
@@ -599,16 +599,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //FIXME: this is a hack, gaz should probably return links to metadata
         String uid = "897";
-        if (link.contains("aus1"))
+        if (link.contains("aus1")) {
             uid = "22";
-        if (link.contains("aus2"))
+        }
+        if (link.contains("aus2")) {
             uid = "23";
-         if (link.contains("imcra"))
+        }
+        if (link.contains("imcra")) {
             uid = "21";
-         if (link.contains("ibra"))
+        }
+        if (link.contains("ibra")) {
             uid = "20";
-         if (link.contains("all_gaz"))
+        }
+        if (link.contains("all_gaz")) {
             uid = "897";
+        }
 
         //add feature to the map as a new layer
         String metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + uid;
@@ -3925,6 +3930,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             chkPointsCluster.setLabel(" Display species as clusters");
             chkPointsCluster.setChecked(false);
 
+            lsid = StringUtils.replace(lsid, ".", "__");
+            try {
+                lsid = URLEncoder.encode(lsid, "UTF-8");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             addLsidBoundingBoxToMetadata(md, lsid);
         }
 
@@ -4554,16 +4566,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void selectColour(Object obj){
+    public void selectColour(Object obj) {
         Div div = (Div) obj;
         String style = div.getStyle();
         String background_color = "background-color";
         int a = style.indexOf(background_color);
-        if(a >= 0){
+        if (a >= 0) {
             String colour = style.substring(a + background_color.length() + 2, a + background_color.length() + 8);
-            int r = Integer.parseInt(colour.substring(0,2),16);
-            int g = Integer.parseInt(colour.substring(2,4),16);
-            int b = Integer.parseInt(colour.substring(4,6),16);
+            int r = Integer.parseInt(colour.substring(0, 2), 16);
+            int g = Integer.parseInt(colour.substring(2, 4), 16);
+            int b = Integer.parseInt(colour.substring(4, 6), 16);
 
             redSlider.setCurpos(r);
             greenSlider.setCurpos(g);
