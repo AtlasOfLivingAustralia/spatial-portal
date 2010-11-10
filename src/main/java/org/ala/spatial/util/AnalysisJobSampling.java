@@ -4,17 +4,13 @@
  */
 package org.ala.spatial.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
-import org.ala.spatial.analysis.service.AlocService;
 import org.ala.spatial.analysis.service.FilteringService;
-import org.ala.spatial.analysis.service.LayerImgService;
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
 
@@ -68,7 +64,7 @@ public class AnalysisJobSampling extends AnalysisJob {
             SpatialSettings ssets;
             ssets = new SpatialSettings();
 
-            SamplingService ss = new SamplingService();
+            SamplingService ss = SamplingService.newForLSID(species);
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"), this);
 
             Vector<String> vFiles = new Vector<String>();
@@ -85,9 +81,9 @@ public class AnalysisJobSampling extends AnalysisJob {
             File fDir = new File(outputpath);
             fDir.mkdir();
 
-            String [] n = OccurrencesIndex.getFirstName(species);
+            String[] n = OccurrencesIndex.getFirstName(species);
             String speciesName = "";
-            if(n != null){
+            if (n != null) {
                 speciesName = n[0];
             }
             String outfile = fDir.getAbsolutePath() + File.separator + speciesName.replaceAll(" ", "_") + "_sample_" + getName() + ".zip";

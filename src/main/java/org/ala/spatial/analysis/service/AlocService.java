@@ -5,10 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
 import org.ala.spatial.analysis.index.LayerFilter;
-
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
 import org.ala.spatial.util.AnalysisJobAloc;
@@ -33,9 +31,10 @@ public class AlocService {
      * @param filename output filename for image out
      * @param layers list of layers to include in ALOC as Layer[]
      * @param numberofgroups number groups to generate as int
-     * @param region option restrictive region
+     * @param region option restrictive region as SimpleRegion
+     * @param envelope option restrictive envelope of LayerFilter[]
      * @param id session id as String
-     * @return groups as int[] TODO: ???
+     * @return groups as int[]
      */
     public static int[] run(String filename, Layer[] layers, int numberofgroups, SimpleRegion region, LayerFilter[] envelope, String id) {
         return run(filename, layers, numberofgroups, region, envelope, id, null);
@@ -101,7 +100,7 @@ public class AlocService {
     static void exportMetadata(String filename, int numberOfGroups, Layer[] layers, String pid, String coloursAndMeansUrl, String area, int width, int height, double minx, double miny, double maxx, double maxy) {
         try {
             FileWriter fw = new FileWriter(filename);
-            int i, j;
+            int i;
 
             fw.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"> <html> <head> <meta http-equiv=\"Content-Type\" content=\"text/html; charset=MacRoman\"> <title>Layer information</title> <link rel=\"stylesheet\" href=\"/alaspatial/styles/style.css\" type=\"text/css\" media=\"all\" /> </head> ");
 

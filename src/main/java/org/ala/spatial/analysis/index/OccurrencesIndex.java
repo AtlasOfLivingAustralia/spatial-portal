@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.analysis.cluster.Record;
+import org.ala.spatial.analysis.service.LoadedPointsService;
+import org.ala.spatial.analysis.service.SamplingLoadedPointsService;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
@@ -244,6 +246,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
 
         return null;
+    }
+
+    public static void putLSIDBoundingBox(String lsid, String bb) {
+        lsidBoundingBox.put(lsid, bb);
     }
     /**
      * all occurrences data
@@ -1070,38 +1076,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             indexedRecord[0] = single_index[pos];
             return indexedRecord;
         }
-
-        /*if (all_indexes.size() > 0) {
-        ArrayList<IndexedRecord> matches = new ArrayList<IndexedRecord>(all_indexes.size());
-        int i = 0;
-        for (IndexedRecord[] ir : all_indexes) {
-        // binary search
-        IndexedRecord searchfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) 0);
-
-        int pos = java.util.Arrays.binarySearch(ir, searchfor,
-        new Comparator<IndexedRecord>() {
-
-        public int compare(IndexedRecord r1, IndexedRecord r2) {
-        return r1.name.compareTo(r2.name);
-        }
-        });
-
-        if (pos >= 0 && pos < ir.length) {
-        matches.add(ir[pos]);
-        break;
-        }
-
-        i++;
-        }
-
-        // return something if found as []
-        if (matches.size() > 0) {
-        IndexedRecord[] indexedRecord = new IndexedRecord[matches.size()];
-        matches.toArray(indexedRecord);
-        return indexedRecord;
-        }
-        }*/
-
+                
         return null;
     }
     static int[] speciesNumberInRecordsOrder = null;
@@ -1716,7 +1691,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             /*LineNumberReader br = new LineNumberReader(
             new FileReader(TabulationSettings.index_path
             + SORTED_FILENAME));
-
+            
             for (i = 0; i < records.length; i++) {
             int loopcounter = records[i] - br.getLineNumber();
             while (loopcounter > 0) {
@@ -2518,11 +2493,11 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
 
             //test each potential match
-            if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
+            if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_FULLY_PRESENT) {
                 for (j = start; j < end; j++) {
                     records.add(new Integer(grid_points_idx[j]));
                 }
-            } else {
+            } else if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
                 for (j = start; j < end; j++) {
                     if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                         records.add(new Integer(grid_points_idx[j]));
@@ -2599,13 +2574,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
 
                 //test each potential match, otherwise add
-                if (mask[cells[i][0]][cells[i][1]] == SimpleRegion.GI_FULLY_PRESENT) {
+                if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_FULLY_PRESENT) {
                     for (j = start; j < end; j++) {
                         if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
                             bitset.set(speciesNumberInRecordsOrder[grid_points_idx[j]]);
                         }
                     }
-                } else if (r.getType() == SimpleRegion.BOUNDING_BOX || mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+                } else if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
                     for (j = start; j < end; j++) {
                         if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
                             if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {   //TODO: remove this validation, should not be required
@@ -2730,7 +2705,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         //     errorCount++;
                         // }
                     }
-                } else if (r.getType() == SimpleRegion.BOUNDING_BOX || mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+                } else if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
                     //TODO: actually make a mask for bounding boxes
                     for (j = start; j < end; j++) {
                         if (r.isWithin(grid_points[j][0], grid_points[j][1])) {
@@ -2977,135 +2952,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         return sb.toString();
     }
-    /*static Record[] cluster_records = null;
-    static void loadClusterRecords(){
-    if(cluster_records != null){
-    return;
-    }
-    loadIndexes();
-    getPointsPairs();
-
-    //check for existing file, load if it exists
-    try{
-    File f = new File(TabulationSettings.index_path
-    + "CLUSTER_RECORDS.dat");
-    if(f.exists()){
-    FileInputStream fis = new FileInputStream(
-    TabulationSettings.index_path
-    + "CLUSTER_RECORDS.dat");
-    BufferedInputStream bis = new BufferedInputStream(fis);
-    ObjectInputStream ois = new ObjectInputStream(bis);
-    cluster_records = (Record[]) ois.readObject();
-    ois.close();
-    }
-    }catch(Exception e){
-    e.printStackTrace();
-    }
-
-    int sciname_pos = -1;
-    int prec_pos = -1;
-    for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
-    if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("s")) {
-    sciname_pos = i;
-    }
-    if (TabulationSettings.geojson_property_names[i].equalsIgnoreCase("u")) {
-    prec_pos = i;
-    }
-    }
-
-    cluster_records = new Record[all_points.length];
-
-
-    System.out.println("Cluster records not built, building now");
-
-    try {
-    BufferedReader br = new BufferedReader(
-    new FileReader(
-    TabulationSettings.index_path
-    + SORTED_FILENAME));
-    String s;
-    String[] sa;
-
-    int recordpos = 0;
-
-    while ((s = br.readLine()) != null) {
-    if(recordpos % 100000 == 0){
-    System.out.println("progress: " + recordpos);
-    }
-    sa = s.split(",");
-
-    if (sa[TabulationSettings.geojson_id] != null) {
-    if (!sa[TabulationSettings.geojson_id].toLowerCase().equals("null")) {
-    cluster_records[recordpos] =
-    new Record(sa[TabulationSettings.geojson_id],
-    sa[TabulationSettings.geojson_property_fields[sciname_pos]],
-    Double.parseDouble(sa[TabulationSettings.geojson_longitude]),
-    Double.parseDouble(sa[TabulationSettings.geojson_latitude]),
-    sa[TabulationSettings.geojson_property_fields[prec_pos]]);
-
-    }else {
-    cluster_records[recordpos] = null;
-    }
-    }
-
-    recordpos++;
-    }
-
-    br.close();
-    } catch (Exception e) {
-    SpatialLogger.log("cluster records, build", e.toString());
-    e.printStackTrace();
-    }
-
-    //export cluster records
-    try{
-    FileOutputStream fos = new FileOutputStream(
-    TabulationSettings.index_path
-    + "CLUSTER_RECORDS.dat");
-    BufferedOutputStream bos = new BufferedOutputStream(fos);
-    ObjectOutputStream oos = new ObjectOutputStream(bos);
-    oos.writeObject(cluster_records);
-    oos.close();
-    }catch(Exception e){
-    e.printStackTrace();
-    }
-    }
-    
-    public static Vector sampleSpeciesForClustering(String species, SimpleRegion region, int max_records){
-    Vector records = new Vector();
-
-    if(species != null){
-    IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(species);
-    if(ir == null || ir.length == 0){
-    return null;
-    }
-    int count = ir[0].record_end - ir[0].record_start + 1;
-    if(max_records < count) count = max_records;
-    int end = count + ir[0].record_start;
-    if(region == null){
-    for(int i=ir[0].record_start;i<=end;i++){
-    records.add(cluster_records[i]);
-    }
-    }else{
-    for(int i=ir[0].record_start;i<=end;i++){
-    if(region.isWithin(all_points[i][0],all_points[i][1])){
-    records.add(cluster_records[i]);
-    }
-    }
-    }
-    }else if(region != null) {
-    int [] r = getRecordsInside(region);
-
-    int count = r.length;
-    if(max_records < count) count = max_records;
-
-    for(int i=0;i<count;i++){
-    records.add(cluster_records[r[i]]);
-    }
-    }
-
-    return records;
-    }*/
     static String[][] cluster_records = null;
 
     static void loadClusterRecords() {
@@ -3253,6 +3099,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @return
      */
     public static Vector sampleSpeciesForClustering(String species, SimpleRegion region1, SimpleRegion region2, ArrayList<Integer> rec, int max_records) {
+        if (SamplingLoadedPointsService.isLoadedPointsLSID(species)) {
+            return sampleLoadedPointsForClustering(species, region1, region2, rec, max_records);
+        }
+
         Vector records = new Vector();
 
         int rec_pos = 0;
@@ -3330,6 +3180,42 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
             }
         }
+        return records;
+    }
+
+    /**
+     * return Vector of Record
+     *
+     * @param species lsid as String, or null
+     * @param region SimpleRegion, or null
+     * @param max_records limit on records to find
+     * @return
+     */
+    public static Vector sampleLoadedPointsForClustering(String id, SimpleRegion region1, SimpleRegion region2, ArrayList<Integer> rec, int max_records) {
+        Vector records = new Vector();
+
+        int rec_pos = 0;
+
+
+        double[][] points = LoadedPointsService.getPoints(id, null, null);
+        String[] ids = LoadedPointsService.getIds(id);
+
+        if (points == null) {
+            return records;
+        }
+        for (int i = 0; i < points.length && records.size() < max_records; i++) {
+            if ((region1 == null || (region1.isWithin(points[i][0], points[i][1])))
+                    && (region2 == null || (region2.isWithin(points[i][0], points[i][1])))) {
+                records.add(
+                        new Record(
+                        "",
+                        ids[i],
+                        points[i][0],
+                        points[i][1],
+                        ""));
+            }
+        }
+
         return records;
     }
 
@@ -3676,6 +3562,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
     static public String getLsidBoundingBox(String lsid) {
         String bb = lsidBoundingBox.get(lsid);
         if (bb == null) {
+            String s = LoadedPointsService.getBoundingBox(lsid);
+            if (s != null) {
+                return s;
+            }
             IndexedRecord[] ir = filterSpeciesRecords(lsid);
             if (ir != null && ir.length > 0) {
                 double minx = all_points[ir[0].record_start][0];

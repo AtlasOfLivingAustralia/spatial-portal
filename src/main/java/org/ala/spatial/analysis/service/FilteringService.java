@@ -1,6 +1,5 @@
 package org.ala.spatial.analysis.service;
 
-import bsh.This;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -16,11 +15,9 @@ import java.util.BitSet;
 import java.util.Date;
 import java.util.Vector;
 import org.ala.spatial.analysis.cluster.Record;
-
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.index.FilteringIndex;
-import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
@@ -53,7 +50,6 @@ import org.ala.spatial.util.TabulationSettings;
 public class FilteringService implements Serializable {
 
     static final long serialVersionUID = 6598125472355988943L;
-
     /**
      * maintained list of filters applied
      * 
@@ -158,7 +154,7 @@ public class FilteringService implements Serializable {
      */
     void updateFilter(LayerFilter new_filter) {
         if (layerfilters.size() == 0
-                || !layerfilters.get(layerfilters.size() - 1).layer.name.equals(new_filter.layer.name)) {
+                || !layerfilters.get(layerfilters.size() - 1).layer.name.equalsIgnoreCase(new_filter.layer.name)) {
             //add
 
 
@@ -274,7 +270,7 @@ public class FilteringService implements Serializable {
      * @param region bounding region for results, or null for none
      * @return number of unqiue species as int[0], number of occurrences as int[1]
      */
-    static public int [] getSpeciesCount(String session_id_, SimpleRegion region) {
+    static public int[] getSpeciesCount(String session_id_, SimpleRegion region) {
         int i;
 
         BitSet species;
@@ -294,7 +290,7 @@ public class FilteringService implements Serializable {
             /* get top filter speciesrecord */
             ArrayList<Integer> rk = fs.getTopSpeciesRecord();
             if (rk == null) {
-                int [] ret = new int[2];
+                int[] ret = new int[2];
                 ret[0] = 0;
                 ret[1] = 0;
                 return ret;
@@ -314,10 +310,10 @@ public class FilteringService implements Serializable {
             }
         }
 
-       int [] ret = new int[2];
-                ret[0] = count;
-                ret[1] = occurrencesCount.intValue();
-                return ret;
+        int[] ret = new int[2];
+        ret[0] = count;
+        ret[1] = occurrencesCount.intValue();
+        return ret;
     }
 
     /**
@@ -425,7 +421,7 @@ public class FilteringService implements Serializable {
             return "";
         }
 
-        if(records.length > maximum_records){
+        if (records.length > maximum_records) {
             records = java.util.Arrays.copyOf(records, maximum_records);
         }
 
@@ -453,9 +449,11 @@ public class FilteringService implements Serializable {
             for (i = 0; i < samples.length; i++) {
                 fw.append(samples[i]);
                 fw.append("\r\n");
-                
+
                 // exit if MAX_RECORD_COUNT_DOWNLOAD reached
-                if (i==TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD-1) break;
+                if (i == TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD - 1) {
+                    break;
+                }
             }
 
             fw.close();
@@ -536,9 +534,9 @@ public class FilteringService implements Serializable {
 
         int nCols = samples[0].split(",").length;
         String[][] output = new String[samples.length][nCols];
-        for(i=0;i<samples.length;i++){
+        for (i = 0; i < samples.length; i++) {
             int j = 0;
-            for(String s : samples[i].split(",")){
+            for (String s : samples[i].split(",")) {
                 output[i][j++] = s;
             }
         }
@@ -562,7 +560,7 @@ public class FilteringService implements Serializable {
         /* check for "none" session */
         Vector dataRecords = null;
         if (session_id_.equals("none")) {
-            dataRecords = OccurrencesIndex.sampleSpeciesForClustering(null,region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+            dataRecords = OccurrencesIndex.sampleSpeciesForClustering(null, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
         } else {
             return null;    //not supported right now
         }
@@ -572,36 +570,38 @@ public class FilteringService implements Serializable {
         int count = 0;
 
         //-1 on samples.length for header
-        int partCount = (int)Math.ceil((dataRecords.size()) / (double)max_parts_size);
+        int partCount = (int) Math.ceil((dataRecords.size()) / (double) max_parts_size);
 
         //test for filename, return if it exists
         String name = "area_" + String.valueOf(System.currentTimeMillis());
         File file;
         String filename = outputpath + File.separator + name;
-        try{
-            file = new File(filename + "_" + (partCount-1));
-            if(file.exists()){
+        try {
+            file = new File(filename + "_" + (partCount - 1));
+            if (file.exists()) {
                 return name + "\n" + partCount;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        for(int j=1;j<dataRecords.size();j+=max_parts_size){
+        for (int j = 1; j < dataRecords.size(); j += max_parts_size) {
 
             StringBuffer sbGeoJSON = new StringBuffer();
             sbGeoJSON.append("{");
             sbGeoJSON.append("\"type\": \"FeatureCollection\",");
             sbGeoJSON.append("\"features\": [");
             int len = j + max_parts_size;
-            if(len > dataRecords.size()){
+            if (len > dataRecords.size()) {
                 len = dataRecords.size();
             }
             for (i = j; i < len; i++) {
-                String s = getRecordAsGeoJSON((Record)dataRecords.get(i));
-                if(s != null){
+                String s = getRecordAsGeoJSON((Record) dataRecords.get(i));
+                if (s != null) {
                     sbGeoJSON.append(s);
-                    if (i<len-1) sbGeoJSON.append(",");
+                    if (i < len - 1) {
+                        sbGeoJSON.append(",");
+                    }
                 }
             }
             sbGeoJSON.append("],");
@@ -670,18 +670,16 @@ public class FilteringService implements Serializable {
         sbRec.append("   },");
         sbRec.append("  \"geometry_name\":\"the_geom\",");
         sbRec.append("  \"properties\":{");
-        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
-            sbRec.append("      \"").append(TabulationSettings.geojson_property_names[i])
-                    .append("\":\"").append(recdata[TabulationSettings.geojson_property_fields[i]])
-                    .append("\"");
-            if(i < TabulationSettings.geojson_property_names.length-1){
+        for (int i = 0; i < TabulationSettings.geojson_property_names.length; i++) {
+            sbRec.append("      \"").append(TabulationSettings.geojson_property_names[i]).append("\":\"").append(recdata[TabulationSettings.geojson_property_fields[i]]).append("\"");
+            if (i < TabulationSettings.geojson_property_names.length - 1) {
                 sbRec.append(",");
             }
         }
         sbRec.append("  }");
         sbRec.append("}");
 
-        return sbRec.toString(); 
+        return sbRec.toString();
 
     }
 
@@ -797,14 +795,10 @@ public class FilteringService implements Serializable {
         sbRec.append("  \"geometry_name\":\"the_geom\",");
         sbRec.append("  \"properties\":{");
 
-            sbRec.append("      \"").append("u")
-                    .append("\":\"").append(record.getUncertainity())
-                    .append("\"");
-                sbRec.append(",");
+        sbRec.append("      \"").append("u").append("\":\"").append(record.getUncertainity()).append("\"");
+        sbRec.append(",");
 
-            sbRec.append("      \"").append("oi")
-                    .append("\":\"").append(record.getId())
-                    .append("\"");
+        sbRec.append("      \"").append("oi").append("\":\"").append(record.getId()).append("\"");
 
         sbRec.append("  }");
         sbRec.append("}");
@@ -812,6 +806,4 @@ public class FilteringService implements Serializable {
         return sbRec.toString();
 
     }
-
-
 }

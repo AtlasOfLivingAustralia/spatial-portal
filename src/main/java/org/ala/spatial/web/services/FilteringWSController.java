@@ -138,7 +138,7 @@ public class FilteringWSController {
                     filteringImage2 = new FilteringImage(file.getPath(), colours[layer_depth % colours.length]);
 
                     if (cType.equalsIgnoreCase("environmental")) {
-                        filteringImage2.applyFilter(cLayer, layerfilter.getMinimum_value(), layerfilter.getMaximum_value());
+                        filteringImage2.applyFilter(layerfilter.layer.name, layerfilter.getMinimum_value(), layerfilter.getMaximum_value());
                     } else {
 
                         int j;
@@ -148,7 +148,7 @@ public class FilteringWSController {
                             for (j = 0; j < values_show.length; j++) {
                                 show_list[j] = Integer.parseInt(values_show[j]);
                             }
-                            filteringImage2.applyFilter(cLayer, show_list);
+                            filteringImage2.applyFilter(layerfilter.layer.name, show_list);
                         }
                     }
 
@@ -291,7 +291,7 @@ public class FilteringWSController {
                     filteringImage2 = new FilteringImage(file.getPath(), colours[layer_depth % colours.length]);
 
                     if (cType.equalsIgnoreCase("environmental")) {
-                        filteringImage2.applyFilter(cLayer, layerfilter.getMinimum_value(), layerfilter.getMaximum_value());
+                        filteringImage2.applyFilter(layerfilter.layer.name, layerfilter.getMinimum_value(), layerfilter.getMaximum_value());
                     } else {
 
                         int j;
@@ -301,7 +301,7 @@ public class FilteringWSController {
                             for (j = 0; j < values_show.length; j++) {
                                 show_list[j] = Integer.parseInt(values_show[j]);
                             }
-                            filteringImage2.applyFilter(cLayer, show_list);
+                            filteringImage2.applyFilter(layerfilter.layer.name, show_list);
                         }
                     }
 

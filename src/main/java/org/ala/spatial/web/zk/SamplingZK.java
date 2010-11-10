@@ -100,13 +100,13 @@ public class SamplingZK extends Window {
 
 			System.out.println("sampling");
 
-			SamplingService ss = new SamplingService();
-
 			String species_long = bb.getValue().toLowerCase();
 
 			if(species_long == null || species_long.length() < 5){
 				return; //TODO make nice
 			}
+
+                        SamplingService ss = SamplingService.newForLSID(species_long);
 
 			String species = species_long;
 			String type;
@@ -145,7 +145,7 @@ public class SamplingZK extends Window {
     		}
     		SimpleRegion sr = SimpleRegion.parseSimpleRegion(points);
 
-			String csv_filename = ss.sampleSpecies(species, layers, sr, null);
+			String csv_filename = ss.sampleSpeciesAsCSV(species, layers, sr, null, TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD);
 
 			//org.zkoss.zhtml.Filedownload.save(csv,"text/plain",species + ".csv");
 
@@ -203,9 +203,6 @@ public class SamplingZK extends Window {
 			}
 	}
 
-	/**
-	 * TODO: make it do something
-	 */
 	public void filterLayers(String filter) {
 		if(filter == null){
 			filter = "";
@@ -287,13 +284,13 @@ public class SamplingZK extends Window {
 			System.out.println("openResults():" + e.toString());
 		}
 
-		SamplingService ss = new SamplingService();
-
 		String species_long = bb.getValue().toLowerCase();
 
 		if(species_long == null || species_long.length() < 5){
 			return; //TODO make nice
 		}
+
+                SamplingService ss = SamplingService.newForLSID(species_long);
 
 		String species = species_long;
 		String type;
@@ -432,7 +429,7 @@ public class SamplingZK extends Window {
         try {
         	Bandbox bb = (Bandbox) getFellow("bb");
     		Label lb_points = (Label) getFellow("lb_points");
-System.out.println("LL:" + bb.getValue());
+
                 String [] selection = bb.getValue().toLowerCase().split("/");
                 String species = bb.getValue();
                 if(selection.length > 1){
@@ -459,8 +456,6 @@ System.out.println("LL:" + bb.getValue());
             String slist = get.getResponseBodyAsString();
 
             System.out.println("Got response from SamplingWSController: \n" + slist);
-            
-/* TODO: make service response include longlat bounds and image resolution */
 			
             String client_request = "drawCircles('" + slist + "');";
             System.out.println("evaljavascript: " + client_request);                      

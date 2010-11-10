@@ -271,7 +271,7 @@ public class FilteringImage implements Serializable {
 
             ois.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace();    
         }
 
 

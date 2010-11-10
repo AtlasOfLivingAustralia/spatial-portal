@@ -56,7 +56,9 @@ public class AnalysisQueue {
                 String name = j.substring(j.lastIndexOf("JOB") + 3);
                 AnalysisJob jb = getSavedJob(name);
                 jb.setName(name);
-                addJob(jb);
+                
+                //addJob(jb);
+                finishedJobs.put(jb.getName(), jb);
             }catch(Exception e){
                 System.out.println("failed to load " + j);
             }

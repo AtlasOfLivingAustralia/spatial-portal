@@ -22,189 +22,21 @@ import org.ala.spatial.util.TabulationSettings;
  */
 public class SamplingService {
 
+    public static SamplingService newForLSID(String lsid) {
+        if (SamplingLoadedPointsService.isLoadedPointsLSID(lsid)) {
+            return new SamplingLoadedPointsService();
+        } else {
+            return new SamplingService();
+        }
+    }
+
     /**
      * constructor init
      */
-    public SamplingService() {
+    SamplingService() {
         TabulationSettings.load();
     }
 
-    /**
-     * gets samples; occurrences records + optional intersecting layer values,
-     * as csv
-     *
-     * @param filter species name as String
-     * @param layers list of layer names of additional data to include as String []
-     * @return samples as csv, String
-     */
-    public String sampleSpecies(String filter, String[] layers) {
-        return sampleSpecies(filter, layers, null);
-    }
-
-    /**
-     * gets samples; occurrences records + optional intersecting layer values,
-     * as csv
-     *
-     * @param filter species name as String
-     * @param layers list of layer names of additional data to include as String []
-     * @param baseDir base directory where the file should be written to
-     * @return file name for samples in csv format, String
-     */
-    public String sampleSpecies(String filter, String[] layers, File baseDir) {
-        StringBuffer output = new StringBuffer();
-
-        /* output header */
-        OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
-
-        for (String s : ofu.getOutputColumnNames()) {
-            output.append(s);
-            output.append(",");
-        }
-        if (layers != null) {
-            for (String l : layers) {
-                output.append(Layers.layerNameToDisplayName(l));
-                output.append(",");
-            }
-        }
-
-        /* tidy up header */
-        output.deleteCharAt(output.length() - 1); //take off end ','
-        output.append("\r\n");
-
-        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
-        int i, j;
-
-        if (ir != null && layers != null && layers.length > 0) {
-            ArrayList<String[]> columns = new ArrayList<String[]>(layers.length + 1);
-
-            try {
-                File temporary_file = null;
-                if (baseDir == null) {
-                    temporary_file = File.createTempFile("sample", ".csv");
-                } else {
-                    temporary_file = File.createTempFile("sample", ".csv", baseDir);
-                }
-                FileWriter fw = new FileWriter(temporary_file);
-
-                fw.append(output.toString());
-
-                for (IndexedRecord r : ir) {
-                    System.out.println(r.name + ", " + r.file_start + ", " + r.file_end + ", " + r.record_start + ", " + r.record_end);
-                    columns.clear();
-
-                    /*
-                     * cap the number of records per read
-                     */
-
-                    int step = 5000000; //max characters to read
-                    long rstart = r.file_start;
-                    long rend;
-
-                    rend = rstart + step;
-                    if (rend > r.file_end) {
-                        rend = r.file_end;
-                    }
-
-                    String[] sortedrecords;
-                    int recordstart = r.record_start;
-                    int recordend;
-
-                    String lastpart = "";
-
-                    while (rend <= r.file_end) {
-
-                        columns.clear();
-
-                        sortedrecords = OccurrencesIndex.getSortedRecords(rstart, rend);
-                        sortedrecords[0] = lastpart + sortedrecords[0];
-
-                        columns.add(sortedrecords);
-
-                        if (rend == r.file_end) {
-                            //do all records
-                            recordend = r.record_end;
-                            lastpart = "";
-                        } else {
-                            //do up to last record
-                            recordend = recordstart + sortedrecords.length - 2;
-                            lastpart = sortedrecords[sortedrecords.length - 1];
-
-                        }
-
-                        for (i = 0; i < layers.length; i++) {
-                            columns.add(SamplingIndex.getRecords(
-                                    Layers.layerDisplayNameToName(layers[i]),
-                                    recordstart,
-                                    recordend));
-                        }
-
-                        /* format output records */
-                        int len = columns.get(1).length;
-                        for (j = 0; j < len; j++) {
-                            for (i = 0; i < columns.size(); i++) {
-                                if (columns.get(i) != null && j < columns.get(i).length) {
-                                    if (!(columns.get(i)[j] == null) && !columns.get(i)[j].equals("NaN")) {
-                                        fw.append(columns.get(i)[j]);
-                                    }
-                                    if (i < columns.size() - 1) {
-                                        fw.append(",");
-                                    }
-                                }
-                            }
-
-                            fw.append("\r\n");
-                        }
-
-                        /* adjust for next loop */
-                        recordstart = recordend + 1; 		//this was inclusive
-                        if (rend < r.file_end) {
-                            rstart = rend;				//this is not inclusive
-                            rend = rstart + step;
-                            if (rend > r.file_end) {
-                                rend = r.file_end;
-                            }
-                        } else {
-                            rend = r.file_end + 1;
-                        }
-                    }
-                }
-
-                fw.close();
-                return temporary_file.getPath();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else if (ir != null) {
-            try {
-                File temporary_file = java.io.File.createTempFile("sample", ".csv");
-                FileWriter fw = new FileWriter(temporary_file);
-
-                fw.append(output.toString());
-
-                for (IndexedRecord r : ir) {
-
-                    int step = 10000000;		/*TODO: move this into tabulation_settings.xml */
-
-                    long k;
-                    for (k = r.file_start; k < r.file_end - step; k += step) {
-                        fw.append(OccurrencesIndex.getSortedRecordsString(
-                                k, k + step));
-                    }
-
-                    fw.append(OccurrencesIndex.getSortedRecordsString(
-                            k, r.file_end));
-
-                }
-                fw.close();
-                return temporary_file.getPath();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-    
     /**
      * gets samples; occurrences records + optional intersecting layer values,
      *
@@ -263,7 +95,7 @@ public class SamplingService {
 
         IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
 
-        if(ir != null && ir.length > 0 && max_rows<=100){
+        if (ir != null && ir.length > 0 && max_rows <= 100) {
             return sampleSpeciesSmall(filter, layers, region, records, max_rows, job);
         }
 
@@ -273,13 +105,15 @@ public class SamplingService {
 
         ArrayList<String[]> columns = new ArrayList<String[]>();
 
-        if(job != null) job.setProgress(0.1);
+        if (job != null) {
+            job.setProgress(0.1);
+        }
 
         try {
             //for (IndexedRecord r : ir) {
-            if(ir != null){ //only expect one result back from oi.filterspr(f);
+            if (ir != null) { //only expect one result back from oi.filterspr(f);
                 IndexedRecord r = ir[0];
-                
+
                 columns.clear();
 
                 /*
@@ -308,16 +142,18 @@ public class SamplingService {
                 double rowCount = r.record_end - r.record_start + 1;
                 results = null;
                 while (rowoffset <= max_rows && rend <= r.file_end) {
-                    if(job != null) job.setProgress(rowoffset / rowCount);
-                    
+                    if (job != null) {
+                        job.setProgress(rowoffset / rowCount);
+                    }
+
                     columns.clear();
 
                     sortedrecords = OccurrencesIndex.getSortedRecords(rstart, rend);
 
-                    if(lastpart.split(",").length == TabulationSettings.occurances_csv_fields.length
-                            && sortedrecords[0].split(",").length == TabulationSettings.occurances_csv_fields.length){
+                    if (lastpart.split(",").length == TabulationSettings.occurances_csv_fields.length
+                            && sortedrecords[0].split(",").length == TabulationSettings.occurances_csv_fields.length) {
                         sortedrecords[0] = lastpart + "\n" + sortedrecords[0];
-                    }else {
+                    } else {
                         sortedrecords[0] = lastpart + sortedrecords[0];
                     }
 
@@ -425,9 +261,9 @@ public class SamplingService {
                 }
 
                 //trim back results
-                String [][] results_trim = new String[rowoffset][results[0].length];
-                for(i=0;i<results_trim.length;i++){
-                    for(j=0;j<results_trim[i].length;j++){
+                String[][] results_trim = new String[rowoffset][results[0].length];
+                for (i = 0; i < results_trim.length; i++) {
+                    for (j = 0; j < results_trim[i].length; j++) {
                         results_trim[i][j] = results[i][j];
                     }
                 }
@@ -439,172 +275,6 @@ public class SamplingService {
             return results;
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    /**
-     * gets samples; occurances records + optional intersecting layer values,
-     * as csv
-     *
-     * limit results by a region
-     *
-     * @param filter species name as String
-     * @param layers list of layer names of additional data to include as String []
-     * @param region region to restrict results as SimpleRegion
-     * @param records sorted pool of records to intersect with as ArrayList<Integer>
-     * @return samples as csv, String
-     */
-    public String sampleSpecies(String filter, String[] layers, SimpleRegion region, ArrayList<Integer> records) {
-        StringBuffer output = new StringBuffer();
-
-        OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
-
-        for (String s : ofu.getOutputColumnNames()) {
-            output.append(s);
-            output.append(",");
-        }
-
-        if (layers != null) {
-            for (String l : layers) {
-                output.append(Layers.layerNameToDisplayName(l));
-                output.append(",");
-            }
-        }
-
-        /* tidy up header */
-        output.deleteCharAt(output.length() - 1); //take off end ','
-        output.append("\r\n");
-
-        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
-        int i, j;
-
-        if (ir != null) {
-            int column_len = 1;
-            if (layers != null) {
-                column_len += layers.length;
-            }
-            ArrayList<String[]> columns = new ArrayList<String[]>(column_len);
-
-            int recordsPos = 0; //position in records list (for intersection test)
-
-            try {
-                /* open output file */
-                File temporary_file = java.io.File.createTempFile("sample", ".csv");
-                FileWriter fw = new FileWriter(temporary_file);
-
-                fw.append(output.toString());
-
-
-                for (IndexedRecord r : ir) {
-                    columns.clear();
-
-                    /*
-                     * cap the number of records per read
-                     */
-
-                    int step = 5000000; //max characters to read TODO: move to tabulation settings.xmls
-                    long rstart = r.file_start;
-                    long rend;
-
-                    rend = rstart + step;
-                    if (rend > r.file_end) {
-                        rend = r.file_end;
-                    }
-
-                    String[] sortedrecords;
-                    int recordstart = r.record_start;
-                    int recordend;
-                    String lastpart = "";
-
-                    while (rend <= r.file_end) {
-
-                        columns.clear();
-
-                        sortedrecords = OccurrencesIndex.getSortedRecords(rstart, rend);
-                        sortedrecords[0] = lastpart + sortedrecords[0];
-
-                        columns.add(sortedrecords);
-
-                        if (rend == r.file_end) {
-                            //do all records
-                            recordend = r.record_end;
-                            lastpart = "";
-                        } else {
-                            //do up to last record
-                            recordend = recordstart + sortedrecords.length - 2;
-                            lastpart = sortedrecords[sortedrecords.length - 1];
-                        }
-
-                        for (i = 0; layers != null && i < layers.length; i++) {
-                            columns.add(SamplingIndex.getRecords(
-                                    Layers.layerDisplayNameToName(layers[i]),
-                                    recordstart,
-                                    recordend));
-                        }
-
-                        double[] points = OccurrencesIndex.getPoints(recordstart, recordend);
-
-                        /* join for output */
-                        int len;
-                        if (columns.size() < 2) {
-                            len = recordend - recordstart + 1;
-                        } else {
-                            len = columns.get(1).length;
-                        }
-
-                        for (j = 0; j < len; j++) {
-                            //do not add if does not intersect with records list
-                            if (records != null) {
-                                int currentRecord = j + recordstart;
-                                //increment recordsPos as required
-                                while (recordsPos < records.size()
-                                        && records.get(recordsPos).intValue() < currentRecord) {
-                                    recordsPos++;
-                                }
-                                //test for intersect
-                                if (recordsPos >= records.size()
-                                        || currentRecord != records.get(recordsPos).intValue()) {
-                                    continue;
-                                }
-                            }
-
-                            //test bounding box
-                            if (region == null || region.isWithin(points[j * 2], points[j * 2 + 1])) {
-                                for (i = 0; i < columns.size(); i++) {
-                                    if (columns.get(i) != null && j < columns.get(i).length) {
-                                        if (!(columns.get(i)[j] == null) && !columns.get(i)[j].equals("NaN")) {
-                                            fw.append(columns.get(i)[j]);
-                                        }
-                                        if (i < columns.size() - 1) {
-                                            fw.append(",");
-                                        }
-                                    }
-                                }
-                                fw.append("\r\n");
-                            }
-                        }
-
-                        /* adjust for next loop */
-                        recordstart = recordend + 1; 		//this was inclusive
-                        if (rend < r.file_end) {
-                            rstart = rend;				//this is not inclusive
-                            rend = rstart + step;
-                            if (rend > r.file_end) {
-                                rend = r.file_end;
-                            }
-                        } else {
-                            rend = r.file_end + 1;
-                        }
-                    }
-                }
-
-                fw.close();
-                return temporary_file.getPath();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
 
         return null;
@@ -747,7 +417,7 @@ public class SamplingService {
 
         return null;
     }
-
+    
     /**
      * gets samples; occurrences records + optional intersecting layer values,
      *
@@ -762,7 +432,7 @@ public class SamplingService {
      * @return samples as grid, String [][]
      */
     public String sampleSpeciesAsCSV(String species, String[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows, AnalysisJobSampling job) {
-         try {
+        try {
 
             System.out.println("Limiting sampling to : " + max_rows);
 
@@ -798,8 +468,11 @@ public class SamplingService {
         return "";
     }
 
-
     public static String getLSIDAsGeoJSON(String lsid, File outputpath) {
+        if (SamplingLoadedPointsService.isLoadedPointsLSID(lsid)) {
+            return getLSIDAsGeoJSON(lsid, outputpath);
+        }
+
         int i;
 
         /* get samples records from records indexes */
@@ -810,10 +483,12 @@ public class SamplingService {
         sbGeoJSON.append("  \"type\": \"FeatureCollection\",");
         sbGeoJSON.append("  \"features\": [");
         for (i = 1; i < samples.length; i++) {
-            String s = getRecordAsGeoJSON(samples,i);
-            if(s != null){
+            String s = getRecordAsGeoJSON(samples, i);
+            if (s != null) {
                 sbGeoJSON.append(s);
-                if (i<samples.length-1) sbGeoJSON.append(",");
+                if (i < samples.length - 1) {
+                    sbGeoJSON.append(",");
+                }
             }
         }
         sbGeoJSON.append("  ],");
@@ -857,6 +532,10 @@ public class SamplingService {
      * @return
      */
     public static String getLSIDAsGeoJSONIntoParts(String lsid, File outputpath) {
+        if (SamplingLoadedPointsService.isLoadedPointsLSID(lsid)) {
+            return getLSIDAsGeoJSONIntoParts(lsid, outputpath);
+        }
+
         int i;
 
         /* get samples records from records indexes */
@@ -867,35 +546,37 @@ public class SamplingService {
         int count = 0;
 
         //-1 on samples.length for header
-        int partCount = (int)Math.ceil((samples.length-1) / (double)max_parts_size);
+        int partCount = (int) Math.ceil((samples.length - 1) / (double) max_parts_size);
 
         //test for filename, return if it exists
         File file;
-        String filename = outputpath + File.separator + lsid.replace(":", "_").replace(".","_");
-        try{
-            file = new File(filename + "_" + (partCount-1));
-            if(file.exists()){
-                return lsid.replace(":", "_").replace(".","_") + "\n" + partCount;
+        String filename = outputpath + File.separator + lsid.replace(":", "_").replace(".", "_");
+        try {
+            file = new File(filename + "_" + (partCount - 1));
+            if (file.exists()) {
+                return lsid.replace(":", "_").replace(".", "_") + "\n" + partCount;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        for(int j=1;j<samples.length;j+= max_parts_size){
+        for (int j = 1; j < samples.length; j += max_parts_size) {
 
             StringBuffer sbGeoJSON = new StringBuffer();
             sbGeoJSON.append("{");
             sbGeoJSON.append("\"type\": \"FeatureCollection\",");
             sbGeoJSON.append("\"features\": [");
             int len = j + max_parts_size;
-            if(len > samples.length){
+            if (len > samples.length) {
                 len = samples.length;
             }
             for (i = j; i < len; i++) {
-                String s = getRecordAsGeoJSON(samples,i);
-                if(s != null){
+                String s = getRecordAsGeoJSON(samples, i);
+                if (s != null) {
                     sbGeoJSON.append(s);
-                    if (i<len-1) sbGeoJSON.append(",");
+                    if (i < len - 1) {
+                        sbGeoJSON.append(",");
+                    }
                 }
             }
             sbGeoJSON.append("],");
@@ -925,19 +606,19 @@ public class SamplingService {
                 e.printStackTrace();
             }
         }
-        return lsid.replace(":", "_").replace(".","_") + "\n" + partCount;
+        return lsid.replace(":", "_").replace(".", "_") + "\n" + partCount;
 
     }
 
-    private static String getRecordAsGeoJSON(String [][] rec, int rw) {
+    private static String getRecordAsGeoJSON(String[][] rec, int rw) {
         //String[] recdata = rec.split(",");
 
-        if(rec == null || rec.length <= rw || rec[rw].length <= TabulationSettings.geojson_latitude){
+        if (rec == null || rec.length <= rw || rec[rw].length <= TabulationSettings.geojson_latitude) {
             return null;
         }
 
-        for(int i=0;i<TabulationSettings.geojson_latitude;i++){
-            if(rec[rw][i] == null){
+        for (int i = 0; i < TabulationSettings.geojson_latitude; i++) {
+            if (rec[rw][i] == null) {
                 return null;
             }
         }
@@ -952,11 +633,9 @@ public class SamplingService {
         sbRec.append("   },");
         sbRec.append("  \"geometry_name\":\"the_geom\",");
         sbRec.append("  \"properties\":{");
-        for(int i=0;i<TabulationSettings.geojson_property_names.length;i++){
-            sbRec.append("      \"").append(TabulationSettings.geojson_property_names[i])
-                    .append("\":\"").append(rec[rw][TabulationSettings.geojson_property_fields[i]])
-                    .append("\"");
-            if(i < TabulationSettings.geojson_property_names.length-1){
+        for (int i = 0; i < TabulationSettings.geojson_property_names.length; i++) {
+            sbRec.append("      \"").append(TabulationSettings.geojson_property_names[i]).append("\":\"").append(rec[rw][TabulationSettings.geojson_property_fields[i]]).append("\"");
+            if (i < TabulationSettings.geojson_property_names.length - 1) {
                 sbRec.append(",");
             }
         }
@@ -971,7 +650,9 @@ public class SamplingService {
         IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
 
         if (ir != null && ir.length > 0) {
-            if(records != null) java.util.Collections.sort(records);
+            if (records != null) {
+                java.util.Collections.sort(records);
+            }
 
             /* get points */
             double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
@@ -980,13 +661,13 @@ public class SamplingService {
             int i;
 
             int alen = 0;
-            int [] a = new int[max_rows];
+            int[] a = new int[max_rows];
 
             int recordsPos = 0; //for test on records
 
             /* return all valid points within the region */
             for (i = 0; i < points.length && alen < max_rows; i += 2) {
-                int currentRecord = (i/2) + ir[0].record_start;
+                int currentRecord = (i / 2) + ir[0].record_start;
 
                 //do not add if does not intersect with records list
                 if (records != null) {
@@ -1006,33 +687,33 @@ public class SamplingService {
                     a[alen++] = currentRecord;
                 }
             }
-            
-            if(alen == 0){
+
+            if (alen == 0) {
                 return null;
             }
 
             //filled a up to alen, get the data
-            if(alen < max_rows){
-                a = java.util.Arrays.copyOf(a,alen);
+            if (alen < max_rows) {
+                a = java.util.Arrays.copyOf(a, alen);
             }
-            String [] oi = OccurrencesIndex.getSortedRecords(a);
+            String[] oi = OccurrencesIndex.getSortedRecords(a);
 
-            int layerscount = (layers == null)?0:layers.length;
+            int layerscount = (layers == null) ? 0 : layers.length;
             int headercount = oi[0].split(",").length;
-            String [][] output = new String[oi.length+1][headercount+layerscount];//+1 for header
+            String[][] output = new String[oi.length + 1][headercount + layerscount];//+1 for header
 
             //fill
-            for(i=0;i<oi.length;i++){
-                String [] line = oi[i].split(",");
-                for(int j=0;j<line.length && j < headercount;j++){
-                    output[i+1][j] = line[j];   //+1 for header
+            for (i = 0; i < oi.length; i++) {
+                String[] line = oi[i].split(",");
+                for (int j = 0; j < line.length && j < headercount; j++) {
+                    output[i + 1][j] = line[j];   //+1 for header
                 }
             }
 
-            for(i=0;layers != null && i<layers.length;i++){
-                String [] si = SamplingIndex.getRecords(layers[i], a);
-                if(si != null){
-                    for(int j=0;j<si.length && j < output.length;j++){
+            for (i = 0; layers != null && i < layers.length; i++) {
+                String[] si = SamplingIndex.getRecords(layers[i], a);
+                if (si != null) {
+                    for (int j = 0; j < si.length && j < output.length; j++) {
                         output[j][headercount + i] = si[j];
                     }
                 }
@@ -1049,7 +730,7 @@ public class SamplingService {
                     output[0][i++] = Layers.layerNameToDisplayName(l).trim();
                 }
             }
-            
+
             return output;
         }
 

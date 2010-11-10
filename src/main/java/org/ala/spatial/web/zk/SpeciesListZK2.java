@@ -93,7 +93,6 @@ public class SpeciesListZK2 extends GenericForwardComposer {
 
 	@Override
 	public void doAfterCompose(Component comp) throws Exception {
-		// TODO Auto-generated method stub
 		super.doAfterCompose(comp);
 
 		int i;

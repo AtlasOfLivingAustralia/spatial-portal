@@ -12,34 +12,28 @@ import java.io.Serializable;
  */
 public class Layer extends Object implements Serializable {
 
-	static final long serialVersionUID = 8072828752153146503L;
-
-    
+    static final long serialVersionUID = 8072828752153146503L;
     /**
      * table for file name
      */
     public String name;
-    
     /**
      * short text for UI
      */
     public String display_name;
-    
     /**
      * detailed description for UI
      */
     public String description;
-    
     /**
      * catagory of 'contextual' or 'environmental'
      */
     public String type;
-    
     /**
      * associated table fields
      */
     public Field[] fields;
-    
+
     /**
      * Constructor for this data structure
      * @param _name table or file name as String
@@ -63,6 +57,6 @@ public class Layer extends Object implements Serializable {
     public boolean equals(Object obj) {
         Layer that = (Layer) obj;
 
-        return (this.display_name.equals(that.display_name));
+        return (this.display_name.equalsIgnoreCase(that.display_name));
     }
 }

@@ -399,8 +399,8 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         }
 
         /* if still not loaded, reutrn null */
-        //TODO: log error
         if (layerfilter == null) {
+            SpatialLogger.info("getLayerFilter(" + layer + ")", ">layer does not exist");
             return null;
         }
 
@@ -445,7 +445,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                 return new LayerFilter(layer, null, null, minimum, maximum);
 
             } catch (Exception e) {
-                /* TODO: log error */
+                SpatialLogger.info("getLayerFilter(" + layer + ")", ">error opening grid file");
                 return null;
             }
         }
@@ -534,7 +534,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         int i;
         for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
             Layer l = TabulationSettings.geo_tables[i];
-            if (l.name.equals(layer_name)) {
+            if (l.name.equalsIgnoreCase(layer_name)) {
                 fieldname = l.fields[0].name;
                 break;
             }
@@ -1061,28 +1061,28 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
         //get latproj and longproj between display projection and data projection
         SpatialCluster3 sc = new SpatialCluster3();
-        int [] px_boundary = new int[4];
+        int[] px_boundary = new int[4];
         px_boundary[0] = sc.convertLngToPixel(longitude_start);
         px_boundary[2] = sc.convertLngToPixel(longitude_end);
         px_boundary[1] = sc.convertLatToPixel(latitude_start);
         px_boundary[3] = sc.convertLatToPixel(latitude_end);
 
-        double [] latproj = new double[latitude_steps];
-        double [] longproj = new double[longitude_steps];
-        for(int i=0;i<latproj.length;i++){
-            latproj[i] = sc.convertPixelToLat((int)(px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) (latproj.length))));
+        double[] latproj = new double[latitude_steps];
+        double[] longproj = new double[longitude_steps];
+        for (int i = 0; i < latproj.length; i++) {
+            latproj[i] = sc.convertPixelToLat((int) (px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) (latproj.length))));
         }
-        for(int i=0;i<longproj.length;i++){
-            longproj[i] = sc.convertPixelToLng((int)(px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) (longproj.length))));
+        for (int i = 0; i < longproj.length; i++) {
+            longproj[i] = sc.convertPixelToLng((int) (px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) (longproj.length))));
         }
-        
+
         //add half cell for sample center
-        double latoffset = (latproj[1] - latproj[0])/2.0;
-        for(int i=0;i<latproj.length;i++){
+        double latoffset = (latproj[1] - latproj[0]) / 2.0;
+        for (int i = 0; i < latproj.length; i++) {
             latproj[i] += latoffset;
         }
-        double longoffset = (longproj[1] - longproj[0])/2.0;
-        for(int i=0;i<longproj.length;i++){
+        double longoffset = (longproj[1] - longproj[0]) / 2.0;
+        for (int i = 0; i < longproj.length; i++) {
             longproj[i] += longoffset;
         }
 
@@ -1123,7 +1123,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         return null;
     }
 
-    static public void main(String [] args){
+    static public void main(String[] args) {
         TabulationSettings.load();
 
         FilteringIndex speciesListIndex = new FilteringIndex();

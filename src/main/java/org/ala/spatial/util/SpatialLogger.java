@@ -11,13 +11,12 @@ import java.util.Calendar;
  */
 public class SpatialLogger {
 
-    private static final String DATE_FORMAT_NOW = "dd-MM-yyyy HH:mm:ss";
+    private static final String DATE_FORMAT_NOW = "dd-MM-yyyy HH:mm:ss:SSS";
 
     private static String now() {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
         return sdf.format(cal.getTime());
-
     }
 
     public static void log(String msg) {

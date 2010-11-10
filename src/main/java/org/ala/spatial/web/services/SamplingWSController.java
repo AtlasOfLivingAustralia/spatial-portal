@@ -76,7 +76,7 @@ public class SamplingWSController {
                 speciesName = "";
             }
             
-            SamplingService ss = new SamplingService();
+            SamplingService ss = SamplingService.newForLSID(species);
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"));
 
             String citationpath = CitationService.generateCitationDataProviders(datafile);
@@ -234,7 +234,7 @@ public class SamplingWSController {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             }
 
-            SamplingService ss = new SamplingService();
+            SamplingService ss = SamplingService.newForLSID(species);
             String[][] results = ss.sampleSpecies(species, layers, region, records, 20);
 
             List rList = new Vector();
@@ -322,7 +322,7 @@ public class SamplingWSController {
             
             System.out.println("species: " + species);
 
-            SamplingService ss = new SamplingService();
+            SamplingService ss = SamplingService.newForLSID(species);
             
             String area = req.getParameter("area");
             ArrayList<Integer> records = null;

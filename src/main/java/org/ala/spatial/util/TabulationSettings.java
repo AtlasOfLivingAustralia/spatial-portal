@@ -6,10 +6,6 @@ import java.io.File;
  * home of all relevant tabulation settings as loaded from
  * appropriate tabulation_settings.xml
  *
- * TODO (among others)
- * 		- move to variables to final for reset on instance load
- * instead of dynamically
- *
  * @author Adam Collins
  *
  * @see Layer

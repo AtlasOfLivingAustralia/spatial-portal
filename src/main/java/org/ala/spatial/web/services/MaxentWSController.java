@@ -74,7 +74,7 @@ public class MaxentWSController {
             // dump the species data to a file
             System.out.println("dumping species data");
 
-            SamplingService ss = new SamplingService();
+            SamplingService ss = SamplingService.newForLSID(taxon);
             double [] points = ss.sampleSpeciesPointsSensitive(taxon, null, null);
             StringBuffer sbSpecies = new StringBuffer();
             // get the header
@@ -239,7 +239,7 @@ public class MaxentWSController {
             ssets = new SpatialSettings();
             // dump the species data to a file
             System.out.println("dumping species data");
-            SamplingService ss = new SamplingService();
+            SamplingService ss = SamplingService.newForLSID(taxon);
             double [] points = ss.sampleSpeciesPointsSensitive(taxon, region, null);
             StringBuffer sbSpecies = new StringBuffer();
             // get the header

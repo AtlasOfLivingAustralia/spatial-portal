@@ -139,9 +139,9 @@ public class Maxent21Controller extends GenericForwardComposer {
         System.out.println("Looking up taxon names for " + sac.getValue());
 
 
-        SamplingService ss = new SamplingService();
+        SamplingService ss = SamplingService.newForLSID(sac.getValue());
         //String csv = ss.sampleSpecies(sac.getValue(), null);
-        String[] csvdata = ss.sampleSpecies(sac.getValue(), null).split("\n");
+        String[] csvdata = ss.sampleSpeciesAsCSV(sac.getValue(), null, null, null, TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD).split("\n");
 
         //System.out.println("Species list for " + sac.getValue() + ":\n" + csv);
 
@@ -248,7 +248,7 @@ public class Maxent21Controller extends GenericForwardComposer {
 
 
         // dump the species data to a file
-        SamplingService ss = new SamplingService();
+        SamplingService ss = SamplingService.newForLSID(sac.getValue());
         double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null, (ArrayList<Integer>) null);
         StringBuffer sbSpecies = new StringBuffer();
         for (int i = 0; i < points.length; i+=2) {
@@ -287,10 +287,6 @@ public class Maxent21Controller extends GenericForwardComposer {
         String extraout = "";
 
         if (exitValue == 0) {
-            // TODO: Should probably move this part an external "parent"
-            // function so can be used by other functions
-            //
-
             Hashtable htGeoserver = ssets.getGeoserverSettings();
 
             // if generated successfully, then add it to geoserver
@@ -350,7 +346,7 @@ public class Maxent21Controller extends GenericForwardComposer {
 
 
         // dump the species data to a file
-        SamplingService ss = new SamplingService();
+        SamplingService ss = SamplingService.newForLSID(sac.getValue());
         double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null, (ArrayList<Integer>) null);
         StringBuffer sbSpecies = new StringBuffer();
         for (int i = 0; i < points.length; i+=2) {
@@ -404,9 +400,6 @@ public class Maxent21Controller extends GenericForwardComposer {
         String extraout = "";
 
         if (exitValue == 0) {
-            // TODO: Should probably move this part an external "parent"
-            // function so can be used by other functions
-            //
 
             Hashtable htGeoserver = ssets.getGeoserverSettings();
 
@@ -522,8 +515,6 @@ public class Maxent21Controller extends GenericForwardComposer {
             String slist = get.getResponseBodyAsString();
 
             System.out.println("Got response from SamplingWSController: \n" + slist);
-
-/* TODO: make service response include longlat bounds and image resolution */
 
             String client_request = "drawCircles('" + slist + "');";
             System.out.println("evaljavascript: " + client_request);
