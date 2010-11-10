@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -14,15 +13,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-//import org.ala.spatial.analysis.cluster.ClusteredRecord;
 import org.ala.spatial.analysis.cluster.ClusterLookup;
 import org.ala.spatial.analysis.cluster.Record;
-//import org.ala.spatial.analysis.cluster.SpatialCluster;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
 import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.FilteringService;
-
 import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.ShapeLookup;
@@ -32,9 +28,6 @@ import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -89,7 +82,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/names", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     Map getNames2(@RequestParam String q, @RequestParam int s, @RequestParam int p) {
         System.out.println("Looking up names for: " + q);
@@ -109,14 +102,14 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/taxon", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     String getTaxonNamesEmpty() {
         return "";
     }
 
     @RequestMapping(value = "/taxon/{name}", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     String getTaxonNames(@PathVariable("name") String name) {
         StringBuffer slist = new StringBuffer();
@@ -137,7 +130,7 @@ public class SpeciesController {
             for (String s : aslist) {
                 slist.append(s).append("\n");
             }
-     
+
             String s = OccurrencesIndex.getCommonNames(name, aslist);
             slist.append(s);
 
@@ -150,11 +143,11 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/lsid/{lsid}", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     List<ValidTaxonName> getTaxonByLsid(@PathVariable("lsid") String lsid) {
         try {
-            
+
             lsid = URLDecoder.decode(lsid, "UTF-8");
             lsid = lsid.replaceAll("__", ".");
             System.out.println("Starting out search for: " + lsid);
@@ -178,7 +171,7 @@ public class SpeciesController {
      * @return
      */
     @RequestMapping(value = "/lsid/{lsid}/geojson", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     String getSamplesListAsGeoJSON(@PathVariable String lsid, HttpServletRequest req) {
         TabulationSettings.load();
@@ -190,10 +183,8 @@ public class SpeciesController {
             lsid = URLDecoder.decode(lsid, "UTF-8");
             lsid = lsid.replaceAll("__", ".");
 
-            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             String currentPath = TabulationSettings.base_output_dir;
-            long currTime = System.currentTimeMillis();
-            //String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator + currTime + File.separator;
+
             String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
             File fDir = new File(outputpath);
             fDir.mkdir();
@@ -203,8 +194,6 @@ public class SpeciesController {
             long end = System.currentTimeMillis();
             System.out.println("get species by lsid geojson: " + (end - start) + "ms");
 
-
-            //return "output/sampling/" + currTime + "/" + gjsonFile;
             return "output/sampling/" + gjsonFile;
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -213,7 +202,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/cluster/{species}", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     Hashtable getClusteredRecords(@PathVariable("species") String species, HttpServletRequest req) {
         try {
@@ -305,7 +294,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/cluster/{species}/area/{area}/id/{id}/now", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     Hashtable getClusteredRecords(@PathVariable("species") String species, @PathVariable("area") String area, @PathVariable("id") String id, HttpServletRequest req) {
         try {
@@ -414,7 +403,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/cluster/id/{id}/cluster/{cluster}/idx/{idx}", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     String getOccurrenceId(@PathVariable("id") String id, @PathVariable("cluster") int cluster, @PathVariable("idx") int idx, HttpServletRequest req) {
         try {
@@ -427,11 +416,11 @@ public class SpeciesController {
             e.printStackTrace(System.out);
         }
         System.out.println("returning null");
-        return null;
+        return "";
     }
 
     @RequestMapping(value = "/cluster/lsid/{lsid}/bb", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     String getBoundingBox(@PathVariable("lsid") String lsid, HttpServletRequest req) {
         try {
@@ -450,7 +439,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/lsid/{lsid}/count", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     String getLsidCount(@PathVariable("lsid") String lsid, HttpServletRequest req) {
         try {
@@ -481,7 +470,7 @@ public class SpeciesController {
      * @return
      */
     @RequestMapping(value = "/cluster/area/{area}/id/{id}/now", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     Hashtable getClusteredRecordsInArea(@PathVariable("area") String area, @PathVariable("id") String id, HttpServletRequest req) {
         try {
@@ -611,7 +600,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/shape/register", method = RequestMethod.POST)
-    public
+    public 
     @ResponseBody
     String registerShape(HttpServletRequest req) {
         try {
@@ -638,7 +627,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/shape/lookup", method = RequestMethod.POST)
-    public
+    public 
     @ResponseBody
     String lookupShape(HttpServletRequest req) {
         try {
@@ -670,7 +659,7 @@ public class SpeciesController {
      * @return
      */
     @RequestMapping(value = "/info/now", method = RequestMethod.GET)
-    public
+    public 
     @ResponseBody
     String getSpeciesInfoInArea(HttpServletRequest req) {
         try {
@@ -702,8 +691,10 @@ public class SpeciesController {
                 String lsid = lsids[i];
                 System.out.println("Looking for species info: " + lsid);
                 IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
-                System.out.println("ir.length: " + ir.length);
-                dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+                if (ir != null && ir.length > 0) {
+                    System.out.println("ir.length: " + ir.length);
+                    dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+                }
             }
 
             StringBuffer sbInfo = new StringBuffer();

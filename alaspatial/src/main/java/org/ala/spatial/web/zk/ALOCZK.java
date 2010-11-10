@@ -121,7 +121,6 @@ public class ALOCZK extends GenericForwardComposer {
 
 	@Override
 	public void doAfterCompose(Component comp) throws Exception {
-		// TODO Auto-generated method stub
 		super.doAfterCompose(comp);
 
 		int i;
@@ -316,7 +315,6 @@ public class ALOCZK extends GenericForwardComposer {
 			}
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -352,7 +350,6 @@ public class ALOCZK extends GenericForwardComposer {
                         timer.start();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -428,13 +425,8 @@ public class ALOCZK extends GenericForwardComposer {
 			int result = client.executeMethod(get);
 			String slist = get.getResponseBodyAsString();
 
-			System.out
-					.println("Got response from ALOCWSController: \n" + slist);
-
-			/*
-			 * TODO: make service response include longlat bounds and image
-			 * resolution
-			 */
+			System.out.println("Got response from ALOCWSController: \n" + slist);
+			
 			pid = slist;
 
 			String img = satServer + "output/aloc/" + slist + "/aloc.png";
@@ -443,9 +435,6 @@ public class ALOCZK extends GenericForwardComposer {
                                 + extents[2] + "," + extents[5] + ","
                                 + extents[4] + "," + extents[3] + ","
                                 + extents[0] + "," + extents[1] + ");";
-
-					//+ "',112,-9,154,-44,252,210);";
-
 
 			System.out.println("evaljavascript: " + client_request);
 			Clients.evalJavaScript(client_request);

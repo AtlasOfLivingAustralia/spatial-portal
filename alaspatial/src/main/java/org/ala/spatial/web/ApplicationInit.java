@@ -19,7 +19,7 @@ public class ApplicationInit extends ContextLoaderListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         TabulationSettings.load();
-        //OccurrencesIndex.loadIndexes();
+        OccurrencesIndex.loadIndexes();
     }
 
     @Override

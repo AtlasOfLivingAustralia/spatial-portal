@@ -4,12 +4,10 @@
  */
 package org.ala.spatial.util;
 
-import au.com.bytecode.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -64,7 +62,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         //cells = GridCutter.countCells(region, envelope);
 
-        SamplingService ss = new SamplingService();
+        SamplingService ss = SamplingService.newForLSID(taxon);
         OccurrencesService os = new OccurrencesService();
         double[] p = ss.sampleSpeciesPoints(taxon, region, null);
         if (p != null) {
@@ -84,7 +82,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             // dump the species data to a file
             setProgress(0, "dumping species data");
 
-            SamplingService ss = new SamplingService();
+            SamplingService ss = SamplingService.newForLSID(taxon);
             double [] points = ss.sampleSpeciesPointsSensitive(taxon, region, null);
             StringBuffer sbSpecies = new StringBuffer();
             // get the header

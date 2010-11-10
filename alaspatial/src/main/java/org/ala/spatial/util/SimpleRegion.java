@@ -110,7 +110,6 @@ public class SimpleRegion extends Object implements Serializable {
      *
      */
     double radius;
-
     /**
      * misc attributes
      */
@@ -387,7 +386,7 @@ public class SimpleRegion extends Object implements Serializable {
             case 0:
                 return null;
             case 1:
-                return getOverlapGridCells_Box(longitude1, latitude1, longitude2, latitude2, width, height, bounding_box);
+                return getOverlapGridCells_Box(longitude1, latitude1, longitude2, latitude2, width, height, bounding_box, three_state_map);
             case 2:
                 return null; /* TODO: circle grid */
             case 3:
@@ -413,7 +412,7 @@ public class SimpleRegion extends Object implements Serializable {
      * for minimum longitude and latitude through to xres,yres for maximums
      */
     public int[][] getOverlapGridCells_Box(double longitude1, double latitude1,
-            double longitude2, double latitude2, int width, int height, double[][] bb) {
+            double longitude2, double latitude2, int width, int height, double[][] bb, byte[][] three_state_map) {
 
         double xstep = Math.abs(longitude2 - longitude1) / (double) width;
         double ystep = Math.abs(latitude2 - latitude1) / (double) height;
@@ -446,21 +445,36 @@ public class SimpleRegion extends Object implements Serializable {
         int out_height = yend - ystart;
         int[][] data = new int[out_width * out_height][2];
         int j, i, p = 0;
-        for (j = ystart; j < yend; j++) {
-            for (i = xstart; i < xend; i++) {
-                data[p][0] = i;
-                data[p][1] = j;
-                p++;
+        if (three_state_map == null) {
+            for (j = ystart; j < yend; j++) {
+                for (i = xstart; i < xend; i++) {
+                    data[p][0] = i;
+                    data[p][1] = j;
+                    p++;
+                }
             }
-        }
+        } else {
+            for (j = ystart; j < yend; j++) {
+                for (i = xstart; i < xend; i++) {
+                    data[p][0] = i;
+                    data[p][1] = j;
+                    three_state_map[j][i] = SimpleRegion.GI_FULLY_PRESENT;
+                    p++;
+                }
+            }
+            //set three state map edges to partially present
+            for (j = ystart; j < yend; j++) {
+                three_state_map[j][xstart] = SimpleRegion.GI_PARTIALLY_PRESENT;
+                three_state_map[j][xend - 1] = SimpleRegion.GI_PARTIALLY_PRESENT;
+            }
+            for (i = xstart; i < xend; i++) {
+                three_state_map[ystart][i] = SimpleRegion.GI_PARTIALLY_PRESENT;
+                three_state_map[yend - 1][i] = SimpleRegion.GI_PARTIALLY_PRESENT;
+            }
 
-        // TODO: fix the above nested for loops so this is not required
-        int[][] d = new int[data.length][2];
-        for (j = 0; j < data.length; j++) {
-            d[j][0] = data[j][0];
-            d[j][1] = data[j][1];
+            //no need to set SimpleRegion.GI_ABSENCE
         }
-        return d;
+        return data;
     }
 
     /**
@@ -756,15 +770,15 @@ public class SimpleRegion extends Object implements Serializable {
         return type;
     }
 
-    public void setAttribute(String name, Object value){
-        if(attributes == null){
+    public void setAttribute(String name, Object value) {
+        if (attributes == null) {
             attributes = new HashMap<String, Object>();
         }
         attributes.put(name, value);
     }
 
-    public Object getAttribute(String name){
-        if(attributes != null){
+    public Object getAttribute(String name) {
+        if (attributes != null) {
             return attributes.get(name);
         }
         return null;

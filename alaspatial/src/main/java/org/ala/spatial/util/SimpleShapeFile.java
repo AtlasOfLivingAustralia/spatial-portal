@@ -69,39 +69,10 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @param fileprefix file path for valid files after appending .shp and .dbf
      */
     public SimpleShapeFile(String fileprefix) {
-        /* read dbf */
-        dbf = new DBF(fileprefix + ".dbf");
-
-        /* read shape header */
-        shapeheader = new ShapeHeader(fileprefix);
-
-        /* read shape records */
-        shaperecords = new ShapeRecords(fileprefix, shapeheader.getShapeType());
-
-        /* get ComplexRegion list from shape records */
-        regions = shaperecords.getRegions();
-
-        /* create shapes reference for intersections */
-        shapesreference = new ShapesReference(shaperecords);
-
-    }
-
-    /**
-     * Constructor for a SimpleShapeFile, requires .dbf and .shp files present
-     * on the fileprefix provided.
-     *
-     * When creating from a shape file use:
-     *      <code>intersect(double[][] points, String[] lookup, int column)</code>
-     *
-     * When creating from a previously saved SimpleShapeFile use:
-     *      <code>intersect(double[][] points, int threadcount)</code>
-     *
-     * @param fileprefix file path for valid files after appending .shp and .dbf
-     * @param isShapeFile use true if the input is a shapefile prefix, otherwise
-     * to load from a previously saved SimpleShapeFile.
-     */
-    public SimpleShapeFile(String fileprefix, boolean isShapeFile) {
-        if (isShapeFile) {
+        //If fileprefix exists as-is it is probably a saved SimpleShapeFile
+        if (loadRegion(fileprefix)) {
+            //previously saved region loaded
+        } else {
             /* read dbf */
             dbf = new DBF(fileprefix + ".dbf");
 
@@ -116,8 +87,6 @@ public class SimpleShapeFile extends Object implements Serializable {
 
             /* create shapes reference for intersections */
             shapesreference = new ShapesReference(shaperecords);
-        } else {
-            loadRegion(fileprefix);
         }
     }
 
@@ -164,13 +133,13 @@ public class SimpleShapeFile extends Object implements Serializable {
             for (i = 0; i < regions.size(); i++) {
                 if (singleColumn[i] == (short) m) {
                     //check that no other column has this 'm' value
-                    int j=0;
-                    for(j=0;j<singleColumn.length;j++){
-                        if(i!=j && singleColumn[i] == singleColumn[j]){
+                    int j = 0;
+                    for (j = 0; j < singleColumn.length; j++) {
+                        if (i != j && singleColumn[i] == singleColumn[j]) {
                             break;
                         }
                     }
-                    if(j == singleColumn.length) {
+                    if (j == singleColumn.length) {
                         try {
                             FileOutputStream fos = new FileOutputStream(filename + "_" + m);
                             BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -191,21 +160,26 @@ public class SimpleShapeFile extends Object implements Serializable {
      * save partial file (enough to reload and use intersect function)
      *
      * @param filename
+     * @return true when successful
      */
-    public void loadRegion(String filename) {
-        try {
-            FileInputStream fis = new FileInputStream(filename);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            shapesreference = (ShapesReference) ois.readObject();
+    public boolean loadRegion(String filename) {
+        if (new File(filename).exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(filename);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                ObjectInputStream ois = new ObjectInputStream(bis);
+                shapesreference = (ShapesReference) ois.readObject();
 
-            singleLookup = (String[]) ois.readObject();
+                singleLookup = (String[]) ois.readObject();
 
-            singleColumn = (short[]) ois.readObject();
-            ois.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+                singleColumn = (short[]) ois.readObject();
+                ois.close();
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+        return false;
     }
 
     /**
@@ -237,13 +211,13 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         int idx = 0;
         LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>();
-        while (idx < 100000){
-            if(new File(filename + "_" + idx).exists()) {
+        while (idx < 100000) {
+            if (new File(filename + "_" + idx).exists()) {
                 lbq.add(filename + "_" + idx);
             }
             idx++;
         }
-        CountDownLatch cdl = new CountDownLatch(idx);
+        CountDownLatch cdl = new CountDownLatch(lbq.size());
 
         //run these functions at the same time as other build_all requests
         class AddCellsThread extends Thread {
@@ -253,6 +227,11 @@ public class SimpleShapeFile extends Object implements Serializable {
 
             @Override
             public void run() {
+                try {
+                    setPriority(MIN_PRIORITY);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 try {
                     while (true) {
                         String filename = lbq.take();
@@ -271,7 +250,7 @@ public class SimpleShapeFile extends Object implements Serializable {
                         oos.close();
                         cdl.countDown();
                     }
-                } catch (InterruptedException e){
+                } catch (InterruptedException e) {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -303,22 +282,22 @@ public class SimpleShapeFile extends Object implements Serializable {
     static public void main(String[] args) {
         TabulationSettings.load();
 
-        if(args.length > 0){
+        if (args.length > 0) {
             SimpleShapeFile.addCellsToShapeRegion(
-                TabulationSettings.index_path
-                + args[0]);
+                    TabulationSettings.index_path
+                    + args[0]);
         }
         /*
         SimpleShapeFile.addCellsToShapeRegion(
-                TabulationSettings.index_path
-                + "aus2");
+        TabulationSettings.index_path
+        + "aus2");
         SimpleShapeFile.addCellsToShapeRegion(
-                TabulationSettings.index_path
-                + "imcra4_pb");
+        TabulationSettings.index_path
+        + "imcra4_pb");
         SimpleShapeFile.addCellsToShapeRegion(
-                TabulationSettings.index_path
-                + "ibra_reg_shape");
-        */
+        TabulationSettings.index_path
+        + "ibra_reg_shape");
+         */
     }
 
     /**
@@ -502,6 +481,10 @@ public class SimpleShapeFile extends Object implements Serializable {
      */
     public String getHeaderString() {
         return shapeheader.toString();
+    }
+
+    public String getValueString(int idx) {
+        return singleLookup[idx];
     }
 
     /**
@@ -1802,7 +1785,7 @@ class ShapesReference extends Object implements Serializable {
         for (int j = 0; j < sra.size(); j++) {
             ComplexRegion s = sra.get(j);
             int[][] map = s.getOverlapGridCells_Box(
-                    boundingbox_all[0][0], boundingbox_all[0][1], boundingbox_all[1][0], boundingbox_all[1][1], mask_dimension, mask_dimension, s.getBoundingBox());
+                    boundingbox_all[0][0], boundingbox_all[0][1], boundingbox_all[1][0], boundingbox_all[1][1], mask_dimension, mask_dimension, s.getBoundingBox(), null);
 
             for (int i = 0; i < map.length; i++) {
                 if (mask[map[i][0]][map[i][1]] == null) {
