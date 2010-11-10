@@ -85,9 +85,10 @@ public class CommonData {
         initEnvironmentalOnlyList();
         initEnvironmentalAllList();
 
-        synchronized (oLayersUtilLock) {
-            synchronized (oEnvironmentalListLock) {
-                synchronized (oLayersUtilLock) {
+
+        //synchronized (oLayersUtilLock) {
+        //    synchronized (oEnvironmentalListLock) {
+        //        synchronized (oLayersUtilLock) {
                     //(1) for LayersUtil
                     if (copy_environmentalLayerNames != null) {
                         environmentalLayerNames = copy_environmentalLayerNames;
@@ -123,9 +124,9 @@ public class CommonData {
                     if (copy_contextualClasses != null) {
                         contextualClasses = copy_contextualClasses;
                     }
-                }
-            }
-        }
+        //        }
+        //    }
+        //}
     }
 
     /**
@@ -135,9 +136,9 @@ public class CommonData {
      * @return environmental layer names as String[] or null on error
      */
     static public String[] getEnvironmentalLayers() {
-        synchronized (oLayersUtilLock) {
+        //synchronized (oLayersUtilLock) {
             return environmentalLayerNames;
-        }
+        //}
     }
 
     static void initEnvironmentalLayers() {
@@ -176,9 +177,9 @@ public class CommonData {
      * @return contextual layer names as String[] or null on error
      */
     static public String[] getContextualLayers() {
-        synchronized (oLayersUtilLock) {
+        //synchronized (oLayersUtilLock) {
             return contextualLayerNames;
-        }
+        //}
     }
 
     static void initContextualLayers() {
@@ -211,33 +212,33 @@ public class CommonData {
     }
 
     static public ArrayList<ListEntry> getListEntriesAll() {
-        synchronized (oEnvironmentalListLock) {
+        //synchronized (oEnvironmentalListLock) {
             return listEntriesAll;
-        }
+        //}
     }
 
     static public String[] getLayerNamesAll() {
-        synchronized (oEnvironmentalListLock) {
+        //synchronized (oEnvironmentalListLock) {
             return layerNamesAll;
-        }
+        //}
     }
 
     static public ArrayList<ListEntry> getListEntriesEnv() {
-        synchronized (oEnvironmentalListLock) {
+        //synchronized (oEnvironmentalListLock) {
             return listEntriesEnv;
-        }
+        //}
     }
 
     static public String[] getLayerNamesEnv() {
-        synchronized (oEnvironmentalListLock) {
+        //synchronized (oEnvironmentalListLock) {
             return layerNamesEnv;
-        }
+        //}
     }
 
     static public float[][] getDistances() {
-        synchronized (oEnvironmentalListLock) {
+        //synchronized (oEnvironmentalListLock) {
             return distances;
-        }
+        //}
     }
 
     static public void initEnvironmentalOnlyList() {
@@ -403,9 +404,9 @@ public class CommonData {
     }
 
     public static String getLayerList() {
-        synchronized (oLayerListJsonLock) {
+        //synchronized (oLayerListJsonLock) {
             return layerlist;
-        }
+        //}
     }
 
     static void initLayerList() {
@@ -426,15 +427,15 @@ public class CommonData {
     }
 
     static public JSONArray getLayerListJSONArray() {
-        synchronized (oLayerListJsonLock) {
+        //synchronized (oLayerListJsonLock) {
             return layerlistJSON;
-        }
+        //}
     }
 
     static public List getContextualClasses(JSONObject layer) {
-        synchronized (oLayerListJsonLock) {
+        //synchronized (oLayerListJsonLock) {
             return contextualClasses.get(layer);
-        }
+        //}
     }
 
     static void initContextualClasses() {
