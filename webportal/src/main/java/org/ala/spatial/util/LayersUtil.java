@@ -179,6 +179,38 @@ public class LayersUtil {
     }
 
     /**
+     * tests if a Species is sensitive
+     *
+     * @param lsid text value to test as String
+     * @return String 0: non-sensitive, 1: sensitive, -1: cannot be determined
+     */
+    public String isSensitiveSpecies(String lsid) {
+        try {
+
+            lsid = StringUtils.replace(lsid, ".", "__");
+            lsid = URLEncoder.encode(lsid, "UTF-8");
+
+            String snUrl = satServer + "/alaspatial/species/lsid/" + lsid + "/sensitivity";
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(snUrl);
+            get.addRequestHeader("Content-type", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString().trim();
+
+            if (slist.equals("0") || slist.equals("1")) {
+                return slist;
+            } else {
+                return "-1";
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return "-1";
+    }
+
+    /**
      * Check if the species is a pest species
      * @param lsid LSID of the species 
      * @return 
@@ -197,12 +229,12 @@ public class LayersUtil {
 
             JSONObject jo = JSONObject.fromObject(slist);
             JSONArray pestStatuses = jo.getJSONObject("extendedTaxonConceptDTO").getJSONArray("pestStatuses");
-            JSONObject pstatus = pestStatuses.getJSONObject(0); 
+            JSONObject pstatus = pestStatuses.getJSONObject(0);
 
-            
+
         } catch (Exception e) {
             System.out.println("Error checking if pest species ");
-            e.printStackTrace(System.out); 
+            e.printStackTrace(System.out);
         }
 
 
@@ -263,7 +295,6 @@ public class LayersUtil {
 
         return null;
     }
-
 
     /**
      * tests if a String is an environmental layer name
@@ -353,7 +384,7 @@ public class LayersUtil {
         if (contextualLayerNames != null) {
             return contextualLayerNames;
         }
-        
+
         contextualLayerNames = CommonData.getContextualLayers();
 
         return contextualLayerNames;

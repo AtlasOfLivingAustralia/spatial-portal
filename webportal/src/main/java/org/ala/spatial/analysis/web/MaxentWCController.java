@@ -234,6 +234,11 @@ public class MaxentWCController extends UtilityComposer {
                 Messagebox.show("Warning: Invasive species will rarely be in equilibrium with the environment at their observed locations so modelling distributions should only be attempted by experienced analysts.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
             }
 
+            if (layersUtil.isSensitiveSpecies(taxon).equals("1")) {
+                Messagebox.show("Warning: There are sensitive records within the dataset that you've chosen to model. Please select non-sensitive species for MaxEnt. For more information on the sensitive species, please refer to http://www.ala.org.au/about/program-of-projects/sds/", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                return;
+            }
+
 
             String msg = "";
             String[] envsel = null;
