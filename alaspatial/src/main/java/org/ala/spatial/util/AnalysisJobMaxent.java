@@ -163,9 +163,17 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 readReplaceBetween(pth + "species.html", "<HR><H2>Pictures of the model", "<HR>","<HR>");
                 readReplace(pth + "species.html", "<a href = \"plots/\"> <img src=\"plots/\" width=600></a>", "see map window");
                 readReplace(pth + "species.html", "plots\\\\", "plots/");
+
+                readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
+                readReplace(pth + "species.html", msets.getOutputPath(), "");
+                readReplaceBetween(pth + "species.html", "Command line","<br>","");
+                readReplaceBetween(pth + "species.html", "Command line","<br>","");
                 
                 //delete image
                 FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
+                FileUtils.deleteQuietly(new File(pth + "species_samplePredictions.csv"));
+                FileUtils.deleteQuietly(new File(pth + "maxent.log"));
+                FileUtils.deleteQuietly(new File(msets.getSpeciesFilepath()));
 
                 writeProjectionFile(msets.getOutputPath());
 

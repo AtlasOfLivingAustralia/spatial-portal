@@ -3556,6 +3556,35 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         return d;
     }
+
+    /**
+     * for Sensitive Records
+     *
+     * Checks if the records are sensitive
+     *
+     * @param file_start first character to return
+     * @param file_end one more than last character to return
+     * @return int 0: non-sensitive, 1: sensitive, -1: cannot be determined
+     */
+    public static int isSensitiveRecord(int recordstart, int recordend) {
+        try {
+            int number_of_points = (recordend - recordstart + 1);
+
+            /* put into double [] */
+            int i;
+            for (i = 0; i < number_of_points; i++) {
+                if (sensitiveCoordinates[i][0] == -1 || sensitiveCoordinates[i][1] == -1) {
+                    return 1;
+                }
+            }
+        } catch (Exception e) {
+            SpatialLogger.log("isSensitive(" + recordstart + "," + recordend, e.toString());
+            return -1;
+        }
+
+        return 0;
+    }
+
     //TODO: bounding box hashmap cleanup
     static HashMap<String, String> lsidBoundingBox = new HashMap<String, String>();
 

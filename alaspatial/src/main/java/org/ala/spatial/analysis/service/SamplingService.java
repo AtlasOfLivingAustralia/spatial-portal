@@ -419,6 +419,26 @@ public class SamplingService {
     }
     
     /**
+     * for Sensitive Records
+     *
+     * Checks if the records are sensitive
+     *
+     * @param filter species (genus, etc) name
+     * @param region region to filter results by
+     * @param records sorted pool of records to intersect with as ArrayList<Integer>
+     * @return int 0: non-sensitive, 1: sensitive, -1: cannot be determined
+     */
+    public static int isSensitiveRecord(String filter, SimpleRegion region, ArrayList<Integer> records) {
+        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
+
+        if (ir != null && ir.length > 0) {
+            return OccurrencesIndex.isSensitiveRecord(ir[0].record_start, ir[0].record_end);
+        }
+
+        return -1;
+    }
+
+    /**
      * gets samples; occurrences records + optional intersecting layer values,
      *
      *

@@ -463,6 +463,28 @@ public class SpeciesController {
     }
 
     /**
+     * Check if the species is sensitive
+     * 
+     * @param lsid
+     * @return
+     */
+    @RequestMapping(value = "/lsid/{lsid}/sensitivity", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getSpeciesSensitivity(@PathVariable("lsid") String lsid) {
+        try {
+            lsid = URLDecoder.decode(lsid, "UTF-8");
+            lsid = lsid.replaceAll("__", ".");
+
+            return "" + SamplingService.isSensitiveRecord(lsid, null, null);
+        } catch (Exception e) {
+            System.out.println("species sensitivity.error: ");
+            e.printStackTrace(System.out);
+        }
+        return "-1";
+    }
+
+    /**
      * not: only supporting square areas
      *
      * @param area
