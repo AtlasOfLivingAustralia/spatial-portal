@@ -209,6 +209,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("/species/count");
 
+            getMapComposer().updateUserLogAnalysis("species count", "area: " + shape, "", "species list in area");
+
             String[] out = postInfo(sbProcessUrl.toString()).split("\n");
 
             results_count = Integer.parseInt(out[0]);

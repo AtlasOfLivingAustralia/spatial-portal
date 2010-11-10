@@ -3933,10 +3933,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             lsid = StringUtils.replace(lsid, ".", "__");
             try {
                 lsid = URLEncoder.encode(lsid, "UTF-8");
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
             }
-
             addLsidBoundingBoxToMetadata(md, lsid);
         }
 
