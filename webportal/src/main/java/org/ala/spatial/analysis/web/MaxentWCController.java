@@ -698,11 +698,11 @@ public class MaxentWCController extends UtilityComposer {
 
         /* set species from layer selector */
         if (species != null) {
-            sac.setValue(species);
             String tmpSpecies = species;
             if (species.contains(" (")) {
                 tmpSpecies = StringUtils.substringBefore(species, " (");
             }
+            sac.setValue(tmpSpecies);
             sac.refresh(tmpSpecies);
         }
 
