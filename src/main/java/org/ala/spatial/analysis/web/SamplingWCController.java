@@ -768,7 +768,6 @@ public class SamplingWCController extends UtilityComposer {
                 taxValue = StringUtils.substringBefore(taxValue, " (");
             }
             sac.refresh(taxValue);
-            sac.refresh(sac.getValue());
         }
 
         //make the sac.getValue() a selected value if it appears in the list
@@ -835,11 +834,11 @@ public class SamplingWCController extends UtilityComposer {
 
         /* set species from layer selector */
         if (species != null) {
-            sac.setValue(species);
             String tmpSpecies = species;
             if (species.contains(" (")) {
                 tmpSpecies = StringUtils.substringBefore(species, " (");
             }
+            sac.setValue(tmpSpecies);
             sac.refresh(tmpSpecies);
         }
 

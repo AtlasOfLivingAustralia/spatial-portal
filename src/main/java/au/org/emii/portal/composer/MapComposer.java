@@ -643,12 +643,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
             
-            if (rank.equalsIgnoreCase("scientific name")) {
-                rank = "taxon"; 
-            }
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
+        }
+        if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
+            rank = "taxon";
         }
         mapSpeciesByLsid((String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
 
