@@ -246,7 +246,7 @@ public class LeftMenuSearchComposer extends UtilityComposer {
     private void populateSearchTerms() {
         // populate search terms from current MEST search catalogue
         PortalSession portalSession = getPortalSession();
-        SearchCatalogue searchCatalogue = portalSessionUtilities.getSelectedSearchCatalogue(portalSession);
+        SearchCatalogue searchCatalogue = null;//portalSessionUtilities.getSelectedSearchCatalogue(portalSession);
         if (searchCatalogue == null) {
             logger.error(String.format("requested search catalogue '%s' is not available - search is broken!",
                             portalSession.getSelectedSearchCatalogueId()));

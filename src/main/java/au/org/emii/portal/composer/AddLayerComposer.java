@@ -164,7 +164,7 @@ public class AddLayerComposer extends GenericAutowireAutoforwardComposer {
 		
 		// validate - DO NOT SHORT CURCUIT HERE!
 		if (validateCommon() & validateAutomaticModeCommon()) {
-			if (getMapComposer().addWMSServer(
+			/*if (getMapComposer().addWMSServer(
 					(nameAutomatically.isChecked()) ? 
 							null : Validate.escapeHtmlAndTrim(label.getValue()), 
 					uri.getValue(), 
@@ -175,14 +175,14 @@ public class AddLayerComposer extends GenericAutowireAutoforwardComposer {
 		
 				// all sweet
 				updateResult("wms_server_added");
-			}
+			}*/
 			// addWMSServer handles showing any errors for us
 		}
 	}
 	
 	public void onClick$hideExtLayersButton() {
             MapComposer mc = getMapComposer();
-            mc.closeAddLayerDiv();
+            //mc.closeAddLayerDiv();
         }            
         
         
@@ -333,7 +333,7 @@ public class AddLayerComposer extends GenericAutowireAutoforwardComposer {
 		 * tab on layers view to be 'user defined' so user can 
 		 * see their new layers
 		 */
-		getMapComposer().selectAndActivateTab(PortalSession.LAYER_USER_TAB);
+		//getMapComposer().selectAndActivateTab(PortalSession.LAYER_USER_TAB);
 	}
 	
 	public float getOpacity() {

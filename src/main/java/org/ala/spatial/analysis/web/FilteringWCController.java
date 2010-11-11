@@ -662,23 +662,23 @@ public class FilteringWCController extends UtilityComposer {
 
     public void onLater(Event event) throws Exception {
         applyFilterEvented();
-        Clients.showBusy("", false);
+        //Clients.showBusy("", false);
         updateActiveArea(false);
     }
 
     public void onLateron(Event event) throws Exception {
         applyFilterEvented();
         doAdd("");
-        Clients.showBusy("", false);
+        //Clients.showBusy("", false);
     }
 
     public void applyFilter() {
-        Clients.showBusy("Applying filter...", true);
+        //Clients.showBusy("Applying filter...", true);
         if (lbSelLayers.getItemCount() == 0) {
             return;
         }
 
-        Clients.showBusy("Applying filter...", true);
+        //Clients.showBusy("Applying filter...", true);
         Events.echoEvent("onLater", this, null);
     }
 
@@ -693,7 +693,7 @@ public class FilteringWCController extends UtilityComposer {
         }
 
         if (doAdd) {
-            Clients.showBusy("Applying filter...", true);
+            //Clients.showBusy("Applying filter...", true);
             Events.echoEvent("onLateron", this, null);
         } else {
             applyFilter();

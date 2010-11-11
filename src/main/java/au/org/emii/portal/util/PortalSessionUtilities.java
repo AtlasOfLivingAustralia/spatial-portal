@@ -369,7 +369,7 @@ public class PortalSessionUtilities {
     }
 
     public SearchCatalogue getSelectedSearchCatalogue(PortalSession portalSession) {
-        return settings.getSearchCatalogues().get(portalSession.getSelectedSearchCatalogueId());
+        return null;//settings.getSearchCatalogues().get(portalSession.getSelectedSearchCatalogueId());
     }
 
     public Settings getSettings() {

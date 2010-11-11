@@ -244,7 +244,7 @@ public class SpeciesAutoComplete extends Combobox {
                 String[] aslist = slist.split("\n");
                 //System.out.println("Got " + aslist.length + " records.");
 
-                if (aslist.length > 0) {
+                if (aslist.length > 1) {
 
                     Arrays.sort(aslist);
 

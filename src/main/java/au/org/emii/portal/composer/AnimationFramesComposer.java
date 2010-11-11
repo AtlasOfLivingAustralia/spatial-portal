@@ -54,11 +54,11 @@ public class AnimationFramesComposer extends UtilityComposer {
 	}
 	
 	public AnimationControlsComposer getAnimationControlsComposer() {
-		return ((MapComposer) Executions.getCurrent()
+		return null; /*((MapComposer) Executions.getCurrent()
 				.getDesktop()
 					.getPage("MapZul")
 						.getFellow("mapPortalPage")
-		).getAnimationControlsComposer();
+		).getAnimationControlsComposer();*/
 	}
 
 	public MapLayer getActiveLayer() {

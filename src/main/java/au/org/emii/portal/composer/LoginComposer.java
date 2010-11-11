@@ -212,7 +212,7 @@ public class LoginComposer extends UtilityComposer {
         // hide any error message before removing window
         loginInvalidMessage.setVisible(false);
         
-        getMapComposer().loginActions();  // login actions for all the site        
+//        getMapComposer().loginActions();  // login actions for all the site        
 
     }
 

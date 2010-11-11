@@ -17,7 +17,7 @@ public class IdGeneratorImpl implements IdGenerator {
                i++;// Start from 1
                desktop.setAttribute("Id_Num", String.valueOf(i));
               // System.out.println("GENERATING NEW ZK ID: " + i);
-               return "zk-comp-" + i;
+               return "zkcomp" + i;
        }
 
        @Override

@@ -40,11 +40,11 @@ public class UserDefinedMapLayerRemoveEventListener extends PortalEvent implemen
 				mc.deactiveLayer(mi.getValueAsMapLayer(), false, true);
 			
 				// step 2, remove the mapLayer from portalSession
-				mc.removeUserDefinedMenuItem(mi);
+//				mc.removeUserDefinedMenuItem(mi);
 				
 				// update layer controls and remove the layers from the map
 				mc.updateLayerControls();
-				mc.updateUserDefinedView();
+				//mc.updateUserDefinedView();
 				/* removing menu items can stop the user defined view from
 				 * being displayable any more - switch to facilities tab 
 				 * if so
@@ -52,7 +52,7 @@ public class UserDefinedMapLayerRemoveEventListener extends PortalEvent implemen
 				PortalSession ps = mc.getPortalSession();
 				if (! ps.isUserDefinedViewDisplayable()) {
 					// set application state for selecting the view...
-					mc.selectAndActivateTab(PortalSession.LAYER_FACILITY_TAB);
+				//	mc.selectAndActivateTab(PortalSession.LAYER_FACILITY_TAB);
 				}
 				
 				/* try to add the layer back to the list of available layers

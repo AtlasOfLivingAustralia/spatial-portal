@@ -8,29 +8,18 @@ import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.UriResolver;
 import au.org.emii.portal.value.BoundingBox;
-import au.org.emii.portal.menu.Facility;
 import au.org.emii.portal.net.HttpAuthenticateProxy;
-import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.menu.Link;
 import au.org.emii.portal.mest.webservice.MestSearchKeywords;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
-import au.org.emii.portal.menu.Region;
 import au.org.emii.portal.wms.RemoteMap;
 import au.org.emii.portal.factory.SearchCatalogueFactory;
-import au.org.emii.portal.config.xmlbeans.Service;
-import au.org.emii.portal.config.xmlbeans.BaseLayer;
-import au.org.emii.portal.config.xmlbeans.Discovery;
-import au.org.emii.portal.config.xmlbeans.LayerGroup;
 import au.org.emii.portal.config.xmlbeans.LayerIdentifiers;
 import au.org.emii.portal.config.xmlbeans.Menu;
 import au.org.emii.portal.config.xmlbeans.MestAccountManager;
-import au.org.emii.portal.config.xmlbeans.SearchCatalogue;
-import au.org.emii.portal.mest.MestConfiguration;
 import au.org.emii.portal.config.xmlbeans.PortalDocument;
 import au.org.emii.portal.config.xmlbeans.PropertiesAccountManager;
-import au.org.emii.portal.config.xmlbeans.RegionLayerGroup;
-import au.org.emii.portal.config.xmlbeans.Settings.MestConfigurations;
 import au.org.emii.portal.config.xmlbeans.StaticLink;
 import au.org.emii.portal.config.xmlbeans.Supplementary;
 import au.org.emii.portal.config.xmlbeans.UriEndPoints;
@@ -39,17 +28,12 @@ import au.org.emii.portal.config.xmlbeans.UserAccount;
 import au.org.emii.portal.factory.MestConfigurationFactory;
 import au.org.emii.portal.util.LayerGroupFactory;
 import au.org.emii.portal.util.PortalSessionUtilities;
-import au.org.emii.portal.mest.webservice.MestWebServiceParameters;
-import au.org.emii.portal.mest.webservice.MestWebServiceParametersImpl;
 import au.org.emii.portal.factory.MasterServiceFactoryConfigurer;
 import au.org.emii.portal.factory.MestServiceFactory;
 import au.org.emii.portal.factory.PropertiesServiceFactory;
-import au.org.emii.portal.menu.MenuGroup;
 import au.org.emii.portal.service.ServiceFactory;
 import java.io.File;
 import java.net.Authenticator;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,15 +170,14 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
 
 
         // note - menu depends on datasources being loaded first!
-        dataSource();
-        blacklist();
+        //dataSource();
+        //blacklist();
 
         menu();
 
+        //search();
 
-        search();
-
-        userAccount();
+        //userAccount();
 
         finaliseSession();
 
@@ -268,7 +251,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
             settings.setIsoCountriesFilename(xmlSettings.getIsoCountriesFilename());
 
             // remaining items are complex types so needs special handling
-            settings.setMestConfigurations(mestConfigurations());
+            //settings.setMestConfigurations(mestConfigurations());
             settings.setDefaultBoundingBox(defaultBoundingBox());
         } catch (NullPointerException e) {
             // FIXME - make this message nicer
@@ -370,7 +353,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     /**
      * Process mest configurations from settings section
      */
-    private Map<String, MestConfiguration> mestConfigurations() {
+/*    private Map<String, MestConfiguration> mestConfigurations() {
         Map<String, MestConfiguration> mestConfigurations = new HashMap<String, MestConfiguration>();
         MestConfigurations xmlMestConfigurations = portalDocument.getPortal().getSettings().getMestConfigurations();
         for (au.org.emii.portal.config.xmlbeans.MestConfiguration xmlMestConfiguration : xmlMestConfigurations.getMestConfigurationList()) {
@@ -384,7 +367,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
             }
         }
         return mestConfigurations;
-    }
+    }*/
 
     private void menu() {
         logger.debug("menu...");
@@ -420,7 +403,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         settings.setDisableUserDefined(xmlMenu.getDisableUserDefinedTab());
 
         // facilities
-        if (xmlMenu.getFacilities().getDisabled()) {
+        /*if (xmlMenu.getFacilities().getDisabled()) {
             logger.info("not loading any facilities because they are disabled in config file");
         } else {
             for (LayerGroup configuredFacility : xmlMenu.getFacilities().getFacilityList()) {
@@ -489,7 +472,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
                     "does not exist or is disabled");
         } else {
             workingPortalSession.setSelectedMenuId(defaultMenuId);
-        }
+        }*/
 
         // normally it's enought just to not load things we don't want to appear in the menus
         // but for the top links section, we provide a convienience flag to indicate whether
@@ -497,7 +480,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         // the menu easily if required
         settings.setDisableTopLinks(xmlMenu.getTopRightLinks().getDisabled());
     }
-
+/*
     private <T extends Facility> T processFacilityOrRegion(LayerGroup configured, PortalSession portalSession, Class<T> clazz) {
         T facilityOrRegion = null;
         if (!configured.getDisabled()) {
@@ -508,7 +491,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
                     + " Known as " + configured.getName() + " because it is disabled");
         }
         return facilityOrRegion;
-    }
+    }*/
 
     private void uriResolver() {
         logger.debug("uriResolver...");
@@ -543,7 +526,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
             }
         }
     }
-
+/*
     private void search() {
         logger.debug("search...");
         Map<String, au.org.emii.portal.value.SearchCatalogue> searchCatalogues = new HashMap<String, au.org.emii.portal.value.SearchCatalogue>();
@@ -601,7 +584,8 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         // any npes on use
         settings.setSearchCatalogues(searchCatalogues);
     }
-
+*/
+    /*
     private void processDiscovery(Discovery discovery, PortalSession portalSession) {
         if (!discovery.getDisabled()) {
             MapLayer mapLayer;
@@ -619,7 +603,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
                  * well, so you can get control over the flags do the discover
                  * call for now, since autodiscover supports fixed versions
                  * as well.  Will review this in v2...
-                 */
+                 *//*
                 mapLayer = remoteMap.discover(discovery, false, false, false);
             }
 
@@ -634,13 +618,13 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
                     "skipping discovery from " + discovery.getId() + " at "
                     + uriResolver.resolve(discovery) + " because it is disabled in configuration file");
         }
-    }
+    }*/
 
     /**
      * process the base layers
      * @param service
      * @return
-     */
+     *//*
     private void processBaseLayer(BaseLayer baseLayer, PortalSession portalSession) {
         if (!baseLayer.getDisabled()) {
             MapLayer mapLayer = remoteMap.baseLayer(baseLayer);
@@ -666,8 +650,8 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
                     "skipping loading service " + service.getId() + " at "
                     + uriResolver.resolve(service) + " because it is disabled in configuration file");
         }
-    }
-
+    }*/
+/*
     private void dataSource() {
         logger.debug("dataSource...");
 
@@ -710,7 +694,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
 
         /* Check the datasource configuration is valid before returning.
          * we want at least one base layer and at least one map layer
-         */
+         *//*
         List<String> errorMessages = new ArrayList<String>();
         if (workingPortalSession.getMapLayers().size() == 0) {
             errorMessages.add(
@@ -730,7 +714,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
 //                    "Invalid datasource configuration",
 //                    errorMessages);
 //        }
-    }
+    }*/
 
     /**
      * copy the static link information from the xmlbean into a POJO.  Why not just
@@ -750,7 +734,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
                     + " for " + staticLink.getUri() + " because it is disabled");
         }
     }
-
+/*
     private void loadMestAccountManagers() {
         Map<String, MestWebServiceParameters> services = new HashMap<String, MestWebServiceParameters>();
         List<MestAccountManager> xmlManagers = portalDocument.getPortal().getUserAccount().getAccountManagers().getMestAccountManagerList();
@@ -791,7 +775,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
             }
         }
         mestServiceFactory.setServices(services);
-    }
+    }*/
 
     private void loadMasterServiceFactory() {
         Map<String, ServiceFactory> factories = new HashMap<String, ServiceFactory>();
@@ -840,7 +824,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         // mest
         for (MestAccountManager mestAccountManager : mestManagers) {
             if (mestAccountManager.getId().equals(id)) {
-                found = mestServiceFactory;
+           //     found = mestServiceFactory;
             }
         }
 
@@ -892,7 +876,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         }
         settings.setDisableAdminConsole(xmlUserAccount.getAdminConsoleDisabled());
 
-        loadMestAccountManagers();
+        //loadMestAccountManagers();
         loadPropertiesAccountManagers();
         loadMasterServiceFactory();
 
@@ -1066,7 +1050,6 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     public void setMasterServiceFactoryConfigurer(MasterServiceFactoryConfigurer masterServiceFactoryConfigurer) {
         this.masterServiceFactoryConfigurer = masterServiceFactoryConfigurer;
     }
-
 
     public MestServiceFactory getMestServiceFactory() {
         return mestServiceFactory;

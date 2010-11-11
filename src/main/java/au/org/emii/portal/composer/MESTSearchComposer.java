@@ -195,7 +195,7 @@ public class MESTSearchComposer extends UtilityComposer {
         version = serverWMS.getVersion();
         MapComposer mc = getThisMapComposer();
 
-        boolean bCheck = mc.addWMSServer(serverName, s, version, opacity, false);
+        boolean bCheck = false;//mc.addWMSServer(serverName, s, version, opacity, false);
 
         if (bCheck) {
             mc.showMessage("Server successfully added");
