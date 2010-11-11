@@ -465,7 +465,7 @@ public class HeatMap {
             // we check if the maxValue = 0
             // 0 tells us that there are no records in the 
             // current "bounding box"            
-            if (maxValue == 0) {
+            if (maxValue > 0) {
                 // we are doing "1" here to make sure nothing is 0
                 int roundFactor = 1;
 

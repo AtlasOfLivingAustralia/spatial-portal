@@ -16,8 +16,12 @@ import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.heatmap.HeatMap;
 import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.Species;
+import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.SimpleShapeFile;
+import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -82,28 +86,38 @@ public class WMSController {
 
         TabulationSettings.load();
 
+        String area = "";
+        area += "POLYGON((";
+        area += "110.911 -44.778,";
+        area += "110.911 -9.221,";
+        area += "156.113 -9.221,";
+        area += "156.113  -44.778,";
+        area += "110.911 -44.778";
+        area += "))";
+        SimpleRegion region = SimpleShapeFile.parseWKT(area);
+
         baseOutUrl = TabulationSettings.base_output_url + "/output/sampling/";
 
         try {
             String lsid = "";
             if (family_lsid != null) {
-                System.out.print("generating family density map for: " + family_lsid);
+                SpatialLogger.log("generating family density map for: " + family_lsid);
                 //msg = "generating density family map for: " + family_lsid;
                 lsid = family_lsid;
             } else if (genus_lsid != null) {
-                System.out.print("generating genus density map for: " + genus_lsid);
+                SpatialLogger.log("generating genus density map for: " + genus_lsid);
                 //msg = "generating density genus map for: " + genus_lsid;
                 lsid = genus_lsid;
             } else if (species_lsid != null) {
-                System.out.print("generating species density map for: " + species_lsid);
+                SpatialLogger.log("generating species density map for: " + species_lsid);
                 //msg = "generating density species map for: " + species_lsid;
                 lsid = species_lsid;
             } else if (subspecies_lsid != null) {
-                System.out.print("generating subspecies density map for: " + subspecies_lsid);
+                SpatialLogger.log("generating subspecies density map for: " + subspecies_lsid);
                 //msg = "generating density subspecies map for: " + subspecies_lsid;
                 lsid = subspecies_lsid;
             } else if (tcid != null) {
-                System.out.print("generating taxonconceptid density map for: " + tcid);
+                SpatialLogger.log("generating taxonconceptid density map for: " + tcid);
                 //msg = "generating density subspecies map for: " + subspecies_lsid;
                 //lsid = tcid;
             }
@@ -114,17 +128,17 @@ public class WMSController {
             File baseDir = new File(currentPath + "output" + File.separator + "sampling" + File.separator);
             if (!lsid.equalsIgnoreCase("")) {
                 String outputfile = baseDir + File.separator + lsid.replace(":", "_") + ".png";
-                System.out.println("Checking if already present: " + outputfile);
+                SpatialLogger.log("Checking if already present: " + outputfile);
                 File imgFile = new File(outputfile);
                 if (imgFile.exists()) {
-                    System.out.println("File already present, sending that: " + baseOutUrl + lsid.replace(":", "_") + ".png");
+                    SpatialLogger.log("File already present, sending that: " + baseOutUrl + lsid.replace(":", "_") + ".png");
                     //msg = baseOutUrl + lsid.replace(":", "_") + ".png";
 
                     // output = generateOutput(baseOutUrl + lsid.replace(":", "_") + ".png", baseOutUrl + "legend_" + lsid.replace(":", "_") + ".png", isHeatmap);
-                    output = generateOutput(lsid.replace(":", "_") + ".png", "legend_" + lsid.replace(":", "_") + ".png", "");
+                    output = generateOutput(lsid.replace(":", "_") + ".png", "legend_" + lsid.replace(":", "_") + ".png", "check");
 
                 } else {
-                    System.out.println("Starting out search for: " + lsid);
+                    SpatialLogger.log("Starting out search for: " + lsid);
 
                     //     IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(vtn.getScientificname());
                     IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
@@ -133,7 +147,7 @@ public class WMSController {
                             double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
 
                             System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
-                            //HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());                            
+                            //HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());
                             HeatMap hm = new HeatMap(baseDir, lsid.replace(":", "_"));
                             if ((points.length / 2) < 500) {
                                 hm.generatePoints(points);
@@ -142,11 +156,12 @@ public class WMSController {
                             } else {
                                 hm.generateClasses(points);
                                 hm.drawOuput(outputfile, true);
-                                isHeatmap=true; 
+                                isHeatmap=true;
                             }
 
                             //msg = baseOutUrl + lsid.replace(":", "_") + ".png";
-                            output = generateOutput(baseOutUrl + lsid.replace(":", "_") + ".png", baseOutUrl + "legend_" + lsid.replace(":", "_") + ".png", isHeatmap);
+                            //output = generateOutput(baseOutUrl + lsid.replace(":", "_") + ".png", baseOutUrl + "legend_" + lsid.replace(":", "_") + ".png", isHeatmap);
+                            output = generateOutput(lsid.replace(":", "_") + ".png", "legend_" + lsid.replace(":", "_") + ".png", ((isHeatmap) ? "heatmap" : "points")); 
                             System.out.println("Sending out: " + msg);
 
                         } else {
@@ -159,6 +174,31 @@ public class WMSController {
                         //msg = baseOutUrl + "base/mapaus1_white.png";
                         output = generateOutput("base/mapaus1_white.png", "", "blank");
                     }
+
+//                    SpatialLogger.log("Looking for " + lsid + " within region: " + area);
+//                    SamplingService ss = SamplingService.newForLSID(lsid);
+//                    double[] p = ss.sampleSpeciesPoints(lsid, region, null);
+//                    if (p != null) {
+//                        SpatialLogger.log("HeatMap.baseDir: " + baseDir.getAbsolutePath());
+//                        //HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());
+//                        HeatMap hm = new HeatMap(baseDir, lsid.replace(":", "_"));
+//                        if ((p.length / 2) < 500) {
+//                            hm.generatePoints(p);
+//                            hm.drawOuput(outputfile, false);
+//                            isHeatmap = false;
+//                        } else {
+//                            hm.generateClasses(p);
+//                            hm.drawOuput(outputfile, true);
+//                            isHeatmap = true;
+//                        }
+//
+//                        //msg = baseOutUrl + lsid.replace(":", "_") + ".png";
+//                        output = generateOutput(baseOutUrl + lsid.replace(":", "_") + ".png", baseOutUrl + "legend_" + lsid.replace(":", "_") + ".png", isHeatmap);
+//                        SpatialLogger.log("Sending out: " + msg);
+//                    } else {
+//                        output = generateOutput("base/mapaus1_white.png", "", "blank");
+//                    }
+
                 }
             } else if (institutionUid != null) {
                 //msg = baseOutUrl + process(baseDir, "institution_code_uid", institutionUid);
@@ -176,14 +216,14 @@ public class WMSController {
                 //msg = baseOutUrl + process(baseDir, "taxonConceptId", tcid);
                 output = process(baseDir, "taxonConceptId", tcid);
             } else if (spname != null) {
-                System.out.println("Mapping via speciesname: " + spname);
+                SpatialLogger.log("Mapping via speciesname: " + spname);
                 String outputfile = baseDir + File.separator + spname + ".png";
                 //IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(spname);
                 IndexedRecord[] ir = null;
                 if (ir != null) {
                     double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
 
-                    System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
+                    SpatialLogger.log("HeatMap.baseDir: " + baseDir.getAbsolutePath());
                     HeatMap hm = new HeatMap(baseDir, spname);
                     if ((points.length / 2) < 500) {
                         hm.generatePoints(points);
@@ -198,18 +238,18 @@ public class WMSController {
 
                     //msg = baseOutUrl + spname + ".png";
                     //output = generateOutput(baseOutUrl + spname + ".png", baseOutUrl + "legend_" + spname + ".png", isHeatmap);
-                    output = generateOutput(spname + ".png", "legend_" + spname + ".png", ((isHeatmap)?"heatmap":"points"));
-                    System.out.println("Sending out: " + msg);
+                    output = generateOutput(spname + ".png", "legend_" + spname + ".png", ((isHeatmap) ? "heatmap" : "points"));
+                    SpatialLogger.log("Sending out: " + msg);
 
                 } else {
-                    System.out.println("getting " + spname + " from db");
+                    SpatialLogger.log("getting " + spname + " from db");
                     List<Species> species = speciesDao.getRecordsById(spname);
 
                     if (species != null) {
                         double[] points = new double[species.size() * 2];
                         int pi = 0;
                         for (Species sp : species) {
-                            System.out.println("sp: " + sp.getSpecies() + " at " + sp.getLongitude() + ", " + sp.getLatitude());
+                            SpatialLogger.log("sp: " + sp.getSpecies() + " at " + sp.getLongitude() + ", " + sp.getLatitude());
                             points[pi] = Double.parseDouble(sp.getLongitude());
                             points[pi + 1] = Double.parseDouble(sp.getLatitude());
                             pi += 2;
@@ -227,13 +267,13 @@ public class WMSController {
 
                         //msg = baseOutUrl + spname + ".png";
                         //output = generateOutput(baseOutUrl + spname + ".png", baseOutUrl + "legend_" + spname + ".png", isHeatmap);
-                        output = generateOutput(spname + ".png", "legend_" + spname + ".png", ((isHeatmap)?"heatmap":"points"));
-                        System.out.println("Sending out: " + msg);
+                        output = generateOutput(spname + ".png", "legend_" + spname + ".png", ((isHeatmap) ? "heatmap" : "points"));
+                        SpatialLogger.log("Sending out: " + msg);
 
                     } else {
                         //msg = baseOutUrl + "base/mapaus1_white.png";
                         output = generateOutput("base/mapaus1_white.png", "", "blank");
-                        System.out.println("Empty filter species");
+                        SpatialLogger.log("Empty filter species");
                     }
 
 
@@ -294,7 +334,7 @@ public class WMSController {
                 }
             }
 
-            System.out.println("final count: " + count);
+            SpatialLogger.log("final count: " + count);
 
             int[] finalArray = new int[count];
             System.arraycopy(tmpArray, 0, finalArray, 0, finalArray.length);
@@ -315,15 +355,15 @@ public class WMSController {
         //String baseOutUrl = TabulationSettings.base_output_url + "/output/sampling/";
 
         String outputfile = baseDir + File.separator + value + ".png";
-        System.out.println("Checking if already present: " + outputfile);
+        SpatialLogger.log("Checking if already present: " + outputfile);
         File imgFile = new File(outputfile);
         if (imgFile.exists()) {
-            System.out.println("File already present, sending that: " + value + ".png");
+            SpatialLogger.log("File already present, sending that: " + value + ".png");
             //msg = value + ".png";
             //output = generateOutput(baseOutUrl + value + ".png", baseOutUrl + "legend_" + value + ".png", isHeatmap);
-            output = generateOutput(value + ".png", "legend_" + value + ".png", "");
+            output = generateOutput(value + ".png", "legend_" + value + ".png", "check");
         } else {
-            System.out.println("Starting out search for: " + value);
+            SpatialLogger.log("Starting out search for: " + value);
             //msg = "generating density data_provider_id map for: " + value;
             int[] recs = OccurrencesIndex.lookup(key, value);
             if (recs != null) {
@@ -336,7 +376,7 @@ public class WMSController {
                     points[i] = pts[finalRecs[i / 2]][0];
                     points[i + 1] = pts[finalRecs[i / 2]][1];
                 }
-                System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
+                SpatialLogger.log("HeatMap.baseDir: " + baseDir.getAbsolutePath());
                 HeatMap hm = new HeatMap(baseDir, value);
                 if ((points.length / 2) < 500) {
                     hm.generatePoints(points);
@@ -349,12 +389,12 @@ public class WMSController {
                 }
 
                 //msg = value + ".png";
-                output = generateOutput(value + ".png", "legend_" + value + ".png", ((isHeatmap)?"heatmap":"points"));
+                output = generateOutput(value + ".png", "legend_" + value + ".png", ((isHeatmap) ? "heatmap" : "points"));
             } else {
                 //msg = "base/mapaus1_white.png";
                 output = generateOutput("base/mapaus1_white.png", "", "blank");
             }
-            System.out.println("Sending out: " + msg);
+            SpatialLogger.log("Sending out: " + msg);
         }
 
         return output;
@@ -381,7 +421,7 @@ public class WMSController {
         // check if the legend file exists,
         // if so, then its a heatmap
         // else it's a point map
-        if (!legUrl.equalsIgnoreCase("")) {
+        if (legUrl.equalsIgnoreCase("check")) {
             String legfile = baseDir + File.separator + "legend_" + mapUrl;
             File legFile = new File(legfile);
             if (legFile.exists()) {
@@ -436,7 +476,7 @@ public class WMSController {
         String type = "heatmap";
         if (!heatmap) {
             type = "points";
-            legUrl = ""; 
+            legUrl = "";
         }
         output.put("mapUrl", mapUrl);
         output.put("legendUrl", legUrl);
@@ -451,7 +491,7 @@ public class WMSController {
         String value = lsid;
 
         List<Species> species = speciesDao.getRecordsById(lsid);
-        System.out.println("Found " + species.size() + " records via db");
+        SpatialLogger.log("Found " + species.size() + " records via db");
         double[] points = null;
         String outputfile = "";
         File baseDir = null;
