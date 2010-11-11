@@ -432,6 +432,9 @@ public class SelectionController extends UtilityComposer {
                    //     mc.removeFromList(mc.getMapLayer("Active Area"));
                         MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
                         updateSpeciesList(false);
+                        searchPoint.setValue("");
+                        setInstructions(null, null);
+
                       
                         break;
                     }
