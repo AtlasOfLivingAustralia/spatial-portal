@@ -332,7 +332,7 @@ public class HeatMap {
         Graphics2D g = (Graphics2D) monochromeImage.getGraphics();
         float radius = 10f;
 
-        Shape circle = new Ellipse2D.Float(p.x - (radius/2), p.y - (radius/2), radius, radius);
+        Shape circle = new Ellipse2D.Float(p.x - (radius / 2), p.y - (radius / 2), radius, radius);
         //g.drawImage(dotImage, null, p.x - circleRadius, p.y - circleRadius);
         g.draw(circle);
         g.setPaint(Color.blue);
@@ -462,26 +462,31 @@ public class HeatMap {
 
             System.out.println("maxW: " + maxValue);
 
-            // we are doing "1" here to make sure nothing is 0
-            int roundFactor = 1;
+            // we check if the maxValue = 0
+            // 0 tells us that there are no records in the 
+            // current "bounding box"            
+            if (maxValue == 0) {
+                // we are doing "1" here to make sure nothing is 0
+                int roundFactor = 1;
 
-            for (int mi = 0; mi < width; mi++) {
-                for (int mj = 0; mj < height; mj++) {
-                    int rgba = (int) (255 - Math.log(dPoints[mi][mj]) * 255 / Math.log((double) maxValue));
-                    if (rgba < 255 && rgba > 255 - (255 / numColours) - roundFactor) {
-                        rgba = 255 - (255 / numColours) - roundFactor;
+                for (int mi = 0; mi < width; mi++) {
+                    for (int mj = 0; mj < height; mj++) {
+                        int rgba = (int) (255 - Math.log(dPoints[mi][mj]) * 255 / Math.log((double) maxValue));
+                        if (rgba < 255 && rgba > 255 - (255 / numColours) - roundFactor) {
+                            rgba = 255 - (255 / numColours) - roundFactor;
+                        }
+                        //rgba <<= 8;
+                        //
+                        //rgba = (((short)rgba) & 0x000000ff) << 24;
+                        rgba = (rgba) | (rgba << 8) | (rgba << 16) | 0xff000000;
+                        //System.out.println("rgba: " + Integer.toHexString(rgba));
+
+                        monochromeImage.setRGB(mi, mj, rgba);
                     }
-                    //rgba <<= 8;
-                    //
-                    //rgba = (((short)rgba) & 0x000000ff) << 24;
-                    rgba = (rgba) | (rgba << 8) | (rgba << 16) | 0xff000000;
-                    //System.out.println("rgba: " + Integer.toHexString(rgba));
-
-                    monochromeImage.setRGB(mi, mj, rgba);
                 }
-            }
 
-            generateLegend(maxValue);
+                generateLegend(maxValue);
+            }
         } catch (Exception e) {
             System.out.println("Error generating log scale circle:");
             e.printStackTrace(System.out);
