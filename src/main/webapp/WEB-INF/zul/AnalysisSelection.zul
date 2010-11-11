@@ -128,21 +128,9 @@ An area can be defined by any of the options below. Once defined, the area can b
                 // transform the point from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 point.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxSearchPoint = $e('${searchPoint.uuid}');
-                tbxSearchPoint.value = point.lon + "," + point.lat;
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSearchPoint.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSearchPoint.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSearchPoint.fireEvent('onblur');
-                    tbxSearchPoint.fireEvent('onchange');
-                }
+                var value = point.lon + "," + point.lat;
+                
+                zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchPoint', value));
             }
 
             function setSpeciesSearchPointAnalysis(point_orig) {
@@ -150,22 +138,10 @@ An area can be defined by any of the options below. Once defined, the area can b
 
                 // transform the point from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
-                point.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxSpeciesSearchPoint = $e('${searchSpeciesPoint.uuid}');
-                tbxSpeciesSearchPoint.value = point.lon + "," + point.lat;
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSpeciesSearchPoint.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSpeciesSearchPoint.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSpeciesSearchPoint.fireEvent('onblur');
-                    tbxSpeciesSearchPoint.fireEvent('onchange');
-                }
+                point.transform(mapObj.projection, mapObj.displayProjection);                
+                var value = point.lon + "," + point.lat;
+                
+                zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchSearchPoint', value));                
             }
 
             function setSelectionGeometry(geometry_orig) {
@@ -174,42 +150,17 @@ An area can be defined by any of the options below. Once defined, the area can b
                 // transform the geometry from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 geometry.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxSelectionGeom = $e('${selectionGeom.uuid}');
-                tbxSelectionGeom.value = geometry;
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSelectionGeom.fireEvent('onblur');
-                    tbxSelectionGeom.fireEvent('onchange');
-                }
+                var value = geometry;
+                
+                zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value));   
             }
 
             function setSelectionLayerGeometry(geometry_orig) {            
                 var geometry = geometry_orig;
 
                 var mapObj = window.frames.mapFrame.map;
-                var tbxSelectionGeom = $e('${selectionGeom.uuid}');
-                tbxSelectionGeom.value = "LAYER(" + geometry + ")";
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSelectionGeom.fireEvent('onblur');
-                    tbxSelectionGeom.fireEvent('onchange');
-                }
+                var value = "LAYER(" + geometry + ")";
+                zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value)); 
             }
 
             function setBoxGeometry(geometry_orig) {
@@ -218,21 +169,9 @@ An area can be defined by any of the options below. Once defined, the area can b
                 // transform the geometry from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 geometry.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxBoxGeom = $e('${boxGeom.uuid}');
-                tbxBoxGeom.value = geometry;
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxBoxGeom.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxBoxGeom.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxBoxGeom.fireEvent('onblur');
-                    tbxBoxGeom.fireEvent('onchange');
-                }
+                var value = geometry;
+                
+                zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onBoxGeom', value)); 
             }
         </script>
     </window>

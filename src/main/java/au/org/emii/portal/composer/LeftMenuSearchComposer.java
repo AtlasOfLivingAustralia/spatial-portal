@@ -41,10 +41,10 @@ public class LeftMenuSearchComposer extends UtilityComposer {
     private MESTSearchComposer searchWindow;
     private Datebox startdate;
     private Datebox enddate;
-    private Doublebox north;
-    private Doublebox south;
-    private Doublebox east;
-    private Doublebox west;
+    private double north;
+    private double south;
+    private double east;
+    private double west;
     private Div geoDiv;
     private Div dateDiv;
 
@@ -123,10 +123,10 @@ public class LeftMenuSearchComposer extends UtilityComposer {
             if (chkSearch) {
 
                 if (sq.isUseBBOX()) {
-                    sq.setTop(north.doubleValue());
-                    sq.setBottom(south.doubleValue());
-                    sq.setRight(east.doubleValue());
-                    sq.setLeft(west.doubleValue());
+                    sq.setTop(north);
+                    sq.setBottom(south);
+                    sq.setRight(east);
+                    sq.setLeft(west);
                 }
 
                 Session session = (Session) Sessions.getCurrent();
@@ -192,10 +192,10 @@ public class LeftMenuSearchComposer extends UtilityComposer {
 
                 Double n = us.getNorth();
                 if (!n.equals(-999.0)) {
-                    east.setValue(us.getEast());
-                    north.setValue(us.getNorth());
-                    south.setValue(us.getSouth());
-                    west.setValue(us.getWest());
+                    east = (us.getEast());
+                    north = (us.getNorth());
+                    south = (us.getSouth());
+                    west = (us.getWest());
                     chkBBOX.setChecked(true);
                 } else {
                     logger.debug("no BBOX");
@@ -324,10 +324,10 @@ public class LeftMenuSearchComposer extends UtilityComposer {
 
     public BoundingBox getViewportBoundingBox() {
         BoundingBox bbox = new BoundingBox();
-        bbox.setMaxLatitude(north.getValue().floatValue());
-        bbox.setMinLatitude(south.getValue().floatValue());
-        bbox.setMinLongitude(west.getValue().floatValue());
-        bbox.setMaxLongitude(east.getValue().floatValue());
+        bbox.setMaxLatitude((float)north);
+        bbox.setMinLatitude((float)south);
+        bbox.setMinLongitude((float)west);
+        bbox.setMaxLongitude((float)east);
         return bbox;
     }
 
@@ -346,19 +346,24 @@ public class LeftMenuSearchComposer extends UtilityComposer {
             loadSavedSearches();
         }
     }
-
-    public void onChange$west(Event e) {
-        //echo to give time for all doubleboxes to be updated
+    
+    public void setExtents(Event event) {
+        String [] extents = ((String) event.getData()).split(",");
+        west = Double.parseDouble(extents[0]);
+        north = Double.parseDouble(extents[1]);
+        east = Double.parseDouble(extents[2]);
+        south = Double.parseDouble(extents[3]);
+        
         Events.echoEvent("triggerViewportChange", this, null);
     }
 
     public void triggerViewportChange(Event e) throws Exception {
         //update bounding box for this session
         BoundingBox bb = new BoundingBox();
-        bb.setMinLatitude(south.getValue().floatValue());
-        bb.setMaxLatitude(north.getValue().floatValue());
-        bb.setMinLongitude(west.getValue().floatValue());
-        bb.setMaxLongitude(east.getValue().floatValue());
+        bb.setMinLatitude((float)south);
+        bb.setMaxLatitude((float)north);
+        bb.setMinLongitude((float)west);
+        bb.setMaxLongitude((float)east);
         getMapComposer().getPortalSession().setDefaultBoundingbox(bb);
         
         for (EventListener el : viewportChangeEvents.values()) {

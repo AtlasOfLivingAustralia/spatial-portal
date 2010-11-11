@@ -172,7 +172,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public String tbxPrintHack;
     int mapZoomLevel = 4;
     private Hashtable activeLayerMapProperties;
-
+        
     /*
      * for capturing layer loaded events signaling listeners
      */

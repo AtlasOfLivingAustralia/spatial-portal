@@ -30,7 +30,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     <script src="/scripts/jquery-1.2.6.min.js" type="text/javascript"></script>
     <script src="/scripts/jqDnR.js" type="text/javascript"></script>
 
-    <script defer="true" type="text/javascript">
+    <script defer="false" type="text/javascript">
         var mapLayers = null;
         var currFeature = null;
         var map = null;
@@ -108,7 +108,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                            tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
 
                             <!--  internal links -->
-                            <toolbarbutton if="${! each.external}" label="${each.name}"
+                            <toolbarbutton id="buttonforsomething" if="${! each.external}" label="${each.name}"
                                            tooltiptext="${each.description}" zclass="leftmenu_ahref"
                                            forward="onClick=onActivateLink()" >
                                 <custom-attributes link="${each}" />
@@ -556,6 +556,11 @@ border-bottom: none;
             }
 
             ${session.attributes.portalSession.onIframeMapFullyLoaded};
+            
+            map = window.mapFrame.map;
+            mapFrame = window.mapFrame;
+            
+            console.log(map);
 
             //update map extents
             var printing = false;
@@ -664,7 +669,8 @@ function changeBaseLayer(type) {
 function showSpeciesInfo(occids, lon, lat) {
     window.mapFrame.showSpeciesInfo(occids, lon, lat); 
 }          
-          
+          ]]></script>
+          <!-- script defer="false" type="text/javascript"><![CDATA[
             
        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'<http://google-analytics.com/ga.js'> type='text/javascript'%3E%3C/script%3E"));       
@@ -672,7 +678,7 @@ function showSpeciesInfo(occids, lon, lat) {
        pageTracker._initData();
        pageTracker._trackPageview();
        ]]>
-        </script>
+        </script -->
     </window>
 </zk>
 

@@ -72,10 +72,10 @@ import org.zkoss.zul.Window;
 public class SelectionController extends UtilityComposer {
 
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
-    private Textbox searchPoint;
-    private Textbox searchSpeciesPoint;
-    private Textbox selectionGeom;
-    private Textbox boxGeom;
+    private String searchPoint;
+    private String searchSpeciesPoint;
+    private String selectionGeom;
+    private String boxGeom;
     private Textbox displayGeom;
     private Div polygonInfo;
     private Div envelopeInfo;
@@ -401,9 +401,10 @@ public class SelectionController extends UtilityComposer {
      * found at the location (for the current top contextual layer).
      * @param event triggered by the usual javascript trickery
      */
-    public void onChange$searchPoint(Event event) {
-        String lon = searchPoint.getValue().split(",")[0];
-        String lat = searchPoint.getValue().split(",")[1];
+    public void onSearchPoint(Event event) {
+        searchPoint = (String) event.getData();
+        String lon = searchPoint.split(",")[0];
+        String lat = searchPoint.split(",")[1];
         Object llist = CommonData.getLayerListJSONArray();
         JSONArray layerlist = JSONArray.fromObject(llist);
         MapComposer mc = getThisMapComposer();
@@ -448,9 +449,10 @@ public class SelectionController extends UtilityComposer {
      * found at the location (for the current top contextual layer).
      * @param event triggered by the usual javascript trickery
      */
-    public void onChange$searchSpeciesPoint(Event event) {
-        double lon = Double.parseDouble(searchSpeciesPoint.getValue().split(",")[0]);
-        double lat = Double.parseDouble(searchSpeciesPoint.getValue().split(",")[1]);
+    public void onSearchSpeciesPoint(Event event) {
+        searchSpeciesPoint = (String) event.getData();
+        double lon = Double.parseDouble(searchSpeciesPoint.split(",")[0]);
+        double lat = Double.parseDouble(searchSpeciesPoint.split(",")[1]);
 
         double BUFFER_DISTANCE = 0.1;
 
@@ -578,17 +580,18 @@ public class SelectionController extends UtilityComposer {
      * 
      * @param event
      */
-    public void onChange$selectionGeom(Event event) {
+    public void onSelectionGeom(Event event) {
+        selectionGeom = (String) event.getData();
         System.out.println("onchange$selectiongeom");
         setInstructions(null, null);
         try {
             String wkt = "";
-            if (selectionGeom.getValue().contains("NaN NaN")) {
+            if (selectionGeom.contains("NaN NaN")) {
                 displayGeom.setValue(DEFAULT_AREA);
                 lastTool = null;
-            } else if (selectionGeom.getValue().startsWith("LAYER(")) {
+            } else if (selectionGeom.startsWith("LAYER(")) {
                 //get WKT from this feature
-                String v = selectionGeom.getValue().replace("LAYER(", "");
+                String v = selectionGeom.replace("LAYER(", "");
                 //FEATURE(table name if known, class name)
                 v = v.substring(0, v.length() - 1);
                 wkt = getLayerGeoJsonAsWkt(v, true);
@@ -597,7 +600,7 @@ public class SelectionController extends UtilityComposer {
                 //for display
                 wkt = getLayerGeoJsonAsWkt(v, false);
             } else {
-                wkt = selectionGeom.getValue();
+                wkt = selectionGeom;
                 displayGeom.setValue(wkt);
             }
             updateComboBoxText();
@@ -613,10 +616,7 @@ public class SelectionController extends UtilityComposer {
             rgAreaSelection.getSelectedItem().setChecked(false);
 
         } catch (Exception e) {//FIXME
-        }
-
-        //reset selectionGeom for next set (could be the same)
-        selectionGeom.setValue("");
+        }       
     }
 
     void updateComboBoxText() {
@@ -641,15 +641,15 @@ public class SelectionController extends UtilityComposer {
         cbAreaSelection.setText(txt);
     }
 
-    public void onChange$boxGeom(Event event) {
+    public void onBoxGeom(Event event) {
+        boxGeom = (String) event.getData();
         setInstructions(null, null);
         try {
-
-            if (boxGeom.getValue().contains("NaN NaN")) {
+            if (boxGeom.contains("NaN NaN")) {
                 displayGeom.setValue(DEFAULT_AREA);
                 lastTool = null;
             } else {
-                displayGeom.setValue(boxGeom.getValue());
+                displayGeom.setValue(boxGeom);
             }
             updateComboBoxText();
             updateSpeciesList(false); // true
@@ -661,7 +661,7 @@ public class SelectionController extends UtilityComposer {
             //add feature to the map as a new layer
             //mc.removeLayer("Area Selection");
             //mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
-            MapLayer mapLayer = mc.addWKTLayer(boxGeom.getValue(), "Active Area");
+            MapLayer mapLayer = mc.addWKTLayer(boxGeom, "Active Area");
 
             rgAreaSelection.getSelectedItem().setChecked(false);
 

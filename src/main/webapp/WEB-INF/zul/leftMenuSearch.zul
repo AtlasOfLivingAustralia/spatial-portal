@@ -70,7 +70,7 @@
                                             return result;
                                         }
                                         
-                                        function getGeographicExtentControls() {
+                                        function getGeographicExtentControls() {                                            
                                             //var extent = window.frames.mapFrame.map.getExtent();
                                             // transform the extents from Google Projection to EPSG:4326
                                             var mapObj = window.frames.mapFrame.map;
@@ -80,12 +80,12 @@
                                             document.getElementById('${east.uuid}').value = roundNumber(extent[2],3);
                                             document.getElementById('${south.uuid}').value = roundNumber(extent[1],3);
                                             document.getElementById('${west.uuid}').value = roundNumber(extent[0],3);
-                                            try {
-                                                zkTxbox.updateChange($e('${west.uuid}'), false);
-                                                zkTxbox.updateChange($e('${north.uuid}'), false);
-                                                zkTxbox.updateChange($e('${east.uuid}'), false);
-                                                zkTxbox.updateChange($e('${south.uuid}'), false);
-                                            } catch (err) {}
+                                            
+                                            zAu.send(new zk.Event(zk.Widget.$(jq('$leftSearch')[0]), 'setExtents', 
+                                            roundNumber(extent[0],3) + "," + 
+                                            roundNumber(extent[3],3) + "," + 
+                                            roundNumber(extent[2],3) + "," + 
+                                            roundNumber(extent[1],3)));                                            
 
 					}
 
