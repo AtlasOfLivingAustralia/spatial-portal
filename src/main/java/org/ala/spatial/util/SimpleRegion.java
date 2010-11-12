@@ -196,6 +196,23 @@ public class SimpleRegion extends Object implements Serializable {
             type = POLYGON;
             int i;
 
+            //fix extents
+            for (i = 0; i < points.length; i++) {
+                //adjust to -360 and 360
+                while (points[i][0] < -360) {
+                    points[i][0] += 360;
+                }
+                while (points[i][0] > 360) {
+                    points[i][0] -= 360;
+                }
+                while (points[i][1] < -360) {
+                    points[i][1] += 360;
+                }
+                while (points[i][1] > 360) {
+                    points[i][1] -= 360;
+                }
+            }
+
             /* copy and ensure last point == first point */
             int len = points_.length - 1;
             if (points_[0][0] != points_[len][0] || points_[0][1] != points_[len][1]) {
