@@ -1418,6 +1418,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
 
                 /* test for uniqueness */
+                if(sa.length < 2){
+                    continue;
+                }
                 int sz = unique.size();
                 unique.add(sa[0] + sa[1].toLowerCase().trim());
                 if (sz == unique.size()) {

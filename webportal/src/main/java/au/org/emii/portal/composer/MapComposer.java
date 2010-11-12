@@ -3858,6 +3858,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //cluster, must have an lsid
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(settingsSupplementary.getValue(CommonData.SAT_URL));
+            lsid = lsid.replace(".","__");
             sbProcessUrl.append("/alaspatial/species/cluster/lsid/").append(lsid);
             sbProcessUrl.append("/bb");
             HttpClient client = new HttpClient();
