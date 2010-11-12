@@ -107,6 +107,23 @@ public class ComplexRegion extends SimpleRegion {
      *  [][1] is latitude
      */
     public void addPolygon(double[][] points_) {
+        //fix extents
+        for (int i = 0; i < points_.length; i++) {
+            //adjust to -360 and 360
+            while (points_[i][0] < -360) {
+                points_[i][0] += 360;
+            }
+            while (points_[i][0] > 360) {
+                points_[i][0] -= 360;
+            }
+            while (points_[i][1] < -360) {
+                points_[i][1] += 360;
+            }
+            while (points_[i][1] > 360) {
+                points_[i][1] -= 360;
+            }
+        }
+
         SimpleRegion sr = new SimpleRegion();
         sr.setPolygon(points_);
 

@@ -160,6 +160,22 @@ public class SimpleRegion extends Object implements Serializable {
         points[1][0] = Math.max(longitude1, longitude2);
         points[1][1] = Math.max(latitude1, latitude2);
 
+        for (int i = 0; i < points.length; i++) {
+            //adjust to -360 and 360
+            while (points[i][0] < -360) {
+                points[i][0] += 360;
+            }
+            while (points[i][0] > 360) {
+                points[i][0] -= 360;
+            }
+            while (points[i][1] < -360) {
+                points[i][1] += 360;
+            }
+            while (points[i][1] > 360) {
+                points[i][1] -= 360;
+            }
+        }
+
         bounding_box = points;
     }
 
