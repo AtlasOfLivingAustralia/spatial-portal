@@ -3541,9 +3541,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             /* put into double [] */
             int i;
-            for (i = 0; i < number_of_points; i += 2) {
-                dsensitive[i] = sensitiveCoordinates[i / 2][0];
-                dsensitive[i + 1] = sensitiveCoordinates[i / 2][1];
+            for (i = recordstart; i < recordend; i ++) {
+                dsensitive[i*2] = sensitiveCoordinates[i][0];
+                dsensitive[i*2 + 1] = sensitiveCoordinates[i][1];
             }
         } catch (Exception e) {
             SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
@@ -3577,7 +3577,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             /* put into double [] */
             int i;
-            for (i = 0; i < number_of_points; i++) {
+            for (i = recordstart; i <= recordend; i++) {
                 if (sensitiveCoordinates[i][0] != -1 || sensitiveCoordinates[i][1] != -1) {
                     SpatialLogger.log("Occ.isSensitiveRecord(1)");
                     return 1;
