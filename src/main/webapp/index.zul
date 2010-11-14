@@ -17,7 +17,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:h="http://www.w3.org/1999/xhtml"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd"
+    xmlns:w="http://www.zkoss.org/2005/zk/client">
 
     <html><![CDATA[
             <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
@@ -120,7 +121,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     
                 </div>
             </north>
-            <west 	style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
+            <west style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
                    id="menus" collapsible="true" 
                    splittable="true" minsize="250">
                 <div id="westChild">
@@ -469,10 +470,10 @@ border-bottom: none;
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
-                        <button id="switchNormal" label="Map" action="onclick: changeBaseLayer('normal'); window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
-                        <button id="switchSatellite" label="Satellite" action="onclick: changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
+                        <button id="switchNormal" label="Map" w:onClick="changeBaseLayer('normal'); window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
+                        <button id="switchSatellite" label="Satellite" w:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
                         <separator orient="vertical" spacing="20px" />
-                        <button label="Save image" action="onclick: printHack('');" sclass="goButton"/>
+                        <button label="Save image" w:onClick="printHack('');" sclass="goButton"/>
                         <button id="reloadPortal" label="Reset map" sclass="goButton"/>
                     </div>
                     
@@ -636,7 +637,7 @@ border-bottom: none;
             }
 
             map.signalLayerLoaded = function (layerName) {
-                zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onLayerLoaded', layername));
+                zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onLayerLoaded', layerName));
             }
         };
 

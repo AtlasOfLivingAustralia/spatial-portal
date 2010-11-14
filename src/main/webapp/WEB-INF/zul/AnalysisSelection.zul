@@ -129,7 +129,6 @@ An area can be defined by any of the options below. Once defined, the area can b
                 var mapObj = window.frames.mapFrame.map;
                 point.transform(mapObj.projection, mapObj.displayProjection);
                 var value = point.lon + "," + point.lat;
-                
                 zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchPoint', value));
             }
 
@@ -140,7 +139,6 @@ An area can be defined by any of the options below. Once defined, the area can b
                 var mapObj = window.frames.mapFrame.map;
                 point.transform(mapObj.projection, mapObj.displayProjection);                
                 var value = point.lon + "," + point.lat;
-                
                 zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchSearchPoint', value));                
             }
 
@@ -150,8 +148,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                 // transform the geometry from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 geometry.transform(mapObj.projection, mapObj.displayProjection);
-                var value = geometry;
-                
+                var value = geometry.toString();
                 zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value));   
             }
 
@@ -159,7 +156,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                 var geometry = geometry_orig;
 
                 var mapObj = window.frames.mapFrame.map;
-                var value = "LAYER(" + geometry + ")";
+                var value = "LAYER(" + geometry.toString() + ")";
                 zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value)); 
             }
 
@@ -169,9 +166,8 @@ An area can be defined by any of the options below. Once defined, the area can b
                 // transform the geometry from Google Projection to EPSG:4326
                 var mapObj = window.frames.mapFrame.map;
                 geometry.transform(mapObj.projection, mapObj.displayProjection);
-                var value = geometry;
-                
-                zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onBoxGeom', value)); 
+                var value = geometry.toString(); 
+                zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onBoxGeom', value));
             }
         </script>
     </window>

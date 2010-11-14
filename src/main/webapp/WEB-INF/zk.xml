@@ -15,7 +15,6 @@
         	<!--  session timeout in seconds -->
 			<session-timeout>7200</session-timeout>
  			<timer-keep-alive>true</timer-keep-alive>
-                        <disable-event-thread>false</disable-event-thread>
 		</session-config>
         
 		
@@ -40,7 +39,6 @@
 
         <system-config>
             <id-generator-class>zk.extra.IdGeneratorImpl</id-generator-class>
-            <disable-event-thread>false</disable-event-thread>
         </system-config>
         
 </zk>

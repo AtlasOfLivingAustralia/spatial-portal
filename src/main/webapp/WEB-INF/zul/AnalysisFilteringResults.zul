@@ -38,7 +38,7 @@
             
                         <separator />
 
-                        <grid width="300px" style="border: 0;">
+                        <grid width="300px" style="border: 0;"  sizedByContent="true">
                             <auxhead  style="border: 0;">
                             <auxheader style="border: 0; font-weight: bold; text-align: center;"  label="Active area summary" colspan="2"/>
                             </auxhead>

@@ -10,7 +10,7 @@
             <label id="samplingresultslabel" value=""/>
             <separator />
             <separator />
-            <grid id="results_gridbox" width="100%" height="300px">
+            <grid id="results_gridbox" sizedByContent="true" height="300px">
                 <rows id="results_rows" />
             </grid>
 

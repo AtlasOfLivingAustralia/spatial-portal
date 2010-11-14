@@ -49,6 +49,8 @@ import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zk.ui.event.OpenEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
@@ -180,7 +182,7 @@ public class SelectionController extends UtilityComposer {
             wInstructions.doOverlapped();
             wInstructions.setPosition("top,center");
         }
-    }
+        }
 
     public void onClick$zoomtoextent(Event event) {
         MapLayer ml = getMapComposer().getMapLayer("Active Area");
@@ -210,16 +212,19 @@ public class SelectionController extends UtilityComposer {
         lastTool = null;
     }
 
-    public void onOpen$cbAreaSelection() {
-        setInstructions(null, null);
-        hideAllInfo();
-        displayGeom.setValue(DEFAULT_AREA);
-        String script = removeCurrentSelection();
-        MapComposer mc = getThisMapComposer();
-        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        mc.removeFromList(mc.getMapLayer("Active Area"));
-        ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers(false);
-        lastTool = null;
+    public void onOpen$cbAreaSelection(Event event) {
+        OpenEvent openEvent = (OpenEvent)((ForwardEvent)event).getOrigin();
+        if(openEvent.isOpen()) {
+            setInstructions(null, null);
+            hideAllInfo();
+            displayGeom.setValue(DEFAULT_AREA);
+            String script = removeCurrentSelection();
+            MapComposer mc = getThisMapComposer();
+            mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+            mc.removeFromList(mc.getMapLayer("Active Area"));
+            ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).removeAllSelectedLayers(false);
+            lastTool = null;
+        }
     }
 
     public void onChange$cbAreaSelection() {

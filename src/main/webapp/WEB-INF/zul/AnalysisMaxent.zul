@@ -12,7 +12,7 @@
             }
         </style>
          <style>
-         .envlist .z-list-header-cnt input, .z-list-group-inner div input {
+         .envlist .z-list-header-cnt input, .z-list-group-inner div input, .z-listheader-img {
          display: none;
          }
 
