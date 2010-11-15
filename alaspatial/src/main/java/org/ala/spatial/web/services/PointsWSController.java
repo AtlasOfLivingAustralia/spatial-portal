@@ -25,7 +25,11 @@ public class PointsWSController {
         try {
 
             String[] pointsString = URLDecoder.decode(req.getParameter("points"), "UTF-8").split("\n");
-            String[] ids = URLDecoder.decode(req.getParameter("ids"), "UTF-8").split("\n");
+            String idss = req.getParameter("ids");
+            String[] ids = null;
+            if(idss != null){
+                ids = URLDecoder.decode(idss,"UTF-8").split("\n");
+            }
             String name = URLDecoder.decode(req.getParameter("name"), "UTF-8");
 
             double[][] points = new double[pointsString.length][2];

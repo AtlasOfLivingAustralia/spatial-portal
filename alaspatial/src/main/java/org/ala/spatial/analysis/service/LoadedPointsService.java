@@ -158,7 +158,7 @@ public class LoadedPointsService {
             double miny = points[0][1];
             double maxx = points[0][0];
             double maxy = points[0][1];
-            for (int i = 0; i <= points.length; i++) {
+            for (int i = 0; i < points.length; i++) {
                 if (minx > points[i][0]) {
                     minx = points[i][0];
                 }

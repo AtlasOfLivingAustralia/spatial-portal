@@ -1082,6 +1082,51 @@ public class OccurrencesIndex implements AnalysisIndexService {
     static int[] speciesNumberInRecordsOrder = null;
     static int[] species_to_family = null;
 
+    static public void loadSpeciesNumberInRecordsOrderOnly() {
+        int i;
+        double[][] points = getPointsPairs();
+        try {
+            String[] columns = TabulationSettings.occurances_csv_fields;
+            String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
+
+            //only load once, corresponding to column names
+            int countOfIndexed = 0;
+            for (i = 0; i < columnsSettings.length; i++) {
+                if (columnsSettings[i].equalsIgnoreCase("2")) {
+                    countOfIndexed++;
+                }
+            }
+            String filename = TabulationSettings.index_path
+                    + SPECIES_IDX_FILENAME;
+
+            FileInputStream fis = new FileInputStream(filename);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            IndexedRecord[] species = (IndexedRecord[]) ois.readObject();
+
+            ois.close();
+
+            speciesNumberInRecordsOrder = new int[points.length];
+            for (i = 0; i < points.length; i++) {
+                speciesNumberInRecordsOrder[i] = -1;
+            }
+            for (i = 0; i < species.length; i++) {
+                for (int j = species[i].record_start; j <= species[i].record_end; j++) {
+                    speciesNumberInRecordsOrder[j] = i;
+                }
+            }
+            //error checking, likely hierarchy problems
+            int countmissing = 0;
+            for (i = 0; i < points.length; i++) {
+                if (speciesNumberInRecordsOrder[i] == -1) {
+                    countmissing++;
+                }
+            }
+            System.out.println("******* missing: " + countmissing);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * loads all OccurrencesIndex files for quicker response times
      *
