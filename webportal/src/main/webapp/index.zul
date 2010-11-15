@@ -916,7 +916,7 @@ border-bottom: none;
                         <button id="switchNormal" label="Map" action="onclick: changeBaseLayer('normal'); window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
                         <button id="switchSatellite" label="Satellite" action="onclick: changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
                         <separator orient="vertical" spacing="20px" />
-                        <button label="Save image" action="onclick: printHack('');" sclass="goButton"/>
+                        <button label="Download map" action="onclick: printHack('');" sclass="goButton"/>
                         <button id="reloadPortal" label="Reset map" sclass="goButton"/>
                     </div>
                     

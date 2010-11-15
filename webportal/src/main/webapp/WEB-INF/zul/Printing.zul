@@ -1,6 +1,6 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
-    <window id="printingwindow" title="Save image" border="normal"
+    <window id="printingwindow" title="Download map" border="normal"
             use="au.org.emii.portal.composer.PrintingComposer"
             apply="au.org.emii.portal.composer.PrintingComposer"
             closable="true" mode="overlapped" width="400px">
@@ -42,7 +42,7 @@
 <separator />
 
             <hbox width="100%">
-            <div style="float:right"><button label="Preview" id="btnPreview" /><button label="Save" id="btnExport" /></div>
+            <div style="float:right"><button label="Preview" id="btnPreview" /><button label="Download" id="btnExport" /></div>
             </hbox>
 
             </vbox>
