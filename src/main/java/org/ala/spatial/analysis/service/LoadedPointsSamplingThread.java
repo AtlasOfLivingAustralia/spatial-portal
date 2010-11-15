@@ -86,7 +86,11 @@ class LoadedPointsSamplingThread extends Thread {
         int[] intersection = ssf.intersect(points, thread_count);
         String[] output = new String[intersection.length];
         for (int i = 0; i < intersection.length; i++) {
-            output[i] = ssf.getValueString(intersection[i]);
+            if(intersection[i] >= 0) {
+                output[i] = ssf.getValueString(intersection[i]);
+            } else {
+                output[i] = "";
+            }
         }
         return output;
     }

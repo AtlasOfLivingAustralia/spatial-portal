@@ -213,19 +213,19 @@ public class SimpleRegion extends Object implements Serializable {
             int i;
 
             //fix extents
-            for (i = 0; i < points.length; i++) {
+            for (i = 0; i < points_.length; i++) {
                 //adjust to -360 and 360
-                while (points[i][0] < -360) {
-                    points[i][0] += 360;
+                while (points_[i][0] < -360) {
+                    points_[i][0] += 360;
                 }
-                while (points[i][0] > 360) {
-                    points[i][0] -= 360;
+                while (points_[i][0] > 360) {
+                    points_[i][0] -= 360;
                 }
-                while (points[i][1] < -360) {
-                    points[i][1] += 360;
+                while (points_[i][1] < -360) {
+                    points_[i][1] += 360;
                 }
-                while (points[i][1] > 360) {
-                    points[i][1] -= 360;
+                while (points_[i][1] > 360) {
+                    points_[i][1] -= 360;
                 }
             }
 

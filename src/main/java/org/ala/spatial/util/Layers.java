@@ -12,6 +12,9 @@ import java.io.FileInputStream;
 public class Layers {
 
     public static Layer[] getLayers(String[] layers) {
+        if(layers == null){
+            return null;
+        }
         Layer[] la = new Layer[layers.length];
         for (int i = 0; i < layers.length; i++) {
             la[i] = getLayer(layers[i]);

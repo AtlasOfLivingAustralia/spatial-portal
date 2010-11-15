@@ -79,17 +79,26 @@ public class SamplingWSController {
             SamplingService ss = SamplingService.newForLSID(species);
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"));
 
-            String citationpath = CitationService.generateCitationDataProviders(datafile);
+            String citationpath = null;
+            try {
+                citationpath = CitationService.generateCitationDataProviders(datafile);
+            }catch (Exception e) {
+
+            }
 
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);
-            vFiles.add(citationpath);
+            if(citationpath != null){
+                vFiles.add(citationpath);
+            }
 
             String[] files = (String[]) vFiles.toArray(new String[vFiles.size()]);
 
-            String[] filenames = new String[2];
+            String[] filenames = new String[vFiles.size()];
             filenames[0] = "samples.csv";
-            filenames[1] = "citation.csv";
+            if(citationpath != null){
+                filenames[1] = "citation.csv";
+            }
             
             //String[] files = new String[vFiles.size()];
             Iterator it = vFiles.iterator();

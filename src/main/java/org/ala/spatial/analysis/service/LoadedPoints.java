@@ -98,6 +98,9 @@ public class LoadedPoints {
         if (sampling == null) {
             sampling = new ConcurrentHashMap<String, String[]>();
         }
+        if (layers == null) {
+            return;
+        }
 
         LinkedBlockingQueue<Integer> lbq = new LinkedBlockingQueue<Integer>();
 
@@ -132,18 +135,25 @@ public class LoadedPoints {
         buildSampling(layers);
         ConcurrentHashMap<String, String[]> sampling = (ConcurrentHashMap<String, String[]>) getAttribute("sampling");
 
-        ArrayList<String[]> columns = new ArrayList<String[]>(layers.length);
-        for (int i = 0; i < layers.length; i++) {
-            columns.add(sampling.get(layers[i].name));
+        ArrayList<String[]> columns = null;
+        if (layers != null) {
+            columns = new ArrayList<String[]>(layers.length);
+            for (int i = 0; i < layers.length; i++) {
+                columns.add(sampling.get(layers[i].name));
+            }
         }
 
         StringBuffer sb = new StringBuffer();
 
         //header: longitude, latitude, layernames
         sb.append("longitude,latitude");
-        for (int i = 0; i < layers.length; i++) {
-            sb.append(",").append(layers[i].display_name);
+
+        if (layers != null) {
+            for (int i = 0; i < layers.length; i++) {
+                sb.append(",").append(layers[i].display_name);
+            }
         }
+        sb.append("\r\n");
 
         //rows:
         int rowsAdded = 0;
@@ -151,8 +161,10 @@ public class LoadedPoints {
             //is it a valid point?
             if ((region == null || region.isWithin(points[i][0], points[i][1]))) {
                 sb.append(points[i][0]).append(",").append(points[i][1]);
-                for (int j = 0; j < layers.length; j++) {
-                    sb.append(",").append(columns.get(j)[i]);
+                if (layers != null) {
+                    for (int j = 0; j < layers.length; j++) {
+                        sb.append(",").append(columns.get(j)[i]);
+                    }
                 }
                 sb.append("\r\n");
                 rowsAdded++;
