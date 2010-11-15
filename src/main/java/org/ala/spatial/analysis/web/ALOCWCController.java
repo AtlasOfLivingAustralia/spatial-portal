@@ -192,7 +192,8 @@ public class ALOCWCController extends UtilityComposer {
 
             public void onEvent(Event event) throws Exception {
                 pid = ((Textbox) wInputBox.getFellow("txtBox")).getValue();
-                pid = pid.trim(); 
+                pid = pid.trim();
+                getParameters();
                 openProgressBar();
                 wInputBox.detach();
             }
@@ -205,6 +206,70 @@ public class ALOCWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    void getParameters() {
+        String txt = get("inputs");
+        try{
+            int pos = 0;
+            int p1 = txt.indexOf("pid:",pos);
+            if(p1 < 0) {
+                return;
+            }
+            int p2 = txt.indexOf("gc:",pos);
+            int p3 = txt.indexOf("area:",pos);
+            int p4 = txt.indexOf("envlist:",pos);
+            int p5 = txt.indexOf("pid:",p1 + 4);
+            if(p5 < 0) p5 = txt.length();
+
+            pos = p5 - 5;
+
+            String pid = txt.substring(p1+4,p2).trim();
+            String gc = txt.substring(p2+3,p3).trim();
+            String area = txt.substring(p3+5,p4).trim();
+            String envlist = txt.substring(p4+8,p5).trim();
+
+            //remove ';' from end
+            if(gc.endsWith(";")){
+                gc = gc.substring(0,gc.length()-1);
+            }
+            if(area.endsWith(";")){
+                area = area.substring(0,area.length()-1);
+            }
+            if(envlist.endsWith(";")){
+                envlist = envlist.substring(0,envlist.length()-1);
+            }
+
+            System.out.println("got [" + pid + "][" + gc + "][" + area + "][" + envlist + "]");
+
+            //apply job input parameters to selection
+            groupCount.setValue(Integer.parseInt(gc));
+
+            lbListLayers.clearSelection();
+            lbListLayers.selectLayers(envlist.split(":"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    String get(String type) {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     void openProgressBar() {
