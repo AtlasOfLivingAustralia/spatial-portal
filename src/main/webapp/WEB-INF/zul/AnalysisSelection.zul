@@ -52,6 +52,10 @@ An area can be defined by any of the options below. Once defined, the area can b
                         <radio label="User-defined &lt;b&gt;point&lt;/b&gt; and &lt;b&gt;radius&lt;/b&gt;" id="rdoPointRadiusSelection"/>
                         <!--<html><![CDATA[User-defined <b>point</b> and <b>radius</b>]]></html>-->
                     </hbox>
+                     <hbox>
+                        <radio label="User-defined &lt;b&gt;radius&lt;/b&gt; from &lt;b&gt;address&lt;/b&gt;" id="rdoAddressRadiusSelection"/>
+
+                    </hbox>
                     <hbox>
                         <radio label="Predefined (displayed) &lt;b&gt;map polygon&lt;/b&gt;" id="rdoExistingFeatureSelection"/>
                         <!--<html><![CDATA[Predefined (displayed) <b>map polygon</b>]]></html>-->
@@ -73,9 +77,9 @@ An area can be defined by any of the options below. Once defined, the area can b
                     <comboitem label="Draw bounding box..." id="ciBoundingBox" />
                     <comboitem label="Draw polygon..." id="ciPolygon" />
                     <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
-                    <comboitem label="Select prefined (displayed) map polygon..." id="ciMapPolygon" />
+                    <comboitem label="Create radius from address..." id="ciAddressRadiusSelection"/>
+                    <comboitem label="Select predefined (displayed) map polygon..." id="ciMapPolygon" />
                     <comboitem label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
-
                     <comboitem label="Box - Australia" id="ciBoxAustralia" />
                     <comboitem label="Box - World" id="ciBoxWorld" />
                     <comboitem label="Box - Current View" id="ciBoxCurrentView" />

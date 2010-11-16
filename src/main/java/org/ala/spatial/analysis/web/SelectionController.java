@@ -12,6 +12,9 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.io.gml2.GMLWriter;
+import geo.google.GeoAddressStandardizer;
+import geo.google.datamodel.GeoAddress;
+import geo.google.datamodel.GeoCoordinate;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -44,6 +47,7 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -59,6 +63,7 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Popup;
@@ -82,6 +87,7 @@ public class SelectionController extends UtilityComposer {
     private Textbox selectionGeom;
     private Textbox boxGeom;
     private Textbox displayGeom;
+    private Textbox addressBox;
     private Div polygonInfo;
     private Div envelopeInfo;
     //private Label instructions;
@@ -112,6 +118,7 @@ public class SelectionController extends UtilityComposer {
     Comboitem ciBoxWorld;
     Comboitem ciBoxCurrentView;
     Comboitem ciPointAndRadius;
+    Comboitem ciAddressRadiusSelection;
     Comboitem lastTool;
     Window wInstructions = null;
 
@@ -153,6 +160,58 @@ public class SelectionController extends UtilityComposer {
             wInstructions.detach();
         }
 
+        if (text != null && text.length > 0 && toolname.contains("address")) {
+            wInstructions = new Window(toolname, "normal", false);
+            wInstructions.setWidth("500px");
+            wInstructions.setClosable(false);
+
+            Vbox vbox = new Vbox();
+            vbox.setParent(wInstructions);
+            for (int i = 0; i < text.length; i++) {
+                Label l = new Label((i + 1) + ". " + text[i]);
+                l.setParent(vbox);
+                l.setMultiline(true);
+                l.setSclass("word-wrap");
+                l.setStyle("white-space: normal; padding: 5px");
+            }
+
+            (new Separator()).setParent(vbox);
+            addressBox = new Textbox();
+            addressBox.setParent(vbox);
+
+            Hbox hbox = new Hbox();
+            hbox.setParent(vbox);
+
+            Button create = new Button("Create radius area");
+            create.setParent(hbox);
+            create.addEventListener("onClick", new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnRadiusFromAddress(null);
+                    wInstructions.detach();
+                }
+            });
+
+            Button b = new Button("Cancel Map Tool");
+            b.setParent(hbox);
+            b.addEventListener("onClick", new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnClearSelection(null);
+                    wInstructions.detach();
+                }
+            });
+
+         
+
+            wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
+            wInstructions.setClosable(true);
+            wInstructions.doOverlapped();
+            wInstructions.setPosition("top,center");
+
+            return;
+        }
+
         if (text != null && text.length > 0) {
             wInstructions = new Window(toolname, "normal", false);
             wInstructions.setWidth("500px");
@@ -179,6 +238,9 @@ public class SelectionController extends UtilityComposer {
                     wInstructions.detach();
                 }
             });
+
+          
+
 
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
             wInstructions.setClosable(true);
@@ -279,7 +341,21 @@ public class SelectionController extends UtilityComposer {
             script += mc.getOpenLayersJavascript().addRadiusDrawingTool();
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
             mc.removeFromList(mc.getMapLayer("Active Area"));
-        } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
+        } else if (cbAreaSelection.getSelectedItem() == ciAddressRadiusSelection) {
+            String[] text = {
+                "Enter address ....",
+             
+            };
+            cbAreaSelection.setText("Select radius from address");
+            setInstructions("Active Map Tool: Create radius from address...", text);
+
+            showPolygonInfo();
+            String script = removeCurrentSelection();
+            MapComposer mc = getThisMapComposer();
+       
+            mc.removeFromList(mc.getMapLayer("Active Area"));
+        }
+        else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             cbAreaSelection.setText("Selecting map polygon");
             String[] text = {
                 "Zoom and pan to the area of interest.",
@@ -645,6 +721,8 @@ public class SelectionController extends UtilityComposer {
             txt = "Got user drawn box";
         } else if (lastTool == ciPointAndRadius) {
             txt = "Got user drawn point and radius";
+        }    else if (lastTool == ciAddressRadiusSelection) {
+            txt = "Got user radius from address";
         } else if (lastTool == ciPolygon) {
             txt = "Got user drawn polygon";
         } else if (lastTool == ciMapPolygon) {
@@ -1140,24 +1218,63 @@ public class SelectionController extends UtilityComposer {
         return feature_text;
     }
 
-//    private static Geometry createCircle(double x, double y, final double RADIUS) {
-//        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
-//
-//        final int SIDES = 32;
-//        Coordinate coords[] = new Coordinate[SIDES+1];
-//        for( int i = 0; i < SIDES; i++){
-//            double angle = ((double) i / (double) SIDES) * Math.PI * 2.0;
-//            double dx = Math.cos( angle ) * RADIUS;
-//            double dy = Math.sin( angle ) * RADIUS;
-//            coords[i] = new Coordinate( (double) x + dx, (double) y + dy );
-//        }
-//        coords[SIDES] = coords[0];
-//
-//        LinearRing ring = factory.createLinearRing( coords );
-//        Polygon polygon = factory.createPolygon( ring, null );
-//
-//        return polygon;
-//    }
+    private String createCircle(double x, double y, final double RADIUS) {
+        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+
+        final int SIDES = 32;
+        Coordinate coords[] = new Coordinate[SIDES+1];
+        for( int i = 0; i < SIDES; i++){
+            double angle = ((double) i / (double) SIDES) * Math.PI * 2.0;
+            double dx = Math.cos( angle ) * RADIUS;
+            double dy = Math.sin( angle ) * RADIUS;
+            coords[i] = new Coordinate( (double) x + dx, (double) y + dy );
+        }
+        coords[SIDES] = coords[0];
+
+        LinearRing ring = geometryFactory.createLinearRing( coords );
+        Polygon polygon = geometryFactory.createPolygon( ring, null );
+
+        WKTWriter writer = new WKTWriter();
+        String wkt = writer.write(polygon);
+        return wkt;
+    }
+
+    private String radiusFromAddress(String address) {
+        try {
+
+        //address = "1600 Amphitheatre Parkway, Mountain View, CA";
+        GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
+        List<GeoAddress> addresses = st.standardizeToGeoAddresses(address);
+        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+
+        GeoCoordinate gco = addresses.get(0).getCoordinate();
+
+        //Point point = geometryFactory.createPoint(new Coordinate(
+        return createCircle(gco.getLongitude(),gco.getLatitude(),0.1);
+
+        }
+        catch(geo.google.GeoException ge)
+        {
+            return "none";
+        }
+
+        
+
+    }
+
+    public void onClick$btnRadiusFromAddress(Event event) {
+        String wkt = radiusFromAddress(addressBox.getAreaText());
+        if (wkt.contentEquals("none")) {
+            return;
+        } else {
+
+            displayGeom.setValue(wkt);
+            MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Active Area");
+            updateSpeciesList(false);
+           
+            setInstructions(null, null);
+        }
+    }
 
 
 }
