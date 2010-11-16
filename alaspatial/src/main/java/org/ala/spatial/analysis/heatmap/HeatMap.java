@@ -42,8 +42,8 @@ import javax.imageio.ImageIO;
 public class HeatMap {
 
     private static String DOT_PATH = "/Users/ajay/projects/ala/code/alageospatialportal/alaspatial/target/ala-spatial-1.0-SNAPSHOT/images/bullet_blue.png";
-    private static BufferedImage backgroundImage;
-    private static BufferedImage legendImage;
+    private BufferedImage backgroundImage;
+    private BufferedImage legendImage;
     private int radius = 8;
     private int numColours = 10;
     private BufferedImage dotImage; /// createFadedCircleImage(radius);
@@ -75,8 +75,8 @@ public class HeatMap {
     }
 
     private void initImages() {
-        System.out.println("Got base dir in initimages: " + baseDir.getAbsolutePath());
-        System.err.println("Got base dir in initimages: " + baseDir.getAbsolutePath());
+        //System.out.println("Got base dir in initimages: " + baseDir.getAbsolutePath());
+        //System.err.println("Got base dir in initimages: " + baseDir.getAbsolutePath());
         try {
             backgroundImage = ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/mapaus1_white.png"));
             legendImage = ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/heatmap_key.png"));
@@ -124,7 +124,7 @@ public class HeatMap {
         monochromeImage = createCompatibleTranslucentImage(
                 width, height);
 
-        System.out.println("mi.type: " + monochromeImage.getType());
+        //System.out.println("mi.type: " + monochromeImage.getType());
 
         Graphics g = monochromeImage.getGraphics();
         g.setColor(Color.WHITE);
@@ -240,7 +240,7 @@ public class HeatMap {
 
     public BufferedImage doColorize() {
 
-        System.out.println("doColorize()");
+        //System.out.println("doColorize()");
 
         int[] image_bytes, image_bytes2;
 
@@ -342,7 +342,7 @@ public class HeatMap {
     private BufferedImage getDotImageFile() {
         try {
             if (baseDir != null) {
-                System.out.println("Reading dot image: " + baseDir.getAbsolutePath() + "/base/bullet_blue.png");
+                //System.out.println("Reading dot image: " + baseDir.getAbsolutePath() + "/base/bullet_blue.png");
                 return ImageIO.read(new File(baseDir.getAbsolutePath() + "/base/bullet_blue.png"));
             }
         } catch (Exception ex) {
@@ -350,7 +350,7 @@ public class HeatMap {
         }
 
         // this should return a faded circle image instead
-        System.out.println("No image, so returning a generated one instead");
+        //System.out.println("No image, so returning a generated one instead");
         return createFadedCircleImage(radius);
     }
 
@@ -460,7 +460,7 @@ public class HeatMap {
                 }
             }
 
-            System.out.println("maxW: " + maxValue);
+            //System.out.println("maxW: " + maxValue);
 
             // we check if the maxValue = 0
             // 0 tells us that there are no records in the 
@@ -529,7 +529,7 @@ public class HeatMap {
         int width = backgroundImage.getWidth();
         int height = backgroundImage.getHeight();
         //System.out.println("bounding box: " + minX + "," + minY + "," + maxX + "," + maxY);
-        System.out.println("Adding " + v.size() + " points to base image...");
+        //System.out.println("Adding " + v.size() + " points to base image...");
         //System.out.println("Adding to base image...");
         int dPoints[][] = new int[width][height];
         for (int i = 0; i < v.size(); i++) {
@@ -565,7 +565,7 @@ public class HeatMap {
         int width = backgroundImage.getWidth();
         int height = backgroundImage.getHeight();
         //System.out.println("bounding box: " + minX + "," + minY + "," + maxX + "," + maxY);
-        System.out.println("Adding " + (v.length / 2) + " points to base image...");
+        //System.out.println("Adding " + (v.length / 2) + " points to base image...");
         //System.out.println("Adding to base image...");
         int dPoints[][] = new int[width][height];
         for (int i = 0; i < v.length; i += 2) {
@@ -601,7 +601,7 @@ public class HeatMap {
         int width = backgroundImage.getWidth();
         int height = backgroundImage.getHeight();
         //System.out.println("bounding box: " + minX + "," + minY + "," + maxX + "," + maxY);
-        System.out.println("Adding " + (v.length / 2) + " points to base image...");
+        //System.out.println("Adding " + (v.length / 2) + " points to base image...");
         //System.out.println("Adding to base image...");
         int dPoints[][] = new int[width][height];
         for (int i = 0; i < v.length; i += 2) {
@@ -616,7 +616,7 @@ public class HeatMap {
 
     private void generateLegend(int maxValue) {
 
-        System.out.println("generating legend...");
+        //System.out.println("generating legend...");
 
         int scale[] = new int[numColours - 1];
         scale[0] = maxValue;
@@ -667,7 +667,7 @@ public class HeatMap {
             cg.drawString(value, left, top);
 
             ImageIO.write(legendImage, "png", ciOut);
-            System.out.println("legend generated");
+            //System.out.println("legend generated");
         } catch (Exception e) {
             System.out.println("Unable to write legendImage:");
             e.printStackTrace(System.out);
@@ -702,7 +702,7 @@ public class HeatMap {
             ImageIO.write(backgroundImage, "png", hmOut);
             //File hmOut2 = new File(outfile + "monochromeImage.png");
             //ImageIO.write(monochromeImage, "png", hmOut2);
-            System.out.println("done");
+            //System.out.println("done");
 
         } catch (Exception ex) {
             ex.printStackTrace(System.out);

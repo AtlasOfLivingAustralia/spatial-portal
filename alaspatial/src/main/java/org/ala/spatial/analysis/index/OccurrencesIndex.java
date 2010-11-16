@@ -3033,7 +3033,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 BufferedReader br = new BufferedReader(
                         new FileReader(
                         TabulationSettings.index_path
-                        + "CLUSTER_RECORDS.csv"));
+                        + "CLUSTER_RECORDS.csv"), 50000000);    //50MB buffer
                 String s;
                 int pos = 0;
                 while ((s = br.readLine()) != null) {
@@ -3514,13 +3514,25 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         //output
         try {
-            FileOutputStream fos = new FileOutputStream(
+            /*FileOutputStream fos = new FileOutputStream(
                     TabulationSettings.index_path
                     + SENSITIVE_COORDINATES);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(sensitiveCoordinates);
-            oos.close();
+            oos.close();*/
+            //write
+            RandomAccessFile points = new RandomAccessFile(
+                TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat",
+                "rw");
+            byte[] b = new byte[sensitiveCoordinates.length * 8 * 2];
+            ByteBuffer bb = ByteBuffer.wrap(b);
+            for (int i = 0; i < sensitiveCoordinates.length; i++) {
+                bb.putDouble(sensitiveCoordinates[i][0]);
+                bb.putDouble(sensitiveCoordinates[i][1]);
+            }
+            points.write(b);
+            points.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -3532,13 +3544,52 @@ public class OccurrencesIndex implements AnalysisIndexService {
         long start = System.currentTimeMillis();
         //input
         try {
-            FileInputStream fis = new FileInputStream(
-                    TabulationSettings.index_path
-                    + SENSITIVE_COORDINATES);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            sensitiveCoordinates = (double[][]) ois.readObject();
-            ois.close();
+            File f = new File(TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat");
+            if(!f.exists()){
+                //read.
+                //TODO: remove this temporary code
+                FileInputStream fis = new FileInputStream(
+                        TabulationSettings.index_path
+                        + SENSITIVE_COORDINATES);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                ObjectInputStream ois = new ObjectInputStream(bis);
+                sensitiveCoordinates = (double[][]) ois.readObject();
+                ois.close();
+                
+                //write
+                RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat",
+                    "rw");             
+                byte[] b = new byte[sensitiveCoordinates.length * 8 * 2];
+                ByteBuffer bb = ByteBuffer.wrap(b);
+                for (int i = 0; i < sensitiveCoordinates.length; i++) {
+                    bb.putDouble(sensitiveCoordinates[i][0]);
+                    bb.putDouble(sensitiveCoordinates[i][1]);
+                }
+                points.write(b);
+                points.close();
+            }
+            /* load all points */
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat",
+                    "rw");
+            int number_of_points = ((int) points.length()) / 8;
+            int number_of_records = number_of_points / 2;
+            byte[] b = new byte[number_of_points * 8];
+            points.read(b);
+            ByteBuffer bb = ByteBuffer.wrap(b);
+            points.close();
+
+            int i;
+
+            /* read doubles into data structure*/
+            double [][] d = new double[number_of_records][2];
+            for (i = 0; i < number_of_records; i++) {
+                d[i][0] = bb.getDouble();
+                d[i][1] = bb.getDouble();
+            }
+
+            sensitiveCoordinates = d;
         } catch (Exception e) {
             e.printStackTrace();
         }
