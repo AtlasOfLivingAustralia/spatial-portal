@@ -4,7 +4,11 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.io.gml2.GMLWriter;
@@ -19,6 +23,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import java.util.SortedSet;
@@ -405,42 +410,54 @@ public class SelectionController extends UtilityComposer {
         String lon = searchPoint.getValue().split(",")[0];
         String lat = searchPoint.getValue().split(",")[1];
         Object llist = CommonData.getLayerListJSONArray();
+
         JSONArray layerlist = JSONArray.fromObject(llist);
         MapComposer mc = getThisMapComposer();
-        
-        for (int i = 0; i < layerlist.size(); i++) {
-            JSONObject jo = layerlist.getJSONObject(i);
-            if (jo != null && jo.getString("type") != null
-                    && jo.getString("type").length() > 0
-                    && jo.getString("type").equalsIgnoreCase("contextual")) {
+        List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
+        Boolean searchComplete = false;
+        for (int i = 0; i < activeLayers.size(); i++) {
+            MapLayer ml = activeLayers.get(i);
+            String activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&format.*", "");
+            for (int j = 0; j < layerlist.size(); j++) {
+                if (searchComplete)
+                        break;
+                JSONObject jo = layerlist.getJSONObject(j);
+
                 System.out.println("********" + jo.getString("name"));
-                if (mc.getMapLayer(jo.getString("displayname")) != null) {
-                    String featureURI = GazetteerPointSearch.PointSearch(lon, lat, jo.getString("name"), geoServer);
+                if (ml != null && jo.getString("type") != null
+                        && jo.getString("type").length() > 0
+                        && jo.getString("type").equalsIgnoreCase("contextual")
+                        && jo.getString("name").equalsIgnoreCase(activeLayerName)) {
+                    
+                    searchComplete = true;
+                    System.out.println(ml.getName());
+                    String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, geoServer);
                     System.out.println(featureURI);
                     //add feature to the map as a new layer
 
-
-                    String feature_text = getWktFromURI(featureURI,true);
+                    String feature_text = getWktFromURI(featureURI, true);
 
                     String json = readGeoJSON(featureURI);
                     String wkt = wktFromJSON(json);
                     if (wkt.contentEquals("none")) {
-                       
+
                         break;
                     } else {
                         displayGeom.setValue(feature_text);
-                   //     mc.removeFromList(mc.getMapLayer("Active Area"));
+                        //     mc.removeFromList(mc.getMapLayer("Active Area"));
+
+
                         MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
                         updateSpeciesList(false);
                         searchPoint.setValue("");
                         setInstructions(null, null);
-
-                      
                         break;
                     }
+
                 }
             }
         }
+        //}
       //  String script = "window.mapFrame.removePointSearch();";
        // mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         
@@ -1122,5 +1139,25 @@ public class SelectionController extends UtilityComposer {
         System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + feature_text);
         return feature_text;
     }
+
+//    private static Geometry createCircle(double x, double y, final double RADIUS) {
+//        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+//
+//        final int SIDES = 32;
+//        Coordinate coords[] = new Coordinate[SIDES+1];
+//        for( int i = 0; i < SIDES; i++){
+//            double angle = ((double) i / (double) SIDES) * Math.PI * 2.0;
+//            double dx = Math.cos( angle ) * RADIUS;
+//            double dy = Math.sin( angle ) * RADIUS;
+//            coords[i] = new Coordinate( (double) x + dx, (double) y + dy );
+//        }
+//        coords[SIDES] = coords[0];
+//
+//        LinearRing ring = factory.createLinearRing( coords );
+//        Polygon polygon = factory.createPolygon( ring, null );
+//
+//        return polygon;
+//    }
+
 
 }
