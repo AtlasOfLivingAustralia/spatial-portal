@@ -121,6 +121,10 @@ public class SelectionController extends UtilityComposer {
     Comboitem ciAddressRadiusSelection;
     Comboitem lastTool;
     Window wInstructions = null;
+    Combobox cbRadius;
+    Comboitem ci5km;
+    Comboitem ci10km;
+    Comboitem ci20km;
 
     public String getGeom() {
         if (displayGeom.getText().contains("ENVELOPE(")) {
@@ -167,18 +171,38 @@ public class SelectionController extends UtilityComposer {
 
             Vbox vbox = new Vbox();
             vbox.setParent(wInstructions);
-            for (int i = 0; i < text.length; i++) {
-                Label l = new Label((i + 1) + ". " + text[i]);
-                l.setParent(vbox);
-                l.setMultiline(true);
-                l.setSclass("word-wrap");
-                l.setStyle("white-space: normal; padding: 5px");
-            }
+          //  for (int i = 0; i < text.length; i++) {
+                Label l1 = new Label((1) + ". " + text[0]);
+                l1.setParent(vbox);
+                l1.setMultiline(true);
+                l1.setSclass("word-wrap");
+                l1.setStyle("white-space: normal; padding: 5px");
+          //  }
 
             (new Separator()).setParent(vbox);
             addressBox = new Textbox();
+            addressBox.setTooltiptext("eg. Black Mountain, Canberra");
             addressBox.setParent(vbox);
 
+              Label l2 = new Label((2) + ". " + text[1]);
+                l2.setParent(vbox);
+                l2.setMultiline(true);
+                l2.setSclass("word-wrap");
+                l2.setStyle("white-space: normal; padding: 5px");
+
+            cbRadius = new Combobox();
+            cbRadius.setParent(vbox);
+            ci5km = new Comboitem("5km radius");
+            ci5km.setParent(cbRadius);           
+            ci10km = new Comboitem("10km radius");
+            ci10km.setParent(cbRadius);
+            ci20km = new Comboitem("20km radius");
+            ci20km.setParent(cbRadius);
+            cbRadius.setSelectedItem(ci5km);
+            
+           
+            
+            
             Hbox hbox = new Hbox();
             hbox.setParent(vbox);
 
@@ -343,7 +367,7 @@ public class SelectionController extends UtilityComposer {
             mc.removeFromList(mc.getMapLayer("Active Area"));
         } else if (cbAreaSelection.getSelectedItem() == ciAddressRadiusSelection) {
             String[] text = {
-                "Enter address ....",
+                "Enter address", "Select radius"
              
             };
             cbAreaSelection.setText("Select radius from address");
@@ -1233,7 +1257,7 @@ public class SelectionController extends UtilityComposer {
 
         LinearRing ring = geometryFactory.createLinearRing( coords );
         Polygon polygon = geometryFactory.createPolygon( ring, null );
-
+        polygon.setSRID(900913);
         WKTWriter writer = new WKTWriter();
         String wkt = writer.write(polygon);
         return wkt;
@@ -1242,15 +1266,26 @@ public class SelectionController extends UtilityComposer {
     private String radiusFromAddress(String address) {
         try {
 
-        //address = "1600 Amphitheatre Parkway, Mountain View, CA";
-        GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
-        List<GeoAddress> addresses = st.standardizeToGeoAddresses(address);
-        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+        
+            GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
 
-        GeoCoordinate gco = addresses.get(0).getCoordinate();
+            List<GeoAddress> addresses = st.standardizeToGeoAddresses(address + ", Australia");
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
 
-        //Point point = geometryFactory.createPoint(new Coordinate(
-        return createCircle(gco.getLongitude(),gco.getLatitude(),0.1);
+            GeoCoordinate gco = addresses.get(0).getCoordinate();
+
+            //Point point = geometryFactory.createPoint(new Coordinate(
+            double radius = 0.044915599;
+            if (cbRadius.getSelectedItem() == ci5km) {
+                radius = 0.044915599;
+            }
+            if (cbRadius.getSelectedItem() == ci10km) {
+                radius = 0.089831198;
+            }
+            if (cbRadius.getSelectedItem() == ci20km) {
+                radius = 0.179662396;
+            }
+            return createCircle(gco.getLongitude(),gco.getLatitude(),radius);
 
         }
         catch(geo.google.GeoException ge)
