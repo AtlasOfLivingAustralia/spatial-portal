@@ -11,6 +11,16 @@
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
     <dependencies>
+         <dependency>
+                <groupId>geoGoogle</groupId>
+                <artifactId>geoGoogle</artifactId>
+                <version>1.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>2.6-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -414,6 +424,16 @@
         </plugins>
     </build>
     <repositories>
+        <repository>
+                <releases>
+                        <updatePolicy>never</updatePolicy>
+                        <checksumPolicy>warn</checksumPolicy>
+                        <enabled>true</enabled>
+                </releases>
+                <id>geogoogle</id>
+                <name>geogoogle repo</name>
+                <url>http://www.cs.drexel.edu/~zl25/maven2/repo</url>
+        </repository>
         <repository>
             <url>http://download.java.net/maven/2</url>
             <id>hibernate-support</id>
