@@ -56,7 +56,6 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
@@ -71,11 +70,13 @@ import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.LegendMaker;
+import org.ala.spatial.util.request.SaveHttpServletRequest;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
+import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
@@ -87,6 +88,7 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zkex.zul.West;
@@ -97,6 +99,7 @@ import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
+import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
@@ -176,7 +179,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Slider blueSlider;
     private Slider sizeSlider;
     private Checkbox chkUncertaintySize;
-    private Checkbox chkPointsCluster;
+    private Button btnPointsCluster;
     private Div uncertainty;
     private Label redLabel;
     private Label greenLabel;
@@ -273,6 +276,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public Textbox tbxPrintHack;
     int mapZoomLevel = 4;
     private Hashtable activeLayerMapProperties;
+    private Button btnCsvUpload;
+    private Fileupload fileupload;
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -644,10 +649,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String rank = "";
 
         String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
-        if (spVal.trim().contains(": ")) {  
+        if (spVal.trim().contains(": ")) {
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
-            
+
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
@@ -2083,7 +2088,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 blueSlider.setCurpos(blue);
                 sizeSlider.setCurpos(size); //size scale
                 chkUncertaintySize.setChecked(sizeUncertain);
-                //chkPointsCluster.setChecked(currentSelection.isClustered());
 
                 blueLabel.setValue(String.valueOf(blue));
                 redLabel.setValue(String.valueOf(red));
@@ -2174,9 +2178,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // TODO: fix the points/cluster toggle for active area
         if (m != null) {
             if (m.getName().equalsIgnoreCase("Species in Active area")) {
-                chkPointsCluster.setVisible(false);
+                btnPointsCluster.setVisible(false);
             } else {
-                chkPointsCluster.setVisible(true);
+                btnPointsCluster.setVisible(true);
             }
         }
     }
@@ -2465,7 +2469,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         onClick$applyChange();
     }
 
-    public void onCheck$chkPointsCluster() {
+    public void onClick$btnPointsCluster() {
+        togglePointsCluster();
+    }
+
+    private void togglePointsCluster() {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         MapLayerMetadata md = selectedLayer.getMapLayerMetadata();
         if (md != null) {
@@ -2507,17 +2515,28 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     + openLayersJavascript.removeMapLayer(selectedLayer));
 
             MapLayer convLayer = null;
-            if (selectedLayer.isClustered()) {
-                System.out.println("calling lsidfilter with:");
-                System.out.println("lsid: " + lsid);
-                System.out.println("species: " + species);
-                System.out.println("rank: " + rank);
-                convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
+            if (selectedLayer.getName().equalsIgnoreCase("Species in Active area")) {
+
+                System.out.println("Is an active area");
+
+                
+
             } else {
-                System.out.println("calling lsidcluster with:");
-                System.out.println("lsid: " + lsid);
-                System.out.println("species: " + species);
-                convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
+
+                System.out.println("Not an active area");
+
+                if (selectedLayer.isClustered()) {
+                    System.out.println("calling lsidfilter with:");
+                    System.out.println("lsid: " + lsid);
+                    System.out.println("species: " + species);
+                    System.out.println("rank: " + rank);
+                    convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
+                } else {
+                    System.out.println("calling lsidcluster with:");
+                    System.out.println("lsid: " + lsid);
+                    System.out.println("species: " + species);
+                    convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
+                }
             }
 
             deactiveLayer(selectedLayer, true, false, true);
@@ -3748,7 +3767,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             rank = speciesrank.split(",")[1];
         }
 
-        //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
+        //use # of points cutoff; //        
         MapLayer ml = null;
         if (countOfLsid(lsid) > 20000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
             ml = mapSpeciesByLsidCluster(lsid, species, rank);
@@ -3838,8 +3857,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 ml.setClustered(true);
 
-                chkPointsCluster.setChecked(false);
-                chkPointsCluster.setLabel(" Display species as points");
+                btnPointsCluster.setLabel(" Display species as points");
             }
 
             return ml;
@@ -3858,7 +3876,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //cluster, must have an lsid
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(settingsSupplementary.getValue(CommonData.SAT_URL));
-            lsid = lsid.replace(".","__");
+            lsid = lsid.replace(".", "__");
             sbProcessUrl.append("/alaspatial/species/cluster/lsid/").append(lsid);
             sbProcessUrl.append("/bb");
             HttpClient client = new HttpClient();
@@ -3928,8 +3946,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setSpeciesRank(rank);
 
             ml.setClustered(false);
-            chkPointsCluster.setLabel(" Display species as clusters");
-            chkPointsCluster.setChecked(false);
+            btnPointsCluster.setLabel(" Display species as clusters");
 
             lsid = StringUtils.replace(lsid, ".", "__");
             try {
@@ -4424,9 +4441,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return Sessions.getCurrent();
     }
 
-    public boolean useClustering() {
-        return chkPointsCluster.isChecked();
-    }
+//    public boolean useClustering() {
+//        return chkPointsCluster.isChecked();
+//    }
 
     public int getMapZoom() {
         return mapZoomLevel;
@@ -4523,12 +4540,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //MDC.put("userip", Executions.getCurrent().getRemoteAddr());
         String userip = Executions.getCurrent().getHeader("x-forwarded-for");
         if (StringUtils.isBlank(userip)) {
-            userip = ""; 
+            userip = "";
         }
         MDC.put("userip", userip);
 
         logger.info(msg);
         MDC.clear();
+        //SaveHttpServletRequest.put((HttpServletRequest) Executions.getCurrent().getNativeRequest());
     }
 
     /**
@@ -4586,6 +4604,59 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             updateLegendImage();
             onClick$applyChange();
+        }
+    }
+
+    public void onClick$btnCsvUpload() {
+        try {
+            Media[] media = Fileupload.get("Please upload a valid CSV file with the format: ID, Longitude, Latitude", "ALA Spatial Portal", 2, 500000, false);
+
+            if (media != null) {
+                System.out.println("Media.contenttype: " + media[0].getContentType());
+                System.out.println("media.getFormat(): " + media[0].getFormat());
+                System.out.println("media.getName(): " + media[0].getName());
+                System.out.println("media.getStringData(): " + media[0].getStringData());
+
+                //if (media instanceof org.zkoss.util.media.AMedia) {
+
+                //}
+
+            } else {
+                System.out.println("Media is null");
+            }
+
+        } catch (InterruptedException ex) {
+            showMessage("File upload interrupted");
+            System.out.println("File upload interrupted");
+            Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void onUpload$fileupload(Event event) {
+        try {
+            System.out.println("File upload event: " + event.getName() + " -> " + event.toString());
+            System.out.println(" => " + event.getData());
+            /*
+            Media media = event.getMedia();
+            if (media != null) {
+            System.out.println("2.Media.contenttype: " + media.getContentType());
+            System.out.println("2.media.getFormat(): " + media.getFormat());
+            System.out.println("2.media.getName(): " + media.getName());
+            System.out.println("2.media.getStringData(): " + media.getStringData());
+
+            //                if (media instanceof org.zkoss.util.media.AMedia) {
+            //
+            //                }
+
+            } else {
+            System.out.println("2.Media is null");
+            }
+             *
+             */
+        } catch (Exception e) {
+            System.out.println("Unable to upload file");
         }
     }
 }
