@@ -22,6 +22,10 @@ import java.util.HashMap;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import java.util.logging.Logger;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.geotools.util.logging.Logging;
+
 /***
  *
  * @author angus
@@ -29,55 +33,58 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 @XStreamAlias("search")
 public class Search {
 
+    private static final Logger logger = Logging.getLogger("org.ala.rest.Search");
     @XStreamAlias("results")
     ArrayList<SearchResultItem> results;
-
     @XStreamAlias("xmlns:xlink")
     @XStreamAsAttribute
     String xlink = "http://www.w3.org/1999/xlink";
-    
+
     /***
      *
      * @return a HashMap representation of the resource - which will be serialized into xml/json
      */
     public Map getMap() {
         HashMap resultsMap = new HashMap();
-        resultsMap.put("results",this.results);
+        resultsMap.put("results", this.results);
         return resultsMap;
     }
 
-    public Search(String searchTerms, String type) {
+    public Search(String searchTerms, String[] layers) {
         results = new ArrayList<SearchResultItem>();
+        for (String layerName : layers) {
+            try {
+                //Get the geoserver data directory from the geoserver instance
+                File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
+                IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
 
-        try {
-            //Get the geoserver data directory from the geoserver instance
-            File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
+                String[] searchFields = {"name", "layerName"};
 
-            String[] searchFields = {"name","type"};
+                MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT, searchFields, new StandardAnalyzer(Version.LUCENE_CURRENT));//Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
+                qp.setDefaultOperator(qp.AND_OPERATOR);
+                Query nameQuery = qp.parse(searchTerms.toLowerCase() + " AND " + layerName);
 
-            MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT,searchFields,new StandardAnalyzer(Version.LUCENE_CURRENT));//Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
-            qp.setDefaultOperator(qp.AND_OPERATOR);
-            Query nameQuery = qp.parse(searchTerms.toLowerCase() + " AND " + type);
+                //TODO: instead of 20 - should be variable and paging?
+                TopDocs topDocs = is.search(nameQuery, 20);
 
-            //TODO: instead of 20 - should be variable and paging?
-            TopDocs topDocs = is.search(nameQuery, 20);
-
-            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document doc = is.doc(scoreDoc.doc);
-                List<Fieldable> fields = doc.getFields();
-                results.add(new SearchResultItem(fields,true));
+                for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                    Document doc = is.doc(scoreDoc.doc);
+                    List<Fieldable> fields = doc.getFields();
+                    results.add(new SearchResultItem(fields, true));
+                }
+                is.close();
+            } catch (IOException e1) {
+                //FIXME: Log error - return http error code?
+                logger.severe("An error occurred in search.");
+                logger.severe(ExceptionUtils.getFullStackTrace(e1));
+            } catch (ParseException e3) {
+                logger.severe("An error occurred parsing search terms.");
+                logger.severe(ExceptionUtils.getFullStackTrace(e3));
             }
-            is.close();
-        } catch (IOException e1) {
-            //FIXME: Log error - return http error code?
-            System.out.println(e1.getMessage());
-        } catch (ParseException e3) {
-            //FIXME
         }
-
     }
 
+    // TODO: Need to limit search to default layers?
     public Search(String searchTerms) {
         results = new ArrayList<SearchResultItem>();
 
@@ -96,14 +103,16 @@ public class Search {
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc = is.doc(scoreDoc.doc);
                 List<Fieldable> fields = doc.getFields();
-                results.add(new SearchResultItem(fields,true));
+                results.add(new SearchResultItem(fields, true));
             }
             is.close();
         } catch (IOException e1) {
             //FIXME: Log error - return http error code?
-            System.out.println(e1.getMessage());
+            logger.severe("An error occurred in search.");
+            logger.severe(ExceptionUtils.getFullStackTrace(e1));
         } catch (ParseException e3) {
-            //FIXME
+            logger.severe("An error occurred parsing search terms.");
+            logger.severe(ExceptionUtils.getFullStackTrace(e3));
         }
 
     }

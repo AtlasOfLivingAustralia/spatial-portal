@@ -3,14 +3,12 @@ package org.ala.rest;
 import com.thoughtworks.xstream.XStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Logger;
 
 import org.geoserver.rest.AbstractResource;
-import org.geoserver.rest.MapResource;
-import org.geoserver.rest.ReflectiveResource;
 import org.geoserver.rest.format.DataFormat;
 import org.geoserver.rest.format.StringFormat;
-import org.geotools.xml.XML;
+import org.geotools.util.logging.Logging;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
@@ -21,12 +19,13 @@ import org.restlet.data.Response;
  */
 public class SearchResource extends AbstractResource {//ReflectiveResource {
 
+    private static final Logger logger = Logging.getLogger("org.ala.rest.SearchResource");
+
     @Override
     protected List<DataFormat> createSupportedFormats(Request request, Response response) {
 
         List<DataFormat> formats = new ArrayList();
         formats.add(new StringFormat(MediaType.APPLICATION_XML));
-
         return formats;
     }
 
@@ -38,44 +37,110 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         XStream xstream = new XStream();
         DataFormat format = getFormatGet();
 
-        System.out.println(getRequest().getAttributes().toString());
+        logger.info(getRequest().getAttributes().toString());
 
+        String q = "";
+        String lon = "";
+        String lat = "";
+        String wkt = "";
+        String layer = "";
+        String layers = "";
 
-        String query = getRequest().getAttributes().get("q").toString();
-        
-        if (query.contains("q")) {
-            String nameTerm = query.split("=")[1].replace(",type", "");
-            System.out.println(query);
-            //Support & as separator as well
-            nameTerm = nameTerm.replace("&type", "");
-            Search searchObj;
-            if (query.contains("type")) {
-                String typeTerm = query.split("=")[2].replace(",", "");
-                searchObj = new Search(nameTerm.replace("+", "* AND ") + "*", typeTerm);
-                xstream.processAnnotations(Search.class);
-                //System.out.println(xstream.toXML(searchObj));
-                String xmlString = xstream.toXML(searchObj);
-                getResponse().setEntity(format.toRepresentation(xmlString));
-            } else {
-                searchObj = new Search(nameTerm.replace("+", "* AND ") + "*");
-                xstream.processAnnotations(Search.class);
-                //System.out.println(xstream.toXML(searchObj));
-                String xmlString = xstream.toXML(searchObj);
-                getResponse().setEntity(format.toRepresentation(xmlString));
+        if (getRequest().getAttributes().containsKey("q")) {
+            String[] pieces = getRequest().getAttributes().get("q").toString().split("&");
+            logger.finer("We have " + pieces.length + " search components.");
+            for (String get_param : pieces) {
+                if (get_param.contains("q=")) {
+                    q = get_param.replace("q=", "");
+                    logger.finer("q is " + q);
+                }
+                if (get_param.contains("lat=")) {
+                    lat = get_param.replace("lat=", "");
+                    logger.finer("lat is " + lat);
+                }
+                if (get_param.contains("lon=")) {
+                    lon = get_param.replace("lon=", "");
+                    logger.finer("lon is " + lon);
+                }
+                if (get_param.contains("layer=")) {
+                    layer = get_param.replace("layer=", "");
+                    logger.finer("layer is " + layer);
+                }
+                if (get_param.contains("layers=")) {
+                    layers = get_param.replace("layers=", "");
+                    logger.finer("layers are " + layers);
+                }
             }
-        } else if (query.contains("point")) {
-            System.out.println("+++++Point search ...");
-            String point = query.split("&")[0];
-            String layerName = query.split("&layer=")[1];
-            String x = point.split("=")[1].split(",")[0];
-            String y = point.split("=")[1].split(",")[1];
+        }
 
+        String[] layers_arr = getLayers(layer, layers);
 
-            PointSearch searchObj = new PointSearch(x, y, layerName);
+        //normal search query
+        if (q.compareTo("") != 0) {
+            Search searchObj;
+            if (layers_arr.length > 0) {
+                searchObj = new Search(q.replace("+", "* AND ") + "*", layers_arr);
+            } else {
+                searchObj = new Search(q.replace("+", "* AND ") + "*");
+            }
+            xstream.processAnnotations(Search.class);
+            String xmlString = xstream.toXML(searchObj);
+            getResponse().setEntity(format.toRepresentation(xmlString));
+        } //point search
+        else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0)) {
+            PointSearch searchObj;
+            if (layers_arr.length > 0) {
+                searchObj = new PointSearch(lon, lat, layers_arr);
+            } else {
+                searchObj = new PointSearch(lon, lat);
+            }
             xstream.processAnnotations(PointSearch.class);
-            //System.out.println(xstream.toXML(searchObj));
             String xmlString = xstream.toXML(searchObj);
             getResponse().setEntity(format.toRepresentation(xmlString));
         }
+    }
+
+    /**
+     * Helper method to merge and parse layer and layers into an array of strings
+     * Also check to see if they are valid layers, and checks for layer aliases
+     * @param layer
+     * @param Layers
+     * @return
+     */
+    public String[] getLayers(String layer, String layers) {
+        GazetteerConfig gc = new GazetteerConfig();
+        ArrayList<String> layer_al = new ArrayList<String>();
+        if (layers.compareTo("") != 0) {
+            String[] layers_a = layers.split(",");
+            for (String layer_str : layers_a) {
+                if (gc.layerNameExists(layer_str)) {
+                    layer_al.add(layer_str);
+                } else {
+                    String layer_a = gc.getNameFromAlias(layer_str);
+                    if (layer_a.compareTo("") != 0) {
+                        layer_al.add(layer_a);
+                    } else {
+                        logger.info("Layer " + layer + " layer name or alias does not exist, ignoring.");
+                    }
+                }
+
+            }
+        }
+        if (layer.compareTo("") != 0) {
+            if (gc.layerNameExists(layer)) {
+                layer_al.add(layer);
+            } else {
+                String layer_a = gc.getNameFromAlias(layer);
+                if (layer_a.compareTo("") != 0) {
+                    layer_al.add(layer_a);
+                } else {
+                    logger.info("Layer " + layer + " layer name or alias does not exist, ignoring.");
+                }
+            }
+        }
+        for (String string : layer_al) {
+            logger.info(string);
+        }
+        return layer_al.toArray(new String[layer_al.size()]);
     }
 }

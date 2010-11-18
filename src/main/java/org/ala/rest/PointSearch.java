@@ -1,56 +1,40 @@
 package org.ala.rest;
 
 import java.util.ArrayList;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import java.io.File;
-import org.apache.lucene.util.Version;
-import java.util.List;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.document.Fieldable;
-import org.vfny.geoserver.global.GeoserverDataDirectory;
 import java.io.IOException;
-import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.ParseException;
 import java.util.Map;
 import java.util.HashMap;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
-import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureIterator;
 
 import org.geotools.filter.text.cql2.CQL;
-import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
 
 import org.vfny.geoserver.util.DataStoreUtils;
+
 /***
  *
  * @author angus
  */
 @XStreamAlias("search")
 public class PointSearch {
+
+    private static final Logger logger = Logging.getLogger("org.ala.rest.PointSearch");
     @XStreamAlias("results")
     ArrayList<SearchResultItem> results;
-
     @XStreamAlias("xmlns:xlink")
     @XStreamAsAttribute
     String xlink = "http://www.w3.org/1999/xlink";
@@ -61,76 +45,122 @@ public class PointSearch {
      */
     public Map getMap() {
         HashMap resultsMap = new HashMap();
-        resultsMap.put("results",this.results);
+        resultsMap.put("results", this.results);
         return resultsMap;
     }
 
+
+    /**
+     * Performs a point search across a single layer (if layer is empty string, it searches across all default layers).
+     * @param lon
+     * @param lat
+     * @param layerName
+     */
+    public PointSearch(String lon, String lat, String[] layers) {
+        results = new ArrayList<SearchResultItem>();
+        GazetteerConfig gc = new GazetteerConfig();
+        GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
+        ServletContext sc = GeoServerExtensions.bean(ServletContext.class);
+        Catalog catalog = gs.getCatalog();
+        logger.info("Point search parameters " + lon + "," + lat + "," + layers);
+
+        //here we want to search default layers
+        if (layers.length == 0) {
+            logger.finer("No actual layers here, searching default layers");
+            ArrayList<String> defaultLayers = (ArrayList<String>) gc.getDefaultLayerNames();
+            for (String layer : defaultLayers) {
+                search(catalog, layer, sc, lon, lat, gc);
+            }
+
+        } else {
+            for (String layerName : layers) {
+                logger.finer("Searching specific layer " + layerName);
+                search(catalog, layerName, sc, lon, lat, gc);
+            }
+        }
+    }
+
+        /**
+     * Performs a point search across a single layer (if layer is empty string, it searches across all default layers).
+     * @param lon
+     * @param lat
+     * @param layerName
+     */
     public PointSearch(String lon, String lat, String layerName) {
         results = new ArrayList<SearchResultItem>();
-         GazetteerConfig gc = new GazetteerConfig();
-
-        GeoServer gs = GeoServerExtensions.bean( GeoServer.class );
-        ServletContext sc = GeoServerExtensions.bean( ServletContext.class );
+        GazetteerConfig gc = new GazetteerConfig();
+        GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
+        ServletContext sc = GeoServerExtensions.bean(ServletContext.class);
         Catalog catalog = gs.getCatalog();
-        System.out.println("+++++++++" + lon + "," + lat + "," + layerName);
+        logger.info("Point search parameters " + lon + "," + lat + "," + layerName);
+
+        //here we want to search default layers
+        if (layerName.compareTo("") == 0) {
+            logger.finer("Searching default layers");
+            ArrayList<String> defaultLayers = (ArrayList<String>) gc.getDefaultLayerNames();
+            for (String layer : defaultLayers) {
+                search(catalog, layer, sc, lon, lat, gc);
+            }
+
+        } else {
+            logger.finer("Searching specific layer " + layerName);
+            search(catalog, layerName, sc, lon, lat, gc);
+        }
+    }
+
+    /**
+     * Constructor to perform a search across the default layers
+     * @param lon
+     * @param lat
+     */
+    public PointSearch(String lon, String lat) {
+        this(lon, lat, "");
+    }
+
+    /**
+     * Refactored method to perform a layer based point search
+     *
+     * @param catalog
+     * @param layerName
+     * @param sc
+     * @param lon
+     * @param lat
+     * @param gc
+     */
+    private void search(Catalog catalog, String layerName, ServletContext sc, String lon, String lat, GazetteerConfig gc) {
         try {
-                LayerInfo layerInfo = catalog.getLayerByName(layerName);
-                Map params = layerInfo.getResource().getStore().getConnectionParameters();
-
-                DataStore dataStore = DataStoreUtils.acquireDataStore(params, sc);//DataStoreFinder.getDataStore(params);
-                FeatureSource layer = dataStore.getFeatureSource(layerName);
-                System.out.println("++++++++++Searching " + layerName);
-
-                FeatureIterator features = layer.getFeatures(CQL.toFilter("CONTAINS(the_geom,POINT(" + lon + " " +lat +"))")).features();
-
-                if (features.hasNext()) {
-                    System.out.println("Found one!!!");
-                    while (features.hasNext()) {
-                        Feature feature = (Feature) features.next();
-                        String id = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
-                        results.add(new SearchResultItem(layerName,id));
-                    }
+            
+            if (!gc.layerNameExists(layerName)){
+                logger.finer("layer " + layerName + " does not exist - trying aliases.");
+                layerName = gc.getNameFromAlias(layerName);
+                if (layerName.compareTo("") == 0){
+                    logger.finer("no aliases found for layer, giving up");
+                    return;
                 }
-                features.close();
+            }
+            
+            LayerInfo layerInfo = catalog.getLayerByName(layerName);
+
+            Map params = layerInfo.getResource().getStore().getConnectionParameters();
+            DataStore dataStore = DataStoreUtils.acquireDataStore(params, sc); //DataStoreFinder.getDataStore(params);
+            FeatureSource layer = dataStore.getFeatureSource(layerName);
+            logger.info("Searching " + layerName);
+            FeatureIterator features = layer.getFeatures(CQL.toFilter("CONTAINS(the_geom,POINT(" + lon + " " + lat + "))")).features();
+            if (features.hasNext()) {
+                logger.info("Found one!!!");
+                while (features.hasNext()) {
+                    Feature feature = (Feature) features.next();
+                    String id = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
+                    results.add(new SearchResultItem(layerName, id));
+                }
+            }
+            features.close();
+        } catch (IOException e1) {
+            logger.severe("IOException thrown in point search");
+            logger.severe(ExceptionUtils.getFullStackTrace(e1));
+        } catch (Exception e2) {
+            logger.severe("Exception thrown in point search");
+            logger.severe(ExceptionUtils.getFullStackTrace(e2));
         }
-    catch (IOException e1) {
-            //FIXME: Log error - return http error code?
-            System.out.println(e1.getMessage());
-        }
-   catch (Exception e2) {
-        System.out.println(e2.getMessage());
     }
-    }
-
-//    public Search(String searchTerms) {
-//        results = new ArrayList<SearchResultItem>();
-//
-//        try {
-//            //Get the geoserver data directory from the geoserver instance
-//            File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-//            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
-//
-//            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
-//
-//            Query nameQuery = qp.parse(searchTerms.toLowerCase());
-//
-//            //TODO: instead of 20 - should be variable and paging?
-//            TopDocs topDocs = is.search(nameQuery, 20);
-//
-//            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-//                Document doc = is.doc(scoreDoc.doc);
-//                List<Fieldable> fields = doc.getFields();
-//                results.add(new SearchResultItem(fields,true));
-//            }
-//        } catch (IOException e1) {
-//            //FIXME: Log error - return http error code?
-//            System.out.println(e1.getMessage());
-//        } catch (ParseException e3) {
-//            //FIXME
-//        }
-//
-//    }
-//}
-
-
 }
