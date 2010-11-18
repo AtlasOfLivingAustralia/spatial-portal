@@ -92,6 +92,23 @@ public class SamplingLoadedPointsService extends SamplingService {
         return sampleSpeciesPoints(filter, region, records);
     }
 
+     /**
+     * for Sensitive Coordinates
+     *
+     * gets array of points for species (genus, etc) name matches within
+     * a specified region
+     *
+     * removes points for all species that are sensitive
+     *
+     * @param filter species (genus, etc) name
+     * @param region region to filter results by
+     * @param records sorted pool of records to intersect with as ArrayList<Integer>
+     * @return points as double[], first is longitude, every second is latitude.
+     */
+    public double[] sampleSpeciesPointsMinusSensitiveSpecies(String filter, SimpleRegion region, ArrayList<Integer> records, StringBuffer removedSpecies) {
+        return sampleSpeciesPoints(filter, region, records);
+    }
+
     public static String getLSIDAsGeoJSON(String lsid, File outputpath) {
         int i;
 
