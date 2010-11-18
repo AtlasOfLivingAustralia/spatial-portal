@@ -8,6 +8,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
@@ -47,7 +48,11 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -370,7 +375,7 @@ public class SelectionController extends UtilityComposer {
                 "Enter address", "Select radius"
              
             };
-            cbAreaSelection.setText("Select radius from address");
+            cbAreaSelection.setText("Select radius around an address");
             setInstructions("Active Map Tool: Create radius from address...", text);
 
             showPolygonInfo();
@@ -1243,24 +1248,75 @@ public class SelectionController extends UtilityComposer {
     }
 
     private String createCircle(double x, double y, final double RADIUS) {
-        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
 
-        final int SIDES = 32;
-        Coordinate coords[] = new Coordinate[SIDES+1];
-        for( int i = 0; i < SIDES; i++){
-            double angle = ((double) i / (double) SIDES) * Math.PI * 2.0;
-            double dx = Math.cos( angle ) * RADIUS;
-            double dy = Math.sin( angle ) * RADIUS;
-            coords[i] = new Coordinate( (double) x + dx, (double) y + dy );
+        try {
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+//            CoordinateReferenceSystem dataCRS = CRS.decode("EPSG:4326");
+//            CoordinateReferenceSystem googleCRS = CRS.decode("EPSG:900913");
+            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
+        + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
+        + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
+        + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
+        + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
+        + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
+        + "  AUTHORITY[\"EPSG\",\"4326\"]]";
+             String wkt900913 = "PROJCS[\"WGS84 / Google Mercator\", "
+  + "  GEOGCS[\"WGS 84\", "
+   + "   DATUM[\"World Geodetic System 1984\", "
+     + "   SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], "
+      + "  AUTHORITY[\"EPSG\",\"6326\"]], "
+     + " PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], "
+     + " UNIT[\"degree\", 0.017453292519943295], "
+     + " AXIS[\"Longitude\", EAST], "
+     + " AXIS[\"Latitude\", NORTH], "
+     + " AUTHORITY[\"EPSG\",\"4326\"]], "
+   + " PROJECTION[\"Mercator_1SP\"], "
+   + " PARAMETER[\"semi_minor\", 6378137.0], "
+   + " PARAMETER[\"latitude_of_origin\", 0.0],"
+   + " PARAMETER[\"central_meridian\", 0.0], "
+   + " PARAMETER[\"scale_factor\", 1.0], "
+   + " PARAMETER[\"false_easting\", 0.0], "
+   + " PARAMETER[\"false_northing\", 0.0], "
+   + " UNIT[\"m\", 1.0], "
+   + " AXIS[\"x\", EAST], "
+   + " AXIS[\"y\", NORTH], "
+   + " AUTHORITY[\"EPSG\",\"900913\"]] ";
+            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
+            CoordinateReferenceSystem googleCRS = CRS.parseWKT(wkt900913);
+            MathTransform transform = CRS.findMathTransform(wgsCRS, googleCRS);
+            Point point = geometryFactory.createPoint(new Coordinate(y, x));
+            Geometry geom = JTS.transform(point, transform);
+            Point gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
+
+            System.out.println("Google point:" + gPoint.getCoordinate().x + "," + gPoint.getCoordinate().y );
+
+            MathTransform reverseTransform = CRS.findMathTransform(googleCRS, wgsCRS);
+            final int SIDES = 32;
+            Coordinate coords[] = new Coordinate[SIDES + 1];
+            for (int i = 0; i < SIDES; i++) {
+                double angle = ((double) i / (double) SIDES) * Math.PI * 2.0;
+                double dx = Math.cos(angle) * RADIUS;
+                double dy = Math.sin(angle) * RADIUS;
+                geom = JTS.transform(geometryFactory.createPoint(new Coordinate((double) gPoint.getCoordinate().x + dx, (double) gPoint.getCoordinate().y + dy)),reverseTransform);
+                coords[i] = new Coordinate(geom.getCoordinate().y, geom.getCoordinate().x);
+            }
+            coords[SIDES] = coords[0];
+
+            LinearRing ring = geometryFactory.createLinearRing(coords);
+            Polygon polygon = geometryFactory.createPolygon(ring, null);
+
+            
+            //Geometry polyGeom = JTS.transform(coords,reverseTransform);
+            WKTWriter writer = new WKTWriter();
+            String wkt = writer.write(polygon);
+            return wkt;
+
+        } catch (Exception e) {
+            System.out.println("Circle fail!");
+            return "none";
         }
-        coords[SIDES] = coords[0];
 
-        LinearRing ring = geometryFactory.createLinearRing( coords );
-        Polygon polygon = geometryFactory.createPolygon( ring, null );
-        polygon.setSRID(900913);
-        WKTWriter writer = new WKTWriter();
-        String wkt = writer.write(polygon);
-        return wkt;
     }
 
     private String radiusFromAddress(String address) {
@@ -1277,14 +1333,18 @@ public class SelectionController extends UtilityComposer {
             //Point point = geometryFactory.createPoint(new Coordinate(
             double radius = 0.044915599;
             if (cbRadius.getSelectedItem() == ci5km) {
-                radius = 0.044915599;
+                //radius = 0.044915599;
+                radius = 5000;
             }
             if (cbRadius.getSelectedItem() == ci10km) {
-                radius = 0.089831198;
+                //radius = 0.089831198;
+                radius = 10000;
             }
             if (cbRadius.getSelectedItem() == ci20km) {
-                radius = 0.179662396;
+                //radius = 0.179662396;
+                radius = 20000;
             }
+
             return createCircle(gco.getLongitude(),gco.getLatitude(),radius);
 
         }
