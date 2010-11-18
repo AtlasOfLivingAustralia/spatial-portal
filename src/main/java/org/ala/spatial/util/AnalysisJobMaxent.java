@@ -83,13 +83,16 @@ public class AnalysisJobMaxent extends AnalysisJob {
             setProgress(0, "dumping species data");
 
             SamplingService ss = SamplingService.newForLSID(taxon);
-            double [] points = ss.sampleSpeciesPointsSensitive(taxon, region, null);
+
+            StringBuffer removedSpecies = new StringBuffer();
+            double[] points = ss.sampleSpeciesPointsMinusSensitiveSpecies(taxon, region, null, removedSpecies);            
+
             StringBuffer sbSpecies = new StringBuffer();
             // get the header
             sbSpecies.append("species, longitude, latitude");
             sbSpecies.append(System.getProperty("line.separator"));
-            for(int i=0;i<points.length;i+=2){
-                sbSpecies.append("species, " + points[i] + ", " + points[i+1]);
+            for (int i = 0; i < points.length; i += 2) {
+                sbSpecies.append("species, " + points[i] + ", " + points[i + 1]);
                 sbSpecies.append(System.getProperty("line.separator"));
             }
 
@@ -163,12 +166,22 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 readReplaceBetween(pth + "species.html", "<HR><H2>Pictures of the model", "<HR>","<HR>");
                 readReplace(pth + "species.html", "<a href = \"plots/\"> <img src=\"plots/\" width=600></a>", "see map window");
                 readReplace(pth + "species.html", "plots\\\\", "plots/");
-
+                
                 readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
                 readReplace(pth + "species.html", msets.getOutputPath(), "");
                 readReplaceBetween(pth + "species.html", "Command line","<br>","");
                 readReplaceBetween(pth + "species.html", "Command line","<br>","");
-                
+
+                if(removedSpecies.length() > 0) {
+                    String header = "'Sensitive species' (http://www.ala.org.au/about/program-of-projects/sds/) masked out of the model\r\n\r\nLSID,Species scientific name,Taxon rank";
+                    writeToFile(header + removedSpecies.toString(),
+                            currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
+
+                    String insertBefore= "<a href = \"maxentResults.csv\">";
+                    String insertText = "<a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br>";
+                    readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
+                }
+
                 //delete image
                 FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
                 FileUtils.deleteQuietly(new File(pth + "species_samplePredictions.csv"));
@@ -237,11 +250,15 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         if (stage <= 1) { //running; 0.2 to 0.9            
             t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
-            if(stage == 1) t2 = t2 + progTime - stageTimes[1];
+            if (stage == 1) {
+                t2 = t2 + progTime - stageTimes[1];
+            }
         }
         if (stage > 1) { //data export + done
             t3 += 5000 * TabulationSettings.maxent_timing_2; //default
-            if(stage == 2) t3 = t3 + progTime - stageTimes[2];
+            if (stage == 2) {
+                t3 = t3 + progTime - stageTimes[2];
+            }
         }
 
         timeRemaining = t1 + t2 + t3;
@@ -288,8 +305,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         if (stage <= 1) { //running; 0.2 to 0.9
             t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
-            if(stage == 1) d2 = (currentTime - stageTimes[1]) / (double) t2;
-            else d2 = 0;
+            if (stage == 1) {
+                d2 = (currentTime - stageTimes[1]) / (double) t2;
+            } else {
+                d2 = 0;
+            }
             if (d2 > 0.9) {
                 d2 = 0.9;
             }
@@ -299,9 +319,12 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         if (stage > 1) { //data export + done
             t3 += 5000 * TabulationSettings.maxent_timing_2; //default
-            if(stage == 2) d3 = (currentTime - stageTimes[2]) / (double) t3;
-            else d3 = 0;
-            if(d3 > 0.9) {
+            if (stage == 2) {
+                d3 = (currentTime - stageTimes[2]) / (double) t3;
+            } else {
+                d3 = 0;
+            }
+            if (d3 > 0.9) {
                 d3 = 0.9;
             }
             d3 *= 0.1; //range limit
@@ -399,8 +422,8 @@ public class AnalysisJobMaxent extends AnalysisJob {
             }
             int start, end;
             start = sb.indexOf(startOldText);
-            if(start >= 0){
-                end = sb.indexOf(endOldText,start+1);
+            if (start >= 0) {
+                end = sb.indexOf(endOldText, start + 1);
                 sb.replace(start, end + endOldText.length(), replText);
             }
             reader.close();
@@ -433,6 +456,16 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
 
         return null;
+    }
+
+    private void writeToFile(String text, String filename) {
+        try {
+            FileWriter fw = new FileWriter(filename);
+            fw.append(text);
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void writeProjectionFile(String outputpath) {

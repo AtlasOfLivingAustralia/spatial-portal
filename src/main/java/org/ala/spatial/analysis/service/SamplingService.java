@@ -417,6 +417,78 @@ public class SamplingService {
 
         return null;
     }
+
+    /**
+     * for Sensitive Coordinates
+     *
+     * gets array of points for species (genus, etc) name matches within
+     * a specified region
+     *
+     * removes points for all species that are sensitive
+     *
+     * @param filter species (genus, etc) name
+     * @param region region to filter results by
+     * @param records sorted pool of records to intersect with as ArrayList<Integer>
+     * @return points as double[], first is longitude, every second is latitude.
+     */
+    public double[] sampleSpeciesPointsMinusSensitiveSpecies(String filter, SimpleRegion region, ArrayList<Integer> records, StringBuffer removedSpecies) {
+        IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(filter);
+
+        if (ir != null && ir.length > 0) {
+
+            /* get points */
+            double[] points = OccurrencesIndex.getPointsMinusSensitiveSpecies(ir[0].record_start, ir[0].record_end, removedSpecies);
+
+            /* test for region absence */
+            if (region == null) {
+                return points;
+            }
+
+            int i;
+            int count = 0;
+
+            int recordsPos = 0; //for test on records
+
+            /* return all valid points within the region */
+            for (i = 0; i < points.length; i += 2) {
+                //do not add if does not intersect with records list
+                if (records != null) {
+                    int currentRecord = i + ir[0].record_start;
+                    //increment recordsPos as required
+                    while (recordsPos < records.size()
+                            && records.get(recordsPos).intValue() < currentRecord) {
+                        recordsPos++;
+                    }
+                    //test for intersect
+                    if (recordsPos >= records.size()
+                            || currentRecord != records.get(recordsPos).intValue()) {
+                        continue;
+                    }
+                }
+                //region test
+                if (region.isWithin(points[i], points[i + 1])) {
+                    count += 2;
+                } else {
+                    points[i] = Double.NaN;
+                }
+            }
+            //move into 'output'
+            if (count > 0) {
+                double[] output = new double[count];
+                int p = 0;
+                for (i = 0; i < points.length; i += 2) {
+                    if (!Double.isNaN(points[i])) {
+                        output[p++] = points[i];
+                        output[p++] = points[i + 1];
+                    }
+                }
+                return output;
+            }
+
+        }
+
+        return null;
+    }
     
     /**
      * for Sensitive Records

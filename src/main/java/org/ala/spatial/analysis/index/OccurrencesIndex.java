@@ -251,6 +251,19 @@ public class OccurrencesIndex implements AnalysisIndexService {
     public static void putLSIDBoundingBox(String lsid, String bb) {
         lsidBoundingBox.put(lsid, bb);
     }
+
+    private static IndexedRecord getSingleIndexAtRecord(int record) {
+        IndexedRecord ir = null;
+        for (int i = 0; i < single_index.length; i++) {
+            if (record >= single_index[i].record_start
+                    && record <= single_index[i].record_end) {
+                if(ir == null || ir.type < single_index[i].type) {
+                    ir = single_index[i];
+                }
+            }
+        }
+        return ir;
+    }
     /**
      * all occurrences data
      */
@@ -1076,7 +1089,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             indexedRecord[0] = single_index[pos];
             return indexedRecord;
         }
-                
+
         return null;
     }
     static int[] speciesNumberInRecordsOrder = null;
@@ -1463,7 +1476,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 }
 
                 /* test for uniqueness */
-                if(sa.length < 2){
+                if (sa.length < 2) {
                     continue;
                 }
                 int sz = unique.size();
@@ -3515,16 +3528,16 @@ public class OccurrencesIndex implements AnalysisIndexService {
         //output
         try {
             /*FileOutputStream fos = new FileOutputStream(
-                    TabulationSettings.index_path
-                    + SENSITIVE_COORDINATES);
+            TabulationSettings.index_path
+            + SENSITIVE_COORDINATES);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(sensitiveCoordinates);
             oos.close();*/
             //write
             RandomAccessFile points = new RandomAccessFile(
-                TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat",
-                "rw");
+                    TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat",
+                    "rw");
             byte[] b = new byte[sensitiveCoordinates.length * 8 * 2];
             ByteBuffer bb = ByteBuffer.wrap(b);
             for (int i = 0; i < sensitiveCoordinates.length; i++) {
@@ -3545,7 +3558,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         //input
         try {
             File f = new File(TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat");
-            if(!f.exists()){
+            if (!f.exists()) {
                 //read.
                 //TODO: remove this temporary code
                 FileInputStream fis = new FileInputStream(
@@ -3555,11 +3568,11 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 ObjectInputStream ois = new ObjectInputStream(bis);
                 sensitiveCoordinates = (double[][]) ois.readObject();
                 ois.close();
-                
+
                 //write
                 RandomAccessFile points = new RandomAccessFile(
-                    TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat",
-                    "rw");             
+                        TabulationSettings.index_path + SENSITIVE_COORDINATES + "_raf.dat",
+                        "rw");
                 byte[] b = new byte[sensitiveCoordinates.length * 8 * 2];
                 ByteBuffer bb = ByteBuffer.wrap(b);
                 for (int i = 0; i < sensitiveCoordinates.length; i++) {
@@ -3583,7 +3596,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             int i;
 
             /* read doubles into data structure*/
-            double [][] d = new double[number_of_records][2];
+            double[][] d = new double[number_of_records][2];
             for (i = 0; i < number_of_records; i++) {
                 d[i][0] = bb.getDouble();
                 d[i][1] = bb.getDouble();
@@ -3637,9 +3650,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
             /* put into double [] */
             int i;
-            for (i = recordstart; i < recordend; i ++) {
-                dsensitive[(i-recordstart)*2] = sensitiveCoordinates[i][0];
-                dsensitive[(i-recordstart)*2 + 1] = sensitiveCoordinates[i][1];
+            for (i = recordstart; i <= recordend; i++) {
+                dsensitive[(i - recordstart) * 2] = sensitiveCoordinates[i][0];
+                dsensitive[(i - recordstart) * 2 + 1] = sensitiveCoordinates[i][1];
             }
         } catch (Exception e) {
             SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
@@ -3657,6 +3670,122 @@ public class OccurrencesIndex implements AnalysisIndexService {
     }
 
     /**
+     * for excluding all species that contain Sensitive Coordinates
+     *
+     * gets points corresponding to sorted records between two record positions
+     *
+     * points returned are in: record start <= record position <= record end
+     *
+     * @param file_start first character to return
+     * @param file_end one more than last character to return
+     * @return each record between first and end character positions, split by new line as String[]
+     */
+    public static double[] getPointsMinusSensitiveSpecies(int recordstart, int recordend, StringBuffer removedSpecies) {
+        double[] d = new double[(recordend - recordstart + 1) * 2];
+        try {
+            /* ready requested byte block */
+            RandomAccessFile points = new RandomAccessFile(
+                    TabulationSettings.index_path + POINTS_FILENAME,
+                    "rw");
+            int number_of_points = (recordend - recordstart + 1) * 2;
+            byte[] b = new byte[(number_of_points) * 8];
+            points.seek(recordstart * 2 * 8);
+            points.read(b);
+            ByteBuffer bb = ByteBuffer.wrap(b);
+            points.close();
+
+            /* put into double [] */
+            int i;
+            for (i = 0; i < number_of_points; i++) {
+                d[i] = bb.getDouble();
+            }
+        } catch (Exception e) {
+            SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
+        }
+
+        double[] dsensitive = new double[(recordend - recordstart + 1) * 2];
+
+        try {
+            int number_of_points = (recordend - recordstart + 1) * 2;
+
+            /* put into double [] */
+            int i;
+            for (i = recordstart; i <= recordend; i++) {
+                dsensitive[(i - recordstart) * 2] = sensitiveCoordinates[i][0];
+                dsensitive[(i - recordstart) * 2 + 1] = sensitiveCoordinates[i][1];
+            }
+        } catch (Exception e) {
+            SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
+        }
+
+
+        {//remove at species level
+            ArrayList<IndexedRecord> irs = new ArrayList<IndexedRecord>();
+
+            //identify sensitive species
+            for (int i = 0; i < d.length; i += 2) {
+                if (dsensitive[i] != -1 || dsensitive[i + 1] != -1) {
+                    IndexedRecord ir = getSingleIndexAtRecord((i/2) + recordstart);
+                    String [] s = getFirstName(ir.name);
+                    removedSpecies.append("\r\n").append(ir.name).append(",").append(StringUtils.capitalize(s[0])).append(",").append(s[1]);
+                    irs.add(ir);
+                    
+                    //seek to last record for this ir
+                    i = (ir.record_end - recordstart) * 2;
+                }
+            }
+
+            //mask out
+            for(IndexedRecord ir : irs) {
+                int start = ir.record_start - recordstart;
+                if(start < recordstart) start = 0;
+                
+                int end = ir.record_end - recordstart;                
+                if(end >= recordend) end = recordend;
+                
+                end *=2;                        //translate to points, long+lat
+                start *=2;                      //translate to points, long+lat
+                for(int j=start;j<=end;j++){
+                   d[j] = -1;                   //mask
+                }
+            }
+
+            //removed masked records
+            int p = 0;
+            for (int i = 0; i < d.length; i += 2) {
+                if(d[i] != -1 && d[i+1] != -1){
+                    d[p] = d[i];
+                    d[p + 1] = d[i + 1];
+                    p += 2;
+                }
+            }
+            if(p == 0){
+                d = null;
+            } else {
+                d = java.util.Arrays.copyOf(d, p);
+            }
+        }
+
+        /*{//remove at points level
+        int p = 0;
+        for (int i = 0; i < d.length; i += 2) {
+        if (dsensitive[i] != -1 || dsensitive[i + 1] != -1) {
+        //this species is sensitive, remove record
+        d[p] = dsensitive[i];
+        d[p + 1] = dsensitive[i + 1];
+        } else {
+        d[p] = d[i];
+        d[p + 1] = d[i + 1];
+        p += 2;
+        }
+        }
+        d = java.util.Arrays.copyOf(d,p);
+        }*/
+
+        return d;
+    }
+
+    /**
      * for Sensitive Records
      *
      * Checks if the records are sensitive
@@ -3666,12 +3795,11 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @return int 0: non-sensitive, 1: sensitive, -1: cannot be determined
      */
     public static int isSensitiveRecord(int recordstart, int recordend) {
-        try {
+        /*try {
             int number_of_points = (recordend - recordstart + 1);
 
             SpatialLogger.log("Occ.isSensitiveRecord.number_of_points: " + number_of_points);
-
-            /* put into double [] */
+            
             int i;
             for (i = recordstart; i <= recordend; i++) {
                 if (sensitiveCoordinates[i][0] != -1 || sensitiveCoordinates[i][1] != -1) {
@@ -3685,9 +3813,16 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
 
         SpatialLogger.log("Occ.isSensitiveRecord(0)");
-        return 0;
-    }
+        return 0;*/
 
+        StringBuffer sb = new StringBuffer();
+        double [] d = getPointsMinusSensitiveSpecies(recordstart, recordend, sb);
+        if(d == null || d.length == 0){
+            return 1;
+        } else {
+            return 0;
+        }
+    }
     //TODO: bounding box hashmap cleanup
     static HashMap<String, String> lsidBoundingBox = new HashMap<String, String>();
 
