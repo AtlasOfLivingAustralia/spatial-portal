@@ -127,6 +127,7 @@ public class SelectionController extends UtilityComposer {
     Comboitem lastTool;
     Window wInstructions = null;
     Combobox cbRadius;
+    Comboitem ci1km;
     Comboitem ci5km;
     Comboitem ci10km;
     Comboitem ci20km;
@@ -187,6 +188,7 @@ public class SelectionController extends UtilityComposer {
             (new Separator()).setParent(vbox);
             addressBox = new Textbox();
             addressBox.setTooltiptext("eg. Black Mountain, Canberra");
+            addressBox.setWidth("95%");
             addressBox.setParent(vbox);
 
               Label l2 = new Label((2) + ". " + text[1]);
@@ -197,13 +199,15 @@ public class SelectionController extends UtilityComposer {
 
             cbRadius = new Combobox();
             cbRadius.setParent(vbox);
+            ci1km = new Comboitem("1km radius");
+            ci1km.setParent(cbRadius);
             ci5km = new Comboitem("5km radius");
             ci5km.setParent(cbRadius);           
             ci10km = new Comboitem("10km radius");
             ci10km.setParent(cbRadius);
             ci20km = new Comboitem("20km radius");
             ci20km.setParent(cbRadius);
-            cbRadius.setSelectedItem(ci5km);
+            cbRadius.setSelectedItem(ci1km);
             
            
             
@@ -1331,17 +1335,17 @@ public class SelectionController extends UtilityComposer {
             GeoCoordinate gco = addresses.get(0).getCoordinate();
 
             //Point point = geometryFactory.createPoint(new Coordinate(
-            double radius = 0.044915599;
+            double radius = 1000;
+             if (cbRadius.getSelectedItem() == ci1km) {
+                radius = 1000;
+            }
             if (cbRadius.getSelectedItem() == ci5km) {
-                //radius = 0.044915599;
                 radius = 5000;
             }
             if (cbRadius.getSelectedItem() == ci10km) {
-                //radius = 0.089831198;
                 radius = 10000;
             }
             if (cbRadius.getSelectedItem() == ci20km) {
-                //radius = 0.179662396;
                 radius = 20000;
             }
 
