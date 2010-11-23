@@ -526,41 +526,46 @@ public class SelectionController extends UtilityComposer {
         Boolean searchComplete = false;
         for (int i = 0; i < activeLayers.size(); i++) {
             MapLayer ml = activeLayers.get(i);
-            String activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&format.*", "");
-            for (int j = 0; j < layerlist.size(); j++) {
-                if (searchComplete)
+
+            String activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+            System.out.println("ACTIVE LAYER: " + activeLayerName );
+            if (ml.isDisplayed()) {
+                for (int j = 0; j < layerlist.size(); j++) {
+                    if (searchComplete) {
                         break;
-                JSONObject jo = layerlist.getJSONObject(j);
+                    }
+                    JSONObject jo = layerlist.getJSONObject(j);
 
-                System.out.println("********" + jo.getString("name"));
-                if (ml != null && jo.getString("type") != null
-                        && jo.getString("type").length() > 0
-                        && jo.getString("type").equalsIgnoreCase("contextual")
-                        && jo.getString("name").equalsIgnoreCase(activeLayerName)) {
-                    
-                    searchComplete = true;
-                    System.out.println(ml.getName());
-                    String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, geoServer);
-                    System.out.println(featureURI);
-                    //add feature to the map as a new layer
+                    System.out.println("********" + jo.getString("name"));
+                    if (ml != null && jo.getString("type") != null
+                            && jo.getString("type").length() > 0
+                            && jo.getString("type").equalsIgnoreCase("contextual")
+                            && jo.getString("name").equalsIgnoreCase(activeLayerName)) {
 
-                    String feature_text = getWktFromURI(featureURI, true);
+                        searchComplete = true;
+                        System.out.println(ml.getName());
+                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, geoServer);
+                        System.out.println(featureURI);
+                        //add feature to the map as a new layer
 
-                    String json = readGeoJSON(featureURI);
-                    String wkt = wktFromJSON(json);
-                    if (wkt.contentEquals("none")) {
+                        String feature_text = getWktFromURI(featureURI, true);
 
-                        break;
-                    } else {
-                        displayGeom.setValue(feature_text);
-                        //     mc.removeFromList(mc.getMapLayer("Active Area"));
+                        String json = readGeoJSON(featureURI);
+                        String wkt = wktFromJSON(json);
+                        if (wkt.contentEquals("none")) {
+
+                            break;
+                        } else {
+                            displayGeom.setValue(feature_text);
+                            //     mc.removeFromList(mc.getMapLayer("Active Area"));
 
 
-                        MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
-                        updateSpeciesList(false);
-                        searchPoint.setValue("");
-                        setInstructions(null, null);
-                        break;
+                            MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+                            updateSpeciesList(false);
+                            searchPoint.setValue("");
+                            setInstructions(null, null);
+                            break;
+                        }
                     }
 
                 }
