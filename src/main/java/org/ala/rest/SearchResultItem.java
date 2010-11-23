@@ -18,30 +18,33 @@ public class SearchResultItem implements Serializable {
     String description;
     String state;
     String layerName;
+    String idAttribute1;
+    String idAttribute2;
+    Float score;
     @XStreamAlias("xlink:href")
     @XStreamAsAttribute
     String link;
     private static final Logger logger = Logging.getLogger("org.ala.rest.SearchResultItem");
 
-    SearchResultItem(String layerName, String idAttribute1) {
-        this(layerName, idAttribute1, "");
+    SearchResultItem(String layerName, String idAttribute1, Float score) {
+        this(layerName, idAttribute1, "", score);
     }
 
-    SearchResultItem(String layerName, String idAttribute1, String idAttribute2) {
+    SearchResultItem(String layerName, String idAttribute1, String idAttribute2, Float score) {
         this.id = layerName + "/" + idAttribute1;
         if (idAttribute2.compareTo("") != 0) {
             this.id += "/" + idAttribute2;
         }
         this.name = idAttribute1;
         this.layerName = layerName;
+        this.idAttribute1 = idAttribute1;
+        this.idAttribute2 = idAttribute2;
+        this.score = score;
         this.link = "/geoserver/rest/gazetteer/";
         this.link += this.id.replace(" ", "_") + ".json";
     }
 
-    SearchResultItem(List<Fieldable> fields, Boolean includeLink) {
-
-        String idAttribute1 = "";
-        String idAttribute2 = "";
+    SearchResultItem(List<Fieldable> fields, Boolean includeLink, Float score) {
 
         this.description = "";
         for (Fieldable field : fields) {
@@ -54,19 +57,21 @@ public class SearchResultItem implements Serializable {
             } else if (field.name().contentEquals("layerName")) {
                 this.layerName = field.stringValue();
             } else if (field.name().contentEquals("idAttribute1")) {
-                idAttribute1 = field.stringValue();
+                this.idAttribute1 = field.stringValue();
             } else if (field.name().contentEquals("idAttribute2")) {
-                idAttribute2 = field.stringValue();
+                this.idAttribute2 = field.stringValue();
             } else {
                 this.description += field.stringValue() + ",";
             }
         }
         this.id = this.layerName + "/" + idAttribute1.replace(" ", "_");
 
-        if (idAttribute2.compareTo("") != 0){
+        if (idAttribute2 != null && idAttribute2.compareTo("") != 0){
             this.id += "/" + idAttribute2.replace(" ", "_");
         }
 
+        this.score = score;
+        
         if (!description.contentEquals("")) {
             description = description.substring(0, description.length() - 1);
         }

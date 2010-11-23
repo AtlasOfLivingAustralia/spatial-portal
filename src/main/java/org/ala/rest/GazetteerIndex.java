@@ -111,10 +111,12 @@ private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerIn
                                 String idAttribute2 = feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
                                 featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
                                 featureDoc.add(new Field("idAttribute2", idAttribute2, Store.YES, Index.ANALYZED));
+                                featureDoc.add(new Field("id", idAttribute1 + " " + idAttribute2, Store.YES, Index.ANALYZED));
                                 logger.finer("Indexed layer " + layerName + " idAttribute1: " + idAttribute1 + " idAttribute2: " + idAttribute2);
                             } else {
                                 String idAttribute1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                                 featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
+                                featureDoc.add(new Field("id", idAttribute1, Store.YES, Index.ANALYZED));
                                 logger.finer("Indexed layer " + layerName + " idAttribute1: " + idAttribute1);
                             }
                             

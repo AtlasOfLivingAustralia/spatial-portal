@@ -1,30 +1,18 @@
 package org.ala.rest;
 
 import com.vividsolutions.jts.geom.Geometry;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.lucene.queryParser.ParseException;
 import org.geotools.data.DataStore;
 
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerInfo;
@@ -42,7 +30,6 @@ import org.opengis.feature.Property;
 import org.vfny.geoserver.util.DataStoreUtils;
 import org.geoserver.wfs.response.GeoJSONBuilder;
 import org.geotools.util.logging.Logging;
-import org.vfny.geoserver.global.GeoserverDataDirectory;
 
 /**
  *
@@ -89,6 +76,37 @@ public class GazetteerFeature {
             }
         }
 
+        //Use search to find matches (provides case insensitive matching)
+        String[] layers = {layerName};
+        String searchTerms = idAttribute1;
+        if (idAttribute2.compareTo("") != 0) {
+            searchTerms += " " + idAttribute2;
+        }
+
+        Search search = new Search(searchTerms, layers);
+        ArrayList<SearchResultItem> results = search.getResults();
+        if (results.size() == 0) {
+            logger.severe("No results returned - this isn't great");
+            throw new Exception("No results returned - this isn't great");
+        }
+        logger.finer("Number of hits is " + results.size());
+        if (results.size() > 1) {
+            logger.severe("Too many features match this id, please be more specific.");
+            throw new Exception("Too many features match this id, please be more specific.");
+        }
+
+        SearchResultItem searchResultItem = results.get(0);
+
+        //grab the first result (highest hit)
+        logger.finer("Match idAttribute1: " + searchResultItem.idAttribute1);
+        logger.finer("Match idAttribute2: " + searchResultItem.idAttribute2);
+        idAttribute1 = searchResultItem.idAttribute1;
+        if (searchResultItem.idAttribute2 == null) {
+            idAttribute2 = "";
+        } else {
+            idAttribute2 = searchResultItem.idAttribute2;
+        }
+
         LayerInfo layerInfo = catalog.getLayerByName(layerName);
         Map params = layerInfo.getResource().getStore().getConnectionParameters();
 
@@ -101,7 +119,6 @@ public class GazetteerFeature {
 
             } else {
                 FeatureSource layer = dataStore.getFeatureSource(layerName);
-
                 //if table has a second id attribute ...
                 String cql = gc.getIdAttribute1Name(layerName) + "='" + idAttribute1.replace('_', ' ') + "'";
                 if (idAttribute2.compareTo("") != 0) {
@@ -156,28 +173,6 @@ public class GazetteerFeature {
             dataStore.dispose();
 
         }
-    }
-
-    /**
-     * Use lucene to get idAttribute1 and (maybe) idAttribute2
-     * @param id
-     * @return
-     * @throws IOException
-     * @throws ParseException
-     */
-    private Document luceneSearch(String id) throws IOException, ParseException {
-        Document doc = null;
-        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-        IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
-        QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "id", new StandardAnalyzer(Version.LUCENE_CURRENT));
-        Query nameQuery = qp.parse(id);
-
-        TopDocs topDocs = is.search(nameQuery, 1);
-
-        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-            doc = is.doc(scoreDoc.doc);
-        }
-        return doc;
     }
 
     public Map getJSONMap() {

@@ -151,7 +151,7 @@ public class PointSearch {
                 while (features.hasNext()) {
                     Feature feature = (Feature) features.next();
                     String id = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
-                    results.add(new SearchResultItem(layerName, id));
+                    results.add(new SearchResultItem(layerName, id, new Float("1.0")));
                 }
             }
             features.close();

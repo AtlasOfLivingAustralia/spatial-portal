@@ -1,11 +1,11 @@
 package org.ala.rest;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -17,6 +17,9 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.LayerInfo;
+import org.geoserver.config.GeoServer;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.util.logging.Logging;
 import org.vfny.geoserver.global.GeoserverDataDirectory;
@@ -30,9 +33,29 @@ public class GazetteerLayer {
     String classList;
     String classAttribute;
     private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerLayer");
-    
+    Map layerMap = new HashMap();
+    Map classMap = new HashMap();
+    GazetteerConfig gc = new GazetteerConfig();
+    GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
+    ServletContext sc = GeoServerExtensions.bean(ServletContext.class);
+    Catalog catalog = gs.getCatalog();
+    String layerName = "";
+
     public GazetteerLayer(String layerName) {
+ 
         GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
+        //check to see if layer exists
+        if (!gc.layerNameExists(layerName)){
+            //if not, check to see if layer alias exists
+            layerName = gc.getNameFromAlias(layerName);
+            if (layerName.compareTo("") == 0){
+                //otherwise log an error
+                logger.severe("No such layer or layer alias " + layerName + " ignoring ...");
+            }
+        }
+
+        this.layerName = layerName;
+
         classAttribute = gc.getClassAttributeName(layerName);
         if (classAttribute.contentEquals("none")) {
             logger.info("No layer classes are defined");
@@ -48,14 +71,26 @@ public class GazetteerLayer {
                 Query nameQuery = qp.parse(layerName);
 
                 TopDocs topDocs = is.search(nameQuery, 1);
-                if (topDocs.totalHits != 1){
+                if (topDocs.totalHits != 1) {
                     logger.severe("We are expecting some layer class details in the index - time to re-index?");
-                }
-                else{
+                } else {
                     ScoreDoc scoreDoc = topDocs.scoreDocs[0];
                     Document doc = is.doc(scoreDoc.doc);
                     classList = doc.getField(classAttribute).stringValue();
                     is.close();
+                }
+                classMap.put(classAttribute, classList);
+
+                logger.finer("fetching layer properties for " + layerName);
+                LayerInfo layerInfo = catalog.getLayerByName(layerName);
+                layerMap.put("layer name: ", layerInfo.getName());
+                layerMap.put("enabled", new Boolean(layerInfo.enabled()).toString());
+                layerMap.put("type", layerInfo.getType().toString());
+                layerMap.put("alias", gc.getLayerAlias(layerName));
+                layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
+                layerMap.put("idAttribute1", gc.getIdAttribute1Name(layerName));
+                if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
+                    layerMap.put("idAttribute2", gc.getIdAttribute2Name(layerName));
                 }
 
             } catch (IOException e1) {
@@ -72,7 +107,8 @@ public class GazetteerLayer {
 
     public Map getMap() {
         Map map = new HashMap();
-        map.put(classAttribute,classList);
+        map.put("layer_details", layerMap);
+        map.put("layer_classes", classMap);
         return map;
     }
 }

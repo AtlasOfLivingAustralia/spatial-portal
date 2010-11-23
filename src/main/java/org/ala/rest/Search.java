@@ -50,6 +50,11 @@ public class Search {
         return resultsMap;
     }
 
+    public ArrayList<SearchResultItem> getResults() {
+        return this.results;
+    }
+
+
     public Search(String searchTerms, String[] layers) {
         results = new ArrayList<SearchResultItem>();
         for (String layerName : layers) {
@@ -58,7 +63,7 @@ public class Search {
                 File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
                 IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
 
-                String[] searchFields = {"name", "layerName"};
+                String[] searchFields = {"id", "layerName"};
 
                 MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT, searchFields, new StandardAnalyzer(Version.LUCENE_CURRENT));//Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
                 qp.setDefaultOperator(qp.AND_OPERATOR);
@@ -70,7 +75,7 @@ public class Search {
                 for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                     Document doc = is.doc(scoreDoc.doc);
                     List<Fieldable> fields = doc.getFields();
-                    results.add(new SearchResultItem(fields, true));
+                    results.add(new SearchResultItem(fields, true, new Float(scoreDoc.score)));
                 }
                 is.close();
             } catch (IOException e1) {
@@ -84,8 +89,8 @@ public class Search {
         }
     }
 
-    // TODO: Need to limit search to default layers?
     public Search(String searchTerms) {
+        logger.finer("search terms are " + searchTerms);
         results = new ArrayList<SearchResultItem>();
 
         try {
@@ -93,7 +98,7 @@ public class Search {
             File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
             IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
 
-            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
+            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "id", new StandardAnalyzer(Version.LUCENE_CURRENT));
 
             Query nameQuery = qp.parse(searchTerms.toLowerCase());
 
@@ -101,9 +106,10 @@ public class Search {
             TopDocs topDocs = is.search(nameQuery, 20);
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                logger.finer("document score match is " + new Float(scoreDoc.score).toString());
                 Document doc = is.doc(scoreDoc.doc);
                 List<Fieldable> fields = doc.getFields();
-                results.add(new SearchResultItem(fields, true));
+                results.add(new SearchResultItem(fields, true, new Float(scoreDoc.score)));
             }
             is.close();
         } catch (IOException e1) {

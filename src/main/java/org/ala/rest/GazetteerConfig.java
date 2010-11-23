@@ -286,4 +286,26 @@ public class GazetteerConfig {
         }
         return classAttribute;
     }
+
+    /**
+     * Checks to see if a layer is a default layer
+     * @param layerName
+     * @return
+     */
+    public boolean isDefaultLayer(String layerName){
+    boolean defaultLayer = false;
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//layer[name='" + layerName + "']/defaultLayer/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            defaultLayer = Boolean.valueOf(nodes.item(0).getNodeValue()).booleanValue();
+            return defaultLayer;
+        } catch (Exception e) {
+            return false;
+
+        }
+    }
 }

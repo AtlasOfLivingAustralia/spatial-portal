@@ -44,9 +44,7 @@
               <key><value>/gazetteer/{layer}/{id1}/{id2}.{format}</value></key>
               <value>featureService</value>
             </entry>
-
          </map>
-
       </property>
     </bean> 
 </beans>

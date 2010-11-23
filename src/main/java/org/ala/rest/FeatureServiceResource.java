@@ -47,6 +47,7 @@ public class FeatureServiceResource extends MapResource {
             if (getRequest().getAttributes().get("help").toString().compareTo("gazetteer") == 0) // TODO: Handle root request
             {
                 logger.info("gaz root has been requested - do something smart");
+                return new GazetteerCapabilities().getJSONMap();
             }
             return null;
         } else {
