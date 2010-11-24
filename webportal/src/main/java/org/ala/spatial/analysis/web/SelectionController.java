@@ -5,17 +5,25 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import com.vividsolutions.jts.geom.impl.PackedCoordinateSequence;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.io.gml2.GMLWriter;
+import com.vividsolutions.jtsexample.geom.ExtendedCoordinateSequence;
 import geo.google.GeoAddressStandardizer;
 import geo.google.datamodel.GeoAddress;
 import geo.google.datamodel.GeoCoordinate;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,6 +40,8 @@ import java.util.Map;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.measure.converter.UnitConverter;
+import javax.measure.unit.Unit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -177,13 +187,13 @@ public class SelectionController extends UtilityComposer {
 
             Vbox vbox = new Vbox();
             vbox.setParent(wInstructions);
-          //  for (int i = 0; i < text.length; i++) {
-                Label l1 = new Label((1) + ". " + text[0]);
-                l1.setParent(vbox);
-                l1.setMultiline(true);
-                l1.setSclass("word-wrap");
-                l1.setStyle("white-space: normal; padding: 5px");
-          //  }
+            //  for (int i = 0; i < text.length; i++) {
+            Label l1 = new Label((1) + ". " + text[0]);
+            l1.setParent(vbox);
+            l1.setMultiline(true);
+            l1.setSclass("word-wrap");
+            l1.setStyle("white-space: normal; padding: 5px");
+            //  }
 
             (new Separator()).setParent(vbox);
             addressBox = new Textbox();
@@ -191,27 +201,27 @@ public class SelectionController extends UtilityComposer {
             addressBox.setWidth("95%");
             addressBox.setParent(vbox);
 
-              Label l2 = new Label((2) + ". " + text[1]);
-                l2.setParent(vbox);
-                l2.setMultiline(true);
-                l2.setSclass("word-wrap");
-                l2.setStyle("white-space: normal; padding: 5px");
+            Label l2 = new Label((2) + ". " + text[1]);
+            l2.setParent(vbox);
+            l2.setMultiline(true);
+            l2.setSclass("word-wrap");
+            l2.setStyle("white-space: normal; padding: 5px");
 
             cbRadius = new Combobox();
             cbRadius.setParent(vbox);
             ci1km = new Comboitem("1km radius");
             ci1km.setParent(cbRadius);
             ci5km = new Comboitem("5km radius");
-            ci5km.setParent(cbRadius);           
+            ci5km.setParent(cbRadius);
             ci10km = new Comboitem("10km radius");
             ci10km.setParent(cbRadius);
             ci20km = new Comboitem("20km radius");
             ci20km.setParent(cbRadius);
             cbRadius.setSelectedItem(ci1km);
-            
-           
-            
-            
+
+
+
+
             Hbox hbox = new Hbox();
             hbox.setParent(vbox);
 
@@ -235,7 +245,7 @@ public class SelectionController extends UtilityComposer {
                 }
             });
 
-         
+
 
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
             wInstructions.setClosable(true);
@@ -272,7 +282,7 @@ public class SelectionController extends UtilityComposer {
                 }
             });
 
-          
+
 
 
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
@@ -377,7 +387,6 @@ public class SelectionController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciAddressRadiusSelection) {
             String[] text = {
                 "Enter address", "Select radius"
-             
             };
             cbAreaSelection.setText("Select radius around an address");
             setInstructions("Active Map Tool: Create radius from address...", text);
@@ -385,10 +394,9 @@ public class SelectionController extends UtilityComposer {
             showPolygonInfo();
             String script = removeCurrentSelection();
             MapComposer mc = getThisMapComposer();
-       
+
             mc.removeFromList(mc.getMapLayer("Active Area"));
-        }
-        else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
+        } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             cbAreaSelection.setText("Selecting map polygon");
             String[] text = {
                 "Zoom and pan to the area of interest.",
@@ -572,9 +580,9 @@ public class SelectionController extends UtilityComposer {
             }
         }
         //}
-      //  String script = "window.mapFrame.removePointSearch();";
-       // mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        
+        //  String script = "window.mapFrame.removePointSearch();";
+        // mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+
     }
 
     /**
@@ -583,8 +591,11 @@ public class SelectionController extends UtilityComposer {
      * @param event triggered by the usual javascript trickery
      */
     public void onChange$searchSpeciesPoint(Event event) {
-        double lon = Double.parseDouble(searchSpeciesPoint.getValue().split(",")[0]);
-        double lat = Double.parseDouble(searchSpeciesPoint.getValue().split(",")[1]);
+        String params[] = searchSpeciesPoint.getValue().split(",");
+        double lon = Double.parseDouble(params[0]);
+        double lat = Double.parseDouble(params[1]);
+
+        int zoom = getMapComposer().getMapZoom(); 
 
         double BUFFER_DISTANCE = 0.1;
 
@@ -597,6 +608,7 @@ public class SelectionController extends UtilityComposer {
                 return;
             }
 
+            boolean hasActiveArea = false;
             String lsidtypes = "";
             String lsids = "";
             Iterator it = speciesfilters.keySet().iterator();
@@ -612,6 +624,9 @@ public class SelectionController extends UtilityComposer {
                 }
 
                 lsids += "lsid=" + URLEncoder.encode(li, "UTF-8");
+                if (li.equalsIgnoreCase("aa")) {
+                    hasActiveArea = true; 
+                }
                 if (it.hasNext()) {
                     lsids += "&";
                 }
@@ -627,19 +642,44 @@ public class SelectionController extends UtilityComposer {
             //reqUri += "&"+lsidtypes;
             reqUri += "&lon=" + lon + "&lat=" + lat;
 
-            StringBuffer wkt = new StringBuffer();
-            wkt.append("POLYGON((");
-            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append(",");
-            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat + BUFFER_DISTANCE)).append(",");
-            wkt.append((lon + BUFFER_DISTANCE)).append(" ").append((lat + BUFFER_DISTANCE)).append(",");
-            wkt.append((lon + BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append(",");
-            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append("))");
+//            StringBuffer wkt = new StringBuffer();
+//            wkt.append("POLYGON((");
+//            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append(",");
+//            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat + BUFFER_DISTANCE)).append(",");
+//            wkt.append((lon + BUFFER_DISTANCE)).append(" ").append((lat + BUFFER_DISTANCE)).append(",");
+//            wkt.append((lon + BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append(",");
+//            wkt.append((lon - BUFFER_DISTANCE)).append(" ").append((lat - BUFFER_DISTANCE)).append("))");
+
+            double radius = 20000;
+            if (zoom > -1 && zoom <= 1) {
+                radius = 500000;
+            } else if (zoom > 1 && zoom <= 3) {
+                radius = 100000;
+            } else if (zoom > 3 && zoom <= 5) {
+                radius = 50000;
+            } else if (zoom > 5 && zoom <= 7) {
+                radius = 10000;
+            } else if (zoom > 7 && zoom <= 9) {
+                radius = 5000;
+            } else if (zoom > 9 && zoom <= 12) {
+                radius = 1000;
+            } else if (zoom > 12 && zoom <= 14) {
+                radius = 100;
+            } else if (zoom > 14) {
+                radius = 50;
+            }
+
+            String wkt2 = createCircle(lon, lat, radius);
 
             reqUri = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial";
             //reqUri += "/filtering/apply/pid/none/samples/geojson";
             reqUri += "/species/info/now";
-            reqUri += "?area=" + URLEncoder.encode(wkt.toString(), "UTF-8");
+            reqUri += "?area=" + URLEncoder.encode(wkt2, "UTF-8");
             reqUri += "&" + lsids;
+
+            if (hasActiveArea) {
+                reqUri += "&aa=" + URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8");
+            }
 
 
             System.out.println("locfeat calling: " + reqUri);
@@ -652,14 +692,14 @@ public class SelectionController extends UtilityComposer {
             String slist = post.getResponseBodyAsString();
             response = slist;
             System.out.println("locfeat data: " + slist);
+
+            //response = "alert('"+response+"'); ";
+            response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
+            Clients.evalJavaScript(response);
         } catch (Exception e) {
             System.out.println("error loading new geojson:");
             e.printStackTrace(System.out);
         }
-
-        //response = "alert('"+response+"'); ";
-        response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
-        Clients.evalJavaScript(response);
     }
 
     private String wktFromJSON(String json) {
@@ -667,16 +707,16 @@ public class SelectionController extends UtilityComposer {
             JSONObject obj = JSONObject.fromObject(json);
             JSONArray geometries = obj.getJSONArray("geometries");
             String wkt = "";
-            for(int i=0;i<geometries.size();i++) {
+            for (int i = 0; i < geometries.size(); i++) {
                 String coords = geometries.getJSONObject(i).getString("coordinates");
 
                 if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
                     wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-                    
+
                 } else {
                     wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))");
                 }
-              
+
                 wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
             }
             return wkt;
@@ -759,7 +799,7 @@ public class SelectionController extends UtilityComposer {
             txt = "Got user drawn box";
         } else if (lastTool == ciPointAndRadius) {
             txt = "Got user drawn point and radius";
-        }    else if (lastTool == ciAddressRadiusSelection) {
+        } else if (lastTool == ciAddressRadiusSelection) {
             txt = "Got user radius from address";
         } else if (lastTool == ciPolygon) {
             txt = "Got user drawn polygon";
@@ -1194,7 +1234,7 @@ public class SelectionController extends UtilityComposer {
      * @param register_shape true to register the shape with alaspatial shape register
      * @return
      */
-    String getWktFromURI(String layer,boolean register_shape) {
+    String getWktFromURI(String layer, boolean register_shape) {
         String feature_text = DEFAULT_AREA;
 
         if (!register_shape) {
@@ -1257,6 +1297,11 @@ public class SelectionController extends UtilityComposer {
     }
 
     private String createCircle(double x, double y, final double RADIUS) {
+        return createCircle(x, y, RADIUS, 50);
+
+    }
+
+    private String createCircle(double x, double y, final double RADIUS, int sides) {
 
         try {
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
@@ -1264,33 +1309,33 @@ public class SelectionController extends UtilityComposer {
 //            CoordinateReferenceSystem dataCRS = CRS.decode("EPSG:4326");
 //            CoordinateReferenceSystem googleCRS = CRS.decode("EPSG:900913");
             String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
-        + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
-        + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
-        + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
-        + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
-        + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
-        + "  AUTHORITY[\"EPSG\",\"4326\"]]";
-             String wkt900913 = "PROJCS[\"WGS84 / Google Mercator\", "
-  + "  GEOGCS[\"WGS 84\", "
-   + "   DATUM[\"World Geodetic System 1984\", "
-     + "   SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], "
-      + "  AUTHORITY[\"EPSG\",\"6326\"]], "
-     + " PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], "
-     + " UNIT[\"degree\", 0.017453292519943295], "
-     + " AXIS[\"Longitude\", EAST], "
-     + " AXIS[\"Latitude\", NORTH], "
-     + " AUTHORITY[\"EPSG\",\"4326\"]], "
-   + " PROJECTION[\"Mercator_1SP\"], "
-   + " PARAMETER[\"semi_minor\", 6378137.0], "
-   + " PARAMETER[\"latitude_of_origin\", 0.0],"
-   + " PARAMETER[\"central_meridian\", 0.0], "
-   + " PARAMETER[\"scale_factor\", 1.0], "
-   + " PARAMETER[\"false_easting\", 0.0], "
-   + " PARAMETER[\"false_northing\", 0.0], "
-   + " UNIT[\"m\", 1.0], "
-   + " AXIS[\"x\", EAST], "
-   + " AXIS[\"y\", NORTH], "
-   + " AUTHORITY[\"EPSG\",\"900913\"]] ";
+                    + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
+                    + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
+                    + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
+                    + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
+                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";
+            String wkt900913 = "PROJCS[\"WGS84 / Google Mercator\", "
+                    + "  GEOGCS[\"WGS 84\", "
+                    + "   DATUM[\"World Geodetic System 1984\", "
+                    + "   SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], "
+                    + "  AUTHORITY[\"EPSG\",\"6326\"]], "
+                    + " PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], "
+                    + " UNIT[\"degree\", 0.017453292519943295], "
+                    + " AXIS[\"Longitude\", EAST], "
+                    + " AXIS[\"Latitude\", NORTH], "
+                    + " AUTHORITY[\"EPSG\",\"4326\"]], "
+                    + " PROJECTION[\"Mercator_1SP\"], "
+                    + " PARAMETER[\"semi_minor\", 6378137.0], "
+                    + " PARAMETER[\"latitude_of_origin\", 0.0],"
+                    + " PARAMETER[\"central_meridian\", 0.0], "
+                    + " PARAMETER[\"scale_factor\", 1.0], "
+                    + " PARAMETER[\"false_easting\", 0.0], "
+                    + " PARAMETER[\"false_northing\", 0.0], "
+                    + " UNIT[\"m\", 1.0], "
+                    + " AXIS[\"x\", EAST], "
+                    + " AXIS[\"y\", NORTH], "
+                    + " AUTHORITY[\"EPSG\",\"900913\"]] ";
             CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
             CoordinateReferenceSystem googleCRS = CRS.parseWKT(wkt900913);
             MathTransform transform = CRS.findMathTransform(wgsCRS, googleCRS);
@@ -1298,16 +1343,16 @@ public class SelectionController extends UtilityComposer {
             Geometry geom = JTS.transform(point, transform);
             Point gPoint = geometryFactory.createPoint(new Coordinate(geom.getCoordinate()));
 
-            System.out.println("Google point:" + gPoint.getCoordinate().x + "," + gPoint.getCoordinate().y );
+            System.out.println("Google point:" + gPoint.getCoordinate().x + "," + gPoint.getCoordinate().y);
 
             MathTransform reverseTransform = CRS.findMathTransform(googleCRS, wgsCRS);
-            final int SIDES = 32;
+            final int SIDES = sides;
             Coordinate coords[] = new Coordinate[SIDES + 1];
             for (int i = 0; i < SIDES; i++) {
                 double angle = ((double) i / (double) SIDES) * Math.PI * 2.0;
                 double dx = Math.cos(angle) * RADIUS;
                 double dy = Math.sin(angle) * RADIUS;
-                geom = JTS.transform(geometryFactory.createPoint(new Coordinate((double) gPoint.getCoordinate().x + dx, (double) gPoint.getCoordinate().y + dy)),reverseTransform);
+                geom = JTS.transform(geometryFactory.createPoint(new Coordinate((double) gPoint.getCoordinate().x + dx, (double) gPoint.getCoordinate().y + dy)), reverseTransform);
                 coords[i] = new Coordinate(geom.getCoordinate().y, geom.getCoordinate().x);
             }
             coords[SIDES] = coords[0];
@@ -1315,11 +1360,11 @@ public class SelectionController extends UtilityComposer {
             LinearRing ring = geometryFactory.createLinearRing(coords);
             Polygon polygon = geometryFactory.createPolygon(ring, null);
 
-            
+
             //Geometry polyGeom = JTS.transform(coords,reverseTransform);
             WKTWriter writer = new WKTWriter();
             String wkt = writer.write(polygon);
-            return wkt;
+            return wkt.replaceAll("POLYGON ", "POLYGON").replaceAll(", ", ",");
 
         } catch (Exception e) {
             System.out.println("Circle fail!");
@@ -1331,11 +1376,11 @@ public class SelectionController extends UtilityComposer {
     private String radiusFromAddress(String address) {
         try {
 
-        
+
             GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
 
             List<GeoAddress> addresses = st.standardizeToGeoAddresses(address + ", Australia");
-            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
             GeoCoordinate gco = addresses.get(0).getCoordinate();
 
@@ -1354,15 +1399,13 @@ public class SelectionController extends UtilityComposer {
                 radius = 20000;
             }
 
-            return createCircle(gco.getLongitude(),gco.getLatitude(),radius);
+            return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
 
-        }
-        catch(geo.google.GeoException ge)
-        {
+        } catch (geo.google.GeoException ge) {
             return "none";
         }
 
-        
+
 
     }
 
@@ -1375,10 +1418,9 @@ public class SelectionController extends UtilityComposer {
             displayGeom.setValue(wkt);
             MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Active Area");
             updateSpeciesList(false);
-           
+
             setInstructions(null, null);
         }
     }
-
 
 }

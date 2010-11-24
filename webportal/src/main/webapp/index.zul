@@ -849,42 +849,10 @@ border-bottom: none;
 
                                         </tabpanel>
 
-                                        <tabpanel  id="customData" visible="false" >
-                                            <button id="btnCsvUpload" label="CSV Upload" />
-                                            <fileupload id="fileupload" maxsize="500000000" />
-                                            <button label="Upload CSV">
-                                                <attribute name="onClick">{
-                                                    org.zkoss.util.media.Media media = Fileupload.get();
-                                                    if (media != null) {
-                                                        if (media instanceof org.zkoss.util.media.AMedia) {
-                                                            Messagebox.show("CSV file loaded: " + media.getName()); 
-                                                        } else {
-                                                            Messagebox.show("Not a CSV file: "+media, "Error", Messagebox.OK, Messagebox.ERROR);
-                                                        }
-                                                    } else {
-                                                            Messagebox.show("Not a CSV file: "+media, "Error", Messagebox.OK, Messagebox.ERROR);
-                                                    }
-                                                }</attribute>
-                                            </button>
-
-                                            <button label="Upload">
-        <attribute name="onClick"><![CDATA[{
-            Object media = Fileupload.get(5);
-            if (media != null)
-            for (int j = 0; j < media.length; ++j) {
-                if (media[j] instanceof org.zkoss.image.Image) {
-                    Image image = new Image();
-                    image.setContent(media[j]);
-                    image.setParent(pics);
-                } else if (media[j] != null) {
-                    Messagebox.show("Not an image: "+media[j], "Error",
-                    Messagebox.OK, Messagebox.ERROR);
-                }
-            }
-        }]]>
-        </attribute>
-    </button>
-    <vbox id="pics"/>
+                                        <tabpanel  id="customData" visible="true" >
+                                            <div>
+                                                <fileupload id="btnFileUpload" maxsize="5000000" />
+                                            </div>
                                         </tabpanel>
 
                                         <tabpanel  id="userTabPanel" visible="false" >

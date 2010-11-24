@@ -1234,7 +1234,8 @@ function selected (evt) {
                 ,
                 null, true, onPopupClose);
 
-            parent.showInfoOne();
+            //parent.showInfoOne();
+            parent.setSpeciesSearchPoint(feature.geometry.getBounds().getCenterLonLat());
 
         } /*else if (attrs["0"].id != undefined) {
             //            popup = new OpenLayers.Popup.FramedCloud("featurePopup",

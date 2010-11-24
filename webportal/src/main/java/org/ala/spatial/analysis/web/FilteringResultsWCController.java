@@ -5,30 +5,25 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.GeoJSONUtilities;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
-import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listitem;
-import org.zkoss.zul.ListModelArray;
-import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Tabbox;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
@@ -366,6 +361,8 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onClick$mapspecies() {
         //results_label_extra.setValue("    [Mapping...]");
         //Events.echoEvent("onMapSpecies", this, null);
+        getMapComposer().addToSession("Species in Active area", "lsid=aa");
+        //getMapComposer().loadSpeciesInActiveArea(pid, results_count_occurrences, false);
         onMapSpecies(null);
     }
 
@@ -429,6 +426,63 @@ public class FilteringResultsWCController extends UtilityComposer {
                 getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
             }
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onMapSpecies2(Event event) {
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+
+        try {
+            MapComposer mc = getMapComposer();
+            String area = mc.getSelectionArea();
+            String polygon = mc.getSelectionAreaPolygon();
+
+            //MapLayer ml = getMapComposer().mapSpeciesByFilter(area, area)
+
+            String uri = satServer + "/geoserver/wms?";
+            uri += "service=WMS&version=1.0.0&request=GetMap&styles=species_activearea&format=image/png";
+            uri += "&layers=ALA:occurrences";
+            uri += "&transparent=true"; // "&env=" + envString +
+            //uri += "&CQL_FILTER=";
+
+            String gml = "";
+            area = StringUtils.remove(area, "POLYGON((");
+            area = StringUtils.remove(area, "))");
+            String[] areacoords = StringUtils.split(area, ",");
+            for (int i=0; i<areacoords.length; i++) {
+                String[] p = areacoords[i].split(" "); 
+                gml += p[0]+","+p[1]+" ";
+
+            }
+            gml = gml.trim(); 
+            String envString = "color:FFFF00;name:square;size:8;opacity:.8;";
+            envString += "activearea:"+gml;
+
+            System.out.println("Mapping activearea: \n" + gml); 
+            
+            if (mc.safeToPerformMapAction()) {
+                boolean addedOk = mc.addKnownWMSLayer("Species in Active area", uri, (float) 0.8, "", envString);
+                if (addedOk) {
+                    MapLayer ml = mc.getMapLayer("Species in Active area");
+                    ml.setDynamicStyle(true);
+                    ml.setEnvParams(envString);
+                    ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
+
+                    ml.setBlueVal(0);
+                    ml.setGreenVal(255);
+                    ml.setRedVal(255);
+                    ml.setSizeVal(8);
+                    ml.setOpacity((float)0.8);
+
+                    //return ml;
+                }
+            }
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }

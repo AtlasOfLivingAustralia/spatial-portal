@@ -1,5 +1,6 @@
 package au.org.emii.portal.composer;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.databinding.ActiveLayerRenderer;
 import au.org.emii.portal.databinding.BaseLayerListRenderer;
 import au.org.emii.portal.request.DesktopState;
@@ -42,6 +43,8 @@ import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -70,9 +73,9 @@ import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.LegendMaker;
-import org.ala.spatial.util.request.SaveHttpServletRequest;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
@@ -99,7 +102,6 @@ import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
-import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
@@ -276,8 +278,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public Textbox tbxPrintHack;
     int mapZoomLevel = 4;
     private Hashtable activeLayerMapProperties;
-    private Button btnCsvUpload;
-    private Fileupload fileupload;
+    private Label lblFupload;
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -2519,11 +2520,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 System.out.println("Is an active area");
 
-                
+                boolean isClustered = selectedLayer.isClustered();
+                String pid = "none";
+                String aarank = "activearea";
+
+                if (selectedLayer.getMapLayerMetadata() != null) {
+                    pid = selectedLayer.getMapLayerMetadata().getSpeciesLsid();
+                    aarank = selectedLayer.getMapLayerMetadata().getSpeciesRank();
+                }
+
+                if (isClustered) {
+                    convLayer = loadSpeciesInActiveArea(pid, 1, false);
+                } else {
+                    convLayer = loadSpeciesInActiveArea(pid, 201, true);
+                }
+
 
             } else {
 
                 System.out.println("Not an active area");
+                deactiveLayer(selectedLayer, true, false, true);
 
                 if (selectedLayer.isClustered()) {
                     System.out.println("calling lsidfilter with:");
@@ -2539,7 +2555,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
             }
 
-            deactiveLayer(selectedLayer, true, false, true);
+            //deactiveLayer(selectedLayer, true, false, true);
 
             // reopen the layer controls
             refreshActiveLayer(convLayer);
@@ -3257,6 +3273,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         PortalSession portalSession = getPortalSession();
         PortalUser portalUser = portalSession.getPortalUser();
 
+        // remove the old species filters 
+        getSession().removeAttribute("speciesfilters");
+
         // create a new session from the master session
         SessionInit sessionInit = new SessionInitImpl();
         try {
@@ -3755,6 +3774,105 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
+    public MapLayer loadSpeciesInActiveArea(String pid, int results_count_occurrences, boolean cluster) {
+        String satServer = "http://spatial.ala.org.au";
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+
+        MapLayer ml = null;
+
+        try {
+            //String area = getMapComposer().getViewArea();
+            String area = getSelectionArea();
+            String polygon = getSelectionAreaPolygon();
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
+            if (cluster || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)) {
+                //clustering
+                MapLayerMetadata md = new MapLayerMetadata();
+                md.setLayerExtent(getViewArea(), 0.2);
+
+                sbProcessUrl.append("species");
+                sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area, "UTF-8"));
+                String id = String.valueOf(System.currentTimeMillis());
+                sbProcessUrl.append("/id/").append(URLEncoder.encode(id, "UTF-8"));
+                sbProcessUrl.append("/now");
+                sbProcessUrl.append("?z=").append(String.valueOf(getMapZoom()));
+                sbProcessUrl.append("&a=").append(URLEncoder.encode(md.getLayerExtentString(), "UTF-8"));
+                sbProcessUrl.append("&m=").append(String.valueOf(8));
+                ml = addGeoJSONLayer("Species in Active area", CommonData.SAT_URL + "/alaspatial/" + sbProcessUrl.toString(), true);
+
+                if (ml.getMapLayerMetadata() == null) {
+                    ml.setMapLayerMetadata(new MapLayerMetadata());
+                }
+                ml.getMapLayerMetadata().setSpeciesLsid(pid);
+                ml.getMapLayerMetadata().setSpeciesRank("activearea");
+                ml.setClustered(true); 
+
+                ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
+
+                //get bounding box for active area
+                try {
+                    MapLayerMetadata md2 = new MapLayerMetadata();
+                    md2.setLayerExtent(polygon, 0);
+                    double[] d = md2.getLayerExtent();
+
+                    List<Double> bb = new ArrayList<Double>();
+                    for (int i = 0; i < d.length; i++) {
+                        bb.add(d[i]);
+                    }
+                    md.setBbox(bb);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                //points
+                sbProcessUrl.append("/filtering/apply");
+                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+                sbProcessUrl.append("/samples/geojson");
+                sbProcessUrl.append("?area=").append(URLEncoder.encode(area, "UTF-8"));
+                String slist = getInfo(sbProcessUrl.toString());
+                //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
+                System.out.println("onMapSpecies: " + slist);
+                String[] results = slist.split("\n");
+                addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
+                ml = getMapLayer("Species in Active area"); 
+            }
+            //updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ml; 
+    }
+    private String getInfo(String urlPart) {
+        String satServer = "http://spatial.ala.org.au";
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+
+        try {
+            HttpClient client = new HttpClient();
+
+            GetMethod get = new GetMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(get);
+
+            //TODO: confirm result
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception ex) {
+            //TODO: error message
+            System.out.println("getInfo.error:");
+            ex.printStackTrace(System.out);
+        }
+        return null;
+    }
+
+
     public MapLayer mapSpeciesByLsid(String lsid, String species) {
         return mapSpeciesByLsid(lsid, species, "species");
     }
@@ -3765,6 +3883,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String speciesrank = LayersUtil.getScientificNameRank(lsid);
             species = speciesrank.split(",")[0];
             rank = speciesrank.split(",")[1];
+        }
+
+        if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
+            rank = "taxon";
         }
 
         //use # of points cutoff; //        
@@ -4444,12 +4566,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //    public boolean useClustering() {
 //        return chkPointsCluster.isChecked();
 //    }
-
     public int getMapZoom() {
         return mapZoomLevel;
     }
 
-    private void addToSession(String species, String filter) {
+    public void addToSession(String species, String filter) {
         Map speciesfilters = (Map) getSession().getAttribute("speciesfilters");
         if (speciesfilters == null) {
             speciesfilters = new HashMap();
@@ -4458,7 +4579,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         getSession().setAttribute("speciesfilters", speciesfilters);
     }
 
-    private void removeFromSession(String species) {
+    public void removeFromSession(String species) {
         Map speciesfilters = (Map) Sessions.getCurrent().getAttribute("speciesfilters");
         if (speciesfilters != null) {
             speciesfilters.remove(species);
@@ -4607,56 +4728,144 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void onClick$btnCsvUpload() {
+    public void processMedia(Media media) {
         try {
-            Media[] media = Fileupload.get("Please upload a valid CSV file with the format: ID, Longitude, Latitude", "ALA Spatial Portal", 2, 500000, false);
-
+            Messagebox.show("Processng...", "Error",
+                    Messagebox.OK, Messagebox.ERROR);
+            System.out.println("Loading files");
             if (media != null) {
-                System.out.println("Media.contenttype: " + media[0].getContentType());
-                System.out.println("media.getFormat(): " + media[0].getFormat());
-                System.out.println("media.getName(): " + media[0].getName());
-                System.out.println("media.getStringData(): " + media[0].getStringData());
-
-                //if (media instanceof org.zkoss.util.media.AMedia) {
-
-                //}
-
+                if (media instanceof org.zkoss.util.media.AMedia) {
+                    lblFupload.setValue(media.getName());
+                    System.out.println("Valid file successfully uploaded");
+                } else {
+                    Messagebox.show("Not a valid upload: " + media, "Error",
+                            Messagebox.OK, Messagebox.ERROR);
+                    System.out.println("not a valid file");
+                }
             } else {
-                System.out.println("Media is null");
+                Messagebox.show("No attachment", "Error",
+                        Messagebox.OK, Messagebox.ERROR);
+                System.out.println("No attachment");
             }
-
-        } catch (InterruptedException ex) {
-            showMessage("File upload interrupted");
-            System.out.println("File upload interrupted");
-            Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (Exception ex) {
-            Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            System.out.println("Unable to process media: ");
+            e.printStackTrace(System.out);
         }
     }
 
-    public void onUpload$fileupload(Event event) {
+    public void processMultipleMedias(Media[] media) {
         try {
-            System.out.println("File upload event: " + event.getName() + " -> " + event.toString());
-            System.out.println(" => " + event.getData());
-            /*
-            Media media = event.getMedia();
+            Messagebox.show("Processng...", "Error",
+                    Messagebox.OK, Messagebox.ERROR);
+            System.out.println("Loading files");
             if (media != null) {
-            System.out.println("2.Media.contenttype: " + media.getContentType());
-            System.out.println("2.media.getFormat(): " + media.getFormat());
-            System.out.println("2.media.getName(): " + media.getName());
-            System.out.println("2.media.getStringData(): " + media.getStringData());
-
-            //                if (media instanceof org.zkoss.util.media.AMedia) {
-            //
-            //                }
-
+                for (int i = 0; i < media.length; i++) {
+                    if (media[i] instanceof org.zkoss.util.media.AMedia) {
+                        lblFupload.setValue(media[i].getName());
+                        Messagebox.show("File uploaded: " + media[i].getName(), "File upload successful",
+                                Messagebox.OK, Messagebox.INFORMATION);
+                        System.out.println("Valid file(s) successfully uploaded");
+                    } else {
+                        Messagebox.show("Not a valid upload: " + media, "Error",
+                                Messagebox.OK, Messagebox.ERROR);
+                        System.out.println("not a valid file(s)");
+                    }
+                }
             } else {
-            System.out.println("2.Media is null");
+                Messagebox.show("No attachment", "Error",
+                        Messagebox.OK, Messagebox.ERROR);
+                System.out.println("No attachment(s)");
             }
-             *
-             */
         } catch (Exception e) {
-            System.out.println("Unable to upload file");
+            System.out.println("Unable to process media: ");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void onUpload$btnFileUpload(Event event) {
+        UploadEvent ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+        System.out.println("fileUploaded()");
+        try {
+            Media m = ue.getMedia();
+
+            //processMedia(m);
+
+            //String coords = m.getStringData(); // new String(m.getByteData())
+            //int count = coords.split("\n").length;
+
+            System.out.println("m.getName(): " + m.getName());
+            System.out.println("getContentType: " + m.getContentType());
+            System.out.println("getFormat: " + m.getFormat());
+
+
+            // check the content-type
+            if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV)) {
+                loadUserPoints(m.getName(), m.getReaderData());
+            }
+
+
+            //System.out.println("coords: " + coords);
+
+            /*
+
+            try {
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.SAT_URL + "/alaspatial/ws/points/register"); // testurl
+            post.addRequestHeader("Accept", "text/plain");
+            post.addParameter("name", m.getName());
+            post.addParameter("points", coords);
+
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
+
+            if (slist != null && result == 200) {
+            sac.setSelection(m.getName(), slist, count);
+            }
+
+            System.out.println("uploaded points name:" + m.getName() + " lsid:" + slist + " coords:" + coords);
+            } catch (Exception e) {
+            e.printStackTrace(System.out);
+            }
+             * 
+             */
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void loadUserPoints(String name, Reader data) {
+        try {
+
+            // Read a line in to check if it's a valid file
+            // if it throw's an error, then it's not a valid csv file
+
+            CSVReader reader = new CSVReader(data);
+            List myEntries = reader.readAll();
+
+            // Post it to alaspatial app
+            HttpClient client = new HttpClient();
+            PostMethod post = new PostMethod(CommonData.SAT_URL + "/alaspatial/ws/points/register"); // testurl
+            post.addRequestHeader("Accept", "text/plain");
+            post.addParameter("name", name);
+            post.addParameter("points", myEntries.toString());
+
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
+
+//            if (slist != null && result == 200) {
+//                sac.setSelection(m.getName(), slist, count);
+//            }
+
+            //System.out.println("uploaded points name:" + m.getName() + " lsid:" + slist + " coords:" + coords);
+
+
+        } catch (Exception e) {
+
+            showMessage("Unable to load your file. Please try again.");
+
+            System.out.println("unable to load user points: ");
+            e.printStackTrace(System.out);
         }
     }
 }
