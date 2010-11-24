@@ -162,31 +162,31 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     }
                 }
 
-                //remove species image path in output species.html
-                readReplaceBetween(pth + "species.html", "<HR><H2>Pictures of the model", "<HR>","<HR>");
-                readReplace(pth + "species.html", "<a href = \"plots/\"> <img src=\"plots/\" width=600></a>", "see map window");
-                readReplace(pth + "species.html", "plots\\\\", "plots/");
-                
-                readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
+//                //remove species image path in output species.html
+//                readReplaceBetween(pth + "species.html", "<HR><H2>Pictures of the model", "<HR>","<HR>");
+//                readReplace(pth + "species.html", "<a href = \"plots/\"> <img src=\"plots/\" width=600></a>", "see map window");
+//                readReplace(pth + "species.html", "plots\\\\", "plots/");
+//
+//                readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
                 readReplace(pth + "species.html", msets.getOutputPath(), "");
                 readReplaceBetween(pth + "species.html", "Command line","<br>","");
                 readReplaceBetween(pth + "species.html", "Command line","<br>","");
-
-                if(removedSpecies.length() > 0) {
-                    String header = "'Sensitive species' (http://www.ala.org.au/about/program-of-projects/sds/) masked out of the model\r\n\r\nLSID,Species scientific name,Taxon rank";
-                    writeToFile(header + removedSpecies.toString(),
-                            currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
-
-                    String insertBefore= "<a href = \"maxentResults.csv\">";
-                    String insertText = "<a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br>";
-                    readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
-                }
-
-                //delete image
-                FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
-                FileUtils.deleteQuietly(new File(pth + "species_samplePredictions.csv"));
-                FileUtils.deleteQuietly(new File(pth + "maxent.log"));
-                FileUtils.deleteQuietly(new File(msets.getSpeciesFilepath()));
+//
+//                if(removedSpecies.length() > 0) {
+//                    String header = "'Sensitive species' (http://www.ala.org.au/about/program-of-projects/sds/) masked out of the model\r\n\r\nLSID,Species scientific name,Taxon rank";
+//                    writeToFile(header + removedSpecies.toString(),
+//                            currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
+//
+//                    String insertBefore= "<a href = \"maxentResults.csv\">";
+//                    String insertText = "<a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br>";
+//                    readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
+//                }
+//
+//                //delete image
+//                FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
+//                FileUtils.deleteQuietly(new File(pth + "species_samplePredictions.csv"));
+//                FileUtils.deleteQuietly(new File(pth + "maxent.log"));
+//                FileUtils.deleteQuietly(new File(msets.getSpeciesFilepath()));
 
                 writeProjectionFile(msets.getOutputPath());
 

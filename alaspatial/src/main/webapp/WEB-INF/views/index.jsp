@@ -85,6 +85,7 @@
             var msampleUrl = "sampling.zul";
             var malocUrl = "ALOC.zul";
             var mjobsUrl = "jobs.zul";
+            var mgdmUrl = "gdm.zul";
             var mmaxentUrl = "maxent2";
 
             function menuClick(method) {
@@ -94,6 +95,7 @@
                 else if (method == 'msample') murl = msampleUrl;
                 else if (method == 'maloc') murl = malocUrl;
                 else if (method == 'mjobs') murl = mjobsUrl;
+                else if (method == 'mgdm') murl = mgdmUrl;
                 else if (method == 'mmaxent') murl = mmaxentUrl;
                 else alert("Please select a method from the list");
 
@@ -114,6 +116,7 @@
                 <li><a id="msample" href="#" onclick="menuClick(this.id);return false;">Sampling</a></li>
                 <li><a id="mmaxent" href="#" onclick="menuClick(this.id);return false;">Maxent</a></li>
                 <li><a id="maloc" href="#" onclick="menuClick(this.id);return false;">ALOC</a></li>
+                <li><a id="mgdm" href="#" onclick="menuClick(this.id);return false;">GDM</a></li>
                 <li><a id="mjobs" href="#" onclick="menuClick(this.id);return false;">Admin</a></li>
             </ul>
         </div>

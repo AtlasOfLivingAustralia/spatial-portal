@@ -82,7 +82,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/names", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     Map getNames2(@RequestParam String q, @RequestParam int s, @RequestParam int p) {
         System.out.println("Looking up names for: " + q);
@@ -102,14 +102,14 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/taxon", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getTaxonNamesEmpty() {
         return "";
     }
 
     @RequestMapping(value = "/taxon/{name}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getTaxonNames(@PathVariable("name") String name) {
         StringBuffer slist = new StringBuffer();
@@ -143,7 +143,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/lsid/{lsid}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     List<ValidTaxonName> getTaxonByLsid(@PathVariable("lsid") String lsid) {
         try {
@@ -171,7 +171,7 @@ public class SpeciesController {
      * @return
      */
     @RequestMapping(value = "/lsid/{lsid}/geojson", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getSamplesListAsGeoJSON(@PathVariable String lsid, HttpServletRequest req) {
         TabulationSettings.load();
@@ -202,7 +202,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/cluster/{species}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     Hashtable getClusteredRecords(@PathVariable("species") String species, HttpServletRequest req) {
         try {
@@ -294,7 +294,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/cluster/{species}/area/{area}/id/{id}/now", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     Hashtable getClusteredRecords(@PathVariable("species") String species, @PathVariable("area") String area, @PathVariable("id") String id, HttpServletRequest req) {
         try {
@@ -403,7 +403,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/cluster/id/{id}/cluster/{cluster}/idx/{idx}", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getOccurrenceId(@PathVariable("id") String id, @PathVariable("cluster") int cluster, @PathVariable("idx") int idx, HttpServletRequest req) {
         try {
@@ -420,7 +420,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/cluster/lsid/{lsid}/bb", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getBoundingBox(@PathVariable("lsid") String lsid, HttpServletRequest req) {
         try {
@@ -439,7 +439,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/lsid/{lsid}/count", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getLsidCount(@PathVariable("lsid") String lsid, HttpServletRequest req) {
         try {
@@ -492,7 +492,7 @@ public class SpeciesController {
      * @return
      */
     @RequestMapping(value = "/cluster/area/{area}/id/{id}/now", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     Hashtable getClusteredRecordsInArea(@PathVariable("area") String area, @PathVariable("id") String id, HttpServletRequest req) {
         try {
@@ -622,7 +622,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/shape/register", method = RequestMethod.POST)
-    public 
+    public
     @ResponseBody
     String registerShape(HttpServletRequest req) {
         try {
@@ -649,7 +649,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/shape/lookup", method = RequestMethod.POST)
-    public 
+    public
     @ResponseBody
     String lookupShape(HttpServletRequest req) {
         try {
@@ -681,7 +681,7 @@ public class SpeciesController {
      * @return
      */
     @RequestMapping(value = "/info/now", method = RequestMethod.GET)
-    public 
+    public
     @ResponseBody
     String getSpeciesInfoInArea(HttpServletRequest req) {
         try {
@@ -693,9 +693,16 @@ public class SpeciesController {
                 area = URLDecoder.decode(area, "UTF-8");
             }
 
+            String activearea = req.getParameter("aa");
+            if (activearea == null) {
+                activearea = "none";
+            } else {
+                activearea = URLDecoder.decode(activearea, "UTF-8");
+            }
+
             String[] lsids = req.getParameterValues("lsid");
 
-            System.out.println("[[[]]] getSpeciesInfoInArea: " + area + "\n" + lsids);
+            System.out.println("[[[]]] getSpeciesInfoInArea: " + area + "\nlsids:" + lsids + "\nactivearea:" + activearea);
 
             SimpleRegion region = null;
             ArrayList<Integer> records = null;
@@ -706,47 +713,42 @@ public class SpeciesController {
                 region = SimpleShapeFile.parseWKT(area);
             }
 
+            SimpleRegion aaregion = null;
+            if (activearea != null) {
+                aaregion = SimpleShapeFile.parseWKT(activearea);
+            }
 
             String spcount = "";
             Vector dataPoints = new Vector();
             for (int i = 0; i < lsids.length; i++) {
                 String lsid = lsids[i];
                 System.out.println("Looking for species info: " + lsid);
-                IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
-                if (ir != null && ir.length > 0) {
-                    System.out.println("ir.length: " + ir.length);
-                    dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+                if (lsid.equalsIgnoreCase("aa")) {
+                    Vector dp = OccurrencesIndex.sampleSpeciesForClustering(null, region, aaregion, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+                    if (dp.size() > 0) {
+                        dataPoints.addAll(dp); 
+                    }
+                } else {
+
+                    IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
+                    if (ir != null && ir.length > 0) {
+                        System.out.println("ir.length: " + ir.length);
+                        dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+                    }
                 }
             }
 
             StringBuffer sbInfo = new StringBuffer();
             for (int i = 0; i < dataPoints.size(); i++) {
                 Record r = (Record) dataPoints.get(i);
-                //sbInfo.append(r.getId() + ", " + r.getLongitude() + ", " + r.getLatitude());
-
                 if (i > 0) {
                     sbInfo.append(",");
                 }
                 sbInfo.append(r.getId());
             }
 
-
-
-
-//            String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
-//            String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
-//            File fDir = new File(outputpath);
-//            fDir.mkdir();
-//
-//            String gjsonFile = FilteringService.getSamplesListAsGeoJSON(pid, region, records, fDir);
-//
-//            System.out.println("getSamplesListAsGeoJSON:" + gjsonFile);
-//            //return "output/filtering/" + gjsonFile;
-//            return null;
-
             System.out.println("species info at location: " + spcount);
             return sbInfo.toString();
-
         } catch (Exception e) {
             System.out.println("error getting species info");
         }
