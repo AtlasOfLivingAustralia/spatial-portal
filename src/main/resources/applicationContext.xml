@@ -16,9 +16,18 @@
               <value>search</value>
             </entry>
             <entry>
+              <key><value>/gazetteer/result</value></key>
+              <value>search</value>
+            </entry>
+            <entry>
               <key><value>/gazetteer/search.{format}</value></key>
               <value>search</value>
             </entry>
+            <entry>
+              <key><value>/gazetteer/search</value></key>
+              <value>search</value>
+            </entry>
+
          </map>
       </property>
     </bean>
@@ -29,11 +38,23 @@
        <property name="routes">
           <map>
             <entry>
-              <key><value>/{help}.{format}</value></key>
+              <key><value>/</value></key>
               <value>featureService</value>
             </entry>
             <entry>
-              <key><value>/gazetteer/{layer}.{format}</value></key>
+              <key><value>/gazetteer.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}.{type}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}</value></key>
               <value>featureService</value>
             </entry>
             <entry>
@@ -41,9 +62,18 @@
               <value>featureService</value>
             </entry>
             <entry>
+              <key><value>/gazetteer/{layer}/{id1}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
               <key><value>/gazetteer/{layer}/{id1}/{id2}.{format}</value></key>
               <value>featureService</value>
             </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}/{id2}</value></key>
+              <value>featureService</value>
+            </entry>
+
          </map>
       </property>
     </bean> 

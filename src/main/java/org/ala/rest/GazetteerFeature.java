@@ -40,7 +40,8 @@ public class GazetteerFeature {
     private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerFeature");
     String id;
     String name;
-    Map properties;
+    Map advanced_properties; //detailed feature metadata
+    Map basic_properties;    //basic feature metadata (to displayed in UI)
     List<String> geometries = new ArrayList();
 
     public GazetteerFeature(String layerName, String idAttribute1) throws IOException, Exception {
@@ -139,8 +140,12 @@ public class GazetteerFeature {
                             }
                             logger.info("Feature ID is : " + this.id);
 
+                            this.basic_properties = new HashMap();
+                            this.basic_properties.put("Feature_ID", this.id);
+
                             this.name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
                             logger.info("Feature Name is : " + this.name);
+                            this.basic_properties.put("Feature_Name", this.name);
 
                             //Construct a geoJSON reperesntation of the geometry uing GeoJSONBuilder
                             //logger.info("Feature geom is " + feature.getDefaultGeometryProperty().getValue().toString());
@@ -153,11 +158,11 @@ public class GazetteerFeature {
                             //Add all the feature properties to the geojson properties object
                             Collection<Property> featureProperties = feature.getProperties();
                             String geomName = feature.getDefaultGeometryProperty().getName().toString();
-                            this.properties = new HashMap();
+                            this.advanced_properties = new HashMap();
                             for (Property property : featureProperties) {
                                 //logger.info("GazetteerFeature: " + property.toString());
                                 if ((property.getName() != null) && (property.getValue() != null) && (!(property.getName().toString().contentEquals(geomName)))) {
-                                    this.properties.put(property.getName().toString(), property.getValue().toString());
+                                    this.advanced_properties.put(property.getName().toString(), property.getValue().toString());
                                 }
                             }
                         }
@@ -180,7 +185,8 @@ public class GazetteerFeature {
         map.put("type", "GeometryCollection");
         map.put("id", this.id);
         map.put("name", this.name);
-        map.put("properties", this.properties);
+        map.put("properties", this.basic_properties);
+        map.put("advanced_properties", this.advanced_properties);
         map.put("geometries", this.geometries);
         return map;
     }

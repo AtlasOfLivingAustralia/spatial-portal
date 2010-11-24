@@ -30,13 +30,12 @@ public class GazetteerCapabilities {
 
     public GazetteerCapabilities() {
 
-
         ArrayList<String> layerNames = (ArrayList<String>) gc.getLayerNames();
         for (String layerName : layerNames) {
             Map layerMap = new HashMap();
             logger.finer("fetching layer properties for " + layerName);
             LayerInfo layerInfo = catalog.getLayerByName(layerName);
-            layerMap.put("layer name: ", layerInfo.getName());
+            layerMap.put("layer_name", layerInfo.getName());
             layerMap.put("enabled", new Boolean(layerInfo.enabled()).toString());
             layerMap.put("type", layerInfo.getType().toString());
             layerMap.put("alias", gc.getLayerAlias(layerName));
@@ -51,8 +50,8 @@ public class GazetteerCapabilities {
 
     public Map getJSONMap() {
         Map map = new HashMap();
-        map.put("Name", "ALA Gazetteer");
-        map.put("Geoserver catalog ID", catalog.getId());
+        map.put("name", "ALA Gazetteer");
+        map.put("geoserver_catalog_id", catalog.getId());
         map.put("layers", layersMap);
         return map;
     }

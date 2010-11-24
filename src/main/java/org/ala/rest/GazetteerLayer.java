@@ -83,7 +83,7 @@ public class GazetteerLayer {
 
                 logger.finer("fetching layer properties for " + layerName);
                 LayerInfo layerInfo = catalog.getLayerByName(layerName);
-                layerMap.put("layer name: ", layerInfo.getName());
+                layerMap.put("layer_name", layerInfo.getName());
                 layerMap.put("enabled", new Boolean(layerInfo.enabled()).toString());
                 layerMap.put("type", layerInfo.getType().toString());
                 layerMap.put("alias", gc.getLayerAlias(layerName));

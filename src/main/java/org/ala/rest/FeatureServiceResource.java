@@ -23,6 +23,7 @@ public class FeatureServiceResource extends MapResource {
         String id1 = null;
         String id2 = null;
 
+        logger.finer(getRequest().getResourceRef().toString());
 
         if (getRequest().getAttributes().containsKey("layer")) {
             layer = getRequest().getAttributes().get("layer").toString();
@@ -39,20 +40,13 @@ public class FeatureServiceResource extends MapResource {
                 }
 
             } else {
-                // TODO: Handles layer only requests
                 logger.info("layer details have been requested");
                 return new GazetteerLayer(layer).getMap();
             }
-        } else if (getRequest().getAttributes().containsKey("help")) {
-            if (getRequest().getAttributes().get("help").toString().compareTo("gazetteer") == 0) // TODO: Handle root request
-            {
-                logger.info("gaz root has been requested - do something smart");
-                return new GazetteerCapabilities().getJSONMap();
-            }
-            return null;
         } else {
-            logger.severe("We can't handle this ...");
-            return null;
+            //everything else, we just render layer details (keep it simple)
+            logger.info("gaz root has been requested - rendering layer details");
+            return new GazetteerCapabilities().getJSONMap();
         }
     }
 }
