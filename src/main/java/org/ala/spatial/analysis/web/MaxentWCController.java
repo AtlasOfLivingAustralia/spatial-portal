@@ -230,13 +230,8 @@ public class MaxentWCController extends UtilityComposer {
                 return;
             }
 
-            if (LayersUtil.isPestSpecies(taxon)) {
-                Messagebox.show("Warning: Invasive species will rarely be in equilibrium with the environment at their observed locations so modelling distributions should only be attempted by experienced analysts.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
-            }
-
-            if (layersUtil.isSensitiveSpecies(taxon).equals("1")) {
-                Messagebox.show("Warning: There are sensitive records within the dataset that you've chosen to model. Please select non-sensitive species for MaxEnt. For more information on the sensitive species, please refer to http://www.ala.org.au/about/program-of-projects/sds/", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
-                return;
+            if (isSensitiveSpecies(taxon)) {
+                return; 
             }
 
 
@@ -374,55 +369,55 @@ public class MaxentWCController extends UtilityComposer {
 
     void getParameters() {
         String txt = get("inputs");
-        try{
+        try {
             int pos = 0;
-            int p1 = txt.indexOf("pid:",pos);
-            if(p1 < 0) {
+            int p1 = txt.indexOf("pid:", pos);
+            if (p1 < 0) {
                 return;
             }
-            int p2 = txt.indexOf("taxonid:",pos);
-            int p3 = txt.indexOf("scientificName:",pos);
-            int p4 = txt.indexOf("taxonRank:",pos);
-            int p5 = txt.indexOf("area:",pos);
-            int p6 = txt.indexOf("envlist:",pos);
-            int p7 = txt.indexOf("txtTestPercentage:",pos);
-            int p8 = txt.indexOf("chkJackknife:",pos);
-            int p9 = txt.indexOf("chkResponseCurves:",pos);
+            int p2 = txt.indexOf("taxonid:", pos);
+            int p3 = txt.indexOf("scientificName:", pos);
+            int p4 = txt.indexOf("taxonRank:", pos);
+            int p5 = txt.indexOf("area:", pos);
+            int p6 = txt.indexOf("envlist:", pos);
+            int p7 = txt.indexOf("txtTestPercentage:", pos);
+            int p8 = txt.indexOf("chkJackknife:", pos);
+            int p9 = txt.indexOf("chkResponseCurves:", pos);
             int p10 = txt.length();
 
-            String pid = txt.substring(p1+"pid:".length(),p2).trim();
-            String taxonid = txt.substring(p2+"taxonid:".length(),p3).trim();
-            String scientificName = txt.substring(p3+"scientificName:".length(),p4).trim();
-            String taxonRank = txt.substring(p4+"taxonRank:".length(),p5).trim();
-            String area = txt.substring(p5+"area:".length(),p6).trim();
-            String envlist = txt.substring(p6+"envlist:".length(),p7).trim();
-            String txtTestPercentage = txt.substring(p7+"txtTestPercentage".length(),p8).trim();
-            String chkJackknife = txt.substring(p8+"chkJackknife".length(),p9).trim();
-            String chkResponseCurves = txt.substring(p9+"chkResponseCurves".length(),p10).trim();
+            String pid = txt.substring(p1 + "pid:".length(), p2).trim();
+            String taxonid = txt.substring(p2 + "taxonid:".length(), p3).trim();
+            String scientificName = txt.substring(p3 + "scientificName:".length(), p4).trim();
+            String taxonRank = txt.substring(p4 + "taxonRank:".length(), p5).trim();
+            String area = txt.substring(p5 + "area:".length(), p6).trim();
+            String envlist = txt.substring(p6 + "envlist:".length(), p7).trim();
+            String txtTestPercentage = txt.substring(p7 + "txtTestPercentage".length(), p8).trim();
+            String chkJackknife = txt.substring(p8 + "chkJackknife".length(), p9).trim();
+            String chkResponseCurves = txt.substring(p9 + "chkResponseCurves".length(), p10).trim();
 
-            if(taxonid.endsWith(";")){
-                taxonid = taxonid.substring(0,taxonid.length()-1);
+            if (taxonid.endsWith(";")) {
+                taxonid = taxonid.substring(0, taxonid.length() - 1);
             }
-            if(scientificName.endsWith(";")){
-                scientificName = scientificName.substring(0,scientificName.length()-1);
+            if (scientificName.endsWith(";")) {
+                scientificName = scientificName.substring(0, scientificName.length() - 1);
             }
-            if(taxonRank.endsWith(";")){
-                taxonRank = taxonRank.substring(0,taxonRank.length()-1);
+            if (taxonRank.endsWith(";")) {
+                taxonRank = taxonRank.substring(0, taxonRank.length() - 1);
             }
-            if(area.endsWith(";")){
-                area = area.substring(0,area.length()-1);
+            if (area.endsWith(";")) {
+                area = area.substring(0, area.length() - 1);
             }
-            if(envlist.endsWith(";")){
-                envlist = envlist.substring(0,envlist.length()-1);
+            if (envlist.endsWith(";")) {
+                envlist = envlist.substring(0, envlist.length() - 1);
             }
-            if(txtTestPercentage.endsWith(";")){
-                txtTestPercentage = txtTestPercentage.substring(0,txtTestPercentage.length()-1);
+            if (txtTestPercentage.endsWith(";")) {
+                txtTestPercentage = txtTestPercentage.substring(0, txtTestPercentage.length() - 1);
             }
-            if(chkJackknife.endsWith(";")){
-                chkJackknife = chkJackknife.substring(0,chkJackknife.length()-1);
+            if (chkJackknife.endsWith(";")) {
+                chkJackknife = chkJackknife.substring(0, chkJackknife.length() - 1);
             }
-            if(chkResponseCurves.endsWith(";")){
-                chkResponseCurves = chkResponseCurves.substring(0,chkResponseCurves.length()-1);
+            if (chkResponseCurves.endsWith(";")) {
+                chkResponseCurves = chkResponseCurves.substring(0, chkResponseCurves.length() - 1);
             }
 
             System.out.println("got [" + pid + "][" + taxonid + "][" + scientificName + "][" + taxonRank + "][" + area + "][" + envlist + "][" + txtTestPercentage + "][" + chkJackknife + "][" + chkResponseCurves + "]");
@@ -436,11 +431,12 @@ public class MaxentWCController extends UtilityComposer {
             lbListLayers.selectLayers(envlist.split(":"));
             try {
                 this.txtTestPercentage.setValue(String.valueOf(Double.parseDouble(txtTestPercentage)));
-            }catch(Exception e){}
+            } catch (Exception e) {
+            }
 
             this.chkJackknife.setChecked(chkJackknife.equalsIgnoreCase("on"));
             this.chkRCurves.setChecked(chkResponseCurves.equalsIgnoreCase("on"));
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -615,19 +611,19 @@ public class MaxentWCController extends UtilityComposer {
         }
 
         //String taxon = sac.getValue();
-        taxon = sac.getValue(); 
+        taxon = sac.getValue();
         String rank = "";
         /*
         String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().startsWith("Scientific name")) {
-            //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
-            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
-            rank = "common name";
-            //mc.mapSpeciesByName(taxon, sac.getValue());
+        //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
+        taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
+        rank = "common name";
+        //mc.mapSpeciesByName(taxon, sac.getValue());
         } else {
-            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
-            //mc.mapSpeciesByName(taxon);
-            //mc.mapSpeciesByNameRank(taxon, rank, null);
+        rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+        //mc.mapSpeciesByName(taxon);
+        //mc.mapSpeciesByNameRank(taxon, rank, null);
         }
         mc.mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon);
          *
@@ -643,8 +639,12 @@ public class MaxentWCController extends UtilityComposer {
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
         }
-        System.out.println("mapping rank and species: " + rank + " - " + taxon);
-        mc.mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
+
+        String lsid = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
+        if (!isSensitiveSpecies(lsid)) {
+            System.out.println("mapping rank and species: " + rank + " - " + taxon);
+            mc.mapSpeciesByLsid(lsid, taxon, rank);
+        } 
 
     }
     /*
@@ -790,7 +790,7 @@ public class MaxentWCController extends UtilityComposer {
             lsid = speciesandlsid.split(",")[1];
         }
         if (StringUtils.isNotBlank(lsid)) {
-            taxon = lsid; 
+            taxon = lsid;
         }
         String[] layers = layersUtil.getActiveEnvCtxLayers();
 
@@ -801,8 +801,10 @@ public class MaxentWCController extends UtilityComposer {
             if (species.contains(" (")) {
                 tmpSpecies = StringUtils.substringBefore(species, " (");
             }
+
             sac.setValue(tmpSpecies);
             sac.refresh(tmpSpecies);
+            isSensitiveSpecies(lsid);
         }
 
         /* set as selected each envctx layer found */
@@ -824,5 +826,23 @@ public class MaxentWCController extends UtilityComposer {
         previousArea = currentArea;*/
 
         lbListLayers.updateDistances();
+    }
+
+    private boolean isSensitiveSpecies(String taxon) {
+        try {
+
+            if (LayersUtil.isPestSpecies(taxon) || layersUtil.isSensitiveSpecies(taxon).equals("1")) {
+                Messagebox.show("Warning: Prediction is disabled for sensitive species where access to precise location information is restricted. Sensitive species include those that are endangered or threatened, pests or potential threats to Australian agriculture or other industries.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                tabboxmaxent.setSelectedIndex(0);
+                return true;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error checking for sensitive species");
+            e.printStackTrace(System.out);
+            return true;
+        }
+
+        return false;
     }
 }

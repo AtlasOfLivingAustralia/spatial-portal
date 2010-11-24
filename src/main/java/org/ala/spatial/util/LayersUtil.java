@@ -5,6 +5,7 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -28,6 +29,9 @@ import org.apache.commons.lang.StringUtils;
  */
 public class LayersUtil {
 
+    public static final String LAYER_TYPE_CSV = "text/csv";
+    public static final String LAYER_TYPE_KML = "application/vnd.google-earth.kml+xml";
+
     /**
      * MapComposer for retrieving active layer names
      */
@@ -48,6 +52,23 @@ public class LayersUtil {
      * populated on first getEnvironmentalLayers call
      */
     String[] environmentalLayerNames = null;
+
+    private static String[] commonTaxonRanks = new String[]{
+        "cultivar",
+        "superfamily",
+        "subgenus",
+        "unranked",
+        "infrageneric",
+        "subfamily",
+        "subspecies",
+        "section",
+        "infraspecific",
+        "hybrid",
+        "variety",
+        "form",
+        "series",
+        "tribe" 
+    };
 
     /**
      * constructor
@@ -286,6 +307,12 @@ public class LayersUtil {
             JSONObject jo = JSONObject.fromObject(slist);
             String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
             String rank = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("rankString");
+
+            System.out.println("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank)); 
+            if (Arrays.binarySearch(commonTaxonRanks, rank) > -1) {
+                rank = "taxon"; 
+            }
+
             return scientficName + "," + rank;
         } catch (Exception e) {
             System.out.println("Error getting scientific name");
