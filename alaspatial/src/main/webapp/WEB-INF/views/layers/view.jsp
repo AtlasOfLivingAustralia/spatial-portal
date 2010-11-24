@@ -40,7 +40,7 @@
 
                 <p>
                     <span class="title">Metadata contact organization:</span> <br />
-                    ${layer.source}
+                    <a href="${layer.sourcelink}" target="_blank">${layer.source}</a>
                 </p>
 
                 <p>
@@ -55,7 +55,12 @@
 
                 <p>
                     <span class="title">Resource constraints:</span> <br />
-                    ${layer.licencelevel}
+                    ${layer.licencelevel}: <a href="${layer.licence_link}" target="_blank">More info</a>
+                </p>
+
+                <p>
+                    <span class="title">Licence notes:</span> <br />
+                    ${layer.licence_notes}
                 </p>
 
                 <p>
