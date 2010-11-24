@@ -3809,7 +3809,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
                 ml.getMapLayerMetadata().setSpeciesLsid(pid);
                 ml.getMapLayerMetadata().setSpeciesRank("activearea");
-                ml.setClustered(true); 
+                ml.setClustered(true);
 
                 ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
 
@@ -3838,14 +3838,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 System.out.println("onMapSpecies: " + slist);
                 String[] results = slist.split("\n");
                 addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
-                ml = getMapLayer("Species in Active area"); 
+                ml = getMapLayer("Species in Active area");
             }
             //updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return ml; 
+        return ml;
     }
+
     private String getInfo(String urlPart) {
         String satServer = "http://spatial.ala.org.au";
         if (settingsSupplementary != null) {
@@ -3871,7 +3872,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         return null;
     }
-
 
     public MapLayer mapSpeciesByLsid(String lsid, String species) {
         return mapSpeciesByLsid(lsid, species, "species");
@@ -4070,8 +4070,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ml.setClustered(false);
             btnPointsCluster.setLabel(" Display species as clusters");
 
-            lsid = StringUtils.replace(lsid, ".", "__");
             try {
+                lsid = StringUtils.replace(lsid, ".", "__");
                 lsid = URLEncoder.encode(lsid, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
