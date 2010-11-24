@@ -87,6 +87,10 @@
 		<to>/ALOC.zul</to>
 	</rule>
 	<rule>
+		<from>/gdm.zul</from>
+		<to>/gdm.zul</to>
+	</rule>
+	<rule>
 		<from>/filtering_cl.html</from>
 		<to>/filtering_cl.html</to>
 	</rule>
