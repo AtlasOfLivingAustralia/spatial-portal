@@ -42,6 +42,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         String q = "";
         String lon = "";
         String lat = "";
+        int radius = 0;
         String wkt = "";
         String layer = "";
         String layers = "";
@@ -61,6 +62,10 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
                 if (get_param.contains("lon=")) {
                     lon = get_param.replace("lon=", "");
                     logger.finer("lon is " + lon);
+                }
+                if (get_param.contains("radius=")) {
+                    radius = new Integer(get_param.replace("radius=", "")).intValue();
+                    logger.finer("radius is " + radius);
                 }
                 if (get_param.contains("layer=")) {
                     layer = get_param.replace("layer=", "");
@@ -90,9 +95,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0)) {
             PointSearch searchObj;
             if (layers_arr.length > 0) {
-                searchObj = new PointSearch(lon, lat, layers_arr);
+                searchObj = new PointSearch(lon, lat, radius, layers_arr);
             } else {
-                searchObj = new PointSearch(lon, lat);
+                searchObj = new PointSearch(lon, lat, radius);
             }
             xstream.processAnnotations(PointSearch.class);
             String xmlString = xstream.toXML(searchObj);

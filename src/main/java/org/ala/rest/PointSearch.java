@@ -39,16 +39,14 @@ public class PointSearch {
     @XStreamAsAttribute
     String xlink = "http://www.w3.org/1999/xlink";
 
-    /***
-     *
-     * @return a HashMap representation of the resource - which will be serialized into xml/json
+     /**
+     * Constructor to perform a search across the default layers
+     * @param lon
+     * @param lat
      */
-    public Map getMap() {
-        HashMap resultsMap = new HashMap();
-        resultsMap.put("results", this.results);
-        return resultsMap;
+    public PointSearch(String lon, String lat, int radius) {
+        this(lon, lat, radius, "");
     }
-
 
     /**
      * Performs a point search across a single layer (if layer is empty string, it searches across all default layers).
@@ -56,7 +54,7 @@ public class PointSearch {
      * @param lat
      * @param layerName
      */
-    public PointSearch(String lon, String lat, String[] layers) {
+    public PointSearch(String lon, String lat, int radius, String[] layers) {
         results = new ArrayList<SearchResultItem>();
         GazetteerConfig gc = new GazetteerConfig();
         GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
@@ -69,24 +67,24 @@ public class PointSearch {
             logger.finer("No actual layers here, searching default layers");
             ArrayList<String> defaultLayers = (ArrayList<String>) gc.getDefaultLayerNames();
             for (String layer : defaultLayers) {
-                search(catalog, layer, sc, lon, lat, gc);
+                search(catalog, layer, sc, lon, lat, radius, gc);
             }
 
         } else {
             for (String layerName : layers) {
                 logger.finer("Searching specific layer " + layerName);
-                search(catalog, layerName, sc, lon, lat, gc);
+                search(catalog, layerName, sc, lon, lat, radius, gc);
             }
         }
     }
 
-        /**
+    /**
      * Performs a point search across a single layer (if layer is empty string, it searches across all default layers).
      * @param lon
      * @param lat
      * @param layerName
      */
-    public PointSearch(String lon, String lat, String layerName) {
+    public PointSearch(String lon, String lat, int radius, String layerName) {
         results = new ArrayList<SearchResultItem>();
         GazetteerConfig gc = new GazetteerConfig();
         GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
@@ -99,22 +97,13 @@ public class PointSearch {
             logger.finer("Searching default layers");
             ArrayList<String> defaultLayers = (ArrayList<String>) gc.getDefaultLayerNames();
             for (String layer : defaultLayers) {
-                search(catalog, layer, sc, lon, lat, gc);
+                search(catalog, layer, sc, lon, lat, radius, gc);
             }
 
         } else {
             logger.finer("Searching specific layer " + layerName);
-            search(catalog, layerName, sc, lon, lat, gc);
+            search(catalog, layerName, sc, lon, lat, radius, gc);
         }
-    }
-
-    /**
-     * Constructor to perform a search across the default layers
-     * @param lon
-     * @param lat
-     */
-    public PointSearch(String lon, String lat) {
-        this(lon, lat, "");
     }
 
     /**
@@ -127,25 +116,32 @@ public class PointSearch {
      * @param lat
      * @param gc
      */
-    private void search(Catalog catalog, String layerName, ServletContext sc, String lon, String lat, GazetteerConfig gc) {
+    private void search(Catalog catalog, String layerName, ServletContext sc, String lon, String lat, int radius, GazetteerConfig gc) {
         try {
-            
-            if (!gc.layerNameExists(layerName)){
+
+            if (!gc.layerNameExists(layerName)) {
                 logger.finer("layer " + layerName + " does not exist - trying aliases.");
                 layerName = gc.getNameFromAlias(layerName);
-                if (layerName.compareTo("") == 0){
+                if (layerName.compareTo("") == 0) {
                     logger.finer("no aliases found for layer, giving up");
                     return;
                 }
             }
-            
+
             LayerInfo layerInfo = catalog.getLayerByName(layerName);
 
             Map params = layerInfo.getResource().getStore().getConnectionParameters();
             DataStore dataStore = DataStoreUtils.acquireDataStore(params, sc); //DataStoreFinder.getDataStore(params);
             FeatureSource layer = dataStore.getFeatureSource(layerName);
             logger.info("Searching " + layerName);
-            FeatureIterator features = layer.getFeatures(CQL.toFilter("CONTAINS(the_geom,POINT(" + lon + " " + lat + "))")).features();
+            FeatureIterator features = null;
+            if (radius == 0) {
+                logger.finer("No radius has been specified");
+                features = layer.getFeatures(CQL.toFilter("CONTAINS(the_geom,POINT(" + lon + " " + lat + "))")).features();
+            } else {
+                logger.finer("radius has been defined");
+                features = layer.getFeatures(CQL.toFilter("DWITHIN(the_geom,POINT(" + lon + " " + lat + "), " + radius + ", kilometers)")).features();
+            }
             if (features.hasNext()) {
                 logger.info("Found one!!!");
                 while (features.hasNext()) {
@@ -163,4 +159,15 @@ public class PointSearch {
             logger.severe(ExceptionUtils.getFullStackTrace(e2));
         }
     }
+
+    /***
+     *
+     * @return a HashMap representation of the resource - which will be serialized into xml/json
+     */
+    public Map getMap() {
+        HashMap resultsMap = new HashMap();
+        resultsMap.put("results", this.results);
+        return resultsMap;
+    }
+
 }
