@@ -169,6 +169,12 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
         print(dom);
     }
 
+    public void testNewPointSearch() throws Exception {
+        System.out.println("TESTING new point search!!");
+        Document dom = getAsDOM("/rest/gazetteer/NamedPlaces/latlon/0.001,0.003");
+        print(dom);
+    }
+
     public void testLayerClasses() throws Exception {
         System.out.println("*************");
         JSON json = getAsJSON("/rest/gazetteer/NamedPlaces.json");

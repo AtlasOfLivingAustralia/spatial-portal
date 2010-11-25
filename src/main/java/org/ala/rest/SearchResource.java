@@ -46,6 +46,8 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         String wkt = "";
         String layer = "";
         String layers = "";
+       
+
 
         if (getRequest().getAttributes().containsKey("q")) {
             String[] pieces = getRequest().getAttributes().get("q").toString().split("&");
@@ -76,6 +78,24 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
                     logger.finer("layers are " + layers);
                 }
             }
+        }
+        //doing a cacheable point in poly request eg. /layer/latlon/lat,lon
+        else if ((getRequest().getAttributes().containsKey("latlon"))) {
+            //point search without query params
+             String latlon =  getRequest().getAttributes().get("latlon").toString();
+               PointSearch searchObj;
+//            if (layers_arr.length > 0) {
+//                searchObj = new PointSearch(lon, lat, layers_arr);
+//            } else {
+               lat = latlon.split(",")[0];
+               lon = latlon.split(",")[1];
+               layer = getRequest().getAttributes().get("layer").toString();
+                searchObj = new PointSearch(lon, lat, 0, layer); //0 Radius means not using radius?
+//            }
+            xstream.processAnnotations(PointSearch.class);
+            String xmlString = xstream.toXML(searchObj);
+            getResponse().setEntity(format.toRepresentation(xmlString));
+            return;
         }
 
         String[] layers_arr = getLayers(layer, layers);

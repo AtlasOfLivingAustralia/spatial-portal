@@ -27,6 +27,10 @@
               <key><value>/gazetteer/search</value></key>
               <value>search</value>
             </entry>
+             <entry>
+              <key><value>/gazetteer/{layer}/latlon/{latlon}</value></key>
+              <value>search</value>
+            </entry>
 
          </map>
       </property>
