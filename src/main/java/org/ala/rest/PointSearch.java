@@ -7,6 +7,11 @@ import java.util.HashMap;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.io.WKTWriter;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -20,6 +25,7 @@ import org.geotools.data.FeatureSource;
 import org.geotools.feature.FeatureIterator;
 
 import org.geotools.filter.text.cql2.CQL;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 
@@ -39,7 +45,7 @@ public class PointSearch {
     @XStreamAsAttribute
     String xlink = "http://www.w3.org/1999/xlink";
 
-     /**
+    /**
      * Constructor to perform a search across the default layers
      * @param lon
      * @param lat
@@ -140,8 +146,32 @@ public class PointSearch {
                 logger.finer("No radius has been specified");
                 features = layer.getFeatures(CQL.toFilter("CONTAINS(the_geom,POINT(" + lon + " " + lat + "))")).features();
             } else {
-                logger.finer("radius has been defined");
-                features = layer.getFeatures(CQL.toFilter("DWITHIN(the_geom,POINT(" + lon + " " + lat + "), " + radius + ", kilometers)")).features();
+
+                GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+                Coordinate coord = new Coordinate(new Double(lon).doubleValue(), new Double(lat).doubleValue());
+                Point p = geometryFactory.createPoint(coord);
+
+                //divide radius by 111.12 to get kilometres
+                double radiusInDegrees = radius / 111.12;
+
+                logger.finer("radius " + radius + " (km) in degrees is " + radiusInDegrees);
+
+                Geometry polygon = p.buffer(radiusInDegrees);
+
+                Coordinate[] coordinates = polygon.getCoordinates();
+                logger.finer("Number of coordinates returned is " + coordinates.length);
+                logger.finer("numpoints: " + polygon.getNumPoints());
+
+                //wkt writer - well worth using
+                WKTWriter wkt = new WKTWriter();
+                String polygonWKT = wkt.write(polygon);
+
+                logger.finer("polygonWKT is " + polygonWKT);
+
+                //perform intersect operation to find out what layers the circle intersects with
+                String cqlFilter = "INTERSECT(the_geom," + polygonWKT + ")";
+                logger.finer("Running cql filter: " + cqlFilter);
+                features = layer.getFeatures(CQL.toFilter(cqlFilter)).features();
             }
             if (features.hasNext()) {
                 logger.info("Found one!!!");
@@ -172,5 +202,4 @@ public class PointSearch {
         resultsMap.put("results", this.results);
         return resultsMap;
     }
-
 }
