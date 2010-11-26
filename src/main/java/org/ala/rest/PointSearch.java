@@ -117,6 +117,7 @@ public class PointSearch {
      * @param gc
      */
     private void search(Catalog catalog, String layerName, ServletContext sc, String lon, String lat, int radius, GazetteerConfig gc) {
+        
         try {
 
             if (!gc.layerNameExists(layerName)) {
@@ -151,6 +152,7 @@ public class PointSearch {
                 }
             }
             features.close();
+            dataStore.dispose();
         } catch (IOException e1) {
             logger.severe("IOException thrown in point search");
             logger.severe(ExceptionUtils.getFullStackTrace(e1));
@@ -158,6 +160,7 @@ public class PointSearch {
             logger.severe("Exception thrown in point search");
             logger.severe(ExceptionUtils.getFullStackTrace(e2));
         }
+       
     }
 
     /***
