@@ -147,7 +147,7 @@ public class GazetteerConfig {
         if (getLayerNames().contains(name))
             return true;
         else
-            logger.finer("Layer name or alias does not exist for " + name);
+            logger.finer("Layer name does not exist for " + name);
             return false;
     }
 

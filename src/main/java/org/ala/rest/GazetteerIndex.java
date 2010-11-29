@@ -40,7 +40,8 @@ import org.geotools.util.logging.Logging;
  */
 public class GazetteerIndex implements InitializingBean {
 
-private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerIndex");
+    private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerIndex");
+
     /***
      * The Gazetteer index is built here if one does not exist already
      */
@@ -55,9 +56,9 @@ private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerIn
 
         GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
 
-        for (String layerName : gc.getLayerNames()){
+        for (String layerName : gc.getLayerNames()) {
             String layerAlias = gc.getLayerAlias(layerName);
-            if (layerAlias.compareTo("") != 0){
+            if (layerAlias.compareTo("") != 0) {
                 logger.info("Layer alias for " + layerName + " is " + layerAlias);
             }
         }
@@ -114,12 +115,16 @@ private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerIn
                                 featureDoc.add(new Field("id", idAttribute1 + " " + idAttribute2, Store.YES, Index.ANALYZED));
                                 logger.finer("Indexed layer " + layerName + " idAttribute1: " + idAttribute1 + " idAttribute2: " + idAttribute2);
                             } else {
-                                String idAttribute1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
-                                featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
-                                featureDoc.add(new Field("id", idAttribute1, Store.YES, Index.ANALYZED));
-                                logger.finer("Indexed layer " + layerName + " idAttribute1: " + idAttribute1);
+                                if (feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue() != null) {
+                                    String idAttribute1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
+                                    featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
+                                    featureDoc.add(new Field("id", idAttribute1, Store.YES, Index.ANALYZED));
+                                    logger.finer("Indexed layer " + layerName + " idAttribute1: " + idAttribute1);
+                                } else {
+                                    logger.severe("Null value retrieved for idAttribute1");
+                                }
                             }
-                            
+
                             if (feature.getProperty(gc.getNameAttributeName(layerName)).getValue() != null) {
                                 featureDoc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
                             }
