@@ -6,6 +6,7 @@
     <nameAttribute>name</nameAttribute>
 </layer> -->
 <layer>
+    <defaultLayer>true</defaultLayer>
     <name>NamedPlaces</name>
     <idAttribute1>NAME</idAttribute1>
     <idAttribute2>FID</idAttribute2> 

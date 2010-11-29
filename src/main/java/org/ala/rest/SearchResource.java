@@ -2,6 +2,8 @@ package org.ala.rest;
 
 import com.thoughtworks.xstream.XStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -12,6 +14,7 @@ import org.geotools.util.logging.Logging;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.Representation;
 
 /**
  * Search resource used for querying the gazetteer.
@@ -83,18 +86,28 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         else if ((getRequest().getAttributes().containsKey("latlon"))) {
             //point search without query params
              String latlon =  getRequest().getAttributes().get("latlon").toString();
-               PointSearch searchObj;
-//            if (layers_arr.length > 0) {
-//                searchObj = new PointSearch(lon, lat, layers_arr);
-//            } else {
-               lat = latlon.split(",")[0];
+              lat = latlon.split(",")[0];
                lon = latlon.split(",")[1];
+             PointSearch searchObj;
+            if (getRequest().getAttributes().containsKey("layer")) {
+                //search the specified layer
                layer = getRequest().getAttributes().get("layer").toString();
                 searchObj = new PointSearch(lon, lat, 0, layer); //0 Radius means not using radius?
-//            }
+                
+            } else {
+                //search the default layers
+                searchObj = new PointSearch(lon, lat, 0);
+            }
             xstream.processAnnotations(PointSearch.class);
             String xmlString = xstream.toXML(searchObj);
-            getResponse().setEntity(format.toRepresentation(xmlString));
+            Date d = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.YEAR, 10);
+            d = cal.getTime();
+            Representation rep = format.toRepresentation(xmlString);
+            rep.setExpirationDate(d);
+            getResponse().setEntity(rep);
+
             return;
         }
 
