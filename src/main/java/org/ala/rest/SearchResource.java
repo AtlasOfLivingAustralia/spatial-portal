@@ -119,7 +119,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             if (layers_arr.length > 0) {
                 searchObj = new Search(q.replace("+", "* AND ") + "*", layers_arr);
             } else {
-                searchObj = new Search(q.replace("+", "* AND ") + "*");
+                //we need to search default layers ...
+                GazetteerConfig gc = new GazetteerConfig();
+                searchObj = new Search(q.replace("+", "* AND ") + "*", gc.getDefaultLayerNames().toArray(new String[gc.getDefaultLayerNames().size()]));
             }
             xstream.processAnnotations(Search.class);
             String xmlString = xstream.toXML(searchObj);

@@ -308,4 +308,25 @@ public class GazetteerConfig {
 
         }
     }
+    /**
+     * Checks to see if the layer is name searchable
+     * @param layerName
+     * @return
+     */
+    public boolean isNameSearchable(String layerName){
+    boolean nameSearch = false;
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//layer[name='" + layerName + "']/nameSearch/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            nameSearch = Boolean.valueOf(nodes.item(0).getNodeValue()).booleanValue();
+            return nameSearch;
+        } catch (Exception e) {
+            return false;
+
+        }
+    }
 }

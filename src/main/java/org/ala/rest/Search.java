@@ -5,7 +5,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import java.io.File;
@@ -24,6 +23,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import java.util.logging.Logger;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.util.logging.Logging;
 
 /***
@@ -54,59 +54,46 @@ public class Search {
         return this.results;
     }
 
-
+    /**
+     * Searches for a feature within a layer based on name.
+     * @param searchTerms
+     * @param layers
+     * @param getFeature if true, it does not need the nameSearch property set to true in gazetteer.xml (used for feature retrieval)
+     */
     public Search(String searchTerms, String[] layers) {
         results = new ArrayList<SearchResultItem>();
-        for (String layerName : layers) {
-            try {
-                //Get the geoserver data directory from the geoserver instance
-                File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-                IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
+        GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
+        String layerSearch = "";
 
-                String[] searchFields = {"id", "layerName"};
-
-                MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT, searchFields, new StandardAnalyzer(Version.LUCENE_CURRENT));//Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
-                qp.setDefaultOperator(qp.AND_OPERATOR);
-                Query nameQuery = qp.parse(searchTerms.toLowerCase() + " AND " + layerName);
-
-                //TODO: instead of 20 - should be variable and paging?
-                TopDocs topDocs = is.search(nameQuery, 20);
-
-                for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                    Document doc = is.doc(scoreDoc.doc);
-                    List<Fieldable> fields = doc.getFields();
-                    results.add(new SearchResultItem(fields, true, new Float(scoreDoc.score)));
+        if (layers.length > 0) {
+            layerSearch = "layerName:(";
+            int count = 0;
+            for (String layerName : layers) {
+                layerSearch += layerName;
+                count++;
+                if (count < layers.length) {
+                    layerSearch += " OR ";
                 }
-                is.close();
-            } catch (IOException e1) {
-                //FIXME: Log error - return http error code?
-                logger.severe("An error occurred in search.");
-                logger.severe(ExceptionUtils.getFullStackTrace(e1));
-            } catch (ParseException e3) {
-                logger.severe("An error occurred parsing search terms.");
-                logger.severe(ExceptionUtils.getFullStackTrace(e3));
             }
+            layerSearch += ")";
         }
-    }
-
-    public Search(String searchTerms) {
-        logger.finer("search terms are " + searchTerms);
-        results = new ArrayList<SearchResultItem>();
+        System.out.println("********************** " + layerSearch);
 
         try {
             //Get the geoserver data directory from the geoserver instance
             File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));//url.toString().replace("file:","")));
+            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
 
-            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "id", new StandardAnalyzer(Version.LUCENE_CURRENT));
+            String[] searchFields = {"id", "layerName"};
 
-            Query nameQuery = qp.parse(searchTerms.toLowerCase());
+            MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT, searchFields, new StandardAnalyzer(Version.LUCENE_CURRENT));
+            qp.setDefaultOperator(qp.AND_OPERATOR);
+            Query nameQuery = qp.parse(searchTerms.toLowerCase() + " AND " + layerSearch);
 
             //TODO: instead of 20 - should be variable and paging?
             TopDocs topDocs = is.search(nameQuery, 20);
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                logger.finer("document score match is " + new Float(scoreDoc.score).toString());
                 Document doc = is.doc(scoreDoc.doc);
                 List<Fieldable> fields = doc.getFields();
                 results.add(new SearchResultItem(fields, true, new Float(scoreDoc.score)));
@@ -120,6 +107,5 @@ public class Search {
             logger.severe("An error occurred parsing search terms.");
             logger.severe(ExceptionUtils.getFullStackTrace(e3));
         }
-
     }
 }
