@@ -174,12 +174,17 @@ public class PointSearch {
                 features = layer.getFeatures(CQL.toFilter(cqlFilter)).features();
             }
             if (features.hasNext()) {
-                logger.info("Found one!!!");
+                logger.info("Feature found - creating SearchResultItem");
                 while (features.hasNext()) {
                     Feature feature = (Feature) features.next();
                     String id1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
-                    String id2 = feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
-                    results.add(new SearchResultItem(layerName, id1, id2, new Float("1.0")));
+                    if (gc.getIdAttribute2Name(layerName).compareTo("") != 0){
+                        String id2 = feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
+                        results.add(new SearchResultItem(layerName, id1, id2, new Float("1.0")));
+                    }
+                    else{
+                        results.add(new SearchResultItem(layerName, id1, new Float("1.0")));
+                    }
                 }
             }
             features.close();

@@ -18,7 +18,6 @@ import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import java.util.Map;
 import java.util.HashMap;
-
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import java.util.logging.Logger;
@@ -77,7 +76,7 @@ public class Search {
             }
             layerSearch += ")";
         }
-        System.out.println("********************** " + layerSearch);
+        logger.finer("layerSearch is " + layerSearch);
 
         try {
             //Get the geoserver data directory from the geoserver instance

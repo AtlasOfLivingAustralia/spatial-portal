@@ -223,7 +223,7 @@ public class GazetteerConfig {
      */
     public String getIdAttribute2Name(String layerName) {
         //using xpath to query
-        String idAttribute = "";
+        String idAttribute2 = "";
         try {
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();
@@ -232,12 +232,12 @@ public class GazetteerConfig {
             Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
             NodeList nodes = (NodeList) result;
             if (nodes.getLength() > 0) {
-                idAttribute = nodes.item(0).getNodeValue();
+                idAttribute2 = nodes.item(0).getNodeValue();
             }
         } catch (Exception e) {
             logger.severe(ExceptionUtils.getFullStackTrace(e));
         }
-        return idAttribute;
+        return idAttribute2;
     }
 
     /***
