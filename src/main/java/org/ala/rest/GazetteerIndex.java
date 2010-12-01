@@ -31,8 +31,13 @@ import org.springframework.beans.factory.InitializingBean;
 import org.vfny.geoserver.global.GeoserverDataDirectory;
 import org.vfny.geoserver.util.DataStoreUtils;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.geotools.util.logging.Logging;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /***
  * Builds the Gazetter index based on the gazetter config and layers/features in Geoserver
@@ -170,6 +175,46 @@ public class GazetteerIndex implements InitializingBean {
                         classIndex.addDocument(classDoc);
                     }
                 }
+
+                //go through synonyms and index features
+                org.w3c.dom.Document synonymDoc;
+                try {
+                    DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+                    domFactory.setNamespaceAware(true);
+                    DocumentBuilder builder = domFactory.newDocumentBuilder();
+                    synonymDoc = builder.parse(new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-synonyms.xml"));
+                    NodeList nList = synonymDoc.getElementsByTagName("layer");
+                    for (int i = 0; i < nList.getLength(); i++){
+                        
+                        Element e = (Element) nList.item(i);
+                        String layerName = e.getAttribute("name");
+                        logger.finer("Found synonym for layer: " + layerName);
+                        
+                        NodeList featureNodes = e.getElementsByTagName("feature");
+                        for (int j=0; j < featureNodes.getLength(); j++){
+                            Document featureDoc = new Document();
+                            featureDoc.add(new Field("layerName", layerName, Store.YES, Index.ANALYZED));
+                            Element featureElement = (Element) featureNodes.item(j);
+                            String idAttribute1 = featureElement.getElementsByTagName("idAttribute1").item(0).getTextContent();
+                            logger.finer("idAttribute1 is: " + idAttribute1);
+                            featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
+
+                            if (featureElement.getElementsByTagName("idAttribute2").getLength() > 0){
+                                String idAttribute2 = featureElement.getElementsByTagName("idAttribute2").item(0).getTextContent();
+                                logger.finer("idAttribute2 is: " + idAttribute2);
+                                featureDoc.add(new Field("idAttribute2", idAttribute2, Store.YES, Index.ANALYZED));
+                            }
+                            String synonym = featureElement.getElementsByTagName("synonym").item(0).getTextContent();
+                            logger.finer("synonym is: " + synonym);
+                            featureDoc.add(new Field("name", synonym, Store.YES, Index.ANALYZED));
+                            featureIndex.addDocument(featureDoc);
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.severe("Failed to initialize Gazetteer");
+                    logger.severe(ExceptionUtils.getFullStackTrace(e));
+                }
+
                 featureIndex.close();
                 classIndex.close();
             }
