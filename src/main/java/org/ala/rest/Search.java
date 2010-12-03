@@ -83,7 +83,7 @@ public class Search {
             File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
             IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
 
-            String[] searchFields = {"name", "layerName"};
+            String[] searchFields = {"id", "layerName"};
 
             MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT, searchFields, new StandardAnalyzer(Version.LUCENE_CURRENT));
             qp.setDefaultOperator(qp.AND_OPERATOR);

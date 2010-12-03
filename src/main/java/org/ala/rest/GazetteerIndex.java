@@ -40,7 +40,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /***
- * Builds the Gazetter index based on the gazetter config and layers/features in Geoserver
+ * Builds the Gazetter index based on the gazetteer config and layers/features in Geoserver
  * @author Angus
  */
 public class GazetteerIndex implements InitializingBean {
@@ -206,6 +206,7 @@ public class GazetteerIndex implements InitializingBean {
                             }
                             String synonym = featureElement.getElementsByTagName("synonym").item(0).getTextContent();
                             logger.finer("synonym is: " + synonym);
+                            featureDoc.add(new Field("id", synonym, Store.YES, Index.ANALYZED));
                             featureDoc.add(new Field("name", synonym, Store.YES, Index.ANALYZED));
                             featureIndex.addDocument(featureDoc);
                         }

@@ -42,13 +42,13 @@ public class GazetteerLayer {
     String layerName = "";
 
     public GazetteerLayer(String layerName) {
- 
+
         GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
         //check to see if layer exists
-        if (!gc.layerNameExists(layerName)){
+        if (!gc.layerNameExists(layerName)) {
             //if not, check to see if layer alias exists
             layerName = gc.getNameFromAlias(layerName);
-            if (layerName.compareTo("") == 0){
+            if (layerName.compareTo("") == 0) {
                 //otherwise log an error
                 logger.severe("No such layer or layer alias " + layerName + " ignoring ...");
             }
@@ -81,27 +81,24 @@ public class GazetteerLayer {
                 }
                 classMap.put(classAttribute, classList);
 
-                logger.finer("fetching layer properties for " + layerName);
-                LayerInfo layerInfo = catalog.getLayerByName(layerName);
-                layerMap.put("layer_name", layerInfo.getName());
-                layerMap.put("enabled", new Boolean(layerInfo.enabled()).toString());
-                layerMap.put("type", layerInfo.getType().toString());
-                layerMap.put("alias", gc.getLayerAlias(layerName));
-                layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
-                layerMap.put("idAttribute1", gc.getIdAttribute1Name(layerName));
-                if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
-                    layerMap.put("idAttribute2", gc.getIdAttribute2Name(layerName));
-                }
-
             } catch (IOException e1) {
                 logger.severe("Problem reading gaz class index");
                 logger.severe(ExceptionUtils.getFullStackTrace(e1));
             } catch (ParseException e3) {
                 logger.severe("Problem reading lucene class index");
                 logger.severe(ExceptionUtils.getFullStackTrace(e3));
-
             }
-
+        }
+        logger.finer("fetching layer properties for " + layerName);
+        LayerInfo layerInfo = catalog.getLayerByName(layerName);
+        layerMap.put("layer_name", layerInfo.getName());
+        layerMap.put("enabled", new Boolean(layerInfo.enabled()).toString());
+        layerMap.put("type", layerInfo.getType().toString());
+        layerMap.put("alias", gc.getLayerAlias(layerName));
+        layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
+        layerMap.put("idAttribute1", gc.getIdAttribute1Name(layerName));
+        if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
+            layerMap.put("idAttribute2", gc.getIdAttribute2Name(layerName));
         }
     }
 
