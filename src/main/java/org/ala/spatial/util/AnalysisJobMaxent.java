@@ -176,12 +176,12 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 readReplaceBetween(pth + "species.html", "(A link to the Explain","additive models.)","");
 
                 if(removedSpecies.length() > 0) {
-                    String header = "'Sensitive species' (http://www.ala.org.au/about/program-of-projects/sds/) masked out of the model\r\n\r\nLSID,Species scientific name,Taxon rank";
+                    String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
                     writeToFile(header + removedSpecies.toString(),
                             currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
 
-                    String insertBefore= "<a href = \"maxentResults.csv\">";
-                    String insertText = "<a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br>";
+                    String insertBefore= "<a href = \"species.asc\">The";
+                    String insertText = "<b><a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
                     readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
                 }
 
