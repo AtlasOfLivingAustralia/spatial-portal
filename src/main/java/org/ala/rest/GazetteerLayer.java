@@ -108,4 +108,10 @@ public class GazetteerLayer {
         map.put("layer_classes", classMap);
         return map;
     }
+
+    @Deprecated
+    public Map getLegacyMap() {
+        
+        return classMap;
+    }
 }

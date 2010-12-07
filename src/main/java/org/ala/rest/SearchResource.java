@@ -80,6 +80,13 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
                     layers = get_param.replace("layers=", "");
                     logger.finer("layers are " + layers);
                 }
+                //Legacy support for 'point' paramater
+                if (get_param.contains("point=")) {
+                    String latlon = get_param.replace("point=","");
+                    lon = latlon.split(",")[0];
+                    lat = latlon.split(",")[1];
+                    logger.finer("lat,lon is " + lat + "," + lon);
+                }
             }
         }
         //doing a cacheable point in poly request eg. /layer/latlon/lat,lon

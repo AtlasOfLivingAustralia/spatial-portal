@@ -165,6 +165,13 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
         print(json);
     }
 
+     public void testPointSearchLegacy() throws Exception {
+        System.out.println("Testing Legacy point search ...");
+        Document dom = getAsDOM("/rest/gazetteer/result.xml?point=0.003,0.001&layer=NamedPlaces");
+        print(dom);
+          System.out.println("... Done");
+    }
+
     public void testPointSearch() throws Exception {
         Document dom = getAsDOM("/rest/gazetteer/result.xml?lon=0.003&lat=0.001&layer=NamedPlaces");
         print(dom);
@@ -182,12 +189,13 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
         print(dom);
     }
 
-    public void testLayerClasses() throws Exception {
+    public void testLayerClassesDeprecated() throws Exception {
         System.out.println("*************");
         JSON json = getAsJSON("/rest/gazetteer/NamedPlaces.json");
         print(json);
         System.out.println("*************");
     }
+
 
     public void testGazetteerFeatureIndex() throws Exception {
         File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");

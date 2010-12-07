@@ -25,6 +25,13 @@ public class FeatureServiceResource extends MapResource {
 
         logger.finer(getRequest().getResourceRef().toString());
 
+
+        //Legacy support for basic class details - when requested as /layer.json
+        if (getRequest().getAttributes().containsKey("type") && !(getRequest().getAttributes().containsKey("id1"))) {
+            layer = getRequest().getAttributes().get("layer").toString();
+            return new GazetteerLayer(layer).getLegacyMap();
+        }
+
         if (getRequest().getAttributes().containsKey("layer")) {
             layer = getRequest().getAttributes().get("layer").toString();
             logger.finer("layer supplied is " + layer);
