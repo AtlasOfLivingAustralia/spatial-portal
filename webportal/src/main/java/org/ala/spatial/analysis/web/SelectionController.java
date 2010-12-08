@@ -5,25 +5,17 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateSequence;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
-import com.vividsolutions.jts.geom.impl.PackedCoordinateSequence;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.io.gml2.GMLWriter;
-import com.vividsolutions.jtsexample.geom.ExtendedCoordinateSequence;
 import geo.google.GeoAddressStandardizer;
 import geo.google.datamodel.GeoAddress;
 import geo.google.datamodel.GeoCoordinate;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -40,8 +32,6 @@ import java.util.Map;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.measure.converter.UnitConverter;
-import javax.measure.unit.Unit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -103,6 +93,7 @@ public class SelectionController extends UtilityComposer {
     private Textbox boxGeom;
     private Textbox displayGeom;
     private Textbox addressBox;
+    private Label addressLabel;
     private Div polygonInfo;
     private Div envelopeInfo;
     //private Label instructions;
@@ -195,11 +186,25 @@ public class SelectionController extends UtilityComposer {
             l1.setStyle("white-space: normal; padding: 5px");
             //  }
 
+            Hbox hbxAddress = new Hbox();
+            hbxAddress.setParent(vbox);
             (new Separator()).setParent(vbox);
             addressBox = new Textbox();
             addressBox.setTooltiptext("eg. Black Mountain, Canberra");
             addressBox.setWidth("95%");
-            addressBox.setParent(vbox);
+            addressBox.setParent(hbxAddress);
+
+            Button btnFind = new Button("Find");
+            btnFind.setParent(hbxAddress);
+            btnFind.addEventListener("onClick", new EventListener() {
+                    public void onEvent(Event event) throws Exception {
+                    onClick$btnFindAddress(null);
+                    
+                }
+            });
+
+           addressLabel = new Label();
+            addressLabel.setParent(vbox);
 
             Label l2 = new Label((2) + ". " + text[1]);
             l2.setParent(vbox);
@@ -225,9 +230,9 @@ public class SelectionController extends UtilityComposer {
             Hbox hbox = new Hbox();
             hbox.setParent(vbox);
 
-            Button create = new Button("Create radius area");
-            create.setParent(hbox);
-            create.addEventListener("onClick", new EventListener() {
+            Button btnCreate = new Button("Create radius area");
+            btnCreate.setParent(hbox);
+            btnCreate.addEventListener("onClick", new EventListener() {
 
                 public void onEvent(Event event) throws Exception {
                     onClick$btnRadiusFromAddress(null);
@@ -1383,7 +1388,8 @@ public class SelectionController extends UtilityComposer {
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
             GeoCoordinate gco = addresses.get(0).getCoordinate();
-
+             cbAreaSelection.setText("address: " + addresses.get(0).getAddressLine());
+          
             //Point point = geometryFactory.createPoint(new Coordinate(
             double radius = 1000;
              if (cbRadius.getSelectedItem() == ci1km) {
@@ -1423,4 +1429,18 @@ public class SelectionController extends UtilityComposer {
         }
     }
 
+      public void onClick$btnFindAddress(Event event) {
+          try {
+           GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
+
+            List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getAreaText() + ", Australia");
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+            GeoCoordinate gco = addresses.get(0).getCoordinate();
+             
+         addressLabel.setValue(addresses.get(0).getAddressLine());
+          } catch (geo.google.GeoException ge) {
+
+        }
+    }
 }
