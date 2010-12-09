@@ -30,6 +30,7 @@ import org.opengis.feature.Property;
 import org.vfny.geoserver.util.DataStoreUtils;
 import org.geoserver.wfs.response.GeoJSONBuilder;
 import org.geotools.util.logging.Logging;
+import org.opengis.geometry.BoundingBox;
 
 /**
  *
@@ -153,6 +154,23 @@ public class GazetteerFeature {
                             StringWriter w = new StringWriter();
                             GeoJSONBuilder geoJson = new GeoJSONBuilder(w);
                             geoJson.writeGeom((Geometry) feature.getDefaultGeometryProperty().getValue());
+                            BoundingBox bb = feature.getBounds();
+
+                            Double minx = new Double(bb.getMinX());
+                            Double miny = new Double(bb.getMinY());
+                            Double maxx = new Double(bb.getMaxX());
+                            Double maxy = new Double(bb.getMaxY());
+
+                            if (maxx.compareTo(minx) == 0 && maxy.compareTo(miny) == 0){
+                                String point = "(" + miny.toString() + "," + minx.toString() + ")";
+                                this.basic_properties.put("Point", point);
+                                logger.info("Point is: " + point);
+                            }
+                            else{
+                                String boundingBox = "((" + miny.toString() + "," + minx.toString() + "),(" + maxy.toString() + "," + maxx.toString() + "))";
+                                this.basic_properties.put("Bounding_Box", boundingBox);
+                                logger.info("Bounding box is: " + boundingBox);
+                            }
                             this.geometries.add(w.toString());
 
                             //Add all the feature properties to the geojson properties object
