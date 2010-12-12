@@ -81,9 +81,26 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             var safeToLoadMapId = '${safeToLoadMap.uuid}';
 
             function updateSafeToLoadMap(status) {
-            document.getElementById(safeToLoadMapId).value = status;
-            zkTxbox.updateChange($e(safeToLoadMapId), false);
-            }
+                    //document.getElementById(safeToLoadMapId).value = status;
+                    //zkTxbox.updateChange($e(safeToLoadMapId), false);
+                    setTimeout(function(){
+                        var tbxTabSelection = $e('${safeToLoadMap.uuid}');
+                        var currentTime = new Date();
+                        tbxTabSelection.value = status;
+                        if (document.createEvent) {
+                        var evt = document.createEvent('HTMLEvents');
+                        evt.initEvent('blur',false,false);
+                        tbxTabSelection.dispatchEvent(evt);
+                        var evt2 = document.createEvent('HTMLEvents');
+                        evt2.initEvent('change',false,false);
+                        tbxTabSelection.dispatchEvent(evt2);
+                        }
+                        else if (document.createEventObject) {
+                        tbxTabSelection.fireEvent('onblur');
+                        tbxTabSelection.fireEvent('onchange');
+                        }
+                    }, 1000);
+                    }
         </script>
         <doublebox id="southReal" visible="false" />
         <doublebox id="northReal" visible="false" />
@@ -167,7 +184,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             function reloadSpecies() {
           //  return;
-            
+
             var tbxReloadLayers = $e('${tbxReloadLayers.uuid}');
         var currentTime = new Date();
         tbxReloadLayers.value = "z=" + map.zoom + "&amp;b=" + map.getExtent().toBBOX();
@@ -186,7 +203,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         }
       }
         function showInfo(curr) {
-            window.mapFrame.showInfo(curr); 
+            window.mapFrame.showInfo(curr);
         }
 
         function showInfoOne() {
@@ -196,7 +213,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
         <textbox id="tbxPrintHack" visible="false"/>
         <textbox id="tbxLayerLoaded" visible="false"/>
-        
+
         <!-- external content (Links) popup -->
         <window id="externalContentWindow" visible="false" width="80%"
                 height="80%" border="normal" sizable="true"
@@ -306,7 +323,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 </div>
             </north>
             <west 	style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
-                   id="menus" collapsible="true" 
+                   id="menus" collapsible="true"
                    splittable="true" minsize="250">
                 <div id="westChild">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
@@ -327,7 +344,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <div zclass="closebox" zindex="500" width="22px" top="5px">
                                 <toolbarbutton label="Help"
                                            sclass="helpButtonMain"
-                                           tooltiptext="ALA Spatial Portal Help" 
+                                           tooltiptext="ALA Spatial Portal Help"
                                            forward="onClick=onActivateLink()" >
                                 <!--<custom-attributes link="http://emii1.its.utas.edu.au/drupal/" />-->
                                     <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/species-maps-help/" />
@@ -487,7 +504,7 @@ border-left: none;
 border-right: none;
 border-bottom: none;
 }
-    
+
                                                     </style>
                                                     <grid id="cpGrid" width="280px" sclass="noborder" >
                                                         <rows>
@@ -849,7 +866,7 @@ border-bottom: none;
 
                                         </tabpanel>
 
-                                        <tabpanel  id="customData" visible="true" >
+                                        <tabpanel  id="customData" visible="false" >
                                             <div>
                                                 <fileupload id="btnFileUpload" maxsize="5000000" />
                                             </div>
@@ -926,7 +943,7 @@ border-bottom: none;
                         <button label="Download map" action="onclick: printHack('');" sclass="goButton"/>
                         <button id="reloadPortal" label="Reset map" sclass="goButton"/>
                     </div>
-                    
+
                     <div style="float:left" width="100%" height="100%" >
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame"  />
                     </div>
@@ -964,7 +981,7 @@ border-bottom: none;
                                 //hide map buttons
                                 var q = $e('${mapbuttons.uuid}');
                                 q.style.display="none";
-                                
+
                                 //hide north
                                 q = $e('${header.uuid}' + '!real');
                                 q.style.height="0px";
@@ -988,7 +1005,7 @@ border-bottom: none;
                                 w = n.style.height;
                                 val2 = w.substring(0,w.length-2)*1 + 68;
                                 n.style.height = val2 + "px";
-                                
+
                                 w = n.style.left;
                                 val = w.substring(0,w.length-2)*1 - diff;
                                 n.style.left =  val + "px";
@@ -1018,7 +1035,7 @@ border-bottom: none;
                             printing = true;
                             h1[i] = h1[i].substring(2,h1[i].length);
                             var h2 = h1[i].split(",");
-                            if(h2.length > 5){                           
+                            if(h2.length > 5){
                                 map.zoomToExtent(new OpenLayers.Bounds(h2[2],h2[3],h2[4],h2[5]),true);
 
                                 while(map.controls.length > 0){
@@ -1029,7 +1046,7 @@ border-bottom: none;
                                 window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
                             }
 
-                            if(h2.length > 7 && currentbaselayertxt != h2[7]) {                                
+                            if(h2.length > 7 && currentbaselayertxt != h2[7]) {
                                 changeBaseLayer(h2[7]);
                             }
 
@@ -1066,7 +1083,7 @@ border-bottom: none;
                                         }
                                     }
                                     vl[i].redraw(true);
-                                }                                
+                                }
                             }
 
                             //scale text?
@@ -1107,7 +1124,7 @@ border-bottom: none;
                 jQuery('.z-north').show();
                 jQuery('.z-south').show();
             }
-    
+
             ]]>
         </script>
 
@@ -1147,9 +1164,9 @@ function changeBaseLayer(type) {
 }
 
 function showSpeciesInfo(occids, lon, lat) {
-    window.mapFrame.showSpeciesInfo(occids, lon, lat); 
+    window.mapFrame.showSpeciesInfo(occids, lon, lat);
 }
-           
+
 
 
             ]]>
