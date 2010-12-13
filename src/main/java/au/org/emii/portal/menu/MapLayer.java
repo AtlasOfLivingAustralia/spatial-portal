@@ -2,16 +2,12 @@ package au.org.emii.portal.menu;
 
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
-import au.org.emii.portal.menu.TreeMenuValue;
-import au.org.emii.portal.menu.TreeMenuItem;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
-
-import au.org.emii.portal.userdata.UserMap;
 import org.apache.log4j.Logger;
 
 /**

@@ -28,20 +28,18 @@
 
 					<!--  static menu links -->
 					<div sclass="toplinks">
-						<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
+						<!-- zk forEach="${session.attributes.portalSession.staticMenuLinks}">
 
-							<!--  external links -->
 							<toolbarbutton if="${each.external}" label="${each.name}"
 								tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
 
-							<!--  internal links -->
 							<toolbarbutton if="${! each.external}" label="${each.name}"
 								tooltiptext="${each.description}" zclass="leftmenu_ahref"
 								forward="onClick=onActivateLink()">
 								<custom-attributes link="${each}" />
 							</toolbarbutton>
 
-						</zk>
+						</zk -->
 						
 						
 					</div>

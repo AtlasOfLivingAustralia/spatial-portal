@@ -3,8 +3,6 @@ package au.org.emii.portal.value;
 import au.org.emii.portal.aspect.CheckNotNull;
 import java.io.Serializable;
 
-import au.org.emii.portal.userdata.UserMap;
-
 public class BoundingBox implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = 1L;
@@ -12,9 +10,7 @@ public class BoundingBox implements Serializable, Cloneable {
 	private float maxLatitude = 0.0f;
 	private float minLongitude = 0.0f;
 	private float maxLongitude = 0.0f;
-	private long id;
-	private UserMap userMap = null;
-	
+	private long id;	
 	
 	public long getId() {
 		return id;
@@ -47,13 +43,6 @@ public class BoundingBox implements Serializable, Cloneable {
 	}
 	public void setMaxLongitude(float maxLongitude) {
 		this.maxLongitude = maxLongitude;
-	}
-	public UserMap getUserMap() {
-		return userMap;
-	}
-
-	public void setUserMap(UserMap userMap) {
-		this.userMap = userMap;
 	}
 
 	@CheckNotNull

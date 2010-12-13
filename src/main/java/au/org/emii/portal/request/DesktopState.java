@@ -4,7 +4,6 @@ import au.org.emii.portal.composer.LegendComposer;
 import java.util.ArrayList;
 import java.util.List;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayer;
 
 /**
  * Storage for objects we want to store per Desktop, not per session.

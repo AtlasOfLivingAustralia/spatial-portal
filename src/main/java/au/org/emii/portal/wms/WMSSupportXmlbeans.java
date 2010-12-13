@@ -1,6 +1,5 @@
 package au.org.emii.portal.wms;
 
-import au.org.emii.portal.net.HttpConnectionImpl;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.util.Sequence;
 import au.org.emii.portal.util.Validate;
@@ -9,15 +8,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import net.opengis.wms.LayerDocument;
 import net.opengis.wms.WMSCapabilitiesDocument;
 import net.opengis.wms.LayerDocument.Layer;
 import net.opengis.wms.StyleDocument.Style;
 import net.opengis.wms.WMSCapabilitiesDocument.WMSCapabilities;
-
 import org.apache.xmlbeans.XmlException;
-
 import au.org.emii.portal.config.xmlbeans.Discovery;
 import au.org.emii.portal.menu.MapLayerMetadata;
 

@@ -72,54 +72,6 @@ public class SamplingWCController extends UtilityComposer {
             layers = new Vector();
             layerdata = new Hashtable<String, String[]>();
 
-          /*  String[][] datas = new String[][]{
-                setupEnvironmentalLayers(),
-                setupContextualLayers()
-            };
-
-            lbenvlayers.setItemRenderer(new ListitemRenderer() {
-
-                @Override
-                public void render(Listitem li, Object data) {
-                    try {
-                        String layername = (String) data;
-                        li.setWidth(null);
-                        Listcell lc = new Listcell(layername);
-                        lc.setParent(li);
-
-                        // onclick event for popup content update
-                        lc.addEventListener("onClick", new EventListener() {
-
-                            @Override
-                            public void onEvent(Event event) throws Exception {
-                                showLayerExtents(event.getTarget());
-                            }
-                        });
-
-                    } catch (Exception e) {
-                        e.printStackTrace(System.out);
-                    }
-                }
-            });
-            groupLabels = new String[]{"Environmental", "Contextual"};
-            if (datas != null) {
-                lbenvlayers.setModel(new SimpleGroupsModel(datas, groupLabels));
-            }
-
-            // need to renderAll() as being a group list
-            // items hidden initially weren't being selected
-            // when selecting all layers without scrolling
-            lbenvlayers.renderAll();
-
-            // disable the checkboxes for the groups
-            List groups = lbenvlayers.getGroups();
-            Iterator<Listgroup> itGroups = groups.iterator();
-            while (itGroups.hasNext()) {
-                Listgroup lg = itGroups.next();
-                //System.out.println("ListGroup: " + lg.getLabel() + " - " + lg.isListenerAvailable("select", true));
-                lg.setCheckable(false);
-            }*/
-
             lbListLayers.init(mc, satServer, false);
         }catch(Exception e){
             e.printStackTrace();
@@ -225,7 +177,6 @@ public class SamplingWCController extends UtilityComposer {
 
     public void onDoInit(Event event) throws Exception {
         runsampling();
-        //Clients.showBusy("", false);
     }
 
     public void produce() {
@@ -233,8 +184,6 @@ public class SamplingWCController extends UtilityComposer {
     }
 
     public void onClick$btnPreview(Event event) {
-        //Clients.showBusy("Sampling...", true);
-        //Events.echoEvent("onDoInit", this, (event == null) ? null : event.toString());
         try{onDoInit(null);}catch(Exception e){}
     }
 
@@ -293,11 +242,6 @@ public class SamplingWCController extends UtilityComposer {
         try {
 
             String taxon = cleanTaxon();
-            // check if its a common name, if so, grab the scientific name
-            //if (rdoCommonSearch.isChecked()) {
-            //    taxon = getScientificName();
-            //}
-
             if (taxon == null || taxon.equals("")) {
                 Messagebox.show("Please select a species in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 //highlight step 1                
@@ -317,11 +261,7 @@ public class SamplingWCController extends UtilityComposer {
                     if (selectedLayers[i] == null) {
                         // seems to be null, shouldn't be, but let's ignore it
                         continue;
-                    }/* else if (ArrayUtils.contains(groupLabels, selectedLayers[i])) {
-                        // this must be the group header, let's ignore it
-                        continue;
-                    }*/
-
+                    }
                     sbenvsel.append(selectedLayers[i]);
                     if (i < selectedLayers.length-1) {
                         sbenvsel.append(":");
@@ -846,19 +786,6 @@ public class SamplingWCController extends UtilityComposer {
         if (layers != null) {
             lbListLayers.selectLayers(layers);
         }
-
-        /*//an area always exists;  validate the area box presence, check if area updated
-        String currentArea = mc.getSelectionArea();
-        if (currentArea.length() > 0) {
-        useArea.setDisabled(false);
-        if (!currentArea.equalsIgnoreCase(previousArea)) {
-        useArea.setChecked(true);
-        }
-        } else {
-        useArea.setDisabled(true);
-        useArea.setChecked(false);
-        }
-        previousArea = currentArea;*/
 
         lbListLayers.updateDistances();
     }

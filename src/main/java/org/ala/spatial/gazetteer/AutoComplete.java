@@ -1,6 +1,5 @@
 package org.ala.spatial.gazetteer;
 
-import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import org.zkoss.zul.Combobox;
@@ -19,16 +18,10 @@ import org.apache.http.HttpHost;
 import org.apache.http.protocol.BasicHttpContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Label;
-import org.zkoss.zul.Listcell;
-import org.zkoss.zul.Listitem;
 
 public class AutoComplete extends Combobox {
-    private String gazServer = null;//"http://spatial.ala.org.au";
+    private String gazServer = null;
 
     public AutoComplete() {
         refresh(""); //init the child comboitems
@@ -43,49 +36,7 @@ public class AutoComplete extends Combobox {
     @Override
     public void setValue(String value) {
         super.setValue(value);
-        //refresh(value); //refresh the child comboitems
     }
-
-    /*
-    public void onSelect(Event event) {
-        if(gazServer == null && this.getParent() != null){
-                SettingsSupplementary settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
-                System.out.println("AC got SS: " + settingsSupplementary);
-                gazServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-        }        
-        if(gazServer == null){
-            return;
-        }
-
-          String label = null;
-            String entity = null;
-            MapLayer mapLayer = null;
-
-            //get the entity value from the button id
-          //  entity = event.getData().toString(); // getTarget().getId();
-            Comboitem item = this.getSelectedItem();
-           //Listcell lc  = (Listcell)(item.getFirstChild());
-            
-            //avoid error seen when occasionally changing tabs
-            if(item == null || item.getValue() == null){
-                return;
-            }
-          label = item.getValue().toString(); //lc.getLabel();
-//         try {
-//          Messagebox.show(label);
-//         }
-//         catch (Exception e) {}
-//            Label ln = (Label) event.getTarget().getFellow("ln" + entity);
-//            label = ln.getValue();
-
-            //get the current MapComposer instance
-            MapComposer mc = getThisMapComposer();
-
-            //add feature to the map as a new layer
-            mapLayer = mc.addGeoJSON(item.getLabel(), gazServer + label);
-    }
-     * 
-     */
     
      /**
      * Gets the main pages controller so we can add a
@@ -191,9 +142,7 @@ public class AutoComplete extends Combobox {
 
         } catch (Exception e) {
 
-        }
-
-        
+        }        
     }
 
 }

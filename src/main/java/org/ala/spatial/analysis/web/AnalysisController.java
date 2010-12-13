@@ -10,10 +10,6 @@ import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
-import org.zkoss.zul.Window;
-import org.ala.spatial.analysis.web.SamplingWCController;
-import org.ala.spatial.analysis.web.MaxentWCController;
-import org.ala.spatial.analysis.web.ALOCWCController;
 import org.zkoss.zk.ui.event.ForwardEvent;
 
 /**

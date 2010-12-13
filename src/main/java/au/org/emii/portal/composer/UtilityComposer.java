@@ -1,7 +1,6 @@
 package au.org.emii.portal.composer;
 
 import au.org.emii.portal.util.Validate;
-import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;

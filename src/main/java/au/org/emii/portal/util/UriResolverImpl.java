@@ -6,8 +6,6 @@
 package au.org.emii.portal.util;
 
 import au.org.emii.portal.config.xmlbeans.AbstractService;
-import au.org.emii.portal.config.xmlbeans.MestAccountManager;
-import au.org.emii.portal.config.xmlbeans.SearchCatalogue;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,22 +68,4 @@ public class UriResolverImpl implements UriResolver {
     public String resolve(AbstractService service) {
         return (service.getUri() == null) ? resolve(service.getUriIdRef()) : service.getUri();
     }
-
-    /**
-     * Resolve the URI used in an SearchCatalogue
-     * @param service service to be inspected
-     * @return the URI to use - if a real URI has been provided this will be
-     * used otherwise the uriId will be looked up in the mapping list
-     */
-    @Override
-    public String resolve(SearchCatalogue searchCatalogue) {
-        return (searchCatalogue.getUri() == null) ? resolve(searchCatalogue.getUriIdRef()) : searchCatalogue.getUri();
-    }
-
-    @Override
-    public String resolve(MestAccountManager mestAccountManager) {
-        return (mestAccountManager.getUri() == null) ?
-            resolve(mestAccountManager.getUriIdRef()) : mestAccountManager.getUri();
-    }
-
 }

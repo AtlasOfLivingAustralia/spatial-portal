@@ -31,7 +31,19 @@ Initial log4j configuration file - will be replaced at runtime
     <logger name="org.springframework">
         <level value="warn"/>
     </logger>
-    <root> 
+    <logger name="org.apache.commons.httpclient">
+        <level value="error"/>
+    </logger>
+    <logger name="httpclient.wire">
+        <level value="fatal"/>
+    </logger>
+    <logger name="httpclient.httpconnection">
+        <level value="fatal"/>
+    </logger>
+    <logger name="httpclient.httpmethodbase">
+        <level value="fatal"/>
+    </logger>
+    <root>
         <priority value ="debug" />
         <appender-ref ref="console" />
         <!--  <appender-ref ref="email" /> -->

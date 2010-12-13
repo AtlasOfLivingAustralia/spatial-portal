@@ -20,7 +20,6 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
-
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.xml.parsers.DocumentBuilder;
@@ -320,18 +319,6 @@ public class SelectionController extends UtilityComposer {
             setInstructions(null, null);
             showPolygonInfo();
 
-            /* current view to be re-calculated on use
-            BoundingBox bb = getMapComposer().getLeftmenuSearchComposer().getViewportBoundingBox();
-
-            wkt = "POLYGON(("
-            + bb.getMinLongitude() + " " + bb.getMinLatitude() + ","
-            + bb.getMinLongitude() + " " + bb.getMaxLatitude() + ","
-            + bb.getMaxLongitude() + " " + bb.getMaxLatitude() + ","
-            + bb.getMaxLongitude() + " " + bb.getMinLatitude() + ","
-            + bb.getMinLongitude() + " " + bb.getMinLatitude() + "))";
-            
-            displayGeom.setValue(wkt);
-            MapLayer mapLayer = getMapComposer().addWKTLayer(displayGeom.getValue(),"Active Area"); */
             wkt = "CURRENTVIEW()";
             displayGeom.setValue(wkt);
 
@@ -368,13 +355,8 @@ public class SelectionController extends UtilityComposer {
 
         if (mc.safeToPerformMapAction()) {
             if ((selectionLayer != null)) {
-                //  selectionLayer.setDisplayed(false);
-                //selectionLayer.
                 System.out.println("removing Active Area layer");
-                //mc.deactiveLayer(selectionLayer, true,false);
                 return mc.getOpenLayersJavascript().removeMapLayer(selectionLayer);
-                //mc.getOpenLayersJavascript().execute(script);
-                //mc.removeLayer("Area Selection");
             } else {
                 return "";
             }
@@ -444,9 +426,6 @@ public class SelectionController extends UtilityComposer {
                 }
             }
         }
-      //  String script = "window.mapFrame.removePointSearch();";
-       // mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        
     }
 
     /**
@@ -489,9 +468,6 @@ public class SelectionController extends UtilityComposer {
                     lsids += "&";
                 }
             }
-
-            //lsids = URLEncoder.encode(lsids, "UTF-8");
-            //lsidtypes = URLEncoder.encode(lsidtypes, "UTF-8");
 
             // /geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=topp%3Atasmania_state_boundaries,topp%3Atasmania_roads,topp%3Atasmania_cities,topp%3Atasmania_water_bodies&QUERY_LAYERS=topp%3Atasmania_state_boundaries,topp%3Atasmania_roads,topp%3Atasmania_cities,topp%3Atasmania_water_bodies&STYLES=,,,&BBOX=140.5315%2C-44.423%2C151.7815%2C-38.798&FEATURE_COUNT=10&HEIGHT=256&WIDTH=512&FORMAT=image%2Fgif&INFO_FORMAT=text%2Fhtml&SRS=EPSG%3A4326&X=306&Y=134
             geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
@@ -680,17 +656,6 @@ public class SelectionController extends UtilityComposer {
 
     public void onClick$btnShowSpecies() {
         openResults();
-        /*
-        if (selectionGeom.getValue() != ""
-        && !selectionGeom.getValue().contains("NaN NaN")) {
-        Clients.showBusy("Filtering species, please wait...", true);
-        Events.echoEvent("showSpeciesPoly", this, displayGeom.getValue());
-        }
-        else if(boxGeom.getValue() != ""
-        && !boxGeom.getValue().contains("NaN NaN")) {
-        Clients.showBusy("Filtering species, please wait...", true);
-        Events.echoEvent("showSpecies", this, displayGeom.getValue());
-        }*/
     }
 
     public void showSpecies(Event event) throws Exception {
@@ -738,17 +703,6 @@ public class SelectionController extends UtilityComposer {
 //            String response = POSTRequest(baseQueryXML);
         } catch (Exception e) {
         }
-//        String baseQueryXML = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\" xmlns:topp=\"http://www.openplans.org/topp\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd\"> <wfs:Query typeName=\"ALA:occurrences\"> <wfs:PropertyName>ALA:scientificname</wfs:PropertyName>";
-//        String filterPart = "<ogc:Filter><Intersects><PropertyName>the_geom</PropertyName><gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:coordinates cs=\" \" decimal=\".\" ts=\",\">COORDINATES</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></Intersects></ogc:Filter></wfs:Query></wfs:GetFeature>";
-//        String coordinateString = selectionGeom.replace("POLYGON", "").replace(")", "").replace("(", "");
-//        String request = baseQueryXML + filterPart.replace("COORDINATES", coordinateString);
-//        try {
-//            Messagebox.show(request);
-//            String response = POSTRequest(request);
-//            // Messagebox.show(response);
-//
-//        } catch (Exception e) { //FIXME
-//        }
     }
 
     /**

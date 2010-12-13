@@ -2,10 +2,7 @@ package au.org.emii.portal.menu;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
 
 public class AnimationSelection implements Serializable {
 

@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -295,6 +294,4 @@ class StreamReaderThread implements Runnable {
             e.printStackTrace();
         }
     }
-
-
 }

@@ -6,8 +6,6 @@
 
 package au.org.emii.portal.util;
 
-import java.util.Properties;
-
 /**
  *
  * @author geoff

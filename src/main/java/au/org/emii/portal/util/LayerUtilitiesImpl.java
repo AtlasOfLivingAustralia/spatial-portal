@@ -2,12 +2,9 @@ package au.org.emii.portal.util;
 
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.net.HttpConnection;
-import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.UnsupportedEncodingException;
-import java.io.InputStream;
-import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.BreakIterator;
@@ -15,35 +12,19 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
-import au.org.emii.portal.net.HttpConnectionImpl;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import net.opengis.wms.BoundingBoxDocument.BoundingBox;
-
 import org.apache.log4j.Logger;
-import org.apache.xmlbeans.XmlException;
 import org.springframework.beans.factory.annotation.Required;
-
-import net.opengis.wms.LayerDocument;
-import net.opengis.wms.WMSCapabilitiesDocument;
-import net.opengis.wms.LayerDocument.Layer;
-import net.opengis.wms.StyleDocument.Style;
-import net.opengis.wms.WMSCapabilitiesDocument.WMSCapabilities;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 

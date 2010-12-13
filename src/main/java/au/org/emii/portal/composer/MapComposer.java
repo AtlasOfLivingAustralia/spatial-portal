@@ -4,12 +4,9 @@ import au.org.emii.portal.databinding.ActiveLayerRenderer;
 import au.org.emii.portal.request.DesktopState;
 import au.org.emii.portal.databinding.EmptyActiveLayersRenderer;
 import au.org.emii.portal.net.HttpConnection;
-import au.org.emii.portal.wms.ImageTester;
 import au.org.emii.portal.menu.Link;
 import au.org.emii.portal.motd.MOTD;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.databinding.MapLayerItemRenderer;
-import au.org.emii.portal.menu.MenuItem;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.wms.RemoteMap;
@@ -18,10 +15,6 @@ import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.session.PortalUser;
-import au.org.emii.portal.userdata.DaoRegistry;
-import au.org.emii.portal.userdata.UserDataDao;
-import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
@@ -148,13 +141,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /*
      * User data object to allow for the saving of maps and searches
      */
-    private UserDataDao userDataManager = null;
     private LanguagePack languagePack = null;
     private MOTD motd = null;
     private OpenLayersJavascript openLayersJavascript = null;
     private HttpConnection httpConnection = null;
-    private ImageTester imageTester = null;
-    private MapLayerItemRenderer mapLayerItemRenderer = null;
     private ActiveLayerRenderer activeLayerRenderer = null;
     private PortalSessionUtilities portalSessionUtilities = null;
     private Settings settings = null;
@@ -178,19 +168,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     String tbxLayerLoaded;
     HashMap<String, EventListener> layerLoadedChangeEvents = new HashMap<String, EventListener>();
-
-    public UserDataDao getUserDataManager() {
-        if (userDataManager == null) {
-            userDataManager = DaoRegistry.getUserDataDao();
-        }
-
-        return userDataManager;
-
-    }
-
-    public void setUserDataManager(UserDataDaoImpl userDataManager) {
-        this.userDataManager = userDataManager;
-    }
 
     private void motd() {
         if (motd.isMotdEnabled()) {
@@ -539,24 +516,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activeLayersList.setSelectedIndex(index);
 
     }
-
-    public void activateMenuItem(MenuItem item) {
-        logger.debug("activate MenuItem: " + item.getId());
-        if (item.isValueMapLayerInstance()) {
-            activateLayer(item.getValueAsMapLayer(), true);
-        } else if (item.isValueLinkInstance()) {
-            activateLink(item.getValueAsLink());
-        } else if (!item.isValueSet()) {
-            logger.info(
-                    "Can't activate menu item - null value instance");
-
-        } else {
-            logger.info(
-                    "Can't activate menu item - unsupported value type: "
-                    + String.valueOf(item.getValue()));
-        }
-    }
-
     
     public void activateLink(String uri, String label, boolean isExternal) {
         if (isExternal) {
@@ -803,35 +762,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Show message for broken wms server
-     * @param rm
-     */
-    public void errorMessageBrokenWMSServer(RemoteMap rm) {
-        showMessage(
-                languagePack.getLang("wms_server_added_error"),
-                rm.getDiscoveryErrorMessageSimple(),
-                rm.getDiscoveryErrorMessage(),
-                "Link to WMS server",
-                rm.getLastUriAttempted(),
-                "Raw data from location",
-                httpConnection.readRawData(rm.getLastUriAttempted()));
-    }
-
-    /**
-     * Show message for broken WMS layer
-     */
-    public void errorMessageBrokenWMSLayer(ImageTester it) {
-        showMessage(
-                languagePack.getLang("wms_layer_added_error"),
-                it.getErrorMessageSimple(),
-                it.getErrorMessage(),
-                "Link to test image",
-                it.getLastUriAttempted(),
-                "Raw image data",
-                httpConnection.readRawData(it.getLastUriAttempted()));
-    }
-
-    /**
      * This is a fixed size (because of zk limitations) message
      * dialogue featuring:
      * 	o	title
@@ -920,14 +850,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      *
      */
     public void addUserDefinedLayerToMenu(MapLayer mapLayer, boolean activate) {
-        if (safeToPerformMapAction()) {
-            PortalSession portalSession = getPortalSession();
-            MenuItem menuItem = portalSessionUtilities.addUserDefinedMapLayer(portalSession, mapLayer);
-
-            //if (portalSession.isDisplayingUserDefinedMenuTree()) {
-            //    logger.debug("user defined menu is being displayed - updating menus");
-                
-            //} else if (activate) {
+        if (safeToPerformMapAction()) {  
                 // activate the layer in openlayers and display in active layers without
                 // updating the tree (because its not displayed)
                 activateLayer(mapLayer, true, true);
@@ -935,11 +858,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 // we must tell any future tree menus that the map layer is already
                 // displayed as we didn't use changeSelection()
                 mapLayer.setListedInActiveLayers(true);
-                //mapLayer.setQueryable(_visible);
-            //}
 
             logger.debug("leaving addUserDefinedLayerToMenu");
-            //updateUserDefinedView();
         }
     }
 
@@ -1022,7 +942,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer.setDefaultStyleLegendUri(uri);
                 if (mapLayer == null) {
                     // fail
-                    errorMessageBrokenWMSLayer(imageTester);
+                    //errorMessageBrokenWMSLayer(imageTester);
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
@@ -1060,7 +980,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
                 if (mapLayer == null) {
                     // fail
-                    errorMessageBrokenWMSLayer(imageTester);
+                    //errorMessageBrokenWMSLayer(imageTester);
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
@@ -1113,7 +1033,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer.setBaseLayer(false);
                 if (mapLayer == null) {
                     // fail
-                    errorMessageBrokenWMSLayer(imageTester);
+                    //errorMessageBrokenWMSLayer(imageTester);
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
@@ -2199,7 +2119,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     void reloadPortal() {
         // grab the portaluser instance so that logged in users stay logged in...
         PortalSession portalSession = getPortalSession();
-        PortalUser portalUser = portalSession.getPortalUser();
+        //PortalUser portalUser = portalSession.getPortalUser();
 
         // create a new session from the master session
         SessionInit sessionInit = new SessionInitImpl();
@@ -2220,7 +2140,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         } else {
             // all good - put the portal user back in, then force a page reload
-            portalSession.setPortalUser(portalUser);
+            //portalSession.setPortalUser(portalUser);
             Executions.getCurrent().sendRedirect(null);
         }
     }
@@ -2847,22 +2767,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void setRemoteMap(RemoteMap remoteMap) {
         this.remoteMap = remoteMap;
-    }
-
-    public ImageTester getImageTester() {
-        return imageTester;
-    }
-
-    public void setImageTester(ImageTester imageTester) {
-        this.imageTester = imageTester;
-    }
-
-    public MapLayerItemRenderer getMapLayerItemRenderer() {
-        return mapLayerItemRenderer;
-    }
-
-    public void setMapLayerItemRenderer(MapLayerItemRenderer mapLayerItemRenderer) {
-        this.mapLayerItemRenderer = mapLayerItemRenderer;
     }
 
     public ActiveLayerRenderer getActiveLayerRenderer() {

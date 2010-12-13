@@ -52,34 +52,4 @@
 
         </html>
 </div>
-
-<div>
-<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
-
-			<!--  external links -->
-			<span sclass="list">
-			<toolbarbutton
-				if="${each.external}"
-				label="${each.name}"
-				tooltiptext="${each.description}"
-				zclass="external"
-				href="${each.uri}"
-				orient="vertical"
-                                visible="false" />
-			</span>
-			<!--  internal links -->
-			<toolbarbutton
-				if="${! each.external}"
-				label="${each.name}"
-				tooltiptext="${each.description}"
-				zclass="list"
-				forward="onClick=${mapPortalPage}.onActivateLink"
-                                visible="false" >
-				<custom-attributes link="${each}" />
-			</toolbarbutton>
-
-
-
-	</zk>
-</div>
 </zk>

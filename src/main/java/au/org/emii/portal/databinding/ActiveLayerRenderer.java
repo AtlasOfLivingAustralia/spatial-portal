@@ -6,13 +6,10 @@ import au.org.emii.portal.event.ActiveLayersInfoEventListener;
 import au.org.emii.portal.event.ActiveLayersLegendEventListener;
 import au.org.emii.portal.event.ActiveLayersRemoveEventListener;
 import au.org.emii.portal.event.ActiveLayersZoomExtentEventListener;
-import au.org.emii.portal.util.LayerUtilitiesImpl;
-import au.org.emii.portal.event.LegendClickEventListener;
 import au.org.emii.portal.event.LegendTooltipOpenEventListener;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.event.VisibilityToggleEventListener;
 import au.org.emii.portal.lang.LanguagePack;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Checkbox;
@@ -130,7 +127,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 			Popup popup = (Popup) Executions.createComponents("/WEB-INF/zul/LegendPopup.zul", legend.getRoot(), null);	
 			popup.addEventListener("onOpen", new LegendTooltipOpenEventListener(layer));
 			legend.setTooltip(popup);
-			//legend.addEventListener("onClick", new LegendClickEventListener(layer));
                         legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
                         legend.setTooltiptext("View/edit the legend");
 

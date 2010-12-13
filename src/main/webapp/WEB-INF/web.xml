@@ -43,6 +43,10 @@
         <servlet-name>zkLoader</servlet-name>
         <url-pattern>*.zul</url-pattern>
     </servlet-mapping>
+        <servlet-mapping>
+          <servlet-name>zkLoader</servlet-name>
+          <url-pattern>/zk/*</url-pattern>
+    </servlet-mapping>    
     <servlet-mapping>
         <servlet-name>zkLoader</servlet-name>
         <url-pattern>*.zhtml</url-pattern>
@@ -50,7 +54,7 @@
     <servlet-mapping>
         <servlet-name>auEngine</servlet-name>
         <url-pattern>/zkau/*</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping>    
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
         <welcome-file>index.htm</welcome-file>
@@ -75,16 +79,6 @@
         <url-pattern>/RemoteRequest</url-pattern>
     </servlet-mapping>
     <servlet>
-        <description>Retrieve a depth or altitude from the database</description>
-        <display-name>DepthServlet</display-name>
-        <servlet-name>DepthServlet</servlet-name>
-        <servlet-class>au.org.emii.portal.servlet.DepthServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>DepthServlet</servlet-name>
-        <url-pattern>/DepthServlet</url-pattern>
-    </servlet-mapping>
-    <servlet>
         <display-name>UserMachine</display-name>
         <servlet-name>userMachine</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
@@ -92,5 +86,5 @@
     <servlet-mapping>
         <servlet-name>userMachine</servlet-name>
         <url-pattern>/UserMachine</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping>    
 </web-app>

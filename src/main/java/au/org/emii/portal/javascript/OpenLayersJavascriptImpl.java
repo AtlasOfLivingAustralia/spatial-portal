@@ -9,13 +9,8 @@ import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
 import java.util.List;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.util.Clients;
 

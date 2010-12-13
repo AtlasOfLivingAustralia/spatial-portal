@@ -3,26 +3,6 @@
  * and open the template in the editor.
  */
 
-
-/**
- *
- *
- *
- * this is the javascipt function we need to add this to the map
- *
- *
- *
- * var options = {numZoomLevels: 3};
-
-    var graphic = new OpenLayers.Layer.Image(
-        'City Lights',
-        'http://earthtrends.wri.org/images/maps/4_m_citylights_lg.gif',
-        new OpenLayers.Bounds(-180, -88.759, 180, 88.759),
-        new OpenLayers.Size(580, 288),
-        options
-    );
- */
-
 package au.org.emii.portal.wms;
 
 /**

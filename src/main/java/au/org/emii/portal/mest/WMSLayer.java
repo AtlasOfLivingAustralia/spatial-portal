@@ -1,12 +1,5 @@
 package au.org.emii.portal.mest;
 
-import java.util.*;
-import org.jaxen.jdom.JDOMXPath;
-import org.jdom.*;
-import org.jdom.Document;
-import org.jdom.Namespace;
-import org.jdom.input.SAXBuilder;
-
 /**
  *
  * @author war398

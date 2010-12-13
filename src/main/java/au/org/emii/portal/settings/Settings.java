@@ -6,9 +6,6 @@
 package au.org.emii.portal.settings;
 
 import au.org.emii.portal.value.BoundingBox;
-import au.org.emii.portal.mest.MestConfiguration;
-import au.org.emii.portal.value.SearchCatalogue;
-import java.util.Map;
 
 /**
  *
@@ -27,8 +24,6 @@ public interface Settings {
     public int getConfigRereadInterval();
 
     public BoundingBox getDefaultBoundingBox();
-
-    public Map<String, MestConfiguration> getMestConfigurations();
 
     public int getNetConnectSlowTimeout();
 
@@ -70,8 +65,6 @@ public interface Settings {
 
     public void setDisableDepthServlet(boolean disableDepthServlet);
 
-    public void setMestConfigurations(Map<String, MestConfiguration> mestConfigurations);
-
     public void setNetConnectSlowTimeout(int netConnectSlowTimeout);
 
     public void setNetConnectTimeout(int netConnectTimeout);
@@ -103,55 +96,6 @@ public interface Settings {
     public String getPortalName();
 
     public void setPortalName(String portalName);
-
-
-    public boolean isDisableAdminConsole();
-
-    public void setDisableAdminConsole(boolean disableAdminConsole);
-
-    public boolean isDisableFacility();
-
-    public void setDisableFacility(boolean disableFacility);
-
-    public boolean isDisableLayers();
-
-    public void setDisableLayers(boolean disableLayers);
-
-    public boolean isDisableLinks();
-
-    public void setDisableLinks(boolean disableLinks);
-
-    public boolean isDisablePortalUsers();
-
-    public void setDisablePortalUsers(boolean disablePortalUsers);
-
-    public boolean isDisableRealtime();
-
-    public void setDisableRealtime(boolean disableRealtime);
-
-    public boolean isDisableRegion();
-
-    public void setDisableRegion(boolean disableRegion);
-
-    public boolean isDisableGazetteer();
-
-    public void setDisableGazetteer(boolean disableGazetteer);
-
-    public boolean isDisableSearch();
-
-    public void setDisableSearch(boolean disableSearch);
-
-    public boolean isDisableUserDefined();
-
-    public void setDisableUserDefined(boolean disableUserDefined);
-
-    public boolean isDisableTopLinks();
-
-    public void setDisableTopLinks(boolean disableTopLinks);
-
-    public Map<String, SearchCatalogue> getSearchCatalogues();
-
-    public void setSearchCatalogues(Map<String, SearchCatalogue> searchCatalogues);
 
     public String getConfigPath();
 

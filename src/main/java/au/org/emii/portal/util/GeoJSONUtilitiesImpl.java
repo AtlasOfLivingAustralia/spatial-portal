@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Vector;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -62,68 +60,8 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
 
     }
 
-    private String cleanUpJson(String json) {
-        JSONObject obj = JSONObject.fromObject(json);
-
-        JSONObject prototype = null;
-        int objType = type(obj.getString("type"));
-
-        switch (objType) {
-            case FEATURE:
-                prototype = obj;
-                JSONObject objGeom = prototype.getJSONObject("geometry");
-                objType = type(objGeom.getString("type"));
-
-                break;
-
-            case FEATURECOLLECTION:
-
-                if (!obj.containsKey("features")) {
-                    logger.debug("no features in this geoJSON object");
-                }
-
-                try {
-                    Vector<JSONObject> vBadFeatures = new Vector<JSONObject>();
-                    prototype = obj.getJSONArray("features").getJSONObject(0);
-
-                    int countFeatures = obj.getJSONArray("features").size();
-                    logger.debug("Iterating thru' " + countFeatures + " features");
-                    for (int i = 0; i < countFeatures; i++) {
-                        JSONObject o = obj.getJSONArray("features").getJSONObject(i);
-                        JSONObject og = o.getJSONObject("geometry");
-                        if (og.isNullObject()) {
-                            vBadFeatures.add(o);
-                        }
-                    }
-
-                    // now remove the bad features
-                    logger.debug("removing " + vBadFeatures.size() + " bad features");
-                    Iterator it = vBadFeatures.iterator();
-                    while (it.hasNext()) {
-                        obj.getJSONArray("features").remove(it.next());
-                    }
-
-                    logger.debug("now the clean json:" + obj.getJSONArray("features").size());
-
-                } catch (IndexOutOfBoundsException ioex) {
-                    //no mappable features found
-                    objType = -1;
-                }
-
-                break;
-
-            default:
-                logger.debug("Object must be feature or feature collection");
-        }
-
-        return obj.toString(0);
-
-    }
-
     @Override
     public int getFirstFeatureType(JSONObject obj) {
-
-
         JSONObject prototype = null;
         int objType = type(obj.getString("type"));
 

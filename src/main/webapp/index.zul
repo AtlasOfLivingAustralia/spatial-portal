@@ -84,8 +84,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <!-- external content (Links) popup -->
         <window id="externalContentWindow" visible="false" width="80%"
                 height="80%" border="normal" sizable="true"
-                use="au.org.emii.portal.composer.ExternalContentComposer"
-                apply="au.org.emii.portal.composer.ExternalContentComposer">
+                use="au.org.emii.portal.composer.ExternalContentComposer" >
             <caption id="caption">
                 <toolbarbutton id="reset" label="Reset Window" />
                 <toolbarbutton id="breakout" label="Open in new Window" target="_blank" />
@@ -102,19 +101,17 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     <!--  top right menu links -->
                     <div sclass="toplinks">                       
 
-                        <zk forEach="${session.attributes.portalSession.staticMenuLinks}" if="${! settings.disableTopLinks}">
+                        <!-- zk forEach="${session.attributes.portalSession.staticMenuLinks}" if="${! settings.disableTopLinks}">
 
-                            <!--  external links -->
                             <toolbarbutton if="${each.external}" label="${each.name}"
                                            tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
 
-                            <!--  internal links -->
                             <toolbarbutton id="buttonforsomething" if="${! each.external}" label="${each.name}"
                                            tooltiptext="${each.description}" zclass="leftmenu_ahref"
                                            forward="onClick=onActivateLink()" >
                                 <custom-attributes link="${each}" />
                             </toolbarbutton>
-                        </zk>
+                        </zk -->
                     </div>
 
                     <label sclass="tmpHeader" value="Explore the Spatial Portal" visible="false" />
@@ -160,7 +157,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <tabs>
                                     <tab id="startNavigationTab" label="Start" />
                                     <tab id="mapNavigationTab" label="Map" />
-                                    <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
+                                    <tab id="linkNavigationTab" label="Analysis" />
                                 </tabs>
                             </tabbox>
                         </div>

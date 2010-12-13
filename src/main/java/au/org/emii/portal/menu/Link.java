@@ -1,8 +1,6 @@
 package au.org.emii.portal.menu;
 
 import au.org.emii.portal.value.AbstractIdentifierImpl;
-import au.org.emii.portal.menu.TreeMenuValue;
-import au.org.emii.portal.menu.TreeMenuItem;
 import java.util.List;
 import au.org.emii.portal.config.xmlbeans.StaticLink;
 

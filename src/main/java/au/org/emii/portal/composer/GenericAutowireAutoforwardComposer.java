@@ -60,7 +60,7 @@ public abstract class GenericAutowireAutoforwardComposer extends Window implemen
     }
 
     public void setPortalSession(PortalSession portalSession) {
-        logger.debug("portal session updated");
+        logger.debug("portal session updated for: " + this.getClass().getName());
         Sessions.getCurrent().setAttribute(SessionInitImpl.PORTAL_SESSION_ATTRIBUTE, portalSession);
     }
 
