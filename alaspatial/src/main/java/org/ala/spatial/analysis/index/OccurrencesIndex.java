@@ -3738,7 +3738,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             //mask out
             for(IndexedRecord ir : irs) {
                 int start = ir.record_start - recordstart;
-                if(start < recordstart) start = 0;
+                if(start < 0) start = 0;
                 
                 int end = ir.record_end - recordstart;                
                 if(end >= recordend) end = recordend;
