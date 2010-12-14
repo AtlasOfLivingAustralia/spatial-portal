@@ -49,8 +49,6 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         String wkt = "";
         String layer = "";
         String layers = "";
-       
-
 
         if (getRequest().getAttributes().containsKey("q")) {
             String[] pieces = getRequest().getAttributes().get("q").toString().split("&");
@@ -123,12 +121,17 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         //normal search query
         if (q.compareTo("") != 0) {
             Search searchObj;
+            //+, _ and space (%20) all get converted into cql and statements
+            q = q.replace("+", "* AND ");
+            q = q.replace("%20", "* AND ");
+            q = q.replace("_", "* AND ");
+            
             if (layers_arr.length > 0) {
-                searchObj = new Search(q.replace("+", "* AND ") + "*", layers_arr);
+                searchObj = new Search(q + "*", layers_arr);
             } else {
                 //we need to search default layers ...
                 GazetteerConfig gc = new GazetteerConfig();
-                searchObj = new Search(q.replace("+", "* AND ") + "*", gc.getDefaultLayerNames().toArray(new String[gc.getDefaultLayerNames().size()]));
+                searchObj = new Search(q + "*", gc.getDefaultLayerNames().toArray(new String[gc.getDefaultLayerNames().size()]));
             }
             xstream.processAnnotations(Search.class);
             String xmlString = xstream.toXML(searchObj);

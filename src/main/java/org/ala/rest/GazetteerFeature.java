@@ -3,6 +3,7 @@ package org.ala.rest;
 import com.vividsolutions.jts.geom.Geometry;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -85,7 +86,7 @@ public class GazetteerFeature {
             searchTerms += " " + idAttribute2;
         }
 
-        Search search = new Search(searchTerms, layers);
+        Search search = new Search(searchTerms, layers, "id");
         ArrayList<SearchResultItem> results = search.getResults();
         if (results.size() == 0) {
             logger.severe("No results returned - this isn't great");
@@ -162,12 +163,12 @@ public class GazetteerFeature {
                             Double maxy = new Double(bb.getMaxY());
 
                             if (maxx.compareTo(minx) == 0 && maxy.compareTo(miny) == 0){
-                                String point = "(" + miny.toString() + "," + minx.toString() + ")";
+                                String point = "(" + strRoundDouble(miny) + "," + strRoundDouble(minx) + ")";
                                 this.basic_properties.put("Point", point);
                                 logger.info("Point is: " + point);
                             }
                             else{
-                                String boundingBox = "((" + miny.toString() + "," + minx.toString() + "),(" + maxy.toString() + "," + maxx.toString() + "))";
+                                String boundingBox = "((" + strRoundDouble(miny) + "," + strRoundDouble(minx) + "),(" + strRoundDouble(maxy) + "," + strRoundDouble(maxx) + "))";
                                 this.basic_properties.put("Bounding_Box", boundingBox);
                                 logger.info("Bounding box is: " + boundingBox);
                             }
@@ -208,4 +209,16 @@ public class GazetteerFeature {
         map.put("geometries", this.geometries);
         return map;
     }
+
+    /**
+     * Returns a string representation of a Double to four decimal places
+     * @param inValue
+     * @return
+     */
+    public String strRoundDouble(Double inValue){
+        DecimalFormat fourDec = new DecimalFormat("0.0000");
+        fourDec.setGroupingUsed(false);
+        return fourDec.format(inValue.doubleValue());
 }
+}
+

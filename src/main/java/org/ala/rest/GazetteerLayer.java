@@ -92,14 +92,8 @@ public class GazetteerLayer {
         logger.finer("fetching layer properties for " + layerName);
         LayerInfo layerInfo = catalog.getLayerByName(layerName);
         layerMap.put("layer_name", layerInfo.getName());
-        layerMap.put("enabled", new Boolean(layerInfo.enabled()).toString());
-        layerMap.put("type", layerInfo.getType().toString());
         layerMap.put("alias", gc.getLayerAlias(layerName));
         layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
-        layerMap.put("idAttribute1", gc.getIdAttribute1Name(layerName));
-        if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
-            layerMap.put("idAttribute2", gc.getIdAttribute2Name(layerName));
-        }
     }
 
     public Map getMap() {

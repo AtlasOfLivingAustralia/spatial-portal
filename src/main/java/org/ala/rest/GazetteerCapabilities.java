@@ -22,7 +22,8 @@ import org.geotools.util.logging.Logging;
 public class GazetteerCapabilities {
 
     private static final Logger logger = Logging.getLogger("org.ala.rest.GazetteerCapabilities");
-    Map layersMap = new HashMap();
+    //Map layersMap = new HashMap();
+    ArrayList<Map> layers = new ArrayList<Map>();
     GazetteerConfig gc = new GazetteerConfig();
     GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
     ServletContext sc = GeoServerExtensions.bean(ServletContext.class);
@@ -31,20 +32,19 @@ public class GazetteerCapabilities {
     public GazetteerCapabilities() {
 
         ArrayList<String> layerNames = (ArrayList<String>) gc.getLayerNames();
+
+
         for (String layerName : layerNames) {
-            Map layerMap = new HashMap();
-            logger.finer("fetching layer properties for " + layerName);
             LayerInfo layerInfo = catalog.getLayerByName(layerName);
-            layerMap.put("layer_name", layerInfo.getName());
-            layerMap.put("enabled", new Boolean(layerInfo.enabled()).toString());
-            layerMap.put("type", layerInfo.getType().toString());
-            layerMap.put("alias", gc.getLayerAlias(layerName));
-            layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
-            layerMap.put("idAttribute1", gc.getIdAttribute1Name(layerName));
-            if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
-                layerMap.put("idAttribute2", gc.getIdAttribute2Name(layerName));
+            //only care about enabled layers
+            if (layerInfo.enabled()) {
+                Map layerMap = new HashMap();
+                logger.finer("fetching layer properties for " + layerName);
+                layerMap.put("layer_name", layerInfo.getName());
+                layerMap.put("alias", gc.getLayerAlias(layerName));
+                layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
+                layers.add(layerMap);
             }
-            layersMap.put(layerName, layerMap);
         }
     }
 
@@ -52,7 +52,7 @@ public class GazetteerCapabilities {
         Map map = new HashMap();
         map.put("name", "ALA Gazetteer");
         map.put("geoserver_catalog_id", catalog.getId());
-        map.put("layers", layersMap);
+        map.put("layers", layers);
         return map;
     }
 }

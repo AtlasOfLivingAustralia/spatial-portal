@@ -25,6 +25,7 @@ public class SearchResultItem implements Serializable {
     @XStreamAsAttribute
     String link;
     private static final Logger logger = Logging.getLogger("org.ala.rest.SearchResultItem");
+    //GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
 
     SearchResultItem(String layerName, String idAttribute1, Float score) {
         this(layerName, idAttribute1, "", score);
@@ -40,7 +41,7 @@ public class SearchResultItem implements Serializable {
         this.idAttribute1 = idAttribute1;
         this.idAttribute2 = idAttribute2;
         this.score = score;
-        this.link = "/geoserver/rest/gazetteer/";
+        this.link = "/gazetteer/";
         this.link += this.id.replace(" ", "_") + ".json";
     }
 
@@ -55,7 +56,15 @@ public class SearchResultItem implements Serializable {
             } else if (field.name().contentEquals("state")) {
                 this.state = field.stringValue();
             } else if (field.name().contentEquals("layerName")) {
-                this.layerName = field.stringValue();
+                GazetteerConfig gc = new GazetteerConfig();
+                //if a layer alias exists the id will always use the alias in preference to the layer name
+                String layerAlias = gc.getLayerAlias(field.stringValue());
+                if (layerAlias.compareTo("") == 0){
+                    this.layerName = field.stringValue();
+                }
+                else{
+                    this.layerName = layerAlias;
+                }
             } else if (field.name().contentEquals("idAttribute1")) {
                 this.idAttribute1 = field.stringValue();
             } else if (field.name().contentEquals("idAttribute2")) {
@@ -76,7 +85,7 @@ public class SearchResultItem implements Serializable {
             description = description.substring(0, description.length() - 1);
         }
         if (includeLink == true) {
-            this.link = "/geoserver/rest/gazetteer/";
+            this.link = "/gazetteer/";
             this.link += id + ".json";
         }
     }

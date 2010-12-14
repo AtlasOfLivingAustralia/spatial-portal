@@ -52,14 +52,21 @@ public class Search {
     public ArrayList<SearchResultItem> getResults() {
         return this.results;
     }
-
+    /**
+     * If no type is specified, assume that it is a name based search
+     * @param searchTerms
+     * @param layers
+     */
+    public Search(String searchTerms, String[] layers){
+        this(searchTerms, layers,"name");
+    }
     /**
      * Searches for a feature within a layer based on name.
      * @param searchTerms
      * @param layers
      * @param getFeature if true, it does not need the nameSearch property set to true in gazetteer.xml (used for feature retrieval)
      */
-    public Search(String searchTerms, String[] layers) {
+    public Search(String searchTerms, String[] layers, String type) {
         results = new ArrayList<SearchResultItem>();
         GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
         String layerSearch = "";
@@ -82,8 +89,14 @@ public class Search {
             //Get the geoserver data directory from the geoserver instance
             File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
             IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
+            String[] searchFields = {"name","layerName"};
 
-            String[] searchFields = {"id", "layerName"};
+            if (type.compareTo("id") == 0){
+                searchFields = new String[] {"id", "layerName"};
+                logger.finer("searching based on id");
+            }
+            
+            searchTerms.replace("_", " ");
 
             MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT, searchFields, new StandardAnalyzer(Version.LUCENE_CURRENT));
             qp.setDefaultOperator(qp.AND_OPERATOR);
