@@ -1,6 +1,7 @@
 package org.ala.rest;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -34,7 +35,11 @@ public class GazetteerConfig {
             configDoc = builder.parse(new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer.xml"));
 
 
-        } catch (Exception e) {
+        }
+        catch (FileNotFoundException fnfe){
+            logger.severe("Unable to find gazetteer.xml in " + GeoserverDataDirectory.getGeoserverDataDirectory());
+        }
+        catch (Exception e) {
             logger.severe("Failed to initialize Gazetteer");
             logger.severe(ExceptionUtils.getFullStackTrace(e));
         }

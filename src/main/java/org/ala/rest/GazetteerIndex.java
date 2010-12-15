@@ -1,6 +1,7 @@
 package org.ala.rest;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +37,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.geotools.util.logging.Logging;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /***
@@ -131,7 +131,8 @@ public class GazetteerIndex implements InitializingBean {
                             }
 
                             if (feature.getProperty(gc.getNameAttributeName(layerName)).getValue() != null) {
-                                featureDoc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
+                                featureDoc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString(), Store.YES, Index.ANALYZED));
+                                //featureDoc.add(new Field("name", feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString().toLowerCase(), Store.YES, Index.ANALYZED));
                             }
 
                             if (!gc.getClassAttributeName(layerName).contentEquals("none")) {
@@ -211,7 +212,11 @@ public class GazetteerIndex implements InitializingBean {
                             featureIndex.addDocument(featureDoc);
                         }
                     }
-                } catch (Exception e) {
+                }
+                catch (FileNotFoundException fnfe){
+                    logger.severe("Unable to find synonyms.xml in " + GeoserverDataDirectory.getGeoserverDataDirectory());
+                }
+                catch (Exception e) {
                     logger.severe("Failed to initialize Gazetteer");
                     logger.severe(ExceptionUtils.getFullStackTrace(e));
                 }
