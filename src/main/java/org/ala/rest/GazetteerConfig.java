@@ -46,6 +46,24 @@ public class GazetteerConfig {
 
     }
 
+    public String getBaseURL() {
+        String baseURL = "";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//baseURL/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            baseURL = nodes.item(0).getNodeValue();
+            
+        } catch (Exception e) {
+            logger.severe("An error has occurred getting the baseurl");
+            logger.severe(ExceptionUtils.getFullStackTrace(e));
+        }
+        return baseURL;
+    }
+
     /**
      * Gets a list of geoserver layer names used by the gazetteer
      * @return a List of the geoserver layer names

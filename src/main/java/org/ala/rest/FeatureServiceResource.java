@@ -32,6 +32,26 @@ public class FeatureServiceResource extends MapResource {
             return new GazetteerLayer(layer).getLegacyMap();
         }
 
+        //TODO: refactor into separate resource object?
+        if (getRequest().getResourceRef().toString().contains("features")) {
+            logger.finer("request for feature list");
+            FeatureList fl;
+            layer = getRequest().getAttributes().get("layer").toString();
+            if (getRequest().getAttributes().containsKey("page")) {
+                int page = Integer.parseInt(getRequest().getAttributes().get("page").toString());
+                System.out.println(getRequest().getAttributes().toString());
+                fl =  new FeatureList(layer,page);
+            }
+            else
+                fl =  new FeatureList(layer);
+            if (getRequest().getAttributes().containsKey("format")) {
+                    String format = (getRequest().getAttributes().get("format").toString());
+                    fl.setFormat(format);
+            }
+            return fl.getMap();
+        }
+
+
         if (getRequest().getAttributes().containsKey("layer")) {
             layer = getRequest().getAttributes().get("layer").toString();
             logger.finer("layer supplied is " + layer);

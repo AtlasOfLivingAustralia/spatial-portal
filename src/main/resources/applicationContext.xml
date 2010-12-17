@@ -65,6 +65,19 @@
               <key><value>/gazetteer/{layer}</value></key>
               <value>featureService</value>
             </entry>
+             
+              <entry>
+              <key><value>/gazetteer/{layer}/features</value></key>
+              <value>featureService</value>
+            </entry>
+             <entry>
+              <key><value>/gazetteer/{layer}/features/{page}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+             <entry>
+              <key><value>/gazetteer/{layer}/features/{page}</value></key>
+              <value>featureService</value>
+            </entry>
             <entry>
               <key><value>/gazetteer/{layer}/{id1}.{format}</value></key>
               <value>featureService</value>
@@ -80,10 +93,11 @@
             <entry>
               <key><value>/gazetteer/{layer}/{id1}/{id2}</value></key>
               <value>featureService</value>
-            </entry>
+           </entry>
 
          </map>
       </property>
-    </bean> 
+    </bean>
+    
 </beans>
 

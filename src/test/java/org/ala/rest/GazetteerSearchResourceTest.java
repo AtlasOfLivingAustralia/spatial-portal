@@ -42,6 +42,7 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
     public MockData buildTestData() throws Exception {
         MockData dataDirectory = super.buildTestData();
         FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParentFile().getParent(), "gazetteer.xml"), dataDirectory.getDataDirectoryRoot());
+       // FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParentFile().getParent(), "synonyms.xml"), dataDirectory.getDataDirectoryRoot());
         return dataDirectory;
     }
 
@@ -148,11 +149,11 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
     }
 
 // GJ: This one no longer works ...
-//     public void testMultiFieldID() throws Exception {
+ //  public void testMultiFieldID() throws Exception {
 //      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
-//        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton/117.json");
-//        print(json);
-//    }
+ //       JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton/117.json");
+  //      print(json);
+   // }
     public void testFeatureServiceJSON() throws Exception {
 //      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
         JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton.json");
@@ -192,6 +193,24 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
     public void testLayerClassesDeprecated() throws Exception {
         System.out.println("*************");
         JSON json = getAsJSON("/rest/gazetteer/NamedPlaces.json");
+        print(json);
+        System.out.println("*************");
+    }
+
+     public void testFeatureList() throws Exception {
+        System.out.println("*************");
+        Document dom = getAsDOM("/rest/gazetteer/NamedPlaces/features");
+        print(dom);
+        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/features.json");
+        print(json);
+        System.out.println("*************");
+    }
+
+       public void testFeatureListPage() throws Exception {
+        System.out.println("*************");
+        Document dom = getAsDOM("/rest/gazetteer/NamedPlaces/features/2");
+        print(dom);
+        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/features/2.json");
         print(json);
         System.out.println("*************");
     }
