@@ -123,7 +123,7 @@ public class PointSearch {
      * @param gc
      */
     private void search(Catalog catalog, String layerName, ServletContext sc, String lon, String lat, int radius, GazetteerConfig gc) {
-        
+
         try {
 
             if (!gc.layerNameExists(layerName)) {
@@ -169,7 +169,7 @@ public class PointSearch {
                 logger.finer("polygonWKT is " + polygonWKT);
 
                 //perform intersect operation to find out what layers the circle intersects with
-                String cqlFilter = "INTERSECT(the_geom," + polygonWKT + ")";
+                String cqlFilter = "INTERSECTS(the_geom," + polygonWKT + ")";
                 logger.finer("Running cql filter: " + cqlFilter);
                 features = layer.getFeatures(CQL.toFilter(cqlFilter)).features();
             }
@@ -177,13 +177,18 @@ public class PointSearch {
                 logger.info("Feature found - creating SearchResultItem");
                 while (features.hasNext()) {
                     Feature feature = (Feature) features.next();
-                    String id1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
-                    if (gc.getIdAttribute2Name(layerName).compareTo("") != 0){
-                        String id2 = feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
-                        results.add(new SearchResultItem(layerName, id1, id2, new Float("1.0")));
+                    String name = "";
+                    if (gc.getNameAttributeName(layerName).compareTo("") != 0) {
+                        name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
+                    } else {
+                        name = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                     }
-                    else{
-                        results.add(new SearchResultItem(layerName, id1, new Float("1.0")));
+                    String id1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
+                    if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
+                        String id2 = feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
+                        results.add(new SearchResultItem(layerName, name, id1, id2, new Float("1.0")));
+                    } else {
+                        results.add(new SearchResultItem(layerName, name, id1, new Float("1.0")));
                     }
                 }
             }
@@ -196,7 +201,7 @@ public class PointSearch {
             logger.severe("Exception thrown in point search");
             logger.severe(ExceptionUtils.getFullStackTrace(e2));
         }
-       
+
     }
 
     /***

@@ -27,16 +27,16 @@ public class SearchResultItem implements Serializable {
     private static final Logger logger = Logging.getLogger("org.ala.rest.SearchResultItem");
     //GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
 
-    SearchResultItem(String layerName, String idAttribute1, Float score) {
-        this(layerName, idAttribute1, "", score);
+    SearchResultItem(String layerName, String name, String idAttribute1, Float score) {
+        this(layerName, name, idAttribute1, "", score);
     }
 
-    SearchResultItem(String layerName, String idAttribute1, String idAttribute2, Float score) {
+    SearchResultItem(String layerName, String name, String idAttribute1, String idAttribute2, Float score) {
         this.id = layerName + "/" + idAttribute1;
         if (idAttribute2.compareTo("") != 0) {
             this.id += "/" + idAttribute2;
         }
-        this.name = idAttribute1;
+        this.name = name;
         this.layerName = layerName;
         this.idAttribute1 = idAttribute1;
         this.idAttribute2 = idAttribute2;

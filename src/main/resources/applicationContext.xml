@@ -35,7 +35,6 @@
               <key><value>/gazetteer/{layer}/latlon/{latlon}</value></key>
               <value>search</value>
             </entry>
-
          </map>
       </property>
     </bean>

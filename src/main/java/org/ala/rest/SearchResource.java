@@ -49,6 +49,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         String wkt = "";
         String layer = "";
         String layers = "";
+        String closestFeature = "";
 
         if (getRequest().getAttributes().containsKey("q")) {
             String[] pieces = getRequest().getAttributes().get("q").toString().split("&");
@@ -84,6 +85,10 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
                     lon = latlon.split(",")[0];
                     lat = latlon.split(",")[1];
                     logger.finer("lat,lon is " + lat + "," + lon);
+                }
+                if (get_param.contains("closestFeature=")) {
+                    closestFeature = get_param.replace("closestFeature=", "");
+                    logger.finer("closestFeature is " + closestFeature);
                 }
             }
         }
@@ -135,6 +140,20 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             }
             xstream.processAnnotations(Search.class);
             String xmlString = xstream.toXML(searchObj);
+            getResponse().setEntity(format.toRepresentation(xmlString));
+        }
+        //Find me the nearest named feature
+        else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0) && (radius != 0) &&(closestFeature.compareTo("true") == 0)){
+            logger.finer("We are performing a closest feature search");
+            ClosestFeatureSearch cfs;
+            if (layers_arr.length > 0){
+                cfs = new ClosestFeatureSearch(lon, lat, radius, layers_arr);
+            }
+            else{
+                cfs = new ClosestFeatureSearch(lon, lat, radius);
+            }
+            xstream.processAnnotations(ClosestFeatureSearch.class);
+            String xmlString = xstream.toXML(cfs);
             getResponse().setEntity(format.toRepresentation(xmlString));
         } //point search
         else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0)) {
