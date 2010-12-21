@@ -46,6 +46,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         String lon = "";
         String lat = "";
         int radius = 0;
+        int count = 0;
         String wkt = "";
         String layer = "";
         String layers = "";
@@ -70,6 +71,10 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
                 if (get_param.contains("radius=")) {
                     radius = new Integer(get_param.replace("radius=", "")).intValue();
                     logger.finer("radius is " + radius);
+                }
+                if (get_param.contains("count=")) {
+                    count = new Integer(get_param.replace("count=", "")).intValue();
+                    logger.finer("count is " + count);
                 }
                 if (get_param.contains("layer=")) {
                     layer = get_param.replace("layer=", "");
@@ -144,13 +149,17 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         }
         //Find me the nearest named feature
         else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0) && (radius != 0) &&(closestFeature.compareTo("true") == 0)){
+            //by default, only return the nearest item
+            if (count == 0){
+                count = 1;
+            }
             logger.finer("We are performing a closest feature search");
             ClosestFeatureSearch cfs;
             if (layers_arr.length > 0){
-                cfs = new ClosestFeatureSearch(lon, lat, radius, layers_arr);
+                cfs = new ClosestFeatureSearch(lon, lat, radius, count, layers_arr);
             }
             else{
-                cfs = new ClosestFeatureSearch(lon, lat, radius);
+                cfs = new ClosestFeatureSearch(lon, lat, radius, count);
             }
             xstream.processAnnotations(ClosestFeatureSearch.class);
             String xmlString = xstream.toXML(cfs);
