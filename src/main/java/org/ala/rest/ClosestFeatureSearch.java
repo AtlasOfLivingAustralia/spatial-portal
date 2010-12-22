@@ -13,6 +13,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Logger;
@@ -198,9 +199,9 @@ public class ClosestFeatureSearch {
                     }
                     if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
                         String id2 = nearestFeature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
-                        matches.add(new ClosestFeatureSearchResultItem(layerName, name, id1, id2, new Double(nearestDistance), new Double(nearestBearing)));
+                        matches.add(new ClosestFeatureSearchResultItem(layerName, name, id1, id2, strRoundDouble(new Double(nearestDistance)), strRoundDouble(new Double(nearestBearing))));
                     } else {
-                        matches.add(new ClosestFeatureSearchResultItem(layerName, name, id1, new Double(nearestDistance), new Double(nearestBearing)));
+                        matches.add(new ClosestFeatureSearchResultItem(layerName, name, id1, strRoundDouble(new Double(nearestDistance)), strRoundDouble(new Double(nearestBearing))));
                     }
                 }
 
@@ -253,6 +254,17 @@ public class ClosestFeatureSearch {
     }
 
     /**
+     * Returns a string representation of a Double to four decimal places
+     * @param inValue
+     * @return
+     */
+    public String strRoundDouble(Double inValue){
+        DecimalFormat fourDec = new DecimalFormat("0.0000");
+        fourDec.setGroupingUsed(false);
+        return fourDec.format(inValue.doubleValue());
+    }
+
+    /**
      * This class is responsible for comparing distances of ClosestFeatureSearchResultItems
      * This is used to get the nearest points
      */
@@ -260,8 +272,8 @@ public class ClosestFeatureSearch {
 
         public int compare(Object feature1, Object feature2) {
 
-            double feature1_distance = ((ClosestFeatureSearchResultItem) feature1).distance.doubleValue();
-            double feature2_distance = ((ClosestFeatureSearchResultItem) feature2).distance.doubleValue();
+            double feature1_distance = new Double(((ClosestFeatureSearchResultItem) feature1).distance).doubleValue();
+            double feature2_distance = new Double(((ClosestFeatureSearchResultItem) feature2).distance).doubleValue();
 
             if (feature1_distance > feature2_distance) {
                 return 1;

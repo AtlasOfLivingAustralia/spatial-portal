@@ -20,19 +20,19 @@ public class ClosestFeatureSearchResultItem implements Serializable {
     String layerName;
     String idAttribute1;
     String idAttribute2;
-    Double distance;
-    Double bearing;
+    String distance;
+    String bearing;
     @XStreamAlias("xlink:href")
     @XStreamAsAttribute
     String link;
     private static final Logger logger = Logging.getLogger("org.ala.rest.SearchResultItem");
     //GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
 
-    ClosestFeatureSearchResultItem(String layerName, String name, String idAttribute1, Double distance, Double bearing) {
+    ClosestFeatureSearchResultItem(String layerName, String name, String idAttribute1, String distance, String bearing) {
         this(layerName, name, idAttribute1, "", distance, bearing);
     }
 
-    ClosestFeatureSearchResultItem(String layerName, String name, String idAttribute1, String idAttribute2, Double distance, Double bearing) {
+    ClosestFeatureSearchResultItem(String layerName, String name, String idAttribute1, String idAttribute2, String distance, String bearing) {
         this.id = layerName + "/" + idAttribute1;
         if (idAttribute2.compareTo("") != 0) {
             this.id += "/" + idAttribute2;
@@ -47,7 +47,7 @@ public class ClosestFeatureSearchResultItem implements Serializable {
         this.link += this.id.replace(" ", "_") + ".json";
     }
 
-    ClosestFeatureSearchResultItem(List<Fieldable> fields, Boolean includeLink, Double distance, Double bearing) {
+    ClosestFeatureSearchResultItem(List<Fieldable> fields, Boolean includeLink, String distance, String bearing) {
 
         this.description = "";
         for (Fieldable field : fields) {
