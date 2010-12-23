@@ -110,6 +110,8 @@ public class GazetteerIndex implements InitializingBean {
 
                         while (features.hasNext()) {
                             Feature feature = features.next();
+                            //logger.finer("Geometry type is " + feature.getDefaultGeometryProperty().getType().getBinding().getSimpleName());
+
                             Document featureDoc = new Document();
 
                             if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
@@ -152,6 +154,7 @@ public class GazetteerIndex implements InitializingBean {
                                     featureDoc.add(new Field(property.getName().toString(), property.getValue().toString(), Store.YES, Index.NO));
                                 }
                             }
+                            featureDoc.add(new Field("Type", feature.getDefaultGeometryProperty().getType().getBinding().getSimpleName(), Store.YES, Index.NO));
 
                             featureIndex.addDocument(featureDoc);
                             //System.out.println(".");
