@@ -189,7 +189,11 @@ public class ClosestFeatureSearch {
                     Measure m = DefaultGeographicCRS.WGS84.distance(new double[]{co[0].x, co[0].y,}, new double[]{co[1].x, co[1].y,});
                     nearestFeature = f;
                     nearestDistance = m.doubleValue();
+                    logger.finer("Coordinate 1 is " + new Double(co[0].x).toString() + ", " + new Double(co[0].y).toString());
+                    logger.finer("Coordinate 2 is " + new Double(co[1].x).toString() + ", " + new Double(co[1].y).toString());
                     nearestBearing = calcBearing(co);
+                    logger.finer("Bearing is " + new Double(nearestBearing).toString());
+
                     String id1 = nearestFeature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                     String name = "";
                     if (gc.getNameAttributeName(layerName).compareTo("") != 0) {
@@ -247,10 +251,12 @@ public class ClosestFeatureSearch {
      * @return
      */
     private double calcBearing(Coordinate[] coords) {
-        double y = Math.sin(coords[0].x - coords[1].x) * Math.cos(coords[1].y);
-        double x = Math.cos(coords[0].y) * Math.sin(coords[1].y) - Math.sin(coords[0].y) * Math.cos(coords[1].y) * Math.cos(coords[0].x - coords[1].x);
-        double brng = ((Math.atan2(y, x) * 180.0 / Math.PI) + 360) % 360;
-        return brng;
+        //this uses the bearing algorithm detailed on http://www.movable-type.co.uk/scripts/latlong.html
+        double lat1 = Math.toRadians(coords[0].y);
+        double lon1 = Math.toRadians(coords[0].x);
+        double lat2 = Math.toRadians(coords[1].y);
+        double lon2 = Math.toRadians(coords[1].x);
+        return ((Math.toDegrees(Math.atan2(Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1))))+360)%360;
     }
 
     /**
