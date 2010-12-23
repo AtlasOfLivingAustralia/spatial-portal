@@ -31,6 +31,7 @@ import org.opengis.feature.Property;
 import org.vfny.geoserver.util.DataStoreUtils;
 import org.geoserver.wfs.response.GeoJSONBuilder;
 import org.geotools.util.logging.Logging;
+import org.opengis.feature.type.GeometryType;
 import org.opengis.geometry.BoundingBox;
 
 /**
@@ -93,10 +94,10 @@ public class GazetteerFeature {
             throw new Exception("No results returned - this isn't great");
         }
         logger.finer("Number of hits is " + results.size());
-        if (results.size() > 1) {
-            logger.severe("Too many features match this id, please be more specific.");
-            throw new Exception("Too many features match this id, please be more specific.");
-        }
+//        if (results.size() > 1) {
+//            logger.severe("Too many features match this id, please be more specific.");
+//            throw new Exception("Too many features match this id, please be more specific.");
+//        }
 
         SearchResultItem searchResultItem = results.get(0);
 
@@ -155,6 +156,8 @@ public class GazetteerFeature {
                             StringWriter w = new StringWriter();
                             GeoJSONBuilder geoJson = new GeoJSONBuilder(w);
                             geoJson.writeGeom((Geometry) feature.getDefaultGeometryProperty().getValue());
+
+
                             BoundingBox bb = feature.getBounds();
 
                             Double minx = new Double(bb.getMinX());
