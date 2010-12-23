@@ -1,8 +1,8 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
-
-    <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" >
+    <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" 
+    apply="org.ala.spatial.analysis.web.ALOCWCController" >
 
         <style>
             .z-loading {

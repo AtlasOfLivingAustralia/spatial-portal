@@ -22,12 +22,10 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Image;
-import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Slider;
 import java.util.ArrayList;
 import org.ala.spatial.util.CommonData;
-
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 
@@ -37,13 +35,11 @@ public class ClassificationLegend extends UtilityComposer {
     String pid = "";
     String layerLabel = "";
     String imagePath = "";
-    MapComposer mc;
     private String satServer = "";
     public Slider redSlider;
     public Slider greenSlider;
     public Slider blueSlider;
     public int colours_index;
-    public Button applyChange;
     public Listcell legend_cell;
     public Image sampleColour;
     public int legend_counter = 0;
@@ -54,8 +50,6 @@ public class ClassificationLegend extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        mc = getThisMapComposer();
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
@@ -103,7 +97,7 @@ public class ClassificationLegend extends UtilityComposer {
             for (i = 1; i < lines.length; i++) {
                 legend_lines.add(lines[i]);
             }
-  
+
             /* apply something to line onclick in lb */
             legend.setItemRenderer(new ListitemRenderer() {
 
@@ -265,7 +259,7 @@ public class ClassificationLegend extends UtilityComposer {
         bbox.add(154.00000000084);
         bbox.add(-9.0);
 
-        mc.addImageLayer(pid, layerLabel, imagePath, opacity, bbox);
+        getMapComposer().addImageLayer(pid, layerLabel, imagePath, opacity, bbox);
 
     }
 }

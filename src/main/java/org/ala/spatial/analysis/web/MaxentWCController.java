@@ -1,6 +1,5 @@
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -14,11 +13,9 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
-import org.zkoss.zul.Label;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
@@ -39,21 +36,17 @@ public class MaxentWCController extends UtilityComposer {
     private static final long serialVersionUID = 165701023268014945L;
     private SpeciesAutoComplete sac;
     Tabbox tabboxmaxent;
-    private Label status;
-    private Label infourl;
-    private Button btnInfo;
     EnvironmentalList lbListLayers;
     private Checkbox chkJackknife;
     private Checkbox chkRCurves;
     private Textbox txtTestPercentage;
-    private Window maxentInfoWindow;
-    private MapComposer mc;
     private String geoServer = null;
-    private String satServer = geoServer;
+    private String satServer = null;
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
     private String pid;
-    String taxon;
+    String taxon;    
+    Window wInputBox;
 
     @Override
     public void doAfterCompose(Component component) throws Exception {
@@ -72,17 +65,14 @@ public class MaxentWCController extends UtilityComposer {
         super.afterCompose();
 
         try {
-            mc = getThisMapComposer();
             if (settingsSupplementary != null) {
                 geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
                 satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
             }
 
-            layersUtil = new LayersUtil(mc, satServer);
-
-            //setupEnvironmentalLayers();
-            lbListLayers.init(mc, satServer, true);
-
+            layersUtil = new LayersUtil(getMapComposer(), satServer);
+            
+            lbListLayers.init(getMapComposer(), satServer, true);
         } catch (Exception e) {
             System.out.println("opps in after compose");
         }
@@ -93,30 +83,8 @@ public class MaxentWCController extends UtilityComposer {
         loadSpeciesOnMap();
     }
 
-    public void onClick$btnMapSpecies(Event event) {
-        try {
-            loadSpeciesOnMap();
-
-        } catch (Exception ex) {
-            System.out.println("Got an error clicking button!!");
-            ex.printStackTrace(System.out);
-        }
-    }
-
-    public void onDoInit(Event event) throws Exception {
+    public void onClick$btnRunMaxent(Event event) {
         runmaxent();
-        //Clients.showBusy("", false);
-    }
-
-    public void produce() {
-        onClick$startmaxent(null);
-    }
-
-    public void onClick$startmaxent(Event event) {
-        try {
-            onDoInit(null);
-        } catch (Exception e) {
-        }
     }
 
     public void runmaxent() {
@@ -142,27 +110,14 @@ public class MaxentWCController extends UtilityComposer {
                 return;
             }
 
-            if (LayersUtil.isPestSpecies(taxon)) {
-                Messagebox.show("Warning: Invasive species will rarely be in equilibrium with the environment at their observed locations so modelling distributions should only be attempted by experienced analysts.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
-            }
-
-            if (layersUtil.isSensitiveSpecies(taxon).equals("1")) {
-                Messagebox.show("Warning: There are sensitive records within the dataset that you've chosen to model. Please select non-sensitive species for MaxEnt. For more information on the sensitive species, please refer to http://www.ala.org.au/about/program-of-projects/sds/", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+            if (isSensitiveSpecies(taxon)) {
                 return;
             }
-
-
-            String msg = "";
-            String[] envsel = null;
+            
             StringBuffer sbenvsel = new StringBuffer();
-
-            status.setValue("Status: Running Maxent, please wait... ");
-            btnInfo.setVisible(false);
 
             String[] selectedLayers = lbListLayers.getSelectedLayers();
             if (selectedLayers.length > 0) {
-                envsel = new String[selectedLayers.length];
-                msg = "Selected " + selectedLayers.length + " items \n ";
                 for (int i = 0; i < selectedLayers.length; i++) {
                     sbenvsel.append(selectedLayers[i]);
                     if (i < selectedLayers.length - 1) {
@@ -171,8 +126,6 @@ public class MaxentWCController extends UtilityComposer {
                 }
             }
 
-            //process(envsel);
-
             System.out.println("Selected species: " + taxon);
             System.out.println("Selected env vars");
             System.out.println(sbenvsel.toString());
@@ -180,7 +133,6 @@ public class MaxentWCController extends UtilityComposer {
             System.out.println("Jackknife: " + chkJackknife.isChecked());
             System.out.println("Response curves: " + chkRCurves.isChecked());
             System.out.println("Test per: " + txtTestPercentage.getValue());
-
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/processgeoq?");
@@ -195,28 +147,15 @@ public class MaxentWCController extends UtilityComposer {
             sbProcessUrl.append("&txtTestPercentage=" + txtTestPercentage.getValue());
 
             /* user selected region support */
-            String user_polygon;
-            if (true) { //an area always exists; useArea.isChecked()) {
-                user_polygon = mc.getSelectionArea();
-            } else {
-                user_polygon = "";
-            }
-            System.out.println("user_polygon: " + user_polygon);
-            String area;
-            if (user_polygon.length() > 0) {
-                //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
-                area = user_polygon;//URLEncoder.encode(user_polygon,"UTF-8");
-            } else {
-                //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+            String area = getMapComposer().getSelectionArea();
+            if (area == null || area.length() == 0) {                
                 area = "none";
             }
 
 
             HttpClient client = new HttpClient();
-            //GetMethod get = new GetMethod(sbProcessUrl.toString());
             PostMethod get = new PostMethod(sbProcessUrl.toString());
             get.addParameter("area", area);
-            //  get.addRequestHeader("Content-type", "application/json");
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
@@ -231,7 +170,6 @@ public class MaxentWCController extends UtilityComposer {
             sbParams.append(";Response curves: " + chkRCurves.isChecked());
             sbParams.append(";Test per: " + txtTestPercentage.getValue());
 
-
             Map attrs = new HashMap();
             attrs.put("actionby", "user");
             attrs.put("actiontype", "analysis");
@@ -243,15 +181,16 @@ public class MaxentWCController extends UtilityComposer {
             attrs.put("method", "maxent");
             attrs.put("params", sbParams.toString());
             attrs.put("downloadfile", "");
-            mc.updateUserLog(attrs, "analysis result: " + satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html");
-
-            //Messagebox.show(msg, "Maxent", Messagebox.OK, Messagebox.INFORMATION);
+            getMapComposer().updateUserLog(attrs, "analysis result: " + satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html");
         } catch (Exception e) {
             System.out.println("Maxent error: ");
             e.printStackTrace(System.out);
         }
     }
-    Window wInputBox;
+    
+    public void onClick$btnPreviousMaxent(){
+        previousModel();
+    }
 
     public void previousModel() {
         wInputBox = new Window("Enter reference number", "normal", false);
@@ -269,6 +208,7 @@ public class MaxentWCController extends UtilityComposer {
                 pid = ((Textbox) wInputBox.getFellow("txtBox")).getValue();
                 pid = pid.trim();
                 taxon = "";
+                getParameters();
                 openProgressBar();
                 wInputBox.detach();
             }
@@ -284,9 +224,6 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     void openProgressBar() {
-        if (maxentInfoWindow != null) {
-            maxentInfoWindow.detach();
-        }
         MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
         window.parent = this;
         window.start(pid);
@@ -350,8 +287,8 @@ public class MaxentWCController extends UtilityComposer {
         }
 
         String layername = "Maxent model for " + speciesName;
-        mc.addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl);
-        MapLayer ml = mc.getMapLayer(layername);
+        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl);
+        MapLayer ml = getMapComposer().getMapLayer(layername);
         String infoUrl = satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         if (md == null) {
@@ -363,42 +300,17 @@ public class MaxentWCController extends UtilityComposer {
         getMapComposer().showMessage("Reference number to retrieve results: " + pid);
 
         showInfoWindow("/output/maxent/" + pid + "/species.html");
-
     }
 
     public void onClick$btnClearSelection(Event event) {
         lbListLayers.clearSelection();
     }
 
-    public void onClick$btnInfo(Event event) {
-        try {
-            showInfoWindow(infourl.getValue());
-        } catch (Exception e) {
-            System.out.println("opps");
-        }
-    }
-
     private void showInfoWindow(String url) {
         String infoUrl = satServer + "/alaspatial" + url;
-
         Events.echoEvent("openUrl", this.getMapComposer(), infoUrl + "\nMaxent output");
     }
-
-    /**
-     * Gets the main pages controller so we can add a
-     * layer to the map
-     * @return MapComposer = map controller class
-     */
-    private MapComposer getThisMapComposer() {
-
-        MapComposer mapComposer = null;
-        //Page page = maxentWindow.getPage();
-        Page page = getPage();
-        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
-
-        return mapComposer;
-    }
-
+   
     private void loadSpeciesOnMap() {
 
         // check if the species name is not valid
@@ -407,11 +319,10 @@ public class MaxentWCController extends UtilityComposer {
         if (sac.getSelectedItem() == null) {
             return;
         }
-
-        //String taxon = sac.getValue();
-        taxon = sac.getValue(); 
+        
+        taxon = sac.getValue();
         String rank = "";
-      
+
         String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().contains(": ")) {
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
@@ -423,11 +334,12 @@ public class MaxentWCController extends UtilityComposer {
         } else {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
         }
-        System.out.println("mapping rank and species: " + rank + " - " + taxon);
-        mc.mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
-
+        String lsid = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
+        if (!isSensitiveSpecies(lsid)) {
+            System.out.println("mapping rank and species: " + rank + " - " + taxon);
+            getMapComposer().mapSpeciesByLsid(lsid, taxon, rank);
+        }
     }
-    
 
     /**
      * get rid of the common name if present
@@ -483,7 +395,7 @@ public class MaxentWCController extends UtilityComposer {
             lsid = speciesandlsid.split(",")[1];
         }
         if (StringUtils.isNotBlank(lsid)) {
-            taxon = lsid; 
+            taxon = lsid;
         }
         String[] layers = layersUtil.getActiveEnvCtxLayers();
 
@@ -496,6 +408,7 @@ public class MaxentWCController extends UtilityComposer {
             }
             sac.setValue(tmpSpecies);
             sac.refresh(tmpSpecies);
+            isSensitiveSpecies(lsid);
         }
 
         /* set as selected each envctx layer found */
@@ -504,5 +417,115 @@ public class MaxentWCController extends UtilityComposer {
         }
 
         lbListLayers.updateDistances();
+    }
+
+    void getParameters() {
+        String txt = get("inputs");
+        try {
+            int pos = 0;
+            int p1 = txt.indexOf("pid:", pos);
+            if (p1 < 0) {
+                return;
+            }
+            int p2 = txt.indexOf("taxonid:", pos);
+            int p3 = txt.indexOf("scientificName:", pos);
+            int p4 = txt.indexOf("taxonRank:", pos);
+            int p5 = txt.indexOf("area:", pos);
+            int p6 = txt.indexOf("envlist:", pos);
+            int p7 = txt.indexOf("txtTestPercentage:", pos);
+            int p8 = txt.indexOf("chkJackknife:", pos);
+            int p9 = txt.indexOf("chkResponseCurves:", pos);
+            int p10 = txt.length();
+
+            String pid = txt.substring(p1 + "pid:".length(), p2).trim();
+            String taxonid = txt.substring(p2 + "taxonid:".length(), p3).trim();
+            String scientificName = txt.substring(p3 + "scientificName:".length(), p4).trim();
+            String taxonRank = txt.substring(p4 + "taxonRank:".length(), p5).trim();
+            String area = txt.substring(p5 + "area:".length(), p6).trim();
+            String envlist = txt.substring(p6 + "envlist:".length(), p7).trim();
+            String txtTestPercentage = txt.substring(p7 + "txtTestPercentage".length(), p8).trim();
+            String chkJackknife = txt.substring(p8 + "chkJackknife".length(), p9).trim();
+            String chkResponseCurves = txt.substring(p9 + "chkResponseCurves".length(), p10).trim();
+
+            if (taxonid.endsWith(";")) {
+                taxonid = taxonid.substring(0, taxonid.length() - 1);
+            }
+            if (scientificName.endsWith(";")) {
+                scientificName = scientificName.substring(0, scientificName.length() - 1);
+            }
+            if (taxonRank.endsWith(";")) {
+                taxonRank = taxonRank.substring(0, taxonRank.length() - 1);
+            }
+            if (area.endsWith(";")) {
+                area = area.substring(0, area.length() - 1);
+            }
+            if (envlist.endsWith(";")) {
+                envlist = envlist.substring(0, envlist.length() - 1);
+            }
+            if (txtTestPercentage.endsWith(";")) {
+                txtTestPercentage = txtTestPercentage.substring(0, txtTestPercentage.length() - 1);
+            }
+            if (chkJackknife.endsWith(";")) {
+                chkJackknife = chkJackknife.substring(0, chkJackknife.length() - 1);
+            }
+            if (chkResponseCurves.endsWith(";")) {
+                chkResponseCurves = chkResponseCurves.substring(0, chkResponseCurves.length() - 1);
+            }
+
+            System.out.println("got [" + pid + "][" + taxonid + "][" + scientificName + "][" + taxonRank + "][" + area + "][" + envlist + "][" + txtTestPercentage + "][" + chkJackknife + "][" + chkResponseCurves + "]");
+
+            //apply job input parameters to selection
+            sac.setValue(scientificName);
+            sac.refresh(scientificName);
+            cleanTaxon();
+
+            lbListLayers.clearSelection();
+            lbListLayers.selectLayers(envlist.split(":"));
+            try {
+                this.txtTestPercentage.setValue(String.valueOf(Double.parseDouble(txtTestPercentage)));
+            } catch (Exception e) {
+            }
+
+            this.chkJackknife.setChecked(chkJackknife.equalsIgnoreCase("on"));
+            this.chkRCurves.setChecked(chkResponseCurves.equalsIgnoreCase("on"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    String get(String type) {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    private boolean isSensitiveSpecies(String taxon) {
+        try {
+
+            if (LayersUtil.isPestSpecies(taxon) || layersUtil.isSensitiveSpecies(taxon).equals("1")) {
+                Messagebox.show("Warning: Prediction is disabled for sensitive species where access to precise location information is restricted. Sensitive species include those that are endangered or threatened, pests or potential threats to Australian agriculture or other industries.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
+                tabboxmaxent.setSelectedIndex(0);
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            return true;
+        }
+
+        return false;
     }
 }

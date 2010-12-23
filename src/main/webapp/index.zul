@@ -1,13 +1,8 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<!-- ?component name="addLayer" macro-uri="/WEB-INF/zul/AddLayer.zul"? -->
 <?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
 <?component name="leftMenuAnalysis" macro-uri="/WEB-INF/zul/Analysis.zul"?>
 <?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/leftMenuLinks.zul"?>
-<!-- ?component name="leftMenuMap" macro-uri="/WEB-INF/zul/leftMenuMap.zul"? -->
-<!-- ?component name="layerListTab" macro-uri="/WEB-INF/zul/leftMapLayers.zul"? -->
-<!-- ?component name="featureInfo" macro-uri="/WEB-INF/zul/featureInfo.zul"? -->
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
-<!-- ?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"? -->
 <?component name="layerList" macro-uri="/WEB-INF/zul/layers.zul"?>
 
 <?page id="MapZul" title="${portalNaming.portalName}" cacheable="false"
@@ -95,28 +90,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         </window>
 
         <borderlayout width="100%">
-            <north id="header" height="45">
-
-                <div>
-                    <!--  top right menu links -->
-                    <div sclass="toplinks">                       
-
-                        <!-- zk forEach="${session.attributes.portalSession.staticMenuLinks}" if="${! settings.disableTopLinks}">
-
-                            <toolbarbutton if="${each.external}" label="${each.name}"
-                                           tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
-
-                            <toolbarbutton id="buttonforsomething" if="${! each.external}" label="${each.name}"
-                                           tooltiptext="${each.description}" zclass="leftmenu_ahref"
-                                           forward="onClick=onActivateLink()" >
-                                <custom-attributes link="${each}" />
-                            </toolbarbutton>
-                        </zk -->
-                    </div>
-
-                    <label sclass="tmpHeader" value="Explore the Spatial Portal" visible="false" />
-                    
-                </div>
+            <north id="header" height="45">             
             </north>
             <west style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
                    id="menus" collapsible="true" 
@@ -141,8 +115,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <toolbarbutton label="Help"
                                            sclass="helpButtonMain"
                                            tooltiptext="ALA Spatial Portal Help" 
-                                           forward="onClick=onActivateLink()" >
-                                <!--<custom-attributes link="http://emii1.its.utas.edu.au/drupal/" />-->
+                                           forward="onClick=onActivateLink()" >                                
                                     <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/species-maps-help/" />
                                     <custom-attributes label="Help" />
                                 </toolbarbutton>
@@ -184,11 +157,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     </div>
 
                                     <div id="layerControls" sclass="highlighted" visible="false">
-                                        <hbox  width="100%">                        
-                                            <hbox  align="right" visible="false" >
-                                                <button id="closeLayerControls" label="Close Legend" />
-                                            </hbox>
-                                        </hbox>
+                                        
                                 <!-- opacity-->
                                         <div id="opacityControls" >
                                             <vbox>
@@ -350,7 +319,7 @@ border-bottom: none;
                                                     <separator />
                                                     <hbox width="100%">
                                                         <div id="cluserpoints" align="left" style="padding-top:0px">
-                                                            <checkbox id="chkPointsCluster" label="Display species in clusters" checked="false" />
+                                                            <button id="btnPointsCluster" label="Display species as clusters" sclass="goButton" />
                                                             <separator />
                                                         </div>
                                                         <separator />
@@ -393,6 +362,7 @@ border-bottom: none;
                                         <tab label="Species" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-species-tab/&quot;)" />
                                         <tab label="Locations" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-locations-tab/&quot;)" />
                                         <tab label="Layers" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-layers-tab/&quot;)" />
+                                        <tab label="Custom" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-layers-tab/&quot;)" visible="false" />
                                     </tabs>
                                     <toolbar>
                                         <toolbarbutton id="mapCXHelp"
@@ -421,12 +391,6 @@ border-bottom: none;
                                                         <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
                                                         <label id="resultGaz" />
                                                     </hbox>
-                                                    <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                        <listhead>
-                                                            <listheader label="Name"/>
-                                                            <listheader label="View" />
-                                                        </listhead>
-                                                    </listbox>
                                                     <label sclass="exampleText">e.g. Australian Capital Territory</label>
                                                 </vbox>
                                             </div>
@@ -446,6 +410,12 @@ border-bottom: none;
                                             <separator />
                                             <layerList id="layerList" />                    
                                         </tabpanel>
+                                        <tabpanel  id="customData" visible="true" >
+                                            <div>
+                                                <fileupload id="btnFileUpload" maxsize="5000000" />
+                                            </div>
+                                        </tabpanel>
+
                                     </tabpanels>
                                 </tabbox>
                             </div>
@@ -458,7 +428,7 @@ border-bottom: none;
                         <div id="searchNavigationTabContent"
                              visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
                             <leftMenuSearch id="leftMenuSearch" />
-                            </div>
+                        </div>
                     </div>
                 </div>
             </west>
@@ -470,7 +440,7 @@ border-bottom: none;
                         <button id="switchNormal" label="Map" w:onClick="changeBaseLayer('normal'); window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
                         <button id="switchSatellite" label="Satellite" w:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
                         <separator orient="vertical" spacing="20px" />
-                        <button label="Save image" w:onClick="printHack('');" sclass="goButton"/>
+                        <button label="Download map" w:onClick="printHack('');" sclass="goButton"/>
                         <button id="reloadPortal" label="Reset map" sclass="goButton"/>
                     </div>
                     
@@ -646,6 +616,7 @@ if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.locati
 }    
         
 function printHack(o) {
+alert('printHack');
     //session variables not in session
     var size = map.getSize().w + "," + (document.body.clientHeight-68); 
     var extent = map.getExtent().toBBOX();
@@ -667,7 +638,8 @@ function changeBaseLayer(type) {
 function showSpeciesInfo(occids, lon, lat) {
     window.mapFrame.showSpeciesInfo(occids, lon, lat); 
 }          
-          ]]></script>
+          ]]>
+        </script>
           <!-- script defer="false" type="text/javascript"><![CDATA[
             
        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

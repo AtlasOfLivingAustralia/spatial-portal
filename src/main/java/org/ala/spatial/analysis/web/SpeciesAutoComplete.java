@@ -150,7 +150,6 @@ public class SpeciesAutoComplete extends Combobox {
     }
 
     private MapComposer getThisMapComposer() {
-
         MapComposer mapComposer = null;
         Page page = getPage();
         mapComposer = (MapComposer) page.getFellow("mapPortalPage");

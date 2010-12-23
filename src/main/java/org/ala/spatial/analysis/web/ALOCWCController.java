@@ -4,7 +4,6 @@
  */
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -21,7 +20,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -36,14 +34,11 @@ import org.zkoss.zul.Window;
  * @author ajay
  */
 public class ALOCWCController extends UtilityComposer {
-    
+
     private Intbox groupCount;
     Tabbox tabboxclassification;
-    private MapComposer mc;
     private String satServer = "";
     private SettingsSupplementary settingsSupplementary = null;
-    String user_polygon = "";
-    Textbox selectionGeomALOC;
     int generation_count = 1;
     String pid;
     String layerLabel;
@@ -51,37 +46,26 @@ public class ALOCWCController extends UtilityComposer {
     LayersUtil layersUtil;
     EnvironmentalList lbListLayers;
     Button btnProduce;
+    Window wInputBox;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        mc = getThisMapComposer();
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
-        layersUtil = new LayersUtil(mc, satServer);
+        layersUtil = new LayersUtil(getMapComposer(), satServer);
 
-        lbListLayers.init(mc, satServer, true);
+        lbListLayers.init(getMapComposer(), satServer, true);
     }
 
-    public void onClick$btnProduce(Event event){
-        produce();
-    }
-
-    public void onDoInit(Event event) throws Exception {
+    public void onClick$btnProduce(Event event) {
         runclassification();
     }
 
-    public void produce() {
-        try {
-            onDoInit(null);
-        } catch (Exception e) {
-        }
-    }
-
-    public void onClick$btnClearSelection(Event event){
+    public void onClick$btnClearSelection(Event event) {
         lbListLayers.clearSelection();
     }
 
@@ -119,18 +103,9 @@ public class ALOCWCController extends UtilityComposer {
             sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeoq?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            if (true) { //an area always exists; useArea.isChecked()) {
-                user_polygon = mc.getSelectionArea();
-            } else {
-                user_polygon = "";
-            }
-            System.out.println("user_polygon: " + user_polygon);
-            String area;
-            if (user_polygon.length() > 0) {
-                //sbProcessUrl.append("&area=" + URLEncoder.encode(user_polygon, "UTF-8"));
-                area = user_polygon;
-            } else {
-                //sbProcessUrl.append("&area=" + URLEncoder.encode("none", "UTF-8"));
+            
+            String area = getMapComposer().getSelectionArea();
+            if (area == null || area.length() == 0) {
                 area = "none";
             }
 
@@ -152,9 +127,7 @@ public class ALOCWCController extends UtilityComposer {
 
             legendPath = "/WEB-INF/zul/AnalysisClassificationLegend.zul?pid=" + pid + "&layer=" + URLEncoder.encode(layerLabel, "UTF-8");
 
-            mc.updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
-
-            //loadMap();
+            getMapComposer().updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
 
             ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", this, null);
             window.parent = this;
@@ -162,12 +135,10 @@ public class ALOCWCController extends UtilityComposer {
             window.doModal();
 
         } catch (Exception ex) {
-            System.out.println("Opps!: ");
             ex.printStackTrace(System.out);
         }
     }
-    Window wInputBox;
-
+    
     public void onClick$previousModel(Event event) {
         wInputBox = new Window("Enter reference number", "normal", false);
         wInputBox.setWidth("300px");
@@ -182,7 +153,8 @@ public class ALOCWCController extends UtilityComposer {
 
             public void onEvent(Event event) throws Exception {
                 pid = ((Textbox) wInputBox.getFellow("txtBox")).getValue();
-                pid = pid.trim(); 
+                pid = pid.trim();
+                getParameters();
                 openProgressBar();
                 wInputBox.detach();
             }
@@ -207,20 +179,6 @@ public class ALOCWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Gets the main pages controller so we can add a
-     * layer to the map
-     * @return MapComposer = map controller class
-     */
-    private MapComposer getThisMapComposer() {
-
-        MapComposer mapComposer = null;
-        Page page = getPage();
-        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
-
-        return mapComposer;
     }
 
     /**
@@ -319,8 +277,8 @@ public class ALOCWCController extends UtilityComposer {
             ex.printStackTrace();
         }
 
-        mc.addImageLayer(pid, layerLabel, uri, opacity, bbox);
-        MapLayer mapLayer = mc.getMapLayer(layerLabel);
+        getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox);
+        MapLayer mapLayer = getMapComposer().getMapLayer(layerLabel);
         if (mapLayer != null) {
             WMSStyle style = new WMSStyle();
             style.setName("Default");
@@ -339,8 +297,74 @@ public class ALOCWCController extends UtilityComposer {
 
             String infoUrl = satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output";
             md.setMoreInfo(infoUrl);
-            
+
             Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
         }
+    }
+
+    void getParameters() {
+        String txt = get("inputs");
+        try {
+            int pos = 0;
+            int p1 = txt.indexOf("pid:", pos);
+            if (p1 < 0) {
+                return;
+            }
+            int p2 = txt.indexOf("gc:", pos);
+            int p3 = txt.indexOf("area:", pos);
+            int p4 = txt.indexOf("envlist:", pos);
+            int p5 = txt.indexOf("pid:", p1 + 4);
+            if (p5 < 0) {
+                p5 = txt.length();
+            }
+
+            pos = p5 - 5;
+
+            String pid = txt.substring(p1 + 4, p2).trim();
+            String gc = txt.substring(p2 + 3, p3).trim();
+            String area = txt.substring(p3 + 5, p4).trim();
+            String envlist = txt.substring(p4 + 8, p5).trim();
+
+            //remove ';' from end
+            if (gc.endsWith(";")) {
+                gc = gc.substring(0, gc.length() - 1);
+            }
+            if (area.endsWith(";")) {
+                area = area.substring(0, area.length() - 1);
+            }
+            if (envlist.endsWith(";")) {
+                envlist = envlist.substring(0, envlist.length() - 1);
+            }
+
+            System.out.println("got [" + pid + "][" + gc + "][" + area + "][" + envlist + "]");
+
+            //apply job input parameters to selection
+            groupCount.setValue(Integer.parseInt(gc));
+
+            lbListLayers.clearSelection();
+            lbListLayers.selectLayers(envlist.split(":"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    String get(String type) {
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(sbProcessUrl.toString());
+
+            get.addRequestHeader("Accept", "text/plain");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }

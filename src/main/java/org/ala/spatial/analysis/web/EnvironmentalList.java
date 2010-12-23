@@ -29,10 +29,6 @@ public class EnvironmentalList extends Listbox {
     String satServer;
     boolean environmentalOnly;
 
-    public EnvironmentalList() {
-        //renderAll();
-    }
-
     public void init(MapComposer mc, String sat_url, boolean environmental_only) {
         mapComposer = mc;
         satServer = sat_url;
@@ -193,12 +189,14 @@ public class EnvironmentalList extends Listbox {
     void selectLayers(String[] layers) {
         for (int i = 0; i < listEntries.size(); i++) {
             for (int j = 0; j < layers.length; j++) {
-                if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])) {
-                    selectItem(getItemAtIndex(i));
-                    break;
-                }
+                if (listEntries.get(i).displayname.equalsIgnoreCase(layers[j])
+	                        || listEntries.get(i).name.equalsIgnoreCase(layers[j])) {
+	                    toggleItemSelection(getItemAtIndex(i));
+		                    break;
+		                }
             }
         }
+        updateDistances();
     }
 
     @Override

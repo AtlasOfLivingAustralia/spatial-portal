@@ -31,13 +31,11 @@ public class CommonData {
     static public final String SAT_URL = "sat_url";
     static public final String GEOSERVER_URL = "geoserver_url";
     //(1) for LayersUtil
-    static Object oLayersUtilLock = new Object();
     static String[] environmentalLayerNames = null;
     static String[] contextualLayerNames = null;
     static String[] copy_environmentalLayerNames = null;
     static String[] copy_contextualLayerNames = null;
     //(2) for EnvironmentalList
-    static Object oEnvironmentalListLock = new Object();
     static ArrayList<ListEntry> listEntriesAll;
     static String[] layerNamesAll;
     static ArrayList<ListEntry> listEntriesEnv;
@@ -49,7 +47,6 @@ public class CommonData {
     static String[] copy_layerNamesEnv;
     static float[][] copy_distances;
     //(3) for layer list json
-    static Object oLayerListJsonLock = new Object();
     static String layerlist = null;
     static JSONArray layerlistJSON = null;
     static HashMap<JSONObject, List> contextualClasses = null;
@@ -85,46 +82,40 @@ public class CommonData {
         initEnvironmentalOnlyList();
         initEnvironmentalAllList();
 
-        synchronized (oLayersUtilLock) {
-            synchronized (oEnvironmentalListLock) {
-                synchronized (oLayersUtilLock) {
-                    //(1) for LayersUtil
-                    if (copy_environmentalLayerNames != null) {
-                        environmentalLayerNames = copy_environmentalLayerNames;
-                    }
-                    if (copy_contextualLayerNames != null) {
-                        contextualLayerNames = copy_contextualLayerNames;
-                    }
+        //(1) for LayersUtil
+        if (copy_environmentalLayerNames != null) {
+            environmentalLayerNames = copy_environmentalLayerNames;
+        }
+        if (copy_contextualLayerNames != null) {
+            contextualLayerNames = copy_contextualLayerNames;
+        }
 
-                    //(2) for EnvironmentalList
-                    if (copy_listEntriesAll != null) {
-                        listEntriesAll = copy_listEntriesAll;
-                    }
-                    if (copy_layerNamesAll != null) {
-                        layerNamesAll = copy_layerNamesAll;
-                    }
-                    if (copy_listEntriesEnv != null) {
-                        listEntriesEnv = copy_listEntriesEnv;
-                    }
-                    if (copy_layerNamesEnv != null) {
-                        layerNamesEnv = copy_layerNamesEnv;
-                    }
-                    if (copy_distances != null) {
-                        distances = copy_distances;
-                    }
+        //(2) for EnvironmentalList
+        if (copy_listEntriesAll != null) {
+            listEntriesAll = copy_listEntriesAll;
+        }
+        if (copy_layerNamesAll != null) {
+            layerNamesAll = copy_layerNamesAll;
+        }
+        if (copy_listEntriesEnv != null) {
+            listEntriesEnv = copy_listEntriesEnv;
+        }
+        if (copy_layerNamesEnv != null) {
+            layerNamesEnv = copy_layerNamesEnv;
+        }
+        if (copy_distances != null) {
+            distances = copy_distances;
+        }
 
-                    //(3) for layer list json
-                    if (copy_layerlist != null) {
-                        layerlist = copy_layerlist;
-                    }
-                    if (copy_layerlistJSON != null) {
-                        layerlistJSON = copy_layerlistJSON;
-                    }
-                    if (copy_contextualClasses != null) {
-                        contextualClasses = copy_contextualClasses;
-                    }
-                }
-            }
+        //(3) for layer list json
+        if (copy_layerlist != null) {
+            layerlist = copy_layerlist;
+        }
+        if (copy_layerlistJSON != null) {
+            layerlistJSON = copy_layerlistJSON;
+        }
+        if (copy_contextualClasses != null) {
+            contextualClasses = copy_contextualClasses;
         }
     }
 
@@ -135,9 +126,7 @@ public class CommonData {
      * @return environmental layer names as String[] or null on error
      */
     static public String[] getEnvironmentalLayers() {
-        synchronized (oLayersUtilLock) {
-            return environmentalLayerNames;
-        }
+        return environmentalLayerNames;
     }
 
     static void initEnvironmentalLayers() {
@@ -176,9 +165,7 @@ public class CommonData {
      * @return contextual layer names as String[] or null on error
      */
     static public String[] getContextualLayers() {
-        synchronized (oLayersUtilLock) {
-            return contextualLayerNames;
-        }
+        return contextualLayerNames;
     }
 
     static void initContextualLayers() {
@@ -211,33 +198,23 @@ public class CommonData {
     }
 
     static public ArrayList<ListEntry> getListEntriesAll() {
-        synchronized (oEnvironmentalListLock) {
-            return listEntriesAll;
-        }
+        return listEntriesAll;
     }
 
     static public String[] getLayerNamesAll() {
-        synchronized (oEnvironmentalListLock) {
-            return layerNamesAll;
-        }
+        return layerNamesAll;
     }
 
     static public ArrayList<ListEntry> getListEntriesEnv() {
-        synchronized (oEnvironmentalListLock) {
-            return listEntriesEnv;
-        }
+        return listEntriesEnv;
     }
 
     static public String[] getLayerNamesEnv() {
-        synchronized (oEnvironmentalListLock) {
-            return layerNamesEnv;
-        }
+        return layerNamesEnv;
     }
 
     static public float[][] getDistances() {
-        synchronized (oEnvironmentalListLock) {
-            return distances;
-        }
+        return distances;
     }
 
     static public void initEnvironmentalOnlyList() {
@@ -403,9 +380,7 @@ public class CommonData {
     }
 
     public static String getLayerList() {
-        synchronized (oLayerListJsonLock) {
-            return layerlist;
-        }
+        return layerlist;
     }
 
     static void initLayerList() {
@@ -426,15 +401,11 @@ public class CommonData {
     }
 
     static public JSONArray getLayerListJSONArray() {
-        synchronized (oLayerListJsonLock) {
-            return layerlistJSON;
-        }
+        return layerlistJSON;
     }
 
     static public List getContextualClasses(JSONObject layer) {
-        synchronized (oLayerListJsonLock) {
-            return contextualClasses.get(layer);
-        }
+        return contextualClasses.get(layer);
     }
 
     static void initContextualClasses() {

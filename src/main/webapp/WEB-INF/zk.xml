@@ -41,7 +41,7 @@
         <id-generator-class>zk.extra.IdGeneratorImpl</id-generator-class>
     </system-config>
 
-    <richlet>
+    <!--richlet>
         <richlet-name>ZKMonitor</richlet-name>
         <richlet-class>cz.datalite.zkspring.monitor.ZKMonitorRichlet</richlet-class>
     </richlet>
@@ -52,6 +52,6 @@
     <listener>
         <description>ZK performance monitor</description>
         <listener-class>cz.datalite.zkspring.monitor.ZKPerformanceMeter</listener-class>
-    </listener>
+    </listener-->
         
 </zk>

@@ -1,12 +1,10 @@
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk> 
-    <window
-   
-        id="popup_results" 
+    <window id="popup_results" 
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        use="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        >
-            <style>
+        use="org.ala.spatial.analysis.web.FilteringResultsWCController">
+            
+        <style>
                 .resultsCount {
                     font-size: 14px;
                     background-color: #000000;
@@ -14,76 +12,45 @@
                     padding: 4px;
                     font-weight: bold;
                     text-align: center;
-                }
-                
-            </style>
+                }                
+        </style>
 
         <tabbox>
             <tabs>
                 <tab label="1*" />
             </tabs>
-            <toolbar>
-                   
+            <toolbar>                   
                 <button label="Produce species list" id="download" sclass="goButton" />
                 <button label="Produce sample" id="downloadsamplesPreview" sclass="goButton" />
-
-
             </toolbar>
             <tabpanels>
                 <tabpanel>
-
-
                     <vbox>
+                        <separator />            
                         <separator />
-            
-                        <separator />
-
                         <grid width="300px" style="border: 0;"  sizedByContent="true">
                             <auxhead  style="border: 0;">
-                            <auxheader style="border: 0; font-weight: bold; text-align: center;"  label="Active area summary" colspan="2"/>
+                                <auxheader style="border: 0; font-weight: bold; text-align: center;"  label="Active area summary" colspan="2"/>
                             </auxhead>
-                                <columns  style="border: 0;">
-                                        <column  style="border: 0;text-align: center; font-weight: bold;" label="Species Count" width="150px"/>
-                                        <column  style="border: 0;text-align: center; font-weight: bold;" label="Occurrences Count" width="150px"/>
-                                </columns>
-                                <rows  style="border: 0;">
-                                        <row  style="text-align: center; border: 0;" id="rowCounts" visible="false">
-                                        <label sclass="resultsCount" id="results_label2_species" /><label sclass="resultsCount" id="results_label2_occurrences" />
-                                        </row>
-                                        <row  style="text-align: center; border: 0;" spans="2" id="rowUpdating" visible="true">
-                                            <label sclass="resultsCount" value="... updating ..." />
-                                        </row>
-                                </rows>
+                            <columns  style="border: 0;">
+                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Species Count" width="150px"/>
+                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Occurrences Count" width="150px"/>
+                            </columns>
+                            <rows  style="border: 0;">
+                                <row  style="text-align: center; border: 0;" id="rowCounts" visible="false">
+                                    <label sclass="resultsCount" id="results_label2_species" />
+                                    <label sclass="resultsCount" id="results_label2_occurrences" />
+                                </row>
+                                <row  style="text-align: center; border: 0;" spans="2" id="rowUpdating" visible="true">
+                                    <label sclass="resultsCount" value="... updating ..." />
+                                </row>
+                            </rows>
                         </grid>
-
-
-
                         <separator />
                         <separator />
                         <hbox>
                             <button label="Map all species occurrences in Active Area" id="mapspecies" visible="false" sclass="goButton"/>
                         </hbox>
-                        <separator />
-                        <label style="font-weight: bold" id="results_label" visible="false" />
-                        <!-- listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
-                            <listhead>
-                                <listheader label="Family" ></listheader>
-                                <listheader label="Scientific name" ></listheader>
-                                <listheader label="Common name/s" ></listheader>
-                                <listheader label="Taxon rank" ></listheader>
-                            </listhead>
-                        </listbox -->
-
-        <!--    <textbox
-                   multiline="true"
-                   id="popup_textbox_results" width="500px" height="200px" readonly="true" visible="false"/>
-                   -->
-                        <separator/>
-
-
-        <!--    <div align="right">
-                <button label="close" onClick="popup_results.detach();" />
-            </div> -->
                     </vbox>
                 </tabpanel>
             </tabpanels>

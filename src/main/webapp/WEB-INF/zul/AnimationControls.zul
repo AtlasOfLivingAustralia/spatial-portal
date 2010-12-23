@@ -11,9 +11,7 @@ to start/stop animation.
 <window id="animationControls" visible="false" 
 		apply="au.org.emii.portal.composer.AnimationControlsComposer"
 		use="au.org.emii.portal.composer.AnimationControlsComposer">
-		
-
-
+                    
                 <separator sclass="hr" height="10px" />
 
 		<div sclass="spaced" >
