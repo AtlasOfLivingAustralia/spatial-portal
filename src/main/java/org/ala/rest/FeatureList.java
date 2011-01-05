@@ -43,7 +43,6 @@ public class FeatureList {
 //        this(layerName, page);
 //        this.format = format;
 //    }
-
     public FeatureList(String layerName) throws IOException, Exception {
         this(layerName, 1);
     }
@@ -52,7 +51,7 @@ public class FeatureList {
         logger.finer("param: layerName: " + layerName);
         this.page = page;
         this.layerName = layerName;
-        
+
 
         GeoServer gs = GeoServerExtensions.bean(GeoServer.class);
         ServletContext sc = GeoServerExtensions.bean(ServletContext.class);
@@ -85,21 +84,21 @@ public class FeatureList {
                 total_features = layer.getCount(Query.ALL);
                 if (features.hasNext()) {
                     int featureNumber = 0;
-                    System.out.println("PAGE: " + page );
-                    while (features.hasNext()) {   
+                    logger.finer("PAGE: " + page);
+                    while (features.hasNext()) {
                         Feature feature = features.next(); //TODO: Really dumb way to do paging - but FeatureSource doesn't seem to allow anything else
                         if (featureNumber == PAGE_SIZE * (page)) {
                             System.out.println("Finished page");
                             break;
                         }
-                        if (featureNumber >= PAGE_SIZE * (page-1)) { 
+                        if (featureNumber >= PAGE_SIZE * (page - 1)) {
                             String link = gc.getBaseURL() + "/" + layerName + "/" + feature.getProperty(idAttribute1Name).getValue().toString();
                             if (idAttribute2Name.compareTo("") != 0) {
                                 link += "/" + feature.getProperty(idAttribute2Name).getValue().toString();
                             }
                             link += ".json";
                             links.add(link.replace(" ", "_"));
-                        }  
+                        }
                         featureNumber++;
                     }
                 } else {
@@ -124,13 +123,30 @@ public class FeatureList {
         if (total_features > page * PAGE_SIZE) {
             int nextPage = page + 1;
             String next = String.valueOf(nextPage);
-            if (!format.isEmpty())
-                    next = String.valueOf(nextPage) + "." + format;
+            if (!format.isEmpty()) {
+                next = String.valueOf(nextPage) + "." + format;
+            }
 
-            map.put("next", gc.getBaseURL() + "/" + layerName + "/features/" + next );
+            map.put("next", gc.getBaseURL() + "/" + layerName + "/features/" + next);
+
         }
+        //Previous button (if applicable)
+        if (page > 1) {
+            int prevPage = page-1;
+            String prev = String.valueOf(prevPage);
+            if (!format.isEmpty()) {
+                prev = String.valueOf(prev) + "." + format;
+            }
+            map.put("prev", gc.getBaseURL() + "/" + layerName + "/features/" + prev);
+        }
+
+        //List total number of pages
+        int pages = total_features / PAGE_SIZE;
+        if (total_features % PAGE_SIZE > 0) {
+            pages++;
+        }
+        map.put("total_pages", pages);
+
         return map;
     }
 }
-
-

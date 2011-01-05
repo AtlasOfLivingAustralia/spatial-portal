@@ -43,6 +43,7 @@ public class GazetteerCapabilities {
                 layerMap.put("layer_name", layerInfo.getName());
                 layerMap.put("alias", gc.getLayerAlias(layerName));
                 layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
+                layerMap.put("url", gc.getBaseURL() + "/" + gc.getLayerAlias(layerName) + ".json");
                 layers.add(layerMap);
             }
         }

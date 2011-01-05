@@ -94,6 +94,7 @@ public class GazetteerLayer {
         layerMap.put("layer_name", layerInfo.getName());
         layerMap.put("alias", gc.getLayerAlias(layerName));
         layerMap.put("default", new Boolean(gc.isDefaultLayer(layerName)).toString());
+        layerMap.put("features_url", gc.getBaseURL() + "/" + gc.getLayerAlias(layerName) + "/features.json");
     }
 
     public Map getMap() {
@@ -105,7 +106,9 @@ public class GazetteerLayer {
 
     @Deprecated
     public Map getLegacyMap() {
-        
-        return classMap;
+        Map map = new HashMap();
+        map.put("layer_details", layerMap);
+        map.put("layer_classes", classMap);
+        return map;
     }
 }
