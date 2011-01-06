@@ -2,11 +2,13 @@ package org.ala.rest;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -99,6 +101,8 @@ public class GazetteerIndex implements InitializingBean {
 
                     dataStore = DataStoreUtils.acquireDataStore(params, sc);//DataStoreFinder.getDataStore(params);
                     Set classNames = new HashSet();
+                    Set uniqueFeatureIds = new HashSet();
+                    Map featureMap = new HashMap();
                     if (dataStore == null) {
                         throw new Exception("Could not find datastore for this layer");
                     } else {
@@ -113,9 +117,9 @@ public class GazetteerIndex implements InitializingBean {
                             //logger.finer("Geometry type is " + feature.getDefaultGeometryProperty().getType().getBinding().getSimpleName());
 
                             Document featureDoc = new Document();
-
+                            String idAttribute1 = null;
                             if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
-                                String idAttribute1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
+                                idAttribute1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                                 String idAttribute2 = feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
                                 featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
                                 featureDoc.add(new Field("idAttribute2", idAttribute2, Store.YES, Index.ANALYZED));
@@ -123,7 +127,7 @@ public class GazetteerIndex implements InitializingBean {
                                 logger.finer("Indexed layer " + layerName + " idAttribute1: " + idAttribute1 + " idAttribute2: " + idAttribute2);
                             } else {
                                 if (feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue() != null) {
-                                    String idAttribute1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
+                                    idAttribute1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                                     featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
                                     featureDoc.add(new Field("id", idAttribute1, Store.YES, Index.ANALYZED));
                                     logger.finer("Indexed layer " + layerName + " idAttribute1: " + idAttribute1);
@@ -155,14 +159,22 @@ public class GazetteerIndex implements InitializingBean {
                                 }
                             }
                             featureDoc.add(new Field("Type", feature.getDefaultGeometryProperty().getType().getBinding().getSimpleName(), Store.YES, Index.NO));
-
-                            featureIndex.addDocument(featureDoc);
+                            //AM: relying on the new requirement to have unique idAttribute1
+                            uniqueFeatureIds.add(idAttribute1);
+                            featureMap.put(idAttribute1,featureDoc);
+                            
                             //System.out.println(".");
                         }
                         features.close();
 
                     }
                     dataStore.dispose();
+
+                    //For some layers, multiple entries are multiple polygons of the same feature - only index once per *feature*
+                    for (Object id : uniqueFeatureIds) {
+                        System.out.println("FOUND AN ID:" + (String)id);
+                        featureIndex.addDocument((Document)featureMap.get(id));
+                    }
 
                     //indexing classes with layer name
 
@@ -192,32 +204,34 @@ public class GazetteerIndex implements InitializingBean {
                         
                         Element e = (Element) nList.item(i);
                         String layerName = e.getAttribute("name");
-                        logger.finer("Found synonym for layer: " + layerName);
+                        logger.log(Level.FINER, "Found synonym for layer: {0}", layerName);
                         
                         NodeList featureNodes = e.getElementsByTagName("feature");
+
                         for (int j=0; j < featureNodes.getLength(); j++){
                             Document featureDoc = new Document();
                             featureDoc.add(new Field("layerName", layerName, Store.YES, Index.ANALYZED));
                             Element featureElement = (Element) featureNodes.item(j);
                             String idAttribute1 = featureElement.getElementsByTagName("idAttribute1").item(0).getTextContent();
-                            logger.finer("idAttribute1 is: " + idAttribute1);
+                            logger.log(Level.FINER, "idAttribute1 is: {0}", idAttribute1);
                             featureDoc.add(new Field("idAttribute1", idAttribute1, Store.YES, Index.ANALYZED));
 
                             if (featureElement.getElementsByTagName("idAttribute2").getLength() > 0){
                                 String idAttribute2 = featureElement.getElementsByTagName("idAttribute2").item(0).getTextContent();
-                                logger.finer("idAttribute2 is: " + idAttribute2);
+                                logger.log(Level.FINER, "idAttribute2 is: {0}", idAttribute2);
                                 featureDoc.add(new Field("idAttribute2", idAttribute2, Store.YES, Index.ANALYZED));
                             }
                             String synonym = featureElement.getElementsByTagName("synonym").item(0).getTextContent();
-                            logger.finer("synonym is: " + synonym);
+                            logger.log(Level.FINER, "synonym is: {0}", synonym);
                             featureDoc.add(new Field("id", synonym, Store.YES, Index.ANALYZED));
                             featureDoc.add(new Field("name", synonym, Store.YES, Index.ANALYZED));
+
                             featureIndex.addDocument(featureDoc);
                         }
                     }
                 }
                 catch (FileNotFoundException fnfe){
-                    logger.severe("Unable to find synonyms.xml in " + GeoserverDataDirectory.getGeoserverDataDirectory());
+                    logger.log(Level.SEVERE, "Unable to find synonyms.xml in {0}", GeoserverDataDirectory.getGeoserverDataDirectory());
                 }
                 catch (Exception e) {
                     logger.severe("Failed to initialize Gazetteer");
