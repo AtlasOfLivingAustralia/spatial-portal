@@ -31,9 +31,25 @@
               <key><value>/gazetteer/latlon/{latlon}</value></key>
               <value>search</value>
             </entry>
-             <entry>
+            <entry>
+                <key><value>/gazetteer/latlon/{latlon}/{closest}</value></key>
+                <value>search</value>
+            </entry>
+            <entry>
+                <key><value>/gazetteer/latlon/{latlon}/{closest}/{count}</value></key>
+                <value>search</value>
+            </entry>
+            <entry>
               <key><value>/gazetteer/{layer}/latlon/{latlon}</value></key>
               <value>search</value>
+            </entry>
+            <entry>
+                <key><value>/gazetteer/{layer}/latlon/{latlon}/closest</value></key>
+                <value>search</value>
+            </entry>
+            <entry>
+                <key><value>/gazetteer/{layer}/latlon/{latlon}/{closest}/{count}</value></key>
+                <value>search</value>
             </entry>
          </map>
       </property>
@@ -63,9 +79,8 @@
             <entry>
               <key><value>/gazetteer/{layer}</value></key>
               <value>featureService</value>
-            </entry>
-             
-              <entry>
+            </entry> 
+            <entry>
               <key><value>/gazetteer/{layer}/features</value></key>
               <value>featureService</value>
             </entry>

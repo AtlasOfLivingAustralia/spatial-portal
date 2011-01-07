@@ -45,7 +45,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         String q = "";
         String lon = "";
         String lat = "";
-        int radius = 0;
+        int radius = 50;
         int count = 0;
         String wkt = "";
         String layer = "";
@@ -86,7 +86,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
                 }
                 //Legacy support for 'point' paramater
                 if (get_param.contains("point=")) {
-                    String latlon = get_param.replace("point=","");
+                    String latlon = get_param.replace("point=", "");
                     lon = latlon.split(",")[0];
                     lat = latlon.split(",")[1];
                     logger.finer("lat,lon is " + lat + "," + lon);
@@ -96,19 +96,49 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
                     logger.finer("closestFeature is " + closestFeature);
                 }
             }
-        }
-        //doing a cacheable point in poly request eg. /layer/latlon/lat,lon
+        } //doing a cacheable point based feature search with count
+        else if ((getRequest().getAttributes().containsKey("latlon"))
+                && (getRequest().getAttributes().containsKey("closest"))) {
+            logger.finer("We are performing a cacheable closest feature search");
+
+            //by default, there is only one feature returned
+            int c_count = 1;
+            if (getRequest().getAttributes().containsKey("count")){
+                c_count = new Integer(getRequest().getAttributes().get("count").toString()).intValue();
+                logger.finer("count is " + c_count);
+            }
+            String c_layer = "";
+            if (getRequest().getAttributes().containsKey("layer")){
+                c_layer = getRequest().getAttributes().get("layer").toString();
+                logger.finer("layer is " + c_layer);
+            }
+            ClosestFeatureSearch cfs;
+            String latlon = getRequest().getAttributes().get("latlon").toString();
+            lat = latlon.split(",")[0];
+            lon = latlon.split(",")[1];
+
+            if (c_layer.compareTo("") == 0) {
+                cfs = new ClosestFeatureSearch(lon, lat, radius, c_count);
+            } else {
+                cfs = new ClosestFeatureSearch(lon, lat, radius, c_count, c_layer);
+            }
+            xstream.processAnnotations(ClosestFeatureSearch.class);
+            String xmlString = xstream.toXML(cfs);
+            getResponse().setEntity(format.toRepresentation(xmlString));
+
+            return;
+        } //doing a cacheable point in poly request eg. /layer/latlon/lat,lon
         else if ((getRequest().getAttributes().containsKey("latlon"))) {
             //point search without query params
-             String latlon =  getRequest().getAttributes().get("latlon").toString();
-              lat = latlon.split(",")[0];
-               lon = latlon.split(",")[1];
-             PointSearch searchObj;
+            String latlon = getRequest().getAttributes().get("latlon").toString();
+            lat = latlon.split(",")[0];
+            lon = latlon.split(",")[1];
+            PointSearch searchObj;
             if (getRequest().getAttributes().containsKey("layer")) {
                 //search the specified layer
-               layer = getRequest().getAttributes().get("layer").toString();
+                layer = getRequest().getAttributes().get("layer").toString();
                 searchObj = new PointSearch(lon, lat, 0, layer); //0 Radius means not using radius?
-                
+
             } else {
                 //search the default layers
                 searchObj = new PointSearch(lon, lat, 0);
@@ -117,6 +147,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             String xmlString = xstream.toXML(searchObj);
             Date d = new Date();
             Calendar cal = Calendar.getInstance();
+            //set cache expiry to be 10 years
             cal.add(Calendar.YEAR, 10);
             d = cal.getTime();
             Representation rep = format.toRepresentation(xmlString);
@@ -135,7 +166,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             q = q.replace("+", "* AND ");
             q = q.replace("%20", "* AND ");
             q = q.replace("_", "* AND ");
-            
+
             if (layers_arr.length > 0) {
                 searchObj = new Search(q + "*", layers_arr);
             } else {
@@ -146,19 +177,17 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             xstream.processAnnotations(Search.class);
             String xmlString = xstream.toXML(searchObj);
             getResponse().setEntity(format.toRepresentation(xmlString));
-        }
-        //Find me the nearest named feature
-        else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0) && (radius != 0) &&(closestFeature.compareTo("true") == 0)){
+        } //Find me the nearest named feature
+        else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0) && (radius != 0) && (closestFeature.compareTo("true") == 0)) {
             //by default, only return the nearest item
-            if (count == 0){
+            if (count == 0) {
                 count = 1;
             }
             logger.finer("We are performing a closest feature search");
             ClosestFeatureSearch cfs;
-            if (layers_arr.length > 0){
+            if (layers_arr.length > 0) {
                 cfs = new ClosestFeatureSearch(lon, lat, radius, count, layers_arr);
-            }
-            else{
+            } else {
                 cfs = new ClosestFeatureSearch(lon, lat, radius, count);
             }
             xstream.processAnnotations(ClosestFeatureSearch.class);

@@ -39,10 +39,6 @@ public class FeatureList {
     private GazetteerConfig gc = new GazetteerConfig();
     private String format = "";
 
-//    public FeatureList(String layerName,int page, String format) throws IOException, Exception {
-//        this(layerName, page);
-//        this.format = format;
-//    }
     public FeatureList(String layerName) throws IOException, Exception {
         this(layerName, 1);
     }
