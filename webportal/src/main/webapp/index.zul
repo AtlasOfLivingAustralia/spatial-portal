@@ -81,26 +81,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             var safeToLoadMapId = '${safeToLoadMap.uuid}';
 
             function updateSafeToLoadMap(status) {
-                    //document.getElementById(safeToLoadMapId).value = status;
-                    //zkTxbox.updateChange($e(safeToLoadMapId), false);
-                    setTimeout(function(){
-                        var tbxTabSelection = $e('${safeToLoadMap.uuid}');
-                        var currentTime = new Date();
-                        tbxTabSelection.value = status;
-                        if (document.createEvent) {
-                        var evt = document.createEvent('HTMLEvents');
-                        evt.initEvent('blur',false,false);
-                        tbxTabSelection.dispatchEvent(evt);
-                        var evt2 = document.createEvent('HTMLEvents');
-                        evt2.initEvent('change',false,false);
-                        tbxTabSelection.dispatchEvent(evt2);
-                        }
-                        else if (document.createEventObject) {
-                        tbxTabSelection.fireEvent('onblur');
-                        tbxTabSelection.fireEvent('onchange');
-                        }
-                    }, 1000);
+                    document.getElementById(safeToLoadMapId).value = status;
+                    try{
+                        zkTxbox.updateChange($e(safeToLoadMapId), false);
+                    }catch(err){
+                        setTimeout(function() { updateSafeToLoadMap(status); }, 1000);
                     }
+            }
         </script>
         <doublebox id="southReal" visible="false" />
         <doublebox id="northReal" visible="false" />
@@ -978,6 +965,10 @@ border-bottom: none;
                             h1[i] = h1[i].substring(2,h1[i].length);
                             var h2 = h1[i].split(",");
                             if(h2.length > 6) {
+                                //style adjustment
+                                document.getElementsByTagName("body")[0].style.margin = "0px";
+                                document.getElementsByTagName("html")[0].style.margin = "0px";
+
                                 //hide map buttons
                                 var q = $e('${mapbuttons.uuid}');
                                 q.style.display="none";
