@@ -168,13 +168,15 @@ public class GazetteerFeature {
                             if (maxx.compareTo(minx) == 0 && maxy.compareTo(miny) == 0){
                                 String point = "(" + strRoundDouble(miny) + "," + strRoundDouble(minx) + ")";
                                 this.basic_properties.put("Point", point);
-                                logger.info("Point is: " + point);
+                                logger.finer("Point is: " + point);
                             }
                             else{
                                 String boundingBox = "((" + strRoundDouble(miny) + "," + strRoundDouble(minx) + "),(" + strRoundDouble(maxy) + "," + strRoundDouble(maxx) + "))";
                                 this.basic_properties.put("Bounding_Box", boundingBox);
-                                logger.info("Bounding box is: " + boundingBox);
+                                logger.finer("Bounding box is: " + boundingBox);
                             }
+                            this.basic_properties.put("Layer_Metadata", "http://" + gc.getHostname() + "/layers/" + layerName);
+                            logger.finer("Layer metadata url is " + gc.getBaseURL() + "/layers/" + layerName);
                             this.geometries.add(w.toString());
 
                             //Add all the feature properties to the geojson properties object

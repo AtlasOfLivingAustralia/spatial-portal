@@ -109,9 +109,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             }
             String c_layer = "";
             if (getRequest().getAttributes().containsKey("layer")){
-                c_layer = getRequest().getAttributes().get("layer").toString();
-                logger.finer("layer is " + c_layer);
+                c_layer = getLayer(getRequest().getAttributes().get("layer").toString());
             }
+
             ClosestFeatureSearch cfs;
             String latlon = getRequest().getAttributes().get("latlon").toString();
             lat = latlon.split(",")[0];
@@ -136,7 +136,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             PointSearch searchObj;
             if (getRequest().getAttributes().containsKey("layer")) {
                 //search the specified layer
-                layer = getRequest().getAttributes().get("layer").toString();
+                layer = getLayer(getRequest().getAttributes().get("layer").toString());
                 searchObj = new PointSearch(lon, lat, 0, layer); //0 Radius means not using radius?
 
             } else {
@@ -249,5 +249,28 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             logger.info(string);
         }
         return layer_al.toArray(new String[layer_al.size()]);
+    }
+
+    /**
+     * Another helper function that returns a layer name provided an alias
+     * @param Layer
+     * @return
+     */
+    public String getLayer(String c_layer) {
+
+        GazetteerConfig gc = new GazetteerConfig();
+        //allows us to use alias and name interchangeably
+        if (gc.layerNameExists(c_layer)) {
+            logger.info("Layer " + c_layer + " exists.");
+        } else {
+            String layer = gc.getNameFromAlias(c_layer);
+            if (layer.compareTo("") != 0) {
+                c_layer = layer;
+            } else {
+                logger.info("Layer " + layer + " layer name or alias does not exist, ignoring.");
+            }
+        }
+        logger.finer("layer is " + c_layer);
+        return c_layer;
     }
 }

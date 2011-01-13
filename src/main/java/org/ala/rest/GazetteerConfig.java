@@ -35,11 +35,9 @@ public class GazetteerConfig {
             configDoc = builder.parse(new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer.xml"));
 
 
-        }
-        catch (FileNotFoundException fnfe){
+        } catch (FileNotFoundException fnfe) {
             logger.severe("Unable to find gazetteer.xml in " + GeoserverDataDirectory.getGeoserverDataDirectory());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.severe("Failed to initialize Gazetteer");
             logger.severe(ExceptionUtils.getFullStackTrace(e));
         }
@@ -56,12 +54,30 @@ public class GazetteerConfig {
             Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
             NodeList nodes = (NodeList) result;
             baseURL = nodes.item(0).getNodeValue();
-            
+
         } catch (Exception e) {
             logger.severe("An error has occurred getting the baseurl");
             logger.severe(ExceptionUtils.getFullStackTrace(e));
         }
         return baseURL;
+    }
+
+    public String getHostname() {
+        String hostname = "";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//hostname/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            hostname = nodes.item(0).getNodeValue();
+
+        } catch (Exception e) {
+            logger.severe("An error has occurred getting the hostname");
+            logger.severe(ExceptionUtils.getFullStackTrace(e));
+        }
+        return hostname;
     }
 
     /**
@@ -166,12 +182,13 @@ public class GazetteerConfig {
      * @param name
      * @return
      */
-    public boolean layerNameExists(String name){
-        if (getLayerNames().contains(name))
+    public boolean layerNameExists(String name) {
+        if (getLayerNames().contains(name)) {
             return true;
-        else
+        } else {
             logger.finer("Layer name does not exist for " + name);
-            return false;
+        }
+        return false;
     }
 
 //    /**
@@ -188,7 +205,6 @@ public class GazetteerConfig {
 //            logger.finer("Layer name or alias does not exist for " + name);
 //            return false;
 //    }
-
     /***
      * Get a list of attributes to use in the feature description for the given layer
      * @param layerName 
@@ -315,8 +331,8 @@ public class GazetteerConfig {
      * @param layerName
      * @return
      */
-    public boolean isDefaultLayer(String layerName){
-    boolean defaultLayer = false;
+    public boolean isDefaultLayer(String layerName) {
+        boolean defaultLayer = false;
         try {
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();
@@ -331,13 +347,14 @@ public class GazetteerConfig {
 
         }
     }
+
     /**
      * Checks to see if the layer is name searchable
      * @param layerName
      * @return
      */
-    public boolean isNameSearchable(String layerName){
-    boolean nameSearch = false;
+    public boolean isNameSearchable(String layerName) {
+        boolean nameSearch = false;
         try {
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();

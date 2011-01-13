@@ -44,7 +44,7 @@
               <value>search</value>
             </entry>
             <entry>
-                <key><value>/gazetteer/{layer}/latlon/{latlon}/closest</value></key>
+                <key><value>/gazetteer/{layer}/latlon/{latlon}/{closest}</value></key>
                 <value>search</value>
             </entry>
             <entry>
