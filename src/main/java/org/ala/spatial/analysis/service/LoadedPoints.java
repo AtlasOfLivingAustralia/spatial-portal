@@ -28,6 +28,27 @@ public class LoadedPoints {
         points = points_;
         name = name_;
         attributes = new HashMap<String, Object>();
+
+        //-180 < longitude <= 180
+        for (int i = 0; i < points_.length; i++) {
+            while (points_[i][0] <= -180) {
+                points_[i][0] += 360;
+            }
+            while (points_[i][0] > 180) {
+                points_[i][0] -= 360;
+            }
+        }
+
+        //default to line numbers as ids
+        if (ids_ == null) {
+            String[] ids = new String[points_.length];
+            for (int i = 0; i < points_.length; i++) {
+                ids[i] = String.valueOf(i + 1);
+            }
+
+            ids_ = ids;
+        }
+
         attributes.put("id", ids_);
     }
 
@@ -134,6 +155,7 @@ public class LoadedPoints {
     public String getSampling(Layer[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows) {
         buildSampling(layers);
         ConcurrentHashMap<String, String[]> sampling = (ConcurrentHashMap<String, String[]>) getAttribute("sampling");
+        String[] ids = (String[]) getAttribute("id");
 
         ArrayList<String[]> columns = null;
         if (layers != null) {
@@ -146,7 +168,7 @@ public class LoadedPoints {
         StringBuffer sb = new StringBuffer();
 
         //header: longitude, latitude, layernames
-        sb.append("longitude,latitude");
+        sb.append("id,longitude,latitude");
 
         if (layers != null) {
             for (int i = 0; i < layers.length; i++) {
@@ -160,6 +182,7 @@ public class LoadedPoints {
         for (int i = 0; i < points.length && rowsAdded < max_rows; i++) {
             //is it a valid point?
             if ((region == null || region.isWithin(points[i][0], points[i][1]))) {
+                sb.append(ids[i]).append(",");
                 sb.append(points[i][0]).append(",").append(points[i][1]);
                 if (layers != null) {
                     for (int j = 0; j < layers.length; j++) {

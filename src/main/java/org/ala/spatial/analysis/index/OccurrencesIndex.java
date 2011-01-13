@@ -182,7 +182,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         int j;
         TreeSet<Integer> ss = new TreeSet<Integer>();
         StringBuffer sb = new StringBuffer();
-        String nameLowerCase = name.toLowerCase();
+        String nameLowerCase = name.toLowerCase().replaceAll("[^a-z]", "");
         for (int i = 0; i < common_names_indexed.length; i++) {
             if (common_names_indexed[i].nameLowerCase.contains(nameLowerCase)) {
                 String lsid = single_index[common_names_indexed[i].index].name;
@@ -257,7 +257,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         for (int i = 0; i < single_index.length; i++) {
             if (record >= single_index[i].record_start
                     && record <= single_index[i].record_end) {
-                if(ir == null || ir.type < single_index[i].type) {
+                if (ir == null || ir.type < single_index[i].type) {
                     ir = single_index[i];
                 }
             }
@@ -1140,6 +1140,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             e.printStackTrace();
         }
     }
+
     /**
      * loads all OccurrencesIndex files for quicker response times
      *
@@ -3725,41 +3726,45 @@ public class OccurrencesIndex implements AnalysisIndexService {
             //identify sensitive species
             for (int i = 0; i < d.length; i += 2) {
                 if (dsensitive[i] != -1 || dsensitive[i + 1] != -1) {
-                    IndexedRecord ir = getSingleIndexAtRecord((i/2) + recordstart);
-                    String [] s = getFirstName(ir.name);
+                    IndexedRecord ir = getSingleIndexAtRecord((i / 2) + recordstart);
+                    String[] s = getFirstName(ir.name);
                     removedSpecies.append("\r\n").append(ir.name).append(",").append(StringUtils.capitalize(s[0])).append(",").append(s[1]);
                     irs.add(ir);
-                    
+
                     //seek to last record for this ir
                     i = (ir.record_end - recordstart) * 2;
                 }
             }
 
             //mask out
-            for(IndexedRecord ir : irs) {
+            for (IndexedRecord ir : irs) {
                 int start = ir.record_start - recordstart;
-                if(start < 0) start = 0;
-                
-                int end = ir.record_end - recordstart;                
-                if(end >= recordend) end = recordend;
-                
-                end *=2;                        //translate to points, long+lat
-                start *=2;                      //translate to points, long+lat
-                for(int j=start;j<=end;j++){
-                   d[j] = -1;                   //mask
+                if (start < 0) {
+                    start = 0;
+                }
+
+                int end = ir.record_end - recordstart;
+                if (end >= recordend) {
+                    end = recordend;
+                }
+
+                end *= 2;                        //translate to points, long+lat
+                start *= 2;                      //translate to points, long+lat
+                for (int j = start; j <= end; j++) {
+                    d[j] = -1;                   //mask
                 }
             }
 
             //removed masked records
             int p = 0;
             for (int i = 0; i < d.length; i += 2) {
-                if(d[i] != -1 && d[i+1] != -1){
+                if (d[i] != -1 && d[i + 1] != -1) {
                     d[p] = d[i];
                     d[p + 1] = d[i + 1];
                     p += 2;
                 }
             }
-            if(p == 0){
+            if (p == 0) {
                 d = null;
             } else {
                 d = java.util.Arrays.copyOf(d, p);
@@ -3796,28 +3801,28 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     public static int isSensitiveRecord(int recordstart, int recordend) {
         /*try {
-            int number_of_points = (recordend - recordstart + 1);
+        int number_of_points = (recordend - recordstart + 1);
 
-            SpatialLogger.log("Occ.isSensitiveRecord.number_of_points: " + number_of_points);
-            
-            int i;
-            for (i = recordstart; i <= recordend; i++) {
-                if (sensitiveCoordinates[i][0] != -1 || sensitiveCoordinates[i][1] != -1) {
-                    SpatialLogger.log("Occ.isSensitiveRecord(1)");
-                    return 1;
-                }
-            }
+        SpatialLogger.log("Occ.isSensitiveRecord.number_of_points: " + number_of_points);
+
+        int i;
+        for (i = recordstart; i <= recordend; i++) {
+        if (sensitiveCoordinates[i][0] != -1 || sensitiveCoordinates[i][1] != -1) {
+        SpatialLogger.log("Occ.isSensitiveRecord(1)");
+        return 1;
+        }
+        }
         } catch (Exception e) {
-            SpatialLogger.log("isSensitive(" + recordstart + "," + recordend, e.toString());
-            return -1;
+        SpatialLogger.log("isSensitive(" + recordstart + "," + recordend, e.toString());
+        return -1;
         }
 
         SpatialLogger.log("Occ.isSensitiveRecord(0)");
         return 0;*/
 
         StringBuffer sb = new StringBuffer();
-        double [] d = getPointsMinusSensitiveSpecies(recordstart, recordend, sb);
-        if(d == null || d.length == 0){
+        double[] d = getPointsMinusSensitiveSpecies(recordstart, recordend, sb);
+        if (d == null || d.length == 0) {
             return 1;
         } else {
             return 0;
@@ -3908,7 +3913,7 @@ class CommonNameRecord {
     public CommonNameRecord(String name_, int index_) {
         name = name_;
         index = index_;
-        nameLowerCase = name_.toLowerCase();
+        nameLowerCase = name_.toLowerCase().replaceAll("[^a-z]", "");
     }
 }
 

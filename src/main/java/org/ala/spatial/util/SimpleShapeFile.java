@@ -357,7 +357,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         /* setup for thread count */
         int threadcount = TabulationSettings.analysis_threads;
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
-        int step = points.length / (threadcount * 10);
+        int step = (int) Math.ceil(points.length / (double) (threadcount * 10));
         if (step % 2 != 0) {
             step++;
         }
@@ -431,7 +431,7 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         /* setup for thread count */
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
-        int step = points.length / (threadcount * 10);
+        int step = (int) Math.ceil(points.length / (double) (threadcount * 10));
         if (step % 2 != 0) {
             step++;
         }
@@ -636,6 +636,8 @@ public class SimpleShapeFile extends Object implements Serializable {
 
         String[] polygons = pointsString.split("S");
 
+        //String[] fixedPolygons = fixStringPolygons(polygons);
+
         //System.out.println("$" + pointsString);
 
         if (polygons.length == 1) {
@@ -643,6 +645,63 @@ public class SimpleShapeFile extends Object implements Serializable {
         } else {
             return ComplexRegion.parseComplexRegion(polygons);
         }
+    }
+
+    private static ArrayList<double[]> fixStringPolygons(String[] polygons) {
+        ArrayList<double[]> fixedPolygons = new ArrayList<double[]>();
+
+        for (int p = 0; p < polygons.length; p++) {
+            String[] pairs = polygons[p].split(",");
+
+            //track polygon longtiude extents
+            double min = 0;
+            double max = 0;
+
+            double[][] points = new double[pairs.length][2];
+            for (int i = 0; i < pairs.length; i++) {
+                String[] longlat = pairs[i].split(":");
+                if (longlat.length == 2) {
+                    try {
+                        points[i][0] = Double.parseDouble(longlat[0]);
+                        points[i][1] = Double.parseDouble(longlat[1]);
+
+                        while (points[i][0] > 360) {
+                            points[i][0] -= 360;
+                        }
+                        while (points[i][0] <= -360) {
+                            points[i][0] += 360;
+                        }
+
+                        if (i == 0) {
+                            min = points[i][0];
+                            max = min;
+                        } else {
+                            if (min < points[i][0]) {
+                                min = points[i][0];
+                            }
+                            if (max < points[i][0]) {
+                                max = points[i][0];
+                            }
+                        }
+                    } catch (Exception e) {
+                        //TODO: alert failure
+                    }
+                } else {
+                    //TODO: alert failure
+                }
+            }
+
+            //does it need to be split?
+            double xplus = 0;
+            if (min <= -180) {
+                xplus = 360;
+            }
+            if (max + xplus > 180) {
+                //TODO: split into polygons
+            }
+        }
+
+        return fixedPolygons;
     }
 
     static String convertGeoToPoints(String geometry) {

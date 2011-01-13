@@ -18,27 +18,41 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class PointsWSController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public 
+    public
     @ResponseBody
     String register(HttpServletRequest req) {
 
         try {
 
-            String[] pointsString = URLDecoder.decode(req.getParameter("points"), "UTF-8").split("\n");
+            String[] pointsString = req.getParameter("points").split("\n");
             String idss = req.getParameter("ids");
             String[] ids = null;
-            if(idss != null){
-                ids = URLDecoder.decode(idss,"UTF-8").split("\n");
+            if (idss != null) {
+                ids = idss.split("\n");
             }
             String name = URLDecoder.decode(req.getParameter("name"), "UTF-8");
 
             double[][] points = new double[pointsString.length][2];
             String[] line;
+            int count = 0;
             for (int i = 0; i < pointsString.length; i++) {
                 line = pointsString[i].split(",");
-                points[i][0] = Double.parseDouble(line[0]);
-                points[i][1] = Double.parseDouble(line[1]);
+                try {
+                    points[count][0] = Double.parseDouble(line[0]);
+                    points[count][1] = Double.parseDouble(line[1]);
+                    count++;
+                } catch (Exception e) {
+                    count = count;
+                }
             }
+
+            //resize
+            double[][] pointsTrimmed = new double[count][2];
+            for (int i = 0; i < count; i++) {
+                pointsTrimmed[i][0] = points[i][0];
+                pointsTrimmed[i][1] = points[i][1];
+            }
+            points = pointsTrimmed;
 
             String id = String.valueOf(System.currentTimeMillis());
 
