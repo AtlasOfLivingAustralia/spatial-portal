@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
  * @author Adam
  */
 public class SessionPrint {
+    final int dpi = 300;
 
     String server;
     String height;
@@ -59,9 +60,10 @@ public class SessionPrint {
         this.mc = mc_;
 
         //resolution == 0 (current)
-        //resolution == 1 (print: width up to 4800px, height up to 7200px)
+        //resolution == 1 (print: width up to 4962px, height up to 7014px = A4 600dpi)
         if(resolution == 1) {
-            int maxW = 4800, maxH = 7200;
+            int maxW = (int)(8.27 * dpi);
+            int maxH = (int)(11.69 * dpi);
             double w = Double.parseDouble(width);
             double h = Double.parseDouble(height);
             if (w/h > maxW/maxH) {
@@ -236,12 +238,23 @@ public class SessionPrint {
 
         //TODO: dynamic path and settings
         //String cmd = "/mnt/ala/printing/wkhtmltoimage"
-        String [][] cmds = {
+        String [][] cmdsScreen = {
             {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,imgFilename},
             {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,jpgFilename},
             {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,pdfFilename}};
 
+        String [][] cmdsPrint = {
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,imgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,jpgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),"-density",dpi + "x" + dpi,"-units","pixelsperinch",jpgFilename,pdfFilename}};
+
         try {
+
+            String [][] cmds = cmdsScreen;
+            if(resolution == 1){
+                cmds = cmdsPrint;
+            }
+
             for (String [] cmd : cmds) {
                 System.out.println("running cmd: " + cmd[0] + " " + cmd[1] + " " + cmd[2]);
 
