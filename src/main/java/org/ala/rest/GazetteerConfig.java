@@ -45,21 +45,7 @@ public class GazetteerConfig {
     }
 
     public String getBaseURL() {
-        String baseURL = "";
-        try {
-            XPathFactory factory = XPathFactory.newInstance();
-            XPath xpath = factory.newXPath();
-            XPathExpression expr = xpath.compile("//baseURL/text()");
-
-            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
-            NodeList nodes = (NodeList) result;
-            baseURL = nodes.item(0).getNodeValue();
-
-        } catch (Exception e) {
-            logger.severe("An error has occurred getting the baseurl");
-            logger.severe(ExceptionUtils.getFullStackTrace(e));
-        }
-        return baseURL;
+        return "http://" + getHostname() + getRootPath();
     }
 
     public String getHostname() {
@@ -79,6 +65,25 @@ public class GazetteerConfig {
         }
         return hostname;
     }
+
+    public String getRootPath() {
+        String rootPath = "";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//rootPath/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            rootPath = nodes.item(0).getNodeValue();
+
+        } catch (Exception e) {
+            logger.severe("An error has occurred getting the hostname");
+            logger.severe(ExceptionUtils.getFullStackTrace(e));
+        }
+        return rootPath;
+    }
+
 
     /**
      * Gets a list of geoserver layer names used by the gazetteer
