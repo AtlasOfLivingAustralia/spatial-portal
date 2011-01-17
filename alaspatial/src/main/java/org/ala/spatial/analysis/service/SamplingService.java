@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.service;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import org.ala.spatial.analysis.index.BoundingBoxes;
 
 import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
@@ -828,4 +829,103 @@ public class SamplingService {
 
         return null;
     }
+
+    /**
+     * gets array of points for species (genus, etc) name matches within
+     * a specified region
+     *
+     * can return other field or sampling for points returned
+     *
+     * @param filter species (genus, etc) name
+     * @param region region to filter results by
+     * @param records sorted pool of records to intersect with as ArrayList<Integer>
+     * @return points as double[], first is longitude, every second is latitude.
+     */
+    public double[] sampleSpeciesPoints(String filter, SimpleRegion region, ArrayList<Integer> records, ArrayList<Object> extra) {
+            //test on bounding box
+            double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
+            double[][] regionbb = region.getBoundingBox();
+            if (bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
+                    && bb[1] <= regionbb[1][1] && bb[3] >= regionbb[0][1]) {
+                
+                IndexedRecord [] ir = OccurrencesIndex.filterSpeciesRecords(filter);
+                if(ir == null) { 
+                    return null;
+                }
+                double [] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
+
+                // test for region absence
+                if (region == null || points == null) {
+                    return points;
+                }
+
+                //TODO: nicer 'get'
+                //TODO: caching on 'extra' data
+                int[] field = null;
+                double[] field_output = null;
+                if (extra != null) {
+                    for (int i = 0; i < extra.size(); i += 2) {
+                        String s = (String) extra.get(i);
+                        if (s.equalsIgnoreCase("u")) {//uncertainty
+                            field = new int[1];
+                            field[0] = 1;   //index in OccurrencesIndex.cluster_records
+                            field_output = new double[points.length / 2];
+                        }
+                    }
+                }
+
+                int i;
+                int count = 0;
+
+                int recordsPos = 0; //for test on records
+
+                // return all valid points within the region
+                double[] output = new double[points.length];
+                for (i = 0; i < points.length; i += 2) {
+                    //do not add if does not intersect with records list
+                    if (records != null) {
+                        int currentRecord = i + ir[0].record_start;
+                        //increment recordsPos as required
+                        while (recordsPos < records.size()
+                                && records.get(recordsPos).intValue() < currentRecord) {
+                            recordsPos++;
+                        }
+                        //test for intersect
+                        if (recordsPos >= records.size()
+                                || currentRecord != records.get(recordsPos).intValue()) {
+                            continue;
+                        }
+                    }
+                    //region test
+                    if (region.isWithin(points[i], points[i + 1])) {
+                        if (field != null) {
+                            try {
+                                //cap uncertainty
+                                field_output[count / 2] = 
+                                        //Math.min(Double.parseDouble(OccurrencesIndex.cluster_records[i / 2 + ir[0].record_start][field[0]]),30000);
+                                        Double.parseDouble(OccurrencesIndex.cluster_records[i / 2 + ir[0].record_start][field[0]]);
+                            } catch (Exception e) {
+                                field_output[count / 2] = Double.NaN; //30000; //default 30km
+                            }
+                        }
+
+                        output[count] = points[i];
+                        count++;
+                        output[count] = points[i + 1];
+                        count++;
+                    }
+                }
+
+                if (count > 0) {
+                    if (field != null) {
+                        extra.set(1, java.util.Arrays.copyOf(field_output, count / 2));
+                    }
+
+                    return java.util.Arrays.copyOf(output, count);
+                }
+            }
+
+        return null;
+    }
+
 }

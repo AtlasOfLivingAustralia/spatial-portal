@@ -1,18 +1,32 @@
 package org.ala.spatial.web.services;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.ala.spatial.analysis.cluster.Record;
+import org.ala.spatial.analysis.cluster.SpatialCluster3;
 import org.ala.spatial.analysis.heatmap.HeatMap;
 import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
@@ -50,7 +64,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author ajay
  */
 @Controller
-@RequestMapping("/ws/density")
+@RequestMapping("/ws")
 public class WMSController {
 
     String baseOutputPath = "";
@@ -62,7 +76,7 @@ public class WMSController {
         this.speciesDao = speciesDao;
     }
 
-    @RequestMapping(value = "/map", method = RequestMethod.GET)
+    @RequestMapping(value = "/density/map", method = RequestMethod.GET)
     public
     @ResponseBody
     Map getDensityMap(
@@ -537,4 +551,311 @@ public class WMSController {
      */
     public static void main(String[] args) {
     }
+
+
+    /*
+    http://spatial.ala.org.au/geoserver/wms/reflect?styles=&format=image/png&
+    layers=ALA:occurrences&transparent=true&
+    CQL_FILTER=speciesconceptid='urn:lsid:biodiversity.org.au:afd.taxon:cd149740-87b2-4da2-96dc-e1aa1f693438'&SRS=EPSG%3A900913&
+    ENV=color%3A1dd183%3Bname%3Acircle%3Bsize%3A8%3Bopacity%3A0.8&
+    VERSION=1.1.0&
+    SERVICE=WMS&REQUEST=GetMap&
+    EXCEPTIONS=application%2Fvnd.ogc.se_inimage&
+    BBOX=15654303.7292,-1408886.9659,15810846.7631,-1252343.932&
+    WIDTH=256&
+    HEIGHT=256
+     *
+     */
+    @RequestMapping(value = "/wms/reflect", method = RequestMethod.GET)
+    public void getPointsMap(
+            @RequestParam(value = "CQL_FILTER", required = false, defaultValue = "") String cql_filter,
+            @RequestParam(value = "ENV", required = false, defaultValue = "") String env,
+            @RequestParam(value = "BBOX", required = false, defaultValue = "") String bboxString,
+            @RequestParam(value = "WIDTH", required = false, defaultValue = "") String widthString,
+            @RequestParam(value = "HEIGHT", required = false, defaultValue = "") String heightString,
+            HttpServletRequest request, HttpServletResponse response) {
+
+        long start = System.currentTimeMillis();
+
+        response.setHeader("Cache-Control", "max-age=86400");   //age == 1 day
+        response.setContentType("image/png");    //only png images generated
+
+        int width = 256, height = 256;
+        try {
+            width = Integer.parseInt(widthString);
+            height = Integer.parseInt(heightString);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            env = URLDecoder.decode(env, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int red = 0, green = 0, blue = 0, alpha = 0;
+        String name = "circle";
+        int size = 4;
+        boolean uncertainty = false;
+        for (String s : env.split(";")) {
+            String[] pair = s.split(":");
+            if (pair[0].equals("color")) {
+                while(pair[1].length() < 6){
+                    pair[1] = "0" + pair[1];
+                }
+                red = Integer.parseInt(pair[1].substring(0, 2), 16);
+                green = Integer.parseInt(pair[1].substring(2, 4), 16);
+                blue = Integer.parseInt(pair[1].substring(4), 16);
+            } else if (pair[0].equals("name")) {
+                name = pair[1];
+            } else if (pair[0].equals("size")) {
+                size = Integer.parseInt(pair[1]);
+            } else if (pair[0].equals("opacity")) {
+                alpha = (int) (255 * Double.parseDouble(pair[1]));
+            } else if (pair[0].equals("uncertainty")) {
+                uncertainty = true;
+            }
+        }
+
+        double[] bbox = new double[4];
+        int i;
+        i = 0;
+        for (String s : bboxString.split(",")) {
+            try {
+                bbox[i] = Double.parseDouble(s);
+                i++;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        //adjust bbox extents with half pixel width/height
+        double pixelWidth = (bbox[2] - bbox[0]) / width;
+        double pixelHeight = (bbox[3] - bbox[1]) / height;
+        bbox[0] += pixelWidth/2;
+        bbox[2] -= pixelWidth/2;
+        bbox[1] += pixelHeight/2;
+        bbox[3] -= pixelHeight/2;
+
+        //offset for points bounding box by size
+        double xoffset = (bbox[2] - bbox[0]) / (double) width * size;
+        double yoffset = (bbox[3] - bbox[1]) / (double) height * size;
+
+        //check offset for points bb by maximum uncertainty (?? 30k ??)
+        if (uncertainty) {
+            double xuoffset = 30000;
+            double yuoffset = 30000;
+            if (xoffset < xuoffset) {
+                xoffset = xuoffset;
+            }
+            if (yoffset < yuoffset) {
+                yoffset = yuoffset;
+            }
+        }
+
+        //adjust offset for pixel height/width
+        xoffset += pixelWidth;
+        yoffset += pixelHeight;
+
+        SpatialCluster3 sc = new SpatialCluster3();
+        SimpleRegion region = new SimpleRegion();
+        region.setBox(sc.convertMetersToLng(bbox[0] - xoffset), sc.convertMetersToLat(bbox[1] - yoffset), sc.convertMetersToLng(bbox[2] + xoffset), sc.convertMetersToLat(bbox[3] + yoffset));
+
+        double [] pbbox = new double[4]; //pixel bounding box
+        pbbox[0] = sc.convertLngToPixel(sc.convertMetersToLng(bbox[0]));
+        pbbox[1] = sc.convertLatToPixel(sc.convertMetersToLat(bbox[1]));
+        pbbox[2] = sc.convertLngToPixel(sc.convertMetersToLng(bbox[2]));
+        pbbox[3] = sc.convertLatToPixel(sc.convertMetersToLat(bbox[3]));
+
+        String lsid = null;
+        SimpleRegion r = null;
+        int p1 = cql_filter.indexOf("id='") + 4;
+        if(p1 > 4) {
+            int p2 = cql_filter.indexOf('\'', p1 + 1);
+            lsid = cql_filter.substring(p1, p2);
+        } else { //expect area=' for SimpleRegion construction
+            p1 = cql_filter.indexOf("area='") + 6;
+            int p2 = cql_filter.indexOf('\'', p1 + 1);
+            r = SimpleShapeFile.parseWKT(cql_filter.substring(p1, p2));
+        }
+
+        /* TODO: buffering for sampleSpeciesPoints */
+        double [] points = null;
+        double[] uncertainties = null;
+        short [] uncertaintiesType = null;
+        if(lsid != null) {
+            SamplingService ss = SamplingService.newForLSID(lsid);
+            ArrayList<Object> other = new ArrayList<Object>();
+            if (uncertainty) {
+                other.add("u"); //matches <geojson_property_names> for column 'uncertainty'
+                other.add(null);    //placeholder for data
+            }
+            points = ss.sampleSpeciesPoints(lsid, region, null, other);
+            if (uncertainty) {
+                uncertainties = (double[]) other.get(1);
+            }
+        } else { //points in 'r'
+            //TODO: create new function for sampling, allowing for 'other' fields
+            Vector<Record> v = OccurrencesIndex.sampleSpeciesForClustering(lsid, region, r, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+            if(v == null){
+                points = null;
+            } else {
+                if(uncertainty) {
+                    points = new double[v.size()*2];
+                    uncertainties = new double[v.size()];
+                    uncertaintiesType = new short[v.size()];
+                    for(int j=0;j<v.size();j++){
+                        points[j*2] = v.get(j).getLongitude();
+                        points[j*2+1] = v.get(j).getLatitude();
+                        try {
+                            //cap maximum uncertainty
+                            uncertainties[j] = Double.parseDouble(v.get(j).getUncertainity());
+                        } catch(Exception e){
+                            uncertainties[j] = Double.NaN;
+                        }
+                    }
+                } else {
+                    points = new double[v.size()*2];
+                    for(int j=0;j<v.size();j++){
+                        points[j*2] = v.get(j).getLongitude();
+                        points[j*2+1] = v.get(j).getLatitude();
+                    }
+                }
+            }
+        }
+
+        if (points == null) {
+            //TODO: make dynamic instead of fixed 256x256
+            setImageBlank(response);
+            System.out.print("[wms blank: " + (System.currentTimeMillis() - start) + "ms]");
+            return;
+        }
+
+
+        //fix uncertanties to max 30000 and alter colours
+        if(uncertainty) {
+            uncertaintiesType = new short[uncertainties.length];
+            for(int j=0;j<uncertainties.length;j++){
+                if(Double.isNaN(uncertainties[j])){
+                    uncertaintiesType[j] = 1;
+                    uncertainties[j] = 30000;
+                } else if(uncertainties[j] > 30000) {
+                    uncertaintiesType[j] = 2;
+                    uncertainties[j] = 30000;
+                }/* else {
+                    uncertaintiesType[j] = 0;
+                }*/
+            }
+        }
+        
+        /* TODO: make this a copy instead of create */
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) img.getGraphics();
+        //g.setClip(-width,-height,width*3,height*3);
+        g.setColor(new Color(0, 0, 0, 0));
+        g.fillRect(0, 0, width, height);
+
+        g.setColor(new Color(red, green, blue, alpha));
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        int x, y;
+        int pointWidth = size * 2;
+        double width_mult = (width / (pbbox[2] - pbbox[0]));
+        double height_mult = (height / (pbbox[1] - pbbox[3]));
+
+        //circle type
+        if (name.equals("circle")) {
+            for (i = 0; i < points.length; i += 2) {
+                x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                g.fillOval(x - size, y - size, pointWidth, pointWidth);
+            }
+        }
+
+        //uncertainty
+        if (uncertainty) {
+            int uncertaintyRadius;
+
+            //white, uncertainty value
+            g.setColor(new Color(255, 255, 255, alpha));
+            double hmult = (height / (bbox[3] - bbox[1]));
+            for (i = 0; i < points.length; i += 2) {
+                if(uncertaintiesType[i/2] == 0) {
+                    x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                    uncertaintyRadius = (int) Math.ceil(uncertainties[i / 2] * hmult);
+                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius*2, uncertaintyRadius*2);
+                }
+            }
+
+            //yellow, undefined uncertainty value
+            g.setColor(new Color(255, 255, 100, alpha));
+            uncertaintyRadius = (int) Math.ceil(30000 * hmult);
+            for (i = 0; i < points.length; i += 2) {
+                if(uncertaintiesType[i/2] == 1) {
+                    x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);                    
+                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius*2, uncertaintyRadius*2);
+                }
+            }
+
+            //green, capped uncertainty value
+            g.setColor(new Color(100, 255, 100, alpha));
+            uncertaintyRadius = (int) Math.ceil(30000 * hmult);
+            for (i = 0; i < points.length; i += 2) {
+                if(uncertaintiesType[i/2] == 2) {
+                    x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);                    
+                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius*2, uncertaintyRadius*2);
+                }
+            }
+        }
+
+        g.dispose();
+
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(img, "png", outputStream);
+            ServletOutputStream outStream = response.getOutputStream();
+            outStream.write(outputStream.toByteArray());
+            outStream.flush();
+            outStream.close();
+        } catch (IOException ex) {
+            Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //System.out.println("[wms tile: " + (System.currentTimeMillis() - start) + "ms]");
+    }
+
+    //256x256 transparent image
+    static Object blankImageObject = new Object();
+    static byte[] blankImageBytes = null;
+
+    private void setImageBlank(HttpServletResponse response) {
+        if (blankImageBytes == null && blankImageObject != null) {
+            synchronized (blankImageObject) {
+                if (blankImageBytes == null) {
+                    try {
+                        RandomAccessFile raf = new RandomAccessFile(WMSController.class.getResource("/blank.png").getFile(), "r");
+                        blankImageBytes = new byte[(int) raf.length()];
+                        raf.read(blankImageBytes);
+                        raf.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+        if (blankImageObject != null) {
+            response.setContentType("image/png");
+            try {
+                ServletOutputStream outStream = response.getOutputStream();
+                outStream.write(blankImageBytes);
+                outStream.flush();
+                outStream.close();
+            } catch (IOException ex) {
+                Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
 }

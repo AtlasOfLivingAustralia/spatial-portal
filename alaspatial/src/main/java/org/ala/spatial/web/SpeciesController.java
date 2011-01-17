@@ -429,7 +429,13 @@ public class SpeciesController {
             lsid = URLDecoder.decode(lsid, "UTF-8");
             lsid = lsid.replaceAll("__", ".");
 
-            return OccurrencesIndex.getLsidBoundingBox(lsid);
+            
+            double [] bb = OccurrencesIndex.getLsidBoundingBox(lsid);
+
+            StringBuffer sb = new StringBuffer();
+            sb.append(bb[0]).append(",").append(bb[1]).append(",").append(bb[2]).append(",").append(bb[3]);
+
+            return sb.toString();
         } catch (Exception e) {
             System.out.println("getOccurrenceId.error: ");
             e.printStackTrace(System.out);
