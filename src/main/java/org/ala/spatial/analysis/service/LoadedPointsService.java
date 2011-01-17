@@ -14,6 +14,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.ala.spatial.analysis.index.BoundingBoxes;
 import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
@@ -21,8 +22,8 @@ import org.ala.spatial.util.TabulationSettings;
 
 /**
  * Allow alaspatial to operate on loaded points (lat long)
- * 
- * Used in 
+ *
+ * Used in
  * - Sampling
  * - Maxent
  * - Clustering
@@ -149,7 +150,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    public static String getBoundingBox(String id) {
+    public static double [] getBoundingBox(String id) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             double[][] points = getPoints(id, null, null);
@@ -172,10 +173,13 @@ public class LoadedPointsService {
                     maxy = points[i][1];
                 }
             }
-            StringBuffer sb = new StringBuffer();
-            sb.append(minx).append(",").append(miny).append(",").append(maxx).append(",").append(maxy);
-            OccurrencesIndex.putLSIDBoundingBox(id, sb.toString());
-            return sb.toString();
+            double [] bb = new double[4];
+            bb[0] = minx;
+            bb[1] = miny;
+            bb[2] = maxx;
+            bb[3] = maxy;
+            BoundingBoxes.putLSIDBoundingBox(id, bb);
+            return bb;
         }
         return null;
     }

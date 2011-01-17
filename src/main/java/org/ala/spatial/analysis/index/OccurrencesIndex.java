@@ -248,7 +248,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         return null;
     }
 
-    public static void putLSIDBoundingBox(String lsid, String bb) {
+    public static void putLSIDBoundingBox(String lsid, double [] bb) {
         lsidBoundingBox.put(lsid, bb);
     }
 
@@ -1263,9 +1263,9 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         loadIdLookup();
 
-        loadClusterRecords();
-
         loadSensitiveCoordinates();
+
+        loadClusterRecords();        
 
         System.out.println("INDEXES LOADED");
 
@@ -1881,12 +1881,13 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @return each record between first and end character positions, split by new line as String[]
      */
     public static double[] getPoints(int recordstart, int recordend) {
+        /*long start1 = System.currentTimeMillis();
         double[] d = new double[(recordend - recordstart + 1) * 2];
         try {
-            /* ready requested byte block */
+            // ready requested byte block
             RandomAccessFile points = new RandomAccessFile(
                     TabulationSettings.index_path + POINTS_FILENAME,
-                    "rw");
+                    "r");
             int number_of_points = (recordend - recordstart + 1) * 2;
             byte[] b = new byte[(number_of_points) * 8];
             points.seek(recordstart * 2 * 8);
@@ -1894,17 +1895,28 @@ public class OccurrencesIndex implements AnalysisIndexService {
             ByteBuffer bb = ByteBuffer.wrap(b);
             points.close();
 
-            /* put into double [] */
+            // put into double []
             int i;
             for (i = 0; i < number_of_points; i++) {
                 d[i] = bb.getDouble();
             }
-
         } catch (Exception e) {
             SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
         }
+        long end1 = System.currentTimeMillis();*/
 
-        return d;
+        //long start2 = System.currentTimeMillis();
+        int len = recordend - recordstart + 1;
+        double [] p = new double[len * 2];
+        for(int i=0;i<len;i++){
+            p[i*2] = all_points[recordstart + i][0];
+            p[i*2 + 1] = all_points[recordstart + i][1];
+        }
+        //long end2 = System.currentTimeMillis();
+
+        //System.out.println("mem_time-disk_time= " + ((end2 - start2) - (end1 - start1)) + "ms with " + len + " points");
+
+        return p;
     }
 
     /**
@@ -2529,8 +2541,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         /* make overlay grid from this region */
         byte[][] mask = new byte[720][720];
         int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
-
-        System.out.println("poly:" + r.toString());
+        
         int i, j;
 
         /* for matching cells, test each record within  */
@@ -2578,7 +2589,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             }
 
             long endtime = System.currentTimeMillis();
-            System.out.println("getRecordsInside(): len=" + data.length + " time=" + (endtime - starttime) + "ms");
+            //System.out.println("getRecordsInside(): len=" + data.length + " time=" + (endtime - starttime) + "ms");
             return data;
         }
         return null;
@@ -3014,7 +3025,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         return sb.toString();
     }
-    static String[][] cluster_records = null;
+    static public String[][] cluster_records = null;
 
     static void loadClusterRecords() {
         if (cluster_records != null) {
@@ -3161,6 +3172,19 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * @return
      */
     public static Vector sampleSpeciesForClustering(String species, SimpleRegion region1, SimpleRegion region2, ArrayList<Integer> rec, int max_records) {
+        //regions intersect check
+        if(region1 != null && region2 != null) {
+            double [][] bb1 = region1.getBoundingBox();
+            double [][] bb2 = region2.getBoundingBox();
+
+            boolean overlap = bb1[0][0] <= bb2[1][0] && bb1[1][0] >= bb2[0][0]
+                    && bb1[0][1] <= bb2[1][1] && bb1[1][0] >= bb2[0][1];
+
+            if(!overlap){
+                return null;
+            }
+        }
+
         if (SamplingLoadedPointsService.isLoadedPointsLSID(species)) {
             return sampleLoadedPointsForClustering(species, region1, region2, rec, max_records);
         }
@@ -3255,8 +3279,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     public static Vector sampleLoadedPointsForClustering(String id, SimpleRegion region1, SimpleRegion region2, ArrayList<Integer> rec, int max_records) {
         Vector records = new Vector();
-
-        int rec_pos = 0;
 
 
         double[][] points = LoadedPointsService.getPoints(id, null, null);
@@ -3829,14 +3851,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
     }
     //TODO: bounding box hashmap cleanup
-    static HashMap<String, String> lsidBoundingBox = new HashMap<String, String>();
+    static HashMap<String, double []> lsidBoundingBox = new HashMap<String, double []>();
 
-    static public String getLsidBoundingBox(String lsid) {
-        String bb = lsidBoundingBox.get(lsid);
+    static public double[] getLsidBoundingBox(String lsid) {
+        double [] bb = lsidBoundingBox.get(lsid);
         if (bb == null) {
-            String s = LoadedPointsService.getBoundingBox(lsid);
-            if (s != null) {
-                return s;
+            bb = LoadedPointsService.getBoundingBox(lsid);
+            if (bb != null) {
+                return bb;
             }
             IndexedRecord[] ir = filterSpeciesRecords(lsid);
             if (ir != null && ir.length > 0) {
@@ -3858,9 +3880,12 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         maxy = all_points[i][1];
                     }
                 }
-                StringBuffer sb = new StringBuffer();
-                sb.append(minx).append(",").append(miny).append(",").append(maxx).append(",").append(maxy);
-                lsidBoundingBox.put(lsid, sb.toString());
+                bb = new double[4];
+                bb[0] = minx;
+                bb[1] = miny;
+                bb[2] = maxx;
+                bb[3] = maxy;
+                lsidBoundingBox.put(lsid, bb);
             }
         }
         return bb;

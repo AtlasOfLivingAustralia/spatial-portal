@@ -55,6 +55,14 @@ public class SpatialCluster3 {
         return ((Math.cos(latitude * Math.PI / 180.0) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom))) * pixels;
     }
 
+    public double convertMetersToLng(double meters) {
+        return meters / 20037508.342789244 * 180;
+    }
+
+    public double convertMetersToLat(double meters) {
+        return 180.0 / Math.PI * (2 * Math.atan(Math.exp(meters / 20037508.342789244 * Math.PI)) - Math.PI / 2.0);
+    }
+
     public int planeDistance(double lat1, double lng1, double lat2, double lng2, int zoom) {
         // Given a pair of lat/long coordinates and a map zoom level, returns
         // the distance between the two points in pixels
