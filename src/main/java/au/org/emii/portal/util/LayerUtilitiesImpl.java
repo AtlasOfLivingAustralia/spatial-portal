@@ -85,6 +85,8 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     private SettingsSupplementary settingsSupplementary = null;
     private ResolveHostName resolveHostname = null;
 
+    private List<Double> worldBBox = null;
+
     public LayerUtilitiesImpl() {
         versions = new ArrayList<String>();
         versions.add(WMS_1_0_0, "1.0.0");
@@ -97,7 +99,12 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         versions.add(GEORSS, "GEORSS");
         versions.add(KML, "KML");
         versions.add(GEOJSON, "GEOJSON");
-      
+
+        worldBBox = new ArrayList<Double>(4);
+        worldBBox.add(-180.0);
+        worldBBox.add(-90.0);
+        worldBBox.add(180.0);
+        worldBBox.add(90.0);
     }
 
     /**
@@ -903,6 +910,9 @@ public class LayerUtilitiesImpl implements LayerUtilities {
 
             //get boundingbox for this layer by checking against each title and name
             Document doc = parseXml(wmsget);
+            if(doc == null) {
+                return worldBBox;
+            }
             NodeList nl = doc.getElementsByTagName("Layer");
             int i,j;
             for (i=0;i<nl.getLength();i++){
@@ -930,7 +940,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
            // java.util.logging.Logger.getLogger(LayerUtilitiesImpl.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
-        return null;
+        return worldBBox;
     }
 
     public List<Double> getBBoxIndex(String uri) {
