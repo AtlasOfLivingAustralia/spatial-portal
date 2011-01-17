@@ -101,9 +101,10 @@ public class FeatureList {
                     throw new Exception("Could not find feature");
                 }
 
-
+                features.close();
             }
         } finally {
+
             dataStore.dispose();
 
         }
