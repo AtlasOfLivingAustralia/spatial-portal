@@ -34,14 +34,17 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
                             + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__",".")
                             + "', 'metadataWindow');");
                     Executions.getCurrent().sendRedirect(activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."), "_blank");*/
+                    logger.debug("opening the following url " + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
                     Events.echoEvent("openUrl", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
 
                 } else if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                     //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
+                    logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
                     mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
                 } else {
+                    logger.debug("no metadata is available for current layer");
                     mapComposer.showMessage("Metadata currently unavailable");
                 }
             } else {
