@@ -55,7 +55,7 @@
 
                 <p>
                     <span class="title">Resource constraints:</span> <br />
-                    ${layer.licencelevel}: <a href="${layer.licence_link}" target="_blank">More info</a>
+                    ${layer.licencelevel}: <a href="${layer.licence_link}" target="_blank">Resource constraints</a>
                 </p>
 
                 <p>
@@ -83,7 +83,7 @@
 
                 <p>
                     <span class="title">More information:</span> <br />
-                    ${layer.metadatapath}
+                    <a href= "${layer.metadatapath}" target="_blank">More information</a>
                 </p>
 
             </c:when>
