@@ -56,6 +56,28 @@ public class FilteringWSController {
             File workingDir = new File(TabulationSettings.base_output_dir + outputpath + currTime + File.separator);
             workingDir.mkdirs();
 
+            //remove dirs older than 5 days
+            long yesterday = currTime - 1000*60*60*24*5;
+            File dirs = new File(TabulationSettings.base_output_dir + outputpath);
+            for(File f : dirs.listFiles()) {
+                if(f.isDirectory() && f.lastModified() < yesterday) {
+                    try {
+                        //delete dir contents
+                        for(File fc : f.listFiles()) {
+                            try {
+                                fc.delete();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        f.delete();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
             return pid;
         } catch (Exception ex) {
             Logger.getLogger(FilteringWSController.class.getName()).log(Level.SEVERE, null, ex);
@@ -208,9 +230,12 @@ public class FilteringWSController {
 
             String boundingBoxString = filteringImage2.writeImageAccumulative(0xFFFF0000); //red
 
+            //String areaSize = String.valueOf(filteringImage2.getApproximateSize()); //only usable after 'writeImageAccumulative'
+
             String filenamepart = file.getName();
             filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf("."));
-            return file.getName() + "\n" + boundingBoxString;
+
+            return file.getName() + "\n" + boundingBoxString; // + "\n" + areaSize;
         } catch (Exception e) {
             e.printStackTrace();
         }
