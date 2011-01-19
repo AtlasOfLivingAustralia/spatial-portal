@@ -313,6 +313,16 @@
             <version>4.7</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-oxm</artifactId>
+            <version>3.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.3.1</version>
+        </dependency>
     </dependencies>
     <repositories>
         <!-- For JSR 303 and Hibernate Validator only - Encourage JBoss to publish these artifacts to Maven Central! -->

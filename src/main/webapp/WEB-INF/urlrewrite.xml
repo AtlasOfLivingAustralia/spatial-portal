@@ -91,6 +91,10 @@
 		<to>/gdm.zul</to>
 	</rule>
 	<rule>
+		<from>/logs.zul</from>
+		<to>/logs.zul</to>
+	</rule>
+	<rule>
 		<from>/filtering_cl.html</from>
 		<to>/filtering_cl.html</to>
 	</rule>
