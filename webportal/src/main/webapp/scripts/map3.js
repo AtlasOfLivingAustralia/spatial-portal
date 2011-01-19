@@ -307,12 +307,13 @@ function buildMapReal() {
      */
     bLayer = new OpenLayers.Layer.Google("Google Hybrid",
     {
-        type: G_HYBRID_MAP,
+        type: google.maps.MapTypeId.HYBRID,
+        wrapDateLine: false,
         'sphericalMercator': true
     });
     bLayer2 = new OpenLayers.Layer.Google("Google Streets",
     {
-        type: G_PHYSICAL_MAP,
+        wrapDateLine: false,
         'sphericalMercator': true
     });
     map.addLayers([bLayer2,bLayer]);
@@ -1191,8 +1192,8 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
 }
 
 function selectedWKT (evt) {
-    console.log("selectedWKT");
-    console.log(evt);
+    //console.log("selectedWKT");
+    //console.log(evt);
 }
 function selected (evt) {
 
@@ -1443,7 +1444,7 @@ function featureadd(evt) {
     var feature = evt.feature;
     var fgeomt = feature.geometry.transform(map.projection,map.displayProjection);
     var isContains = max_map_bounds.contains(this.getDataExtent().left, this.getDataExtent().top); 
-    console.log("1.featureadd: " + feature.geometry.x + ", " + feature.geometry.y + " -> " + feature.isMirror + ", " + feature.onScreen() + ", " + isContains);
+    //console.log("1.featureadd: " + feature.geometry.x + ", " + feature.geometry.y + " -> " + feature.isMirror + ", " + feature.onScreen() + ", " + isContains);
     /*
          * add a mirror point 360 to the west of the feature, so that it will be displayed
          * when the map's extent becomes < -180 as a result of the warpdateline function
@@ -1458,15 +1459,15 @@ function featureadd(evt) {
                     feature.style);
                 featureMirror.isMirror = true;
                 feature.isMirror = false;
-                console.log("1.featureMirror: " + featureMirror.geometry.x + ", " + featureMirror.geometry.y);
+                //console.log("1.featureMirror: " + featureMirror.geometry.x + ", " + featureMirror.geometry.y);
                 var fmgeomt = featureMirror.geometry.transform(map.projection,map.displayProjection);
-                console.log("2.featureMirror: " + featureMirror.geometry.x + ", " + featureMirror.geometry.y);
+                //console.log("2.featureMirror: " + featureMirror.geometry.x + ", " + featureMirror.geometry.y);
                 this.addFeatures([featureMirror]);
             }
         }
     }
     fgeomt = feature.geometry.transform(map.displayProjection,map.projection);
-    console.log("2.featureadd: " + feature.geometry.x + ", " + feature.geometry.y + " -> " + feature.isMirror);
+    //console.log("2.featureadd: " + feature.geometry.x + ", " + feature.geometry.y + " -> " + feature.isMirror);
 }
 
 function addJsonUrlToMap(url, name, hexColour, radius, opacity, szUncertain) {
@@ -2803,7 +2804,7 @@ function loadXML(kmlfile) {
             maxDepth: 2
         }
     });
-    console.log("loading kml file");
+    //console.log("loading kml file");
     map.addLayer(kmlfile);
 }
 
@@ -2819,7 +2820,7 @@ function loadXML2() {
             maxDepth: 2
         }
     });
-    console.log("Loading kml file 2");
+    //console.log("Loading kml file 2");
     map.addLayer(kmlfile);
 }
 
@@ -2846,7 +2847,7 @@ function loadKmlFile(name, kmlurl) {
             })
         })
     });
-    console.log("Loading kml file: " + name);
+    //console.log("Loading kml file: " + name);
     //map.addLayer(kmlLayer);
     return kmlLayer; 
 
