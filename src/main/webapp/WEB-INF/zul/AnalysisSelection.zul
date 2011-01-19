@@ -80,6 +80,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                     <comboitem label="Create radius from address..." id="ciAddressRadiusSelection"/>
                     <comboitem label="Select predefined (displayed) map polygon..." id="ciMapPolygon" />
                     <comboitem label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
+                    <comboitem label="Upload Shapefile..." id="ciUploadShapefile" />
                     <comboitem label="Box - Australia" id="ciBoxAustralia" />
                     <comboitem label="Box - World" id="ciBoxWorld" />
                     <comboitem label="Box - Current View" id="ciBoxCurrentView" />

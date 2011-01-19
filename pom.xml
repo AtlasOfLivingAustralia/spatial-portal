@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -11,15 +12,20 @@
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
     <dependencies>
-         <dependency>
-                <groupId>geoGoogle</groupId>
-                <artifactId>geoGoogle</artifactId>
-                <version>1.5.0</version>
+        <dependency>
+            <groupId>geoGoogle</groupId>
+            <artifactId>geoGoogle</artifactId>
+            <version>1.5.0</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-main</artifactId>
-            <version>2.6-SNAPSHOT</version>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -252,11 +258,11 @@
             <artifactId>webportal_configuration_xmlbeans</artifactId>
             <version>3.0.8</version>
         </dependency>
-	<dependency>
-	   <groupId>org.apache.xmlbeans</groupId>
-	   <artifactId>xmlbeans</artifactId>
-	   <version>2.4.0</version>
-	</dependency>
+        <dependency>
+            <groupId>org.apache.xmlbeans</groupId>
+            <artifactId>xmlbeans</artifactId>
+            <version>2.4.0</version>
+        </dependency>
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
@@ -312,7 +318,7 @@
             <artifactId>postgresql</artifactId>
             <version>8.4-701.jdbc4</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.1-alpha1</version>
@@ -362,16 +368,6 @@
             <id>AM</id>
             <name>Angus Macaulay</name>
             <email>angus.i.macaulay@gmail.com</email>
-            <organization>ALA</organization>
-            <organizationUrl>http://www.ala.org.au</organizationUrl>
-            <roles>
-                <role>Software Engineer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>BW</id>
-            <name>Brendon Ward</name>
-            <email>brendon.ward@sixlighthouses.com</email>
             <organization>ALA</organization>
             <organizationUrl>http://www.ala.org.au</organizationUrl>
             <roles>
@@ -431,20 +427,25 @@
     </build>
     <repositories>
         <repository>
-                <releases>
-                        <updatePolicy>never</updatePolicy>
-                        <checksumPolicy>warn</checksumPolicy>
-                        <enabled>true</enabled>
-                </releases>
-                <id>geogoogle</id>
-                <name>geogoogle repo</name>
-                <url>http://www.cs.drexel.edu/~zl25/maven2/repo</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+                <enabled>true</enabled>
+            </releases>
+            <id>geogoogle</id>
+            <name>geogoogle repo</name>
+            <url>http://www.cs.drexel.edu/~zl25/maven2/repo</url>
         </repository>
         <repository>
             <url>http://download.java.net/maven/2</url>
             <id>hibernate-support</id>
             <layout>default</layout>
             <name>Repository for library Library[hibernate-support]</name>
+        </repository>
+        <repository>
+            <id>osgeo</id>
+            <name>OpenGeo GeoTools Repository</name>
+            <url>http://repo.opengeo.org/</url>
         </repository>
         <repository>
             <id>unknown-jars-temp-repo</id>
@@ -490,6 +491,7 @@
         <zkVersion>3.6.3</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
+        <geotools.version>2.6-SNAPSHOT</geotools.version>
     </properties>
 </project>
 

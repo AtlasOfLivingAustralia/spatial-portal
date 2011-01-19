@@ -172,7 +172,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             function reloadSpecies() {
           //  return;
 
-            var tbxReloadLayers = $e('${tbxReloadLayers.uuid}');
+        var tbxReloadLayers = $e('${tbxReloadLayers.uuid}');
         var currentTime = new Date();
         tbxReloadLayers.value = "z=" + map.zoom + "&amp;b=" + map.getExtent().toBBOX();
 
@@ -740,6 +740,7 @@ border-bottom: none;
                                                 <html>
                                                 <![CDATA[ <br> ]]>
                                                 </html>
+                                                <button id="btnUploadSpecies" label="Upload your species locations" />
                                                 <html>
                                                 <![CDATA[ <br> ]]>
                                                 </html>
@@ -853,11 +854,13 @@ border-bottom: none;
 
                                         </tabpanel>
 
+                                        <!--
                                         <tabpanel  id="customData" visible="false" >
                                             <div>
                                                 <fileupload id="btnFileUpload" maxsize="5000000" />
                                             </div>
                                         </tabpanel>
+                                        -->
 
                                         <tabpanel  id="userTabPanel" visible="false" >
                                         <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">

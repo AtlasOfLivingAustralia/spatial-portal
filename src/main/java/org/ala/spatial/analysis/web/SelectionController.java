@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -19,9 +20,11 @@ import geo.google.datamodel.GeoAddress;
 import geo.google.datamodel.GeoCoordinate;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.lang.String;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -48,6 +51,9 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.ShapefileReader;
+import org.ala.spatial.util.Zipper;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -61,6 +67,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.zkoss.util.media.Media;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
@@ -68,11 +75,14 @@ import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
@@ -99,6 +109,7 @@ public class SelectionController extends UtilityComposer {
     private Textbox displayGeom;
     private Textbox addressBox;
     private Label addressLabel;
+    private Fileupload fileUpload;
     private Div polygonInfo;
     private Div envelopeInfo;
     //private Label instructions;
@@ -125,6 +136,7 @@ public class SelectionController extends UtilityComposer {
     Comboitem ciPolygon;
     Comboitem ciMapPolygon;
     Comboitem ciEnvironmentalEnvelope;
+    Comboitem ciUploadShapefile;
     Comboitem ciBoxAustralia;
     Comboitem ciBoxWorld;
     Comboitem ciBoxCurrentView;
@@ -208,13 +220,14 @@ public class SelectionController extends UtilityComposer {
             Button btnFind = new Button("Find");
             btnFind.setParent(hbxAddress);
             btnFind.addEventListener("onClick", new EventListener() {
-                    public void onEvent(Event event) throws Exception {
+
+                public void onEvent(Event event) throws Exception {
                     onClick$btnFindAddress(null);
-                    
+
                 }
             });
 
-           addressLabel = new Label();
+            addressLabel = new Label();
             addressLabel.setParent(vbox);
 
             Label l2 = new Label((2) + ". " + text[1]);
@@ -262,6 +275,48 @@ public class SelectionController extends UtilityComposer {
             });
 
 
+
+            wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
+            wInstructions.setClosable(true);
+            wInstructions.doOverlapped();
+            wInstructions.setPosition("top,center");
+
+            return;
+        }
+
+        if (text != null && text.length > 0 && toolname.contains("shapefile")) {
+            wInstructions = new Window(toolname, "normal", false);
+            wInstructions.setWidth("500px");
+            wInstructions.setClosable(false);
+
+            Vbox vbox = new Vbox();
+            vbox.setParent(wInstructions);
+            //  for (int i = 0; i < text.length; i++) {
+            Label l1 = new Label((1) + ". " + text[0]);
+            l1.setParent(vbox);
+            l1.setMultiline(true);
+            l1.setSclass("word-wrap");
+            l1.setStyle("white-space: normal; padding: 5px");
+            //  }
+
+            (new Separator()).setParent(vbox);
+            fileUpload = new Fileupload();
+            fileUpload.setMaxsize(5000000);
+            fileUpload.setParent(vbox);
+
+            fileUpload.addEventListener("onUpload", new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    onUpload$btnFileUpload(event);
+                    wInstructions.detach();
+                }
+            });
+            fileUpload.addEventListener("onClose", new EventListener() {
+                public void onEvent(Event event) throws Exception {
+                    System.out.println("Cancelling");
+                    wInstructions.detach();
+                }
+            });
 
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
             wInstructions.setClosable(true);
@@ -412,6 +467,17 @@ public class SelectionController extends UtilityComposer {
             MapComposer mc = getThisMapComposer();
 
             mc.removeFromList(mc.getMapLayer("Active Area"));
+        } else if (cbAreaSelection.getSelectedItem() == ciUploadShapefile) {
+            cbAreaSelection.setText("Upload shapefile...");
+            String[] text = {
+                "Select a shapefile with a single polygon"
+            };
+            setInstructions("Active Map Tool: Upload shapefile (single polygon)...", text);
+            showPolygonInfo();
+            String script = removeCurrentSelection();
+            MapComposer mc = getThisMapComposer();
+
+            mc.removeFromList(mc.getMapLayer("Active Area"));
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             cbAreaSelection.setText("Selecting map polygon");
             String[] text = {
@@ -552,7 +618,7 @@ public class SelectionController extends UtilityComposer {
             MapLayer ml = activeLayers.get(i);
 
             String activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
-            System.out.println("ACTIVE LAYER: " + activeLayerName );
+            System.out.println("ACTIVE LAYER: " + activeLayerName);
             if (ml.isDisplayed()) {
                 for (int j = 0; j < layerlist.size(); j++) {
                     if (searchComplete) {
@@ -611,7 +677,7 @@ public class SelectionController extends UtilityComposer {
         double lon = Double.parseDouble(params[0]);
         double lat = Double.parseDouble(params[1]);
 
-        int zoom = getMapComposer().getMapZoom(); 
+        int zoom = getMapComposer().getMapZoom();
 
         double BUFFER_DISTANCE = 0.1;
 
@@ -641,7 +707,7 @@ public class SelectionController extends UtilityComposer {
 
                 lsids += "lsid=" + URLEncoder.encode(li, "UTF-8");
                 if (li.equalsIgnoreCase("aa")) {
-                    hasActiveArea = true; 
+                    hasActiveArea = true;
                 }
                 if (it.hasNext()) {
                     lsids += "&";
@@ -841,6 +907,8 @@ public class SelectionController extends UtilityComposer {
             txt = "Got user drawn point and radius";
         } else if (lastTool == ciAddressRadiusSelection) {
             txt = "Got user radius from address";
+        } else if (lastTool == ciUploadShapefile) {
+            txt = "Got user polygon from shapefile";
         } else if (lastTool == ciPolygon) {
             txt = "Got user drawn polygon";
         } else if (lastTool == ciMapPolygon) {
@@ -1457,11 +1525,11 @@ public class SelectionController extends UtilityComposer {
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
             GeoCoordinate gco = addresses.get(0).getCoordinate();
-             cbAreaSelection.setText("address: " + addresses.get(0).getAddressLine());
-          
+            cbAreaSelection.setText("address: " + addresses.get(0).getAddressLine());
+
             //Point point = geometryFactory.createPoint(new Coordinate(
             double radius = 1000;
-             if (cbRadius.getSelectedItem() == ci1km) {
+            if (cbRadius.getSelectedItem() == ci1km) {
                 radius = 1000;
             }
             if (cbRadius.getSelectedItem() == ci5km) {
@@ -1498,18 +1566,17 @@ public class SelectionController extends UtilityComposer {
         }
     }
 
-      public void onClick$btnFindAddress(Event event) {
-          try {
-           GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
+    public void onClick$btnFindAddress(Event event) {
+        try {
+            GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
 
             List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getAreaText() + ", Australia");
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
             GeoCoordinate gco = addresses.get(0).getCoordinate();
-             
-         addressLabel.setValue(addresses.get(0).getAddressLine());
-          } catch (geo.google.GeoException ge) {
 
+            addressLabel.setValue(addresses.get(0).getAddressLine());
+        } catch (geo.google.GeoException ge) {
         }
     }
 
@@ -1624,6 +1691,86 @@ public class SelectionController extends UtilityComposer {
 
             //run it now
             updateAreaLabel();
+        }
+    }
+
+    public void onUpload$btnFileUpload(Event event) {
+        //UploadEvent ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+        UploadEvent ue = null;
+        if (event.getName().equals("onUpload")) {
+            ue = (UploadEvent) event;
+        } else if (event.getName().equals("onForward")) {
+            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+        }
+        if (ue == null) {
+            System.out.println("unable to upload file");
+            return;
+        } else {
+            System.out.println("fileUploaded()");
+        }
+        try {
+            Media m = ue.getMedia();
+
+            System.out.println("m.getName(): " + m.getName());
+            System.out.println("getContentType: " + m.getContentType());
+            System.out.println("getFormat: " + m.getFormat());
+
+
+            // check the content-type
+            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
+                getMapComposer().loadUserPoints(m.getName(), m.getReaderData());
+            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL)) {
+                byte[] csvdata = m.getByteData();
+                getMapComposer().loadUserPoints(m.getName(), new StringReader(new String(csvdata)));
+            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {
+                System.out.println("isBin: " + m.isBinary());
+                System.out.println("inMem: " + m.inMemory());
+                if (m.inMemory()) {
+                    getMapComposer().loadUserLayerKML(m.getName(), m.getByteData());
+                } else {
+                    getMapComposer().loadUserLayerKML(m.getName(), m.getStreamData());
+                }
+
+            } else if (m.getFormat().equalsIgnoreCase("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
+                // "/data/ala/runtime/output/layers/"
+                // "/Users/ajay/projects/tmp/useruploads/"
+                Map input = Zipper.unzipFile(m.getName(), m.getStreamData(), "/data/ala/runtime/output/layers/");
+                String type = "";
+                String file = "";
+                if (input.containsKey("type")) {
+                    type = (String) input.get("type");
+                }
+                if (input.containsKey("file")) {
+                    file = (String) input.get("file");
+                }
+                if (type.equalsIgnoreCase("shp")) {
+                    System.out.println("Uploaded file is a shapefile. Loading...");
+                    Map shape = ShapefileReader.loadShapefile(new File(file));
+
+                    if (shape == null) {
+                        return;
+                    } else {
+                        String wkt = (String) shape.get("wkt");
+                        wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
+                        displayGeom.setValue(wkt);
+                        System.out.println("Got shapefile wkt...");
+                        updateComboBoxText();
+                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Active Area");
+                        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
+                        mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
+                        updateSpeciesList(false);
+                        setInstructions(null, null);
+                    }
+
+                } else {
+                    System.out.println("Unknown file type. ");
+                    getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
+                }
+            }
+
+        } catch (Exception ex) {
+            getMapComposer().showMessage("Unable to load file. Please try again. ");
+            ex.printStackTrace();
         }
     }
 }

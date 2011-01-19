@@ -30,7 +30,10 @@ import org.apache.commons.lang.StringUtils;
 public class LayersUtil {
 
     public static final String LAYER_TYPE_CSV = "text/csv";
+    public static final String LAYER_TYPE_CSV_EXCEL = "text/x-comma-separated-values";
+    public static final String LAYER_TYPE_EXCEL = "application/vnd.ms-excel";
     public static final String LAYER_TYPE_KML = "application/vnd.google-earth.kml+xml";
+    public static final String LAYER_TYPE_ZIP = "application/zip";
 
     /**
      * MapComposer for retrieving active layer names

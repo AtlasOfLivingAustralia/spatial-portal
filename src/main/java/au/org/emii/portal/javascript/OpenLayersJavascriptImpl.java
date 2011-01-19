@@ -542,32 +542,45 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         return wrapWithSafeToProceed(getAdditionalScript() + script.toString());
     }
 
+//    @Override
+//    public String defineKMLMapLayer(MapLayer layer) {
+//        /* can't have a GeoRSS baselayer so we don't need to decide where to store
+//         * the layer definition
+//         */
+//        String script =
+//                "	mapLayers['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.GML("
+//                + "		'" + layer.getNameJS() + "', "
+//                + "		'" + layer.getUriJS() + "', "
+//                + "		{"
+//                + "			transparent: true, "
+//                + //"			projection: new OpenLayers.Projection('EPSG:3032'), " +
+//                //"			projection: new OpenLayers.Projection('EPSG:6326'), " +
+//                "			internalProjection: new OpenLayers.Projection('ESPG:4326'), "
+//                + "			externalProjection: new OpenLayers.Projection('ESPG:3032'), "
+//                + "			format: OpenLayers.Format.KML, "
+//                + "			formatOptions: { "
+//                + "				extractStyles: true, "
+//                + "				extractAttributes: true"
+//                + "			} "
+//                + "		}, "
+//                + "		{ "
+//                + "			opacity:" + layer.getOpacity() + ","
+//                + "			wrapDateLine: true "
+//                + "		}  "
+//                + "	);"
+//                + // register for loading images...
+//                "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
+//
+//        return wrapWithSafeToProceed(script);
+//    }
+//
     @Override
     public String defineKMLMapLayer(MapLayer layer) {
         /* can't have a GeoRSS baselayer so we don't need to decide where to store
          * the layer definition
          */
         String script =
-                "	mapLayers['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.GML("
-                + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS() + "', "
-                + "		{"
-                + "			transparent: true, "
-                + //"			projection: new OpenLayers.Projection('EPSG:3032'), " +
-                //"			projection: new OpenLayers.Projection('EPSG:6326'), " +
-                "			internalProjection: new OpenLayers.Projection('ESPG:4326'), "
-                + "			externalProjection: new OpenLayers.Projection('ESPG:3032'), "
-                + "			format: OpenLayers.Format.KML, "
-                + "			formatOptions: { "
-                + "				extractStyles: true, "
-                + "				extractAttributes: true"
-                + "			} "
-                + "		}, "
-                + "		{ "
-                + "			opacity:" + layer.getOpacity() + ","
-                + "			wrapDateLine: true "
-                + "		}  "
-                + "	);"
+                "	mapLayers['" + layer.getUniqueIdJS() + "'] = window.mapFrame.loadKmlFile('"+layer.getNameJS()+"','"+layer.getUriJS()+"');"
                 + // register for loading images...
                 "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 
@@ -732,7 +745,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + "			queryable: " + layer.isQueryable() + ", "
                 //                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
                 + "			gutter: " + gutter + ", "
-                + "			wrapDateLine: " + (layer.getName().contains("WorldClim") || layer.getName().contains("_cars")) //set cars layers wrap=true FIXME: this is hack - should actually check the extents
+                + "			wrapDateLine: true" //+ (layer.getName().contains("WorldClim") || layer.getName().contains("_cars")) //set cars layers wrap=true FIXME: this is hack - should actually check the extents
                 + "		}  "
                 + "	); "
                 + // decorate with getFeatureInfoBuffer field - do not set buffer

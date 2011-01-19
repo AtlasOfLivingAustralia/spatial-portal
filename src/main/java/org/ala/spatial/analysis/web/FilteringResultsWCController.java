@@ -363,7 +363,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         //Events.echoEvent("onMapSpecies", this, null);
         getMapComposer().addToSession("Species in Active area", "lsid=aa");
         //getMapComposer().loadSpeciesInActiveArea(pid, results_count_occurrences, false);
-        onMapSpecies(null);
+        onMapSpecies2(null);
     }
 
     public void onMapSpecies(Event event) {
@@ -459,45 +459,21 @@ public class FilteringResultsWCController extends UtilityComposer {
             //MapLayer ml = getMapComposer().mapSpeciesByFilter(area, area)
 
             String uri = satServer + "/geoserver/wms?";
-            uri += "service=WMS&version=1.0.0&request=GetMap&styles=species_activearea&format=image/png";
+            uri += "service=WMS&version=1.1.0&request=GetMap&styles=&format=image/png";
             uri += "&layers=ALA:occurrences";
             uri += "&transparent=true"; // "&env=" + envString +
-            //uri += "&CQL_FILTER=";
 
-            String gml = "";
-            area = StringUtils.remove(area, "POLYGON((");
-            area = StringUtils.remove(area, "))");
-            String[] areacoords = StringUtils.split(area, ",");
-            for (int i=0; i<areacoords.length; i++) {
-                String[] p = areacoords[i].split(" "); 
-                gml += p[0]+","+p[1]+" ";
+            String envString = "color:FFFF00;name:square;size:8;opacity:.8";
 
-            }
-            gml = gml.trim(); 
-            String envString = "color:FFFF00;name:square;size:8;opacity:.8;";
-            envString += "activearea:"+gml;
+            String cql = ""; // CQL_FILTER=
+            cql += "WITHIN(the_geom,"+area+")";
+            //cql += "speciesconceptid='urn:lsid:biodiversity.org.au:afd.taxon:aa745ff0-c776-4d0e-851d-369ba0e6f537'";
 
-            System.out.println("Mapping activearea: \n" + gml); 
+
+            System.out.println("Mapping activearea: \n" + area);
+
+            MapLayer ml = mc.mapSpeciesWMSByFilter("Species in Active area", cql);
             
-            if (mc.safeToPerformMapAction()) {
-                boolean addedOk = mc.addKnownWMSLayer("Species in Active area", uri, (float) 0.8, "", envString);
-                if (addedOk) {
-                    MapLayer ml = mc.getMapLayer("Species in Active area");
-                    ml.setDynamicStyle(true);
-                    ml.setEnvParams(envString);
-                    ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
-
-                    ml.setBlueVal(0);
-                    ml.setGreenVal(255);
-                    ml.setRedVal(255);
-                    ml.setSizeVal(8);
-                    ml.setOpacity((float)0.8);
-
-                    //return ml;
-                }
-            }
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
