@@ -230,12 +230,12 @@ public class FilteringWSController {
 
             String boundingBoxString = filteringImage2.writeImageAccumulative(0xFFFF0000); //red
 
-            //String areaSize = String.valueOf(filteringImage2.getApproximateSize()); //only usable after 'writeImageAccumulative'
+            String areaSize = String.valueOf(filteringImage2.getApproximateSize()); //only usable after 'writeImageAccumulative'
 
             String filenamepart = file.getName();
             filenamepart = filenamepart.substring(0, filenamepart.lastIndexOf("."));
 
-            return file.getName() + "\n" + boundingBoxString; // + "\n" + areaSize;
+            return file.getName() + "\n" + boundingBoxString + "\n" + areaSize;
         } catch (Exception e) {
             e.printStackTrace();
         }

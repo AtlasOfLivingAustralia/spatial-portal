@@ -79,6 +79,7 @@ public class FilteringWCController extends UtilityComposer {
     String activeAreaUrl = null;
     String activeAreaExtent = null;
     String activeAreaMetadata = null;
+    private String activeAreaSize = null;
 
     @Override
     public void afterCompose() {
@@ -110,6 +111,14 @@ public class FilteringWCController extends UtilityComposer {
             return pid;
         } else {
             return "";
+        }
+    }
+
+    public String getAreaSize() {
+        if (activeAreaSize != null) {
+            return activeAreaSize;
+        } else {
+            return null;
         }
     }
 
@@ -208,6 +217,9 @@ public class FilteringWCController extends UtilityComposer {
             //TODO: error message
             e.printStackTrace(System.out);
         }
+
+        //reset active area size
+        activeAreaSize = null;
     }
 
     private SPLFilter getSPLFilter(String layername) {
@@ -339,6 +351,9 @@ public class FilteringWCController extends UtilityComposer {
         showAdjustPopup(null);
 
         listFix();
+
+        //reset active area size
+        activeAreaSize = null;
     }
 
     public void onClick$btnClearSelection(Event event) {
@@ -595,6 +610,7 @@ public class FilteringWCController extends UtilityComposer {
 
             activeAreaUrl = imagefilepath[0];
             activeAreaExtent = imagefilepath[1];
+            activeAreaSize = imagefilepath[2];
 
             //make the metadata?
             activeAreaMetadata = "Environmental Envelope";

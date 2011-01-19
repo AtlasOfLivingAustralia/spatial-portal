@@ -1,5 +1,8 @@
 package org.ala.spatial.analysis.index;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.WKTReader;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -23,6 +26,11 @@ import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Tile;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 /**
  * builder for species list index.
@@ -96,6 +104,9 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         }
 
         System.out.println("Start FilteringIndex.build_all (" + threadcount + " threads): " + System.currentTimeMillis());
+
+        //height mapping here while it is running
+        startBuildAreaSize();
 
         //wait until all done
         try {
@@ -1123,11 +1134,159 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         return null;
     }
 
+    //build vertical area file
+    static void buildAreaSize(double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end,
+            int longitude_steps, int latitude_steps) {
+
+        //get latproj between display projection and data projection
+        SpatialCluster3 sc = new SpatialCluster3();
+        int[] px_boundary = new int[4];
+        px_boundary[0] = sc.convertLngToPixel(longitude_start);
+        px_boundary[2] = sc.convertLngToPixel(longitude_end);
+        px_boundary[1] = sc.convertLatToPixel(latitude_start);
+        px_boundary[3] = sc.convertLatToPixel(latitude_end);
+
+        double[] latproj = new double[latitude_steps + 1];
+        double[] longproj = new double[longitude_steps];
+        for (int i = 0; i < latproj.length; i++) {
+            latproj[i] = sc.convertPixelToLat((int) (px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) (latproj.length))));
+        }
+        for (int i = 0; i < longproj.length; i++) {
+            longproj[i] = sc.convertPixelToLng((int) (px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) (longproj.length))));
+        }
+
+        //get area's
+        double[] areaSize = new double[latitude_steps];
+
+        double north, south, east, west;
+        east = longproj[longproj.length - 2];
+        west = longproj[longproj.length - 1];
+
+        try {
+            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
+                    + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
+                    + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
+                    + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
+                    + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
+                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";
+            String wkt3577 = "PROJCS[\"GDA94 / Australian Albers\","
+                    + "    GEOGCS[\"GDA94\","
+                    + "        DATUM[\"Geocentric_Datum_of_Australia_1994\","
+                    + "            SPHEROID[\"GRS 1980\",6378137,298.257222101,"
+                    + "                AUTHORITY[\"EPSG\",\"7019\"]],"
+                    + "            TOWGS84[0,0,0,0,0,0,0],"
+                    + "            AUTHORITY[\"EPSG\",\"6283\"]],"
+                    + "        PRIMEM[\"Greenwich\",0,"
+                    + "            AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "        UNIT[\"degree\",0.01745329251994328,"
+                    + "            AUTHORITY[\"EPSG\",\"9122\"]],"
+                    + "        AUTHORITY[\"EPSG\",\"4283\"]],"
+                    + "    UNIT[\"metre\",1,"
+                    + "        AUTHORITY[\"EPSG\",\"9001\"]],"
+                    + "    PROJECTION[\"Albers_Conic_Equal_Area\"],"
+                    + "    PARAMETER[\"standard_parallel_1\",-18],"
+                    + "    PARAMETER[\"standard_parallel_2\",-36],"
+                    + "    PARAMETER[\"latitude_of_center\",0],"
+                    + "    PARAMETER[\"longitude_of_center\",132],"
+                    + "    PARAMETER[\"false_easting\",0],"
+                    + "    PARAMETER[\"false_northing\",0],"
+                    + "    AUTHORITY[\"EPSG\",\"3577\"],"
+                    + "    AXIS[\"Easting\",EAST],"
+                    + "    AXIS[\"Northing\",NORTH]]";
+
+            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
+            CoordinateReferenceSystem GDA94CRS = CRS.parseWKT(wkt3577);
+            MathTransform transform = CRS.findMathTransform(wgsCRS, GDA94CRS);
+
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+            WKTReader reader = new WKTReader(geometryFactory);
+
+            for (int i = 0; i < latitude_steps; i++) {
+                south = latproj[i];
+                north = latproj[i + 1];     //latproj is len latitude_steps+1
+
+                //backwards otherwise projection fails (?)
+                String wkt = "POLYGON((" + south + " " + east
+                        + ", " + north + " " + east
+                        + ", " + north + " " + west
+                        + ", " + south + " " + west
+                        + ", " + south + " " + east + "))";
+
+                Geometry geom = reader.read(wkt);
+                Geometry geomT = JTS.transform(geom, transform);
+
+                //images are top down, this is south to north.
+                areaSize[latitude_steps - 1 - i] = geomT.getArea();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        //export
+        try {
+            String filename = TabulationSettings.index_path + "IMAGE_LATITUDE_AREA";
+
+            FileOutputStream fos = new FileOutputStream(filename);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            oos.writeObject(areaSize);
+
+            oos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static public double[] getImageLatitudeArea() {
+        String filename = TabulationSettings.index_path + "IMAGE_LATITUDE_AREA";
+
+        //TODO: remove this temporary code
+        //create it if it does not exist
+        File file = new File(filename);
+        if (!file.exists()) {
+            startBuildAreaSize();
+        }
+
+        //import
+        double[] areaSize = null;
+        try {
+
+
+            FileInputStream fis = new FileInputStream(filename);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+
+            areaSize = (double[]) ois.readObject();
+
+            ois.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return areaSize;
+    }
+
+    static void startBuildAreaSize() {
+        double longitude_start = 112;
+        double longitude_end = 154;
+        double latitude_start = -44;//-44;
+        double latitude_end = -9;
+        int height = 840; //210 42/210
+        int width = 1008; //252
+
+        buildAreaSize(longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+    }
+
     static public void main(String[] args) {
         TabulationSettings.load();
 
-        FilteringIndex speciesListIndex = new FilteringIndex();
-        speciesListIndex.occurancesUpdate();
+        //FilteringIndex speciesListIndex = new FilteringIndex();
+        //speciesListIndex.occurancesUpdate();
+
+        startBuildAreaSize();
     }
 
     /**

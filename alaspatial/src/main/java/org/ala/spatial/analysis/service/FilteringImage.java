@@ -1,5 +1,7 @@
 package org.ala.spatial.analysis.service;
 
+import com.vividsolutions.jts.geom.Geometry;
+import org.geotools.referencing.CRS;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -11,6 +13,7 @@ import java.util.Comparator;
 
 import javax.imageio.ImageIO;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
+import org.ala.spatial.analysis.index.FilteringIndex;
 
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Tile;
@@ -60,6 +63,14 @@ public class FilteringImage implements Serializable {
      * count of layers applied, for accumulative
      */
     int accumulative;
+    /**
+     * calculate approximate area of envelope
+     */
+    double approximateSize;
+    /**
+     * height vs size mapping
+     */
+    double [] sizeMapping;
 
     /**
      * constructor for new, fully hidden, layer/image
@@ -100,6 +111,10 @@ public class FilteringImage implements Serializable {
         edgeColour = 0xff000000 | ((r / 3) & 0x00ff0000) | ((b / 3) & 0x0000ff00) | ((b / 3) & 0x000000ff);
 
         accumulative = 0;
+
+        approximateSize = 0;
+
+        sizeMapping = null;
     }
 
     /**
@@ -184,6 +199,13 @@ public class FilteringImage implements Serializable {
      * returning extents as double,double,double,double
      */
     public String writeImageAccumulative(int colour) {
+        approximateSize = 0;
+
+        //size mapping
+        if(sizeMapping == null) {
+            sizeMapping = FilteringIndex.getImageLatitudeArea();
+        }
+
         try {
             /* convert each
              * - if not transparent and any neighbor (x8) is
@@ -201,6 +223,8 @@ public class FilteringImage implements Serializable {
                         if(i > maxi) maxi = i;
                         if(j < minj) minj = j;
                         if(j > maxj) maxj = j;
+
+                        approximateSize += sizeMapping[i];
                     }
                     pos++;
                 }
@@ -502,5 +526,9 @@ public class FilteringImage implements Serializable {
                 image_bytes[data[j].pos_]++;
             }
         }
+    }
+
+    public double getApproximateSize() {
+        return approximateSize;
     }
 }

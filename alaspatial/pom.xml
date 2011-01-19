@@ -15,6 +15,11 @@
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>2.6-SNAPSHOT</version>
+        </dependency>
 
         <!--  Spring -->
         <dependency>
@@ -323,6 +328,10 @@
         <repository>
             <id>Hibernate Spatial repo</id>
             <url>http://www.hibernatespatial.org/repository</url>
+        </repository>
+        <repository>
+            <id>opengeo</id>
+            <url>http://repo.opengeo.org</url>
         </repository>
     </repositories>
     <build>

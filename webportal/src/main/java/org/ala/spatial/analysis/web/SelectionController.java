@@ -10,6 +10,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.io.gml2.GMLWriter;
@@ -32,6 +33,8 @@ import java.util.Map;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,6 +54,8 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.w3c.dom.Document;
@@ -133,6 +138,12 @@ public class SelectionController extends UtilityComposer {
     Comboitem ci10km;
     Comboitem ci20km;
 
+    //displays area of active area
+    Label lblArea;
+    private String storedSize;
+
+    boolean viewportListenerAdded = false;
+
     public String getGeom() {
         if (displayGeom.getText().contains("ENVELOPE(")) {
             //get PID and return as ENVELOPE(PID)
@@ -163,7 +174,7 @@ public class SelectionController extends UtilityComposer {
         }
 
         cbAreaSelection.setSelectedItem(ciBoxCurrentView);
-        displayGeom.setValue(DEFAULT_AREA);
+        displayGeom.setValue(DEFAULT_AREA);        
     }
 
     void setInstructions(String toolname, String[] text) {
@@ -431,7 +442,7 @@ public class SelectionController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             setInstructions(null, null);
             showPolygonInfo();
-            wkt = "POLYGON((-180 -180,-180 180.0,180.0 180.0,180.0 -180.0,-180.0 -180.0))";
+            wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
             displayGeom.setValue(wkt);
 
             MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Active Area");
@@ -707,9 +718,25 @@ public class SelectionController extends UtilityComposer {
         }
     }
 
+    /**
+     * transform json string with geometries into wkt.
+     *
+     * extracts 'shape_area' if available and assigns it to storedSize.
+     *
+     * @param json
+     * @return
+     */
     private String wktFromJSON(String json) {
         try {
             JSONObject obj = JSONObject.fromObject(json);
+
+            //attempt to get shape_area
+            //try {
+            //    storedSize = obj.getJSONObject("advanced_properties").getString("shape_area");
+            //} catch (Exception e){
+            //    e.printStackTrace();
+            //}
+
             JSONArray geometries = obj.getJSONArray("geometries");
             String wkt = "";
             for (int i = 0; i < geometries.size(); i++) {
@@ -766,6 +793,9 @@ public class SelectionController extends UtilityComposer {
                 displayGeom.setValue(DEFAULT_AREA);
                 lastTool = null;
             } else if (selectionGeom.getValue().startsWith("LAYER(")) {
+                //reset stored size
+                storedSize = null;
+
                 //get WKT from this feature
                 String v = selectionGeom.getValue().replace("LAYER(", "");
                 //FEATURE(table name if known, class name)
@@ -775,6 +805,11 @@ public class SelectionController extends UtilityComposer {
 
                 //for display
                 wkt = getLayerGeoJsonAsWkt(v, false);
+
+                //calculate area is not populated
+                if(storedSize == null) {
+                    storedSize = getAreaOfWKT(wkt);
+                }
             } else {
                 wkt = selectionGeom.getValue();
                 displayGeom.setValue(wkt);
@@ -1126,11 +1161,43 @@ public class SelectionController extends UtilityComposer {
             e.printStackTrace();
         }
 
+        updateAreaLabel();
+    }
+
+    void updateAreaLabel() {
+        //treat as WKT
+        String area = getGeom();
+
+        String size = null;
+
+        if(area.contains("ENVELOPE") || area.contains("LAYER")) {
+            size = storedSize;
+        } else if(displayGeom.getText().contains("WORLD")) {
+            size = "509600000"; //fixed value
+        } else {
+            //try as WKT
+            size = getAreaOfWKT(area);
+        }
+
+        if(size == null) {
+            lblArea.setValue("");
+        } else {
+            lblArea.setValue(size + " sq km");
+        }
     }
 
     void onEnvelopeDone(boolean hide) {
         try {
             String envPid = ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).getPid();
+            storedSize = "";
+            String size = ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).getAreaSize();
+
+            try {
+                double d = Double.parseDouble(size);
+                storedSize = String.format("%,.1f", d / 1000000.0);  //convert m^2 to km^2
+            }catch(Exception e){
+                e.printStackTrace();
+            }
 
             if (envPid.length() > 0) {
                 displayGeom.setText("ENVELOPE(" + envPid + ")");
@@ -1161,6 +1228,8 @@ public class SelectionController extends UtilityComposer {
                 wInstructions.detach();
             }
         }
+
+        attachViewportListener();
     }
 
     /**
@@ -1441,6 +1510,120 @@ public class SelectionController extends UtilityComposer {
          addressLabel.setValue(addresses.get(0).getAddressLine());
           } catch (geo.google.GeoException ge) {
 
+        }
+    }
+
+    private String getAreaOfWKT(String wkt) {
+        String area = null;
+
+        try {
+            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
+                    + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
+                    + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
+                    + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
+                    + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
+                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";             
+             String wkt3577 = "PROJCS[\"GDA94 / Australian Albers\","
+                    + "    GEOGCS[\"GDA94\","
+                    + "        DATUM[\"Geocentric_Datum_of_Australia_1994\","
+                    + "            SPHEROID[\"GRS 1980\",6378137,298.257222101,"
+                    + "                AUTHORITY[\"EPSG\",\"7019\"]],"
+                    + "            TOWGS84[0,0,0,0,0,0,0],"
+                    + "            AUTHORITY[\"EPSG\",\"6283\"]],"
+                    + "        PRIMEM[\"Greenwich\",0,"
+                    + "            AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "        UNIT[\"degree\",0.01745329251994328,"
+                    + "            AUTHORITY[\"EPSG\",\"9122\"]],"
+                    + "        AUTHORITY[\"EPSG\",\"4283\"]],"
+                    + "    UNIT[\"metre\",1,"
+                    + "        AUTHORITY[\"EPSG\",\"9001\"]],"
+                    + "    PROJECTION[\"Albers_Conic_Equal_Area\"],"
+                    + "    PARAMETER[\"standard_parallel_1\",-18],"
+                    + "    PARAMETER[\"standard_parallel_2\",-36],"
+                    + "    PARAMETER[\"latitude_of_center\",0],"
+                    + "    PARAMETER[\"longitude_of_center\",132],"
+                    + "    PARAMETER[\"false_easting\",0],"
+                    + "    PARAMETER[\"false_northing\",0],"
+                    + "    AUTHORITY[\"EPSG\",\"3577\"],"
+                    + "    AXIS[\"Easting\",EAST],"
+                    + "    AXIS[\"Northing\",NORTH]]";
+
+            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
+            CoordinateReferenceSystem GDA94CRS = CRS.parseWKT(wkt3577);
+            MathTransform transform = CRS.findMathTransform(wgsCRS, GDA94CRS);
+
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory( null );
+            WKTReader reader = new WKTReader(geometryFactory);
+
+            //there is a need to swap longitude and latitude in the wkt
+            StringBuffer sb = new StringBuffer();
+            String x = "";
+            String y = "";
+            int inNumber = 0;
+            for(int i=0;i<wkt.length();i++){
+                char c = wkt.charAt(i);
+                if((c >= '0' && c <= '9') || c == '.' || c == '-') {
+                    if(inNumber == 0) {
+                        //start first number
+                        inNumber = 1;
+
+                        x = "" + c;
+                    } else if(inNumber == 1) {
+                        //continue first number
+                        x = x + c;
+                    } else {
+                        //continue 2nd number
+                        y = y + c;
+                    }
+                } else if(inNumber == 1 && c == ' ') {
+                    //moving to 2nd number
+                    inNumber = 2;
+
+                    //reset 2nd number
+                    y = "";
+                } else {
+                    if(inNumber == 2) {
+                        //write swapped numbers
+                        sb.append(y).append(" ").append(x);
+
+                        //reset position
+                        inNumber = 0;
+                    }
+                    //write current value
+                    sb.append(c);
+                }
+            }
+            
+            Geometry geom = reader.read(sb.toString());
+            Geometry geomT = JTS.transform(geom, transform);
+
+            area = String.format("%,.1f", geomT.getArea() / 1000000.0);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return area;
+    }
+
+    public void attachViewportListener() {
+        if(!viewportListenerAdded) {
+            viewportListenerAdded = true;
+
+            //listen for map extents changes
+            EventListener el = new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    // refresh count may be required if area is CURRENTVIEW
+                    if(displayGeom.getText().contains("CURRENTVIEW()")) {
+                        updateAreaLabel();
+                    }
+                }
+            };
+            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("areaLabel", el);
+
+            //run it now
+            updateAreaLabel();
         }
     }
 }
