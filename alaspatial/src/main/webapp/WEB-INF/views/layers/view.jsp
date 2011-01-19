@@ -83,7 +83,10 @@
 
                 <p>
                     <span class="title">More information:</span> <br />
-                    <a href= "${layer.metadatapath}" target="_blank">More information</a>
+                    <c:forEach var="u" items="${fn:split(layer.metadatapath, '|')}">
+                        <a href="${u}">${u}</a><br />
+                    </c:forEach>
+
                 </p>
 
             </c:when>

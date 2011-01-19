@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.dao.LayersDAO;
@@ -42,6 +43,14 @@ public class LayersController {
     public void setLayersDao(LayersDAO layersDao) {
         System.out.println("setting layers dao");
         this.layersDao = layersDao;
+    }
+
+    @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE+"/"}, method = RequestMethod.GET)
+    public ModelAndView showPublicIndexPage() {
+        ModelMap modelMap = new ModelMap();
+        modelMap.addAttribute("message", "Displaying all layers");
+        modelMap.addAttribute("layerList", layersDao.getLayers());
+        return new ModelAndView("layers/public_list", modelMap);
     }
 
     @RequestMapping(value = LAYERS_INDEX, method = RequestMethod.GET)
@@ -148,10 +157,61 @@ public class LayersController {
         System.out.print("retriving layer list by id: " + uid);
         LayerInfo layer = layersDao.getLayerById(uid);
 
+        // change the metadata separator.
+        String mdp = layer.getMetadatapath();
+        if (mdp != null) {
+            layer.setMetadatapath(mdp.replaceAll(", ", "|"));
+        }
+
         ModelMap m = new ModelMap();
         m.addAttribute("layer", layer);
 
         return new ModelAndView("layers/view", m);
+    }
+
+    /**
+     * Action call to get a layer info based on it's UID
+     *
+     * @param uid
+     * @return ModelAndView view
+     */
+    @RequestMapping(value = LAYERS_BASE + "/more/{uid}", method = RequestMethod.GET)
+    public ModelAndView getLayerInfoByUId(@PathVariable String uid) {
+
+        // test if the "uid" is a number or text
+        // if number, then it's a uid
+        // if text, then it'll be the layer (table) name
+
+        boolean isUid = false;
+        try {
+            Integer.parseInt(uid);
+            isUid = true; 
+        } catch (NumberFormatException nfe) {}
+
+        LayerInfo layer = null; 
+        if (isUid) {
+            System.out.print("retriving layer list by id: " + uid);
+            layer = layersDao.getLayerById(uid);
+        } else {
+            System.out.print("retriving layer list by name: " + uid);
+            List<LayerInfo> layers = layersDao.getLayersByName(uid);
+            if (layers != null) {
+                if (layers.size() > 0) {
+                    layer = layers.get(0); 
+                }
+            }
+        }
+        
+        // change the metadata separator.
+        String mdp = layer.getMetadatapath();
+        if (mdp != null) {
+            layer.setMetadatapath(mdp.replaceAll(", ", "|"));
+        }
+
+        ModelMap m = new ModelMap();
+        m.addAttribute("layer", layer);
+
+        return new ModelAndView("layers/moreinfo", m);
     }
 
     /**

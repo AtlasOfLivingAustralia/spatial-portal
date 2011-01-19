@@ -35,7 +35,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayers() {
-        return hibernateTemplate.find("from LayerInfo order by  classification1, classification2, displayname ");
+        return hibernateTemplate.find("from LayerInfo where enabled=true order by  classification1, classification2, displayname ");
     }
 
     /**
@@ -56,12 +56,23 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
 
     /**
      * Get layer by name
-     * 
+     *
      * @param name
      * @return LayerInfo
      */
     @Override
     public List<LayerInfo> getLayersByName(String name) {
+        return hibernateTemplate.find("from LayerInfo where lower(name) = ? order by  classification1, classification2, displayname ", name);
+    }
+
+    /**
+     * Get layer by display name
+     * 
+     * @param name
+     * @return LayerInfo
+     */
+    @Override
+    public List<LayerInfo> getLayersByDisplayName(String name) {
         return hibernateTemplate.find("from LayerInfo where lower(displayname) like ? order by  classification1, classification2, displayname ", ("%" + name.toLowerCase() + "%"));
     }
 

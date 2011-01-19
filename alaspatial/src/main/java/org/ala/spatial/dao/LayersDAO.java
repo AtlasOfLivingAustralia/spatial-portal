@@ -11,6 +11,7 @@ public interface LayersDAO {
     public List<LayerInfo> getLayers();
     public LayerInfo getLayerById(String id);
     public List<LayerInfo> getLayersByName(String name);
+    public List<LayerInfo> getLayersByDisplayName(String name);
     public List<LayerInfo> getLayersByType(String type);
     public List<LayerInfo> getLayersBySource(String source);
     public List<LayerInfo> getLayersByExtent(String extent);
