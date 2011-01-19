@@ -10,14 +10,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
  * @author Adam
  */
 public class SessionPrint {
-    final int dpi = 300;
+    final int dpi = 200;
+    final double margin_north = .2;  //A4 portrait top
+    final double margin_south = .2;  //A4 portrait bottom
+    final double margin_east = .2;   //A4 portrait right
+    final double margin_west = .2;   //A4 portrait left
 
     String server;
     String height;
@@ -62,7 +65,7 @@ public class SessionPrint {
         //resolution == 0 (current)
         //resolution == 1 (print: width up to 4962px, height up to 7014px = A4 600dpi)
         if(resolution == 1) {
-            int maxW = (int)(8.27 * dpi);
+            /*int maxW = (int)(8.27 * dpi);
             int maxH = (int)(11.69 * dpi);
             double w = Double.parseDouble(width);
             double h = Double.parseDouble(height);
@@ -76,7 +79,29 @@ public class SessionPrint {
                 scaleBy = maxH/h;
                 w = w * maxH/h;
                 h = maxH;
+            }*/
+
+            int maxW = (int)((8.27 - margin_west - margin_east) * dpi);  //A4 in inches
+            int maxH = (int)((11.69 - margin_north - margin_south) * dpi);
+            double w = Double.parseDouble(width);
+            double h = Double.parseDouble(height);
+            if(w > h) {               //swap to produce largest possible A4 map
+                int tmp = maxH;
+                maxH = maxW;
+                maxW = tmp;
             }
+            if (w/h > maxW/maxH) {
+                //limit by w
+                scaleBy = maxW/w;
+                h = h * maxW/w;
+                w = maxW;
+            } else {
+                //limit by h
+                scaleBy = maxH/h;
+                w = w * maxH/h;
+                h = maxH;
+            }
+
             this.width = String.valueOf((int)w);
             this.height = String.valueOf((int)h);
             
@@ -235,7 +260,6 @@ public class SessionPrint {
             return;
         }
 
-
         //TODO: dynamic path and settings
         //String cmd = "/mnt/ala/printing/wkhtmltoimage"
         String [][] cmdsScreen = {
@@ -246,7 +270,7 @@ public class SessionPrint {
         String [][] cmdsPrint = {
             {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,imgFilename},
             {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,jpgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),"-density",dpi + "x" + dpi,"-units","pixelsperinch",jpgFilename,pdfFilename}};
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),"-density",dpi + "x" + dpi,"-units","pixelsperinch",jpgFilename,pdfFilename}};            
 
         try {
 

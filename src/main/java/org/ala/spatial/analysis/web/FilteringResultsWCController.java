@@ -363,7 +363,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         //Events.echoEvent("onMapSpecies", this, null);
         getMapComposer().addToSession("Species in Active area", "lsid=aa");
         //getMapComposer().loadSpeciesInActiveArea(pid, results_count_occurrences, false);
-        onMapSpecies2(null);
+        onMapSpecies(null);
     }
 
     public void onMapSpecies(Event event) {
@@ -379,6 +379,13 @@ public class FilteringResultsWCController extends UtilityComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
             if (results_count_occurrences > 20000 || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)) {
+                MapLayer gjLayer = getMapComposer().getMapLayer("Species in Active area");
+                if(gjLayer != null) {
+                    getMapComposer().deactiveLayer(gjLayer, true, false, true);
+                    getMapComposer().getOpenLayersJavascript().setAdditionalScript(getMapComposer().getOpenLayersJavascript().iFrameReferences
+                                + getMapComposer().getOpenLayersJavascript().removeMapLayer(gjLayer));                        
+                }
+
                 //clustering
                 MapLayerMetadata md = new MapLayerMetadata();
                 md.setLayerExtent(getMapComposer().getViewArea(), 0.2);
@@ -417,6 +424,14 @@ public class FilteringResultsWCController extends UtilityComposer {
                         bb.add(d[i]);
                     }
                     md.setBbox(bb);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                // reopen the layer controls
+                try {
+                    getMapComposer().refreshActiveLayer(ml);
+                    getMapComposer().setupLayerControls(ml);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
