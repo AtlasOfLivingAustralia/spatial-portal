@@ -1053,8 +1053,19 @@ border-bottom: none;
                                           visible: true
                                       });
                                     ctrl.labelSymbolizer.fontColor = "white";
-                                    ctrl.lineSymbolizer.strokeColor = "white";
-                                    ctrl.lineSymbolizer.strokeWidth = 1;
+                                    if(h2.length > 9) {
+                                        ctrl.labelSymbolizer.fontSize = "15";
+                                        ctrl.labelSymbolizer.fontWeight = "bold";
+                                        ctrl.lineSymbolizer.strokeWidth = 2;
+
+                                        //resize scale text
+                                        mapFrame.document.getElementById("mapscale").style.fontSize = "15px"
+                                        mapFrame.document.getElementById("mapscale").style.fontWeight = "bold"
+
+                                    } else {
+                                        ctrl.lineSymbolizer.strokeWidth = 1;
+                                    }
+                                    ctrl.lineSymbolizer.strokeColor = "white";                                    
                                     ctrl.lineSymbolizer.strokeOpacity = 0.6;
                                     map.addControl(ctrl);
                                 }

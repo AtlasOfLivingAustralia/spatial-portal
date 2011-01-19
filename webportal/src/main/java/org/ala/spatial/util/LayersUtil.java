@@ -6,7 +6,9 @@ import au.org.emii.portal.menu.MapLayer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -106,9 +108,12 @@ public class LayersUtil {
      */
     public String getFirstSpeciesLsidLayer() {
         List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
+        Entry<String, UserData> entry;
         for (MapLayer ml : activeLayers) {
             if (ml.isDisplayed() && isSpeciesName(ml.getName())) {
                 return ml.getName() + "," + ml.getMapLayerMetadata().getSpeciesLsid();
+            } else if (ml.isDisplayed() && ((entry = getUserData(ml.getName())) != null)) {
+                return entry.getValue().getDisplayName() + "," + entry.getKey();
             }
         }
         return null;
@@ -199,7 +204,22 @@ public class LayersUtil {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
+
         return false;
+    }
+
+    public Entry<String, UserData> getUserData(String displayName) {
+        //check against user uploaded records
+        Hashtable<String, UserData> htUserSpecies = (Hashtable) mc.getSession().getAttribute("userpoints");
+        if (htUserSpecies != null) {
+            for(Entry<String, UserData> entry : htUserSpecies.entrySet()) {
+                if(entry.getValue().getDisplayName().equalsIgnoreCase(displayName)){
+                    return entry;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

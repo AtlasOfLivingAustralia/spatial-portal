@@ -2577,7 +2577,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     convLayer = mapSpeciesWMSByFilter("Species in Active area", "area='" + md.getUnits() + "'");
                     convLayer.getMapLayerMetadata().setUnits(md.getUnits());
 
-                    convLayer.setClustered(true);
+                    convLayer.setClustered(false);
                     btnPointsCluster.setLabel("Display species as clusters");
                 } else {
                     //convLayer = loadSpeciesInActiveArea(pid, 201, true);
@@ -4016,16 +4016,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ml = mapSpeciesByLsidFilter(lsid, species, rank);
         }
 
-        MapLayerMetadata md = ml.getMapLayerMetadata();
-        if (md == null) {
-            md = new MapLayerMetadata();
-            ml.setMapLayerMetadata(md);
+        if(ml != null) {
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setSpeciesLsid(lsid);
+            md.setSpeciesDisplayName(species);
+            md.setSpeciesRank(rank);
+            
+            updateUserLogMapSpecies(lsid);
         }
-        md.setSpeciesLsid(lsid);
-        md.setSpeciesDisplayName(species);
-        md.setSpeciesRank(rank);
-
-        updateUserLogMapSpecies(lsid);
 
         return ml;
     }
@@ -4182,9 +4184,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // double check that if the species is loaded by the user,
         // for now, load them as clusters
-        if (rank.equals("user")) {
-            return mapSpeciesByLsidCluster(lsid, species, rank);
-        }
+        //if (rank.equals("user")) {
+        //    return mapSpeciesByLsidCluster(lsid, species, rank);
+        //}
 
         String filter = rank + "conceptid='" + lsid + "'";
         //filter = rank+"='"+species+"'";
@@ -4294,8 +4296,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 if (label.equalsIgnoreCase("Species in Active area")) {
                     if (gjLayer != null) {
                         System.out.println("removing existing layer: " + gjLayer.getName());
-                        openLayersJavascript.setAdditionalScript(
-                                openLayersJavascript.removeMapLayer(gjLayer));
+
+                        openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
+                                + openLayersJavascript.removeMapLayer(gjLayer));
+                        
+                        deactiveLayer(gjLayer, true, false, true);
+
                     } //else {
                     boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
                     if (addedOk) {
@@ -4322,6 +4328,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         //TODO: make new variable in MapLayerMetadata for
                         // mapping 'Species in Active area' as WMS from alaspatial
                         md.setUnits(filter);
+
+                        // reopen the layer controls
+                        try {
+                            refreshActiveLayer(ml);
+                            setupLayerControls(ml);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
                         return ml;
                     } else {
@@ -5193,10 +5207,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void loadUserPoints(UserData ud, Reader data) {
-        String satServer = "http://spatial-dev.ala.org.au";
-        //if (settingsSupplementary != null) {
-        //    satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        //}
+        String satServer = null;//"http://spatial-dev.ala.org.au";
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
 
         try {
 
