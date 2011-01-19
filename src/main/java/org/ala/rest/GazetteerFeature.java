@@ -44,7 +44,7 @@ public class GazetteerFeature {
     String id;
     String name;
     Map advanced_properties; //detailed feature metadata
-    Map basic_properties;    //basic feature metadata (to displayed in UI)
+    Map properties;    //basic feature metadata (to displayed in UI)
     List<String> geometries = new ArrayList();
 
     public GazetteerFeature(String layerName, String idAttribute1) throws IOException, Exception {
@@ -143,12 +143,12 @@ public class GazetteerFeature {
                             }
                             logger.info("Feature ID is : " + this.id);
 
-                            this.basic_properties = new HashMap();
-                            this.basic_properties.put("Feature_ID", this.id);
+                            this.properties = new HashMap();
+                            this.properties.put("Feature_ID", this.id);
 
                             this.name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
                             logger.info("Feature Name is : " + this.name);
-                            this.basic_properties.put("Feature_Name", this.name);
+                            this.properties.put("Feature_Name", this.name);
 
                             //Construct a geoJSON reperesntation of the geometry uing GeoJSONBuilder
                             //logger.info("Feature geom is " + feature.getDefaultGeometryProperty().getValue().toString());
@@ -167,15 +167,16 @@ public class GazetteerFeature {
 
                             if (maxx.compareTo(minx) == 0 && maxy.compareTo(miny) == 0){
                                 String point = "(" + strRoundDouble(miny) + "," + strRoundDouble(minx) + ")";
-                                this.basic_properties.put("Point", point);
+                                this.properties.put("Point", point);
                                 logger.finer("Point is: " + point);
                             }
                             else{
                                 String boundingBox = "((" + strRoundDouble(miny) + "," + strRoundDouble(minx) + "),(" + strRoundDouble(maxy) + "," + strRoundDouble(maxx) + "))";
-                                this.basic_properties.put("Bounding_Box", boundingBox);
+                                this.properties.put("Bounding_Box", boundingBox);
                                 logger.finer("Bounding box is: " + boundingBox);
                             }
-                            this.basic_properties.put("Layer_Metadata", "http://" + gc.getHostname() + "/layers/" + layerName);
+			    //Get Metadata link from config 
+                            this.properties.put("Layer_Metadata", gc.getMetadataPath(layerName));//"http://" + gc.getHostname() + "/layers/" + layerName);
                             logger.finer("Layer metadata url is " + gc.getBaseURL() + "/layers/" + layerName);
                             this.geometries.add(w.toString());
 
@@ -186,7 +187,7 @@ public class GazetteerFeature {
                             for (Property property : featureProperties) {
                                 //logger.info("GazetteerFeature: " + property.toString());
                                 if ((property.getName() != null) && (property.getValue() != null) && (!(property.getName().toString().contentEquals(geomName)))) {
-                                    this.advanced_properties.put(property.getName().toString(), property.getValue().toString());
+                                    this.properties.put(property.getName().toString(), property.getValue().toString());
                                 }
                             }
                         }
@@ -209,8 +210,8 @@ public class GazetteerFeature {
         map.put("type", "GeometryCollection");
         map.put("id", this.id);
         map.put("name", this.name);
-        map.put("properties", this.basic_properties);
-        map.put("advanced_properties", this.advanced_properties);
+        map.put("properties", this.properties);
+        //map.put("advanced_properties", this.advanced_properties);  advanced_properties is not in the geojson standard
         map.put("geometries", this.geometries);
         return map;
     }

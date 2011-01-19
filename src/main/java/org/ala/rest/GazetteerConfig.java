@@ -374,4 +374,23 @@ public class GazetteerConfig {
 
         }
     }
+
+    public String getMetadataPath(String layerName) {
+	 //using xpath to query
+        String metadata = "none";
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//layer[name='" + layerName + "']/metadataPath/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+            metadata = nodes.item(0).getNodeValue();
+
+        } catch (Exception e) {
+            //this fails pretty hard when the attribute doesn't exist
+            return "none";
+        }
+        return metadata;
+    }
 }

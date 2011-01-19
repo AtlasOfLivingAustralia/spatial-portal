@@ -1,6 +1,7 @@
 
 <gazetteer>
-<baseURL>http://localhost:8080/geoserver/rest/gazetteer</baseURL>
+<hostname>localhost:8080</hostname>
+<rootPath>/rest/gazetteer</rootPath>
 <!--<layer>
     <name>GeoRegionFeatures</name>
     <idAttribute>id</idAttribute>
@@ -17,6 +18,7 @@
     <!--   <descriptionAttribute>NAME</descriptionAttribute> -->
 	<descriptionAttribute>FID</descriptionAttribute>
     </descriptionAttributes>
+    <metadataPath>http://localhost:8080/layers/1</metadataPath>
 </layer>
 <!--<layer>
     <name>aus0</name>
