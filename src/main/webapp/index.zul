@@ -781,7 +781,7 @@ border-bottom: none;
                                                 <vbox width="95%">
                                                     <label value="Enter place name" />
                                                     <hbox>
-                                                        <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                        <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="320px"></combobox>
                                                     <!-- <button id="gazSearch" label="Add to Map" /> -->
                                                         <label id="resultGaz" />
                                                     </hbox>
@@ -814,7 +814,7 @@ border-bottom: none;
                                             <div>
                                                 <vbox>
                                                     <label value="Enter a layer name or a keyword" />
-                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
+                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="320px" >
                                                         <comboitem label=""/>
                                                     </combobox>
                                                     <label sclass="exampleText">e.g. Temperature</label>
