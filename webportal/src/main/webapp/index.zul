@@ -729,7 +729,7 @@ border-bottom: none;
                                                 <vbox>
                                                     <label>Enter a scientific or common name</label>
 
-                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
                                                         <comboitem label=""/>
                                                     </combobox>
 
