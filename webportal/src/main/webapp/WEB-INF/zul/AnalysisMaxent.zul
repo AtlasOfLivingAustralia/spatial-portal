@@ -57,7 +57,7 @@
                     </hbox>
                 </radiogroup>
                 -->
-                            <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                            <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
                                 <comboitem label=""/>
                             </combobox>
                             <!-- <button id="btnMapSpecies" label="Add to Map" visible="true" /> -->
