@@ -110,6 +110,7 @@ import org.zkoss.zk.ui.Path;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
+import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -123,6 +124,7 @@ import org.zkoss.zul.Caption;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
@@ -487,7 +489,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     //selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
                     String envString = "color:" + hexColour + ";name:circle;size:" + sizeSlider.getCurpos();
                     envString += ";opacity:" + opacity;
-                    if(chkUncertaintySize.isChecked()){
+                    if (chkUncertaintySize.isChecked()) {
                         envString += ";uncertainty:1";
                     }
                     selectedLayer.setEnvParams(envString);
@@ -762,7 +764,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void refreshActiveLayer(MapLayer mapLayer) {
         ListModelList model = (ListModelList) activeLayersList.getModel();
         int index = model.indexOf(mapLayer);
-        if(index >= 0){
+        if (index >= 0) {
             model.remove(index);
             model.add(index, mapLayer);
 
@@ -2539,7 +2541,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 Color c = new Color(red, green, blue);
                 String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
                 envParams = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity + "";
-                if(chkUncertaintySize.isChecked()){
+                if (chkUncertaintySize.isChecked()) {
                     envParams += ";uncertainty:1";
                 }
             }
@@ -2632,7 +2634,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         }
 
                         convLayer = ml;
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -2664,7 +2666,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
 
             // now remove the colour settings
             activeLayerMapProperties = null;
@@ -4016,7 +4018,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ml = mapSpeciesByLsidFilter(lsid, species, rank);
         }
 
-        if(ml != null) {
+        if (ml != null) {
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
@@ -4025,7 +4027,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setSpeciesLsid(lsid);
             md.setSpeciesDisplayName(species);
             md.setSpeciesRank(rank);
-            
+
             updateUserLogMapSpecies(lsid);
         }
 
@@ -4251,13 +4253,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
         String envString = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity;
-        if(chkUncertaintySize.isChecked()){
+        if (chkUncertaintySize.isChecked()) {
             envString += ";uncertainty:1";
         }
 
         //uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
         //geoServer = "http://localhost:8080";
-       // uri = geoServer + "/geoserver/wms?";
+        // uri = geoServer + "/geoserver/wms?";
 
         //uri = "http://localhost:8084/alaspatial/ws/wms/reflect?";
 
@@ -4299,7 +4301,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                         openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
                                 + openLayersJavascript.removeMapLayer(gjLayer));
-                        
+
                         deactiveLayer(gjLayer, true, false, true);
 
                     } //else {
@@ -4481,7 +4483,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         //uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
-        
+
         //uri = "http://localhost:8084/alaspatial/ws/wms/reflect?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
 
         uri = settingsSupplementary.getValue(CommonData.SAT_URL)
@@ -5148,6 +5150,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         tbName = new org.zkoss.zul.Textbox();
         tbName.setParent(vbox);
+        tbName.setConstraint(new Constraint() {
+
+            @Override
+            public void validate(Component comp, Object value) throws WrongValueException {
+                String val = (String) value;
+                Hashtable<String, UserData> htUserSpecies = (Hashtable) getSession().getAttribute("userpoints");
+                if (htUserSpecies != null) {
+                    if (htUserSpecies.size() > 0) {
+                        Enumeration e = htUserSpecies.keys();
+                        while (e.hasMoreElements()) {
+                            String k = (String) e.nextElement();
+                            UserData ud = htUserSpecies.get(k);
+
+                            if (ud.getName().toLowerCase().equals(val.trim().toLowerCase())) {
+                                throw new WrongValueException(comp, "User dataset named '" + val + "' already exists. Please enter another name for your dataset.");
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         (new Separator()).setParent(vbox);
 
@@ -5163,7 +5186,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         (new Separator()).setParent(vbox);
 
-        Label l3 = new Label("3. Select CSV file");
+        Label l3 = new Label("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
         l3.setParent(vbox);
         l3.setMultiline(true);
         l3.setSclass("word-wrap");
@@ -5178,7 +5201,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             public void onEvent(Event event) throws Exception {
                 //onUpload$btnFileUpload(event);
-                System.out.println("Calling dataset upload: " + tbName.getValue());
 
                 UserData ud = new UserData(tbName.getValue(), tbDesc.getValue(), "points");
                 doFileUpload(ud, event);
@@ -5259,17 +5281,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             ud.setFeatureCount(userPoints.size());
             Long did = new Long(slist);
-            System.out.println("lval: " + did.longValue()); 
+            System.out.println("lval: " + did.longValue());
             ud.setUploadedTimeInMs(did.longValue());
 
             String metadata = "";
             metadata += "User uploaded points \n";
             metadata += "Name: " + ud.getName() + " \n";
             metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Date: " + ud.getDisplayName() + " \n";
+            metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
-            MapLayer ml = mapSpeciesByLsidCluster(slist, ud.getDisplayName(), "user");
+            MapLayer ml = null;
+            if (ud.getFeatureCount() > 20000) {
+                ml = mapSpeciesByLsidFilter(slist, ud.getName(), "user");
+            } else {
+                ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+            }
+
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();

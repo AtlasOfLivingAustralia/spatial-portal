@@ -72,8 +72,8 @@ public class UserData {
         this.uploadedTimeInMs = uploadedTimeInMs;
     }
 
-    public String getDisplayName() {
-        return "User " + covertMillisecondsToDate(uploadedTimeInMs); 
+    public String getDisplayTime() {
+        return covertMillisecondsToDate(uploadedTimeInMs); 
     }
 
     private String covertMillisecondsToDate(long ms) {

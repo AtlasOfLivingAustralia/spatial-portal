@@ -326,23 +326,21 @@ public class SpeciesAutoComplete extends Combobox {
     private String loadUserPoints(String val) {
         String userPoints = "";
         Hashtable<String, UserData> htUserSpecies = (Hashtable) getThisMapComposer().getSession().getAttribute("userpoints");
+        val = val.toLowerCase();
+        
         try {
             if (htUserSpecies != null) {
                 if (htUserSpecies.size() > 0) {
                     Enumeration e = htUserSpecies.keys();
                     StringBuilder sbup = new StringBuilder();
-                    System.out.println("Iterating thru' " + htUserSpecies.size() + " species for " + val);
                     while (e.hasMoreElements()) {
                         String k = (String) e.nextElement();
                         UserData ud = htUserSpecies.get(k);
 
-                        System.out.println("ud.getDisplayName().contains(val): " + ud.getDisplayName().contains(val)); 
-                        System.out.println("ud.getName().contains(val): " + ud.getName().contains(val));
-                        System.out.println("ud.getDescription().contains(val): " + ud.getDescription().contains(val));
-                        if (ud.getDisplayName().toLowerCase().contains(val) || 
+                        if ("user".contains(val) ||
                                 ud.getName().toLowerCase().contains(val) ||
                                 ud.getDescription().toLowerCase().contains(val)) {
-                            sbup.append(ud.getDisplayName());
+                            sbup.append(ud.getName());
                             sbup.append(" / ");
                             sbup.append(k);
                             sbup.append(" / ");

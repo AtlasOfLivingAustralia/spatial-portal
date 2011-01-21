@@ -740,7 +740,7 @@ border-bottom: none;
                                                 <html>
                                                 <![CDATA[ <br> ]]>
                                                 </html>
-                                                <button id="btnUploadSpecies" label="Upload your species locations" />
+                                                <button id="btnUploadSpecies" label="Upload species file" />
                                                 <html>
                                                 <![CDATA[ <br> ]]>
                                                 </html>
