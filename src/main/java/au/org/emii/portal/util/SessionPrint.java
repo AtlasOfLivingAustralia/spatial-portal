@@ -17,10 +17,12 @@ import java.io.InputStreamReader;
  */
 public class SessionPrint {
     final int dpi = 200;
-    final double margin_north = .2;  //A4 portrait top
-    final double margin_south = .2;  //A4 portrait bottom
-    final double margin_east = .2;   //A4 portrait right
-    final double margin_west = .2;   //A4 portrait left
+    final double margin_north = .4;  //A4 portrait top
+    final double margin_south = .4;  //A4 portrait bottom
+    final double margin_east = .4;   //A4 portrait right
+    final double margin_west = .4;   //A4 portrait left
+    final double page_width = 8.27;  //A4 width
+    final double page_height = 11.69;//A4 height
 
     String server;
     String height;
@@ -81,8 +83,8 @@ public class SessionPrint {
                 h = maxH;
             }*/
 
-            int maxW = (int)((8.27 - margin_west - margin_east) * dpi);  //A4 in inches
-            int maxH = (int)((11.69 - margin_north - margin_south) * dpi);
+            int maxW = (int)((page_width - margin_west - margin_east) * dpi); 
+            int maxH = (int)((page_height - margin_north - margin_south) * dpi);
             double w = Double.parseDouble(width);
             double h = Double.parseDouble(height);
             if(w > h) {               //swap to produce largest possible A4 map
@@ -270,7 +272,7 @@ public class SessionPrint {
         String [][] cmdsPrint = {
             {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,imgFilename},
             {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,jpgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),"-density",dpi + "x" + dpi,"-units","pixelsperinch",jpgFilename,pdfFilename}};            
+            {mc.getSettingsSupplementary().getValue("convert_cmd"),"-density",dpi + "x" + dpi,"-units","pixelsperinch",imgFilename,pdfFilename}};
 
         try {
 
