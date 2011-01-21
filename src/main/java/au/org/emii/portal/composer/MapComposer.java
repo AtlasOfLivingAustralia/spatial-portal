@@ -3761,10 +3761,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //westContent.setParent(leftMenuHolder);
             menus.setWidth(settingsSupplementary.getValue(MENU_MINIMISED_WIDTH));
             menus.setBorder("none");
+            menus.setStyle("overflow: hidden");
         } else {
             //westContent.setParent(menus);
             menus.setWidth(settingsSupplementary.getValue(MENU_DEFAULT_WIDTH));
             menus.setBorder("normal");
+            menus.setStyle("overflow: auto");
 
             // must also hide the switcher...
             toggleLayerSwitcher(false);
