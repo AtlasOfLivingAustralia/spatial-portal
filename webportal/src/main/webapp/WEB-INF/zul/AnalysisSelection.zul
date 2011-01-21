@@ -25,7 +25,7 @@ An area can be defined by any of the options below. Once defined, the area can b
         <vbox>
             <separator/>
             <hbox width="95%">
-                <div style="float: left; ">
+                <div style="float: left;  margin-left: 5px;">
                     <html><![CDATA[<b>Active Area</b>]]>
                     </html>
                 </div>

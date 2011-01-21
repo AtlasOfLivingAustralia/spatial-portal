@@ -398,7 +398,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <div id="layerNavigationTabContent" visible="true"> <!-- visible=${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}" -->
 
                                     <hbox width="95%">
-                                        <div style="float: left" >
+                                        <div style="float: left; margin-left: 5px;" >
                                             <label style="font-weight: bold" value="Active Layers"  />
                                         </div>
                                         <div style="float:right" visible="false"><!--button id="reloadPortal" label="Reset Map" sclass="h3" /-->
