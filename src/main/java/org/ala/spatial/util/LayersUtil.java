@@ -113,7 +113,7 @@ public class LayersUtil {
             if (ml.isDisplayed() && isSpeciesName(ml.getName())) {
                 return ml.getName() + "," + ml.getMapLayerMetadata().getSpeciesLsid();
             } else if (ml.isDisplayed() && ((entry = getUserData(ml.getName())) != null)) {
-                return entry.getValue().getDisplayName() + "," + entry.getKey();
+                return entry.getValue().getName() + "," + entry.getKey();
             }
         }
         return null;
@@ -213,7 +213,7 @@ public class LayersUtil {
         Hashtable<String, UserData> htUserSpecies = (Hashtable) mc.getSession().getAttribute("userpoints");
         if (htUserSpecies != null) {
             for(Entry<String, UserData> entry : htUserSpecies.entrySet()) {
-                if(entry.getValue().getDisplayName().equalsIgnoreCase(displayName)){
+                if(entry.getValue().getName().equalsIgnoreCase(displayName)){
                     return entry;
                 }
             }
