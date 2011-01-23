@@ -63,7 +63,11 @@ class LoadedPointsSamplingThread extends Thread {
         float[] d = grid.getValues(points);
         String[] output = new String[d.length];
         for (int i = 0; i < d.length; i++) {
-            output[i] = String.valueOf(d[i]);
+            if(Float.isNaN(d[i])) {
+                output[i] = "";
+            } else {
+                output[i] = String.valueOf(d[i]);
+            }
         }
         return output;
     }

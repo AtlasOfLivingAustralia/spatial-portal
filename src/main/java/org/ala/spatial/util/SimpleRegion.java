@@ -161,19 +161,20 @@ public class SimpleRegion extends Object implements Serializable {
         points[1][1] = Math.max(latitude1, latitude2);
 
         for (int i = 0; i < points.length; i++) {
-            //adjust to -360 and 360
-            while (points[i][0] < -360) {
-                points[i][0] += 360;
+            //fix at -180 and 180
+            if (points[i][0] < -180) {
+                points[i][0] = -180;
             }
-            while (points[i][0] > 360) {
-                points[i][0] -= 360;
+            if (points[i][0] > 180) {
+                points[i][0] = 180;
             }
-            while (points[i][1] < -360) {
-                points[i][1] += 360;
+            while (points[i][1] < -180) {
+                points[i][1] = -180;
             }
-            while (points[i][1] > 360) {
-                points[i][1] -= 360;
+            while (points[i][1] > 180) {
+                points[i][1] = 180;
             }
+
         }
 
         bounding_box = points;
@@ -214,18 +215,18 @@ public class SimpleRegion extends Object implements Serializable {
 
             //fix extents
             for (i = 0; i < points_.length; i++) {
-                //adjust to -360 and 360
-                while (points_[i][0] < -360) {
-                    points_[i][0] += 360;
+                //fix at -180 and 180
+                if (points_[i][0] < -180) {
+                    points_[i][0] = -180;
                 }
-                while (points_[i][0] > 360) {
-                    points_[i][0] -= 360;
+                if (points_[i][0] > 180) {
+                    points_[i][0] = 180;
                 }
-                while (points_[i][1] < -360) {
-                    points_[i][1] += 360;
+                while (points_[i][1] < -180) {
+                    points_[i][1] = -180;
                 }
-                while (points_[i][1] > 360) {
-                    points_[i][1] -= 360;
+                while (points_[i][1] > 180) {
+                    points_[i][1] = 180;
                 }
             }
 
