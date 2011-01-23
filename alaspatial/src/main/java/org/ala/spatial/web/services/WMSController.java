@@ -727,7 +727,7 @@ public class WMSController {
         if (points == null) {
             //TODO: make dynamic instead of fixed 256x256
             setImageBlank(response);
-            System.out.print("[wms blank: " + (System.currentTimeMillis() - start) + "ms]");
+            //System.out.print("[wms blank: " + (System.currentTimeMillis() - start) + "ms]");
             return;
         }
 
