@@ -834,10 +834,12 @@ function featureSelected(feature) {
 
 function radiusAdded(feature) {
     
-    removeAreaSelection();
+    
     // addWKTFeatureToMap(feature.geometry,"Test",'blue');    
     setVectorLayersSelectable();
+    
     parent.setPolygonGeometry(feature.geometry);
+    removeAreaSelection();
 }
 
 // This function passes the region geometry up to javascript in index.zul which can then send it to the server.
@@ -868,8 +870,8 @@ function regionAdded(feature) {
 
 // This function passes the geometry up to javascript in index.zul which can then send it to the server.
 function polygonAdded(feature) {
-    removeAreaSelection();
     parent.setPolygonGeometry(feature.geometry);
+    removeAreaSelection();
     setVectorLayersSelectable();
 }
 //// Copy for Sampling, ALOC, Filtering, This function passes the geometry up to javascript in index.zul which can then send it to the server.
