@@ -156,7 +156,7 @@ function checkLibraryLoaded() {
 
 }
 
-var bLayer,bLayer2;
+var bLayer,bLayer2,bLayer3;
 function loadBaseMap() {
 
     goToLocation(134, -25, 4);
@@ -182,8 +182,10 @@ function goToLocation(lon, lat, zoom) {
 function changeBaseLayer(type) {
     if (type == 'normal') {
         map.setBaseLayer(bLayer2);
-    } else {
+    } else if (type == 'hybrid') {
         map.setBaseLayer(bLayer);
+    } else if (type == 'minimal') {
+        map.setBaseLayer(bLayer3);
     }
 }
 
@@ -316,9 +318,16 @@ function buildMapReal() {
         wrapDateLine: false,
         'sphericalMercator': true
     });
-    map.addLayers([bLayer2,bLayer]);
+    bLayer3 = new OpenLayers.Layer.WMS("Minimal",
+        "http://vmap0.tiles.osgeo.org/wms/vmap0",
+        {
+            layers: 'basic'
+        });
+
+    map.addLayers([bLayer2,bLayer,bLayer3]);
     parent.bLayer = bLayer;
     parent.bLayer2 = bLayer2;
+    parent.bLayer3 = bLayer3;
 
 
 
@@ -944,7 +953,7 @@ function showInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
+    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
 
         $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
             var occinfo = data.occurrence;
@@ -1092,7 +1101,7 @@ function showClusterInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial.ala.org.au/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
+    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
 
         $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
             displaySpeciesInfo(data, prevBtn, nextBtn, curr, currFeature.attributes["count"]);
@@ -1225,8 +1234,6 @@ function selected (evt) {
                 html += "Feature ID: " + attrs.Feature_ID + "<br />";
                 html += "GID: " + attrs.gid + "<br /><br />";
 
-                if (attrs.shape_area) html += "Shape area: " + attrs.shape_area + "<br />";
-                if (attrs.shape_leng) html += "Shape length: " + attrs.shape_leng + "<br />";
                 if (attrs.Bounding_Box) {
                     html += "Bounding box: " + attrs.Bounding_Box + "<br />";
                     html += "Feature type: Polygon <br /><br />";

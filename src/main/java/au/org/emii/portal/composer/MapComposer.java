@@ -5063,12 +5063,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             System.out.println("fileUploaded()");
         }
-        if (ud == null) {
-            ud = new UserData("User");
-        }
         try {
             Media m = ue.getMedia();
 
+            if (ud == null) {
+                ud = new UserData(m.getName());
+            }
+            if (ud.getName().trim().equals("")) {
+                ud.setName(m.getName());
+            }
+            ud.setFilename(m.getName()); 
             //processMedia(m);
 
             //String coords = m.getStringData(); // new String(m.getByteData())
@@ -5290,6 +5294,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             metadata += "User uploaded points \n";
             metadata += "Name: " + ud.getName() + " \n";
             metadata += "Description: " + ud.getDescription() + " \n";
+            metadata += "Filename: " + ud.getFilename() + " \n";
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 

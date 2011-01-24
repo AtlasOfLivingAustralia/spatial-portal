@@ -14,6 +14,7 @@ public class UserData {
     private String name;
     private String description;
     private String type;
+    private String filename; 
     private int featureCount;
     private long uploadedTimeInMs;
 
@@ -30,6 +31,14 @@ public class UserData {
         this.name = name;
         this.description = description;
         this.type = type;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     public String getDescription() {
