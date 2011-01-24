@@ -570,6 +570,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         mapSpeciesByLsid((String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), sSearchTerm);
 
         btnSearchSpecies.setVisible(false);
+        searchSpeciesAuto.setValue(""); 
 
     }
 
@@ -637,33 +638,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             return;
         }
 
-        //FIXME: this is a hack, gaz should probably return links to metadata
-        String uid = "897";
-        if (link.contains("aus1")) {
-            uid = "22";
-        }
-        if (link.contains("aus2")) {
-            uid = "23";
-        }
-        if (link.contains("imcra")) {
-            uid = "21";
-        }
-        if (link.contains("ibra")) {
-            uid = "20";
-        }
-        if (link.contains("all_gaz")) {
-            uid = "897";
-        }
-
         //add feature to the map as a new layer
-        String metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + uid;
         MapLayer mapLayer = addGeoJSON(label, geoServer + link);
-        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
-        mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);
 
+        JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+        String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+        
+        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
+        mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink); 
 
         updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
 
+        gazetteerAuto.setValue("");
 
 
     }
