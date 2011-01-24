@@ -842,13 +842,9 @@ function featureSelected(feature) {
 }
 
 function radiusAdded(feature) {
-    
-    
-    // addWKTFeatureToMap(feature.geometry,"Test",'blue');    
-    setVectorLayersSelectable();
-    
     parent.setPolygonGeometry(feature.geometry);
     removeAreaSelection();
+    setVectorLayersSelectable();
 }
 
 // This function passes the region geometry up to javascript in index.zul which can then send it to the server.
