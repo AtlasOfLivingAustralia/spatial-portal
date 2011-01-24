@@ -594,6 +594,16 @@ border-bottom: none;
                                                         <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
                                                             <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
                                                             <separator />
+                                                            <hbox id="uncertaintyLegend" visible="false">
+                                                                <separator orient="vertical" spacing="20px" />
+                                                                <vbox>
+                                                                    <label value="Uncertainty Legend" />
+                                                                    <hbox><image src="img/whitecircle.png" /><label value="&lt; 30km (mapped with actual radius)" /></hbox>
+                                                                    <hbox><image src="img/greencircle.png" /><label value="&gt; 30km (mapped with 30km radius)" /></hbox>
+                                                                    <hbox><image src="img/yellowcircle.png" /><label value="unknown (mapped with 30km radius)" /></hbox>
+                                                                </vbox>
+                                                            </hbox>
+                                                            <separator />
                                                         </div>
                                                         <separator />
                                                     </hbox>

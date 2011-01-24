@@ -128,6 +128,7 @@ import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
+import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
@@ -211,6 +212,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Checkbox chkUncertaintySize;
     public Button btnPointsCluster;
     private Div uncertainty;
+    private Hbox uncertaintyLegend;
     private Label redLabel;
     private Label greenLabel;
     private Label blueLabel;
@@ -2488,8 +2490,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else {
                 uncertainty.setVisible(true);
             }
+        }
 
-
+        if(chkUncertaintySize.isChecked() && !uncertaintyLegend.isVisible()) {
+            uncertaintyLegend.setVisible(true);
+        } else if(!chkUncertaintySize.isChecked() && uncertaintyLegend.isVisible()){
+            uncertaintyLegend.setVisible(false);
         }
     }
 
@@ -4137,12 +4143,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 bb.add(Double.parseDouble(sa[i]));
             }
         } catch (Exception e) {
-            //default to 'world' bb
+            //default to 'world' bb, with offset so zooming still works
             bb.clear();
-            bb.add(-180.0);
-            bb.add(-90.0);
-            bb.add(180.0);
-            bb.add(90.0);
+            bb.add(-180.0 + 10);
+            bb.add(-90.0 + 10);
+            bb.add(180.0 - 10);
+            bb.add(90.0 - 10);
 
             e.printStackTrace();
         }
@@ -5081,6 +5087,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("m.getName(): " + m.getName());
             System.out.println("getContentType: " + m.getContentType());
             System.out.println("getFormat: " + m.getFormat());
+
+            if(ud.getName() == null || ud.getName().length() == 0) {
+                ud.setName(m.getName());
+            }
+            if(ud.getDescription() == null || ud.getDescription().length() == 0) {
+                ud.setDescription(m.getName());
+            }
 
             String name = ud.getName();
 
