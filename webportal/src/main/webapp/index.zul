@@ -964,6 +964,7 @@ border-bottom: none;
                         <button label="Zoom to my location" action="onclick: goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
                         <separator orient="vertical" spacing="2px" />
                         <button label="Download map" action="onclick: printHack('');" sclass="goButton" image="img/picture_save.png" />
+                        <separator orient="vertical" spacing="1px" />
                         <button id="reloadPortal" label="Reset map" sclass="goButton" image="img/arrow_refresh.png" />
                         </hbox>
                     </div>
