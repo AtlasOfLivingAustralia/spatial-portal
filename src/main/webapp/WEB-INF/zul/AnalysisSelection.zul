@@ -52,7 +52,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                         <radio label="User-defined &lt;b&gt;point&lt;/b&gt; and &lt;b&gt;radius&lt;/b&gt;" id="rdoPointRadiusSelection"/>
                         <!--<html><![CDATA[User-defined <b>point</b> and <b>radius</b>]]></html>-->
                     </hbox>
-                     <hbox>
+                    <hbox>
                         <radio label="User-defined &lt;b&gt;radius&lt;/b&gt; from &lt;b&gt;address&lt;/b&gt;" id="rdoAddressRadiusSelection"/>
 
                     </hbox>
@@ -91,13 +91,16 @@ An area can be defined by any of the options below. Once defined, the area can b
                         tooltiptext="zoom to extent"/>
                     <button id="btnMetadata" image="/img/information.png"
                         tooltiptext="more information"/>
-                    <button image="/img/util_garbage.png" 
+                    <button image="/img/util_garbage.png"
                         id="btnClearSelection" visible="true" />
                 </div>
 
             </hbox>
             <div sclass ="highlighted" width="95%" >
                 <label id="lblArea" value="" />
+                <html><![CDATA[
+                    <div id="jsarea"></div>
+                ]]></html>                
             </div>
         </vbox>
 
@@ -112,7 +115,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                     <hbox>
                         <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
                         <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
-                    </hbox>                    
+                    </hbox>
                     <hbox>
                         <button label="Show Species" id="btnShowSpecies" visible="false" sclass="goButton" />
 
