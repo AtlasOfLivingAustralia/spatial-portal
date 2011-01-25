@@ -83,7 +83,7 @@ var autoBaseLayerSwitch = false;
 // 1 = user-switch
 // 2 = auto-switch 
 var baseLayerSwitchStatus = 0;
-
+var activeAreaPresent = false;
 
 
 function stopCheckingLibraryLoaded() {
@@ -319,7 +319,7 @@ function buildMapReal() {
         'sphericalMercator': true
     });
     bLayer3 = new OpenLayers.Layer.WMS("Minimal",
-        "http://vmap0.tiles.osgeo.org/wms/vmap0",
+        "http://vmap0.tiles.osgeo.org/wms/vmap0", 
         {
             layers: 'basic'
         });
@@ -361,6 +361,9 @@ function buildMapReal() {
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
         parent.reloadSpecies();
+        if (!activeAreaPresent) {
+            parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000); 
+        }
         Event.stop(e);
     });
 
@@ -1323,6 +1326,11 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
 
     removePointSearch();
 
+    if (name=="Active Area") {
+        parent.displayArea((wktLayer.features[0].geometry.getGeodesicArea(map.projection)/1000)/1000);
+        activeAreaPresent = true; 
+    }
+
     return wktLayer;
 }
 var myVector;
@@ -1542,6 +1550,10 @@ function removeFromSelectControl(lyrname) {
         }
     }
 
+    if (lyrname=="Active Area") {
+        activeAreaPresent = false;
+        parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000);
+    }
 
     var isActive = selectControl.active;
     try{
@@ -1781,7 +1793,7 @@ function removeItFromTheList(layername) {
             var layer = map.getLayer(gjLayers[key].id);
             if (layer.name == layername) {
                 if(layer.removeFeatures != undefined) layer.removeFeatures();
-                map.removeLayer(layer);               
+                map.removeLayer(layer);
             }
         }
     }

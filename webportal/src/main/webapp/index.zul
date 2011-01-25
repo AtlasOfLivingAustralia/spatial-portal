@@ -598,9 +598,18 @@ border-bottom: none;
                                                                 <separator orient="vertical" spacing="20px" />
                                                                 <vbox>
                                                                     <label value="Uncertainty Legend" />
-                                                                    <hbox><image src="img/whitecircle.png" /><label value="&lt; 30km (mapped with actual radius)" /></hbox>
-                                                                    <hbox><image src="img/greencircle.png" /><label value="&gt; 30km (mapped with 30km radius)" /></hbox>
-                                                                    <hbox><image src="img/yellowcircle.png" /><label value="unknown (mapped with 30km radius)" /></hbox>
+                                                                    <hbox>
+                                                                        <image src="img/whitecircle.png" />
+                                                                        <label value="&lt; 30km (mapped with actual radius)" />
+                                                                    </hbox>
+                                                                    <hbox>
+                                                                        <image src="img/greencircle.png" />
+                                                                        <label value="&gt; 30km (mapped with 30km radius)" />
+                                                                    </hbox>
+                                                                    <hbox>
+                                                                        <image src="img/yellowcircle.png" />
+                                                                        <label value="unknown (mapped with 30km radius)" />
+                                                                    </hbox>
                                                                 </vbox>
                                                             </hbox>
                                                             <separator />
@@ -950,7 +959,7 @@ border-bottom: none;
                         <button id="reloadPortal" label="Reset map" sclass="goButton"/>
                         -->
                         <hbox>
-                        <html><![CDATA[
+                            <html><![CDATA[
                         <ul id="cssdropdown">
                             <li id="mapopt" class="headlink goButton"><span id="selmap">Normal</span>
                                 <ul>
@@ -960,12 +969,13 @@ border-bottom: none;
                                 </ul>
                             </li>
                         </ul>
-                        ]]></html>
-                        <button label="Zoom to my location" action="onclick: goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
-                        <separator orient="vertical" spacing="2px" />
-                        <button label="Download map" action="onclick: printHack('');" sclass="goButton" image="img/picture_save.png" />
-                        <separator orient="vertical" spacing="1px" />
-                        <button id="reloadPortal" label="Reset map" sclass="goButton" image="img/arrow_refresh.png" />
+                        ]]>
+                            </html>
+                            <button label="Zoom to my location" action="onclick: goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
+                            <separator orient="vertical" spacing="2px" />
+                            <button label="Download map" action="onclick: printHack('');" sclass="goButton" image="img/picture_save.png" />
+                            <separator orient="vertical" spacing="1px" />
+                            <button id="reloadPortal" label="Reset map" sclass="goButton" image="img/arrow_refresh.png" />
                         </hbox>
                     </div>
 
@@ -1217,6 +1227,21 @@ function goToUserLocation() {
     } else {
         alert("Unable to determine your location"); 
     }
+}
+
+function displayArea(area) {
+   $('#jsarea').html('calculated area: ' + addCommas(area.toFixed(2)));
+}
+function addCommas(nStr) {
+	nStr += '';
+	x = nStr.split('.');
+	x1 = x[0];
+	x2 = x.length > 1 ? '.' + x[1] : '';
+	var rgx = /(\d+)(\d{3})/;
+	while (rgx.test(x1)) {
+		x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	}
+	return x1 + x2;
 }
 
 	// this part is for enabling the slide-down
