@@ -36,6 +36,8 @@ public class FeatureList {
     private int total_features;
     private int page;
     private String layerName;
+    private String layerAlias;
+
     private GazetteerConfig gc = new GazetteerConfig();
     private String format = "";
 
@@ -61,6 +63,12 @@ public class FeatureList {
                 logger.finer("no aliases found for layer, giving up");
                 return;
             }
+        }
+        if (gc.getLayerAlias(layerName).compareTo("") != 0){
+            layerAlias = gc.getLayerAlias(layerName);
+        }
+        else{
+            layerAlias = layerName;
         }
         LayerInfo layerInfo = catalog.getLayerByName(layerName);
         Map params = layerInfo.getResource().getStore().getConnectionParameters();
@@ -88,7 +96,7 @@ public class FeatureList {
                             break;
                         }
                         if (featureNumber >= PAGE_SIZE * (page - 1)) {
-                            String link = gc.getBaseURL() + "/" + layerName + "/" + feature.getProperty(idAttribute1Name).getValue().toString();
+                            String link = gc.getBaseURL() + "/" + layerAlias + "/" + feature.getProperty(idAttribute1Name).getValue().toString();
                             if (idAttribute2Name.compareTo("") != 0) {
                                 link += "/" + feature.getProperty(idAttribute2Name).getValue().toString();
                             }
@@ -124,7 +132,7 @@ public class FeatureList {
                 next = String.valueOf(nextPage) + "." + format;
             }
 
-            map.put("next", gc.getBaseURL() + "/" + layerName + "/features/" + next);
+            map.put("next", gc.getBaseURL() + "/" + layerAlias + "/features/" + next);
 
         }
         //Previous button (if applicable)
@@ -134,7 +142,7 @@ public class FeatureList {
             if (!format.isEmpty()) {
                 prev = String.valueOf(prev) + "." + format;
             }
-            map.put("prev", gc.getBaseURL() + "/" + layerName + "/features/" + prev);
+            map.put("prev", gc.getBaseURL() + "/" + layerAlias + "/features/" + prev);
         }
 
         //List total number of pages
