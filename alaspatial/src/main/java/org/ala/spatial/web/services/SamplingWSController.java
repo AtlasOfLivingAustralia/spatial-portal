@@ -246,7 +246,7 @@ public class SamplingWSController {
             SamplingService ss = SamplingService.newForLSID(species);
             String[][] results = ss.sampleSpecies(species, layers, region, records, 20);
 
-            List rList = new Vector();
+            //List rList = new Vector();
             StringBuilder sbResults = new StringBuilder();
             
             for (int i = 0; i < results.length; i++) {
@@ -254,18 +254,18 @@ public class SamplingWSController {
                 //System.out.println("");
                 Hashtable htRecs = new Hashtable();
                 for (int j = 0; j < results[i].length; j++) {
-                    System.out.print("|" + results[i][j]);
+                    //System.out.print("|" + results[i][j]);
                     if (results[i][j] != null) {
-                        htRecs.put(j, results[i][j]);
+                        //htRecs.put(j, results[i][j]);
                         sbResults.append(results[i][j]);
                     }
                     if (j < results[i].length - 1) {
                         sbResults.append("~");
                     }
                 }
-                System.out.println("|");
+                //System.out.println("|");
                 sbResults.append(";");
-                rList.add(htRecs);
+                //rList.add(htRecs);
             }
 
             return sbResults.toString();

@@ -575,8 +575,6 @@ public class WMSController {
             @RequestParam(value = "HEIGHT", required = false, defaultValue = "") String heightString,
             HttpServletRequest request, HttpServletResponse response) {
 
-        long start = System.currentTimeMillis();
-
         response.setHeader("Cache-Control", "max-age=86400");   //age == 1 day
         response.setContentType("image/png");    //only png images generated
 
@@ -585,6 +583,7 @@ public class WMSController {
             width = Integer.parseInt(widthString);
             height = Integer.parseInt(heightString);
         } catch (Exception e) {
+            System.out.println(request.getRequestURI());
             e.printStackTrace();
         }
 
@@ -625,6 +624,7 @@ public class WMSController {
                 bbox[i] = Double.parseDouble(s);
                 i++;
             } catch (Exception e) {
+                System.out.println(request.getRequestURI());
                 e.printStackTrace();
             }
         }
@@ -820,6 +820,7 @@ public class WMSController {
             outStream.flush();
             outStream.close();
         } catch (IOException ex) {
+            System.out.println(request.getRequestURI());
             Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
         }
 

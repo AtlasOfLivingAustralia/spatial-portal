@@ -127,6 +127,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
      * record number
      */
     static final String SPECIES_TO_FAMILY = "OCC_SPECIES_TO_FAMILY.dat";
+    static final String SINGLEINDEX_TO_FAMILY = "OCC_SINGLEINDEX_TO_FAMILY.dat";
     /**
      * prefix for non-species index files
      */
@@ -248,7 +249,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         return null;
     }
 
-    public static void putLSIDBoundingBox(String lsid, double [] bb) {
+    public static void putLSIDBoundingBox(String lsid, double[] bb) {
         lsidBoundingBox.put(lsid, bb);
     }
 
@@ -1094,6 +1095,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
     }
     static int[] speciesNumberInRecordsOrder = null;
     static int[] species_to_family = null;
+    static int[] singleindex_to_family = null;
 
     static public void loadSpeciesNumberInRecordsOrderOnly() {
         int i;
@@ -1112,20 +1114,37 @@ public class OccurrencesIndex implements AnalysisIndexService {
             String filename = TabulationSettings.index_path
                     + SPECIES_IDX_FILENAME;
 
-            FileInputStream fis = new FileInputStream(filename);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            IndexedRecord[] species = (IndexedRecord[]) ois.readObject();
-
-            ois.close();
+            //FileInputStream fis = new FileInputStream(filename);
+            //BufferedInputStream bis = new BufferedInputStream(fis);
+            //ObjectInputStream ois = new ObjectInputStream(bis);
 
             speciesNumberInRecordsOrder = new int[points.length];
             for (i = 0; i < points.length; i++) {
                 speciesNumberInRecordsOrder[i] = -1;
             }
-            for (i = 0; i < species.length; i++) {
-                for (int j = species[i].record_start; j <= species[i].record_end; j++) {
-                    speciesNumberInRecordsOrder[j] = i;
+
+            int countFindError = 0;
+            for (int k = 0; k < all_indexes.size(); k++) {
+                IndexedRecord[] species = all_indexes.get(k); //(IndexedRecord[]) ois.readObject();
+
+                for (i = 0; i < species.length; i++) {
+                    //identify the corresponding entry in single_index
+                    int pos = java.util.Arrays.binarySearch(single_index, species[i],
+                            new Comparator<IndexedRecord>() {
+
+                                public int compare(IndexedRecord r1, IndexedRecord r2) {
+                                    return r1.name.compareTo(r2.name);
+                                }
+                            });
+
+                    //everything is in single_index, better check
+                    if(pos < 0) {
+                        countFindError++;
+                    }
+
+                    for (int j = species[i].record_start; j <= species[i].record_end; j++) {
+                        speciesNumberInRecordsOrder[j] = pos;
+                    }
                 }
             }
             //error checking, likely hierarchy problems
@@ -1135,6 +1154,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     countmissing++;
                 }
             }
+            System.out.println("******* find error: " + countFindError);
             System.out.println("******* missing: " + countmissing);
         } catch (Exception e) {
             e.printStackTrace();
@@ -1158,6 +1178,30 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         OccurrencesFieldsUtil.load();
 
+        loadIndexedRecords();
+
+        //build speciesNumberInRecordsOrder
+        getPointsPairsGrid(); //load up gridded points
+        loadSpeciesNumberInRecordsOrderOnly();
+
+        loadCommonNames();  //done last since dependant on indexed records
+        loadCommonNamesIndex();  //done last since dependant on indexed records
+
+        /* setup species_to_family idx */
+        loadSpeciesToFamilyIdx();
+        loadSingleIndexToFamilyIdx();
+
+        loadIdLookup();
+
+        loadSensitiveCoordinates();
+
+        loadClusterRecords();
+
+        System.out.println("INDEXES LOADED");
+
+    }
+
+    static void loadIndexedRecords() {
         String[] columns = TabulationSettings.occurances_csv_fields;
         String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
 
@@ -1232,43 +1276,6 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         return r1.name.compareTo(r2.name);
                     }
                 });
-
-        //build speciesNumberInRecordsOrder
-        getPointsPairsGrid(); //load up gridded points
-        IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
-        speciesNumberInRecordsOrder = new int[grid_points_idx.length];
-        for (i = 0; i < grid_points_idx.length; i++) {
-            speciesNumberInRecordsOrder[i] = -1;
-        }
-        for (i = 0; i < species.length; i++) {
-            for (int j = species[i].record_start; j <= species[i].record_end; j++) {
-                speciesNumberInRecordsOrder[j] = i;
-            }
-        }
-        //error checking, likely hierarchy problems
-        int countmissing = 0;
-        for (i = 0; i < grid_points_idx.length; i++) {
-            if (speciesNumberInRecordsOrder[i] == -1) {
-                countmissing++;
-            }
-        }
-        System.out.println("******* missing: " + countmissing);
-
-
-        loadCommonNames();  //done last since dependant on indexed records
-        loadCommonNamesIndex();  //done last since dependant on indexed records
-
-        /* setup species_to_family idx */
-        loadSpeciesToFamilyIdx();
-
-        loadIdLookup();
-
-        loadSensitiveCoordinates();
-
-        loadClusterRecords();        
-
-        System.out.println("INDEXES LOADED");
-
     }
 
     static void loadSpeciesToFamilyIdx() {
@@ -1311,6 +1318,53 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 ObjectInputStream ois = new ObjectInputStream(bis);
                 species_to_family = (int[]) ois.readObject();
+                ois.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    static void loadSingleIndexToFamilyIdx() {
+        int i;
+        File file = new File(TabulationSettings.index_path
+                + SINGLEINDEX_TO_FAMILY);
+        if (!file.exists()) {
+            IndexedRecord[] singleIdx = single_index;//all_indexes.get(all_indexes.size() - 1);
+            IndexedRecord[] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index);
+            singleindex_to_family = new int[singleIdx.length];
+            for (i = 0; i < singleindex_to_family.length; i++) {
+                singleindex_to_family[i] = -1;
+            }
+            for (i = 0; i < singleindex_to_family.length; i++) {
+                for (int j = 0; j < familyIdx.length; j++) {
+                    if (singleIdx[i].record_start <= familyIdx[j].record_end
+                            && singleIdx[i].record_start >= familyIdx[j].record_start) {
+                        singleindex_to_family[i] = j;
+                        break;
+                    }
+                }
+            }
+
+            try {
+                FileOutputStream fos = new FileOutputStream(
+                        TabulationSettings.index_path
+                        + SINGLEINDEX_TO_FAMILY);
+                BufferedOutputStream bos = new BufferedOutputStream(fos);
+                ObjectOutputStream oos = new ObjectOutputStream(bos);
+                oos.writeObject(singleindex_to_family);
+                oos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                FileInputStream fis = new FileInputStream(
+                        TabulationSettings.index_path
+                        + SINGLEINDEX_TO_FAMILY);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                ObjectInputStream ois = new ObjectInputStream(bis);
+                singleindex_to_family = (int[]) ois.readObject();
                 ois.close();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1884,33 +1938,33 @@ public class OccurrencesIndex implements AnalysisIndexService {
         /*long start1 = System.currentTimeMillis();
         double[] d = new double[(recordend - recordstart + 1) * 2];
         try {
-            // ready requested byte block
-            RandomAccessFile points = new RandomAccessFile(
-                    TabulationSettings.index_path + POINTS_FILENAME,
-                    "r");
-            int number_of_points = (recordend - recordstart + 1) * 2;
-            byte[] b = new byte[(number_of_points) * 8];
-            points.seek(recordstart * 2 * 8);
-            points.read(b);
-            ByteBuffer bb = ByteBuffer.wrap(b);
-            points.close();
+        // ready requested byte block
+        RandomAccessFile points = new RandomAccessFile(
+        TabulationSettings.index_path + POINTS_FILENAME,
+        "r");
+        int number_of_points = (recordend - recordstart + 1) * 2;
+        byte[] b = new byte[(number_of_points) * 8];
+        points.seek(recordstart * 2 * 8);
+        points.read(b);
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        points.close();
 
-            // put into double []
-            int i;
-            for (i = 0; i < number_of_points; i++) {
-                d[i] = bb.getDouble();
-            }
+        // put into double []
+        int i;
+        for (i = 0; i < number_of_points; i++) {
+        d[i] = bb.getDouble();
+        }
         } catch (Exception e) {
-            SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
+        SpatialLogger.log("getPoints(" + recordstart + "," + recordend, e.toString());
         }
         long end1 = System.currentTimeMillis();*/
 
         //long start2 = System.currentTimeMillis();
         int len = recordend - recordstart + 1;
-        double [] p = new double[len * 2];
-        for(int i=0;i<len;i++){
-            p[i*2] = all_points[recordstart + i][0];
-            p[i*2 + 1] = all_points[recordstart + i][1];
+        double[] p = new double[len * 2];
+        for (int i = 0; i < len; i++) {
+            p[i * 2] = all_points[recordstart + i][0];
+            p[i * 2 + 1] = all_points[recordstart + i][1];
         }
         //long end2 = System.currentTimeMillis();
 
@@ -2541,7 +2595,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         /* make overlay grid from this region */
         byte[][] mask = new byte[720][720];
         int[][] cells = r.getOverlapGridCells(-180, -180, 180, 180, 720, 720, mask);
-        
+
         int i, j;
 
         /* for matching cells, test each record within  */
@@ -2614,7 +2668,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         IndexedRecord[] species = all_indexes.get(all_indexes.size() - 1);
         IndexedRecord[] familyIdx = all_indexes.get(TabulationSettings.species_list_first_column_index);
 
-        BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+        BitSet bitset = new BitSet(single_index.length + 1) ;//OccurrencesIndex.getSpeciesIndex().length + 1);
 
         long t2 = System.currentTimeMillis();
 
@@ -2733,7 +2787,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
         int i, j;
 
         /* for matching cells, test each record within  */
-        BitSet bitset = new BitSet(OccurrencesIndex.getSpeciesIndex().length + 1);
+        BitSet bitset = new BitSet(single_index.length + 1);//OccurrencesIndex.getSpeciesIndex().length + 1);
 
         int countOccurrences = 0;
         int errorCount = 0;
@@ -2951,10 +3005,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
         for (int i = 0; i < bitset.size(); i++) {
             if (bitset.get(i)) {
                 //append family
-                if (species_to_family[i] >= 0) {
+                if (singleindex_to_family[i] >= 0) {
                     //sb.append(StringUtils.capitalize(
                     //      familyIdx[species_to_family[i]].name));
-                    lookfor.name = familyIdx[species_to_family[i]].name;
+                    lookfor.name = familyIdx[singleindex_to_family[i]].name;
 
 
                     int j = java.util.Arrays.binarySearch(single_index,
@@ -2986,7 +3040,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
 
                 //append scientific name
-                lookfor.name = species[i].name;
+                lookfor.name = single_index[i].name;
 
                 int j = java.util.Arrays.binarySearch(single_index,
                         lookfor,
@@ -3173,14 +3227,14 @@ public class OccurrencesIndex implements AnalysisIndexService {
      */
     public static Vector sampleSpeciesForClustering(String species, SimpleRegion region1, SimpleRegion region2, ArrayList<Integer> rec, int max_records) {
         //regions intersect check
-        if(region1 != null && region2 != null) {
-            double [][] bb1 = region1.getBoundingBox();
-            double [][] bb2 = region2.getBoundingBox();
+        if (region1 != null && region2 != null) {
+            double[][] bb1 = region1.getBoundingBox();
+            double[][] bb2 = region2.getBoundingBox();
 
             boolean overlap = bb1[0][0] <= bb2[1][0] && bb1[1][0] >= bb2[0][0]
                     && bb1[0][1] <= bb2[1][1] && bb1[1][0] >= bb2[0][1];
 
-            if(!overlap){
+            if (!overlap) {
                 return null;
             }
         }
@@ -3851,10 +3905,10 @@ public class OccurrencesIndex implements AnalysisIndexService {
         }
     }
     //TODO: bounding box hashmap cleanup
-    static HashMap<String, double []> lsidBoundingBox = new HashMap<String, double []>();
+    static HashMap<String, double[]> lsidBoundingBox = new HashMap<String, double[]>();
 
     static public double[] getLsidBoundingBox(String lsid) {
-        double [] bb = lsidBoundingBox.get(lsid);
+        double[] bb = lsidBoundingBox.get(lsid);
         if (bb == null) {
             bb = LoadedPointsService.getBoundingBox(lsid);
             if (bb != null) {
