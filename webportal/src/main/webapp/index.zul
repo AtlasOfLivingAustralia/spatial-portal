@@ -1002,6 +1002,17 @@ border-bottom: none;
         </borderlayout>
 
         <script type="text/javascript"><![CDATA[
+            var retryFixExtent = 0;
+            function fixExtent(a,b,c,d) {
+                map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d),true);
+
+                //does not always stick
+                if(retryFixExtent < 1) {
+                    retryFixExtent++;
+                    setTimeout(function() { fixExtent(a,b,c,d); }, 2000);
+                }
+            }
+
             var onIframeMapFullyLoaded = function() {
                 //update screen widths before map is loaded (hide header)
                 var h0 = window.location.href.split('?');
@@ -1075,7 +1086,8 @@ border-bottom: none;
                             h1[i] = h1[i].substring(2,h1[i].length);
                             var h2 = h1[i].split(",");
                             if(h2.length > 5){
-                                map.zoomToExtent(new OpenLayers.Bounds(h2[2],h2[3],h2[4],h2[5]),true);
+                                fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
+                                //map.zoomToExtent(new OpenLayers.Bounds(1*h2[2],1*h2[3],1*h2[4],1*h2[5]), true);
 
                                 while(map.controls.length > 0){
                                     map.controls[0].deactivate();
