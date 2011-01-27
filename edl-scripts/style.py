@@ -1,4 +1,4 @@
-#!/usr/bin/python26
+#!/usr/bin/python
 import os
 import shutil
 import edlconfig
