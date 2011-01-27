@@ -114,6 +114,7 @@ public class OccurrenceLayers {
 
     public static void makeSpeciesCountLayer(int cell_offset) {
         TabulationSettings.load();
+        OccurrencesIndex.loadIndexedRecords();
         OccurrencesIndex.loadSpeciesNumberInRecordsOrderOnly();
 
         int pieces = 10;
@@ -245,7 +246,7 @@ public class OccurrenceLayers {
     }
 
     static public void main(String[] args) {
-        OccurrenceLayers.makeOccurrenceCountLayer(1);
-        makeSpeciesCountLayer(1);
+        OccurrenceLayers.makeOccurrenceCountLayer(4);
+        makeSpeciesCountLayer(4);
     }
 }
