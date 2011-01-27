@@ -3,8 +3,6 @@
 import os
 import shutil
 import edlconfig
-#dataset = "/mnt/transfer/media/LaCie/datasets/DEM/"
-#gdalapps = "/home/angus/gdal-1.7.2/apps"
 
 for root, dirs, files in os.walk(edlconfig.dataset):
 	for name in files:
