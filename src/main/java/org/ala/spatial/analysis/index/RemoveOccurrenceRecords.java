@@ -31,13 +31,14 @@ public class RemoveOccurrenceRecords {
      * @param args
      */
     static void main(String [] args) {
-        ArrayList<Long> ids = extractIds(args[0]);
-
-        removeIds(args[1], args[2], ids);
-
         if(args.length > 3) {
             match = args[3];
         }
+
+        ArrayList<Long> ids = extractIds(args[0]);
+        java.util.Collections.sort(ids);
+
+        removeIds(args[1], args[2], ids);
     }
 
     private static ArrayList<Long> extractIds(String filename) {

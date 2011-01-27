@@ -205,7 +205,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     int o = occurances_csv_field_pairs_FirstFromSingleIndex[common_names_indexed[i].index];
 
                     //String sn = single_index[common_names_indexed[i].index].name;
-                    String sn = "";
+                    String sn = "unknown";
                     if (o >= 0) {
                         sn = occurances_csv_field_pairs_Name[o];
                     }
@@ -241,7 +241,11 @@ public class OccurrencesIndex implements AnalysisIndexService {
 
         if (pos >= 0) {
             String[] out = new String[2];
-            out[0] = occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[pos]];
+            if(occurances_csv_field_pairs_FirstFromSingleIndex[pos] >= 0) {
+                out[0] = occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[pos]];
+            } else {
+                out[0] = "unknown";
+            }
             out[1] = getIndexType(single_index[pos].type);
             return out;
         }
@@ -1152,6 +1156,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
             for (i = 0; i < points.length; i++) {
                 if (speciesNumberInRecordsOrder[i] == -1) {
                     countmissing++;
+                    System.out.print(i + ",");
                 }
             }
             System.out.println("******* find error: " + countFindError);
@@ -3257,7 +3262,7 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 count = max_records;
             }
             int end = count + ir[0].record_start;
-            for (int i = ir[0].record_start; i <= end; i++) {
+            for (int i = ir[0].record_start; i < end; i++) {
                 if ((region1 == null || (region1.isWithin(all_points[i][0], all_points[i][1])))
                         && (region2 == null || (region2.isWithin(all_points[i][0], all_points[i][1])))
                         && speciesNumberInRecordsOrder[i] >= 0) {
@@ -3273,13 +3278,23 @@ public class OccurrencesIndex implements AnalysisIndexService {
                         }
                     }
 
-                    records.add(
-                            new Record(
-                            cluster_records[i][0],
-                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
-                            all_points[i][0],
-                            all_points[i][1],
-                            cluster_records[i][1]));
+                    if(occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]] >= 0) {
+                            records.add(
+                                    new Record(
+                                    cluster_records[i][0],
+                                    occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                                    all_points[i][0],
+                                    all_points[i][1],
+                                    cluster_records[i][1]));
+                        } else {
+                            records.add(
+                                    new Record(
+                                    cluster_records[i][0],
+                                    "unknown",
+                                    all_points[i][0],
+                                    all_points[i][1],
+                                    cluster_records[i][1]));
+                        }
                 }
             }
         } else if (rec != null) {
@@ -3288,17 +3303,36 @@ public class OccurrencesIndex implements AnalysisIndexService {
                 if ((region1 == null || (region1.isWithin(all_points[i][0], all_points[i][1])))
                         && (region2 == null || (region2.isWithin(all_points[i][0], all_points[i][1])))
                         && speciesNumberInRecordsOrder[i] >= 0) {
-                    records.add(
-                            new Record(
-                            cluster_records[i][0],
-                            occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
-                            all_points[i][0],
-                            all_points[i][1],
-                            cluster_records[i][1]));
+                   if(occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]] >= 0) {
+                            records.add(
+                                    new Record(
+                                    cluster_records[i][0],
+                                    occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                                    all_points[i][0],
+                                    all_points[i][1],
+                                    cluster_records[i][1]));
+                        } else {
+                            records.add(
+                                    new Record(
+                                    cluster_records[i][0],
+                                    "unknown",
+                                    all_points[i][0],
+                                    all_points[i][1],
+                                    cluster_records[i][1]));
+                        }
                 }
             }
         } else if (region1 != null) {
-            int[] r = getRecordsInside(region1);
+            int[] r = null;
+            //if(region1.getType() == SimpleRegion.BOUNDING_BOX) {
+            //    r = getRecordsInside(region1);
+            //} else {
+                r = (int[]) region1.getAttribute("records");
+                if(r == null) {
+                    r = getRecordsInside(region1);
+                    region1.setAttribute("records",r);
+                }
+            //}
             if (r != null) {
                 int count = r.length;
                 if (max_records < count) {
@@ -3309,13 +3343,23 @@ public class OccurrencesIndex implements AnalysisIndexService {
                     int i = r[j];
                     if ((region2 == null || (region2.isWithin(all_points[i][0], all_points[i][1])))
                             && speciesNumberInRecordsOrder[i] >= 0) {
-                        records.add(
-                                new Record(
-                                cluster_records[i][0],
-                                occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
-                                all_points[i][0],
-                                all_points[i][1],
-                                cluster_records[i][1]));
+                        if(occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]] >= 0) {
+                            records.add(
+                                    new Record(
+                                    cluster_records[i][0],
+                                    occurances_csv_field_pairs_Name[occurances_csv_field_pairs_FirstFromSingleIndex[speciesNumberInRecordsOrder[i]]],
+                                    all_points[i][0],
+                                    all_points[i][1],
+                                    cluster_records[i][1]));
+                        } else {
+                            records.add(
+                                    new Record(
+                                    cluster_records[i][0],
+                                    "unknown",
+                                    all_points[i][0],
+                                    all_points[i][1],
+                                    cluster_records[i][1]));
+                        }
                     }
                 }
             }
