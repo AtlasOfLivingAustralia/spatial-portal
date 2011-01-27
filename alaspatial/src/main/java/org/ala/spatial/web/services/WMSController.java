@@ -696,7 +696,7 @@ public class WMSController {
             }
         } else { //points in 'r'
             //TODO: create new function for sampling, allowing for 'other' fields
-            Vector<Record> v = OccurrencesIndex.sampleSpeciesForClustering(lsid, region, r, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+            Vector<Record> v = OccurrencesIndex.sampleSpeciesForClustering(lsid, r, region, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
             if(v == null){
                 points = null;
             } else {
