@@ -1,10 +1,5 @@
 package org.ala.rest;
 
-import java.util.ArrayList;
-import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
-
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -13,12 +8,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
-import java.text.DecimalFormat;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.logging.Logger;
-
-import javax.servlet.ServletContext;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerInfo;
@@ -27,7 +16,6 @@ import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.FeatureIterator;
-
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.measure.Measure;
@@ -36,6 +24,12 @@ import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.vfny.geoserver.util.DataStoreUtils;
+
+import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.logging.Logger;
 
 /***
  *
@@ -64,7 +58,9 @@ public class ClosestFeatureSearch {
      * Performs a closest feature search across a single layer (if layer is empty string, it searches across all default layers).
      * @param lon
      * @param lat
-     * @param layerName
+     * @param radius
+     * @param count
+     * @param layers
      */
     public ClosestFeatureSearch(String lon, String lat, int radius, int count, String[] layers) {
         results = new ArrayList<ClosestFeatureSearchResultItem>();
@@ -128,6 +124,7 @@ public class ClosestFeatureSearch {
      * @param lat
      * @param gc
      */
+    @SuppressWarnings("unchecked")
     private void search(Catalog catalog, String layerName, ServletContext sc, String lon, String lat, int radius, int count, GazetteerConfig gc) {
 
         try {
@@ -201,12 +198,7 @@ public class ClosestFeatureSearch {
                     } else {
                         name = nearestFeature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                     }
-                    if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
-                        String id2 = nearestFeature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
-                        matches.add(new ClosestFeatureSearchResultItem(layerName, name, id1, id2, strRoundDouble(new Double(nearestDistance)), strRoundDouble(new Double(nearestBearing))));
-                    } else {
-                        matches.add(new ClosestFeatureSearchResultItem(layerName, name, id1, strRoundDouble(new Double(nearestDistance)), strRoundDouble(new Double(nearestBearing))));
-                    }
+                    matches.add(new ClosestFeatureSearchResultItem(layerName, name, id1, strRoundDouble(new Double(nearestDistance)), strRoundDouble(new Double(nearestBearing))));
                 }
 
                 //sort the matches by distance
@@ -240,7 +232,7 @@ public class ClosestFeatureSearch {
      * @return a HashMap representation of the resource - which will be serialized into xml/json
      */
     public Map getMap() {
-        HashMap resultsMap = new HashMap();
+        HashMap<String,ArrayList<ClosestFeatureSearchResultItem>> resultsMap = new HashMap<String,ArrayList<ClosestFeatureSearchResultItem>>();
         resultsMap.put("results", this.results);
         return resultsMap;
     }

@@ -18,8 +18,8 @@ public class ClosestFeatureSearchResultItem implements Serializable {
     String description;
     String state;
     String layerName;
+    String layerAlias;
     String idAttribute1;
-    String idAttribute2;
     String distance;
     String bearing;
     @XStreamAlias("xlink:href")
@@ -29,18 +29,15 @@ public class ClosestFeatureSearchResultItem implements Serializable {
     //GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
 
     ClosestFeatureSearchResultItem(String layerName, String name, String idAttribute1, String distance, String bearing) {
-        this(layerName, name, idAttribute1, "", distance, bearing);
-    }
-
-    ClosestFeatureSearchResultItem(String layerName, String name, String idAttribute1, String idAttribute2, String distance, String bearing) {
-        this.id = layerName + "/" + idAttribute1;
-        if (idAttribute2.compareTo("") != 0) {
-            this.id += "/" + idAttribute2;
+        GazetteerConfig gc = new GazetteerConfig();
+        layerAlias = gc.getLayerAlias(layerName);
+        if (layerAlias.compareTo("") == 0){
+            layerAlias = layerName;
         }
+        this.id = layerAlias + "/" + idAttribute1;
         this.name = name;
         this.layerName = layerName;
         this.idAttribute1 = idAttribute1;
-        this.idAttribute2 = idAttribute2;
         this.distance = distance;
         this.bearing = bearing;
         this.link = "/gazetteer/";
@@ -60,26 +57,17 @@ public class ClosestFeatureSearchResultItem implements Serializable {
             } else if (field.name().contentEquals("layerName")) {
                 GazetteerConfig gc = new GazetteerConfig();
                 //if a layer alias exists the id will always use the alias in preference to the layer name
-                String layerAlias = gc.getLayerAlias(field.stringValue());
+                layerAlias = gc.getLayerAlias(field.stringValue());
                 if (layerAlias.compareTo("") == 0) {
-                    this.layerName = field.stringValue();
-                } else {
-                    this.layerName = layerAlias;
+                    layerAlias = layerName;
                 }
             } else if (field.name().contentEquals("idAttribute1")) {
                 this.idAttribute1 = field.stringValue();
-            } else if (field.name().contentEquals("idAttribute2")) {
-                this.idAttribute2 = field.stringValue();
             } else {
                 this.description += field.stringValue() + ",";
             }
         }
-        this.id = this.layerName + "/" + idAttribute1.replace(" ", "_");
-
-        if (idAttribute2 != null && idAttribute2.compareTo("") != 0) {
-            this.id += "/" + idAttribute2.replace(" ", "_");
-        }
-
+        this.id = this.layerAlias + "/" + idAttribute1.replace(" ", "_");
         this.distance = distance;
         this.bearing = bearing;
 

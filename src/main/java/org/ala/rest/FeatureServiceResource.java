@@ -58,14 +58,7 @@ public class FeatureServiceResource extends MapResource {
             if (getRequest().getAttributes().containsKey("id1")) {
                 id1 = getRequest().getAttributes().get("id1").toString();
                 logger.finer("id1 supplied is " + id1);
-                if (getRequest().getAttributes().containsKey("id2")) {
-                    id2 = getRequest().getAttributes().get("id2").toString();
-                    logger.finer("id2 supplied is " + id2);
-                    return new GazetteerFeature(layer, id1, id2).getJSONMap();
-                } else {
-                    return new GazetteerFeature(layer, id1).getJSONMap();
-                }
-
+                return new GazetteerFeature(layer, id1).getJSONMap();
             } else {
                 logger.info("layer details have been requested");
                 return new GazetteerLayer(layer).getMap();

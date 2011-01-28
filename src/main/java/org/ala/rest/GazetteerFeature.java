@@ -44,25 +44,20 @@ public class GazetteerFeature {
     String id;
     String name;
     Map advanced_properties; //detailed feature metadata
-    Map properties;    //basic feature metadata (to displayed in UI)
-    List<String> geometries = new ArrayList();
-
-    public GazetteerFeature(String layerName, String idAttribute1) throws IOException, Exception {
-        this(layerName, idAttribute1, "");
-    }
+    Map<String,String> properties;    //basic feature metadata (to displayed in UI)
+    List<String> geometries = new ArrayList<String>();
 
     /**
      * Instantiates a gazetteer feature given an id string and layer name
      * @param layerName
-     * @param id
+     * @param idAttribute1
      * @throws IOException
      * @throws Exception
      */
-    public GazetteerFeature(String layerName, String idAttribute1, String idAttribute2) throws IOException, Exception {
+    public GazetteerFeature(String layerName, String idAttribute1) throws IOException, Exception {
 
         logger.finer("param: layerName: " + layerName);
         logger.finer("param: idAttribute1: " + idAttribute1);
-        logger.finer("param: idAttribute2: " + idAttribute2);
 
         GazetteerConfig gc = new GazetteerConfig();
 
@@ -83,9 +78,6 @@ public class GazetteerFeature {
         //Use search to find matches (provides case insensitive matching)
         String[] layers = {layerName};
         String searchTerms = idAttribute1;
-        if (idAttribute2.compareTo("") != 0) {
-            searchTerms += " " + idAttribute2;
-        }
 
         Search search = new Search(searchTerms, layers, "id");
         ArrayList<SearchResultItem> results = search.getResults();
@@ -94,22 +86,13 @@ public class GazetteerFeature {
             throw new Exception("No results returned - this isn't great");
         }
         logger.finer("Number of hits is " + results.size());
-//        if (results.size() > 1) {
-//            logger.severe("Too many features match this id, please be more specific.");
-//            throw new Exception("Too many features match this id, please be more specific.");
-//        }
 
         SearchResultItem searchResultItem = results.get(0);
 
         //grab the first result (highest hit)
         logger.finer("Match idAttribute1: " + searchResultItem.idAttribute1);
-        logger.finer("Match idAttribute2: " + searchResultItem.idAttribute2);
+
         idAttribute1 = searchResultItem.idAttribute1;
-        if (searchResultItem.idAttribute2 == null) {
-            idAttribute2 = "";
-        } else {
-            idAttribute2 = searchResultItem.idAttribute2;
-        }
 
         LayerInfo layerInfo = catalog.getLayerByName(layerName);
         Map params = layerInfo.getResource().getStore().getConnectionParameters();
@@ -123,11 +106,7 @@ public class GazetteerFeature {
 
             } else {
                 FeatureSource layer = dataStore.getFeatureSource(layerName);
-                //if table has a second id attribute ...
                 String cql = gc.getIdAttribute1Name(layerName) + "='" + idAttribute1.replace('_', ' ') + "'";
-                if (idAttribute2.compareTo("") != 0) {
-                    cql = cql + " AND " + gc.getIdAttribute2Name(layerName) + "='" + idAttribute2.replace('_', ' ') + "'";
-                }
                 logger.finer("cql: " + cql);
 
                 FeatureIterator features = layer.getFeatures(CQL.toFilter(cql)).features();
@@ -136,21 +115,24 @@ public class GazetteerFeature {
                     if (features.hasNext()) {
                         while (features.hasNext()) {
                             Feature feature = (Feature) features.next();
-
-                            this.id = layerName + "/" + feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
-                            if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
-                                this.id += "/" + feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
+                            String layerAlias = "";
+                            layerAlias = gc.getLayerAlias(layerName);
+                            if (layerAlias.compareTo("") == 0){
+                                layerAlias = layerName;
                             }
+                            logger.finer("Layer Alias is : " + layerAlias);
+
+                            this.id = layerAlias + "/" + feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString().replace(" ", "_");
                             logger.info("Feature ID is : " + this.id);
 
-                            this.properties = new HashMap();
+                            this.properties = new HashMap<String,String>();
                             this.properties.put("Feature_ID", this.id);
 
                             this.name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
                             logger.info("Feature Name is : " + this.name);
                             this.properties.put("Feature_Name", this.name);
 
-                            //Construct a geoJSON reperesntation of the geometry uing GeoJSONBuilder
+                            //Construct a geoJSON representation of the geometry using GeoJSONBuilder
                             //logger.info("Feature geom is " + feature.getDefaultGeometryProperty().getValue().toString());
 
                             StringWriter w = new StringWriter();
@@ -175,8 +157,8 @@ public class GazetteerFeature {
                                 this.properties.put("Bounding_Box", boundingBox);
                                 logger.finer("Bounding box is: " + boundingBox);
                             }
-			    //Get Metadata link from config 
-                            this.properties.put("Layer_Metadata", gc.getMetadataPath(layerName));//"http://" + gc.getHostname() + "/layers/" + layerName);
+			                //Get Metadata link from config
+                            this.properties.put("Layer_Metadata", gc.getMetadataPath(layerName));
                             logger.finer("Layer metadata url is " + gc.getBaseURL() + "/layers/" + layerName);
                             this.geometries.add(w.toString());
 
@@ -185,7 +167,6 @@ public class GazetteerFeature {
                             String geomName = feature.getDefaultGeometryProperty().getName().toString();
                             this.advanced_properties = new HashMap();
                             for (Property property : featureProperties) {
-                                //logger.info("GazetteerFeature: " + property.toString());
                                 if ((property.getName() != null) && (property.getValue() != null) && (!(property.getName().toString().contentEquals(geomName)))) {
                                     this.properties.put(property.getName().toString(), property.getValue().toString());
                                 }
@@ -206,12 +187,11 @@ public class GazetteerFeature {
     }
 
     public Map getJSONMap() {
-        Map map = new HashMap();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("type", "GeometryCollection");
         map.put("id", this.id);
         map.put("name", this.name);
         map.put("properties", this.properties);
-        //map.put("advanced_properties", this.advanced_properties);  advanced_properties is not in the geojson standard
         map.put("geometries", this.geometries);
         return map;
     }

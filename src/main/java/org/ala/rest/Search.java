@@ -44,7 +44,7 @@ public class Search {
      * @return a HashMap representation of the resource - which will be serialized into xml/json
      */
     public Map getMap() {
-        HashMap resultsMap = new HashMap();
+        HashMap<String, ArrayList<SearchResultItem>> resultsMap = new HashMap<String, ArrayList<SearchResultItem>>();
         resultsMap.put("results", this.results);
         return resultsMap;
     }
@@ -64,7 +64,7 @@ public class Search {
      * Searches for a feature within a layer based on name.
      * @param searchTerms
      * @param layers
-     * @param getFeature if true, it does not need the nameSearch property set to true in gazetteer.xml (used for feature retrieval)
+     * @param type
      */
     public Search(String searchTerms, String[] layers, String type) {
         results = new ArrayList<SearchResultItem>();
