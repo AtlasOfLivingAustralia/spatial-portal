@@ -1,18 +1,25 @@
 package org.ala.spatial.web.services;
 
+import au.com.bytecode.opencsv.CSVWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.ala.spatial.dao.LayersDAO;
 import org.ala.spatial.model.LayerInfo;
 import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,12 +52,59 @@ public class LayersController {
         this.layersDao = layersDao;
     }
 
-    @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE+"/"}, method = RequestMethod.GET)
+    @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE + "/"}, method = RequestMethod.GET)
     public ModelAndView showPublicIndexPage() {
         ModelMap modelMap = new ModelMap();
         modelMap.addAttribute("message", "Displaying all layers");
         modelMap.addAttribute("layerList", layersDao.getLayers());
         return new ModelAndView("layers/public_list", modelMap);
+    }
+
+    @RequestMapping(value = LAYERS_BASE + ".csv", method = RequestMethod.GET)
+    public void downloadLayerList(HttpServletResponse res) {
+        try {
+            List<LayerInfo> layers = layersDao.getLayers();
+
+            String header = "";
+            header += "UID, ";
+            header += "Name, ";
+            header += "Description, ";
+            header += "Metadata contact organization, ";
+            header += "Metadata contact organization website, ";
+            header += "Organisation role, ";
+            header += "Metadata date, ";
+            header += "Reference date, ";
+            header += "Licence level, ";
+            header += "Licence info, ";
+            header += "Licence notes, ";
+            header += "Type, ";
+            header += "Classification 1, ";
+            header += "Classification 2, ";
+            header += "Units, ";
+            header += "Data language, ";
+            header += "Scope, ";
+            header += "Notes, ";
+            header += "More information";
+            
+            res.setContentType("application/spc; charset=UTF-8");
+            res.setHeader("Content-Disposition", "inline;filename=ALA_Spatial_Layers.csv");
+            CSVWriter cw = new CSVWriter(res.getWriter());
+            cw.writeNext(header.split(","));
+            
+            Iterator<LayerInfo> it = layers.iterator();
+            List<String[]> mylist = new Vector<String[]>();
+            while(it.hasNext()) {
+                LayerInfo lyr = it.next();
+                System.out.println("Writing layer info for: " + lyr.getUid() + " - " + lyr.getDisplayname());
+                mylist.add(lyr.toArray());
+            }
+            cw.writeAll(mylist);
+            cw.close();
+        } catch (Exception e) {
+            System.out.println("Error writing layers.csv");
+            e.printStackTrace(System.out);
+        }
+
     }
 
     @RequestMapping(value = LAYERS_INDEX, method = RequestMethod.GET)
@@ -185,10 +239,11 @@ public class LayersController {
         boolean isUid = false;
         try {
             Integer.parseInt(uid);
-            isUid = true; 
-        } catch (NumberFormatException nfe) {}
+            isUid = true;
+        } catch (NumberFormatException nfe) {
+        }
 
-        LayerInfo layer = null; 
+        LayerInfo layer = null;
         if (isUid) {
             System.out.print("retriving layer list by id: " + uid);
             layer = layersDao.getLayerById(uid);
@@ -197,11 +252,11 @@ public class LayersController {
             List<LayerInfo> layers = layersDao.getLayersByName(uid);
             if (layers != null) {
                 if (layers.size() > 0) {
-                    layer = layers.get(0); 
+                    layer = layers.get(0);
                 }
             }
         }
-        
+
         // change the metadata separator.
         String mdp = layer.getMetadatapath();
         if (mdp != null) {
@@ -256,8 +311,8 @@ public class LayersController {
                 layers.add(layersDao.getLayerById(uid));
             }
 
-            return layers; 
-            
+            return layers;
+
         } catch (Exception e) {
             System.out.println("Error reading in post content");
             e.printStackTrace(System.out);
