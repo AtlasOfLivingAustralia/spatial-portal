@@ -2518,6 +2518,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             int blue = selectedLayer.getBlueVal();
             int size = selectedLayer.getSizeVal();
             float opacity = selectedLayer.getOpacity();
+            int uncertaintyCheck = (selectedLayer.getSizeUncertain())?1:0;
             String envParams = selectedLayer.getEnvParams();
             String envName = selectedLayer.getEnvName();
             String envColour = selectedLayer.getEnvColour();
@@ -2533,7 +2534,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 Color c = new Color(red, green, blue);
                 String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
                 envParams = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity + "";
-                if (chkUncertaintySize.isChecked()) {
+                if (uncertaintyCheck > 0) {
                     envParams += ";uncertainty:1";
                 }
             }
@@ -2542,6 +2543,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             activeLayerMapProperties.put("green", green);
             activeLayerMapProperties.put("size", size);
             activeLayerMapProperties.put("opacity", opacity);
+            activeLayerMapProperties.put("uncertainty", uncertaintyCheck);
             activeLayerMapProperties.put("envColour", envColour);
             activeLayerMapProperties.put("envParams", envParams);
 
@@ -4233,6 +4235,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int g = (hash >> 8) % 255;
         int b = (hash) % 255;
 
+        int uncertaintyCheck = 0; //0 == false default
+
         int size = 8;
         float opacity = (float) 0.8;
 
@@ -4242,12 +4246,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             g = ((Integer) activeLayerMapProperties.get("green")).intValue();
             size = ((Integer) activeLayerMapProperties.get("size")).intValue();
             opacity = ((Float) activeLayerMapProperties.get("opacity")).floatValue();
+            uncertaintyCheck = ((Integer) activeLayerMapProperties.get("uncertainty")).intValue();
         }
 
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
         String envString = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity;
-        if (chkUncertaintySize.isChecked()) {
+
+        if (uncertaintyCheck > 0) {
             envString += ";uncertainty:1";
         }
 
