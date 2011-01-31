@@ -16,7 +16,7 @@ public class MapLayerMetadata implements Serializable {
     public final static int LATEST_CONCATENATED = 2;
     public final static int LATEST_ISO = 3;
     private String units = null;
-    private List<Double> bbox;
+    private List<Double> bbox = null;
     private List<Double> scaleRange;
     private List<String> supportedStyles;
     private List<String> datesWithData = new ArrayList<String>();

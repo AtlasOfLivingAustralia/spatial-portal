@@ -712,17 +712,19 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
         //extend to add ogc filter
-        List<Double> bbox = layerUtilities.getBBoxIndex(layer.getUri());
-        if (bbox == null) {
-            bbox = new ArrayList(4);
-            double[] box = layer.getMapLayerMetadata().getLayerExtent();
-            bbox.add(box[0]);
-            bbox.add(box[1]);
-            bbox.add(box[2]);
-            bbox.add(box[3]);
-        }
-        if (bbox != null && layer.getMapLayerMetadata() != null) {
-            layer.getMapLayerMetadata().setBbox(bbox);
+        if(layer.getMapLayerMetadata() != null && layer.getMapLayerMetadata().getBbox() == null) {
+            List<Double> bbox = layerUtilities.getBBoxIndex(layer.getUri());
+            if (bbox == null) {
+                bbox = new ArrayList(4);
+                double[] box = layer.getMapLayerMetadata().getLayerExtent();
+                bbox.add(box[0]);
+                bbox.add(box[1]);
+                bbox.add(box[2]);
+                bbox.add(box[3]);
+            }
+            if (bbox != null) {
+                layer.getMapLayerMetadata().setBbox(bbox);
+            }
         }
         
         String script =
