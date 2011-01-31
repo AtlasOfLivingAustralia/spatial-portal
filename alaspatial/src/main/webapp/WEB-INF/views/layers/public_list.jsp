@@ -217,6 +217,7 @@
                 <div class="section">
                     <c:choose>
                         <c:when test="${fn:length(layerList) > 0}">
+                            <a href="/layers.csv">Download as CSV</a>
                             <table border="1">
                                 <tr>
                                     <th>Classification 1</th>
@@ -246,6 +247,7 @@
                                     </tr>
                                 </c:forEach>
                             </table>
+                            <a href="/layers.csv">Download as CSV</a>
                         </c:when>
                         <c:otherwise>
                             <ul><li>No layers available</li></ul>

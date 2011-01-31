@@ -1,5 +1,7 @@
 package org.ala.spatial.model;
 
+import java.util.List;
+import java.util.Vector;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -390,6 +392,80 @@ public class LayerInfo {
 
     public void setSourcelink(String sourcelink) {
         this.sourcelink = sourcelink;
+    }
+
+    public String[] toArray() {
+        if (description == null) {
+            description = "";
+        }
+        if (licence_notes == null) {
+            licence_notes = "";
+        }
+        if (notes == null) {
+            notes = "";
+        }
+
+        List v = new Vector();
+        v.add(uid);
+        v.add(displayname);
+        v.add(description.replaceAll("\n", " "));
+        v.add(source);
+        v.add(sourcelink);
+        v.add(resppartyrole);
+        v.add(mddatest);
+        v.add(citationdate);
+        v.add(licencelevel);
+        v.add(licence_link);
+        v.add(licence_notes.replaceAll("\n", " "));
+        v.add(type);
+        v.add(classification1);
+        v.add(classification2);
+        v.add(environmentalvalueunits);
+        v.add(datalang);
+        v.add(mdhrlv);
+        v.add(notes.replaceAll("\n", " "));
+        v.add(metadatapath);
+
+        return (String[]) v.toArray(new String[v.size()]);
+
+    }
+
+    @Override
+    public String toString() {
+
+        if (description == null) {
+            description = "";
+        }
+        if (licence_notes == null) {
+            licence_notes = "";
+        }
+        if (notes == null) {
+            notes = "";
+        }
+
+        //return uid + "," + displayname + "description=" + description + "type=" + type + "source=" + source + "path=" + path + "displaypath=" + displaypath + "scale=" + scale + "extent=" + extent + "minlatitude=" + minlatitude + "minlongitude=" + minlongitude + "maxlatitude=" + maxlatitude + "maxlongitude=" + maxlongitude + "notes=" + notes + "enabled=" + enabled + "environmentalvaluemin=" + environmentalvaluemin + "environmentalvaluemax=" + environmentalvaluemax + "environmentalvalueunits=" + environmentalvalueunits + "lookuptablepath=" + lookuptablepath + "metadatapath=" + metadatapath + "classification1=" + classification1 + "classification2=" + classification2 + "mddatest=" + mddatest + "citationdate=" + citationdate + "datalang=" + datalang + "mdhrlv=" + mdhrlv + "resppartyrole=" + resppartyrole + "licencelevel=" + licencelevel + "licence_link=" + licence_link + "licence_notes=" + licence_notes + "sourcelink=" + sourcelink + '}';
+        String lyr = "";
+        lyr += "\"" + uid + "\", ";
+        lyr += "\"" + displayname + "\", ";
+        lyr += "\"" + description.replaceAll("\n", " ").replaceAll("\"", "\\\"") + "\", "; //
+        lyr += "\"" + source + "\", ";
+        lyr += "\"" + sourcelink + "\", ";
+        lyr += "\"" + resppartyrole + "\", ";
+        lyr += "\"" + mddatest + "\", ";
+        lyr += "\"" + citationdate + "\", ";
+        lyr += "\"" + licencelevel + "\", ";
+        lyr += "\"" + licence_link + "\", ";
+        lyr += "\"" + licence_notes.replaceAll("\n", " ").replaceAll("\"", "\\\"") + "\", "; //
+        lyr += "\"" + type + "\", ";
+        lyr += "\"" + classification1 + "\", ";
+        lyr += "\"" + classification2 + "\", ";
+        lyr += "\"" + environmentalvalueunits + "\", ";
+        lyr += "\"" + datalang + "\", ";
+        lyr += "\"" + mdhrlv + "\", ";
+        lyr += "\"" + notes.replaceAll("\n", " ").replaceAll("\"", "\\\"") + "\", "; //
+        lyr += "\"" + metadatapath + "\"";
+
+        return lyr; 
     }
 
 }
