@@ -6,7 +6,7 @@
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
         >
-            <style>
+        <style>
                 .resultsCount {
                     font-size: 14px;
                     background-color: #000000;
@@ -16,7 +16,7 @@
                     text-align: center;
                 }
                 
-            </style>
+        </style>
 
         <tabbox>
             <tabs>
@@ -40,20 +40,21 @@
 
                         <grid width="300px" style="border: 0;">
                             <auxhead  style="border: 0;">
-                            <auxheader style="border: 0; font-weight: bold; text-align: center;"  label="Active area summary" colspan="2"/>
+                                <auxheader style="border: 0; font-weight: bold; text-align: center;"  label="Active area summary" colspan="2"/>
                             </auxhead>
-                                <columns  style="border: 0;">
-                                        <column  style="border: 0;text-align: center; font-weight: bold;" label="Species Count" width="150px"/>
-                                        <column  style="border: 0;text-align: center; font-weight: bold;" label="Occurrences Count" width="150px"/>
-                                </columns>
-                                <rows  style="border: 0;">
-                                        <row  style="text-align: center; border: 0;" id="rowCounts" visible="false">
-                                        <label sclass="resultsCount" id="results_label2_species" /><label sclass="resultsCount" id="results_label2_occurrences" />
-                                        </row>
-                                        <row  style="text-align: center; border: 0;" spans="2" id="rowUpdating" visible="true">
-                                            <label sclass="resultsCount" value="... updating ..." />
-                                        </row>
-                                </rows>
+                            <columns  style="border: 0;">
+                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Species Count" width="150px"/>
+                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Occurrences Count" width="150px"/>
+                            </columns>
+                            <rows  style="border: 0;">
+                                <row  style="text-align: center; border: 0;" id="rowCounts" visible="false">
+                                    <label sclass="resultsCount" id="results_label2_species" />
+                                    <label sclass="resultsCount" id="results_label2_occurrences" />
+                                </row>
+                                <row  style="text-align: center; border: 0;" spans="2" id="rowUpdating" visible="true">
+                                    <label sclass="resultsCount" value="... updating ..." />
+                                </row>
+                            </rows>
                         </grid>
 
 
@@ -79,6 +80,11 @@
                    id="popup_textbox_results" width="500px" height="200px" readonly="true" visible="false"/>
                    -->
                         <separator/>
+
+                        <html><![CDATA[
+                            <div id="biostormsg"></div>
+                            <div id="biostorlist"></div>
+                        ]]></html>
 
 
         <!--    <div align="right">
