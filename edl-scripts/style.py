@@ -14,7 +14,7 @@ for line in unitFile.readlines():
 
 for root, dirs, files in os.walk(edlconfig.dataset):
 	for name in files:
-		if (".tif" in name) and (name not in ['landuse.tif','landcover.tif','vast.tif','tenure08.tif','present_veg.tif','aria.tif']):
+		if (".geotiff" in name) and (name not in ['landuse.tif','landcover.tif','vast.tif','tenure08.tif','present_veg.tif','aria.tif']):
 #			layername = edlconfig.source + "_" + name.replace(".tif","")
 			layername = name.replace(".tif","")
 			print(layername)	
