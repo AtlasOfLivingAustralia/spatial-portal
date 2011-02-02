@@ -1241,6 +1241,9 @@ function goToUserLocation() {
     }
 }
 
+function displayHTMLInformation(element, info) {
+   $('#'+element).html(info);
+}
 function displayArea(area) {
    $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
 }
