@@ -21,6 +21,21 @@ the portal name value
         </layout>
     </appender>
 
+    <appender name="rollfile" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <param name="File" value="/Library/Tomcat/Home/logs/useractions.log"/>
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="INFO"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value='"%d{ISO8601}", "%X{userip}", "%X{useremail}", "%X{processid}", "%X{sessionid}", "%X{actiontype}", "%X{lsid}", "%X{layers}", "%X{method}", "%X{params}", "%X{downloadfile}", "%m"%n'/>
+        </layout>
+        <filter class="org.apache.log4j.filter.MDCMatchFilter">
+            <param name="KeyToMatch" value="actionby"/>
+            <param name="ValueToMatch" value="user"/>
+            <param name="ExactMatch" value="true"/>
+        </filter>
+    </appender>
+
     <appender name="email"  class="org.apache.log4j.net.SMTPAppender">
         <param name="BufferSize" value="512" />
         <param name="SMTPHost" value="postoffice.utas.edu.au" />
@@ -39,9 +54,22 @@ the portal name value
     <logger name="org.springframework">
         <level value="warn"/>
     </logger>
+    <logger name="org.apache.commons.httpclient">
+        <level value="error"/>
+    </logger>
+    <logger name="httpclient.wire">
+        <level value="fatal"/>
+    </logger>
+    <logger name="httpclient.httpconnection">
+        <level value="fatal"/>
+    </logger>
+    <logger name="httpclient.httpmethodbase">
+        <level value="fatal"/>
+    </logger>    
     <root> 
         <priority value ="debug" />
         <appender-ref ref="console" />
+        <appender-ref ref="rollfile" />
         <!--  <appender-ref ref="email" /> -->
     </root>
 

@@ -84,8 +84,11 @@
             imos0.ersa.edu.au|
             imos1.ersa.edu.au|
             imos2.ersa.edu.au|
+            localhost:8080|
             spatial-dev.ala.org.au|
             spatial.ala.org.au|
+            biocache.ala.org.au|
+            bie.ala.org.au|
             ec2-184-73-34-104.compute-1.amazonaws.com</tns:proxyAllowedHosts>
     <!--Cache Reflector
         ~~~~~~~~~~~~~~~
@@ -183,11 +186,14 @@
             to prevent drawing too far off screen - an integer (=px)-->
       <window_stacking_constant>600</window_stacking_constant>
       <!-- GeoServer details -->
-      <geoserver_url>http://localhost:8080</geoserver_url>
+      <geoserver_url>http://spatial-dev.ala.org.au</geoserver_url>
       <geoserver_username>admin</geoserver_username>
       <geoserver_password>password</geoserver_password>
       <!-- ALA Spatial Analysis Toolkit -->
       <sat_url>http://spatial-dev.ala.org.au</sat_url>
+      <points_cluster_threshold>15000</points_cluster_threshold>
+      <max_record_count_download>15000</max_record_count_download>
+      <max_record_count_map>15000</max_record_count_map>
       <!-- Common Name search url -->
       <!-- replace the _query_ with the common name query string -->
       <common_name_url>http://data.ala.org.au/taxonomy/taxonName/ajax/returnType/commonName/view/ajaxTaxonName?query=_query_</common_name_url>
@@ -198,9 +204,9 @@
      <!-- (printing) local path for print output, also web accessible -->
      <print_output_path>/usr/local/tomcat/instance_03_webportal/webapps/webportal/print/</print_output_path>
      <!-- (printing) url for print_output_path -->
-     <print_output_url>http://spatial-dev.ala.org.au/webportal/print/</print_output_url>
+     <print_output_url>http://spatial.ala.org.au/print/</print_output_url>
      <!-- (printing) server url -->
-     <print_server_url>http://spatial-dev.ala.org.au/webportal/</print_server_url>
+     <print_server_url>http://spatial-dev.ala.org.au/</print_server_url>
     <!-- url to species metadata.  _lsid_ is replaced with actual lsid -->
      <species_metadata_url>http://bie.ala.org.au/species/_lsid_</species_metadata_url>
      <help_url>http://test.ala.org.au</help_url>
