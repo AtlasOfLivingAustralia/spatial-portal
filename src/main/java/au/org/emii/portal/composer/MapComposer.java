@@ -170,6 +170,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private static final String MENU_DEFAULT_WIDTH = "menu_default_width";
     private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";
     private static final String SPECIES_METADATA_URL = "species_metadata_url";
+    private static  final String POINTS_CLUSTER_THRESHOLD = "points_cluster_threshold";
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
     public String geoServer;
@@ -4007,7 +4008,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //use # of points cutoff; //        
         MapLayer ml = null;
-        if (countOfLsid(lsid) > 20000 || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
+        if (countOfLsid(lsid) > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD) || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
             ml = mapSpeciesByLsidCluster(lsid, species, rank);
         } else {
             //return mapSpeciesByLsidPoints(lsid,species);
@@ -5076,10 +5077,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //String coords = m.getStringData(); // new String(m.getByteData())
             //int count = coords.split("\n").length;
 
-            System.out.println("m.getName(): " + m.getName());
-            System.out.println("getContentType: " + m.getContentType());
-            System.out.println("getFormat: " + m.getFormat());
-
             if(ud.getName() == null || ud.getName().length() == 0) {
                 ud.setName(m.getName());
             }
@@ -5096,8 +5093,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 byte[] csvdata = m.getByteData();
                 loadUserPoints(ud, new StringReader(new String(csvdata)));
             } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {
-                System.out.println("isBin: " + m.isBinary());
-                System.out.println("inMem: " + m.inMemory());
                 if (m.inMemory()) {
                     loadUserLayerKML(name, m.getByteData());
                 } else {
@@ -5107,32 +5102,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 unzipFile(m.getName(), m.getStreamData());
             }
-
-
-            //System.out.println("coords: " + coords);
-
-            /*
-
-            try {
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.SAT_URL + "/alaspatial/ws/points/register"); // testurl
-            post.addRequestHeader("Accept", "text/plain");
-            post.addParameter("name", m.getName());
-            post.addParameter("points", coords);
-
-            int result = client.executeMethod(post);
-            String slist = post.getResponseBodyAsString();
-
-            if (slist != null && result == 200) {
-            sac.setSelection(m.getName(), slist, count);
-            }
-
-            System.out.println("uploaded points name:" + m.getName() + " lsid:" + slist + " coords:" + coords);
-            } catch (Exception e) {
-            e.printStackTrace(System.out);
-            }
-             *
-             */
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -5304,10 +5273,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
             MapLayer ml = null;
-            if (ud.getFeatureCount() > 20000) {
-                ml = mapSpeciesByLsidFilter(slist, ud.getName(), "user");
-            } else {
+            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD)) {
                 ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+            } else {
+                ml = mapSpeciesByLsidFilter(slist, ud.getName(), "user");
             }
 
             MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -5326,6 +5295,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
             htUserSpecies.put(slist, ud);
             getSession().setAttribute("userpoints", htUserSpecies);
+
+            // close the reader and data streams
+            reader.close();
+            data.close();
 
         } catch (Exception e) {
 

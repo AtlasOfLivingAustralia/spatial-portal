@@ -236,7 +236,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             //refreshButton2.setVisible(true);
 
             // toggle the map button
-            if (results_count > 0 && results_count_occurrences <= 100000) {
+            if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
                 mapspecies.setVisible(true);
             } else {
                 mapspecies.setVisible(false);
@@ -295,8 +295,8 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         //validate with 'occurrences count'
-        if (results_count_occurrences > 15000) {
-            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area.  Cannot produce sample for more than 15000 occurrences.");
+        if (results_count_occurrences > settingsSupplementary.getValueAsInt("max_record_count_download")) {
+            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area.  Cannot produce sample for more than "+settingsSupplementary.getValue("max_record_count_download")+" occurrences.");
             return;
         }
 
@@ -616,7 +616,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         //refreshButton2.setVisible(true);
 
         // toggle the map button
-        if (results_count > 0 && results_count_occurrences <= 100000) {
+        if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_download")) {
             mapspecies.setVisible(true);
         } else {
             mapspecies.setVisible(false);

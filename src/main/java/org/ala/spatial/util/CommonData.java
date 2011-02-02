@@ -32,7 +32,7 @@ public class CommonData {
 
     //common parameters
     static public final String SAT_URL = "sat_url";
-    static public final String GEOSERVER_URL = "geoserver_url";
+    static public final String GEOSERVER_URL = "geoserver_url";    
     //(1) for LayersUtil
     static Object oLayersUtilLock = new Object();
     static String[] environmentalLayerNames = null;
