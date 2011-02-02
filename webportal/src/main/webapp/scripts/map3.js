@@ -363,6 +363,15 @@ function buildMapReal() {
         parent.reloadSpecies();
         if (!activeAreaPresent) {
             parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000); 
+            var verts = map.getExtent().toGeometry().getVertices();
+            var gll = new Array();
+            if (verts.length > 0) {
+                for (var v=0; v<verts.length; v++) {
+                    var pt = verts[v].transform(map.projection, map.displayProjection);
+                    gll.push(new google.maps.LatLng(pt.y, pt.x));
+                }
+            }
+            parent.displayArea2((google.maps.geometry.spherical.computeArea(gll)/1000)/1000);
         }
         Event.stop(e);
     });
@@ -1328,6 +1337,15 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
 
     if (name=="Active Area") {
         parent.displayArea((wktLayer.features[0].geometry.getGeodesicArea(map.projection)/1000)/1000);
+        var verts = wktLayer.features[0].geometry.getVertices();
+        var gll = new Array();
+        if (verts.length > 0) {
+            for (var v=0; v<verts.length; v++) {
+                var pt = verts[v].transform(map.projection, map.displayProjection);
+                gll.push(new google.maps.LatLng(pt.y, pt.x));
+            }
+        }
+        parent.displayArea2((google.maps.geometry.spherical.computeArea(gll)/1000)/1000);
         activeAreaPresent = true; 
     }
 
@@ -1553,6 +1571,16 @@ function removeFromSelectControl(lyrname) {
     if (lyrname=="Active Area") {
         activeAreaPresent = false;
         parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000);
+        var verts = map.getExtent().toGeometry().getVertices();
+        var gll = new Array();
+        if (verts.length > 0) {
+            for (var v=0; v<verts.length; v++) {
+                var pt = verts[v].transform(map.projection, map.displayProjection);
+                gll.push(new google.maps.LatLng(pt.y, pt.x));
+            }
+        }
+        parent.displayArea2((google.maps.geometry.spherical.computeArea(gll)/1000)/1000);
+
     }
 
     var isActive = selectControl.active;
