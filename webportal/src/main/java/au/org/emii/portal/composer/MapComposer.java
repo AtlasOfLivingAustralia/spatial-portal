@@ -5174,7 +5174,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         (new Separator()).setParent(vbox);
         Fileupload fileUpload = new Fileupload();
-        fileUpload.setMaxsize(5000000);
+        fileUpload.setMaxsize(60000); // 5000000
         fileUpload.setParent(vbox);
 
         fileUpload.addEventListener("onUpload", new EventListener() {
@@ -5230,6 +5230,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 System.out.println(key);
             }
             List userPoints = reader.readAll();
+
+            // check if the count of points goes over the threshold.
+            if (userPoints.size() > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
+                showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
+                return; 
+            }
+
+
             StringBuffer sbUIds = new StringBuffer();
             StringBuffer sbUPoints = new StringBuffer();
             for (int i = 0; i < userPoints.size(); i++) {
