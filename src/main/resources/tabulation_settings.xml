@@ -1481,6 +1481,7 @@ if not csv, then tab delimited
     -->
     <base_output_dir>/Users/ajay/Sites/ala/</base_output_dir>
     <base_output_url>http://localhost/~ajay/ala/</base_output_url>
+    <base_files_dir>/Users/ajay/projects/tmp/useruploads/</base_files_dir>
 
     <max_record_count_download>15000</max_record_count_download>
     <max_record_count_cluster>1000000</max_record_count_cluster>
