@@ -100,6 +100,7 @@ An area can be defined by any of the options below. Once defined, the area can b
                 <label id="lblArea" value="" />
                 <html><![CDATA[
                     <div id="jsarea"></div>
+                    <div id="jsarea2"></div>
                 ]]></html>                
             </div>
         </vbox>

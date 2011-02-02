@@ -1,7 +1,6 @@
 package au.org.emii.portal.composer;
 
 import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
 import au.org.emii.portal.databinding.ActiveLayerRenderer;
 import au.org.emii.portal.databinding.BaseLayerListRenderer;
 import au.org.emii.portal.request.DesktopState;
@@ -102,6 +101,7 @@ import org.geotools.data.FileDataStoreFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
+import org.springframework.util.NumberUtils;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
@@ -5174,7 +5174,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         (new Separator()).setParent(vbox);
         Fileupload fileUpload = new Fileupload();
-        fileUpload.setMaxsize(60000); // 5000000
+        //fileUpload.setMaxsize(60000); // 5000000
+        getDesktop().getWebApp().getConfiguration().setMaxUploadSize(60000);
         fileUpload.setParent(vbox);
 
         fileUpload.addEventListener("onUpload", new EventListener() {
@@ -5220,19 +5221,34 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             // if it throw's an error, then it's not a valid csv file
 
             CSVReader reader = new CSVReader(data);
-            HeaderColumnNameTranslateMappingStrategy hms = new HeaderColumnNameTranslateMappingStrategy();
-            hms.captureHeader(reader);
-            Map<String, String> csvheader = hms.getColumnMapping();
-            Iterator<String> it = csvheader.keySet().iterator();
-            System.out.println("CSV Header");
-            while (it.hasNext()) {
-                String key = it.next();
-                System.out.println(key);
-            }
+//            HeaderColumnNameTranslateMappingStrategy hms = new HeaderColumnNameTranslateMappingStrategy();
+//            hms.captureHeader(reader);
+//            Map<String, String> csvheader = hms.getColumnMapping();
+//            Iterator<String> it = csvheader.keySet().iterator();
+//            System.out.println("CSV Header");
+//            while (it.hasNext()) {
+//                String key = it.next();
+//                System.out.println(key);
+//            }
             List userPoints = reader.readAll();
 
+            boolean hasHeader = false;
+
+            // check if it has a header
+            String[] upHeader = (String[]) userPoints.get(0);
+            try {
+                Double d1 = new Double(upHeader[1]);
+                Double d2 = new Double(upHeader[2]);
+            } catch (Exception e) {
+                hasHeader = true;
+            }
+
+            System.out.println("hasHeader: " + hasHeader); 
+
             // check if the count of points goes over the threshold.
-            if (userPoints.size() > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
+            int sizeToCheck = (hasHeader)?userPoints.size()-1:userPoints.size(); 
+            System.out.println("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
+            if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
                 showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
                 return; 
             }

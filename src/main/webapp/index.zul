@@ -1242,7 +1242,10 @@ function goToUserLocation() {
 }
 
 function displayArea(area) {
-   $('#jsarea').html('calculated area: ' + addCommas(area.toFixed(2)));
+   $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
+}
+function displayArea2(area) {
+   $('#jsarea2').html('GM area: ' + addCommas(area.toFixed(2)) + ' sq km');
 }
 function addCommas(nStr) {
 	nStr += '';
