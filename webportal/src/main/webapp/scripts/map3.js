@@ -318,11 +318,12 @@ function buildMapReal() {
         wrapDateLine: false,
         'sphericalMercator': true
     });
-    bLayer3 = new OpenLayers.Layer.WMS("Minimal",
-        "http://vmap0.tiles.osgeo.org/wms/vmap0", 
-        {
-            layers: 'basic'
-        });
+//    bLayer3 = new OpenLayers.Layer.WMS("Minimal",
+//        "http://www2.demis.nl/WMS/wms.asp?WMS=WorldMap&WMTVER=1.0.0", // "http://vmap0.tiles.osgeo.org/wms/vmap0"
+//        {
+//            layers: 'basic'
+//        });
+    bLayer3 = new OpenLayers.Layer.OSM();
 
     map.addLayers([bLayer2,bLayer,bLayer3]);
     parent.bLayer = bLayer;
@@ -2844,7 +2845,7 @@ function displayBiostorRecords() {
     $.getJSON(proxy_script + biostorurl, function(data){
         var html = '<ol>';
         for(var i=0, item; item=data.list[i]; i++) {
-            html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '">' + item.title + '</a></li>';
+            html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
         }
         html += '</ol>';
         parent.displayHTMLInformation("biostormsg",'Found ' + data.list.length + " documents.");
