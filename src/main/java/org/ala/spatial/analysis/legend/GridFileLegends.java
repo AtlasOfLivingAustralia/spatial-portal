@@ -27,16 +27,18 @@ public class GridFileLegends {
         float[] dsorted = d.clone();
         java.util.Arrays.sort(dsorted);
 
-        Legend[] legends = new Legend[2];
-        legends[0] = new LegendEqualSize();
+        Legend[] legends = new Legend[4];
+        legends[3] = new LegendEqualSize();
         legends[1] = new LegendEvenInterval();
+        legends[2] = new LegendEvenIntervalLog();
+        legends[0] = new LegendEvenIntervalLog10();
 
         for (int i = 0; i < legends.length; i++) {
             legends[i].generate(dsorted);
             legends[i].determineGroupSizes(dsorted);
             double e2 = legends[i].evaluateStdDev(dsorted);
             System.out.print(legends[i].getCutoffs());
-            legends[i].exportImage(d, g.ncols, output_name + "_" + legends[i].getTypeName() + ".png");
+            legends[i].exportImage(d, g.ncols, output_name + "_" + legends[i].getTypeName() + ".jpg", 4);
             legends[i].exportLegend(output_name + "_" + legends[i].getTypeName() + "_legend.txt");
             System.out.println("stddev: " + e2);
         }
@@ -55,12 +57,14 @@ public class GridFileLegends {
         }*/
 
         //specific environmental files
-        new GridFileLegends("slope_length", dir + "SlopeLength");
-        new GridFileLegends("substrate_mrrtf", dir + "RidgeTopFlatness");
-        new GridFileLegends("aspect", dir + "Aspect");
-        new GridFileLegends("substrate_mrvbf", dir + "Valley bottom flatness");
-        new GridFileLegends("substrate_roughness", dir + "Topographic roughness");
-        new GridFileLegends("substrate_relief", dir + "Topographic relief");
+        //new GridFileLegends("slope_length", dir + "SlopeLength");
+        //new GridFileLegends("substrate_mrrtf", dir + "RidgeTopFlatness");
+        //new GridFileLegends("aspect", dir + "Aspect");
+        //new GridFileLegends("substrate_mrvbf", dir + "Valley bottom flatness");
+        //new GridFileLegends("substrate_roughness", dir + "Topographic roughness");
+        //new GridFileLegends("substrate_relief", dir + "Topographic relief");
+        new GridFileLegends("ALA-SPATIAL_layer_occurrence_av_1", dir + "Occurrence Density");
+        new GridFileLegends("ALA-SPATIAL_layer_species_av_1", dir + "Species Richness");
 
     }
 }

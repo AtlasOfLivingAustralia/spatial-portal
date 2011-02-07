@@ -1,7 +1,5 @@
 package org.ala.spatial.analysis.service;
 
-import com.vividsolutions.jts.geom.Geometry;
-import org.geotools.referencing.CRS;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -64,13 +62,13 @@ public class FilteringImage implements Serializable {
      */
     int accumulative;
     /**
-     * calculate approximate area of envelope
-     */
-    double approximateSize;
-    /**
-     * height vs size mapping
-     */
-    double [] sizeMapping;
+	     * calculate approximate area of envelope
+	     */
+	    double approximateSize;
+	    /**
+	     * height vs size mapping
+	     */
+	    double [] sizeMapping;
 
     /**
      * constructor for new, fully hidden, layer/image
@@ -108,13 +106,13 @@ public class FilteringImage implements Serializable {
         int g = (hidden_colour & 0x0000ff00);
         int b = (hidden_colour & 0x000000ff);
 
-        edgeColour = 0xff000000 | ((r / 3) & 0x00ff0000) | ((b / 3) & 0x0000ff00) | ((b / 3) & 0x000000ff);
+        edgeColour = 0xff000000 | ((r / 3) & 0x00ff0000) | ((g / 3) & 0x0000ff00) | ((b / 3) & 0x000000ff);
 
         accumulative = 0;
 
         approximateSize = 0;
 
-        sizeMapping = null;
+	        sizeMapping = null;
     }
 
     /**
@@ -201,10 +199,10 @@ public class FilteringImage implements Serializable {
     public String writeImageAccumulative(int colour) {
         approximateSize = 0;
 
-        //size mapping
-        if(sizeMapping == null) {
-            sizeMapping = FilteringIndex.getImageLatitudeArea();
-        }
+	        //size mapping
+	        if(sizeMapping == null) {
+	            sizeMapping = FilteringIndex.getImageLatitudeArea();
+	        }
 
         try {
             /* convert each
@@ -529,6 +527,6 @@ public class FilteringImage implements Serializable {
     }
 
     public double getApproximateSize() {
-        return approximateSize;
-    }
+	        return approximateSize;
+	    }
 }

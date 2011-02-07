@@ -59,19 +59,20 @@ public class HeatMapIndex {
             area += "))";
             SimpleRegion region = SimpleShapeFile.parseWKT(area);
 
-            OccurrencesIndex.loadIndexes();
-
             extraIndexes();
 
             LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>();
-            CountDownLatch cdl = new CountDownLatch(OccurrencesIndex.single_index.length);
+            CountDownLatch cdl = null;//TODO: fix for new indexnew CountDownLatch(OccurrencesIndex.single_index.length);
 
             //start producer threads
             LinkedBlockingQueue<IndexedRecord> lbqp = new LinkedBlockingQueue<IndexedRecord>();
-            System.out.println(OccurrencesIndex.single_index.length);
-            for (IndexedRecord r : OccurrencesIndex.single_index) {
-                lbqp.add(r);
-            }
+
+            //TODO: fix for new index
+            //System.out.println(OccurrencesIndex.single_index.length);
+            //for (IndexedRecord r : OccurrencesIndex.single_index) {
+            //    lbqp.add(r);
+            //}
+
             HeatMapIndexProducerThread[] hmipt = new HeatMapIndexProducerThread[TabulationSettings.analysis_threads];
             for (int i = 0; i < hmipt.length; i++) {
                 hmipt[i] = new HeatMapIndexProducerThread(lbqp, lbq, threshold, cdl, region);
@@ -162,9 +163,6 @@ public class HeatMapIndex {
 
                 String value = lsid.replace(":", "_");
 
-                //FileUtils.deleteQuietly(new File(baseDir.getAbsolutePath() + File.separator + value + ".png"));
-                //FileUtils.deleteQuietly(new File(baseDir.getAbsolutePath() + File.separator + "legend_" + value + ".png"));
-
                 HeatMap hm = new HeatMap(baseDir, value);
                 hm.generateClasses(points);
                 hm.drawOuput(outputfile, true);
@@ -226,6 +224,8 @@ public class HeatMapIndex {
     }
 
     static void extraIndexes() {
+        //TODO: fix for new index
+        /*
         String pth = TabulationSettings.base_output_dir + "output" + File.separator + "sampling" + File.separator;
         File baseDir = new File(pth);
         String[] lookups = OccurrencesIndex.listLookups();
@@ -258,6 +258,8 @@ public class HeatMapIndex {
         for(int i=0;i<et.length;i++){
             et[i].interrupt();
         }
+         *
+         */
     }
 
     private static class ExtraThread extends Thread {
@@ -290,6 +292,7 @@ public class HeatMapIndex {
         }
 
         void process(File baseDir, String key, String value) {
+            /* //TODO: fix for new index
             long start = System.currentTimeMillis();
             String outputfile = baseDir + File.separator + value + ".png";
 
@@ -317,7 +320,7 @@ public class HeatMapIndex {
 
                 long end = System.currentTimeMillis();
                 System.out.println("E," + recs.length + "," + (end - start));
-            }
+            }*/
         }
     }
 }

@@ -32,31 +32,10 @@ public class Indexing {
         if (args.length > 0 && args[0].equals("build_all")) {
             System.out.println("building all");
 
-            /* some indexes have dependances on others so order is important */
-            OccurrencesIndex occurancesIndex = new OccurrencesIndex();
-            occurancesIndex.occurancesUpdate();
-
-            SamplingIndex samplingIndex = new SamplingIndex();
-            samplingIndex.occurancesUpdate();
-
-            FilteringIndex speciesListIndex = new FilteringIndex();
-            speciesListIndex.occurancesUpdate();
-        } else if (args.length > 0 && args[0].equals("build_sampling")) {
-            SamplingIndex samplingIndex = new SamplingIndex();
-            samplingIndex.occurancesUpdate();
-        } else if (args.length > 0 && args[0].equals("build_filtering")) {
-            FilteringIndex speciesListIndex = new FilteringIndex();
-            speciesListIndex.occurancesUpdate();
-        } else if (args.length > 1 && args[0].equals("build_layer")) {
-            for (i = 1; i < args.length; i++) {
-                System.out.println("building layer: " + args[i]);
-
-                SamplingIndex samplingIndex = new SamplingIndex();
-                samplingIndex.layersUpdate(args[i]);
-
-                FilteringIndex speciesListIndex = new FilteringIndex();
-                speciesListIndex.layersUpdate(args[i]);
-            }
+             TabulationSettings.load();
+             OccurrencesCollection.init();
+             DatasetMonitor dm = new DatasetMonitor();
+             dm.initDatasetFiles();     //this performs require updates
         } else if (args.length > 0 && args[0].equals("layer_distances")) {
             TabulationSettings.load();
 

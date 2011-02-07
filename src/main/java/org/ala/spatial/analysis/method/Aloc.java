@@ -218,15 +218,7 @@ public class Aloc {
         int [] seedgroup_nonmissingvalues = new int[seedidxsize * nCols];
         double [] otherGroupMovement = new double[seedidxsize];
         double [] groupMovement = new double[seedidxsize];
-        AlocSharedData asd = new AlocSharedData(
-                    otherGroupMovement,
-                    groupMovement,
-                    nCols,
-                    col_range,
-                    seedidxsize,
-                    seeds,
-                    seedgroup_nonmissingvalues     
-                    );
+
         AlocSharedData [] asdCopies = new AlocSharedData[threadcount];
         for(i=0;i<threadcount;i++){
             asdCopies[i] = new AlocSharedData(

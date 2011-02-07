@@ -1,25 +1,19 @@
 package org.ala.spatial.web.services;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.service.SamplingService;
-import org.ala.spatial.analysis.index.FilteringIndex;
-import org.ala.spatial.analysis.index.OccurrencesIndex;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.AnalysisQueue;
 import org.ala.spatial.util.CitationService;
-import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -60,7 +54,7 @@ public class SamplingWSController {
             String area = req.getParameter("area");
 
             String[] layers = getLayerFiles(URLDecoder.decode(req.getParameter("envlist"), "UTF-8"));
-            ArrayList<Integer> records = null;
+            int [] records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
@@ -68,7 +62,7 @@ public class SamplingWSController {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             } 
 
-            String [] n = OccurrencesIndex.getFirstName(species);
+            String [] n = OccurrencesCollection.getFirstName(species);
             String speciesName;
             if(n != null){
                 speciesName = n[0];
@@ -145,7 +139,7 @@ public class SamplingWSController {
             String area = req.getParameter("area");
 
            /* String[] layers = getLayerFiles();
-            ArrayList<Integer> records = null;
+            int [] records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
@@ -162,7 +156,7 @@ public class SamplingWSController {
             inputs.append("pid:").append(pid);
             inputs.append(";taxonid:").append(species);
 
-            String [] n = OccurrencesIndex.getFirstName(species);
+            String [] n = OccurrencesCollection.getFirstName(species);
             String speciesName;
             if(n != null){
                 speciesName = n[0];
@@ -235,7 +229,7 @@ public class SamplingWSController {
             System.out.println("area: " + req.getParameter("area"));
             
             String area = req.getParameter("area");
-            ArrayList<Integer> records = null;
+            int [] records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
@@ -246,7 +240,7 @@ public class SamplingWSController {
             SamplingService ss = SamplingService.newForLSID(species);
             String[][] results = ss.sampleSpecies(species, layers, region, records, 20);
 
-            //List rList = new Vector();
+            List rList = new Vector();
             StringBuilder sbResults = new StringBuilder();
             
             for (int i = 0; i < results.length; i++) {
@@ -254,18 +248,18 @@ public class SamplingWSController {
                 //System.out.println("");
                 Hashtable htRecs = new Hashtable();
                 for (int j = 0; j < results[i].length; j++) {
-                    //System.out.print("|" + results[i][j]);
+                    System.out.print("|" + results[i][j]);
                     if (results[i][j] != null) {
-                        //htRecs.put(j, results[i][j]);
+                        htRecs.put(j, results[i][j]);
                         sbResults.append(results[i][j]);
                     }
                     if (j < results[i].length - 1) {
                         sbResults.append("~");
                     }
                 }
-                //System.out.println("|");
+                System.out.println("|");
                 sbResults.append(";");
-                //rList.add(htRecs);
+                rList.add(htRecs);
             }
 
             return sbResults.toString();
@@ -334,14 +328,14 @@ public class SamplingWSController {
             SamplingService ss = SamplingService.newForLSID(species);
             
             String area = req.getParameter("area");
-            ArrayList<Integer> records = null;
+            int [] records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
             } else {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             }
-            double [] points = ss.sampleSpeciesPoints(species, region, records);
+            double [] points = null;//ss.sampleSpeciesPoints(species, region, records);
             StringBuffer sb = new StringBuffer();
             for(int i=0;i<points.length;i+=2){
             	sb.append(points[i]);
@@ -363,6 +357,166 @@ public class SamplingWSController {
 
     }
 
+
+    /**
+     * histogram:
+     *
+     * lsid for species
+     * env layer name
+     * number of segments to produce
+     *
+     * 1. get env layer data for lsid
+     * 2. scale between segments
+     * 3. return segment counts
+     * 4. return segment lower bounds + top bound
+     *
+     *
+     *
+     * intersection histogram:
+     *
+     * lsid for species
+     * env layer name
+     * number of segments to produce
+     * 2nd env layer name
+     * 2nd env layer upper bound
+     * 2nd env layer lower bound
+     *
+     * 5. return intersection counts
+     *
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/histogram", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String histogram(HttpServletRequest req) {
+        try {
+            ssets = new SpatialSettings();
+
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String[] layers = getLayerFiles(req.getParameter("envlist"));
+
+            System.out.println("species: " + species);
+            System.out.println("envlist: " + req.getParameter("envlist"));
+            System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
+            System.out.println("layers:" + layers);
+            System.out.println("area: " + req.getParameter("area"));
+
+            String area = req.getParameter("area");
+            int [] records = null;
+            SimpleRegion region = null;
+            if (area != null && area.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(req.getParameter("area"));
+            } else {
+                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
+            }
+
+            SamplingService ss = SamplingService.newForLSID(species);
+            String[][] results = null;//ss.sampleSpecies(species, layers, region, records, 20);
+
+            List rList = new Vector();
+            StringBuilder sbResults = new StringBuilder();
+
+            for (int i = 0; i < results.length; i++) {
+                //System.out.println(results[i]);
+                //System.out.println("");
+                Hashtable htRecs = new Hashtable();
+                for (int j = 0; j < results[i].length; j++) {
+                    System.out.print("|" + results[i][j]);
+                    if (results[i][j] != null) {
+                        htRecs.put(j, results[i][j]);
+                        sbResults.append(results[i][j]);
+                    }
+                    if (j < results[i].length - 1) {
+                        sbResults.append("~");
+                    }
+                }
+                System.out.println("|");
+                sbResults.append(";");
+                rList.add(htRecs);
+            }
+
+            return sbResults.toString();
+
+        } catch (Exception e) {
+            System.out.println("Error processing Sampling request:");
+            e.printStackTrace(System.out);
+        }
+
+        return null;
+
+    }
+
+    /**
+     * lsid (mandatory)
+     * points or layer name
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/scatterplot", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String scatterplot(HttpServletRequest req) {
+        try {
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String[] layers = getLayerFiles(req.getParameter("envlist"));
+
+            SamplingService ss = SamplingService.newForLSID(species);
+            String[][] results = ss.sampleSpecies(species, layers, null, null, 1000000);
+
+            StringBuilder sbResults = new StringBuilder();
+
+            //last 4 columns; longitude, latitude, layer1, layer2
+            for (int i = 0; i < results.length; i++) {
+                for (int j = results[i].length - 4; j < results[i].length; j++) {
+                    if (results[i][j] != null) {
+                        sbResults.append(results[i][j]);
+                    }
+                    if (j < results[i].length - 1) {
+                        sbResults.append(",");
+                    }
+                }
+                sbResults.append("\n");
+            }
+
+            return sbResults.toString();
+
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    @RequestMapping(value = "/scatterplot/register", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String scatterplotRegister(HttpServletRequest req) {
+        try {
+            //int highlightLsid(String keyEnd, String lsid, String layer1, double x1, double x2, String layer2, double y1, double y2)
+
+            String pid = String.valueOf(System.currentTimeMillis());
+
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String[] layers = getLayerFiles(req.getParameter("envlist"));
+
+            String params = URLDecoder.decode(req.getParameter("bounds"), "UTF-8");
+            double [] bounds = new double[4];
+            String [] aParams = params.split(",");
+            for(int i=0;i<aParams.length;i++) {
+                bounds[i] = Double.parseDouble(aParams[i]);
+            }
+
+            int count = OccurrencesCollection.highlightLsid(pid, species, layers[0], bounds[0], bounds[1], layers[1], bounds[2], bounds[3]);
+
+            return pid + "\n" + String.valueOf(count);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
 
 

@@ -133,24 +133,28 @@ public abstract class Legend {
         float stdev = 0;
         float mean = numberOfUniqueValues / (float) groupSizes.length;
         for(int i=0;i<groupSizes.length;i++) {
-            stdev += Math.pow(groupSizes[i] - mean, 2) / groupSizes.length;
+            stdev += Math.pow(groupSizes[i] - mean, 2) / (float) groupSizes.length;
         }
+
+        stdev = (float)Math.sqrt(stdev);
 
         return stdev;
     }
 
     /**
-     * save to a file as a png.
+     * save to a file as a type (filename extension).
+     *
+     * Option to scale down image size by discarding values/pixels
      * 
      * @param d float [] of raster data to have legend applied
      * @param width row width
      * @param filename output filename
      */
-    void exportImage(float [] d, int width, String filename) {
+    void exportImage(float [] d, int width, String filename, int scaleDownBy) {
         try {
             /* make image */
-            BufferedImage image = new BufferedImage(width, d.length / width,
-                    BufferedImage.TYPE_4BYTE_ABGR);
+            BufferedImage image = new BufferedImage(width / scaleDownBy, d.length / width / scaleDownBy,
+                    BufferedImage.TYPE_INT_BGR);
 
             /* get bytes structure */
             int [] image_bytes = image.getRGB(0, 0, image.getWidth(), image.getHeight(),
@@ -158,7 +162,15 @@ public abstract class Legend {
 
             //fill
             for (int i = 0; i < image_bytes.length; i++) {
-                image_bytes[i] = getColour(d[i]);
+                int x = i % (width / scaleDownBy);
+                int y = i / (width / scaleDownBy);
+
+                int dataX = x * scaleDownBy;
+                int dataY = y * scaleDownBy;
+                
+                int dataI = dataX + dataY * width;
+
+                image_bytes[i] = getColour(d[dataI]);
             }
 
             /* write back image bytes */
@@ -166,7 +178,8 @@ public abstract class Legend {
                     image_bytes, 0, image.getWidth());
 
             /* write image */
-            ImageIO.write(image, "png", new File(filename));
+            String extension = filename.substring(filename.length() - 3);
+            ImageIO.write(image, extension, new File(filename));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,14 +193,14 @@ public abstract class Legend {
      */
     int getColour(float d) {
         if(Float.isNaN(d)) {
-            return 0x00000000;
+            return 0xFFFFFFFF;
         }
         int pos = java.util.Arrays.binarySearch(cutoffs, d);
         if(pos < 0) {
             pos = (pos * -1) - 1;
         }
         if(pos >= cutoffs.length) {
-            return 0x00000000;
+            return 0xFFFFFFFF;
         } else {
             double upper = cutoffs[pos];
             double lower;
@@ -219,6 +232,7 @@ public abstract class Legend {
      */
     public String getCutoffs() {
         StringBuffer sb = new StringBuffer();
+        System.out.println(getTypeName());
         for(int i=0;i<cutoffs.length;i++) {
             if(groupSizes != null) {
                 sb.append(String.valueOf(cutoffs[i])).append("\t").append(String.valueOf(groupSizes[i])).append("\n");

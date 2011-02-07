@@ -357,7 +357,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         /* setup for thread count */
         int threadcount = TabulationSettings.analysis_threads;
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
-        int step = (int) Math.ceil(points.length / (double) (threadcount * 10));
+        int step = (int)Math.ceil(points.length / (double)(threadcount * 10));
         if (step % 2 != 0) {
             step++;
         }
@@ -424,14 +424,11 @@ public class SimpleShapeFile extends Object implements Serializable {
      * for each provided point, or -1 for not found as int []
      */
     public int[] intersect(double[][] points, int threadcount) {
-
-        Long start_time = Calendar.getInstance().getTimeInMillis();
-
         int i;
 
         /* setup for thread count */
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
-        int step = (int) Math.ceil(points.length / (double) (threadcount * 10));
+        int step = (int)Math.ceil(points.length / (double)(threadcount * 10));
         if (step % 2 != 0) {
             step++;
         }
@@ -487,6 +484,10 @@ public class SimpleShapeFile extends Object implements Serializable {
         return singleLookup[idx];
     }
 
+    public String [] getColumnLookup() {
+        return singleLookup;
+    }
+
     /**
      * for use with SimpleShapeFile constructed from a Shape File
      *
@@ -504,11 +505,10 @@ public class SimpleShapeFile extends Object implements Serializable {
      * coverage
      */
     public Tile[] getTileList(int column, double longitude1, double latitude1, double longitude2, double latitude2, int width, int height) {
-        int i, j, k, v;
+        int i, j, k;
 
         String[] lookup = getColumnLookup(column);
 
-        String s;
         Vector<Tile> tiles = new Vector<Tile>();
         byte[][] map;
         int m;
@@ -566,11 +566,10 @@ public class SimpleShapeFile extends Object implements Serializable {
      * coverage
      */
     public Tile[] getTileList(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height) {
-        int i, j, k, v;
+        int i, j, k;
 
         String[] lookup = singleLookup;
 
-        String s;
         Vector<Tile> tiles = new Vector<Tile>();
         byte[][] map;
         int m;
@@ -635,7 +634,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         pointsString = convertGeoToPoints(pointsString);
 
         String[] polygons = pointsString.split("S");
-
+        
         //String[] fixedPolygons = fixStringPolygons(polygons);
 
         //System.out.println("$" + pointsString);
@@ -648,61 +647,61 @@ public class SimpleShapeFile extends Object implements Serializable {
     }
 
     private static ArrayList<double[]> fixStringPolygons(String[] polygons) {
-        ArrayList<double[]> fixedPolygons = new ArrayList<double[]>();
+	        ArrayList<double[]> fixedPolygons = new ArrayList<double[]>();
 
-        for (int p = 0; p < polygons.length; p++) {
-            String[] pairs = polygons[p].split(",");
+	        for (int p = 0; p < polygons.length; p++) {
+	            String[] pairs = polygons[p].split(",");
 
-            //track polygon longtiude extents
-            double min = 0;
-            double max = 0;
+	            //track polygon longtiude extents
+	            double min = 0;
+	            double max = 0;
 
-            double[][] points = new double[pairs.length][2];
-            for (int i = 0; i < pairs.length; i++) {
-                String[] longlat = pairs[i].split(":");
-                if (longlat.length == 2) {
-                    try {
-                        points[i][0] = Double.parseDouble(longlat[0]);
-                        points[i][1] = Double.parseDouble(longlat[1]);
+	            double[][] points = new double[pairs.length][2];
+	            for (int i = 0; i < pairs.length; i++) {
+	                String[] longlat = pairs[i].split(":");
+	                if (longlat.length == 2) {
+	                    try {
+	                        points[i][0] = Double.parseDouble(longlat[0]);
+	                        points[i][1] = Double.parseDouble(longlat[1]);
 
-                        while (points[i][0] > 360) {
-                            points[i][0] -= 360;
-                        }
-                        while (points[i][0] <= -360) {
-                            points[i][0] += 360;
-                        }
+	                        while (points[i][0] > 360) {
+	                            points[i][0] -= 360;
+	                        }
+	                        while (points[i][0] <= -360) {
+	                            points[i][0] += 360;
+	                        }
 
-                        if (i == 0) {
-                            min = points[i][0];
-                            max = min;
-                        } else {
-                            if (min < points[i][0]) {
-                                min = points[i][0];
-                            }
-                            if (max < points[i][0]) {
-                                max = points[i][0];
-                            }
-                        }
-                    } catch (Exception e) {
-                        //TODO: alert failure
-                    }
-                } else {
-                    //TODO: alert failure
-                }
-            }
+	                        if (i == 0) {
+	                            min = points[i][0];
+	                            max = min;
+	                        } else {
+	                            if (min < points[i][0]) {
+	                                min = points[i][0];
+	                            }
+	                            if (max < points[i][0]) {
+	                                max = points[i][0];
+	                            }
+	                        }
+	                    } catch (Exception e) {
+	                        //TODO: alert failure
+	                    }
+	                } else {
+	                    //TODO: alert failure
+	                }
+	            }
 
-            //does it need to be split?
-            double xplus = 0;
-            if (min <= -180) {
-                xplus = 360;
-            }
-            if (max + xplus > 180) {
-                //TODO: split into polygons
-            }
-        }
+	            //does it need to be split?
+	            double xplus = 0;
+	            if (min <= -180) {
+	                xplus = 360;
+	            }
+	            if (max + xplus > 180) {
+	                //TODO: split into polygons
+	            }
+	        }
 
-        return fixedPolygons;
-    }
+	        return fixedPolygons;
+	    }
 
     static String convertGeoToPoints(String geometry) {
         if (geometry == null) {
@@ -1801,7 +1800,6 @@ class ShapesReference extends Object implements Serializable {
      * @param sr_ all shapes for this mask as ShapeRecords
      */
     public ShapesReference(ShapeRecords sr_) {
-        long t1 = System.currentTimeMillis();
 
         sr = sr_;
         boundingbox_all = new double[2][2];
@@ -1933,13 +1931,10 @@ class IntersectionThread implements Runnable {
     public void run() {
 
         int i, idx;
-        int hits = 0;
 
         /* get next batch */
         Integer start;
         try {
-            //System.out.println("try*: ");
-
             while (true) {
                 start = lbq.take();
 
@@ -1953,17 +1948,13 @@ class IntersectionThread implements Runnable {
                     target[i] = -1;
                     if ((idx = shapesreference.intersection(points[i][0], points[i][1])) >= 0) {
                         target[i] = idx;
-                        hits++;
                     }
                 }
 
                 cdl.countDown();
-
-                /* report */
-                //System.out.println("*: " + start.intValue() + " to " + end + " with hits=" + hits);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

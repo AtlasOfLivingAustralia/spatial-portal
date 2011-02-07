@@ -162,19 +162,18 @@ public class SimpleRegion extends Object implements Serializable {
 
         for (int i = 0; i < points.length; i++) {
             //fix at -180 and 180
-            if (points[i][0] < -180) {
-                points[i][0] = -180;
-            }
-            if (points[i][0] > 180) {
-                points[i][0] = 180;
-            }
-            while (points[i][1] < -180) {
-                points[i][1] = -180;
-            }
-            while (points[i][1] > 180) {
-                points[i][1] = 180;
-            }
-
+	            if (points[i][0] < -180) {
+	                points[i][0] = -180;
+	            }
+	            if (points[i][0] > 180) {
+	                points[i][0] = 180;
+	            }
+	            while (points[i][1] < -180) {
+	                points[i][1] = -180;
+	            }
+	            while (points[i][1] > 180) {
+	                points[i][1] = 180;
+	            }
         }
 
         bounding_box = points;
@@ -213,21 +212,20 @@ public class SimpleRegion extends Object implements Serializable {
             type = POLYGON;
             int i;
 
-            //fix extents
-            for (i = 0; i < points_.length; i++) {
+            for(i=0;i<points_.length;i++) {
                 //fix at -180 and 180
-                if (points_[i][0] < -180) {
-                    points_[i][0] = -180;
-                }
-                if (points_[i][0] > 180) {
-                    points_[i][0] = 180;
-                }
-                while (points_[i][1] < -180) {
-                    points_[i][1] = -180;
-                }
-                while (points_[i][1] > 180) {
-                    points_[i][1] = 180;
-                }
+	            if (points_[i][0] < -180) {
+	                points_[i][0] = -180;
+	            }
+	            if (points_[i][0] > 180) {
+	                points_[i][0] = 180;
+	            }
+	            while (points_[i][1] < -180) {
+	                points_[i][1] = -180;
+	            }
+	            while (points_[i][1] > 180) {
+	                points_[i][1] = 180;
+	            }
             }
 
             /* copy and ensure last point == first point */
@@ -451,9 +449,9 @@ public class SimpleRegion extends Object implements Serializable {
         double xstep = Math.abs(longitude2 - longitude1) / (double) width;
         double ystep = Math.abs(latitude2 - latitude1) / (double) height;
 
-        double maxlong = Math.max(longitude1, longitude2);
+        //double maxlong = Math.max(longitude1, longitude2);
         double minlong = Math.min(longitude1, longitude2);
-        double maxlat = Math.max(latitude1, latitude2);
+        //double maxlat = Math.max(latitude1, latitude2);
         double minlat = Math.min(latitude1, latitude2);
 
         //setup minimums from bounding box (TODO: should this have -1 on steps?)
@@ -535,9 +533,9 @@ public class SimpleRegion extends Object implements Serializable {
         double xstep = Math.abs(longitude2 - longitude1) / (double) width;
         double ystep = Math.abs(latitude2 - latitude1) / (double) height;
 
-        double maxlong = Math.max(longitude1, longitude2);
+        //double maxlong = Math.max(longitude1, longitude2);
         double minlong = Math.min(longitude1, longitude2);
-        double maxlat = Math.max(latitude1, latitude2);
+        //double maxlat = Math.max(latitude1, latitude2);
         double minlat = Math.min(latitude1, latitude2);
 
         //setup for bounding box (TODO: should xstep be -1 or is it handled correctly?)

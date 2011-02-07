@@ -17,7 +17,6 @@ import java.util.Hashtable;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
-import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.apache.commons.io.FileUtils;
 
@@ -62,8 +61,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         //cells = GridCutter.countCells(region, envelope);
 
-        SamplingService ss = SamplingService.newForLSID(taxon);
-        OccurrencesService os = new OccurrencesService();
+        SamplingService ss = SamplingService.newForLSID(taxon);        
         double[] p = ss.sampleSpeciesPoints(taxon, region, null);
         if (p != null) {
             speciesCount = p.length / 2;

@@ -145,9 +145,9 @@
             when a grid provided does not align to <grd_definition> an aligning
             copy is created with this path
             -->
-        
+
         <environmental_data_path_common>/mnt/ala/data/envlayers/WorldClimCurrent/10minutes/common/</environmental_data_path_common>
-        
+
         <environmental_data_files>
             <environmental_data_file>
                 <environmental_data_file_name>adefi</environmental_data_file_name>
@@ -1305,6 +1305,16 @@
                 <environmental_data_file_display_name>Phosphorus</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>ALA-SPATIAL_layer_occurrence_av_1</environmental_data_file_name>
+                <environmental_data_file_display_name>Occurrence Density</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>ALA-SPATIAL_layer_species_av_1</environmental_data_file_name>
+                <environmental_data_file_display_name>Species Richness</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
 <!--environmental_data_file>
                 <environmental_data_file_name>uleeur</environmental_data_file_name>
                 <environmental_data_file_display_name>Gorse (Ulex europaeus)</environmental_data_file_display_name>
@@ -1324,28 +1334,26 @@
         </environmental_data_files>
     </environmental_data>
 
-
-
     <!--
-                occurances.csv as headed csv with species, longitude, latitude
+                occurrences.csv as headed csv with species, longitude, latitude
                 as minimum columns
 
                 field list is comma separated, hierarchy fields
         -->
-    <occurances_csv>d:\mnt\ala\data\occurrences\occurrences2.csv</occurances_csv>
-    
-    <!--
-    limit index size, for testing
-    
-    use -1 for all
-    
-    samples first n records.
-    -->
-    <occurances_csv_max_records>-1</occurances_csv_max_records>
-    <!--occurances_csv>/mnt/ala/data/occurrences/occurrences.csv</occurances_csv-->
+    <occurrences_csv>d:\mnt\ala\data\occurrences\occurrences_joined.csv</occurrences_csv>
 
     <!--
-        field settings for occurances_csv_fields:
+    limit index size, for testing
+
+    use -1 for all
+
+    samples first n records.
+    -->
+    <occurrences_csv_max_records>-1</occurrences_csv_max_records>
+    <!--occurrences_csv>/mnt/ala/data/occurrences/occurrences.csv</occurrences_csv-->
+
+    <!--
+        field settings for occurrences_csv_fields:
         0 is output only
         1 is use for sorting (left to right by order of appearance
         2 is same as (1) as well as use as an index for searching functions
@@ -1354,26 +1362,23 @@
         5 is unique id, same as (0)
         6 is unique id, same as (2)
     -->
-    <!--occurances_csv_fields>occurrenceId,kingdom,phylum,class,order,family,genus,species,scientificName,latitude,longitude,dataProviderId,dataResourceId,institutionCode,collectionCode,catalogueNumber,taxonConceptId,taxonRank,isoCountryCode,coordinateUncertaintyInMeters,altitudeMetres,depthCentimetres,year,month,occurrenceDate,basisOfRecord</occurances_csv_fields>
-    <occurances_csv_field_settings>0,1,1,2,2,2,2,0,2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
-    <occurances_csv_fields_lookups>dataProviderId,dataResourceId,institutionCode,collectionCode</occurances_csv_fields_lookups-->
 
-    <occurances_csv_fields>id,kingdom_lsid,phylum_lsid,class_lsid,order_lsid,family_lsid,genus_lsid,species_lsid,taxon_concept_lsid,kingdom,phylum,class,order,family,genus,species,taxon_name,latitude,longitude,data_provider_uid,data_provider,data_resource_uid,data_resource,institution_code_uid,institution_code,institution_code_name,collection_code_uid,collection_code,catalogue_number,rank,country_code,lat_long_precision,altitudeMetres,depthCentimetres,year,month,occurrence_date,basis_of_record</occurances_csv_fields>
-    <occurances_csv_field_settings>0,1,1,2,2,2,2,2,2,0,0,0,0,0,0,0,0,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurances_csv_field_settings>
-    <occurances_csv_fields_lookups>data_provider_uid,data_resource_uid,institution_code_uid,institution_code,collection_code_uid,collection_code</occurances_csv_fields_lookups>
-    <occurances_csv_field_pairs>class_lsid,class,order_lsid,order,family_lsid,family,genus_lsid,genus,species_lsid,species,taxon_concept_lsid,taxon_name</occurances_csv_field_pairs>
+    <occurrences_csv_fields>id,kingdom_lsid,phylum_lsid,class_lsid,order_lsid,family_lsid,genus_lsid,species_lsid,taxon_concept_lsid,kingdom,phylum,class,order,family,genus,species,taxon_name,latitude,longitude,data_provider_uid,data_provider,data_resource_uid,data_resource,institution_code_uid,institution_code,institution_code_name,collection_code_uid,collection_code,catalogue_number,rank,country_code,lat_long_precision,altitudeMetres,depthCentimetres,year,month,occurrence_date,basis_of_record</occurrences_csv_fields>
+    <occurrences_csv_field_settings>0,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</occurrences_csv_field_settings>
+    <occurrences_csv_fields_lookups>data_provider_uid,data_resource_uid,institution_code_uid,institution_code,collection_code_uid,collection_code</occurrences_csv_fields_lookups>
+    <occurrences_csv_field_pairs>kingdom_lsid,kingdom,phylum_lsid,phylum,class_lsid,class,order_lsid,order,family_lsid,family,genus_lsid,genus,species_lsid,species,taxon_concept_lsid,taxon_name</occurrences_csv_field_pairs>
 
     <!--
         for sensitive data handling
 
-        1. occurrences_id_field must also appear in <occurances_csv_fields>
+        1. occurrences_id_field must also appear in <occurrences_csv_fields>
         2. sensitive longitude and sensitive latitude must NOT
-            appear in <occurances_csv_fields>.
+            appear in <occurrences_csv_fields>.
 
         For analysis functions sensitive longitude and latitude coordinates are
         used, if available.
 
-        For mapping functions <occurances_csv_field_settings> (4) and (3)
+        For mapping functions <occurrences_csv_field_settings> (4) and (3)
         value columns are used.
 
         -->
@@ -1395,7 +1400,7 @@
     <!--
         autocomplete friendly names for 1's & 2's (type names)
         -->
-    <occurances_csv_twos_names>kingdom,phylum,class,order,family,genus,species,scientific name</occurances_csv_twos_names>
+    <occurrences_csv_twos_names>kingdom,phylum,class,order,family,genus,species,scientific name</occurrences_csv_twos_names>
 
     <!--
         integer indexes (0-n) for occurrence columns containing:
@@ -1420,9 +1425,11 @@
     <!-- actual column names geojson_property_names>
     id, lat_long_precision
     </geojson_property_names -->
-    <geojson_property_names>oi,u</geojson_property_names>
-    <geojson_property_fields>8,29</geojson_property_fields>
-    
+    <geojson_property_names>u</geojson_property_names>
+    <geojson_property_fields>29</geojson_property_fields>
+    <geojson_property_types>int</geojson_property_types>
+
+
     <!--
         column for inclusion as the first column in species list exports.
 
@@ -1467,10 +1474,10 @@ if not csv, then tab delimited
 
 
 
-    <!-- 
+    <!--
         'base_output_dir' should be the base directory where the 'output' folder sits
         the 'output' folder inturn should contain the necessary folders:
-        e.g: 
+        e.g:
             sampling
             filtering
             layers
@@ -1479,11 +1486,12 @@ if not csv, then tab delimited
 
         'base_output_url' should be the base path where the output directory can be reached
     -->
-    <base_output_dir>/Users/ajay/Sites/ala/</base_output_dir>
-    <base_output_url>http://localhost/~ajay/ala/</base_output_url>
+    <!--base_output_dir>C:\Users\Adam\Documents\NetBeansProjects\trunk\alaspatial\target\ala-spatial-1.0-SNAPSHOT\</base_output_dir-->
+    <base_output_dir>C:\Users\Adam\Documents\NetBeansProjects\alaspatial-index2\target\ala-spatial-1.0-SNAPSHOT\</base_output_dir>
+    <base_output_url>http://localhost:8084/alaspatial/</base_output_url>
 
-    <max_record_count_download>15000</max_record_count_download>
-    <max_record_count_cluster>1000000</max_record_count_cluster>
+    <max_record_count_download>2000000</max_record_count_download>
+    <max_record_count_cluster>2000000</max_record_count_cluster>
 
     <alaspatial_url>http://localhost:8084/alaspatial/</alaspatial_url>
 
@@ -1513,7 +1521,7 @@ if not csv, then tab delimited
 
         NOTE: must be greater than (<analysis_threads> + 3)
         -->
-    <max_grids_load>30</max_grids_load>
+    <max_grids_load>1</max_grids_load>
 
     <!--
         number of threads allowed for use by analysis jobs
@@ -1553,4 +1561,6 @@ if not csv, then tab delimited
     <process_estimate_smoothing>20</process_estimate_smoothing>
 
     <cluster_lookup_size>10000</cluster_lookup_size>
+
+    <occurrences_config_path>d:\mnt\ala\data\occurrences\config\</occurrences_config_path>
 </tabulation>

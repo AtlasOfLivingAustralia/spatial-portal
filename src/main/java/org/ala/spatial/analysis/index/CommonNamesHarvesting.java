@@ -7,8 +7,9 @@ package org.ala.spatial.analysis.index;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,13 +27,12 @@ import org.codehaus.jackson.JsonToken;
  * @author Adam
  */
 public class CommonNamesHarvesting {
+
     static final int RETRY_MAXIMUM = 3;
-
     static boolean save_json = false;
-
     static HashMap<String, Integer> retry_count;
 
-    public static boolean isSavingJson(){
+    public static boolean isSavingJson() {
         return save_json;
     }
 
@@ -70,24 +70,24 @@ public class CommonNamesHarvesting {
             e.printStackTrace();
         }
 
-        for(int i=0;i<harvesters.length;i++){
+        for (int i = 0; i < harvesters.length; i++) {
             harvesters[i].interrupt();
         }
 
         System.out.println("exporting lsid vs common names");
 
         try {
-
-            FileWriter fw = new FileWriter(
-                    TabulationSettings.index_path + "commonnames.txt");
+            OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(
+                    TabulationSettings.index_path
+                    + "commonnames.txt"), "UTF-8");
 
             for (Entry<String, String> es : results.entrySet()) {
                 String k = es.getKey();
                 String v = es.getValue();
-                if(k != null && k.length() > 2 && v != null && v.length() > 2
-                        && k.indexOf(v) > 2){
+                if (k != null && k.length() > 2 && v != null && v.length() > 2
+                        && k.indexOf(v) > 2) {
                     k = k.substring(0, k.indexOf(v) - 1).trim();
-                   fw.append(k).append('\t').append(v).append("\r\n");
+                    fw.append(k).append('\t').append(v).append("\r\n");
                 }
             }
 
@@ -108,6 +108,12 @@ public class CommonNamesHarvesting {
             String[] lsids = (String[]) ois.readObject();
 
             ois.close();
+
+            if (lsids != null) {
+                System.out.println("got lsids: " + lsids.length);
+            } else {
+                System.out.println("lsids empty");
+            }
             return lsids;
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,10 +128,10 @@ class CommonNamesHarvester extends Thread {
     CountDownLatch cdl;
     ConcurrentHashMap<String, String> results;
     String base_url;
-    FileWriter outputFilePiece;
+    OutputStreamWriter outputFilePiece;
     HashMap<String, Integer> retry_count;
 
-    CommonNamesHarvester(LinkedBlockingQueue<String> lbq_, CountDownLatch cdl_, ConcurrentHashMap<String, String> results_, String base_url_,HashMap<String, Integer> retry_count_) {
+    CommonNamesHarvester(LinkedBlockingQueue<String> lbq_, CountDownLatch cdl_, ConcurrentHashMap<String, String> results_, String base_url_, HashMap<String, Integer> retry_count_) {
         lbq = lbq_;
         cdl = cdl_;
         results = results_;
@@ -134,7 +140,8 @@ class CommonNamesHarvester extends Thread {
 
         try {
             File tmpFile = File.createTempFile("commonnames", ".txt");
-            outputFilePiece = new FileWriter(tmpFile);
+            outputFilePiece = new OutputStreamWriter(new FileOutputStream(
+                    tmpFile), "UTF-8");
             System.out.println(tmpFile.getPath());
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,13 +164,13 @@ class CommonNamesHarvester extends Thread {
                     System.out.println(lbq.size());
                 }
             }
-        } catch(InterruptedException e){
+        } catch (InterruptedException e) {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        try{
+        try {
             outputFilePiece.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("closing harvester");
@@ -182,7 +189,9 @@ class CommonNamesHarvester extends Thread {
             client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
-            if(CommonNamesHarvesting.isSavingJson()) save(lsid, slist);
+            if (CommonNamesHarvesting.isSavingJson()) {
+                save(lsid, slist);
+            }
 
             JsonFactory f = new JsonFactory();
             JsonParser jp = f.createJsonParser(slist);
@@ -200,18 +209,22 @@ class CommonNamesHarvester extends Thread {
                     jt = jp.nextToken();
                     while (jt != JsonToken.END_ARRAY) {
                         fieldname = jp.getCurrentName();
-                        jt = jp.nextToken(); // move to value, or START_OBJECT/START_ARRAY
+                        jt = jp.nextToken(); // move to value, or START_OBJECT/START_ARRAY                        
 
                         if (fieldname != null && "nameString".equals(fieldname)) {
                             String commonName = jp.getText().trim();
 
-                            if (!commonName.equals("preferred")) {
-                                results.put(lsid + " " + commonName, commonName);
+                            jt = jp.nextToken(); // move to next
 
-                                //output to piece file as well
-                                outputFilePiece.append(lsid).append("\t").append(commonName).append("\r\n");
-                                count++;
-                            }
+                            //if (!commonName.equals("preferred")) {
+                            results.put(lsid + " " + commonName, commonName);
+
+                            //output to piece file as well
+                            outputFilePiece.append(lsid).append("\t").append(commonName).append("\r\n");
+                            count++;
+
+                            System.out.println(lsid + " " + commonName);
+                            //}
                         }
                     }
                     break;
@@ -223,20 +236,20 @@ class CommonNamesHarvester extends Thread {
             }
 
             cdl.countDown();
-            
+
         } catch (Exception e) {
             //only retry if under retry_count limit
-            synchronized(retry_count){
+            synchronized (retry_count) {
                 //increment count
                 Integer c = retry_count.get(lsid);
-                if(c == null){
+                if (c == null) {
                     c = new Integer(1);
-                }else{
+                } else {
                     c = c + 1;
                 }
                 retry_count.put(lsid, c);
 
-                if(c >= CommonNamesHarvesting.RETRY_MAXIMUM){
+                if (c >= CommonNamesHarvesting.RETRY_MAXIMUM) {
                     //report failure
                     System.out.println("retry limit reached for:" + lsid);
                 } else {
@@ -254,10 +267,11 @@ class CommonNamesHarvester extends Thread {
         }
     }
 
-    void save(String lsid, String json){
+    void save(String lsid, String json) {
         try {
-            File tmpFile = File.createTempFile("json" + lsid.replace(":","_"), ".txt");
-            FileWriter fw = new FileWriter(tmpFile);
+            File tmpFile = File.createTempFile("json" + lsid.replace(":", "_"), ".txt");
+            OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(
+                    tmpFile), "UTF-8");
             fw.append(json);
             fw.close();
         } catch (Exception e) {

@@ -43,9 +43,7 @@ public class GridCutter {
         }
 
         /* get data, remove missing values, restrict by optional region */
-        int i, j;
-        float[][] data = null;
-        j = 0;
+        int i;
         int width;
         int height;
         int xmin;

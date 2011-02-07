@@ -33,7 +33,7 @@ public class ClusterLookup {
             freeCluster();
             o = new Object[2];
         }
-        o[0] = new Long(System.currentTimeMillis());
+        o[0] = Long.valueOf(System.currentTimeMillis());
         o[1] = cluster;
 
         clusters.put(id, o);
@@ -41,10 +41,9 @@ public class ClusterLookup {
 
     private static void freeCluster() {
         if (clusters.size() > TabulationSettings.cluster_lookup_size) {
-            Long time_min = new Long(0);
-            Long time_max = new Long(0);
-            String key = null;
-            Object o = null;
+            Long time_min = Long.valueOf(0);
+            Long time_max = Long.valueOf(0);
+
             for (Entry<String, Object[]> e : clusters.entrySet()) {
                 if (time_min == 0 || (Long) e.getValue()[0] < time_min) {
                     time_min = (Long) e.getValue()[0];
@@ -62,13 +61,13 @@ public class ClusterLookup {
         }
     }
 
-    public static String getClusterId(String id, int cluster, int idx) {
+    public static long getClusterId(String id, int cluster, int idx) {
         Object[] o = clusters.get(id);
         if (o == null) {
             o = retrieve(id);
         }
         if (o != null) {
-            o[0] = new Long(System.currentTimeMillis());
+            o[0] = Long.valueOf(System.currentTimeMillis());
             Vector<Vector> v = (Vector<Vector>) o[1];
             if (v.size() > cluster && cluster >= 0) {
                 Vector c = v.get(cluster);
@@ -79,10 +78,10 @@ public class ClusterLookup {
             }
         }
 
-        return null;
+        return Long.MIN_VALUE;
     }
 
-    static void store(String key, Object [] o) {
+    static void store(String key, Object[] o) {
         try {
             File file = new File(System.getProperty("java.io.tmpdir")
                     + "cluster" + key + ".dat");

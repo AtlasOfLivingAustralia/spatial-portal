@@ -307,7 +307,7 @@ public class Grid { //  implements Serializable
 
         float[] ret = new float[length];
 
-        int i, j;
+        int i;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");
 
@@ -391,7 +391,7 @@ public class Grid { //  implements Serializable
      * @param dfiltered
      */
     void writeGrid(String newfilename, double[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
-        int size, i, length = dfiltered.length, pos;
+        int size, i, length = dfiltered.length;
         double maxvalue = Double.MAX_VALUE * -1;
         double minvalue = Double.MAX_VALUE;
 
@@ -437,7 +437,7 @@ public class Grid { //  implements Serializable
     }
 
     void writeGrid(String newfilename, float[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
-        int size, i, length = dfiltered.length, pos;
+        int size, i, length = dfiltered.length;
         double maxvalue = Double.MAX_VALUE * -1;
         double minvalue = Double.MAX_VALUE;
 
@@ -558,14 +558,14 @@ public class Grid { //  implements Serializable
         int startx = (int) ((xmin - this.xmin) / xres);
         int endx = startx + width;
         int starty = (int) ((ymin - this.ymin) / yres);
-        int endy = starty + height;
+        //int endy = starty + height;
 
         int length = width * height;
 
         float[] ret = new float[length];
         int pos = 0;
 
-        int i, j;
+        int i;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");
 
@@ -740,7 +740,7 @@ public class Grid { //  implements Serializable
         //System.out.println("expecting " + points.length + " env values with datatype " + datatype);
 
         int length = points.length;
-        int size, i, j, pos;
+        int size, i, pos;
         byte[] b;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");

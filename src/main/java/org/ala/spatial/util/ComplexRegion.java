@@ -355,7 +355,6 @@ public class ComplexRegion extends SimpleRegion {
         }
         byte[][] shapemask = new byte[height][width];
 
-        int q = 0;
         for (SimpleRegion sr : simpleregions) {
             int[][] cells = sr.getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, shapemask);
 

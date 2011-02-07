@@ -5,16 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-
 import javax.imageio.ImageIO;
-
-import org.ala.spatial.analysis.method.Aloc;
-import org.ala.spatial.analysis.method.Pca;
-import org.ala.spatial.util.Grid;
-import org.ala.spatial.util.Layer;
-import org.ala.spatial.util.SimpleRegion;
-import org.ala.spatial.util.TabulationSettings;
 import org.apache.commons.io.FileUtils;
 
 /**

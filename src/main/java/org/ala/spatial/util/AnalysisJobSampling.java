@@ -5,13 +5,11 @@
 package org.ala.spatial.util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.service.FilteringService;
-import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
 
 /**
@@ -25,7 +23,7 @@ public class AnalysisJobSampling extends AnalysisJob {
     SimpleRegion region;
     LayerFilter[] envelope;
     String species;
-    ArrayList<Integer> records;
+    int[] records;
     long[] stageTimes;
     String envlist;
     String area;
@@ -40,15 +38,16 @@ public class AnalysisJobSampling extends AnalysisJob {
         area = area_;
 
         layers = getLayerFiles(envlist);
-        ArrayList<Integer> records = null;
-        SimpleRegion region = null;
+        records = null;
+        region = null;
         if (area != null && area.startsWith("ENVELOPE")) {
             records = FilteringService.getRecords(area);
         } else {
             region = SimpleShapeFile.parseWKT(area);
         }
 
-        points = OccurrencesService.getSpeciesCount(species_);
+        //TODO: update for new occurrencescollection
+        //points = OccurrencesService.getSpeciesCount(species_);
 
         stageTimes = new long[4];
     }
@@ -81,7 +80,7 @@ public class AnalysisJobSampling extends AnalysisJob {
             File fDir = new File(outputpath);
             fDir.mkdir();
 
-            String[] n = OccurrencesIndex.getFirstName(species);
+            String[] n = OccurrencesCollection.getFirstName(species);
             String speciesName = "";
             if (n != null) {
                 speciesName = n[0];
@@ -112,7 +111,7 @@ public class AnalysisJobSampling extends AnalysisJob {
         }
 
         long timeElapsed;
-        long t1 = 0, t2 = 0, t3 = 0, t4 = 0;
+        long t1 = 0;
         double prog;
         synchronized (progress) {
             timeElapsed = progressTime - stageTimes[getStage()];

@@ -403,11 +403,8 @@ public class AlocService {
         }
 
         int[][] cells = (int[][]) data_pieces.get(data_pieces.size() - 2);
-        int group;
         int[] colour = new int[3];
         for (i = 0; i < groups.length; i++) {
-            //groups.length == cells.length
-            group = groups[i];
             for (j = 0; j < colour.length; j++) {
                 colour[j] = (int) (colours[groups[i]][j]);
             }

@@ -1,12 +1,10 @@
 package org.ala.spatial.web.services;
 
-import au.com.bytecode.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +18,7 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.FilteringService;
@@ -60,11 +58,8 @@ public class MaxentWSController {
 
             TabulationSettings.load(); 
 
-
-            HttpSession session = req.getSession(true);
             long currTime = System.currentTimeMillis();
 
-            //String currentPath = session.getServletContext().getRealPath("/");
             String currentPath = TabulationSettings.base_output_dir;
 
             String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
@@ -205,13 +200,8 @@ public class MaxentWSController {
 
         try {
 
-            TabulationSettings.load();
-
-
-            HttpSession session = req.getSession(true);
             long currTime = System.currentTimeMillis();
 
-            //String currentPath = session.getServletContext().getRealPath("/");
             String currentPath = TabulationSettings.base_output_dir;
 
             String taxon = req.getParameter("taxonid");
@@ -365,10 +355,8 @@ public class MaxentWSController {
 
             ssets = new SpatialSettings();
 
-            HttpSession session = req.getSession(true);
             long currTime = System.currentTimeMillis();
 
-            //String currentPath = session.getServletContext().getRealPath("/");
             String currentPath = TabulationSettings.base_output_dir;
             String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
             String area = req.getParameter("area");
@@ -393,7 +381,7 @@ public class MaxentWSController {
             inputs.append("pid:").append(pid);
             inputs.append(";taxonid:").append(taxon);
             
-            String [] n = OccurrencesIndex.getFirstName(taxon);
+            String [] n = OccurrencesCollection.getFirstName(taxon);
             if(n != null){
                 inputs.append(";scientificName:").append(n[0]);
                 inputs.append(";taxonRank:").append(n[1]);
@@ -564,8 +552,6 @@ public class MaxentWSController {
         Layer[] sellayers = new Layer[nameslist.length];
 
         Layer[] _layerlist = ssets.getEnvironmentalLayers();
-        String _layerPath = ssets.getEnvDataPath();
-
 
         for (int j = 0; j < nameslist.length; j++) {
             for (int i = 0; i < _layerlist.length; i++) {

@@ -1,29 +1,9 @@
 package org.ala.spatial.web.services;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.Hashtable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import org.ala.spatial.analysis.service.AlocService;
 import org.ala.spatial.analysis.service.LayerImgService;
-import org.ala.spatial.util.Grid;
-import org.ala.spatial.util.Layer;
-import org.ala.spatial.util.SimpleRegion;
-import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
-import org.ala.spatial.util.UploadSpatialResource;
-import org.ala.spatial.util.Zipper;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,9 +44,6 @@ public class LayerImgWSController {
         try {
             pid = req.getParameter("pid");
 
-            //String currentPath = req.getSession(true).getServletContext().getRealPath(File.separator);
-            //TabulationSettings.load();
-            String currentPath = TabulationSettings.base_output_dir;
             String outputpath = /* currentPath + */ "output/layers/" + pid + "/";
             String layerimage = outputpath + "img.png";            
             String layerlegend = outputpath + "legend.txt";
