@@ -479,15 +479,10 @@ public class CommonData {
         try {
             int result = client.executeMethod(get);
             String classes = get.getResponseBodyAsString();
-
-            //JSONObject joClasses = JSONObject.fromObject(classes);
-            // System.out.println("CLASSES JSON:" + classes);
-            classes = classes.replace("\"", "").replace("{", "").replace("}", "");
-
-            String classAttribute = classes.split(":")[0];
-            classList = Arrays.asList(classes.split(":")[1].split(","));
-            // System.out.println("KEY:" + classAttribute);
-            // classList = Arrays.asList((jo.getString(classAttribute)).split(","));
+            JSONObject joLayers = JSONObject.fromObject(classes);
+            JSONObject joClasses = joLayers.getJSONObject("layer_classes");
+            String classAttribute = joClasses.keys().next().toString();
+            classList = Arrays.asList(joClasses.getString(classAttribute).split(","));
 
             for (String classVal : classList) {
                 //     System.out.println("CLASS:"+(String)classVal);
