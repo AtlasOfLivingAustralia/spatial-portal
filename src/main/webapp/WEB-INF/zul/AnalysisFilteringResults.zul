@@ -55,5 +55,9 @@
                 </tabpanel>
             </tabpanels>
         </tabbox>
+        <html><![CDATA[
+           <div id="biostormsg"></div>
+           <div id="biostorlist"></div>
+        ]]></html>
     </window>
 </zk>

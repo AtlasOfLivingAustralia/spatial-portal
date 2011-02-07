@@ -4,7 +4,10 @@ import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
+import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.Page;
@@ -103,6 +106,10 @@ public class SpeciesAutoComplete extends Combobox {
                 int result = client.executeMethod(get);
                 String slist = get.getResponseBodyAsString();
 
+                slist += loadUserPoints(val);
+
+	                System.out.println("SpeciesAutoComplete: \n" + slist);
+
                 String[] aslist = slist.split("\n");
 
                 if (aslist.length > 1) {
@@ -156,4 +163,43 @@ public class SpeciesAutoComplete extends Combobox {
 
         return mapComposer;
     }
+
+  private String loadUserPoints(String val) {
+	        String userPoints = "";
+	        Hashtable<String, UserData> htUserSpecies = (Hashtable) getThisMapComposer().getSession().getAttribute("userpoints");
+                val = val.toLowerCase();
+
+	        try {
+	            if (htUserSpecies != null) {
+	                if (htUserSpecies.size() > 0) {
+	                    Enumeration e = htUserSpecies.keys();
+	                    StringBuilder sbup = new StringBuilder();
+	                    while (e.hasMoreElements()) {
+	                        String k = (String) e.nextElement();
+	                        UserData ud = htUserSpecies.get(k);
+
+	                        if ("user".contains(val) ||
+	                                ud.getName().toLowerCase().contains(val) ||
+	                                ud.getDescription().toLowerCase().contains(val)) {
+	                            sbup.append(ud.getName());
+	                            sbup.append(" / ");
+                            sbup.append(k);
+	                            sbup.append(" / ");
+	                            sbup.append("user");
+	                            sbup.append(" / ");
+	                            sbup.append(ud.getFeatureCount());
+	                            sbup.append("\n");
+	                        }
+	                    }
+                    userPoints = sbup.toString();
+	                }
+            }
+	        } catch (Exception e) {
+	            System.out.println("Unable to load user points into Species Auto Complete");
+	            e.printStackTrace(System.out);
+	        }
+
+	        return userPoints;
+	    }
+
 }

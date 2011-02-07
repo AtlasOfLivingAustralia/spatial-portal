@@ -32,6 +32,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         var map = null;
         var bLayer = null;
         var bLayer2 = null;
+        var bLayer3 = null;
         var OpenLayers = null;
         var baseLayers = null;
         var currentbaselayertxt = "normal";
@@ -143,7 +144,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <separator/>                                
                                 <div id="layerNavigationTabContent" visible="true"> 
                                     <hbox width="95%">
-                                        <div style="float: left" >
+                                        <div style="float: left margin-left: 5px" >
                                             <label style="font-weight: bold" value="Active Layers"  />
                                         </div>
                                         <div style="float:right" visible="false">
@@ -310,8 +311,27 @@ border-bottom: none;
                                                     </hbox>
                                                     <separator />
                                                     <hbox width="100%">
-                                                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
+                                                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">                                                           
                                                             <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
+                                                            <separator />
+                                                            <hbox id="uncertaintyLegend" visible="false">
+                                                                <separator orient="vertical" spacing="20px" />
+                                                                <vbox>
+                                                                    <label value="Uncertainty Legend" />
+                                                                    <hbox>
+                                                                        <image src="img/whitecircle.png" />
+                                                                        <label value="&lt; 30km (mapped with actual radius)" />
+                                                                    </hbox>
+                                                                    <hbox>
+                                                                        <image src="img/greencircle.png" />
+                                                                        <label value="&gt; 30km (mapped with 30km radius)" />
+                                                                    </hbox>
+                                                                    <hbox>
+                                                                        <image src="img/yellowcircle.png" />
+                                                                        <label value="unknown (mapped with 30km radius)" />
+                                                                    </hbox>
+                                                                </vbox>
+                                                            </hbox>
                                                             <separator />
                                                         </div>
                                                         <separator />
@@ -376,19 +396,23 @@ border-bottom: none;
                                             <div>                                           
                                                 <vbox>
                                                     <label>Enter a scientific or common name</label>
-                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="250px" >
+                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
                                                         <comboitem label=""/>
                                                     </combobox>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
                                                 </vbox>
                                             </div>
+                                            <separator />
+                                            <button id="btnUploadSpecies" label="Upload species file" />
                                         </tabpanel>
                                         <tabpanel>                                            
                                             <div>
-                                                <vbox width="95%">
+                                                <vbox>
                                                     <label value="Enter place name" />
                                                     <hbox>
-                                                        <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="240px"></combobox>
+                                                        <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="320px">
+                                                            <comboitem label=""/>
+                                                        </combobox>
                                                         <label id="resultGaz" />
                                                     </hbox>
                                                     <label sclass="exampleText">e.g. Australian Capital Territory</label>
@@ -400,7 +424,7 @@ border-bottom: none;
                                             <div>
                                                 <vbox>
                                                     <label value="Enter a layer name or a keyword" />
-                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px" >
+                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="92%" >
                                                         <comboitem label=""/>
                                                     </combobox>
                                                     <label sclass="exampleText">e.g. Temperature</label>
@@ -410,12 +434,6 @@ border-bottom: none;
                                             <separator />
                                             <layerList id="layerList" />                    
                                         </tabpanel>
-                                        <tabpanel  id="customData" visible="true" >
-                                            <div>
-                                                <fileupload id="btnFileUpload" maxsize="5000000" />
-                                            </div>
-                                        </tabpanel>
-
                                     </tabpanels>
                                 </tabbox>
                             </div>
@@ -437,11 +455,24 @@ border-bottom: none;
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
-                        <button id="switchNormal" label="Map" w:onClick="changeBaseLayer('normal'); window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
-                        <button id="switchSatellite" label="Satellite" w:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
-                        <separator orient="vertical" spacing="20px" />
-                        <button label="Download map" w:onClick="printHack('');" sclass="goButton"/>
-                        <button id="reloadPortal" label="Reset map" sclass="goButton"/>
+                        <hbox>
+                            <html><![CDATA[
+                            <ul id="cssdropdown">
+                                <li id="mapopt" class="headlink goButton"><span id="selmap">Normal</span>
+                                    <ul>
+                                        <li><a href="#" onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</a></li>
+                                        <li><a href="#" onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</a></li>
+                                        <li><a href="#" onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            ]]></html>
+                            <button label="Zoom to my location" action="onclick: goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
+                            <separator orient="vertical" spacing="2px" />
+                            <button label="Download map" action="onclick: printHack('');" sclass="goButton" image="img/picture_save.png" />
+                            <separator orient="vertical" spacing="1px" />
+                            <button id="reloadPortal" label="Reset map" sclass="goButton" image="img/arrow_refresh.png" />
+                            </hbox>
                     </div>
                     
                     <div style="float:left" width="100%" height="100%" >
@@ -466,6 +497,16 @@ border-bottom: none;
         </borderlayout>
 
         <script defer="false" type="text/javascript"><![CDATA[
+        var retryFixExtent = 0;
+        function fixExtent(a,b,c,d) {
+            map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d),true);
+
+            //does not always stick
+            if(retryFixExtent < 1) {
+                retryFixExtent++;
+                setTimeout(function() { fixExtent(a,b,c,d); }, 2000);
+            }
+        }
         
         var onIframeMapFullyLoaded = function() {
             //update screen widths before map is loaded (hide header)
@@ -478,6 +519,10 @@ border-bottom: none;
                         h1[i] = h1[i].substring(2,h1[i].length);
                         var h2 = h1[i].split(",");
                         if(h2.length > 6) {
+                            //style adjustment
+                            document.getElementsByTagName("body")[0].style.margin = "0px";
+                            document.getElementsByTagName("html")[0].style.margin = "0px";
+
                             //hide map buttons
                             var q = jq('$mapbuttons')[0];
                             q.style.display="none";
@@ -527,8 +572,6 @@ border-bottom: none;
             
             map = window.mapFrame.map;
             mapFrame = window.mapFrame;
-            
-            console.log(map);
 
             //update map extents
             var printing = false;
@@ -542,7 +585,8 @@ border-bottom: none;
                         h1[i] = h1[i].substring(2,h1[i].length);
                         var h2 = h1[i].split(",");
                         if(h2.length > 5){                           
-                            map.zoomToExtent(new OpenLayers.Bounds(h2[2],h2[3],h2[4],h2[5]),true);
+                            fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
+                            //map.zoomToExtent(new OpenLayers.Bounds(1*h2[2],1*h2[3],1*h2[4],1*h2[5]), true);
 
                             while(map.controls.length > 0){
                                 map.controls[0].deactivate();
@@ -565,8 +609,19 @@ border-bottom: none;
                                     visible: true
                                 });
                                 ctrl.labelSymbolizer.fontColor = "white";
+                                if(h2.length > 9) {
+                                    ctrl.labelSymbolizer.fontSize = "15";
+                                    ctrl.labelSymbolizer.fontWeight = "bold";
+                                    ctrl.lineSymbolizer.strokeWidth = 2;
+
+                                    //resize scale text
+                                    mapFrame.document.getElementById("mapscale").style.fontSize = "15px"
+                                    mapFrame.document.getElementById("mapscale").style.fontWeight = "bold"
+
+                                } else {
+                                    ctrl.lineSymbolizer.strokeWidth = 1;
+                                }
                                 ctrl.lineSymbolizer.strokeColor = "white";
-                                ctrl.lineSymbolizer.strokeWidth = 1;
                                 ctrl.lineSymbolizer.strokeOpacity = 0.6;
                                 map.addControl(ctrl);
                             }
@@ -630,14 +685,47 @@ function changeBaseLayer(type) {
     currentbaselayertxt = type;
     if (type == 'normal') {
         map.setBaseLayer(bLayer2);
-    } else {
+    } else if (type == 'hybrid') {
         map.setBaseLayer(bLayer);
+    } else if (type == 'minimal') {
+        map.setBaseLayer(bLayer3);
     }
 }
 
 function showSpeciesInfo(occids, lon, lat) {
     window.mapFrame.showSpeciesInfo(occids, lon, lat); 
-}          
+}
+
+
+function goToUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position){
+            window.mapFrame.goToLocation(position.coords.longitude, position.coords.latitude, 15);
+        });
+    } else {
+        alert("Unable to determine your location");
+    }
+}
+
+function displayHTMLInformation(element, info) {
+    $('#'+element).html(info);
+}
+function displayArea(area) {
+   $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
+}
+function displayArea2(area) {
+  $('#jsarea2').html('GM area: ' + addCommas(area.toFixed(2)) + ' sq km');
+}
+function addCommas(nStr) {
+    nStr += '';
+    x = nStr.split('.');
+    x1 = x[0];
+    x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+}
           ]]>
         </script>
           <!-- script defer="false" type="text/javascript"><![CDATA[

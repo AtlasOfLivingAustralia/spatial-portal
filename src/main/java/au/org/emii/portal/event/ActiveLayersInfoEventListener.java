@@ -22,14 +22,17 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
                 if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
-                    // send the user to the BIE page for the species             
-                    Events.echoEvent("openUrl", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
+                    // send the user to the BIE page for the species
+                    logger.debug("opening the following url " + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
+                    Events.echoEvent("openUrl", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
 
                 } else if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
+                    logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
                     mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
                 } else {
+                    logger.debug("no metadata is available for current layer");
                     mapComposer.showMessage("Metadata currently unavailable");
                 }
             } else {

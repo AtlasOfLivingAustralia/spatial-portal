@@ -78,6 +78,7 @@ public class FilteringWCController extends UtilityComposer {
     String activeAreaUrl = null;
     String activeAreaExtent = null;
     String activeAreaMetadata = null;
+    private String activeAreaSize = null;
 
     @Override
     public void afterCompose() {
@@ -102,6 +103,14 @@ public class FilteringWCController extends UtilityComposer {
         // init the session on the server and get a pid (process_id)
         pid = getInfo("/filtering/init");
     }
+
+     public String getAreaSize() {
+	        if (activeAreaSize != null) {
+	            return activeAreaSize;
+	        } else {
+return null;
+}
+	    }
 
     public String getPid() {
         if (selectedLayers.size() > 0) {
@@ -173,24 +182,7 @@ public class FilteringWCController extends UtilityComposer {
                     Listcell count = new Listcell(String.valueOf(f.count));
                     count.setStyle("text-align: right; ");
                     count.setParent(li);
-                    /* species list tab exists
-                    count.addEventListener("onClick", new EventListener() {
-
-                    public void onEvent(Event event) throws Exception {
-                    if (!((Listcell) event.getTarget()).getLabel().equals("0")
-                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
-
-                    if (lbSelLayers.getItemCount() > 0) {
-                    applyFilterEvented();
-                    java.util.Map args = new java.util.HashMap();
-                    args.put("pid", pid);
-                    Window win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
-                    win.doModal();
-                    }
-                    }
-                    }
-                    });*/
+                   
                 }
             });
 
@@ -207,6 +199,9 @@ public class FilteringWCController extends UtilityComposer {
             //TODO: error message
             e.printStackTrace(System.out);
         }
+
+        //reset active area size
+activeAreaSize = null;
     }
 
     private SPLFilter getSPLFilter(String layername) {
@@ -338,6 +333,9 @@ public class FilteringWCController extends UtilityComposer {
         showAdjustPopup(null);
 
         listFix();
+
+        //reset active area size
+activeAreaSize = null;
     }
 
     public void onClick$btnClearSelection(Event event) {
@@ -594,6 +592,7 @@ public class FilteringWCController extends UtilityComposer {
 
             activeAreaUrl = imagefilepath[0];
             activeAreaExtent = imagefilepath[1];
+            activeAreaSize = imagefilepath[2];
 
             //make the metadata?
             activeAreaMetadata = "Environmental Envelope";

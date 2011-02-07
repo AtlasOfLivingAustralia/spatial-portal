@@ -1,18 +1,15 @@
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
-import au.org.emii.portal.util.GeoJSONUtilities;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import org.apache.commons.lang.StringUtils;
 import java.util.List;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
@@ -169,7 +166,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             results_label2_occurrences.setValue(String.valueOf(results_count_occurrences));
 
             // toggle the map button
-            if (results_count > 0 && results_count_occurrences <= 15000) {
+            if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
                 mapspecies.setVisible(true);
             } else {
                 mapspecies.setVisible(false);
@@ -224,8 +221,8 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         //validate with 'occurrences count'
-        if (results_count_occurrences > 15000) {
-            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area.  Cannot produce sample for more than 15000 occurrences.");
+        if (results_count_occurrences > settingsSupplementary.getValueAsInt("max_record_count_download")) {
+            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area.  Cannot produce sample for more than " + settingsSupplementary.getValueAsInt("max_record_count_download") + " occurrences.");
             return;
         }
 
@@ -303,7 +300,13 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
-            if (results_count_occurrences > 5000 || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)) {
+            if (results_count_occurrences > 20000 || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)) {
+                MapLayer gjLayer = getMapComposer().getMapLayer("Species in Active area");
+	                if(gjLayer != null) {
+	                    getMapComposer().deactiveLayer(gjLayer, true, false, true);
+	                    getMapComposer().getOpenLayersJavascript().setAdditionalScript(getMapComposer().getOpenLayersJavascript().iFrameReferences
+	                                + getMapComposer().getOpenLayersJavascript().removeMapLayer(gjLayer));
+	                }
                 //clustering
                 MapLayerMetadata md = new MapLayerMetadata();
                 md.setLayerExtent(getMapComposer().getViewArea(), 0.2);
@@ -318,11 +321,18 @@ public class FilteringResultsWCController extends UtilityComposer {
                 sbProcessUrl.append("&m=").append(String.valueOf(8));
                 MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString(), true);
 
+                ml.setClustered(true);
+
+                getMapComposer().btnPointsCluster.setLabel("Display species as points");
+
                 if (ml.getMapLayerMetadata() == null) {
                     ml.setMapLayerMetadata(new MapLayerMetadata());
                 }
 
                 ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
+
+                //TODO: don't use setUnits
+                ml.getMapLayerMetadata().setUnits(area);
 
                 //get bounding box for active area
                 try {
@@ -338,16 +348,18 @@ public class FilteringResultsWCController extends UtilityComposer {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                // reopen the layer controls
+	                try {
+	                    getMapComposer().refreshActiveLayer(ml);
+	                    getMapComposer().setupLayerControls(ml);
+	                } catch (Exception e) {
+	                    e.printStackTrace();
+	                }
             } else {
-                //points
-                sbProcessUrl.append("/filtering/apply");
-                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-                sbProcessUrl.append("/samples/geojson");
-                sbProcessUrl.append("?area=").append(URLEncoder.encode(area, "UTF-8"));
-                String slist = getInfo(sbProcessUrl.toString());
-                System.out.println("onMapSpecies: " + slist);
-                String[] results = slist.split("\n");
-                getMapComposer().addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
+                MapLayer ml = getMapComposer().mapSpeciesWMSByFilter("Species in Active area", "area='" + area + "'");
+
+                //TODO: don't use setUnits
+                ml.getMapLayerMetadata().setUnits(area);
             }
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
@@ -451,60 +463,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         setUpdatingCount(false);
 
         // toggle the map button
-        if (results_count > 0 && results_count_occurrences <= 15000) {
+        if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
             mapspecies.setVisible(true);
         } else {
             mapspecies.setVisible(false);
-        }
-    }
-
-    public void onMapSpecies2(Event event) {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
-        try {
-            MapComposer mc = getMapComposer();
-            String area = mc.getSelectionArea();
-            String polygon = mc.getSelectionAreaPolygon();
-
-            String uri = satServer + "/geoserver/wms?";
-            uri += "service=WMS&version=1.0.0&request=GetMap&styles=species_activearea&format=image/png";
-            uri += "&layers=ALA:occurrences";
-            uri += "&transparent=true";
-
-            String gml = "";
-            area = StringUtils.remove(area, "POLYGON((");
-            area = StringUtils.remove(area, "))");
-            String[] areacoords = StringUtils.split(area, ",");
-            for (int i = 0; i < areacoords.length; i++) {
-                String[] p = areacoords[i].split(" ");
-                gml += p[0] + "," + p[1] + " ";
-
-            }
-            gml = gml.trim();
-            String envString = "color:FFFF00;name:square;size:8;opacity:.8;";
-            envString += "activearea:" + gml;
-
-            System.out.println("Mapping activearea: \n" + gml);
-
-            if (mc.safeToPerformMapAction()) {
-                boolean addedOk = mc.addKnownWMSLayer("Species in Active area", uri, (float) 0.8, "", envString);
-                if (addedOk) {
-                    MapLayer ml = mc.getMapLayer("Species in Active area");
-                    ml.setDynamicStyle(true);
-                    ml.setEnvParams(envString);
-                    ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
-
-                    ml.setBlueVal(0);
-                    ml.setGreenVal(255);
-                    ml.setRedVal(255);
-                    ml.setSizeVal(8);
-                    ml.setOpacity((float) 0.8);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

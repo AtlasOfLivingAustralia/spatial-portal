@@ -7,6 +7,12 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+import org.apache.http.HttpEntity;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -31,7 +37,7 @@ public class GazetteerPointSearch {
 
 
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-        domFactory.setNamespaceAware(true);
+        domFactory.setNamespaceAware(false);
 
         String featureURL = "none";
 
@@ -40,9 +46,14 @@ public class GazetteerPointSearch {
             //Read in the xml response
             DocumentBuilder builder = domFactory.newDocumentBuilder();
            
-            String uri = geoserver + "/geoserver/rest/gazetteer/result.xml?point=" + lon + "," + lat +"&layer=" + layer;
+            String uri = geoserver + "/gazetteer/" + layer + "/latlon/" + lat + "," + lon;
             System.out.println(uri);
-            Document resultDoc = builder.parse(uri);
+	    HttpGet get = new HttpGet(uri);
+	    HttpClient httpclient = new DefaultHttpClient();
+	    HttpResponse response = httpclient.execute(get);
+	    HttpEntity entity = response.getEntity();
+
+            Document resultDoc = builder.parse(entity.getContent());
 
             //Get a list of links (to features) from the xml
             XPathFactory factory = XPathFactory.newInstance();

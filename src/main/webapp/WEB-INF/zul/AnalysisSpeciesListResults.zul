@@ -16,6 +16,8 @@
                                 <listheader label="Scientific name" ></listheader>
                                 <listheader label="Common name/s" ></listheader>
                                 <listheader label="Taxon rank" ></listheader>
+                                <listheader label="LSID" ></listheader>
+                                <listheader label="# Occurrences" ></listheader>
                             </listhead>
                         </listbox>
 

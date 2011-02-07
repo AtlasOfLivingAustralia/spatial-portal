@@ -1,6 +1,5 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>au.org.emii</groupId>
     <artifactId>webportal</artifactId>
@@ -8,10 +7,17 @@
     <version>2.0.0</version>
 
 
-    <name>zk5 ALA Spatial Portal</name>
+    <name>ZK5 ALA Spatial Portal </name>
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
     <dependencies>
+        <!-- alaspatial styles -->
+        <dependency>
+            <groupId>org.ala.spatial</groupId>
+            <artifactId>alaspatial</artifactId>
+            <version>1.00</version>
+        </dependency>
+
         <dependency>
             <groupId>geoGoogle</groupId>
             <artifactId>geoGoogle</artifactId>
@@ -20,7 +26,27 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-main</artifactId>
-            <version>2.6-SNAPSHOT</version>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-api</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opengis</groupId>
+            <artifactId>geoapi</artifactId>
+            <version>2.3-M1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opengis</groupId>
+            <artifactId>geoapi-pending</artifactId>
+            <version>2.3-M1</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -114,6 +140,12 @@
             <classifier>jdk15</classifier>
         </dependency>
 
+        <!-- csv -->
+        <dependency>
+            <groupId>net.sf.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>2.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.beanshell</groupId>
@@ -133,29 +165,11 @@
             <version>${zkVersion}</version>
         </dependency>
 
-            <!-- dependency>
-                <groupId>DLZKMonitor_ZK5</groupId>
-                <artifactId>DLZKMonitor_ZK5</artifactId>
-                <version>5</version>
-            </dependency -->
-
         <dependency>
             <groupId>org.zkoss.zk</groupId>
             <artifactId>zk</artifactId>
             <version>${zkVersion}</version>
         </dependency>
-
-            <!--dependency>
-                <groupId>org.zkoss.zk</groupId>
-                <artifactId>zkex</artifactId>
-                <version>${zkVersion}</version>
-            </dependency -->
-
-            <!-- dependency>
-                <groupId>org.zkoss.zk</groupId>
-                <artifactId>zkmax</artifactId>
-                <version>${zkVersion}</version>
-            </dependency -->
 
         <dependency>
             <groupId>org.zkoss.zk</groupId>
@@ -174,11 +188,6 @@
             <version>3.0RC</version>
         </dependency>
 
-            <!-- dependency>
-                <groupId>org.zkoss.zk</groupId>
-                <artifactId>zml</artifactId>
-                <version>${zkVersion}</version>
-            </dependency -->
 
         <dependency>
             <groupId>org.zkoss.zk</groupId>
@@ -222,26 +231,26 @@
             <artifactId>commons-io</artifactId>
             <version>1.4</version>
         </dependency>
-            <!--
-            http client 3.1
-            -->
+        <!--
+        http client 3.1
+        -->
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
         </dependency>
 
-            <!--
+        <!--
 
-            Http client 4.0.1 doesn't work with proxies without reworking stage2
-            proxyHack() - sergey was right!
+        Http client 4.0.1 doesn't work with proxies without reworking stage2
+        proxyHack() - sergey was right!
 
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.0.1</version>
-            </dependency>
-            -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        -->
 
         <dependency>
             <groupId>commons-validator</groupId>
@@ -328,20 +337,6 @@
             <artifactId>jts</artifactId>
             <version>1.11</version>
         </dependency>
-            
-            <!-- styles -->
-        <dependency>
-            <groupId>org.ala.spatial</groupId>
-            <artifactId>alaspatial</artifactId>
-            <version>1.00</version>
-        </dependency>
-            
-             <!-- csv -->
-        <dependency>
-            <groupId>net.sf.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-            <version>2.1</version>
-        </dependency>
     </dependencies>
     <issueManagement>
         <system>Google Code</system>
@@ -382,16 +377,6 @@
             <id>AM</id>
             <name>Angus Macaulay</name>
             <email>angus.i.macaulay@gmail.com</email>
-            <organization>ALA</organization>
-            <organizationUrl>http://www.ala.org.au</organizationUrl>
-            <roles>
-                <role>Software Engineer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>BW</id>
-            <name>Brendon Ward</name>
-            <email>brendon.ward@sixlighthouses.com</email>
             <organization>ALA</organization>
             <organizationUrl>http://www.ala.org.au</organizationUrl>
             <roles>
@@ -467,18 +452,14 @@
             <name>Repository for library Library[hibernate-support]</name>
         </repository>
         <repository>
+            <id>osgeo</id>
+            <name>OpenGeo GeoTools Repository</name>
+            <url>http://repo.opengeo.org/</url>
+        </repository>
+        <repository>
             <id>unknown-jars-temp-repo</id>
             <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please replace the dependencies in this repository with correct ones and delete this repository.</name>
             <url>file:${project.basedir}/lib</url>
-        </repository>
-        <repository>
-            <id>zk repository</id>
-            <url>http://mavensync.zkoss.org/maven2</url>
-        </repository>
-        <repository>
-            <id>maven.geotools.fr</id>
-            <name>http://maven.geotools.fr/repository/</name>
-            <url>http://maven.geotools.fr/repository</url>
         </repository>
     </repositories>
     <reporting>
@@ -488,7 +469,7 @@
                 <configuration>
                     <source>1.6</source>
                     <doclet>
-                            gr.spinellis.umlgraph.doclet.UmlGraphDoc
+                        gr.spinellis.umlgraph.doclet.UmlGraphDoc
                     </doclet>
                     <docletArtifact>
                         <groupId>gr.spinellis</groupId>
@@ -496,12 +477,12 @@
                         <version>4.4</version>
                     </docletArtifact>
                     <additionalparam>
-                            -inferrel -inferdep -quiet -hide java.*
-                            -collpackages java.util.* -qualify
-                            -postfixpackage -nodefontsize 9
-                            -nodefontpackagesize 7 -attributes -operations
-                            -enumerations -enumconstants -visibility
-                            -link "http://java.sun.com/j2se/1.6/docs/api/"
+                        -inferrel -inferdep -quiet -hide java.*
+                        -collpackages java.util.* -qualify
+                        -postfixpackage -nodefontsize 9
+                        -nodefontpackagesize 7 -attributes -operations
+                        -enumerations -enumconstants -visibility
+                        -link "http://java.sun.com/j2se/1.6/docs/api/"
                     </additionalparam>
                 </configuration>
             </plugin>
@@ -510,13 +491,15 @@
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>2.1</version>
             </plugin>
+
         </plugins>
     </reporting>
     <properties>
-        <netbeans.hint.deploy.server>Tomcat70</netbeans.hint.deploy.server>
+        <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <springVersion>3.0.1.RELEASE</springVersion>
         <zkVersion>5.0.5</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
+        <geotools.version>2.6-SNAPSHOT</geotools.version>
     </properties>
 </project>

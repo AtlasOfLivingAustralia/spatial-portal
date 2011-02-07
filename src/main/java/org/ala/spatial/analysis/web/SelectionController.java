@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -79,6 +80,14 @@ import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
+import java.io.File;
+import java.io.StringReader;
+import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.ShapefileReader;
+import org.ala.spatial.util.Zipper;
+import org.zkoss.util.media.Media;
+import org.zkoss.zk.ui.event.UploadEvent;
+import org.zkoss.zul.Fileupload;
 
 /**
  *
@@ -107,6 +116,7 @@ public class SelectionController extends UtilityComposer {
     public Label popup_label;
     private Label addressLabel;
     public Radio rdoEnvironmentalEnvelope;
+    private Fileupload fileUpload;
     private Radiogroup rgAreaSelection;
     HtmlMacroComponent envelopeWindow;
     private SettingsSupplementary settingsSupplementary = null;
@@ -118,6 +128,7 @@ public class SelectionController extends UtilityComposer {
     Combobox cbAreaSelection;
     Comboitem ciBoundingBox;
     Comboitem ciPolygon;
+    Comboitem ciUploadShapefile;
     Comboitem ciAddressRadiusSelection;
     Comboitem ciMapPolygon;
     Comboitem ciEnvironmentalEnvelope;
@@ -131,6 +142,10 @@ public class SelectionController extends UtilityComposer {
     Comboitem ci5km;
     Comboitem ci10km;
     Comboitem ci20km;
+    //displays area of active area
+    Label lblArea;
+    private String storedSize;
+    boolean viewportListenerAdded = false;
     Window wInstructions = null;
 
     public String getGeom() {
@@ -185,7 +200,7 @@ public class SelectionController extends UtilityComposer {
             l1.setSclass("word-wrap");
             l1.setStyle("white-space: normal; padding: 5px");
             // }
-            
+
             Hbox hbxAddress = new Hbox();
             hbxAddress.setParent(vbox);
 
@@ -195,17 +210,18 @@ public class SelectionController extends UtilityComposer {
             addressBox.setWidth("95%");
             addressBox.setParent(hbxAddress);
 
-Button btnFind = new Button("Find");
-  btnFind.setParent(hbxAddress);
- btnFind.addEventListener("onClick", new EventListener() {
-        public void onEvent(Event event) throws Exception {
-           onClick$btnFindAddress(null);
+            Button btnFind = new Button("Find");
+            btnFind.setParent(hbxAddress);
+            btnFind.addEventListener("onClick", new EventListener() {
 
-        }
-     });
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnFindAddress(null);
 
-     addressLabel = new Label();
-      addressLabel.setParent(vbox);
+                }
+            });
+
+            addressLabel = new Label();
+            addressLabel.setParent(vbox);
 
             Label l2 = new Label((2) + ". " + text[1]);
             l2.setParent(vbox);
@@ -229,8 +245,8 @@ Button btnFind = new Button("Find");
             hbox.setParent(vbox);
 
             Button btnCreate = new Button("Create radius area");
-	            btnCreate.setParent(hbox);
-	            btnCreate.addEventListener("onClick", new EventListener() {
+            btnCreate.setParent(hbox);
+            btnCreate.addEventListener("onClick", new EventListener() {
 
                 public void onEvent(Event event) throws Exception {
                     onClick$btnRadiusFromAddress(null);
@@ -249,6 +265,49 @@ Button btnFind = new Button("Find");
             });
 
 
+
+            wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
+            wInstructions.setClosable(true);
+            wInstructions.doOverlapped();
+            wInstructions.setPosition("top,center");
+
+            return;
+        }
+
+        if (text != null && text.length > 0 && toolname.contains("shapefile")) {
+            wInstructions = new Window(toolname, "normal", false);
+            wInstructions.setWidth("500px");
+            wInstructions.setClosable(false);
+
+            Vbox vbox = new Vbox();
+            vbox.setParent(wInstructions);
+            //  for (int i = 0; i < text.length; i++) {
+            Label l1 = new Label((1) + ". " + text[0]);
+            l1.setParent(vbox);
+            l1.setMultiline(true);
+            l1.setSclass("word-wrap");
+            l1.setStyle("white-space: normal; padding: 5px");
+            //  }
+
+            (new Separator()).setParent(vbox);
+            fileUpload = new Fileupload();
+            //fileUpload.setMaxsize(5000000);
+            fileUpload.setParent(vbox);
+
+            fileUpload.addEventListener("onUpload", new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    onUpload$btnFileUpload(event);
+                    wInstructions.detach();
+                }
+            });
+            fileUpload.addEventListener("onClose", new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    System.out.println("Cancelling");
+                    wInstructions.detach();
+                }
+            });
 
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
             wInstructions.setClosable(true);
@@ -398,6 +457,17 @@ Button btnFind = new Button("Find");
             MapComposer mc = getThisMapComposer();
 
             mc.removeFromList(mc.getMapLayer("Active Area"));
+        } else if (cbAreaSelection.getSelectedItem() == ciUploadShapefile) {
+            cbAreaSelection.setText("Upload shapefile...");
+            String[] text = {
+                "Select a shapefile with a single polygon"
+            };
+            setInstructions("Active Map Tool: Upload shapefile (single polygon)...", text);
+            showPolygonInfo();
+            String script = removeCurrentSelection();
+            MapComposer mc = getThisMapComposer();
+
+            mc.removeFromList(mc.getMapLayer("Active Area"));
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             cbAreaSelection.setText("Selecting map polygon");
             String[] text = {
@@ -428,7 +498,7 @@ Button btnFind = new Button("Find");
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             setInstructions(null, null);
             showPolygonInfo();
-            wkt = "POLYGON((-180 -180,-180 180.0,180.0 180.0,180.0 -180.0,-180.0 -180.0))";
+            wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
             displayGeom.setValue(wkt);
 
             MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Active Area");
@@ -603,8 +673,8 @@ Button btnFind = new Button("Find");
 
                 lsidtypes += "type=" + lt;
                 if (li.equalsIgnoreCase("aa")) {
-          hasActiveArea = true;
-           }
+                    hasActiveArea = true;
+                }
                 if (it.hasNext()) {
                     lsidtypes += "&";
                 }
@@ -614,44 +684,39 @@ Button btnFind = new Button("Find");
                     lsids += "&";
                 }
             }
-
-            // /geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=topp%3Atasmania_state_boundaries,topp%3Atasmania_roads,topp%3Atasmania_cities,topp%3Atasmania_water_bodies&QUERY_LAYERS=topp%3Atasmania_state_boundaries,topp%3Atasmania_roads,topp%3Atasmania_cities,topp%3Atasmania_water_bodies&STYLES=,,,&BBOX=140.5315%2C-44.423%2C151.7815%2C-38.798&FEATURE_COUNT=10&HEIGHT=256&WIDTH=512&FORMAT=image%2Fgif&INFO_FORMAT=text%2Fhtml&SRS=EPSG%3A4326&X=306&Y=134
-            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-            String reqUri = geoServer + "/geoserver/rest/occurrences/features.json?";
-            reqUri += lsids;
-            //reqUri += "&"+lsidtypes;
-            reqUri += "&lon=" + lon + "&lat=" + lat;
+           
+            String reqUri;
 
             double radius = 20000;
-	            if (zoom > -1 && zoom <= 1) {
-	                radius = 500000;
-	            } else if (zoom > 1 && zoom <= 3) {
-	                radius = 100000;
-	            } else if (zoom > 3 && zoom <= 5) {
-	                radius = 50000;
-	            } else if (zoom > 5 && zoom <= 7) {
-	                radius = 10000;
-	            } else if (zoom > 7 && zoom <= 9) {
-	                radius = 5000;
-	            } else if (zoom > 9 && zoom <= 12) {
-	                radius = 1000;
-	            } else if (zoom > 12 && zoom <= 14) {
-	                radius = 100;
-	            } else if (zoom > 14) {
-	                radius = 50;
-	            }
-	
-	            String wkt2 = createCircle(lon, lat, radius);
+            if (zoom > -1 && zoom <= 1) {
+                radius = 500000;
+            } else if (zoom > 1 && zoom <= 3) {
+                radius = 100000;
+            } else if (zoom > 3 && zoom <= 5) {
+                radius = 50000;
+            } else if (zoom > 5 && zoom <= 7) {
+                radius = 10000;
+            } else if (zoom > 7 && zoom <= 9) {
+                radius = 5000;
+            } else if (zoom > 9 && zoom <= 12) {
+                radius = 1000;
+            } else if (zoom > 12 && zoom <= 14) {
+                radius = 100;
+            } else if (zoom > 14) {
+                radius = 50;
+            }
+
+            String wkt2 = createCircle(lon, lat, radius);
 
             reqUri = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial";
             //reqUri += "/filtering/apply/pid/none/samples/geojson";
             reqUri += "/species/info/now";
             reqUri += "?area=" + URLEncoder.encode(wkt2, "UTF-8");
             reqUri += "&" + lsids;
-            
+
             if (hasActiveArea) {
-           reqUri += "&aa=" + URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8");
-}
+                reqUri += "&aa=" + URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8");
+            }
 
 
             System.out.println("locfeat calling: " + reqUri);
@@ -674,6 +739,14 @@ Button btnFind = new Button("Find");
         Clients.evalJavaScript(response);
     }
 
+    /**
+     * transform json string with geometries into wkt.
+     *
+     * extracts 'shape_area' if available and assigns it to storedSize.
+     *
+     * @param json
+     * @return
+     */
     private String wktFromJSON(String json) {
         try {
             JSONObject obj = JSONObject.fromObject(json);
@@ -734,6 +807,8 @@ Button btnFind = new Button("Find");
                 displayGeom.setValue(DEFAULT_AREA);
                 lastTool = null;
             } else if (selectionGeom.startsWith("LAYER(")) {
+                //reset stored size
+                storedSize = null;
                 //get WKT from this feature
                 String v = selectionGeom.replace("LAYER(", "");
                 //FEATURE(table name if known, class name)
@@ -743,6 +818,11 @@ Button btnFind = new Button("Find");
 
                 //for display
                 wkt = getLayerGeoJsonAsWkt(v, false);
+
+                //calculate area is not populated
+                if (storedSize == null) {
+                    storedSize = getAreaOfWKT(wkt);
+                }
             } else {
                 wkt = selectionGeom;
                 displayGeom.setValue(wkt);
@@ -771,6 +851,8 @@ Button btnFind = new Button("Find");
             txt = "Got user drawn point and radius";
         } else if (lastTool == ciAddressRadiusSelection) {
             txt = "Got user radius from address";
+        } else if (lastTool == ciUploadShapefile) {
+            txt = "Got user polygon from shapefile";
         } else if (lastTool == ciPolygon) {
             txt = "Got user drawn polygon";
         } else if (lastTool == ciMapPolygon) {
@@ -1068,12 +1150,43 @@ Button btnFind = new Button("Find");
         } catch (Exception e) {
             e.printStackTrace();
         }
+        updateAreaLabel();
+    }
 
+    void updateAreaLabel() {
+        //treat as WKT
+        String area = getGeom();
+
+        String size = null;
+
+        if (area.contains("ENVELOPE") || area.contains("LAYER")) {
+            size = storedSize;
+        } else if (displayGeom.getText().contains("WORLD")) {
+            size = "509600000"; //fixed value
+        } else {
+            //try as WKT
+            size = getAreaOfWKT(area);
+        }
+
+        if (size == null) {
+            lblArea.setValue("");
+        } else {
+            lblArea.setValue(size + " sq km");
+        }
     }
 
     void onEnvelopeDone(boolean hide) {
         try {
             String envPid = ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).getPid();
+            storedSize = "";
+            String size = ((FilteringWCController) envelopeWindow.getFellow("filteringwindow")).getAreaSize();
+
+            try {
+                double d = Double.parseDouble(size);
+                storedSize = String.format("%,.1f", d / 1000000.0);  //convert m^2 to km^2
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             if (envPid.length() > 0) {
                 displayGeom.setText("ENVELOPE(" + envPid + ")");
@@ -1104,6 +1217,8 @@ Button btnFind = new Button("Find");
                 wInstructions.detach();
             }
         }
+
+        attachViewportListener();
     }
 
     /**
@@ -1246,13 +1361,16 @@ Button btnFind = new Button("Find");
 
     private String createCircle(double x, double y, final double RADIUS) {
         return createCircle(x, y, RADIUS, 50);
-	
-	    }
-	
+
+    }
+
     private String createCircle(double x, double y, final double RADIUS, int sides) {
-    
+
         try {
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+//            CoordinateReferenceSystem dataCRS = CRS.decode("EPSG:4326");
+//            CoordinateReferenceSystem googleCRS = CRS.decode("EPSG:900913");
             String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
                     + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
                     + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
@@ -1262,7 +1380,7 @@ Button btnFind = new Button("Find");
                     + "  AUTHORITY[\"EPSG\",\"4326\"]]";
             String wkt900913 = "PROJCS[\"WGS84 / Google Mercator\", "
                     + "  GEOGCS[\"WGS 84\", "
-                    + "lsidtype   DATUM[\"World Geodetic System 1984\", "
+                    + "   DATUM[\"World Geodetic System 1984\", "
                     + "   SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], "
                     + "  AUTHORITY[\"EPSG\",\"6326\"]], "
                     + " PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], "
@@ -1315,6 +1433,7 @@ Button btnFind = new Button("Find");
             System.out.println("Circle fail!");
             return "none";
         }
+
     }
 
     private String radiusFromAddress(String address) {
@@ -1326,7 +1445,7 @@ Button btnFind = new Button("Find");
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
             GeoCoordinate gco = addresses.get(0).getCoordinate();
-             cbAreaSelection.setText("address: " + addresses.get(0).getAddressLine());
+            cbAreaSelection.setText("address: " + addresses.get(0).getAddressLine());
 
             //Point point = geometryFactory.createPoint(new Coordinate(
             double radius = 1000;
@@ -1365,18 +1484,212 @@ Button btnFind = new Button("Find");
             setInstructions(null, null);
         }
     }
-     public void onClick$btnFindAddress(Event event) {
-	          try {
-	           GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
-	
-	            List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getText() + ", Australia");
-	            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
-	
-	            GeoCoordinate gco = addresses.get(0).getCoordinate();
-	
-	         addressLabel.setValue(addresses.get(0).getAddressLine());
-	          } catch (geo.google.GeoException ge) {
-	
-	        }
-	    }
+
+    public void onClick$btnFindAddress(Event event) {
+        try {
+            GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
+
+            List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getText() + ", Australia");
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+            GeoCoordinate gco = addresses.get(0).getCoordinate();
+
+            addressLabel.setValue(addresses.get(0).getAddressLine());
+        } catch (geo.google.GeoException ge) {
+        }
+    }
+
+    private String getAreaOfWKT(String wkt) {
+        String area = null;
+
+        try {
+            String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
+                    + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
+                    + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
+                    + "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],"
+                    + "  AXIS[\"Lat\",NORTH]," + "  AXIS[\"Long\",EAST],"
+                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";
+            String wkt3577 = "PROJCS[\"GDA94 / Australian Albers\","
+                    + "    GEOGCS[\"GDA94\","
+                    + "        DATUM[\"Geocentric_Datum_of_Australia_1994\","
+                    + "            SPHEROID[\"GRS 1980\",6378137,298.257222101,"
+                    + "                AUTHORITY[\"EPSG\",\"7019\"]],"
+                    + "            TOWGS84[0,0,0,0,0,0,0],"
+                    + "            AUTHORITY[\"EPSG\",\"6283\"]],"
+                    + "        PRIMEM[\"Greenwich\",0,"
+                    + "            AUTHORITY[\"EPSG\",\"8901\"]],"
+                    + "        UNIT[\"degree\",0.01745329251994328,"
+                    + "            AUTHORITY[\"EPSG\",\"9122\"]],"
+                    + "        AUTHORITY[\"EPSG\",\"4283\"]],"
+                    + "    UNIT[\"metre\",1,"
+                    + "        AUTHORITY[\"EPSG\",\"9001\"]],"
+                    + "    PROJECTION[\"Albers_Conic_Equal_Area\"],"
+                    + "    PARAMETER[\"standard_parallel_1\",-18],"
+                    + "    PARAMETER[\"standard_parallel_2\",-36],"
+                    + "    PARAMETER[\"latitude_of_center\",0],"
+                    + "    PARAMETER[\"longitude_of_center\",132],"
+                    + "    PARAMETER[\"false_easting\",0],"
+                    + "    PARAMETER[\"false_northing\",0],"
+                    + "    AUTHORITY[\"EPSG\",\"3577\"],"
+                    + "    AXIS[\"Easting\",EAST],"
+                    + "    AXIS[\"Northing\",NORTH]]";
+
+            CoordinateReferenceSystem wgsCRS = CRS.parseWKT(wkt4326);
+            CoordinateReferenceSystem GDA94CRS = CRS.parseWKT(wkt3577);
+            MathTransform transform = CRS.findMathTransform(wgsCRS, GDA94CRS);
+
+            GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+            WKTReader reader = new WKTReader(geometryFactory);
+
+            //there is a need to swap longitude and latitude in the wkt
+            StringBuffer sb = new StringBuffer();
+            String x = "";
+            String y = "";
+            int inNumber = 0;
+            for (int i = 0; i < wkt.length(); i++) {
+                char c = wkt.charAt(i);
+                if ((c >= '0' && c <= '9') || c == '.' || c == '-') {
+                    if (inNumber == 0) {
+                        //start first number
+                        inNumber = 1;
+
+                        x = "" + c;
+                    } else if (inNumber == 1) {
+                        //continue first number
+                        x = x + c;
+                    } else {
+                        //continue 2nd number
+                        y = y + c;
+                    }
+                } else if (inNumber == 1 && c == ' ') {
+                    //moving to 2nd number
+                    inNumber = 2;
+
+                    //reset 2nd number
+                    y = "";
+                } else {
+                    if (inNumber == 2) {
+                        //write swapped numbers
+                        sb.append(y).append(" ").append(x);
+
+                        //reset position
+                        inNumber = 0;
+                    }
+                    //write current value
+                    sb.append(c);
+                }
+            }
+
+            Geometry geom = reader.read(sb.toString());
+            Geometry geomT = JTS.transform(geom, transform);
+
+            area = String.format("%,.1f", geomT.getArea() / 1000000.0);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return area;
+    }
+
+    public void attachViewportListener() {
+        if (!viewportListenerAdded) {
+            viewportListenerAdded = true;
+
+            //listen for map extents changes
+            EventListener el = new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    // refresh count may be required if area is CURRENTVIEW
+                    if (displayGeom.getText().contains("CURRENTVIEW()")) {
+                        updateAreaLabel();
+                    }
+                }
+            };
+            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("areaLabel", el);
+
+            //run it now
+            updateAreaLabel();
+        }
+    }
+
+    public void onUpload$btnFileUpload(Event event) {
+        //UploadEvent ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+        UploadEvent ue = null;
+        if (event.getName().equals("onUpload")) {
+            ue = (UploadEvent) event;
+        } else if (event.getName().equals("onForward")) {
+            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+        }
+        if (ue == null) {
+            System.out.println("unable to upload file");
+            return;
+        } else {
+            System.out.println("fileUploaded()");
+        }
+        try {
+            Media m = ue.getMedia();
+
+            System.out.println("m.getName(): " + m.getName());
+            System.out.println("getContentType: " + m.getContentType());
+            System.out.println("getFormat: " + m.getFormat());
+
+
+            // check the content-type
+            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
+                getMapComposer().loadUserPoints(m.getName(), m.getReaderData());
+            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL)) {
+                byte[] csvdata = m.getByteData();
+                getMapComposer().loadUserPoints(m.getName(), new StringReader(new String(csvdata)));
+            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {
+                System.out.println("isBin: " + m.isBinary());
+                System.out.println("inMem: " + m.inMemory());
+                if (m.inMemory()) {
+                    getMapComposer().loadUserLayerKML(m.getName(), m.getByteData());
+                } else {
+                    getMapComposer().loadUserLayerKML(m.getName(), m.getStreamData());
+                }
+
+            } else if (m.getFormat().equalsIgnoreCase("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
+                // "/data/ala/runtime/output/layers/"
+                // "/Users/ajay/projects/tmp/useruploads/"
+                Map input = Zipper.unzipFile(m.getName(), m.getStreamData(), "/data/ala/runtime/output/layers/");
+                String type = "";
+                String file = "";
+                if (input.containsKey("type")) {
+                    type = (String) input.get("type");
+                }
+                if (input.containsKey("file")) {
+                    file = (String) input.get("file");
+                }
+                if (type.equalsIgnoreCase("shp")) {
+                    System.out.println("Uploaded file is a shapefile. Loading...");
+                    Map shape = ShapefileReader.loadShapefile(new File(file));
+
+                    if (shape == null) {
+                        return;
+                    } else {
+                        String wkt = (String) shape.get("wkt");
+                        wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
+                        displayGeom.setValue(wkt);
+                        System.out.println("Got shapefile wkt...");
+                        updateComboBoxText();
+                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Active Area");
+                        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
+                        mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
+                        updateSpeciesList(false);
+                        setInstructions(null, null);
+                    }
+
+                } else {
+                    System.out.println("Unknown file type. ");
+                    getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
+                }
+            }
+
+        } catch (Exception ex) {
+            getMapComposer().showMessage("Unable to load file. Please try again. ");
+            ex.printStackTrace();
+        }
+    }
 }

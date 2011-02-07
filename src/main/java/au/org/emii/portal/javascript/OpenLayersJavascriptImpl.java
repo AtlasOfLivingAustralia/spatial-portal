@@ -157,12 +157,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
     public String zoomGeoJsonExtent(MapLayer ml) {
         String script = "";
-        if(ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getBboxString() != null){
+        if (ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getBboxString() != null) {
             //cluster
             script = "window.mapFrame.map.zoomToExtent(new OpenLayers.Bounds.fromString('"
                     + ml.getMapLayerMetadata().getBboxString()
                     + "').transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()))";
-        }else {
+        } else {
             script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName().replaceAll("'", "\\'") + "')";
         }
 
@@ -543,26 +543,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
          * the layer definition
          */
         String script =
-                "	mapLayers['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.GML("
-                + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS() + "', "
-                + "		{"
-                + "			transparent: true, "
-                + //"			projection: new OpenLayers.Projection('EPSG:3032'), " +
-                //"			projection: new OpenLayers.Projection('EPSG:6326'), " +
-                "			internalProjection: new OpenLayers.Projection('ESPG:4326'), "
-                + "			externalProjection: new OpenLayers.Projection('ESPG:3032'), "
-                + "			format: OpenLayers.Format.KML, "
-                + "			formatOptions: { "
-                + "				extractStyles: true, "
-                + "				extractAttributes: true"
-                + "			} "
-                + "		}, "
-                + "		{ "
-                + "			opacity:" + layer.getOpacity() + ","
-                + "			wrapDateLine: true "
-                + "		}  "
-                + "	);"
+                "	mapLayers['" + layer.getUniqueIdJS() + "'] = window.mapFrame.loadKmlFile('" + layer.getNameJS() + "','" + layer.getUriJS() + "');"
                 + // register for loading images...
                 "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 
@@ -694,23 +675,25 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
         //extend to add ogc filter
-        List<Double> bbox = layerUtilities.getBBoxIndex(layer.getUri());
-        if (bbox == null) {
-            bbox = new ArrayList(4);
-            double[] box = layer.getMapLayerMetadata().getLayerExtent();
-            bbox.add(box[0]);
-            bbox.add(box[1]);
-            bbox.add(box[2]);
-            bbox.add(box[3]);
+        if (layer.getMapLayerMetadata() != null && layer.getMapLayerMetadata().getBbox() == null) {
+            List<Double> bbox = layerUtilities.getBBoxIndex(layer.getUri());
+            if (bbox == null) {
+                bbox = new ArrayList(4);
+                double[] box = layer.getMapLayerMetadata().getLayerExtent();
+                bbox.add(box[0]);
+                bbox.add(box[1]);
+                bbox.add(box[2]);
+                bbox.add(box[3]);
+            }
+            if (bbox != null && layer.getMapLayerMetadata() != null) {
+                layer.getMapLayerMetadata().setBbox(bbox);
+            }
         }
-        if (bbox != null && layer.getMapLayerMetadata() != null) {
-            layer.getMapLayerMetadata().setBbox(bbox);
-        }
-        
+
         String script =
                 "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS("
                 + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&","wms\\/reflect?") + "', "
+                + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', "
                 + "		{"
                 + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
                 + "			layers: '" + layer.getLayerJS() + "', "
@@ -721,13 +704,13 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + wmsVersionDeclaration(layer) + //","
                 "		}, "
                 + "		{ "
-          //      + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
+                //      + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
                 + "			isBaseLayer: " + layer.isBaseLayer() + ", "
                 + "			opacity: " + layer.getOpacity() + ", "
                 + "			queryable: " + layer.isQueryable() + ", "
                 //                + "			buffer: " + settingsSupplementary.getValue("openlayers_tile_buffer") + ", "
                 + "			gutter: " + gutter + ", "
-                + "			wrapDateLine: " + (layer.getName().contains("WorldClim") || layer.getName().contains("_cars")) //set cars layers wrap=true FIXME: this is hack - should actually check the extents
+                + "			wrapDateLine: true" //+ (layer.getName().contains("WorldClim") || layer.getName().contains("_cars")) //set cars layers wrap=true FIXME: this is hack - should actually check the extents
                 + "		}  "
                 + "	); "
                 + // decorate with getFeatureInfoBuffer field - do not set buffer

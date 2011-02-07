@@ -4,8 +4,11 @@
  */
 package org.ala.spatial.util;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -480,5 +483,14 @@ public class CommonData {
             System.out.println("Failure to get contextual classes.");
             return classNodes;
         }
+    }
+
+    public static String covertMillisecondsToDate(long ms) {
+        DateFormat formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss.SSS");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(ms);
+
+        return formatter.format(calendar.getTime());
+
     }
 }

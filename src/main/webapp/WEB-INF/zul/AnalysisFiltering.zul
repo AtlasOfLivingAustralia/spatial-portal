@@ -1,75 +1,6 @@
-<!-- <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?> -->
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk>
-    <div align="right" visible="false">
-        <button image="/img/help.png" sclass="helpButton"
-            onClick="help.open=(help.open) ? false:true;" />
-
-    <separator/>
-    </div>
-    <panel id="help" style="padding: 5px;" border="normal" open="false">
-        <panelchildren>
-            <html style="white-space: normal; padding: 5px"><![CDATA[
-                    With this option, area is defined by upper and lower values
-                    of a combination of environmental layers. For example, the
-                    selection of values of 10c and 12c of annual mean temperature
-                    will create a set of areas (polygons) on the map that conform
-                    to those limits: Areas within those polygons will have an annual
-                    mean temperature between 10-12c. The number of species in
-                    this area will be reported once 'Apply Filter' is pressed.
-                    Additional environmental layers can be added that will further
-                    restrict the environmental envelope and the number of species
-                    it contains.
-
-                    <br /><br />
-                    <strong>Step 1</strong>. Select an environmental layer to be used as a filter.
-                    This layer will be added to the table. Clicking on the layer
-                    will link to metadata describing this layer.
-
-                    <br /><br />
-                    <strong>Step 2</strong>. Select the lower and upper values for the selected
-                    layer using the slider bars or entering the values directly
-                    into the upper and lower values boxes.
-
-                    <br /><br />
-                    <strong>Step 3</strong>. The map will update to show what geographic areas
-                    conform to this environmental envelope (filter).
-
-                    <br /><br />
-                    <strong>Step 4</strong>. The number of species in the environmental envelope
-                    will be displayed. Clicking on this number will display the
-                    list of species that are within this environmental envelope.
-
-                    <br /><br />
-                    <strong>Step 5</strong>. The list of species or the individual observations
-                    of the listed species can be exported (CSV format) by clicking
-                    on the appropriate button.
-            ]]></html>
-            <separator/>
-            <div align="right"><button label="hide help" onClick="help.open=false;" /></div>
-        </panelchildren>
-    </panel>
-
-    <window id="filteringwindow" apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController">
-        <!-- style>
-            .z-loading {
-            top: 50% !important;
-            left: 45% !important;
-            align: center;
-            vertical-align: middle;
-            }
-            div.z-list-header-cnt {
-            white-space: normal;
-            width: 70px;
-            }
-        </style -->
-
-        <!--div sclass="highlighted">
-            <vbox>
-                <label value="Add environmental layer to the filter" />
-                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="90%" />
-            </vbox>
-        </div -->
+    <window id="filteringwindow" apply="org.ala.spatial.analysis.web.FilteringWCController" use="org.ala.spatial.analysis.web.FilteringWCController">      
         <div>
             <vbox>
                 <label value="Add a layer: Enter a layer name or a keyword" />
@@ -82,7 +13,7 @@
         <separator />
         <div width="50px" > <button id="btnClearSelection" label="Clear layers"  sclass="goButton" /> </div>
         <div>           
-            <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" vflex="true">
+            <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" height="300px" >
                 <listhead sizable="true">
                     <listheader label="Layer" width="40%" ></listheader>
                     <listheader>
@@ -132,10 +63,6 @@
             <separator />
             <separator />
             <div align="left"><button label="Use this envelope as the Active Area" id="filter_done" sclass="goButton"/></div>
-            <separator />
-            <separator />
-            <separator bar="true" />
-            <separator />
         </div>        
     </window>
 </zk>

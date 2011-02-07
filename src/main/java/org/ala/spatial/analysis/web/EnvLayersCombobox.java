@@ -160,10 +160,10 @@ public class EnvLayersCombobox extends Combobox {
         String[] env = CommonData.getEnvironmentalLayers();
         validLayers = new String[ctx.length + env.length];
         for (int i = 0; i < env.length; i++) {
-            validLayers[i] = env[i];
+            validLayers[i] = env[i].toLowerCase();
         }
         for (int i = 0; i < ctx.length; i++) {
-            validLayers[i + env.length] = ctx[i];
+            validLayers[i + env.length] = ctx[i].toLowerCase();
         }
         java.util.Arrays.sort(validLayers);
     }
