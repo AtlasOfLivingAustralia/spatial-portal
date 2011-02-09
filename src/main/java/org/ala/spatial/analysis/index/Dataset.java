@@ -119,7 +119,7 @@ public class Dataset {
      * @param forceUpdate flag to force an update and ignore file date checks as boolean.
      */
     public void updateOccurrencesIndex(boolean forceUpdate) {
-        OccurrencesIndex oi = new OccurrencesIndex(occurrencesFilename, getDirectoryName());
+        OccurrencesIndex oi = new OccurrencesIndex(this, occurrencesFilename, getDirectoryName());
         oi.occurrencesUpdate(forceUpdate);
     }
 
@@ -135,7 +135,7 @@ public class Dataset {
      * @param forceUpdate flag to force an update and ignore file date checks as boolean.
      */
     public void updateSamplingIndex(boolean forceUpdate) {
-        OccurrencesIndex oi = new OccurrencesIndex(occurrencesFilename, getDirectoryName());
+        OccurrencesIndex oi = new OccurrencesIndex(this, occurrencesFilename, getDirectoryName());
         SamplingIndex si = new SamplingIndex(getDirectoryName(), oi.getPointsPairs());
         si.occurrencesUpdate(forceUpdate);
 
@@ -196,7 +196,7 @@ public class Dataset {
             return false;
         }
 
-        occurrencesIndex = new OccurrencesIndex(occurrencesFilename, getDirectoryName());
+        occurrencesIndex = new OccurrencesIndex(this, occurrencesFilename, getDirectoryName());
 
         if (isUpToDate() && isEnabled()) {
             this.isReady = occurrencesIndex.load();

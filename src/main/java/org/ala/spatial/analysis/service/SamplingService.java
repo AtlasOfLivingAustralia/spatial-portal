@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.ala.spatial.analysis.index.BoundingBoxes;
 
 import org.ala.spatial.analysis.index.IndexedRecord;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.index.OccurrencesFilter;
 import org.ala.spatial.util.AnalysisJobSampling;
@@ -51,7 +52,7 @@ public class SamplingService {
      * @param max_rows upper limit of records to return as int
      * @return samples as grid, String [][]
      */
-    public String sampleSpeciesAsCSV(String filter, String[] layers, SimpleRegion region, int [] records, int max_rows) {
+    public String sampleSpeciesAsCSV(String filter, String[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
         return sampleSpeciesAsCSV(filter, layers, region, records, max_rows, null);
     }
 
@@ -68,7 +69,7 @@ public class SamplingService {
      * @param max_rows upper limit of records to return as int
      * @return samples as grid, String [][]
      */
-    public String[][] sampleSpecies(String filter, String[] layers, SimpleRegion region, int[] records, int max_rows) {
+    public String[][] sampleSpecies(String filter, String[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
         return sampleSpecies(filter, layers, region, records, max_rows, null);
     }
 
@@ -88,7 +89,7 @@ public class SamplingService {
         return header.toString();
     }
 
-    public String[][] sampleSpecies(String filter, String[] layers, SimpleRegion region, int[] records, int max_rows, AnalysisJobSampling job) {
+    public String[][] sampleSpecies(String filter, String[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows, AnalysisJobSampling job) {
         ArrayList<String> as = OccurrencesCollection.getFullRecords(new OccurrencesFilter(filter, region, records, layers, max_rows));
 
         //split records and append header
@@ -115,212 +116,7 @@ public class SamplingService {
             return output;
         }
 
-        return null;
-
-        
-
-        /*
-        String[][] results = null;
-
-        StringBuffer output = new StringBuffer();
-        int number_of_columns = TabulationSettings.occurrences_csv_fields.length;
-        OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
-        for (String s : ofu.getOutputColumnNames()) {
-            output.append(s);
-            output.append(",");
-        }
-        if (layers != null) {
-            for (String l : layers) {
-                output.append(Layers.layerNameToDisplayName(l));
-                output.append(",");
-            }
-            number_of_columns += layers.length;
-        }
-        // tidy up header
-        output.deleteCharAt(output.length() - 1); //take off end ','
-        //output.append("\r\n");
-
-        IndexedRecord[] ir = null;// OccurrencesCollection.filterSpeciesRecords(new OccurrencesFilter(filter);
-
-        if (ir != null && ir.length > 0 && max_rows <= 100) {
-            return sampleSpeciesSmall(filter, layers, region, records, max_rows, job);
-        }
-
-        int i, j;
-
-        int recordsPos = 0; //for records intersection counter
-
-        ArrayList<String[]> columns = new ArrayList<String[]>();
-
-        if (job != null) {
-            job.setProgress(0.1);
-        }
-
-        try {
-            //for (IndexedRecord r : ir) {
-            if (ir != null) { //only expect one result back from oi.filterspr(f);
-                IndexedRecord r = ir[0];
-
-                columns.clear();
-
-                //cap the number of records per read
-
-                int step = 1000000; //max characters to read TODO: move to tabulation settings.xml
-                long rstart = r.file_start;
-                long rend;
-
-                rend = rstart + step;
-                if (rend > r.file_end) {
-                    rend = r.file_end;
-                }
-
-                String[] sortedrecords;
-                int recordstart = r.record_start;
-                int recordend;
-
-                String lastpart = "";
-
-                //repeat until 20, or so records retrieved
-                int rowoffset = 0;
-                double rowCount = r.record_end - r.record_start + 1;
-                results = null;
-                while (rowoffset <= max_rows && rend <= r.file_end) {
-                    if (job != null) {
-                        job.setProgress(rowoffset / rowCount);
-                    }
-
-                    columns.clear();
-
-                    sortedrecords = null;//OccurrencesIndex.getSortedRecords(rstart, rend);
-
-                    if (lastpart.split(",").length == TabulationSettings.occurrences_csv_fields.length
-                            && sortedrecords[0].split(",").length == TabulationSettings.occurrences_csv_fields.length) {
-                        sortedrecords[0] = lastpart + "\n" + sortedrecords[0];
-                    } else {
-                        sortedrecords[0] = lastpart + sortedrecords[0];
-                    }
-
-                    columns.add(sortedrecords);
-
-                    if (rend == r.file_end) {
-                        //do all records
-                        recordend = r.record_end;
-                        lastpart = "";
-                    } else {
-                        //do up to last record
-                        lastpart = "";
-                        recordend = recordstart + sortedrecords.length - 2; //inclusive
-                        lastpart = sortedrecords[sortedrecords.length - 1];
-                    }
-
-                    if (layers != null) {
-                        for (i = 0; i < layers.length; i++) {
-                            //columns.add(SamplingIndex.getRecords(
-                            //        Layers.layerDisplayNameToName(layers[i]),
-                            //        recordstart,
-                            //        recordend));
-                        }
-                    }
-
-                    // format for csv
-                    int len;
-                    if (columns.size() > 1) {
-                        len = columns.get(1).length;
-                    } else {
-                        len = recordend - recordstart + 1;
-                    }
-
-                    String[] row;
-
-                    // output structure
-                    if (results == null) {
-                        //limited to max_rows output rows by rowoffset in add loop
-                        //+1 for header
-                        results = new String[max_rows + 1][number_of_columns + 1];
-
-                        //populate header
-                        row = output.toString().split(",");
-                        for (j = 0; j < row.length; j++) {
-                            results[0][j] = row[j];
-                        }
-                        rowoffset++;
-                    }
-
-                    int coloffset = 0;
-
-                    double[] points = null;// OccurrencesIndex.getPoints(recordstart, recordend);
-
-                    for (j = 0; rowoffset <= max_rows && j < len; j++) {
-                        //do not add if does not intersect with records list
-                        if (records != null) {
-                            int currentRecord = j + recordstart;
-                            //increment recordsPos as required
-                            while (recordsPos < records.size()
-                                    && records.get(recordsPos).intValue() < currentRecord) {
-                                recordsPos++;
-                            }
-                            //test for intersect
-                            if (recordsPos >= records.size()
-                                    || currentRecord != records.get(recordsPos).intValue()) {
-                                continue;
-                            }
-                        }
-
-                        coloffset = 0;
-                        //test bounding box
-                        if (region == null || region.isWithin(points[j * 2], points[j * 2 + 1])) {
-                            for (i = 0; i < columns.size(); i++) {
-                                if (columns.get(i) != null && j < columns.get(i).length) {
-                                    if (i == 0) {
-                                        row = columns.get(i)[j].split(",");
-
-                                        for (int k = 0; k < row.length && k < results[rowoffset].length; k++) {
-                                            results[rowoffset][k] = row[k];
-                                        }
-                                        coloffset = row.length - 1;
-                                    } else if (!(columns.get(i)[j] == null) && !columns.get(i)[j].equals("NaN")) {
-                                        results[rowoffset][coloffset] = columns.get(i)[j];
-                                    } else {
-                                        results[rowoffset][coloffset] = "missing";
-                                    }
-                                    coloffset++;
-                                }
-                            }
-                            rowoffset++;
-                        }
-                    }
-
-                    // adjust for next loop
-                    recordstart = recordend + 1; 		//this was inclusive
-                    if (rend < r.file_end) {
-                        rstart = rend;				//this is not inclusive
-                        rend = rstart + step;
-                        if (rend > r.file_end) {
-                            rend = r.file_end;
-                        }
-                    } else {
-                        rend = r.file_end + 1;
-                    }
-                }
-
-                //trim back results
-                String[][] results_trim = new String[rowoffset][results[0].length];
-                for (i = 0; i < results_trim.length; i++) {
-                    for (j = 0; j < results_trim[i].length; j++) {
-                        results_trim[i][j] = results[i][j];
-                    }
-                }
-                return results_trim;
-            }
-
-
-
-            return results;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;*/
+        return null;        
     }
 
     /**
@@ -332,7 +128,7 @@ public class SamplingService {
      * @param records sorted pool of records to intersect with as int []
      * @return points as double[], first is longitude, every second is latitude.
      */
-    public double[] sampleSpeciesPoints(String filter, SimpleRegion region, int [] records) {
+    public double[] sampleSpeciesPoints(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         
         //test on bounding box
         double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
@@ -357,7 +153,7 @@ public class SamplingService {
      * @param records sorted pool of records to intersect with as ArrayList<Integer>
      * @return points as double[], first is longitude, every second is latitude.
      */
-    public double[] sampleSpeciesPoints(String filter, SimpleRegion region, int [] records, ArrayList<Object> extra) {
+    public double[] sampleSpeciesPoints(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, ArrayList<Object> extra) {
             //test on bounding box
             double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
             double[][] regionbb = region.getBoundingBox();
@@ -521,7 +317,7 @@ public class SamplingService {
      * @param records sorted pool of records to intersect with as ArrayList<Integer>
      * @return points as double[], first is longitude, every second is latitude.
      */
-    public double[] sampleSpeciesPointsMinusSensitiveSpecies(String filter, SimpleRegion region, int [] records, StringBuffer removedSpecies) {
+    public double[] sampleSpeciesPointsMinusSensitiveSpecies(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, StringBuffer removedSpecies) {
         /* get points */
         return OccurrencesCollection.getPointsMinusSensitiveSpecies(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), removedSpecies);
     }
@@ -539,7 +335,7 @@ public class SamplingService {
      *      1 when sensitive or no records,
      *      -1 when cannot be determined
      */
-    public static int isSensitiveRecord(String filter, SimpleRegion region, int [] records) {
+    public static int isSensitiveRecord(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         StringBuffer sb = new StringBuffer();
         try {
             double [] d = OccurrencesCollection.getPointsMinusSensitiveSpecies(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), sb);
@@ -568,7 +364,7 @@ public class SamplingService {
      * @param max_rows upper limit of records to return as int
      * @return samples as grid, String [][]
      */
-    public String sampleSpeciesAsCSV(String species, String[] layers, SimpleRegion region, int [] records, int max_rows, AnalysisJobSampling job) {
+    public String sampleSpeciesAsCSV(String species, String[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows, AnalysisJobSampling job) {
         try {
 
             System.out.println("Limiting sampling to : " + max_rows);

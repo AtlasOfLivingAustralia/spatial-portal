@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import org.ala.spatial.analysis.service.ShapeIntersectionService;
 import org.ala.spatial.util.TabulationSettings;
 
 /**
@@ -42,6 +43,8 @@ public class DatasetMonitor extends Thread {
      *
      */
     public void initDatasetFiles() {
+        ShapeIntersectionService.init();
+        
         dataset_files = new ArrayList<String>();
         path = new File(TabulationSettings.occurrences_config_path);
 

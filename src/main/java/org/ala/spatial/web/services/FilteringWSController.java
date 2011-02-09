@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.service.FilteringImage;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -476,59 +475,6 @@ public class FilteringWSController {
 
             return "output/filtering/" + "Sample_" + sdate + "_" + currTime + ".zip";
 
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-        return "";
-    }
-    
-    /**
-     * Returns a relative path to a zip file of the filtered georeferenced data
-     *
-     * @param pid
-     * @param shape
-     * @param req
-     * @return
-     */
-    @RequestMapping(value = "/apply/pid/{pid}/samples/geojson", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String getSamplesListAsGeoJSON(@PathVariable String pid, HttpServletRequest req) {
-        TabulationSettings.load();
-
-        try {
-            String shape = req.getParameter("area");
-            if (shape == null) {
-                shape = "none";
-            } else {
-                shape = URLDecoder.decode(shape, "UTF-8");
-            }
-            if (shape.equals("none") && pid.equals("none")) {
-                return "";  //error
-            }
-
-            System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
-
-            SimpleRegion region = null;
-            int [] records = null;
-            shape = URLDecoder.decode(shape, "UTF-8");
-            if (shape != null && shape.startsWith("ENVELOPE")) {
-                records = FilteringService.getRecords(shape);
-            } else {
-                region = SimpleShapeFile.parseWKT(shape);
-            }
-
-
-            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
-            String currentPath = TabulationSettings.base_output_dir;
-            String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
-            File fDir = new File(outputpath);
-            fDir.mkdir();
-
-            String gjsonFile = FilteringService.getSamplesListAsGeoJSON("none" /*TODO: allow pid here*/, region, records, fDir);
-
-            System.out.println("getSamplesListAsGeoJSON:" + gjsonFile);
-            return "output/filtering/" + gjsonFile;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

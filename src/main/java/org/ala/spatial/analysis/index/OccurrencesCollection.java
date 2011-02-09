@@ -7,6 +7,7 @@ package org.ala.spatial.analysis.index;
 import java.util.ArrayList;
 import java.util.Vector;
 import org.ala.spatial.analysis.cluster.Record;
+import org.ala.spatial.util.SimpleRegion;
 
 /**
  *
@@ -84,7 +85,7 @@ public class OccurrencesCollection {
 
                     if (extra != null && extra.size() > 0) {
                         for (int i = 0; i < extra.size(); i += 2) {
-                            if (((String) extra.get(i)).equals("u")) {
+                            if (((String) extra.get(i)).equals("u")) {  //uncertainty
                                 double[] dCurrent = (double[]) extra.get(i + 1);
                                 if (extra.get(i + 1) == null) {
                                     extra.set(i + 1, extraPart.get(i + 1));
@@ -95,7 +96,7 @@ public class OccurrencesCollection {
                                     System.arraycopy(dAdd, 0, dNew, dCurrent.length, dAdd.length);
                                     extra.set(i + 1, dNew);
                                 }
-                            } else if (((String) extra.get(i)).startsWith("h")) {
+                            } else if (((String) extra.get(i)).startsWith("h")) {   //highlight flag
                                 boolean[] dCurrent = (boolean[]) extra.get(i + 1);
                                 if (extra.get(i + 1) == null) {
                                     extra.set(i + 1, extraPart.get(i + 1));
@@ -106,7 +107,8 @@ public class OccurrencesCollection {
                                     System.arraycopy(dAdd, 0, dNew, dCurrent.length, dAdd.length);
                                     extra.set(i + 1, dNew);
                                 }
-                            } else if (((String) extra.get(i)).startsWith("c")) {
+                            } else if (((String) extra.get(i)).startsWith("c")  //hash from specified taxon level name
+                                    ||((String) extra.get(i)).startsWith("i")) {  //SpeciesIndex lookup number
                                 int[] dCurrent = (int[]) extra.get(i + 1);
                                 if (extra.get(i + 1) == null) {
                                     extra.set(i + 1, extraPart.get(i + 1));
@@ -182,6 +184,8 @@ public class OccurrencesCollection {
             }
         }
 
+        //TODO merge arrays
+
         return al;
     }
 
@@ -202,17 +206,22 @@ public class OccurrencesCollection {
         return SpeciesIndex.getCommonNames(name, aslist);
     }
 
-    public static int[] lookup(String key, String value) {
+    public static ArrayList<OccurrenceRecordNumbers> lookup(String key, String value) {
+        ArrayList<OccurrenceRecordNumbers> records = new ArrayList<OccurrenceRecordNumbers>();
         for (Dataset d : datasets) {
             if (d.isEnabled() && d.isReady()) {
                 int[] s = d.getOccurrencesIndex().lookup(key, value);
                 if (s != null) {
-                    return s;
+                    records.add(new OccurrenceRecordNumbers(d.getUniqueName(), s));
                 }
             }
         }
 
-        return null;
+        if(records.size() == 0) {
+            records = null;
+        }
+
+        return records;
     }
 
     /**
@@ -309,7 +318,6 @@ public class OccurrencesCollection {
     }
 
     public static OccurrencesSpeciesList getSpeciesList(ArrayList<OccurrenceRecordNumbers> rk) {
-        //TODO: more than one dataset
         ArrayList<OccurrencesSpeciesList> al = new ArrayList<OccurrencesSpeciesList>();
 
         for (Dataset d : datasets) {
@@ -319,7 +327,7 @@ public class OccurrencesCollection {
                         continue;
                     }
                     OccurrencesSpeciesList osl = new OccurrencesSpeciesList(d.getUniqueName(),
-                            new OccurrencesFilter(rk.get(i).getRecords(), 100000000));
+                            new OccurrencesFilter(rk, 100000000));
                     if (osl != null && osl.getSpeciesCount() > 0) {
                         al.add(osl);
                     }
@@ -353,6 +361,50 @@ public class OccurrencesCollection {
         for (Dataset d : datasets) {
             if (d.isEnabled() && d.isReady()) {
                 count += d.getOccurrencesIndex().highlightLsid(keyEnd, lsid, layer1, x1, x2, layer2, y1, y2);
+            }
+        }
+        return count;
+    }
+
+    public static int registerLSID(String id, String[] lsids) {
+        int count = 0;
+
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                count += d.getOccurrencesIndex().registerLSID(id, lsids);
+            }
+        }
+        return count;
+    }
+
+    public static int registerArea(String id, SimpleRegion region) {
+         int count = 0;
+
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                count += d.getOccurrencesIndex().registerArea(id, region);
+            }
+        }
+        return count;
+    }
+
+    public static int registerRecords(String id, ArrayList<OccurrenceRecordNumbers> records) {
+        int count = 0;
+
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                count += d.getOccurrencesIndex().registerRecords(id, records);              
+            }
+        }
+        return count;
+    }
+
+    public static int registerHighlight(String lsid, String id, String pid, boolean include) {
+        int count = 0;
+
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                count += d.getOccurrencesIndex().registerHighlight(new OccurrencesFilter(lsid, 10000000),id, pid, include);
             }
         }
         return count;

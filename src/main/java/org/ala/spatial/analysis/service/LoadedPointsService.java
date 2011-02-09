@@ -11,9 +11,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import org.ala.spatial.analysis.index.BoundingBoxes;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.TabulationSettings;
@@ -114,7 +116,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    static public double[][] getPoints(String id, SimpleRegion region, int[] records) {
+    static public double[][] getPoints(String id, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             return lp.getPoints(region, records);
@@ -122,7 +124,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    static public double[] getPointsFlat(String id, SimpleRegion region, int[] records) {
+    static public double[] getPointsFlat(String id, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             return lp.getPointsFlat(region, records);
@@ -130,7 +132,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    static String getSampling(String id, Layer[] layers, SimpleRegion region, int[] records, int max_rows) {
+    static String getSampling(String id, Layer[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             return lp.getSampling(layers, region, records, max_rows);

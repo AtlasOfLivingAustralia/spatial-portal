@@ -61,7 +61,7 @@ public class DatasetLoadedPoints extends Dataset {
             return false;
         }
 
-        occurrencesIndex = new OccurrencesIndexLoadedPoints(occurrencesFilename, getDirectoryName());
+        occurrencesIndex = new OccurrencesIndexLoadedPoints(this, occurrencesFilename, getDirectoryName());
 
         isReady = true;
 

@@ -477,6 +477,24 @@ public class SpeciesIndex {
     }
 
     /**
+     * return first found LSID by speciesName
+     *
+     * @param speicesName String
+     * @return LSID as String
+     */
+    static public String getLSID(String speciesName) {
+        String [] s = filterBySpeciesName(speciesName, 1);
+        if(s != null && s.length > 0) {
+            String [] words = s[0].split("/");
+            if(words.length > 1) {
+                int pos = findLSID(words[1].trim());
+                return getLSID(pos);
+            }
+        }
+        return "";
+    }
+
+    /**
      * gets scientificName taxonrank for provided lsid
      * @param lsid
      * @return String [] where String[0] is scientific name and String[1] is taxonrank name

@@ -2,12 +2,14 @@ package org.ala.spatial.web.services;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.FilteringService;
@@ -54,7 +56,7 @@ public class SamplingWSController {
             String area = req.getParameter("area");
 
             String[] layers = getLayerFiles(URLDecoder.decode(req.getParameter("envlist"), "UTF-8"));
-            int [] records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
@@ -229,7 +231,7 @@ public class SamplingWSController {
             System.out.println("area: " + req.getParameter("area"));
             
             String area = req.getParameter("area");
-            int [] records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
@@ -328,7 +330,7 @@ public class SamplingWSController {
             SamplingService ss = SamplingService.newForLSID(species);
             
             String area = req.getParameter("area");
-            int [] records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));
@@ -403,7 +405,7 @@ public class SamplingWSController {
             System.out.println("area: " + req.getParameter("area"));
 
             String area = req.getParameter("area");
-            int [] records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(req.getParameter("area"));

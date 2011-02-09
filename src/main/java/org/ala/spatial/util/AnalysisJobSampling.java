@@ -5,9 +5,11 @@
 package org.ala.spatial.util;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 import org.ala.spatial.analysis.index.LayerFilter;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
@@ -23,7 +25,7 @@ public class AnalysisJobSampling extends AnalysisJob {
     SimpleRegion region;
     LayerFilter[] envelope;
     String species;
-    int[] records;
+    ArrayList<OccurrenceRecordNumbers> records;
     long[] stageTimes;
     String envlist;
     String area;

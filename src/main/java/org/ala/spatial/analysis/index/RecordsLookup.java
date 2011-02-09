@@ -19,17 +19,17 @@ import org.ala.spatial.util.TabulationSettings;
  *
  * @author Adam
  */
-public class RecordSelectionLookup {
+public class RecordsLookup {
 
     /**
      * store for ID and {last access time (Long) , cluster (Vector) }
      */
     static HashMap<String, Object[]> selections = new HashMap<String, Object[]>();
 
-    static public void addSelection(String id, boolean [] selection) {
+    static public void addRecords(String id, int[] selection) {
         Object[] o = selections.get(id);
         if (o == null) {
-            freeCluster();
+            freeRecords();
             o = new Object[2];
         }
         o[0] = Long.valueOf(System.currentTimeMillis());
@@ -38,7 +38,7 @@ public class RecordSelectionLookup {
         selections.put(id, o);
     }
 
-    private static void freeCluster() {
+    private static void freeRecords() {
         if (selections.size() > TabulationSettings.cluster_lookup_size) {
             Long time_min = Long.valueOf(0);
             Long time_max = Long.valueOf(0);
@@ -60,14 +60,14 @@ public class RecordSelectionLookup {
         }
     }
 
-    public static boolean [] getSelection(String id) {
+    public static int[] getRecords(String id) {
         Object[] o = selections.get(id);
         if (o == null) {
             o = retrieve(id);
         }
         if (o != null) {
             o[0] = Long.valueOf(System.currentTimeMillis());
-            boolean [] v = (boolean []) o[1];
+            int[] v = (int[]) o[1];
             return v;
         }
 
@@ -81,7 +81,7 @@ public class RecordSelectionLookup {
             FileOutputStream fos = new FileOutputStream(file);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
-            boolean [] v = (boolean []) (o[1]);
+            int[] v = (int[]) (o[1]);
             oos.writeObject(v);
             oos.close();
         } catch (Exception e) {
@@ -97,10 +97,10 @@ public class RecordSelectionLookup {
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 ObjectInputStream ois = new ObjectInputStream(bis);
-                boolean [] v = (boolean []) ois.readObject();
+                int[] v = (int[]) ois.readObject();
                 ois.close();
 
-                addSelection(key, v);
+                addRecords(key, v);
                 return selections.get(key);
             }
         } catch (Exception e) {

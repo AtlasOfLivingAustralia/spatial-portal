@@ -16,7 +16,7 @@ public class OccurrencesFilter {
     //searching filters (names, specific records, geographic regions)
 
     String searchTerm = null;
-    int[] records = null;
+    ArrayList<OccurrenceRecordNumbers> records = null;
     SimpleRegion region = null;
     //return filter (columns to return)
     ArrayList<String> columns = null;
@@ -33,19 +33,19 @@ public class OccurrencesFilter {
         this.maxRecords = maxRecords;
     }
 
-    public OccurrencesFilter(int[] records, int maximum_records) {
+    public OccurrencesFilter(ArrayList<OccurrenceRecordNumbers> records, int maximum_records) {
         this.records = records;
         this.maxRecords = maximum_records;
     }
 
-    public OccurrencesFilter(String lsid, SimpleRegion region, int[] rk, int i) {
+    public OccurrencesFilter(String lsid, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> rk, int i) {
         this.searchTerm = lsid;
         this.region = region;
         this.records = rk;
         this.maxRecords = i;
     }
 
-    public OccurrencesFilter(String lsid, SimpleRegion region, int[] records, String[] layers, int max_rows) {
+    public OccurrencesFilter(String lsid, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, String[] layers, int max_rows) {
         this.searchTerm = lsid;
         this.region = region;
         this.records = records;

@@ -354,7 +354,7 @@ public class FilteringService implements Serializable {
             FilteringService fs = FilteringService.getSession(session_id_);
 
             //put records into filter
-            occurrencesFilter = new OccurrencesFilter(fs.getTopSpeciesRecord().get(0).getRecords(), TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+            occurrencesFilter = new OccurrencesFilter(fs.getTopSpeciesRecord(), TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
         }
 
         String output = null;
@@ -365,6 +365,20 @@ public class FilteringService implements Serializable {
             for(String s : osl.get(0).getSpeciesList()){
                 sb.append(s).append("|");
             }
+
+            //any species distributions?
+            int [] r = ShapeIntersectionService.getIntersections(region);
+            if(r != null) {
+                String [] lsids = ShapeIntersectionService.convertToLsids(r);
+                String str = sb.toString();
+                for(int i=0;i<lsids.length;i++) {
+                    if(!str.contains(lsids[i])) {
+                        //append the missing entry
+                        sb.append(OccurrencesSpeciesList.getSpeciesListEntryFromADistribution(lsids[i])).append("|");
+                    }
+                }
+            }
+
             output = sb.toString();
         }
 
@@ -395,7 +409,7 @@ public class FilteringService implements Serializable {
             FilteringService fs = FilteringService.getSession(session_id_);
 
             //put records into filter
-             occurrencesFilter = new OccurrencesFilter(fs.getTopSpeciesRecord().get(0).getRecords(), maximum_records);
+             occurrencesFilter = new OccurrencesFilter(fs.getTopSpeciesRecord(), maximum_records);
         }
 
         /* get samples records from records indexes */
@@ -444,145 +458,6 @@ public class FilteringService implements Serializable {
         }
 
         return ""; //failed
-    }
-
-    /**
-     * TODO:
-     * 1. split data into _0 to n
-     * 2. add # pieces onto end
-     *
-     * @param session_id_ must be 'none'
-     * @param region SimpleRegion
-     * @param outputpath
-     * @return
-     */
-    public static String getSamplesListAsGeoJSON(String session_id_, SimpleRegion region, int [] records, File outputpath) {
-        int i;
-
-        /* check for "none" session */
-        Vector dataRecords = null;
-        if (session_id_.equals("none")) {
-            dataRecords = null;//OccurrencesCollection.sampleSpeciesForClustering(null, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
-        } else {
-            return null;    //not supported right now
-        }
-
-        //double[][] bbox = region.getBoundingBox();
-        int max_parts_size = 2000;
-        int count = 0;
-
-        //-1 on samples.length for header
-        int partCount = (int) Math.ceil((dataRecords.size()) / (double) max_parts_size);
-
-        //test for filename, return if it exists
-        String name = "area_" + String.valueOf(System.currentTimeMillis());
-        File file;
-        String filename = outputpath + File.separator + name;
-        try {
-            file = new File(filename + "_" + (partCount - 1));
-            if (file.exists()) {
-                return name + "\n" + partCount;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        for (int j = 1; j < dataRecords.size(); j += max_parts_size) {
-
-            StringBuffer sbGeoJSON = new StringBuffer();
-            sbGeoJSON.append("{");
-            sbGeoJSON.append("\"type\": \"FeatureCollection\",");
-            sbGeoJSON.append("\"features\": [");
-            int len = j + max_parts_size;
-            if (len > dataRecords.size()) {
-                len = dataRecords.size();
-            }
-            for (i = j; i < len; i++) {
-                String s = getRecordAsGeoJSON((Record) dataRecords.get(i));
-                if (s != null) {
-                    sbGeoJSON.append(s);
-                    if (i < len - 1) {
-                        sbGeoJSON.append(",");
-                    }
-                }
-            }
-            sbGeoJSON.append("],");
-            sbGeoJSON.append("\"crs\": {");
-            sbGeoJSON.append("\"type\": \"EPSG\",");
-            sbGeoJSON.append("\"properties\": {");
-            sbGeoJSON.append("\"code\": \"4326\"");
-            sbGeoJSON.append("}");
-            sbGeoJSON.append("}");
-            sbGeoJSON.append("}");
-
-            /* write samples to a file */
-            try {
-                FileWriter fw = new FileWriter(
-                        filename + "_" + count);
-                count++;
-
-                fw.write(sbGeoJSON.toString());
-
-                fw.close();
-
-            } catch (Exception e) {
-                SpatialLogger.log("FilteringService: getSamplesListAsGeoJSON()", e.toString());
-                e.printStackTrace();
-            }
-        }
-        return name + "\n" + partCount;
-    }
-
-    private static String getRecordAsGeoJSON(String rec) {
-        String[] recdata = rec.split(",");
-
-        /*StringBuffer sbRec = new StringBuffer();
-        sbRec.append("{");
-        sbRec.append("  \"type\":\"Feature\",");
-        sbRec.append("  \"id\":\"occurrences.data.").append(recdata[11]).append("\",");
-        sbRec.append("  \"geometry\":{");
-        sbRec.append("      \"type\":\"Point\",");
-        sbRec.append("      \"coordinates\":[").append(recdata[32]).append(",").append(recdata[33]).append("]");
-        sbRec.append("   },");
-        sbRec.append("  \"geometry_name\":\"the_geom\",");
-        sbRec.append("  \"properties\":{");
-        sbRec.append("      \"occurrenceid\":\"").append(recdata[11]).append("\",");
-        sbRec.append("      \"dataprovideruid\":\"").append(recdata[12]).append("\",");
-        sbRec.append("      \"dataprovidername\":\"").append(recdata[13]).append("\",");
-        sbRec.append("      \"dataresourceuid\":\"").append(recdata[14]).append("\",");
-        sbRec.append("      \"institutioncode\":\"").append(recdata[17]).append("\",");
-        sbRec.append("      \"collectioncode\":\"").append(recdata[20]).append("\",");
-        sbRec.append("      \"cataloguenumber\":\"").append(recdata[21]).append("\",");
-        sbRec.append("      \"family\":\"").append(recdata[5]).append("\",");
-        sbRec.append("      \"scientificname\":\"").append(recdata[10]).append("\",");
-        sbRec.append("      \"taxonconceptid\":\"").append(recdata[22]).append("\",");
-        sbRec.append("      \"longitude\":\"").append(recdata[24]).append("\",");
-        sbRec.append("      \"latitude\":\"").append(recdata[25]).append("\",");
-        sbRec.append("      \"occurrencedate\":\"").append(recdata[30]).append("\"");
-        sbRec.append("  }");
-        sbRec.append("}");*/
-
-        StringBuffer sbRec = new StringBuffer();
-        sbRec.append("{");
-        sbRec.append("  \"type\":\"Feature\",");
-        sbRec.append("  \"id\":\"occurrences.data.").append(recdata[TabulationSettings.geojson_id]).append("\",");
-        sbRec.append("  \"geometry\":{");
-        sbRec.append("      \"type\":\"Point\",");
-        sbRec.append("      \"coordinates\":[\"").append(recdata[TabulationSettings.geojson_longitude]).append("\",\"").append(recdata[TabulationSettings.geojson_latitude]).append("\"]");
-        sbRec.append("   },");
-        sbRec.append("  \"geometry_name\":\"the_geom\",");
-        sbRec.append("  \"properties\":{");
-        for (int i = 0; i < TabulationSettings.geojson_property_names.length; i++) {
-            sbRec.append("      \"").append(TabulationSettings.geojson_property_names[i]).append("\":\"").append(recdata[TabulationSettings.geojson_property_fields[i]]).append("\"");
-            if (i < TabulationSettings.geojson_property_names.length - 1) {
-                sbRec.append(",");
-            }
-        }
-        sbRec.append("  }");
-        sbRec.append("}");
-
-        return sbRec.toString();
-
     }
 
     /**
@@ -654,13 +529,13 @@ public class FilteringService implements Serializable {
      * "ENVELOPE(session_id)"
      * @return list of record numbers as int []
      */
-    public static int [] getRecords(String session_id_) {
+    public static ArrayList<OccurrenceRecordNumbers> getRecords(String session_id_) {
         if (session_id_.startsWith("ENVELOPE(")) {
             session_id_ = session_id_.replace("ENVELOPE(", "");
             session_id_ = session_id_.replace(")", "");
         }
         FilteringService fs = FilteringService.getSession(session_id_);
-        return fs.getTopSpeciesRecord().get(0).getRecords();
+        return fs.getTopSpeciesRecord();
     }
 
     /**

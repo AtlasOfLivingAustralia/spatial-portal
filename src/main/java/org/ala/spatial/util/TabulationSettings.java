@@ -231,6 +231,11 @@ public class TabulationSettings {
      * occurrences_config_path for datasets/versions of occurrences_csv
      */
     public static String occurrences_config_path;
+    /**
+     * path to csv file containing:
+     * shape_file_path, scientific name, [optional data, e.g. depth]
+     */
+    public static String shape_intersection_files;
     
 
     /**
@@ -515,6 +520,7 @@ public class TabulationSettings {
         spatial_logger_url = xr.getValue("spatial_logger_url");
 
         occurrences_config_path = xr.getValue("occurrences_config_path");
+        shape_intersection_files = xr.getValue("shape_intersection_files");
     }
 
     static public String getPath(String layerName) {

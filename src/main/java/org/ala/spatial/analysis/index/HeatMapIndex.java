@@ -42,6 +42,9 @@ public class HeatMapIndex {
         } else if(args.length > 0 && args[0].equalsIgnoreCase("build")){
             SpatialLogger.info("start");
             TabulationSettings.load();
+            OccurrencesCollection.init();
+            DatasetMonitor dm = new DatasetMonitor();
+            dm.initDatasetFiles();
 
             int threshold = 2000;
             try {
@@ -61,17 +64,19 @@ public class HeatMapIndex {
 
             extraIndexes();
 
-            LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>();
-            CountDownLatch cdl = null;//TODO: fix for new indexnew CountDownLatch(OccurrencesIndex.single_index.length);
+            LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>();           
 
             //start producer threads
-            LinkedBlockingQueue<IndexedRecord> lbqp = new LinkedBlockingQueue<IndexedRecord>();
+            LinkedBlockingQueue<String> lbqp = new LinkedBlockingQueue<String>();
+            
+            System.out.println(SpeciesIndex.size());
+            for(int i=0;i<SpeciesIndex.size();i++) {
+                if(SpeciesIndex.getCount(i) > threshold) {
+                    lbqp.add(SpeciesIndex.getLSID(i));
+                }
+            }
 
-            //TODO: fix for new index
-            //System.out.println(OccurrencesIndex.single_index.length);
-            //for (IndexedRecord r : OccurrencesIndex.single_index) {
-            //    lbqp.add(r);
-            //}
+            CountDownLatch cdl = new CountDownLatch(lbqp.size());
 
             HeatMapIndexProducerThread[] hmipt = new HeatMapIndexProducerThread[TabulationSettings.analysis_threads];
             for (int i = 0; i < hmipt.length; i++) {
@@ -175,13 +180,13 @@ public class HeatMapIndex {
 
     private static class HeatMapIndexProducerThread extends Thread {
 
-        LinkedBlockingQueue<IndexedRecord> lbqp;
+        LinkedBlockingQueue<String> lbqp;
         LinkedBlockingQueue<String> lbq;
         CountDownLatch cdl;
         SimpleRegion region;
         int threshold;
 
-        private HeatMapIndexProducerThread(LinkedBlockingQueue<IndexedRecord> lbqp_, LinkedBlockingQueue<String> lbq_, int threshold_, CountDownLatch cdl_, SimpleRegion region_) {
+        private HeatMapIndexProducerThread(LinkedBlockingQueue<String> lbqp_, LinkedBlockingQueue<String> lbq_, int threshold_, CountDownLatch cdl_, SimpleRegion region_) {
             lbqp = lbqp_;
             lbq = lbq_;
             threshold = threshold_;
@@ -194,8 +199,8 @@ public class HeatMapIndex {
         public void run() {
             try {
                 while (true) {
-                    IndexedRecord r = lbqp.take();
-                    process(r);
+                    String lsid = lbqp.take();
+                    process(lsid);
                 }
             } catch (InterruptedException ie) {
             } catch (Exception e) {
@@ -204,18 +209,14 @@ public class HeatMapIndex {
             }
         }
 
-        private void process(IndexedRecord r) {            
-            if (r.record_end - r.record_start >= threshold) {
-                SamplingService ss = SamplingService.newForLSID(r.name);
-                double[] p = ss.sampleSpeciesPoints(r.name, region, null);
-                if (p != null && (p.length / 2) > threshold) {
-                    try{
-                        lbq.put(r.name);
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                } else {
-                    cdl.countDown();
+        private void process(String lsid) {
+            SamplingService ss = SamplingService.newForLSID(lsid);
+            double[] p = ss.sampleSpeciesPoints(lsid, region, null);
+            if (p != null && (p.length / 2) > threshold) {
+                try{
+                    lbq.put(lsid);
+                }catch(Exception e){
+                    e.printStackTrace();
                 }
             } else {
                 cdl.countDown();

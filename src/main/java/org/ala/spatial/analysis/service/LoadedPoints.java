@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
 
@@ -27,25 +28,25 @@ public class LoadedPoints {
         name = name_;
         attributes = new HashMap<String, Object>();
 
-       //-180 < longitude <= 180
-	        for (int i = 0; i < points_.length; i++) {
-	            while (points_[i][0] <= -180) {
-	                points_[i][0] += 360;
-	            }
-	            while (points_[i][0] > 180) {
-	                points_[i][0] -= 360;
-	            }
-	        }
+        //-180 < longitude <= 180
+        for (int i = 0; i < points_.length; i++) {
+            while (points_[i][0] <= -180) {
+                points_[i][0] += 360;
+            }
+            while (points_[i][0] > 180) {
+                points_[i][0] -= 360;
+            }
+        }
 
-	        //default to line numbers as ids
-	        if (ids_ == null) {
-	            String[] ids = new String[points_.length];
-	            for (int i = 0; i < points_.length; i++) {
-	                ids[i] = String.valueOf(i + 1);
-	            }
+        //default to line numbers as ids
+        if (ids_ == null) {
+            String[] ids = new String[points_.length];
+            for (int i = 0; i < points_.length; i++) {
+                ids[i] = String.valueOf(i + 1);
+            }
 
-	            ids_ = ids;
-	        }
+            ids_ = ids;
+        }
 
         attributes.put("id", ids_);
     }
@@ -62,7 +63,7 @@ public class LoadedPoints {
         attributes.put(name, value);
     }
 
-    public double[][] getPoints(SimpleRegion region, int[] records) {
+    public double[][] getPoints(SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         if (region == null) {
             return points;
         } else {
@@ -84,7 +85,7 @@ public class LoadedPoints {
         }
     }
 
-    public double[] getPointsFlat(SimpleRegion region, int[] records) {
+    public double[] getPointsFlat(SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         if (region == null) {
             double[] output = new double[points.length * 2];
             for (int i = 0; i < points.length; i++) {
@@ -150,7 +151,7 @@ public class LoadedPoints {
         }
     }
 
-    public String getSampling(Layer[] layers, SimpleRegion region, int[] records, int max_rows) {
+    public String getSampling(Layer[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
         buildSampling(layers);
         ConcurrentHashMap<String, String[]> sampling = (ConcurrentHashMap<String, String[]>) getAttribute("sampling");
         String[] ids = (String[]) getAttribute("id");

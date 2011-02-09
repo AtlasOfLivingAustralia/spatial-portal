@@ -1486,7 +1486,6 @@ if not csv, then tab delimited
 
         'base_output_url' should be the base path where the output directory can be reached
     -->
-    <!--base_output_dir>C:\Users\Adam\Documents\NetBeansProjects\trunk\alaspatial\target\ala-spatial-1.0-SNAPSHOT\</base_output_dir-->
     <base_output_dir>C:\Users\Adam\Documents\NetBeansProjects\alaspatial-index2\target\ala-spatial-1.0-SNAPSHOT\</base_output_dir>
     <base_output_url>http://localhost:8084/alaspatial/</base_output_url>
 
@@ -1563,4 +1562,6 @@ if not csv, then tab delimited
     <cluster_lookup_size>10000</cluster_lookup_size>
 
     <occurrences_config_path>d:\mnt\ala\data\occurrences\config\</occurrences_config_path>
+
+    <shape_intersection_files>d:\shapefiles\shapefiles_for_intersection.csv</shape_intersection_files>
 </tabulation>

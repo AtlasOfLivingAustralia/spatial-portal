@@ -27,4 +27,8 @@ public class OccurrenceRecordNumbers implements Serializable {
     public String getName() {
         return datasetId;
     }
+
+    public void setRecords(int[] newrec) {
+        records = newrec;
+    }
 }

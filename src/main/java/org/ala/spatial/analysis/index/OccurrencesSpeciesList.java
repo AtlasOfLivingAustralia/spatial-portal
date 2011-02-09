@@ -107,6 +107,20 @@ public class OccurrencesSpeciesList {
     }
 
     /**
+     * get's a species list entry with an LSID input
+     */
+    static public String getSpeciesListEntryFromADistribution(String lsid) {
+        int i = SpeciesIndex.findLSID(lsid);
+        return (new StringBuilder())
+                        .append(SpeciesIndex.getFamilyName(i)).append("*")
+                        .append(SpeciesIndex.getScientificName(i)).append("*")
+                        .append(SpeciesIndex.getCommonNames(i)).append("*")
+                        .append(SpeciesIndex.getTaxonRank(i)).append("*")
+                        .append(SpeciesIndex.getLSID(i)).append("*")
+                        .append("-1").toString();
+    }
+
+    /**
      *
      * @return occurrence record id's for the OccurrencesFilter supplied in
      * construction.  Otherwise null.

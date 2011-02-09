@@ -49,8 +49,8 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
     /**
      * constructor
      */
-    OccurrencesIndexLoadedPoints(String occurrencesFilename, String directoryName) {
-        super(occurrencesFilename, directoryName);
+    OccurrencesIndexLoadedPoints(Dataset d, String occurrencesFilename, String directoryName) {
+        super(d, occurrencesFilename, directoryName);
     }
 
     /**
@@ -93,7 +93,7 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
 
         int i, j;
 
-        int[] records = filter.records;
+//        int[] records = filter.records;
         SimpleRegion region = filter.region;
         String lsid = filter.searchTerm;
         if (lsid != null) {
@@ -183,7 +183,7 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
 
         int i;
 
-        int[] records = filter.records;
+ //       int[] records = filter.records;
         SimpleRegion region = filter.region;
         String lsid = filter.searchTerm;
         if (lsid != null) {
@@ -259,5 +259,17 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
         RecordSelectionLookup.addSelection(getHash() + keyEnd, highlight);
 
         return count;*/
+    }
+
+    public int registerLSID(String key, String[] lsid) {
+        return 0;
+    }
+
+    public int registerArea(String key, SimpleRegion region) {
+        return 0;
+    }
+
+    public int registerRecords(String key, ArrayList<OccurrenceRecordNumbers> records) {
+        return 0;
     }
 }

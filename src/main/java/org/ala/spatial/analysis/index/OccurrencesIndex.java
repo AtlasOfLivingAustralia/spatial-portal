@@ -154,7 +154,6 @@ public class OccurrencesIndex {
     String[] occurrences_csv_field_pairs_Name;
     int[] occurrences_csv_field_pairs_ToSingleIndex;
     int[] occurrences_csv_field_pairs_FirstFromSingleIndex;  //length == single_index.length
-    
     IndexedRecord[] speciesSortByRecordNumber = null;
     int[] speciesSortByRecordNumberOrder = null;
     /**
@@ -199,13 +198,13 @@ public class OccurrencesIndex {
     /*
      * SpeciesIndex add of single_index requires a translation between records
      */
-    int [] speciesIndexLookup;
-
+    int[] speciesIndexLookup;
 
     /**
      * constructor
      */
-    OccurrencesIndex(String occurrencesFilename, String directoryName) {
+    OccurrencesIndex(Dataset d, String occurrencesFilename, String directoryName) {
+        dataset = d;
         TabulationSettings.load();
         occurrences_csv = occurrencesFilename;
         index_path = directoryName;
@@ -914,7 +913,6 @@ public class OccurrencesIndex {
         fw_maps = null;
         System.gc();
     }
-
 
     /**
      * returns a list of (species names / type / count) for valid
@@ -1781,7 +1779,7 @@ public class OccurrencesIndex {
             /* load all points */
             RandomAccessFile points = new RandomAccessFile(
                     index_path + SENSITIVE_COORDINATES + "_raf.dat",
-                    "rw");
+                    "r");
             int number_of_points = ((int) points.length()) / 8;
             int number_of_records = number_of_points / 2;
             byte[] b = new byte[number_of_points * 8];
@@ -1827,10 +1825,10 @@ public class OccurrencesIndex {
             }
 
             if (extra != null) {
-                for(int j=0;j<extra.size();j+=2) {
-                    if(((String)extra.get(j)).equals("u")){
+                for (int j = 0; j < extra.size(); j += 2) {
+                    if (((String) extra.get(j)).equals("u")) {
                         //TODO: more than uncertainty
-                        int[] uncertainty = (int[]) attributesMap.get("u");
+                        int[] uncertainty = (int[]) attributesMap.get("u"); //uncertainty
                         double[] d = new double[r.length];
                         for (int i = 0; i < r.length; i++) {
                             if (uncertainty[r[i]] == Integer.MIN_VALUE) {
@@ -1841,30 +1839,36 @@ public class OccurrencesIndex {
 
                         }
                         extra.set(j + 1, d);
-                    } else if(((String)extra.get(j)).startsWith("h")){
+                    } else if (((String) extra.get(j)).startsWith("h")) {  //highlight flag
                         //lookup by replacing 'h' with dataset hash
                         String key = (String) extra.get(j);
                         key = key.replace("h", getHash());
                         IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
-                        boolean [] highlight = RecordSelectionLookup.getSelection(key);
-                        boolean [] h = new boolean[r.length];
-                        for(int i=0;i<r.length;i++) {
+                        boolean[] highlight = RecordSelectionLookup.getSelection(key);
+                        boolean[] h = new boolean[r.length];
+                        for (int i = 0; i < r.length; i++) {
                             h[i] = highlight[r[i] - ir.record_start];
                         }
                         extra.set(j + 1, h);
-                    } else if(((String)extra.get(j)).startsWith("c")){
-                        String level = (String)extra.get(j);
-                        level = level.replace("c","");
+                    } else if (((String) extra.get(j)).startsWith("c")) {  //species hash at a specified taxon level
+                        String level = (String) extra.get(j);
+                        level = level.replace("c", "");
                         int taxonLevel = Integer.parseInt(level);
-                        int [] h = new int[r.length];
-                        for(int i=0;i<r.length;i++) {
-                            if(speciesNumberInRecordsOrder[r[i]] >= 0) {
+                        int[] h = new int[r.length];
+                        for (int i = 0; i < r.length; i++) {
+                            if (speciesNumberInRecordsOrder[r[i]] >= 0) {
                                 //set alpha
                                 h[i] = 0xFF000000 | SpeciesIndex.getHash(taxonLevel, speciesIndexLookup[speciesNumberInRecordsOrder[r[i]]]);
                             } else {
                                 //white
-                                h[i] = 0xFFFFFFFF;  
+                                h[i] = 0xFFFFFFFF;
                             }
+                        }
+                        extra.set(j + 1, h);
+                    } else if (((String) extra.get(j)).startsWith("i")) {  //SpeciesIndex lookup number
+                        int[] h = new int[r.length];
+                        for (int i = 0; i < r.length; i++) {
+                            h[i] = speciesIndexLookup[speciesNumberInRecordsOrder[r[i]]];
                         }
                         extra.set(j + 1, h);
                     }
@@ -1881,29 +1885,33 @@ public class OccurrencesIndex {
     int highlightLsid(String keyEnd, String lsid, String layer1, double x1, double x2, String layer2, double y1, double y2) {
         SamplingIndex ss = new SamplingIndex(index_path, null);
         int[] r = getRecordNumbers(new OccurrencesFilter(lsid, PART_SIZE_MAX)); //TODO: config limited
-        if(r == null || r.length == 0) {
+        if (r == null || r.length == 0) {
             RecordSelectionLookup.addSelection(getHash() + keyEnd, null);
             return 0;
         }
-        
-        float [] d1 = ss.getRecordsFloat(layer1, r);
-        float [] d2 = ss.getRecordsFloat(layer2, r);
 
-        double minX = Math.min(x1,x2);
-        double maxX = Math.max(x1,x2);
-        double minY = Math.min(y1,y2);
-        double maxY = Math.max(y1,y2);
+        float[] d1 = ss.getRecordsFloat(layer1, r);
+        float[] d2 = ss.getRecordsFloat(layer2, r);
 
-        boolean [] highlight = new boolean[r.length];
+        double minX = Math.min(x1, x2);
+        double maxX = Math.max(x1, x2);
+        double minY = Math.min(y1, y2);
+        double maxY = Math.max(y1, y2);
+
+        boolean[] highlight = new boolean[r.length];
         int count = 0;
-        for(int i=0;i<r.length;i++) {
-            if(Float.isNaN(d1[i])) d1[i] = 0;
-            if(Float.isNaN(d2[i])) d2[i] = 0;
-            
-            if(d1[i] <= maxX && d1[i] >= minX
+        for (int i = 0; i < r.length; i++) {
+            if (Float.isNaN(d1[i])) {
+                d1[i] = 0;
+            }
+            if (Float.isNaN(d2[i])) {
+                d2[i] = 0;
+            }
+
+            if (d1[i] <= maxX && d1[i] >= minX
                     && d2[i] <= maxY && d2[i] >= minY) {
                 highlight[i] = true;
-                count ++;
+                count++;
             }
         }
 
@@ -2023,7 +2031,15 @@ public class OccurrencesIndex {
         int spos = 0;
         int[] species = new int[SpeciesIndex.size()];
 
-        int[] records = filter.records;
+        int[] records = null;
+        if(filter.records != null) {
+            for (i = 0; i < filter.records.size(); i++) {
+                if (filter.records.get(i).getName().equals(getDatasetName())) {
+                    records = filter.records.get(i).getRecords();
+                }
+            }
+        }
+
         SimpleRegion region = filter.region;
         if (region == null) {
             //no region, use records
@@ -2122,9 +2138,33 @@ public class OccurrencesIndex {
     public int[] getRecordNumbers(OccurrencesFilter filter) {
         int i, j;
 
-        int[] records = filter.records;
+        int[] records = null;
+        if(filter.records != null) {
+            for (i = 0; i < filter.records.size(); i++) {
+                if (filter.records.get(i).getName().equals(getDatasetName())) {
+                    records = filter.records.get(i).getRecords();
+                }
+            }
+        }
+        
         SimpleRegion region = filter.region;
         String lsid = filter.searchTerm;
+
+        int[] r = null;
+        if(lsid != null && (r = RecordsLookup.getRecords(getHash() + lsid)) != null) {
+            //append r to records
+            if(records == null) {
+                records = r;
+            } else {
+                int [] nr = new int[records.length + r.length];
+                System.arraycopy(records,0,nr,0,records.length);
+                System.arraycopy(r,0,nr,records.length,r.length);
+                records = nr;
+            }
+
+            lsid = null;
+        }
+
         if (lsid != null) {
             IndexedRecord ir = filterSpeciesRecords(lsid);
             if (ir != null) {
@@ -2160,7 +2200,7 @@ public class OccurrencesIndex {
                 return records;
             } else {
                 j = 0;
-                int [] rec = new int[records.length];
+                int[] rec = new int[records.length];
                 for (i = 0; i < records.length && j < filter.maxRecords; i++) {
                     if (region.isWithin(all_points[records[i]][0], all_points[records[i]][1])) {
                         rec[j] = records[i];
@@ -2445,14 +2485,111 @@ public class OccurrencesIndex {
     }
 
     void addToSpeciesIndex() {
-        String [] speciesNames = new String[single_index.length];
-        for(int i=0;i<single_index.length;i++) {
+        String[] speciesNames = new String[single_index.length];
+        for (int i = 0; i < single_index.length; i++) {
             speciesNames[i] = getScientificName(i);
         }
-         speciesIndexLookup = SpeciesIndex.add(single_index, speciesNames);
+        speciesIndexLookup = SpeciesIndex.add(single_index, speciesNames);
     }
 
     private void removeFromSpeciesIndex() {
         SpeciesIndex.remove(single_index);
+    }
+
+    public int registerLSID(String key, String[] lsid) {
+        ArrayList<int[]> all = new ArrayList<int[]>(lsid.length);
+        int count = 0;
+        for (int i = 0; i < lsid.length; i++) {
+            int[] r = getRecordNumbers(new OccurrencesFilter(lsid[i], 10000000));
+            if (r != null) {
+                all.add(r);
+                count += r.length;
+            }
+        }
+
+        if (count > 0) {
+            int[] records = new int[count];
+            int pos = 0;
+            for (int i = 0; i < all.size(); i++) {
+                System.arraycopy(all.get(i), 0, records, pos, all.get(i).length);
+                pos += all.get(i).length;
+            }
+
+            java.util.Arrays.sort(records);
+
+            RecordsLookup.addRecords(getHash() + key, records);
+        }
+
+        return count;
+    }
+
+    public int registerArea(String key, SimpleRegion region) {
+        int[] r = getRecordNumbers(new OccurrencesFilter(region, 10000000));
+
+        int count = 0;
+
+        if (r != null && r.length > 0) {
+            count = r.length;
+
+            java.util.Arrays.sort(r);
+
+            RecordsLookup.addRecords(getHash() + key, r);
+        }
+
+        return count;
+    }
+
+    public int registerRecords(String key, ArrayList<OccurrenceRecordNumbers> records) {
+        int[] r = getRecordNumbers(new OccurrencesFilter(records, 10000000));
+
+        int count = 0;
+
+        if (r != null && r.length > 0) {
+            count = r.length;
+
+            java.util.Arrays.sort(r);
+
+            RecordsLookup.addRecords(getHash() + key, r);
+        }
+
+        return count;
+    }
+
+    public int registerHighlight(OccurrencesFilter filter, String key, String highlightPid, boolean include) {
+        int[] r = getRecordNumbers(filter);
+        if (r != null) {            
+            //lookup by replacing 'h' with dataset hash
+            IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
+            boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
+            int pos = 0;
+            for (int i = 0; i < r.length; i++) {
+                if(include != highlight[r[i] - ir.record_start]) {
+                    r[pos] = r[i];
+                    pos++;
+                }
+            }
+            r = java.util.Arrays.copyOf(r, pos);
+        }
+
+        int count = 0;
+
+        if (r != null && r.length > 0) {
+            count = r.length;
+
+            java.util.Arrays.sort(r);
+
+            RecordsLookup.addRecords(getHash() + key, r);
+        }
+
+        return count;
+    }
+
+    Dataset dataset = null;
+
+    private String getDatasetName() {
+        if (dataset != null) {
+            return dataset.getUniqueName();
+        }
+        return "";
     }
 }

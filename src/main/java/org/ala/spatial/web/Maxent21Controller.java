@@ -96,8 +96,8 @@ public class Maxent21Controller extends GenericForwardComposer {
     public void doAfterCompose(Component comp) throws Exception {
         super.doAfterCompose(comp);
 
-        DatasetMonitor dm = new DatasetMonitor();
-        dm.start();
+        //DatasetMonitor dm = new DatasetMonitor();
+        //dm.start();
 
         // load layer list
         _layers = new ArrayList();

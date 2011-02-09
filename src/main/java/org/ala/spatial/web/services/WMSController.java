@@ -25,6 +25,7 @@ import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
 import org.ala.spatial.analysis.heatmap.HeatMap;
 import org.ala.spatial.analysis.index.IndexedRecord;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.index.OccurrencesFilter;
 import org.ala.spatial.analysis.service.FilteringService;
@@ -318,9 +319,9 @@ public class WMSController {
         } else {
             SpatialLogger.log("Starting out search for: " + value);
             //msg = "generating density data_provider_id map for: " + value;
-            int[] recs = OccurrencesCollection.lookup(key, value);
+            ArrayList<OccurrenceRecordNumbers> recs = OccurrencesCollection.lookup(key, value);
             if (recs != null) {
-                int[] finalRecs = recs;
+                ArrayList<OccurrenceRecordNumbers> finalRecs = recs;
 
                 double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(recs, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
 
@@ -607,7 +608,7 @@ public class WMSController {
 
         String lsid = null;
         SimpleRegion r = null;
-        int[] records = null;
+        ArrayList<OccurrenceRecordNumbers> records = null;
         int p1 = cql_filter.indexOf("id='") + 4;
         if (p1 > 4) {
             int p2 = cql_filter.indexOf('\'', p1 + 1);

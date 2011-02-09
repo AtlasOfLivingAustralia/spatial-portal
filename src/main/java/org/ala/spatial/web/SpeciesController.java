@@ -513,7 +513,7 @@ public class SpeciesController {
             int min_radius = DEFAULT_MIN_RADIUS;
 
             SimpleRegion region = null;
-            int [] records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             area = URLDecoder.decode(area, "UTF-8");
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(area);
@@ -714,7 +714,7 @@ public class SpeciesController {
             System.out.println("[[[]]] getSpeciesInfoInArea: " + area + "\nlsids:" + lsids + "\nactivearea:" + activearea);
 
             SimpleRegion region = null;
-            int [] records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             area = URLDecoder.decode(area, "UTF-8");
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(area);
@@ -725,15 +725,26 @@ public class SpeciesController {
             SimpleRegion aaregion = null;
             if (activearea != null) {
                 if (activearea.startsWith("ENVELOPE")) {
-                    int [] rec = FilteringService.getRecords(activearea);
-                    if(records == null || records.length == 0) {
+                    ArrayList<OccurrenceRecordNumbers> rec = FilteringService.getRecords(activearea);
+                    if(records == null || records.size() == 0) {
                         records = rec;
-                    } else if(rec != null && rec.length > 0) {
+                    } else if(rec != null && rec.size() > 0) {
                         //join
-                        int [] newrec = new int[rec.length + records.length];
-                        System.arraycopy(records, 0, newrec, 0, records.length);
-                        System.arraycopy(rec, 0, newrec, records.length, rec.length);
-                        records = newrec;
+                        for(int i=0;i<records.size();i++) {
+                            for(int j=0;j<rec.size();j++) {
+                                if(records.get(i).getName().equals(rec.get(j).getName())) {
+                                    int [] recA = rec.get(j).getRecords();
+                                    int [] recordsA = records.get(i).getRecords();
+
+                                    int [] newrec = new int[recA.length + recordsA.length];
+                                    System.arraycopy(recordsA, 0, newrec, 0, recordsA.length);
+                                    System.arraycopy(recA, 0, newrec, recordsA.length, recA.length);
+
+                                    //write back
+                                    records.get(i).setRecords(newrec);
+                                }
+                            }
+                        }
                     }
                 } else {
                     aaregion = SimpleShapeFile.parseWKT(activearea);
@@ -785,5 +796,86 @@ public class SpeciesController {
         }
 
         return "";
+    }
+
+    @RequestMapping(value = "/lsid/register", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String lsidRecords(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String [] lsids = req.getParameter("lsids").split(",");
+
+            for(int i=0;i<lsids.length;i++) {
+                lsids[i] = lsids[i].replaceAll("__", ".");
+            }
+
+            int count = OccurrencesCollection.registerLSID(id, lsids);
+
+            System.out.println("successfully registered records in lsids: " + count);
+
+            return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/area/register", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String areaRecords(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String areaParam = req.getParameter("area");
+
+            SimpleRegion region = null;;
+            areaParam = URLDecoder.decode(areaParam, "UTF-8");
+
+            int count = 0;
+            if (areaParam != null && areaParam.startsWith("ENVELOPE")) {
+                ArrayList<OccurrenceRecordNumbers> records = FilteringService.getRecords(areaParam);
+                count = OccurrencesCollection.registerRecords(id, records);
+            } else {
+                region = SimpleShapeFile.parseWKT(areaParam);
+                count = OccurrencesCollection.registerArea(id, region);
+            }
+
+            System.out.println("successfully registered records in area: " + count);
+
+            return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/highlight/register", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String highlightRecords(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String lsid = req.getParameter("lsid").replaceAll("__", ".");
+            String pid = req.getParameter("pid");
+            String include = req.getParameter("include");
+
+            pid = URLDecoder.decode(pid, "UTF-8");
+
+            int count = 0;
+            if(pid != null) {
+                count = OccurrencesCollection.registerHighlight(lsid, id, pid, (include!=null));
+            }
+
+            System.out.println("successfully registered records in highlight: " + count);
+
+            return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

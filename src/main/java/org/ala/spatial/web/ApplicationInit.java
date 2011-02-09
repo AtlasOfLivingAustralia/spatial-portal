@@ -22,8 +22,8 @@ public class ApplicationInit extends ContextLoaderListener {
     public void contextInitialized(ServletContextEvent sce) {
         TabulationSettings.load();
         OccurrencesCollection.init();
-        //DatasetMonitor dm = new DatasetMonitor();
-        //dm.start();
+        DatasetMonitor dm = new DatasetMonitor();
+        dm.start();
 
         //OccurrencesIndex.loadIndexes();
     }

@@ -8,7 +8,9 @@ import java.io.FileWriter;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.BitSet;
+import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.TabulationSettings;
 
 /**
@@ -31,7 +33,11 @@ public class OccurrenceLayers {
         TabulationSettings.load();
         int[][] actual_grid = new int[TabulationSettings.grd_ncols][TabulationSettings.grd_nrows];
 
-        double[] points = OccurrencesCollection.getPoints(null);
+        //region
+        SimpleRegion region = new SimpleRegion();
+        region.setBox(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
+
+        double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(region, Integer.MAX_VALUE));
 
         int x, y;
         for (int i = 0; i < points.length; i += 2) {
@@ -113,13 +119,6 @@ public class OccurrenceLayers {
     }
 
     public static void makeSpeciesCountLayer(int cell_offset) {
-        TabulationSettings.load();
-        DatasetMonitor dm = new DatasetMonitor();
-        dm.start();
-
-        //TODO: wait for index to load
-
-
         int pieces = 10;
         int height = TabulationSettings.grd_nrows / pieces;
 
@@ -147,7 +146,17 @@ public class OccurrenceLayers {
 
                 BitSet[][] actual_grid = new BitSet[TabulationSettings.grd_ncols][grd_nrows];
 
-                double[] points = OccurrencesCollection.getPoints(null);
+                ArrayList<Object> extra = new ArrayList<Object>(2);
+                extra.add("i"); //request for SpeciesIndex lookup number
+                extra.add(null);//placeholder for data
+
+                //region
+                SimpleRegion region = new SimpleRegion();
+                region.setBox(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
+
+                double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(region, Integer.MAX_VALUE), extra);
+
+                int[] speciesLookupNumber = (int[]) extra.get(1);
 
                 int x, y;
                 for (int i = 0; i < points.length; i += 2) {
@@ -159,10 +168,10 @@ public class OccurrenceLayers {
                         if (actual_grid[x][y] == null) {
                             actual_grid[x][y] = new BitSet();
                         }
-                        //TODO: fix for new index
-                        //if(OccurrencesIndex.speciesNumberInRecordsOrder[i] >= 0) {
-                        //    actual_grid[x][y].set(OccurrencesIndex.speciesNumberInRecordsOrder[i]);
-                        //}
+
+                        if (speciesLookupNumber[i/2] >= 0) {
+                            actual_grid[x][y].set(speciesLookupNumber[i/2]);
+                        }
                     }
                 }
 
@@ -250,6 +259,11 @@ public class OccurrenceLayers {
     }
 
     static public void main(String[] args) {
+        TabulationSettings.load();
+        OccurrencesCollection.init();
+        DatasetMonitor dm = new DatasetMonitor();
+        dm.initDatasetFiles();
+
         int size = 4; //spacing is 4 + 1 + 4 = 9x9
         if (args.length > 0) {
             try {
@@ -258,7 +272,8 @@ public class OccurrenceLayers {
                 e.printStackTrace();
             }
         }
-        OccurrenceLayers.makeOccurrenceCountLayer(size);
+        
+        makeOccurrenceCountLayer(size);
         makeSpeciesCountLayer(size);
     }
 }
