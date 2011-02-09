@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -131,7 +132,18 @@ public class SpeciesAutoComplete extends Combobox {
                             myci = new Comboitem(taxon);
                             myci.setParent(this);
                         }
-                        myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records");
+
+                        String [] wmsNames = CommonData.getSpeciesDistributionWMS(spVal[1].trim());
+                        if(wmsNames != null && wmsNames.length > 0) {
+                            if(wmsNames.length == 1) {
+                                myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records + map");
+                            } else {
+                                myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records + " + wmsNames.length + " maps");
+                            }
+                        } else {
+                            myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records");
+                        }
+                        
                         myci.setDisabled(false);
                         myci.addAnnotation(spVal[1].trim(),"LSID", null);
 
@@ -164,7 +176,7 @@ public class SpeciesAutoComplete extends Combobox {
         return mapComposer;
     }
 
-  private String loadUserPoints(String val) {
+    private String loadUserPoints(String val) {
 	        String userPoints = "";
 	        Hashtable<String, UserData> htUserSpecies = (Hashtable) getThisMapComposer().getSession().getAttribute("userpoints");
                 val = val.toLowerCase();

@@ -13,14 +13,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:h="http://www.w3.org/1999/xhtml"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd"
-    xmlns:w="http://www.zkoss.org/2005/zk/client">
+    xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
 
-    <html><![CDATA[
-            <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
-            <link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
-            <!-- <link rel="stylesheet" href="css/alastyles.css" type="text/css" media="screen" /> -->
-        ]]>
-    </html>
+   
+    <n:link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
+    <n:link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
+    <!-- <n:link rel="stylesheet" href="css/alastyles.css" type="text/css" media="screen" /> -->
+    
 
     <!-- style src="css/zkprint.css" media="print" /-->
     <script src="/scripts/jquery-1.2.6.min.js" type="text/javascript"></script>
@@ -195,9 +194,29 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </hbox>
                                             </div>
                                             <div id="colourChooser" visible="false">
-
                                                 <hbox>
-                                                    <label value="Colours:" sclass="h3" />
+                                                    <label value="Colour:" sclass="h3" />
+                                                    <separator orient="vertical" />
+                                                    <combobox id="cbColour" >
+                                                        <comboitem label="User defined" id="ciColourUser" value="-1" />
+                                                        <comboitem label="Scientific Name" id="ciColourSN" value="7" />
+                                                        <comboitem label="Species" id="ciColourS" value="6" />
+                                                        <comboitem label="Genus" id="ciColourG" value="5" />
+                                                        <comboitem label="Family" id="ciColourF" value="4" />
+                                                        <comboitem label="Order" id="ciColourO" value="3" />
+                                                        <comboitem label="Class" id="ciColourC" value="2" />
+                                                        <comboitem label="Phylum" id="ciColourP" value="1" />
+                                                        <comboitem label="Kingdom" id="ciColourK" value="0" />
+                                                    </combobox>
+                                                </hbox>
+                                                <div id="divUserColours" >
+                                                    <separator />
+                                                <hbox >
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
                                                     <style dynamic="true">
 
 			<!-- cut/hide the vertical borders in the grid rows -->
@@ -309,9 +328,12 @@ border-bottom: none;
                                                             <label id="blueLabel" />
                                                         </div>
                                                     </hbox>
-                                                    <separator />
+                                                    </vbox>
+                                                    </div>
+                                                    <vbox>
                                                     <hbox width="100%">
-                                                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">                                                           
+                                                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
+                                                            <separator />
                                                             <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
                                                             <separator />
                                                             <hbox id="uncertaintyLegend" visible="false">
@@ -455,21 +477,19 @@ border-bottom: none;
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
-                        <hbox>
-                            <html><![CDATA[
-                            <ul id="cssdropdown">
-                                <li id="mapopt" class="headlink goButton"><span id="selmap">Normal</span>
-                                    <ul>
-                                        <li><a href="#" onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</a></li>
-                                        <li><a href="#" onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</a></li>
-                                        <li><a href="#" onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                            ]]></html>
-                            <button label="Zoom to my location" action="onclick: goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
+                        <hbox>                            
+                            <n:ul id="cssdropdown" >
+                                <n:li id="mapopt" class="headlink goButton"><n:span id="selmap">Normal</n:span>
+                                    <n:ul>
+                                        <n:li><n:a href="#" onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</n:a></n:li>
+                                        <n:li><n:a href="#" onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</n:a></n:li>
+                                        <n:li><n:a href="#" onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</n:a></n:li>
+                                    </n:ul>
+                                </n:li>
+                            </n:ul>                            
+                            <button label="Zoom to my location"  w:onClick="goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
                             <separator orient="vertical" spacing="2px" />
-                            <button label="Download map" action="onclick: printHack('');" sclass="goButton" image="img/picture_save.png" />
+                            <button label="Download map" w:onClick="printHack('')" sclass="goButton" image="img/picture_save.png" />
                             <separator orient="vertical" spacing="1px" />
                             <button id="reloadPortal" label="Reset map" sclass="goButton" image="img/arrow_refresh.png" />
                             </hbox>
@@ -671,7 +691,6 @@ if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.locati
 }    
         
 function printHack(o) {
-alert('printHack');
     //session variables not in session
     var size = map.getSize().w + "," + (document.body.clientHeight-68); 
     var extent = map.getExtent().toBBOX();
@@ -679,7 +698,7 @@ alert('printHack');
     var basemap = currentbaselayertxt
     var mapHTML = size + "," + extent + "," + lhsWidth + "," + currentbaselayertxt;
     
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onPrint', mapHTML));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$onPrint', mapHTML));
 }
 function changeBaseLayer(type) {
     currentbaselayertxt = type;
@@ -725,6 +744,7 @@ function addCommas(nStr) {
     while (rgx.test(x1)) {
         x1 = x1.replace(rgx, '$1' + ',' + '$2');
     }
+    return x1;
 }
           ]]>
         </script>

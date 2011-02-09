@@ -1,16 +1,12 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -25,6 +21,7 @@ import org.zkoss.zul.Tabbox;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Row;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -36,6 +33,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     public Button mapspecies;
     public Label results_label2_occurrences;
     public Label results_label2_species;
+    public Label sdLabel;
     public String[] results = null;
     public String pid;
     String shape;
@@ -138,6 +136,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onRefreshCount(Event e) throws Exception {
+        //temporary:
+        intersectWithSpeciesDistributions();
+
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("/filtering/apply");
@@ -289,6 +290,27 @@ public class FilteringResultsWCController extends UtilityComposer {
         onMapSpecies(null);
     }
 
+    String registerPointsInArea(String area) {
+        //register with alaspatial using data.getPid();
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("species/area/register");
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
+            get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public void onMapSpecies(Event event) {
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
@@ -296,71 +318,14 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         try {
             String area = getMapComposer().getSelectionArea();
-            String polygon = getMapComposer().getSelectionAreaPolygon();
+            //String polygon = getMapComposer().getSelectionAreaPolygon();
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
-            if (results_count_occurrences > 20000 || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)) {
-                MapLayer gjLayer = getMapComposer().getMapLayer("Species in Active area");
-	                if(gjLayer != null) {
-	                    getMapComposer().deactiveLayer(gjLayer, true, false, true);
-	                    getMapComposer().getOpenLayersJavascript().setAdditionalScript(getMapComposer().getOpenLayersJavascript().iFrameReferences
-	                                + getMapComposer().getOpenLayersJavascript().removeMapLayer(gjLayer));
-	                }
-                //clustering
-                MapLayerMetadata md = new MapLayerMetadata();
-                md.setLayerExtent(getMapComposer().getViewArea(), 0.2);
 
-                sbProcessUrl.append("species");
-                sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area, "UTF-8"));
-                String id = String.valueOf(System.currentTimeMillis());
-                sbProcessUrl.append("/id/").append(URLEncoder.encode(id, "UTF-8"));
-                sbProcessUrl.append("/now");
-                sbProcessUrl.append("?z=").append(String.valueOf(getMapComposer().getMapZoom()));
-                sbProcessUrl.append("&a=").append(URLEncoder.encode(md.getLayerExtentString(), "UTF-8"));
-                sbProcessUrl.append("&m=").append(String.valueOf(8));
-                MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + sbProcessUrl.toString(), true);
+            //register points with a new id for mapping
+            String lsid = registerPointsInArea(area);
+            getMapComposer().mapSpeciesByLsid(lsid, "Species in Active area");
 
-                ml.setClustered(true);
-
-                getMapComposer().btnPointsCluster.setLabel("Display species as points");
-
-                if (ml.getMapLayerMetadata() == null) {
-                    ml.setMapLayerMetadata(new MapLayerMetadata());
-                }
-
-                ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
-
-                //TODO: don't use setUnits
-                ml.getMapLayerMetadata().setUnits(area);
-
-                //get bounding box for active area
-                try {
-                    MapLayerMetadata md2 = new MapLayerMetadata();
-                    md2.setLayerExtent(polygon, 0);
-                    double[] d = md2.getLayerExtent();
-
-                    List<Double> bb = new ArrayList<Double>();
-                    for (int i = 0; i < d.length; i++) {
-                        bb.add(d[i]);
-                    }
-                    md.setBbox(bb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                // reopen the layer controls
-	                try {
-	                    getMapComposer().refreshActiveLayer(ml);
-	                    getMapComposer().setupLayerControls(ml);
-	                } catch (Exception e) {
-	                    e.printStackTrace();
-	                }
-            } else {
-                MapLayer ml = getMapComposer().mapSpeciesWMSByFilter("Species in Active area", "area='" + area + "'");
-
-                //TODO: don't use setUnits
-                ml.getMapLayerMetadata().setUnits(area);
-            }
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
             e.printStackTrace();
@@ -468,5 +433,82 @@ public class FilteringResultsWCController extends UtilityComposer {
         } else {
             mapspecies.setVisible(false);
         }
+    }
+
+    Textbox taLSIDs;
+    public void onClick$btnAddLSIDs(Event event) {
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+
+        try {
+            String lsids = taLSIDs.getValue().trim();
+            lsids = lsids.replace("\n", ",");
+            lsids = lsids.replace("\t", ",");
+            lsids = lsids.replace(" ","");
+
+            String [] split = lsids.split(",");
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("/species/lsid/register");
+            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".","__"), "UTF-8"));
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            pid = get.getResponseBodyAsString();
+
+            System.out.println("btnAddLSIDs:" + pid);
+
+            getMapComposer().mapSpeciesByLsid(pid, "User entered LSIDs");
+
+            //getMapComposer().updateUserLogAnalysis("Sampling", "", "", u.getFile(), pid, "Sampling download");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    Textbox taSpeciesDistribution;
+    public void intersectWithSpeciesDistributions() {
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+
+        try {
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("ws/intersect/shape");
+            //sbProcessUrl.append("?area=" + URLEncoder.encode(shape, "UTF-8"));
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            if(result == 200) {
+                String txt = get.getResponseBodyAsString();
+                taSpeciesDistribution.setText(txt);
+                String [] lines = txt.split("\n");
+                if(lines[0].length() == 0) {
+                    sdLabel.setValue("0 species distribution layers found");
+                } else {
+                    sdLabel.setValue(lines.length + " species distribution layers found");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClick$sdDownload(Event event) {
+        String spid = pid;
+        if(spid == null || spid.equals("none")){
+            spid = String.valueOf(System.currentTimeMillis());
+        }
+
+        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        String sdate = date.format(new Date());
+
+        Filedownload.save(taSpeciesDistribution.getText(), "text/plain", "Species_distributions_" + sdate + "_" + spid + ".csv");
     }
 }

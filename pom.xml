@@ -17,6 +17,11 @@
             <artifactId>alaspatial</artifactId>
             <version>1.00</version>
         </dependency>
+        <dependency>
+            <groupId>jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.13</version>
+        </dependency>
 
         <dependency>
             <groupId>geoGoogle</groupId>
@@ -455,6 +460,11 @@
             <id>osgeo</id>
             <name>OpenGeo GeoTools Repository</name>
             <url>http://repo.opengeo.org/</url>
+        </repository>
+        <repository>
+            <id>jboss</id>
+            <name>jboss</name>
+            <url>http://repository.jboss.org/maven2/</url>
         </repository>
         <repository>
             <id>unknown-jars-temp-repo</id>

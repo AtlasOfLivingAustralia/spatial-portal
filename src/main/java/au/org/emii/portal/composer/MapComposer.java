@@ -68,6 +68,7 @@ import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.LegendMaker;
+import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -98,6 +99,7 @@ import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Caption;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Div;
@@ -199,6 +201,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public String tbxPrintHack;
     int mapZoomLevel = 4;
     private Hashtable activeLayerMapProperties;
+
+    Div divUserColours;
+    Combobox cbColour;
+    Comboitem ciColourUser; //User selected colour
+    Comboitem ciColourSN;   //scientific name
+    Comboitem ciColourS;    //species
+    Comboitem ciColourG;    //genus
+    Comboitem ciColourF;    //family
+    Comboitem ciColourO;    //order
+    Comboitem ciColourC;    //class
+    Comboitem ciColourP;    //phylum
+    Comboitem ciColourK;    //kingdom
+
     /*
      * for capturing layer loaded events signaling listeners
      */
@@ -260,6 +275,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void applyChange() {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
+        applyChange(selectedLayer);
+    }
+
+    public void applyChange(MapLayer selectedLayer) {
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             float opacity = ((float) opacitySlider.getCurpos()) / 100;
             selectedLayer.setOpacity(opacity);
@@ -276,6 +295,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 selectedLayer.setBlueVal(blueSlider.getCurpos());
                 selectedLayer.setSizeVal(sizeSlider.getCurpos());
                 selectedLayer.setSizeUncertain(chkUncertaintySize.isChecked());
+
+                selectedLayer.setColourMode((String) cbColour.getSelectedItem().getValue());
 
                 Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
                 String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
@@ -320,9 +341,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else {
                     System.out.println("nothing:" + selectedLayer.getType());
                     //selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
-                    String envString = "color:" + hexColour + ";name:circle;size:" + sizeSlider.getCurpos();
+                    String envString = "";
+                    if (selectedLayer.getColourMode().equals("-1")) {
+                        envString += "color:" + hexColour;
+                    } else {
+                        envString += "colormode:" + selectedLayer.getColourMode();
+                    }
+                    envString += ";name:circle;size:" + sizeSlider.getCurpos();
                     envString += ";opacity:" + opacity;
-                    if (chkUncertaintySize.isChecked()) {
+                    if(selectedLayer.getHighlight() != null) {
+                        envString += ";sel:" + selectedLayer.getHighlight();
+                    } else if (chkUncertaintySize.isChecked()) {
                         envString += ";uncertainty:1";
                     }
                     selectedLayer.setEnvParams(envString);
@@ -430,21 +459,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onChange$searchSpeciesAuto() {
+        mapSpeciesFromAutocomplete(searchSpeciesAuto);
+    }
 
+    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac){
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
-        if (searchSpeciesAuto.getSelectedItem() == null
-                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
-                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
+        if (sac.getSelectedItem() == null
+                || sac.getSelectedItem().getAnnotatedProperties() == null
+                || sac.getSelectedItem().getAnnotatedProperties().size() == 0) {
             return;
         }
 
         //btnSearchSpecies.setVisible(true);
-        String taxon = searchSpeciesAuto.getValue();
+        String taxon = sac.getValue();
         String rank = "";
 
-        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
+        String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().contains(": ")) {
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
@@ -456,11 +488,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
             rank = "taxon";
         }
-        mapSpeciesByLsid((String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
 
+        String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
+        //are there any distribution maps to map first?
+        //Heptranchias
+        String [] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
+        if(wmsNames != null && wmsNames.length > 0) {
+            if(wmsNames.length > 1) {
+                for(int i=0;i<wmsNames.length;i++) {
+                    addWMSLayer(taxon + " map " + (i+1), wmsNames[i], 0.75f);
+                }
+            } else {
+                addWMSLayer(taxon + " map", wmsNames[0], 0.75f);
+            }
+        }
+
+        //map species
+        mapSpeciesByLsid(lsid, taxon, rank);
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
-
     }
 
     public void onChange$lac() {
@@ -1343,10 +1389,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 chkUncertaintySize.setChecked(sizeUncertain);
                 //chkPointsCluster.setChecked(currentSelection.isClustered());
 
+                updateComboBoxesColour(currentSelection);
+
                 blueLabel.setValue(String.valueOf(blue));
                 redLabel.setValue(String.valueOf(red));
                 greenLabel.setValue(String.valueOf(green));
                 sizeLabel.setValue(String.valueOf(size));
+
+                if (currentSelection.getColourMode().equals("-1")) {
+                    divUserColours.setVisible(true);
+                } else {
+                    divUserColours.setVisible(false);
+                }
 
                 if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
                     legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
@@ -1428,15 +1482,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             hideLayerControls(null);
         }
-
-        // TODO: fix the points/cluster toggle for active area
+        
         if (m != null) {
             btnPointsCluster.setVisible(true);
-//            if (m.getName().equalsIgnoreCase("Species in Active area")) {
-//                btnPointsCluster.setVisible(false);
-//            } else {
-//                btnPointsCluster.setVisible(true);
-//            }
         }
     }
 
@@ -1591,6 +1639,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onCheck$chkUncertaintySize() {
+        MapLayer selectedLayer = getActiveLayersSelection(true);
+        if(selectedLayer != null) {
+            selectedLayer.setHighlight(null);
+        }
         updateLegendImage();
         applyChange();
     }
@@ -1627,8 +1679,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (envParams == null) {
                 Color c = new Color(red, green, blue);
                 String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
-                envParams = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity + "";
-                if (uncertaintyCheck > 0) {
+                envParams = "";
+                if (selectedLayer.getColourMode().equals("-1")) {
+                    envParams += "color:" + hexColour;
+                } else {
+                    envParams += "colormode:" + selectedLayer.getColourMode();
+                }
+                envParams += ";name:circle;size:" + size + ";opacity:" + opacity + "";
+                if(selectedLayer.getHighlight() != null) {
+                    envParams += ";sel:" + selectedLayer.getHighlight();
+                } else if (uncertaintyCheck > 0) {
                     envParams += ";uncertainty:1";
                 }
             }
@@ -1646,94 +1706,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     + openLayersJavascript.removeMapLayer(selectedLayer));
 
             MapLayer convLayer = null;
-            if (selectedLayer.getName().equalsIgnoreCase("Species in Active area")) {
 
-                deactiveLayer(selectedLayer, true, false, true);
+            deactiveLayer(selectedLayer, true, false, true);
 
-                System.out.println("Is an active area");
-                boolean isClustered = selectedLayer.isClustered();
-                String pid = "none";
-                String aarank = "activearea";
-
-                if (selectedLayer.getMapLayerMetadata() != null) {
-                    pid = selectedLayer.getMapLayerMetadata().getSpeciesLsid();
-                    aarank = selectedLayer.getMapLayerMetadata().getSpeciesRank();
-                }
-
-                if (isClustered) {
-                    //convLayer = loadSpeciesInActiveArea(pid, 1, false);
-                    convLayer = mapSpeciesWMSByFilter("Species in Active area", "area='" + md.getUnits() + "'");
-                    convLayer.getMapLayerMetadata().setUnits(md.getUnits());
-
-                    convLayer.setClustered(false);
-                    btnPointsCluster.setLabel("Display species as clusters");
-                } else {
-                    //convLayer = loadSpeciesInActiveArea(pid, 201, true);
-
-                    try {
-                        String area = md.getUnits();
-                        String polygon = getSelectionAreaPolygon();
-
-                        StringBuffer sbProcessUrl = new StringBuffer();
-
-                        //clustering
-                        MapLayerMetadata md2 = new MapLayerMetadata();
-                        md2.setLayerExtent(getMapComposer().getViewArea(), 0.2);
-
-                        sbProcessUrl.append("species");
-                        sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area, "UTF-8"));
-                        String id = String.valueOf(System.currentTimeMillis());
-                        sbProcessUrl.append("/id/").append(URLEncoder.encode(id, "UTF-8"));
-                        sbProcessUrl.append("/now");
-                        sbProcessUrl.append("?z=").append(String.valueOf(getMapZoom()));
-                        sbProcessUrl.append("&a=").append(URLEncoder.encode(md2.getLayerExtentString(), "UTF-8"));
-                        sbProcessUrl.append("&m=").append(String.valueOf(8));
-                        MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area",
-                                settingsSupplementary.getValue(CommonData.SAT_URL)
-                                + "/alaspatial/" + sbProcessUrl.toString(), true);
-
-                        ml.setClustered(true);
-                        btnPointsCluster.setLabel("Display species as points");
-
-                        if (ml.getMapLayerMetadata() == null) {
-                            ml.setMapLayerMetadata(new MapLayerMetadata());
-                        }
-
-                        ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
-
-                        //TODO: don't use setUnits
-                        ml.getMapLayerMetadata().setUnits(md.getUnits());
-
-                        //get bounding box for active area
-                        try {
-                            MapLayerMetadata md3 = new MapLayerMetadata();
-                            md3.setLayerExtent(polygon, 0);
-                            double[] d = md3.getLayerExtent();
-
-                            List<Double> bb = new ArrayList<Double>();
-                            for (int i = 0; i < d.length; i++) {
-                                bb.add(d[i]);
-                            }
-                            md2.setBbox(bb);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        convLayer = ml;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+            if (selectedLayer.isClustered()) {
+                convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
             } else {
-                System.out.println("Not an active area");
-
-                deactiveLayer(selectedLayer, true, false, true);
-
-                if (selectedLayer.isClustered()) {
-                    convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
-                } else {
-                    convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
-                }
+                convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
             }
 
             // reopen the layer controls
@@ -1782,6 +1761,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // showtime!
         load();
+
+         //combobox defaults
+        cbColour.setSelectedItem(ciColourUser);
     }
 
     /**
@@ -1949,7 +1931,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (safeToPerformMapAction()) {
             MapLayer gjLayer = getMapLayer(label);
-            if (label.equalsIgnoreCase("Species in Active area") || forceReload) {
+            if (forceReload) {
                 if (gjLayer != null) {
                     System.out.println("removing existing layer: " + gjLayer.getName());
                     openLayersJavascript.setAdditionalScript(
@@ -2040,7 +2022,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (safeToPerformMapAction()) {
             MapLayer gjLayer = getMapLayer(label);
-            if (label.equalsIgnoreCase("Species in Active area") || forceReload) {
+            if (forceReload) {
                 if (gjLayer != null) {
                     System.out.println("removing existing layer: " + gjLayer.getName());
                     openLayersJavascript.setAdditionalScript(
@@ -2497,6 +2479,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 ml.setClustered(true);
 
                 btnPointsCluster.setLabel("Display species as points");
+                updateComboBoxesColour(ml);
             }
 
             return ml;
@@ -2593,6 +2576,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             ml.setClustered(false);
             btnPointsCluster.setLabel("Display species as clusters");
+            updateComboBoxesColour(ml);
 
             lsid = StringUtils.replace(lsid, ".", "__");
             try {
@@ -2655,34 +2639,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         System.out.println("Mapping: " + label + " with " + uri + filter);
 
         try {
-            if (safeToPerformMapAction()) {
-                /*
-                boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
-                if (addedOk) {
-                MapLayer ml = getMapLayer(label);
-                ml.setDynamicStyle(true);
-                ml.setEnvParams(envString);
-                ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
-
-                ml.setBlueVal(b);
-                ml.setGreenVal(g);
-                ml.setRedVal(r);
-                ml.setSizeVal(8);
-                ml.setOpacity(opacity);
-
-                return ml;
-                }
-                 *
-                 */
+            if (safeToPerformMapAction()) {                
 
                 MapLayer gjLayer = getMapLayer(label);
-                if (label.equalsIgnoreCase("Species in Active area")) {
-                    if (gjLayer != null) {
-                        System.out.println("removing existing layer: " + gjLayer.getName());
-                        openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
-                                + openLayersJavascript.removeMapLayer(gjLayer));
-                        deactiveLayer(gjLayer, true, false, true);
-                    } //else {
+                
+                MapLayer mapLayer = null;
+                if (getMapLayer(label) == null) {
                     boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
                     if (addedOk) {
                         MapLayer ml = getMapLayer(label);
@@ -2698,23 +2660,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                         ml.setClustered(false);
                         btnPointsCluster.setLabel("Display species as clusters");
+                        updateComboBoxesColour(ml);
 
                         MapLayerMetadata md = ml.getMapLayerMetadata();
                         if (md == null) {
                             md = new MapLayerMetadata();
                             ml.setMapLayerMetadata(md);
-                        }
-
-                        //TODO: make new variable in MapLayerMetadata for
-                        // mapping 'Species in Active area' as WMS from alaspatial
-                        md.setUnits(filter);
-
-                        // reopen the layer controls
-                        try {
-                            refreshActiveLayer(ml);
-                            setupLayerControls(ml);
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
 
                         return ml;
@@ -2724,50 +2675,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         logger.info("adding WMS layer failed ");
                     }
                 } else {
-                    MapLayer mapLayer = null;
-                    if (getMapLayer(label) == null) {
-                        boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
-                        if (addedOk) {
-                            MapLayer ml = getMapLayer(label);
-                            ml.setDynamicStyle(true);
-                            ml.setEnvParams(envString);
-                            ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
+                    //need to cleanup any additional scripts outstanding
+                    openLayersJavascript.useAdditionalScript();
 
-                            ml.setBlueVal(b);
-                            ml.setGreenVal(g);
-                            ml.setRedVal(r);
-                            ml.setSizeVal(8);
-                            ml.setOpacity(opacity);
-
-                            ml.setClustered(false);
-                            btnPointsCluster.setLabel("Display species as clusters");
-
-                            MapLayerMetadata md = ml.getMapLayerMetadata();
-                            if (md == null) {
-                                md = new MapLayerMetadata();
-                                ml.setMapLayerMetadata(md);
-                            }
-
-                            //TODO: make new variable in MapLayerMetadata for
-                            // mapping 'Species in Active area' as WMS from alaspatial
-                            md.setUnits(filter);
-
-                            return ml;
-                        } else {
-                            // fail
-                            //hide error, might be clustering zoom in;  showMessage("No mappable features available");
-                            logger.info("adding WMS layer failed ");
-                        }
-                    } else {
-                        //need to cleanup any additional scripts outstanding
-                        openLayersJavascript.useAdditionalScript();
-
-                        // fail
-                        //showMessage("GeoJSON layer already exists");
-                        logger.info(
-                                "refusing to add a new layer with URI " + uri
-                                + " because it already exists in the menu");
-                    }
+                    // fail
+                    //showMessage("GeoJSON layer already exists");
+                    logger.info(
+                            "refusing to add a new layer with URI " + uri
+                            + " because it already exists in the menu");
                 }
             }
         } catch (Exception ex) {
@@ -3409,6 +3324,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //fileUpload.setMaxsize(60000);
         getDesktop().getWebApp().getConfiguration().setMaxUploadSize(60000);
         fileUpload.setParent(vbox);
+        fileUpload.setLabel("Upload File");
+        fileUpload.setUpload("true");
 
         fileUpload.addEventListener("onUpload", new EventListener() {
 
@@ -3692,5 +3609,117 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("unable to load user shapefile: ");
             e.printStackTrace(System.out);
         }
+    }
+
+
+    public void onChange$cbColour(Event event) {
+        updateUserColourDiv();
+        applyChange();
+    }
+
+    void updateUserColourDiv() {
+        if (cbColour.getSelectedItem() == ciColourUser) {
+            divUserColours.setVisible(true);
+        } else {
+            divUserColours.setVisible(false);
+        }
+    }
+
+    private void updateComboBoxesColour(MapLayer currentSelection) {
+        if (currentSelection.isClustered()) {
+            cbColour.setSelectedItem(ciColourUser);
+            cbColour.setDisabled(true);
+        } else {
+            cbColour.setDisabled(false);
+
+            if (currentSelection.getColourMode().equals(ciColourUser.getValue())) {
+                cbColour.setSelectedItem(ciColourUser);
+            } else if (currentSelection.getColourMode().equals(ciColourSN.getValue())) {
+                cbColour.setSelectedItem(ciColourSN);
+            } else if (currentSelection.getColourMode().equals(ciColourS.getValue())) {
+                cbColour.setSelectedItem(ciColourS);
+            } else if (currentSelection.getColourMode().equals(ciColourG.getValue())) {
+                cbColour.setSelectedItem(ciColourG);
+            } else if (currentSelection.getColourMode().equals(ciColourF.getValue())) {
+                cbColour.setSelectedItem(ciColourF);
+            } else if (currentSelection.getColourMode().equals(ciColourO.getValue())) {
+                cbColour.setSelectedItem(ciColourO);
+            } else if (currentSelection.getColourMode().equals(ciColourC.getValue())) {
+                cbColour.setSelectedItem(ciColourC);
+            } else if (currentSelection.getColourMode().equals(ciColourP.getValue())) {
+                cbColour.setSelectedItem(ciColourP);
+            } else if (currentSelection.getColourMode().equals(ciColourK.getValue())) {
+                cbColour.setSelectedItem(ciColourK);
+            }
+            updateUserColourDiv();
+        }
+    }
+
+    /*
+     * remove it + map it
+     */
+    public MapLayer activateLayerForScatterplot(ScatterplotData data, String rank) {
+        List udl = getMapComposer().getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        MapLayer mapLayer = null;
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if(md != null
+                && md.getSpeciesLsid() != null
+                && md.getSpeciesLsid().equals(data.getLsid())) {
+
+                if(ml.isClustered() || !ml.isDisplayed()) {
+                    //removeLayer;
+                    openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
+                        + openLayersJavascript.removeMapLayer(ml));
+                } else {
+                    mapLayer = ml;
+                }
+
+                break;
+            }
+        }
+
+        if(mapLayer == null) {
+            try {
+                deactiveLayer(getActiveLayersSelection(false), true, false, true);
+            } catch (Exception e) {
+
+            }
+
+            //map as WMS points layer
+            mapLayer = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "");
+            if (mapLayer != null) {
+                MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    mapLayer.setMapLayerMetadata(md);
+                }
+                md.setSpeciesLsid(data.getLsid());
+                md.setSpeciesDisplayName(data.getSpeciesName());
+                md.setSpeciesRank(rank);
+
+                updateUserLogMapSpecies(data.getLsid());
+            }
+        }
+
+        // reopen the layer controls
+        try {
+            refreshActiveLayer(mapLayer);
+            setupLayerControls(mapLayer);
+
+            for(int i=0;i<activeLayersList.getItemCount();i++) {
+                Listitem item = (Listitem) activeLayersList.getItemAtIndex(i);
+                if(mapLayer == (MapLayer) item.getValue()) {
+                    activeLayersList.setSelectedIndex(i);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return mapLayer;
     }
 }

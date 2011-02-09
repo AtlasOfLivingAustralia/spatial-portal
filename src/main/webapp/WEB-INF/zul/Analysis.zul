@@ -4,6 +4,7 @@
 <?component name="alocForm" macro-uri="/WEB-INF/zul/AnalysisALOC.zul"?>
 <?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
 <?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?>
+<?component name="scatterplotForm" macro-uri="/WEB-INF/zul/Scatterplot.zul"?>
 
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
 <zk>
@@ -38,6 +39,10 @@
 
                 <!--  aloc -->
                 <tab id="alocTab" label="Classification" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
+
+
+                <!-- scatterplot -->
+                <tab id="scatterplotTab" label="Species/Environment Scatterplot" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
             </tabs>
             <toolbar>
                 <toolbarbutton id="analysisCXHelp"
@@ -60,6 +65,9 @@
                 </tabpanel>
                 <tabpanel>
                     <alocForm id="af" />
+                </tabpanel>
+                <tabpanel>
+                    <scatterplotForm id="scatterplotForm" />
                 </tabpanel>
             </tabpanels>
         </tabbox>

@@ -21,6 +21,7 @@ public class AnalysisController extends UtilityComposer {
     private Session sess = (Session) Sessions.getCurrent();
     private SettingsSupplementary settingsSupplementary = null;
     private HtmlMacroComponent speciesListForm;
+    private HtmlMacroComponent scatterplotForm;
     private HtmlMacroComponent asf;
     private HtmlMacroComponent mf;
     private HtmlMacroComponent af;
@@ -29,6 +30,7 @@ public class AnalysisController extends UtilityComposer {
     boolean samplingTabActive = true;   //TODO: tie to default in .zul
     boolean maxentTabActive = false;
     boolean alocTabActive = false;
+    boolean scatterplotActive = false;
 
     @Override
     public void afterCompose() {
@@ -62,6 +64,7 @@ public class AnalysisController extends UtilityComposer {
         samplingTabActive = false;
         maxentTabActive = false;
         alocTabActive = false;
+        scatterplotActive = false;
         ((FilteringResultsWCController) speciesListForm.getFellow("popup_results")).refreshCount();
     }
 
@@ -70,6 +73,7 @@ public class AnalysisController extends UtilityComposer {
         samplingTabActive = true;
         maxentTabActive = false;
         alocTabActive = false;
+        scatterplotActive = false;
         ((SamplingWCController) asf.getFellow("samplingwindow")).callPullFromActiveLayers();
     }
 
@@ -82,6 +86,7 @@ public class AnalysisController extends UtilityComposer {
         samplingTabActive = false;
         maxentTabActive = true;
         alocTabActive = false;
+        scatterplotActive = false;
         ((MaxentWCController) mf.getFellow("maxentwindow")).callPullFromActiveLayers();
     }
 
@@ -90,10 +95,24 @@ public class AnalysisController extends UtilityComposer {
         samplingTabActive = false;
         maxentTabActive = false;
         alocTabActive = true;
+        scatterplotActive = false;
         getMapComposer().setWestWidth(MENU_HALF_WIDTH);
 
         ((ALOCWCController) af.getFellow("alocwindow")).callPullFromActiveLayers();
     }
+    
+    public void onSelect$scatterplotTab() {
+        speciesListTabActive = false;
+        samplingTabActive = false;
+        maxentTabActive = false;
+        alocTabActive = false;
+        scatterplotActive = true;
+        getMapComposer().setWestWidth(MENU_HALF_WIDTH);
+
+        ((ScatterplotWCController) scatterplotForm.getFellow("scatterplotwindow")).callPullFromActiveLayers();
+    }
+
+
 
     public void callPullFromActiveLayers() {
         ((SelectionController) sf.getFellow("selectionwindow")).checkForAreaRemoval();
@@ -103,6 +122,8 @@ public class AnalysisController extends UtilityComposer {
             ((MaxentWCController) mf.getFellow("maxentwindow")).callPullFromActiveLayers();
         } else if (alocTabActive) {
             ((ALOCWCController) af.getFellow("alocwindow")).callPullFromActiveLayers();
+        } else if (scatterplotActive) {
+            ((ScatterplotWCController) scatterplotForm.getFellow("scatterplotwindow")).callPullFromActiveLayers();
         }
     }
 

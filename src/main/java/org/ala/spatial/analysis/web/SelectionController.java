@@ -1159,9 +1159,9 @@ public class SelectionController extends UtilityComposer {
 
         String size = null;
 
-        if (area.contains("ENVELOPE") || area.contains("LAYER")) {
+        if(area.toLowerCase().contains("envelope") || area.toLowerCase().contains("layer")) {
             size = storedSize;
-        } else if (displayGeom.getText().contains("WORLD")) {
+        } else if(cbAreaSelection.getText().toLowerCase().contains("world")) {
             size = "509600000"; //fixed value
         } else {
             //try as WKT

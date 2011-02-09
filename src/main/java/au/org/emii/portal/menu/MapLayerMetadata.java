@@ -344,6 +344,9 @@ public class MapLayerMetadata implements Serializable {
 
     public boolean isOutside(String viewArea) {
         double[] vArea = polygonToExtents(viewArea);
+        if(vArea == null) {
+            return false;
+        }
         return !(vArea[0] >= layerExtent[0] && vArea[2] <= layerExtent[2]
                 && vArea[1] >= layerExtent[1] && vArea[3] <= layerExtent[3]);
     }

@@ -51,6 +51,47 @@
                         <hbox>
                             <button label="Map all species occurrences in Active Area" id="mapspecies" visible="false" sclass="goButton"/>
                         </hbox>
+
+                        <div visible="true" >
+                            <div align="left" visible="true">
+                                <button label="LSID upload" sclass="goButton"
+                                    onClick="lsidupload.open=(lsidupload.open) ? false:true;" />
+                            <separator/>
+                            </div>
+                            <panel id="lsidupload" style="padding: 5px;" border="normal" open="false">
+                                <panelchildren>
+                                    <vbox>
+                                        <separator />
+                                        <label value="enter LSIDs (test code, only maps the points as a new layer)" />
+                                        <textbox id="taLSIDs" rows="6" cols="60" />
+                                        <button id="btnAddLSIDs" label="add layer with these LSIDs" />
+                                    </vbox>
+
+                                    <separator/>
+                                    <div align="right"><button label="Hide" onClick="lsidupload.open=false;" /></div>
+                                </panelchildren>
+                            </panel>
+                        </div>
+
+                        <div visible="true" >
+                            <div align="left" visible="true">
+                                <label id="sdLabel" /><button label="Show records" sclass="goButton"
+                                    onClick="sd.open=(sd.open) ? false:true;" /><button id="sdDownload" label="Download records" sclass="goButton" />
+                            <separator/>
+                            
+                            </div>
+                            <panel id="sd" style="padding: 5px;" border="normal" open="false">
+                                <panelchildren>
+                                    <vbox>
+                                        <separator />
+                                        <label value="Distribution Layers in the Active Area" />
+                                        <textbox id="taSpeciesDistribution" rows="6" cols="60" />
+                                    </vbox>
+                                    <separator/>
+                                    <div align="right"><button label="Hide" onClick="sd.open=false;" /></div>
+                                </panelchildren>
+                            </panel>
+                        </div>
                     </vbox>
                 </tabpanel>
             </tabpanels>

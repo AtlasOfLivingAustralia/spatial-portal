@@ -57,6 +57,13 @@ public class CommonData {
     static String copy_layerlist = null;
     static JSONArray copy_layerlistJSON = null;
     static HashMap<JSONObject, List> copy_contextualClasses = null;
+    //(4) species with distribution layres
+    /**
+     * key = LSID
+     * value = list of WMS names
+     */
+    static HashMap<String, String[]> species_wms_layers = null;
+    static HashMap<String, String[]> copy_species_wms_layers = null;
     //Common
     static String satServer;
     static String geoServer;
@@ -84,6 +91,9 @@ public class CommonData {
         //(2) for EnvironmentalList - uses layer list json, so run after        
         initEnvironmentalOnlyList();
         initEnvironmentalAllList();
+
+        //(4) for species wms layers
+        initSpeciesWMSLayers();
 
         //(1) for LayersUtil
         if (copy_environmentalLayerNames != null) {
@@ -119,6 +129,11 @@ public class CommonData {
         }
         if (copy_contextualClasses != null) {
             contextualClasses = copy_contextualClasses;
+        }
+
+        //(4) for species wms distributions
+        if(copy_species_wms_layers != null) {
+            species_wms_layers = copy_species_wms_layers;
         }
     }
 
@@ -450,14 +465,10 @@ public class CommonData {
             int result = client.executeMethod(get);
             String classes = get.getResponseBodyAsString();
 
-            //JSONObject joClasses = JSONObject.fromObject(classes);
-            // System.out.println("CLASSES JSON:" + classes);
-            classes = classes.replace("\"", "").replace("{", "").replace("}", "");
-
-            String classAttribute = classes.split(":")[0];
-            classList = Arrays.asList(classes.split(":")[1].split(","));
-            // System.out.println("KEY:" + classAttribute);
-            // classList = Arrays.asList((jo.getString(classAttribute)).split(","));
+            JSONObject joLayers = JSONObject.fromObject(classes);
+            JSONObject joClasses = joLayers.getJSONObject("layer_classes");
+            String classAttribute = joClasses.keys().next().toString();
+            classList = Arrays.asList(joClasses.getString(classAttribute).split(","));
 
             for (String classVal : classList) {
                 //     System.out.println("CLASS:"+(String)classVal);
@@ -480,7 +491,7 @@ public class CommonData {
             }
             return classNodes;
         } catch (Exception e) {
-            System.out.println("Failure to get contextual classes.");
+            System.out.println("Failure to get contextual classes for: " + layerName);
             return classNodes;
         }
     }
@@ -492,5 +503,40 @@ public class CommonData {
 
         return formatter.format(calendar.getTime());
 
+    }
+
+    private static void initSpeciesWMSLayers() {
+        try {
+            String layersListURL = satServer + "/alaspatial/ws/intersect/list";
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(layersListURL);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            copy_species_wms_layers = new HashMap<String, String[]>();
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            System.out.println("****** species wms distributions ******");
+            System.out.println(slist);
+
+            if(slist != null && slist.length() > 0) {
+                String [] lines = slist.split("\n");
+                for(int i=0;i<lines.length;i++){
+                    String [] words = lines[i].split(",");
+                    copy_species_wms_layers.put(words[0], words[1].split("\t"));
+                }
+            }
+        } catch (Exception e) {
+            copy_species_wms_layers = null;
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * returns array of WMS species requests
+     */
+    static public String [] getSpeciesDistributionWMS(String lsid) {
+        return species_wms_layers.get(lsid);
     }
 }

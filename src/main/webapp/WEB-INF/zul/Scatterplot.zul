@@ -1,0 +1,114 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?page title="Maxent" contentType="text/html;charset=UTF-8" id="ScatterplotPage"?>
+<zk>
+    <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
+            apply="org.ala.spatial.analysis.web.SamplingWCController">
+
+        <style>
+            .ctxenvlist div.z-list-cell-cnt {
+                font-size: 10px;
+             }
+        </style>
+        <div sclass="highlighted" visible="true" width="100%">
+            <vbox width="100%" >
+                <vbox>
+                    <label>Enter a scientific or common name</label>
+                    <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
+                        <comboitem label=""/>
+                    </combobox>
+                </vbox>
+                <separator />
+                <hbox width="100%">
+                    <label value="Layer 1" />
+                    <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" >
+                    </combobox>
+                </hbox>
+                <separator />
+                <hbox width="100%">
+                    <label value="Layer 2" />
+                    <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" >
+                    </combobox>
+                 </hbox>
+            </vbox>
+        </div>
+
+<div width="300px" height="300px" >
+    <hbox>
+        <image id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
+        <html><![CDATA[
+        <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px;"
+            onmousedown="console.log(event); console.log(Event); drawMouseDown(event.clientX, event.clientY);"
+            onmouseup="drawMouseUp(event.clientX, event.clientY);"
+            onmousemove="drawResize(event.clientX, event.clientY);" />
+        <div id="drawnDiv" style="position: absolute; left: -1000px; top: -1000px; background-color: white; opacity: 0.2; width: 10px; height: 10px; border: black 2px solid;"></div>
+        ]]></html>
+    </hbox>
+</div>
+<separator />
+<vbox>
+<label id="tbxSelectionCount" />
+<label id="tbxRange" />
+<label id="tbxDomain" />
+<separator />
+<button label="add selected records to map" id="addUnSelectedRecords" visible="false" />
+<button label="add unselected records to map" id="addSelectedRecords" visible="false" />
+</vbox>
+<textbox id="tbxChartSelection" visible="false"/>
+
+<separator sclass="hr" height="10px" />
+
+<script type="text/JavaScript"><![CDATA[
+var startx = 0;
+var starty = 0;
+var resizing = false;
+
+function drawMouseDown(x, y) {
+    console.log(x + "," + y);
+    startx = x - $("#chartDiv").offset().left;
+    starty = y - $("#chartDiv").offset().top;
+    console.log(startx + "," + starty);
+    resizing = true;
+}
+
+function drawMouseUp(x, y) {
+    resizing = false;
+
+    //send coords to server
+    var d = document.getElementById("drawnDiv");
+    var x = d.style.left;
+    var y = d.style.top;
+    var w = d.style.width;
+    var h = d.style.height;
+
+    chartSelection(x, y, w, h);
+}
+
+function drawResize(x, y) {
+    if(resizing) {
+        x = x - $("#chartDiv").offset().left;
+        y = y - $("#chartDiv").offset().top;
+        var d = document.getElementById("drawnDiv");
+        d.style.left = Math.min(startx, x) + "px";
+        d.style.top = Math.min(starty, y) + "px";
+        d.style.width = Math.abs(x - startx) + "px";
+        d.style.height = Math.abs(y - starty) + "px"
+    }
+}
+
+function clearSelection() {
+    var d = document.getElementById("drawnDiv");
+    d.style.left = "-1000px";
+    d.style.top = "-1000px";
+    d.style.width = "1px";
+    d.style.height = "1px"
+}
+
+function chartSelection(x1, y1, x2, y2) {
+    var value = x1 + "," + y1 + "," + x2 + "," + y2;
+    zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
+}
+ ]]>
+        </script>
+        
+    </window>
+</zk>
