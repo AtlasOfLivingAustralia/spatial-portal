@@ -13,7 +13,8 @@ SET search_path = public, pg_catalog;
 SET default_tablespace = '';
 SET default_with_oids = false;
 
--- Sequence: layers_id_seq
+DROP TABLE if exists layers;
+
 -- IMPORTANT!! YOU MUST UPDATE START WHEN ADDING NEW ROWS
 
 DROP SEQUENCE if exists layers_id_seq;
@@ -31,7 +32,6 @@ ALTER TABLE layers_id_seq OWNER TO postgres;
 -- Dependencies: 3159 3
 -- Name: layers; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
-DROP TABLE if exists layers;
 
 CREATE TABLE layers (
     id integer DEFAULT nextval('layers_id_seq'::regclass) NOT NULL,
