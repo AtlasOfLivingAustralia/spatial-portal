@@ -267,76 +267,76 @@ public class ComplexRegion extends SimpleRegion {
      * within the specified region of the specified resolution beginning at 0,0
      * for minimum longitude and latitude through to xres,yres for maximums     *
      */
-    @Override
+    /*@Override
     public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
-        int i, j;
+    int i, j;
 
-        //if there are a large number of points, attempt to reduce them
-        int points_count = 0;
-        for (i = 0; i < simpleregions.size(); i++) {
-            points_count += simpleregions.get(i).getNumberOfPoints();
-        }
-        if (points_count > 10000) {
-            ComplexRegion cr = new ComplexRegion();
+    //if there are a large number of points, attempt to reduce them
+    int points_count = 0;
+    for (i = 0; i < simpleregions.size(); i++) {
+    points_count += simpleregions.get(i).getNumberOfPoints();
+    }
+    if (points_count > 10000) {
+    ComplexRegion cr = new ComplexRegion();
 
-            int points_remaining = 0;
+    int points_remaining = 0;
 
-            for (i = 0; i < simpleregions.size(); i++) {
-                double[][] points = simpleregions.get(i).getPoints();
-                double[][] tmpPoints = new double[points.length][2];
+    for (i = 0; i < simpleregions.size(); i++) {
+    double[][] points = simpleregions.get(i).getPoints();
+    double[][] tmpPoints = new double[points.length][2];
 
-                //leave a small number of points alone
-                int pos = 3;
-                for (j = 0; j < pos; j++) {
-                    tmpPoints[j][0] = points[j][0];
-                    tmpPoints[j][1] = points[j][1];
-                }
-
-                double divx = (longitude2 - longitude1) / width;
-                double divy = (latitude2 - latitude1) / height;
-
-                //don't include point j if it is in same cell as j-1
-                for (j = pos; j < points.length; j++) {
-                    if ((int) ((points[j][0] - longitude1) / divx) != (int) ((points[j - 1][0] - longitude1) / divx)
-                            || (int) ((points[j][1] - latitude1) / divy) != (int) ((points[j - 1][1] - latitude1) / divy)) {
-                        //may need to add j-1 so exit from cell is the same
-                        if (tmpPoints[pos - 1][0] != points[j - 1][0]
-                                || tmpPoints[pos - 1][0] != points[j - 1][0]) {
-                            tmpPoints[pos][0] = points[j - 1][0];
-                            tmpPoints[pos][1] = points[j - 1][1];
-                            pos++;
-                        }
-
-                        tmpPoints[pos][0] = points[j][0];
-                        tmpPoints[pos][1] = points[j][1];
-                        pos++;
-                    }
-                }
-
-                //shorten
-                double[][] newPoints = new double[pos][2];
-                for (j = 0; j < pos; j++) {
-                    newPoints[j][0] = tmpPoints[j][0];
-                    newPoints[j][1] = tmpPoints[j][1];
-                }
-
-                points_remaining += newPoints.length;
-
-                //create simple shape and add
-                cr.addPolygon(newPoints);
-            }
-
-            //report difference
-            SpatialLogger.info("reduced number of points: " + points_count + " to " + points_remaining);
-
-            //return result for reduced points
-            return cr.getOverlapGridCellsActual(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map);
-        }
-
-        return getOverlapGridCellsActual(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map);
+    //leave a small number of points alone
+    int pos = 3;
+    for (j = 0; j < pos; j++) {
+    tmpPoints[j][0] = points[j][0];
+    tmpPoints[j][1] = points[j][1];
     }
 
-    int[][] getOverlapGridCellsActual(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
+    double divx = (longitude2 - longitude1) / width;
+    double divy = (latitude2 - latitude1) / height;
+
+    //don't include point j if it is in same cell as j-1
+    for (j = pos; j < points.length; j++) {
+    if ((int) ((points[j][0] - longitude1) / divx) != (int) ((points[j - 1][0] - longitude1) / divx)
+    || (int) ((points[j][1] - latitude1) / divy) != (int) ((points[j - 1][1] - latitude1) / divy)) {
+    //need to add j-1 so exit from cell is the same
+    if (tmpPoints[pos - 1][0] != points[j - 1][0]
+    || tmpPoints[pos - 1][0] != points[j - 1][0]) {
+    tmpPoints[pos][0] = points[j - 1][0];
+    tmpPoints[pos][1] = points[j - 1][1];
+    pos++;
+    }
+
+    tmpPoints[pos][0] = points[j][0];
+    tmpPoints[pos][1] = points[j][1];
+    pos++;
+    }
+    }
+
+    //shorten
+    double[][] newPoints = new double[pos][2];
+    for (j = 0; j < pos; j++) {
+    newPoints[j][0] = tmpPoints[j][0];
+    newPoints[j][1] = tmpPoints[j][1];
+    }
+
+    points_remaining += newPoints.length;
+
+    //create simple shape and add
+    cr.addPolygon(newPoints);
+    }
+
+    //report difference
+    SpatialLogger.info("reduced number of points: " + points_count + " to " + points_remaining);
+
+    //return result for reduced points
+    return cr.getOverlapGridCellsActual(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map);
+    }
+
+    return getOverlapGridCellsActual(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map);
+    }*/
+    @Override
+    public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
         int i, j;
 
         int[][] output = null;

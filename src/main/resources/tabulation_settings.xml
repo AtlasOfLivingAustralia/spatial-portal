@@ -1408,8 +1408,25 @@
             longitude
             latitude
             property_fields (csv)
-        property names for export with property field column (by idx) values
+        
+        short names for internal use with property field column (by idx) values.
             property_names (csv)
+            reserved name: "h", "i", "t"
+            
+        property long names for UI
+            property_display_names (csv)
+            
+        field data types for properties
+            property_type            
+            types allowed: int, double, date(FORMAT STRING), string, boolean (Y/N, 1/0)
+
+        field data catagory for max/min validation (or empty value)
+            depth, altitude, distance, year
+
+        field data units for conversion of known extensions (or empty value)
+            (e.g. m expected but value is #km)
+            mm, cm, m, km
+
 
         Note: indexes in field output order, NOT as above:
         order:
@@ -1422,12 +1439,13 @@
     <geojson_id>8</geojson_id>
     <geojson_longitude>36</geojson_longitude>
     <geojson_latitude>37</geojson_latitude>
-    <!-- actual column names geojson_property_names>
-    id, lat_long_precision
-    </geojson_property_names -->
-    <geojson_property_names>u</geojson_property_names>
-    <geojson_property_fields>29</geojson_property_fields>
-    <geojson_property_types>int</geojson_property_types>
+    <geojson_property_names>u,p,in,y,c,a,d</geojson_property_names>
+    <geojson_property_display_names>Uncertainty,Data Provider,Institution,Year,Collection,Altitude,Depth</geojson_property_display_names>
+    <geojson_property_fields>29,18,23,32,25,30,31</geojson_property_fields>
+    <geojson_property_types>int,string,string,int,string,double,double</geojson_property_types>
+    <geojson_property_catagory>distance,,,year,,altitude,depth</geojson_property_catagory>
+    <geojson_property_units>m,,,,,m,cm</geojson_property_units>
+
 
 
     <!--
@@ -1525,7 +1543,7 @@ if not csv, then tab delimited
     <!--
         number of threads allowed for use by analysis jobs
         -->
-    <analysis_threads>6</analysis_threads>
+    <analysis_threads>4</analysis_threads>
 
     <!--
         set of variables for analysis runnning time estimates

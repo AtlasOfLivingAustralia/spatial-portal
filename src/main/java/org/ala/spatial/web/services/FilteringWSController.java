@@ -1,9 +1,12 @@
 package org.ala.spatial.web.services;
 
+import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
+import java.io.FileReader;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
@@ -50,27 +53,27 @@ public class FilteringWSController {
             File workingDir = new File(TabulationSettings.base_output_dir + outputpath + currTime + File.separator);
             workingDir.mkdirs();
 
-             //remove dirs older than 5 days
-	            long yesterday = currTime - 1000*60*60*24*5;
-	            File dirs = new File(TabulationSettings.base_output_dir + outputpath);
-	            for(File f : dirs.listFiles()) {
-	                if(f.isDirectory() && f.lastModified() < yesterday) {
-	                    try {
-	                        //delete dir contents
-	                        for(File fc : f.listFiles()) {
-	                            try {
-	                                fc.delete();
-	                            } catch (Exception e) {
-	                                e.printStackTrace();
-	                            }
-	                        }
+            //remove dirs older than 5 days
+            long yesterday = currTime - 1000 * 60 * 60 * 24 * 5;
+            File dirs = new File(TabulationSettings.base_output_dir + outputpath);
+            for (File f : dirs.listFiles()) {
+                if (f.isDirectory() && f.lastModified() < yesterday) {
+                    try {
+                        //delete dir contents
+                        for (File fc : f.listFiles()) {
+                            try {
+                                fc.delete();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
 
-	                        f.delete();
-	                    } catch (Exception e) {
-	                        e.printStackTrace();
-	                    }
-	                }
-	            }
+                        f.delete();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
             return pid;
         } catch (Exception ex) {
@@ -204,8 +207,8 @@ public class FilteringWSController {
             filteringImage2 = new FilteringImage(file.getPath(), 0x00000000);
 
             // apply the filters by iterating thru' the layers from client, make spl, should be one layer
-            LayerFilter [] lf = FilteringService.getFilters(pid);
-            for (int i = 0; i < lf.length; i++) {  
+            LayerFilter[] lf = FilteringService.getFilters(pid);
+            for (int i = 0; i < lf.length; i++) {
                 if (lf[i].getLayer().type.equalsIgnoreCase("environmental")) {
                     filteringImage2.applyFilterAccumulative(lf[i].getLayer().name, lf[i].getMinimum_value(), lf[i].getMaximum_value());
                 } else {
@@ -382,9 +385,8 @@ public class FilteringWSController {
      * @return
      */
     @RequestMapping(value = "/apply/pid/{pid}/species/list", method = RequestMethod.POST)
-    public
-    //@ResponseBody
-    void getSpeciesList(@PathVariable String pid, HttpServletRequest req, HttpServletResponse response) {
+    public //@ResponseBody
+            void getSpeciesList(@PathVariable String pid, HttpServletRequest req, HttpServletResponse response) {
         TabulationSettings.load();
 
         long starttime = System.currentTimeMillis();
@@ -405,7 +407,7 @@ public class FilteringWSController {
 
             String list = FilteringService.getSpeciesList(pid, region);
             long endtime = System.currentTimeMillis();
-            System.out.println("getSpeciesCount().length=" + list.length() + " in " + (endtime - starttime) + "ms");            
+            System.out.println("getSpeciesCount().length=" + list.length() + " in " + (endtime - starttime) + "ms");
 
             response.setContentType("text/plain;charset=UTF-8");
             ServletOutputStream outStream = response.getOutputStream();
@@ -417,7 +419,7 @@ public class FilteringWSController {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
-        return ;//"";
+        return;//"";
     }
 
     /**
@@ -431,7 +433,7 @@ public class FilteringWSController {
     @RequestMapping(value = "/apply/pid/{pid}/samples/list", method = RequestMethod.POST)
     public
     @ResponseBody
-    String getSamplesList(@PathVariable String pid, HttpServletRequest req) {        
+    String getSamplesList(@PathVariable String pid, HttpServletRequest req) {
         TabulationSettings.load();
 
         try {
@@ -474,6 +476,66 @@ public class FilteringWSController {
             Zipper.zipFiles(files, filenames, outfile);
 
             return "output/filtering/" + "Sample_" + sdate + "_" + currTime + ".zip";
+
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return "";
+    }
+
+    /**
+     * Returns string of samples preview
+     *
+     * @param pid
+     * @param shape
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/apply/pid/{pid}/samples/list/preview", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String getSamplesListPreview(@PathVariable String pid, HttpServletRequest req) {
+        TabulationSettings.load();
+
+        try {
+            String shape = req.getParameter("area");
+            if (shape == null) {
+                shape = "none";
+            } else {
+                shape = URLDecoder.decode(shape, "UTF-8");
+            }
+            if (shape.equals("none") && pid.equals("none")) {
+                return "";  //error
+            }
+
+            System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
+
+            SimpleRegion region = SimpleShapeFile.parseWKT(shape);
+
+            String filepath = FilteringService.getSamplesList(pid, region, 20);
+
+            //read in file
+            StringBuffer sbResults = new StringBuffer();
+            try {
+                CSVReader reader = new CSVReader(new FileReader(filepath));
+                List<String[]> contents = reader.readAll();
+                for (int i = 0; i < contents.size(); i++) {
+                    String[] results = contents.get(i);
+                    for (int j = 0; j < results.length; j++) {
+                        if (results[j] != null) {
+                            sbResults.append(results[j]);
+                        }
+                        if (j < results.length - 1) {
+                            sbResults.append("~");
+                        }
+                    }
+                    sbResults.append(";");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return sbResults.toString();
 
         } catch (Exception e) {
             e.printStackTrace(System.out);

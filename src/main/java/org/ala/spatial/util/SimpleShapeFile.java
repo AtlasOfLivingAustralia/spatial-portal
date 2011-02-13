@@ -12,9 +12,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.Calendar;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.analysis.service.ShapeLookup;
@@ -354,10 +354,27 @@ public class SimpleShapeFile extends Object implements Serializable {
     public int[] intersect(double[][] points, String[] lookup, int column) {
         int i;
 
+        //copy, tag and sort points
+        PointPos[] p = new PointPos[points.length];
+        for (i = 0; i < p.length; i++) {
+            p[i] = new PointPos(points[i][0], points[i][1], i);
+        }
+        java.util.Arrays.sort(p, new Comparator<PointPos>() {
+
+            @Override
+            public int compare(PointPos o1, PointPos o2) {
+                if (o1.x == o2.x) {
+                    return ((o1.y - o2.y) > 0) ? 1 : -1;
+                } else {
+                    return ((o1.x - o2.x) > 0) ? 1 : -1;
+                }
+            }
+        });
+
         /* setup for thread count */
         int threadcount = TabulationSettings.analysis_threads;
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
-        int step = (int)Math.ceil(points.length / (double)(threadcount * 10));
+        int step = (int) Math.ceil(points.length / (double) (threadcount * 10));
         if (step % 2 != 0) {
             step++;
         }
@@ -375,7 +392,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         int[] target = new int[points.length];
 
         for (i = 0; i < threadcount; i++) {
-            it[i] = new IntersectionThread(shapesreference, points, lbq, step, target, cdl);
+            it[i] = new IntersectionThread(shapesreference, p, lbq, step, target, cdl);
         }
 
         //wait for all parts to be finished
@@ -426,9 +443,27 @@ public class SimpleShapeFile extends Object implements Serializable {
     public int[] intersect(double[][] points, int threadcount) {
         int i;
 
+        //copy, tag and sort points
+        PointPos[] p = new PointPos[points.length];
+        for (i = 0; i < p.length; i++) {
+            p[i] = new PointPos(points[i][0], points[i][1], i);
+        }
+        java.util.Arrays.sort(p, new Comparator<PointPos>() {
+
+            @Override
+            public int compare(PointPos o1, PointPos o2) {
+                if (o1.x == o2.x) {
+                    return ((o1.y - o2.y) > 0) ? 1 : -1;
+                } else {
+                    return ((o1.x - o2.x) > 0) ? 1 : -1;
+                }
+            }
+        });
+
+
         /* setup for thread count */
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
-        int step = (int)Math.ceil(points.length / (double)(threadcount * 10));
+        int step = (int) Math.ceil(points.length / (double) (threadcount * 10));
         if (step % 2 != 0) {
             step++;
         }
@@ -447,7 +482,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         int[] target = new int[points.length];
 
         for (i = 0; i < threadcount; i++) {
-            it[i] = new IntersectionThread(shapesreference, points, lbq, step, target, cdl);
+            it[i] = new IntersectionThread(shapesreference, p, lbq, step, target, cdl);
         }
 
         try {
@@ -484,7 +519,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         return singleLookup[idx];
     }
 
-    public String [] getColumnLookup() {
+    public String[] getColumnLookup() {
         return singleLookup;
     }
 
@@ -634,7 +669,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         pointsString = convertGeoToPoints(pointsString);
 
         String[] polygons = pointsString.split("S");
-        
+
         //String[] fixedPolygons = fixStringPolygons(polygons);
 
         //System.out.println("$" + pointsString);
@@ -647,61 +682,61 @@ public class SimpleShapeFile extends Object implements Serializable {
     }
 
     private static ArrayList<double[]> fixStringPolygons(String[] polygons) {
-	        ArrayList<double[]> fixedPolygons = new ArrayList<double[]>();
+        ArrayList<double[]> fixedPolygons = new ArrayList<double[]>();
 
-	        for (int p = 0; p < polygons.length; p++) {
-	            String[] pairs = polygons[p].split(",");
+        for (int p = 0; p < polygons.length; p++) {
+            String[] pairs = polygons[p].split(",");
 
-	            //track polygon longtiude extents
-	            double min = 0;
-	            double max = 0;
+            //track polygon longtiude extents
+            double min = 0;
+            double max = 0;
 
-	            double[][] points = new double[pairs.length][2];
-	            for (int i = 0; i < pairs.length; i++) {
-	                String[] longlat = pairs[i].split(":");
-	                if (longlat.length == 2) {
-	                    try {
-	                        points[i][0] = Double.parseDouble(longlat[0]);
-	                        points[i][1] = Double.parseDouble(longlat[1]);
+            double[][] points = new double[pairs.length][2];
+            for (int i = 0; i < pairs.length; i++) {
+                String[] longlat = pairs[i].split(":");
+                if (longlat.length == 2) {
+                    try {
+                        points[i][0] = Double.parseDouble(longlat[0]);
+                        points[i][1] = Double.parseDouble(longlat[1]);
 
-	                        while (points[i][0] > 360) {
-	                            points[i][0] -= 360;
-	                        }
-	                        while (points[i][0] <= -360) {
-	                            points[i][0] += 360;
-	                        }
+                        while (points[i][0] > 360) {
+                            points[i][0] -= 360;
+                        }
+                        while (points[i][0] <= -360) {
+                            points[i][0] += 360;
+                        }
 
-	                        if (i == 0) {
-	                            min = points[i][0];
-	                            max = min;
-	                        } else {
-	                            if (min < points[i][0]) {
-	                                min = points[i][0];
-	                            }
-	                            if (max < points[i][0]) {
-	                                max = points[i][0];
-	                            }
-	                        }
-	                    } catch (Exception e) {
-	                        //TODO: alert failure
-	                    }
-	                } else {
-	                    //TODO: alert failure
-	                }
-	            }
+                        if (i == 0) {
+                            min = points[i][0];
+                            max = min;
+                        } else {
+                            if (min < points[i][0]) {
+                                min = points[i][0];
+                            }
+                            if (max < points[i][0]) {
+                                max = points[i][0];
+                            }
+                        }
+                    } catch (Exception e) {
+                        //TODO: alert failure
+                    }
+                } else {
+                    //TODO: alert failure
+                }
+            }
 
-	            //does it need to be split?
-	            double xplus = 0;
-	            if (min <= -180) {
-	                xplus = 360;
-	            }
-	            if (max + xplus > 180) {
-	                //TODO: split into polygons
-	            }
-	        }
+            //does it need to be split?
+            double xplus = 0;
+            if (min <= -180) {
+                xplus = 360;
+            }
+            if (max + xplus > 180) {
+                //TODO: split into polygons
+            }
+        }
 
-	        return fixedPolygons;
-	    }
+        return fixedPolygons;
+    }
 
     static String convertGeoToPoints(String geometry) {
         if (geometry == null) {
@@ -1905,13 +1940,13 @@ class IntersectionThread implements Runnable {
 
     Thread t;
     ShapesReference shapesreference;
-    double[][] points;
+    PointPos[] points;
     LinkedBlockingQueue<Integer> lbq;
     int step;
     int[] target;
     CountDownLatch cdl;
 
-    public IntersectionThread(ShapesReference shapesreference_, double[][] points_, LinkedBlockingQueue<Integer> lbq_, int step_, int[] target_, CountDownLatch cdl_) {
+    public IntersectionThread(ShapesReference shapesreference_, PointPos[] points_, LinkedBlockingQueue<Integer> lbq_, int step_, int[] target_, CountDownLatch cdl_) {
         t = new Thread(this);
         t.setPriority(Thread.MIN_PRIORITY);
 
@@ -1944,15 +1979,20 @@ class IntersectionThread implements Runnable {
                 if (end > target.length) {
                     end = target.length;
                 }
-                for (i = start.intValue(); i < end; i++) {
-                    target[i] = -1;
-                    if ((idx = shapesreference.intersection(points[i][0], points[i][1])) >= 0) {
-                        target[i] = idx;
+                int sv = start.intValue();
+                for (i = sv; i < end; i++) {
+                    if (i > sv && points[i - 1].x == points[i].x && points[i - 1].y == points[i].y) {
+                        target[points[i].pos] = target[points[i - 1].pos];
+                    } else if ((idx = shapesreference.intersection(points[i].x, points[i].y)) >= 0) {
+                        target[points[i].pos] = idx;
+                    } else {
+                        target[points[i].pos] = -1;
                     }
                 }
 
                 cdl.countDown();
             }
+        } catch (InterruptedException ie) {
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1964,5 +2004,17 @@ class IntersectionThread implements Runnable {
 
     void interrupt() {
         t.interrupt();
+    }
+}
+
+class PointPos {
+
+    public double x, y;
+    public int pos;
+
+    PointPos(double x, double y, int pos) {
+        this.x = x;
+        this.y = y;
+        this.pos = pos;
     }
 }

@@ -71,29 +71,7 @@ public class SimpleRegion extends Object implements Serializable {
      * 	value at [0] is <code>a</code>
      * 	value at [1] is <code>b</code>
      */
-    double[][] lines; //for polygons
-    /**
-     * for point/grid to polygon intersection method
-     *
-     * polygon edges with sorted longitude
-     * lines_long = double [n][2]
-     * where
-     * 	n is number of edges
-     * 	value at [0] is minimum longitude
-     * 	value at [1] is maximum longitude
-     */
-    double[][] lines_long; //for polygons, lines longitude sorted
-    /**
-     * for point/grid to polygon intersection method
-     *
-     * polygon edges with sorted latitude
-     * lines_lat = double [n][2]
-     * where
-     * 	n is number of edges
-     * 	value at [0] is minimum latitude
-     * 	value at [1] is maximum latitude
-     */
-    double[][] lines_lat; //for polygons, lines latitude sorted
+    double[][] lines2;
     /**
      * bounding box for types BOUNDING_BOX and POLYGON
      *
@@ -162,18 +140,18 @@ public class SimpleRegion extends Object implements Serializable {
 
         for (int i = 0; i < points.length; i++) {
             //fix at -180 and 180
-	            if (points[i][0] < -180) {
-	                points[i][0] = -180;
-	            }
-	            if (points[i][0] > 180) {
-	                points[i][0] = 180;
-	            }
-	            while (points[i][1] < -180) {
-	                points[i][1] = -180;
-	            }
-	            while (points[i][1] > 180) {
-	                points[i][1] = 180;
-	            }
+            if (points[i][0] < -180) {
+                points[i][0] = -180;
+            }
+            if (points[i][0] > 180) {
+                points[i][0] = 180;
+            }
+            while (points[i][1] < -180) {
+                points[i][1] = -180;
+            }
+            while (points[i][1] > 180) {
+                points[i][1] = 180;
+            }
         }
 
         bounding_box = points;
@@ -212,20 +190,20 @@ public class SimpleRegion extends Object implements Serializable {
             type = POLYGON;
             int i;
 
-            for(i=0;i<points_.length;i++) {
+            for (i = 0; i < points_.length; i++) {
                 //fix at -180 and 180
-	            if (points_[i][0] < -180) {
-	                points_[i][0] = -180;
-	            }
-	            if (points_[i][0] > 180) {
-	                points_[i][0] = 180;
-	            }
-	            while (points_[i][1] < -180) {
-	                points_[i][1] = -180;
-	            }
-	            while (points_[i][1] > 180) {
-	                points_[i][1] = 180;
-	            }
+                if (points_[i][0] < -180) {
+                    points_[i][0] = -180;
+                }
+                if (points_[i][0] > 180) {
+                    points_[i][0] = 180;
+                }
+                while (points_[i][1] < -180) {
+                    points_[i][1] = -180;
+                }
+                while (points_[i][1] > 180) {
+                    points_[i][1] = 180;
+                }
             }
 
             /* copy and ensure last point == first point */
@@ -263,18 +241,12 @@ public class SimpleRegion extends Object implements Serializable {
                 }
             }
 
-            /* intersection method precalculated data */
-            lines = new double[points.length - 1][2];
-            lines_long = new double[points.length - 1][2];
-            lines_lat = new double[points.length - 1][2];
+            // intersection method precalculated data
+            lines2 = new double[points.length][2];   //lines[0][] is not used
             for (i = 0; i < points.length - 1; i++) {
-                lines[i][0] = (points[i][1] - points[i + 1][1])
-                        / (points[i][0] - points[i + 1][0]);						//slope
-                lines[i][1] = points[i][1] - lines[i][0] * points[i][0];		//intercept
-                lines_long[i][0] = Math.min(points[i][0], points[i + 1][0]);	//min longitude on line
-                lines_long[i][1] = Math.max(points[i][0], points[i + 1][0]);	//max longitude on line
-                lines_lat[i][0] = Math.min(points[i][1], points[i + 1][1]);	//min latitude on line
-                lines_lat[i][1] = Math.max(points[i][1], points[i + 1][1]);	//max latitude on line
+                lines2[i + 1][0] = (points[i][1] - points[i + 1][1])
+                        / (points[i][0] - points[i + 1][0]);				//slope
+                lines2[i + 1][1] = points[i][1] - lines2[i + 1][0] * points[i][0];		//intercept
             }
         }
     }
@@ -335,56 +307,41 @@ public class SimpleRegion extends Object implements Serializable {
      *
      * point is inside of area when number of crossings is odd;
      *
-     * if on point or on line returns true
+     * point is on a polygon edge return true
      *
      * @param longitude
      * @param latitude
-     * @return true iff longitude and latitude point is within polygon
+     * @return true iff longitude and latitude point is on edge or within polygon
      */
     private boolean isWithinPolygon(double longitude, double latitude) {
-        /* bounding box test */
+        // bounding box test
         if (longitude <= bounding_box[1][0] && longitude >= bounding_box[0][0]
                 && latitude <= bounding_box[1][1] && latitude >= bounding_box[0][1]) {
 
-            double y;
-            int segment;
-
             //initial segment
-            if (points[0][0] > longitude) {
-                segment = 1;
-            } else {
-                segment = -1;
-            }
+            boolean segment = points[0][0] > longitude;
 
+            double y;
             int i;
             int len = points.length;
-            int new_segment;
             int score = 0;
 
             for (i = 1; i < len; i++) {
-                /* determine new segment */
-                if (points[i][0] < longitude) {
-                    new_segment = -1;
-                } else {
-                    /* point on point */
-                    if (points[i][0] == longitude && points[i][1] == latitude) {
-                        return true;
-                    }
-                    new_segment = 1;
-                }
-
-                /* do nothing if segment is the same */
-                if (segment != new_segment) {
-                    segment = new_segment;
-
-                    //longtiude crossing
-                    y = lines[i - 1][0] * longitude + lines[i - 1][1];
-
+                // is it in a new segment?
+                if ((points[i][0] > longitude) != segment) {
+                    //lat value at line crossing > target point
+                    y = lines2[i][0] * longitude + lines2[i][1];
                     if (y > latitude) {
                         score++;
                     } else if (y == latitude) {
+                        //line crossing
                         return true;
                     }
+
+                    segment = !segment;
+                } else if (points[i][0] == longitude && points[i][1] == latitude) {
+                    //point on point
+                    return true;
                 }
             }
             return (score % 2 != 0);
@@ -425,7 +382,6 @@ public class SimpleRegion extends Object implements Serializable {
                 return getOverlapGridCells_Polygon(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map);
         }
         return null;
-
     }
 
     /**
@@ -507,212 +463,6 @@ public class SimpleRegion extends Object implements Serializable {
             //no need to set SimpleRegion.GI_ABSENCE
         }
         return data;
-    }
-
-    /**
-     * determines overlap with a grid for POLYGON
-     *
-     * when <code>three_state_map</code> is not null populate it with one of:
-     * 	GI_UNDEFINED
-     * 	GI_PARTIALLY_PRESENT
-     * 	GI_FULLY_PRESENT
-     * 	GI_ABSENCE
-     *
-     * @param longitude1
-     * @param latitude1
-     * @param longitude2
-     * @param latitude2
-     * @param xres number of longitude segements as int
-     * @param yres number of latitude segments as int
-     * @return (x,y) as double [][2] for each grid cell at least partially falling
-     * within the specified region of the specified resolution beginning at 0,0
-     * for minimum longitude and latitude through to xres,yres for maximums
-     */
-    int[][] getOverlapGridCells_Polygon(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
-
-        double xstep = Math.abs(longitude2 - longitude1) / (double) width;
-        double ystep = Math.abs(latitude2 - latitude1) / (double) height;
-
-        //double maxlong = Math.max(longitude1, longitude2);
-        double minlong = Math.min(longitude1, longitude2);
-        //double maxlat = Math.max(latitude1, latitude2);
-        double minlat = Math.min(latitude1, latitude2);
-
-        //setup for bounding box (TODO: should xstep be -1 or is it handled correctly?)
-        int xstart = (int) Math.floor((bounding_box[0][0] - minlong) / xstep);
-        int ystart = (int) Math.floor((bounding_box[0][1] - minlat) / ystep);
-        int xend = (int) Math.ceil((bounding_box[1][0] - minlong) / xstep);
-        int yend = (int) Math.ceil((bounding_box[1][1] - minlat) / ystep);
-        if (xstart < 0) {
-            xstart = 0;
-        }
-        if (ystart < 0) {
-            ystart = 0;
-        }
-        if (xend > width) {
-            xend = width;
-        }
-        if (yend > height) {
-            yend = height;
-        }
-        if (xstart > width || xend < 0 || ystart > height || yend < 0) {
-            //outside of bounding box, do nothing
-            return null;
-        }
-
-        // fill data with coordinates
-        int out_width = xend - xstart;
-        int out_height = yend - ystart;
-        int[][] data = new int[out_width * out_height][2];
-        int j, i, p = 0;
-        boolean inside;
-        boolean cross;
-        boolean shapeinside;
-        int len = lines.length;
-
-        for (j = ystart; j < yend; j++) {
-            for (i = xstart; i < xend; i++) {
-                /* test for this grid box */
-                double long1 = i * xstep + minlong;
-                double long2 = (i + 1) * xstep + minlong;
-                double lat1 = j * ystep + minlat;
-                double lat2 = (j + 1) * ystep + minlat;
-
-                inside = false;
-                cross = false;
-
-                /* box contained within shape */
-                if (long1 <= bounding_box[0][0] && bounding_box[1][0] <= long2
-                        && lat1 <= bounding_box[0][1] && bounding_box[1][1] <= lat2) {
-                    // setup for partial containment results
-                    shapeinside = true;
-                    cross = true;
-                    inside = true;
-                } else {
-                    shapeinside = false;
-                }
-
-                /* any lines cross */
-                double q;
-                int k = 0;
-                if (!shapeinside) {
-                    for (k = 0; k < len; k++) {
-                        if (lines_long[k][0] <= long2 && lines_long[k][1] >= long1
-                                && lines_lat[k][0] <= lat2 && lines_lat[k][1] >= lat1) {
-                            // is any gridcell line crossed by this polygon border?
-
-                            //vertical polygon line k cross test
-                            if (Double.isInfinite(lines[k][0])) {
-                                /* grid top line or grid bottom line pass across
-                                 * (long1->long2 cross lines_long[k][0&1])
-                                 * and between ends of
-                                 * (lines_lat[k][0&1])
-                                 */
-                                if (long1 <= lines_long[k][1]
-                                        && long2 >= lines_long[k][0]
-                                        && ((lat1 <= lines_lat[k][1]
-                                        && lat1 >= lines_lat[k][0])
-                                        || (lat1 <= lines_lat[k][1]
-                                        && lat1 >= lines_lat[k][0]))) {
-                                    cross = true;
-                                    break;
-                                }
-                            } else {
-                                //non-vertical polygonline k cross test
-
-                                /* q is y-intercept of grid LHS edge with
-                                 * polygon line k.  Cross=true if q is between
-                                 * ends of polylinek lat and grid (lat1&2)
-                                 */
-                                q = lines[k][0] * long1 + lines[k][1];
-                                if (lines_lat[k][0] <= q && q <= lines_lat[k][1]
-                                        && lat1 <= q && q <= lat2) {
-                                    cross = true;
-                                    break;
-                                }
-                                /* q is y-intercept of grid RHS edge with
-                                 * polygon line k.  Cross=true if q is between
-                                 * ends of polylinek lat and grid (lat1&2)
-                                 */
-                                q = lines[k][0] * long2 + lines[k][1];
-                                if (lines_lat[k][0] <= q && q <= lines_lat[k][1]
-                                        && lat1 <= q && q <= lat2) {
-                                    cross = true;
-                                    break;
-                                }
-
-                                /* different test if polygon line horizontal,
-                                 * i.e. slope == 0
-                                 */
-                                if (lines[k][0] == 0) {
-                                    /* cross=true when lat==lat && long's
-                                     * overlap
-                                     */
-                                    if ((lines_lat[k][0] == lat1
-                                            || lines_lat[k][0] == lat1)
-                                            && (lines_long[k][0] <= long2
-                                            && lines_long[k][1] >= long1)) {
-                                        cross = true;
-                                        break;
-                                    }
-                                } else {
-                                    /* q is x-intercept of grid BOTTOM edge with
-                                     * polygon line k.  Cross=true if q is between
-                                     * ends of polylinek longs and grid (long1&2)
-                                     */
-                                    q = (lat1 - lines[k][1]) / lines[k][0];
-                                    if (lines_long[k][0] <= q && q <= lines_long[k][1]
-                                            && long1 <= q && q <= long2) {
-                                        cross = true;
-                                        break;
-                                    }
-                                    /* q is x-intercept of grid TOP edge with
-                                     * polygon line k.  Cross=true if q is between
-                                     * ends of polylinek longs and grid (long1&2)
-                                     */
-                                    q = (lat2 - lines[k][1]) / lines[k][0];
-                                    if (lines_long[k][0] <= q && q <= lines_long[k][1]
-                                            && long1 <= q && q <= long2) {
-                                        cross = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (!cross) {
-                        /* first point inside, for zero cross & therefore
-                         * box contained within shape
-                         */
-                        if (isWithinPolygon(long1, lat1)) {
-                            inside = true;
-                        } else {
-                            inside = false;
-                        }
-                    }
-                }
-                if (three_state_map != null) {
-                    if (cross) {
-                        three_state_map[j][i] = SimpleRegion.GI_PARTIALLY_PRESENT;
-                    } else if (inside) {
-                        three_state_map[j][i] = SimpleRegion.GI_FULLY_PRESENT;
-                    } else {
-                        three_state_map[j][i] = SimpleRegion.GI_ABSENCE;
-                    }
-                }
-
-                //record if intersecting
-                if (cross || inside) {
-                    data[p][0] = i;
-                    data[p][1] = j;
-                    p++;
-                }
-            }
-        }
-
-        //output only required range
-        return java.util.Arrays.copyOfRange(data, 0, p);
     }
 
     /**
@@ -814,5 +564,171 @@ public class SimpleRegion extends Object implements Serializable {
             return attributes.get(name);
         }
         return null;
+    }
+
+    /**
+     * determines overlap with a grid for POLYGON
+     *
+     * when <code>three_state_map</code> is not null populate it with one of:
+     * 	GI_UNDEFINED
+     * 	GI_PARTIALLY_PRESENT
+     * 	GI_FULLY_PRESENT
+     * 	GI_ABSENCE
+     *
+     * 1. Get 3state mask and fill edge passes as 'partial'.
+     *  then
+     * 3. Test 0,0 then progress across vert raster until finding cells[][] entry
+     * 4. Repeat from (3).
+     *
+     * @param longitude1
+     * @param latitude1
+     * @param longitude2
+     * @param latitude2
+     * @param xres number of longitude segements as int
+     * @param yres number of latitude segments as int
+     * @return (x,y) as double [][2] for each grid cell at least partially falling
+     * within the specified region of the specified resolution beginning at 0,0
+     * for minimum longitude and latitude through to xres,yres for maximums
+     */
+    public int[][] getOverlapGridCells_Polygon(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
+        int i, j;
+        if (three_state_map == null) {
+            three_state_map = new byte[width][height];
+        }
+
+        double divx = (longitude2 - longitude1) / width;
+        double divy = (latitude2 - latitude1) / height;
+
+        //to cells
+        int x, y, xend, yend;
+        for (j = 1; j < points.length; j++) {
+            x = (int) ((points[j - 1][0] - longitude1) / divx);
+            y = (int) ((points[j - 1][1] - latitude1) / divy);
+            xend = (int) ((points[j][0] - longitude1) / divx);
+            yend = (int) ((points[j][1] - latitude1) / divy);
+
+            //determine cell exit side and value
+            double xDirection = (points[j - 1][0] < points[j][0]) ? 1 : -1;
+            double yDirection = (points[j - 1][1] < points[j][1]) ? 1 : -1;
+
+            if (x == xend && y == yend) {
+                if (y >= 0 && y < three_state_map.length && x >= 0 && x < three_state_map[0].length) {
+                    three_state_map[y][x] = GI_PARTIALLY_PRESENT;
+                }
+            } else if ((points[j - 1][0] - points[j][0]) == 0) {
+                //vertical line
+                while (y != yend) {
+                    if (y >= 0 && y < three_state_map.length && x >= 0 && x < three_state_map[0].length) {
+                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
+                    }
+                    y += yDirection;
+                }
+                if (y >= 0 && y < three_state_map.length && x >= 0 && x < three_state_map[0].length) {
+                    three_state_map[y][x] = GI_PARTIALLY_PRESENT;
+                }
+            } else {
+                double slope = (points[j - 1][1] - points[j][1]) / (points[j - 1][0] - points[j][0]);
+                double intercept = points[j - 1][1] - slope * points[j - 1][0];
+
+                while (x != xend || y != yend) {
+                    //current cell
+                    if (y >= 0 && y < three_state_map.length && x >= 0 && x < three_state_map[0].length) {
+                        three_state_map[y][x] = GI_PARTIALLY_PRESENT;
+                    }
+
+                    //edges of the current cell
+                    double cellTopLat = (y + 1) * divy + latitude1;
+                    double cellBottomLat = y * divy + latitude1;
+                    double cellLeftLong = x * divx + longitude1;
+                    double cellRightLong = (x + 1) * divx + longitude1;
+
+                    double ix, iy;
+
+                    //check rhs
+                    double xdist = 1, ydist = 1;
+
+                    if (x != xend) {
+                        if (xDirection > 0) {
+                            iy = slope * cellRightLong + intercept;
+                        } else {
+                            //check lhs
+                            iy = slope * cellLeftLong + intercept;
+                        }
+                        if (iy <= cellTopLat && iy >= cellBottomLat) {
+                            x += xDirection;
+                            continue;
+                        } else {
+                            xdist = Math.min(Math.abs(cellTopLat - iy), Math.abs(iy - cellBottomLat));   //for numerical error
+                        }
+                    }
+
+                    if (y != yend) {
+                        if (yDirection > 0) {
+                            //check top
+                            ix = (cellTopLat - intercept) / slope;
+                        } else {
+                            //check bottom
+                            ix = (cellBottomLat - intercept) / slope;
+                        }
+                        if (ix <= cellRightLong && ix >= cellLeftLong) {
+                            y += yDirection;
+                            continue;
+                        } else {
+                            ydist = Math.min(Math.abs(cellRightLong - ix), Math.abs(ix - cellLeftLong));   //for numerical error
+                        }
+                    }
+
+                    //no exit found, pick nearest
+                    if (xdist < ydist && x != xend) {
+                        x += xDirection;
+                    } else if (xdist > ydist && y != yend) {
+                        y += yDirection;
+                    } else {
+                        //undecided, may be through the point, no harm in setting 'partial'.
+                        x += xDirection;
+                        if (y >= 0 && y < three_state_map.length && x >= 0 && x < three_state_map[0].length) {
+                            three_state_map[y][x] = GI_PARTIALLY_PRESENT;
+                        }
+                        x -= xDirection;
+                        y += yDirection;
+                        if (y >= 0 && y < three_state_map.length && x >= 0 && x < three_state_map[0].length) {
+                            three_state_map[y][x] = GI_PARTIALLY_PRESENT;
+                        }
+                        x += xDirection;
+                    }
+                }
+                if (y >= 0 && y < three_state_map.length && x >= 0 && x < three_state_map[0].length) {
+                    three_state_map[y][x] = GI_PARTIALLY_PRESENT;
+                }
+            }
+        }
+
+        //do raster check
+        int[][] data = new int[width * height][2];
+        int p = 0;
+        for (j = 0; j < three_state_map[0].length; j++) {
+            for (i = 0; i < three_state_map.length; i++) {
+                if (three_state_map[i][j] == GI_PARTIALLY_PRESENT) {
+                    //if it is partially present, do nothing
+                } else if ((j == 0 || three_state_map[i][j - 1] == GI_PARTIALLY_PRESENT)) {
+                    if (isWithin(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)) {
+                        //if the previous was partially present or absent, test
+                        three_state_map[i][j] = GI_FULLY_PRESENT;
+                    } //else absent
+                } else {
+                    //if the previous was fully present, repeat
+                    //if the previous was absent, repeat
+                    three_state_map[i][j] = three_state_map[i][j - 1];
+                }
+
+                //apply to cells;
+                if (three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
+                    data[p][0] = j;
+                    data[p][1] = i;
+                    p++;
+                }
+            }
+        }
+        return java.util.Arrays.copyOfRange(data, 0, p);
     }
 }

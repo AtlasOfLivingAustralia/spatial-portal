@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author adam
  *
  */
-public class IndexedRecord implements Serializable {
+public class IndexedRecord2 implements Serializable {
 
     static final long serialVersionUID = 238184888719362147L;
     /**
@@ -30,6 +30,10 @@ public class IndexedRecord implements Serializable {
      * current usage as sorted records file column index
      */
     public byte type;
+    /**
+     * array position
+     */
+    public int pos;
 
     /**
      * constructor for new IndexedRecord
@@ -41,10 +45,11 @@ public class IndexedRecord implements Serializable {
      * @param _type type as byte, current usage as sorted records file
      * column index
      */
-    public IndexedRecord(String _name, int _record_start, int _record_end, byte _type) {
+    public IndexedRecord2(String _name, int _record_start, int _record_end, byte _type, int _pos) {
         name = _name;
         record_start = _record_start;
         record_end = _record_end;
         type = _type;
+        pos = _pos;
     }
 }

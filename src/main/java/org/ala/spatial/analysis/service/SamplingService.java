@@ -9,6 +9,7 @@ import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.index.OccurrencesFilter;
+import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
@@ -93,30 +94,30 @@ public class SamplingService {
         ArrayList<String> as = OccurrencesCollection.getFullRecords(new OccurrencesFilter(filter, region, records, layers, max_rows));
 
         //split records and append header
-        if(as.size() > 0) {
-            String [] header = getHeader(layers).split(",");
+        if (as.size() > 0) {
+            String[] header = getHeader(layers).split(",");
 
             int numCols = header.length;
 
-            String [][] output = new String[as.size() + 1][numCols];
+            String[][] output = new String[as.size() + 1][numCols];
 
             //header
-            for(int j=0;j<header.length && j < numCols;j++){
+            for (int j = 0; j < header.length && j < numCols; j++) {
                 output[0][j] = header[j];
             }
 
             //records
-            for(int i = 0;i< as.size();i++){
-                String [] s = as.get(i).split(",");
-                for(int j=0;j<s.length && j < numCols;j++){
-                    output[i+1][j] = s[j];
+            for (int i = 0; i < as.size(); i++) {
+                String[] s = as.get(i).split(",");
+                for (int j = 0; j < s.length && j < numCols; j++) {
+                    output[i + 1][j] = s[j];
                 }
             }
 
             return output;
         }
 
-        return null;        
+        return null;
     }
 
     /**
@@ -129,14 +130,14 @@ public class SamplingService {
      * @return points as double[], first is longitude, every second is latitude.
      */
     public double[] sampleSpeciesPoints(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
-        
+
         //test on bounding box
         double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
         double[][] regionbb = region.getBoundingBox();
         if (bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
                 && bb[1] <= regionbb[1][1] && bb[3] >= regionbb[0][1]) {
 
-           return OccurrencesCollection.getPoints(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+            return OccurrencesCollection.getPoints(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
         }
 
         return null;
@@ -153,83 +154,21 @@ public class SamplingService {
      * @param records sorted pool of records to intersect with as ArrayList<Integer>
      * @return points as double[], first is longitude, every second is latitude.
      */
-    public double[] sampleSpeciesPoints(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, ArrayList<Object> extra) {
-            //test on bounding box
-            double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
-            double[][] regionbb = region.getBoundingBox();
-            if (bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
-                    && bb[1] <= regionbb[1][1] && bb[3] >= regionbb[0][1]) {
+    public double[] sampleSpeciesPoints(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, ArrayList<SpeciesColourOption> extra) {
+        //test on bounding box
+        double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
 
-                /* get points */
-                return OccurrencesCollection.getPoints(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), extra);
+        if (region == null) {
+            return OccurrencesCollection.getPoints(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), extra);
+        }
 
-                /* test for region absence
-                if (region == null) {
-                    return points;
-                }
+        double[][] regionbb = region.getBoundingBox();
+        if (bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
+                && bb[1] <= regionbb[1][1] && bb[3] >= regionbb[0][1]) {
 
-                //TODO: nicer 'get'
-                //TODO: caching on 'extra' data
-                int[] field = null;
-                double[] field_output = null;
-                if (extra != null) {
-                    for (int i = 0; i < extra.size(); i += 2) {
-                        String s = (String) extra.get(i);
-                        if (s.equalsIgnoreCase("u")) {//uncertainty
-                            field = new int[1];
-                            field[0] = 1;   //index in OccurrencesIndex.cluster_records
-                            field_output = new double[points.length / 2];
-                        }
-                    }
-                }
-
-                int i;
-                int count = 0;
-
-                int recordsPos = 0; //for test on records
-
-                // return all valid points within the region
-                double[] output = new double[points.length];
-                for (i = 0; i < points.length; i += 2) {
-                    //do not add if does not intersect with records list
-                    if (records != null) {
-                        int currentRecord = i + ir[0].record_start;
-                        //increment recordsPos as required
-                        while (recordsPos < records.size()
-                                && records.get(recordsPos).intValue() < currentRecord) {
-                            recordsPos++;
-                        }
-                        //test for intersect
-                        if (recordsPos >= records.size()
-                                || currentRecord != records.get(recordsPos).intValue()) {
-                            continue;
-                        }
-                    }
-                    //region test
-                    if (region.isWithin(points[i], points[i + 1])) {
-                        if (field != null) {
-                            try {
-                                field_output[count / 2] = 0;//Double.parseDouble(OccurrencesIndex.cluster_records[i / 2 + ir[0].record_start][field[0]]);
-                            } catch (Exception e) {
-                                field_output[count / 2] = 10000; //default 10km
-                            }
-                        }
-
-                        output[count] = points[i];
-                        count++;
-                        output[count] = points[i + 1];
-                        count++;
-                    }
-                }
-
-                if (count > 0) {
-                    if (field != null) {
-                        extra.set(1, java.util.Arrays.copyOf(field_output, count / 2));
-                    }
-
-                    return java.util.Arrays.copyOf(output, count);
-                } */
-            }
+            /* get points */
+            return OccurrencesCollection.getPoints(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), extra);
+        }
 
         return null;
     }
@@ -245,7 +184,7 @@ public class SamplingService {
      * @param records sorted pool of records to intersect with as ArrayList<Integer>
      * @return points as double[], first is longitude, every second is latitude.
      */
-    public double[] sampleSpeciesPointsSensitive(String filter, SimpleRegion region, int [] records) {
+    public double[] sampleSpeciesPointsSensitive(String filter, SimpleRegion region, int[] records) {
         IndexedRecord[] ir = null;// OccurrencesIndex.filterSpeciesRecords(filter);
 
         if (ir != null && ir.length > 0) {
@@ -338,13 +277,13 @@ public class SamplingService {
     public static int isSensitiveRecord(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         StringBuffer sb = new StringBuffer();
         try {
-            double [] d = OccurrencesCollection.getPointsMinusSensitiveSpecies(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), sb);
-            if(d == null) {
+            double[] d = OccurrencesCollection.getPointsMinusSensitiveSpecies(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), sb);
+            if (d == null) {
                 return 1;
             } else {
                 return 0;
-        }
-        }catch(Exception e){
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -629,7 +568,8 @@ public class SamplingService {
             if (alen < max_rows) {
                 a = java.util.Arrays.copyOf(a, alen);
             }
-            String[] oi = null;;//OccurrencesIndex.getSortedRecords(a);
+            String[] oi = null;
+            ;//OccurrencesIndex.getSortedRecords(a);
 
             int layerscount = (layers == null) ? 0 : layers.length;
             int headercount = oi[0].split(",").length;

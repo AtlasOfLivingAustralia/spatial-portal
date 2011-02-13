@@ -530,7 +530,7 @@ public class Grid { //  implements Serializable
 
         //load whole grid
         float[] grid = getGrid();
-
+        int glen = grid.length;
         int length = points.length;
         int i, pos;
 
@@ -539,7 +539,7 @@ public class Grid { //  implements Serializable
         //points loop
         for (i = 0; i < length; i++) {
             pos = getcellnumber(points[i][0], points[i][1]);
-            if (pos >= 0) {
+            if (pos >= 0 && pos < glen) {
                 ret[i] = grid[pos];
             } else {
                 ret[i] = Float.NaN;

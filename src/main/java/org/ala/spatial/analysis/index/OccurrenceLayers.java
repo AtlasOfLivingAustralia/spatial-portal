@@ -146,9 +146,8 @@ public class OccurrenceLayers {
 
                 BitSet[][] actual_grid = new BitSet[TabulationSettings.grd_ncols][grd_nrows];
 
-                ArrayList<Object> extra = new ArrayList<Object>(2);
-                extra.add("i"); //request for SpeciesIndex lookup number
-                extra.add(null);//placeholder for data
+                ArrayList<SpeciesColourOption> extra = new ArrayList<SpeciesColourOption>();
+                extra.add(SpeciesColourOption.fromName("i", false)); //request for SpeciesIndex lookup number
 
                 //region
                 SimpleRegion region = new SimpleRegion();
@@ -156,7 +155,7 @@ public class OccurrenceLayers {
 
                 double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(region, Integer.MAX_VALUE), extra);
 
-                int[] speciesLookupNumber = (int[]) extra.get(1);
+                int[] speciesLookupNumber = extra.get(0).getIntArray();
 
                 int x, y;
                 for (int i = 0; i < points.length; i += 2) {
@@ -169,8 +168,8 @@ public class OccurrenceLayers {
                             actual_grid[x][y] = new BitSet();
                         }
 
-                        if (speciesLookupNumber[i/2] >= 0) {
-                            actual_grid[x][y].set(speciesLookupNumber[i/2]);
+                        if (speciesLookupNumber[i / 2] >= 0) {
+                            actual_grid[x][y].set(speciesLookupNumber[i / 2]);
                         }
                     }
                 }
@@ -272,7 +271,7 @@ public class OccurrenceLayers {
                 e.printStackTrace();
             }
         }
-        
+
         makeOccurrenceCountLayer(size);
         makeSpeciesCountLayer(size);
     }

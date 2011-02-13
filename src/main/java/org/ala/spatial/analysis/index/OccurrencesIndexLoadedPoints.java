@@ -127,7 +127,7 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
     }
 
     @Override
-    double[] getPoints(OccurrencesFilter filter, ArrayList<Object> extra) {
+    double[] getPoints(OccurrencesFilter filter, ArrayList<SpeciesColourOption> extra) {
         if (filter.searchTerm == null
                 || !SamplingLoadedPointsService.isLoadedPointsLSID(filter.searchTerm)) {
             return null;
@@ -136,7 +136,9 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
         double[] points = LoadedPointsService.getPointsFlat(filter.searchTerm, filter.region, null);
 
         if (extra != null) {
-            extra.set(1, new double[points.length / 2]);
+            for(int i=0;i<extra.size();i++) {
+                extra.get(i).assignMissingData(points.length / 2);
+            }
         }
 
         return points;

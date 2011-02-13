@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.util.SimpleRegion;
+import org.ala.spatial.util.TabulationSettings;
 
 /**
  *
@@ -63,19 +64,18 @@ public class OccurrencesCollection {
         return ps;
     }
 
-    public static double[] getPoints(OccurrencesFilter filter, ArrayList<Object> extra) {
+    public static double[] getPoints(OccurrencesFilter filter, ArrayList<SpeciesColourOption> extra) {
         ArrayList<double[]> ap = new ArrayList<double[]>();
 
         //get OccurrenceSpecies from all enabled and ready datasets
         int count = 0;
         for (Dataset d : datasets) {
             if (d.isEnabled() && d.isReady()) {
-                ArrayList<Object> extraPart = null;
+                ArrayList<SpeciesColourOption> extraPart = null;
                 if (extra != null && extra.size() > 0) {
-                    extraPart = new ArrayList<Object>();
-                    for (int i = 0; i < extra.size(); i += 2) {
-                        extraPart.add(extra.get(i));        //string id
-                        extraPart.add(null);                //where data goes
+                    extraPart = new ArrayList<SpeciesColourOption>(extra.size());
+                    for (int i = 0; i < extra.size(); i++) {
+                        extraPart.add(SpeciesColourOption.fromSpeciesColourOption(extra.get(i)));
                     }
                 }
                 double[] p = d.getOccurrencesIndex().getPoints(filter, extraPart);
@@ -84,42 +84,8 @@ public class OccurrencesCollection {
                     ap.add(p);
 
                     if (extra != null && extra.size() > 0) {
-                        for (int i = 0; i < extra.size(); i += 2) {
-                            if (((String) extra.get(i)).equals("u")) {  //uncertainty
-                                double[] dCurrent = (double[]) extra.get(i + 1);
-                                if (extra.get(i + 1) == null) {
-                                    extra.set(i + 1, extraPart.get(i + 1));
-                                } else {
-                                    double[] dAdd = (double[]) extraPart.get(i + 1);
-                                    double[] dNew = new double[dCurrent.length + dAdd.length];
-                                    System.arraycopy(dCurrent, 0, dNew, 0, dCurrent.length);
-                                    System.arraycopy(dAdd, 0, dNew, dCurrent.length, dAdd.length);
-                                    extra.set(i + 1, dNew);
-                                }
-                            } else if (((String) extra.get(i)).startsWith("h")) {   //highlight flag
-                                boolean[] dCurrent = (boolean[]) extra.get(i + 1);
-                                if (extra.get(i + 1) == null) {
-                                    extra.set(i + 1, extraPart.get(i + 1));
-                                } else {
-                                    boolean[] dAdd = (boolean[]) extraPart.get(i + 1);
-                                    boolean[] dNew = new boolean[dCurrent.length + dAdd.length];
-                                    System.arraycopy(dCurrent, 0, dNew, 0, dCurrent.length);
-                                    System.arraycopy(dAdd, 0, dNew, dCurrent.length, dAdd.length);
-                                    extra.set(i + 1, dNew);
-                                }
-                            } else if (((String) extra.get(i)).startsWith("c")  //hash from specified taxon level name
-                                    ||((String) extra.get(i)).startsWith("i")) {  //SpeciesIndex lookup number
-                                int[] dCurrent = (int[]) extra.get(i + 1);
-                                if (extra.get(i + 1) == null) {
-                                    extra.set(i + 1, extraPart.get(i + 1));
-                                } else {
-                                    int[] dAdd = (int[]) extraPart.get(i + 1);
-                                    int[] dNew = new int[dCurrent.length + dAdd.length];
-                                    System.arraycopy(dCurrent, 0, dNew, 0, dCurrent.length);
-                                    System.arraycopy(dAdd, 0, dNew, dCurrent.length, dAdd.length);
-                                    extra.set(i + 1, dNew);
-                                }
-                            }
+                        for (int i = 0; i < extra.size(); i++) {
+                            extra.get(i).append(extraPart.get(i));
                         }
                     }
                 }
@@ -217,7 +183,7 @@ public class OccurrencesCollection {
             }
         }
 
-        if(records.size() == 0) {
+        if (records.size() == 0) {
             records = null;
         }
 
@@ -378,7 +344,7 @@ public class OccurrencesCollection {
     }
 
     public static int registerArea(String id, SimpleRegion region) {
-         int count = 0;
+        int count = 0;
 
         for (Dataset d : datasets) {
             if (d.isEnabled() && d.isReady()) {
@@ -393,7 +359,7 @@ public class OccurrencesCollection {
 
         for (Dataset d : datasets) {
             if (d.isEnabled() && d.isReady()) {
-                count += d.getOccurrencesIndex().registerRecords(id, records);              
+                count += d.getOccurrencesIndex().registerRecords(id, records);
             }
         }
         return count;
@@ -404,9 +370,13 @@ public class OccurrencesCollection {
 
         for (Dataset d : datasets) {
             if (d.isEnabled() && d.isReady()) {
-                count += d.getOccurrencesIndex().registerHighlight(new OccurrencesFilter(lsid, 10000000),id, pid, include);
+                count += d.getOccurrencesIndex().registerHighlight(new OccurrencesFilter(lsid, 10000000), id, pid, include);
             }
         }
         return count;
+    }
+
+    public static String getColourLegend(String lsid, String colourMode) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

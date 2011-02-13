@@ -83,7 +83,6 @@ public class TabulationSettings {
      * TODO : getter
      */
     public static boolean loaded = false;
-    
     /**
      * occurrences csv fields for use
      */
@@ -201,32 +200,30 @@ public class TabulationSettings {
      * occurrences file
      */
     public static String[] occurrences_csv_twos_names;
-
     /**
      * fields for geojson calls
      */
     public static int geojson_id;
     public static int geojson_longitude;
     public static int geojson_latitude;
-    public static String [] geojson_property_names;
-    public static int [] geojson_property_fields;
-    public static int [] geojson_property_types;
-
+    public static String[] geojson_property_names;
+    public static String[] geojson_property_display_names;
+    public static int[] geojson_property_fields;
+    public static int[] geojson_property_types;
+    public static String[] geojson_property_catagory;
+    public static String[] geojson_property_units;
     /**
      * for sensitive coordinate handling
      */
     public static String occurrences_id_field;
     public static String occurrences_sen_long_field;
     public static String occurrences_sen_lat_field;
-
     public static int cluster_lookup_size;
-
     public static String occurrences_dr_uid;
     public static String citation_url_data_provider;
     public static String citation_url_layer_provider;
     public static String ala_logger_url;
     public static String spatial_logger_url;
-
     /**
      * occurrences_config_path for datasets/versions of occurrences_csv
      */
@@ -236,7 +233,6 @@ public class TabulationSettings {
      * shape_file_path, scientific name, [optional data, e.g. depth]
      */
     public static String shape_intersection_files;
-    
 
     /**
      * loads settings form name of the appropriate xml resource file
@@ -261,12 +257,12 @@ public class TabulationSettings {
 
         System.out.println("tabulation_settings.xml: " + filename);
         try {
-            RandomAccessFile raf = new RandomAccessFile(filename,"r");
-            byte [] b = new byte[(int)raf.length()];
-            String s = new String(b,"UTF-8");
+            RandomAccessFile raf = new RandomAccessFile(filename, "r");
+            byte[] b = new byte[(int) raf.length()];
+            String s = new String(b, "UTF-8");
             System.out.println(s);
             raf.close();
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -483,28 +479,34 @@ public class TabulationSettings {
         geojson_longitude = Integer.parseInt(xr.getValue("geojson_longitude"));
         geojson_latitude = Integer.parseInt(xr.getValue("geojson_latitude"));
         geojson_property_names = xr.getValue("geojson_property_names").split(",");
-        String [] pf = xr.getValue("geojson_property_fields").split(",");
+        geojson_property_display_names = xr.getValue("geojson_property_display_names").split(",");
+        String[] pf = xr.getValue("geojson_property_fields").split(",");
         geojson_property_fields = new int[pf.length];
-        for(int i=0;i<pf.length;i++){
+        for (int i = 0; i < pf.length; i++) {
             geojson_property_fields[i] = Integer.parseInt(pf[i]);
         }
 
-        //double = 0, int = 1
-        //TODO: other types
-        String [] pt = xr.getValue("geojson_property_types").split(",");
+        //double = 0, int = 1, boolean = 2, string = 3
+        String[] pt = xr.getValue("geojson_property_types").split(",");
         geojson_property_types = new int[pt.length];
-        for(int i=0;i<pt.length;i++){
-            if(pt[i].equalsIgnoreCase("double")) {
+        for (int i = 0; i < pt.length; i++) {
+            if (pt[i].equalsIgnoreCase("double")) {
                 geojson_property_types[i] = 0;
-            } else if(pt[i].equalsIgnoreCase("int")) {
+            } else if (pt[i].equalsIgnoreCase("int")) {
                 geojson_property_types[i] = 1;
+            } else if (pt[i].equalsIgnoreCase("boolean")) {
+                geojson_property_types[i] = 2;
+            } else if (pt[i].equalsIgnoreCase("string")) {
+                geojson_property_types[i] = 3;
             } else {
                 //error
                 System.out.println("unsupported <geojson_property_types>: " + pt[i]);
             }
         }
 
-        
+        geojson_property_catagory = xr.getValue("geojson_property_catagory").split(",");
+        geojson_property_units = xr.getValue("geojson_property_units").split(",");
+
         process_estimate_smoothing = Integer.parseInt(xr.getValue("process_estimate_smoothing"));
 
         occurrences_id_field = xr.getValue("occurrences_id_field");

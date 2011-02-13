@@ -55,13 +55,6 @@ public class SamplingIndex {
     double[][] points = null;
     String index_path;
 
-    /**
-     * default constructor
-     */
-    public SamplingIndex() {
-        TabulationSettings.load();
-    }
-
     SamplingIndex(String directoryName, double[][] p) {
         index_path = directoryName;
         points = p;
@@ -71,8 +64,6 @@ public class SamplingIndex {
      * performs update of 'indexing' for new points data
      */
     public void occurrencesUpdate(boolean forceUpdate) {
-        TabulationSettings.load();
-
         /* threaded building, needs more ram than one at a time */
         int threadcount = TabulationSettings.analysis_threads;
         ArrayList<String> layers = new ArrayList();
@@ -576,7 +567,7 @@ public class SamplingIndex {
          */
         try {
 
-            float [] data = new float[records.length];
+            float[] data = new float[records.length];
             int pos = 0;
 
             String filenameD = index_path

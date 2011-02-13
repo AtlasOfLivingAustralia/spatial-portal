@@ -199,6 +199,10 @@ public class OccurrencesIndex {
      * SpeciesIndex add of single_index requires a translation between records
      */
     int[] speciesIndexLookup;
+    /*
+     * parent dataset
+     */
+    Dataset dataset = null;
 
     /**
      * constructor
@@ -217,7 +221,7 @@ public class OccurrencesIndex {
         this.updating = new CountDownLatch(1);
 
         /* order is important */
-        System.out.println("loading occurrences");
+        System.out.println("loading occurrences: " + occurrences_csv);
 
         //begin here
         makePartsThreaded();
@@ -234,7 +238,9 @@ public class OccurrencesIndex {
 
             @Override
             public void run() {
-                exportFieldIndexes();
+                int recordcount = exportFieldIndexes();
+
+                convertPropertyFieldCSVsToDATs(recordcount);
 
                 updating.countDown();
 
@@ -374,7 +380,7 @@ public class OccurrencesIndex {
     }
 
     /**
-     * method to determine if the index is up to date
+     * method to determine if the index is up to date, as a whole
      *
      * Compares dates on last written index file
      *      <code>index_path + SORTED_CONCEPTID_NAMES + "1.csv"</code>
@@ -395,6 +401,22 @@ public class OccurrencesIndex {
         }
 
         return false;
+    }
+
+    /**
+     * method to determine if the field indexes exist for:
+     *      <code>index_path + TabulationSettings.geojson_property_names[i] + ".dat"</code>
+     *
+     * @return true if index is up to date
+     */
+    public boolean isUpToDateFieldIndexes() {
+        for (int i = 0; i < TabulationSettings.geojson_property_names.length; i++) {
+            if (!(new File(index_path + TabulationSettings.geojson_property_names[i] + ".dat")).exists()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -460,7 +482,7 @@ public class OccurrencesIndex {
      * generates an index for each occurrences field (minus longitude
      * and latitude)
      */
-    void exportFieldIndexes() {
+    int exportFieldIndexes() {
         System.gc();
 
         System.out.println("doing exportFieldIndexes (after gc)");
@@ -495,7 +517,7 @@ public class OccurrencesIndex {
                 }
             }
             if (ofu.columnNames.length == i) {
-                System.out.println("ERORR:" + TabulationSettings.occurrences_csv_field_pairs[j]);
+                System.out.println("ERROR:" + TabulationSettings.occurrences_csv_field_pairs[j]);
             }
         }
 
@@ -523,17 +545,18 @@ public class OccurrencesIndex {
         String[] search_for = new String[3];
         int pos;
 
+        long filepos = 0;
+        int recordpos = 0;
+
         try {
             RandomAccessFile fw = new RandomAccessFile(index_path
                     + "OCCURRENCE_ID.dat", "rw");
-            RandomAccessFile[] attributes =
-                    new RandomAccessFile[TabulationSettings.geojson_property_names.length];
+            FileWriter[] attributes =
+                    new FileWriter[TabulationSettings.geojson_property_names.length];
             for (i = 0; i < attributes.length; i++) {
-                attributes[i] = new RandomAccessFile(index_path
-                        + TabulationSettings.geojson_property_names[i] + ".dat", "rw");
+                attributes[i] = new FileWriter(index_path
+                        + TabulationSettings.geojson_property_names[i] + ".txt");
             }
-            int[] attributeColumns = TabulationSettings.geojson_property_fields;
-            int[] attributeTypes = TabulationSettings.geojson_property_types;
 
             BufferedReader br = new BufferedReader(new FileReader(index_path + SORTED_FILENAME));
             String s;
@@ -555,9 +578,6 @@ public class OccurrencesIndex {
                 last_position[i] = 0;
                 last_record[i] = 0;
             }
-
-            long filepos = 0;
-            int recordpos = 0;
 
             ArrayList<Integer>[] obj = new ArrayList[extra_indexes.length];
             String[] prev_key = new String[extra_indexes.length];
@@ -609,8 +629,6 @@ public class OccurrencesIndex {
                         if (recordpos != 0 && !last_value[i].equalsIgnoreCase(sa[i])) {
                             fw_maps[i].put(last_value[i],
                                     new IndexedRecord(last_value[i].toLowerCase(),
-                                    last_position[i],
-                                    filepos,
                                     last_record[i],
                                     recordpos - 1, (byte) i));
 
@@ -634,24 +652,11 @@ public class OccurrencesIndex {
                     }
                     fw.writeLong(l);
 
-                    for (int j = 0; j < attributeColumns.length; j++) {
-                        switch (attributeTypes[j]) {
-                            case 0: //double
-                                double d = Double.NaN;
-                                try {
-                                    d = Double.parseDouble(sa[attributeColumns[j]]);
-                                } catch (Exception e) {
-                                }
-                                attributes[j].writeDouble(d);
-                                break;
-                            case 1: //int
-                                int v = Integer.MIN_VALUE;
-                                try {
-                                    v = Integer.parseInt(sa[attributeColumns[j]]);
-                                } catch (Exception e) {
-                                }
-                                attributes[j].writeInt(v);
-                                break;
+                    for (int j = 0; j < TabulationSettings.geojson_property_names.length; j++) {
+                        if (sa[TabulationSettings.geojson_property_fields[j]] == null) {
+                            attributes[j].append("").append("\n");
+                        } else {
+                            attributes[j].append(sa[TabulationSettings.geojson_property_fields[j]]).append("\n");
                         }
                     }
                 }
@@ -698,6 +703,8 @@ public class OccurrencesIndex {
                 ObjectOutputStream oos = new ObjectOutputStream(bos);
                 oos.writeObject(sortedLineStarts);
                 oos.close();
+
+                sortedLineStarts = null;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -717,6 +724,8 @@ public class OccurrencesIndex {
                 }
                 points.write(b);
                 points.close();
+
+                sensitiveCoordinates = null;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -725,8 +734,6 @@ public class OccurrencesIndex {
             for (i = 0; i < countOfIndexed; i++) {
                 fw_maps[i].put(last_value[i],
                         new IndexedRecord(last_value[i].toLowerCase(),
-                        last_position[i],
-                        filepos,
                         last_record[i],
                         recordpos - 1, (byte) i));
             }
@@ -769,6 +776,8 @@ public class OccurrencesIndex {
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(extra_indexes);
             oos.close();
+
+            extra_indexes = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -807,16 +816,14 @@ public class OccurrencesIndex {
                 for (IndexedRecord r : ir) {
                     fw.append(r.name);
                     fw.append(",");
-                    fw.append(String.valueOf(r.file_start));
-                    fw.append(",");
-                    fw.append(String.valueOf(r.file_end));
-                    fw.append(",");
                     fw.append(String.valueOf(r.record_start));
                     fw.append(",");
                     fw.append(String.valueOf(r.record_end));
                     fw.append("\r\n");
                 }
                 fw.close();
+
+                fw_maps = null;
             }
             SpatialLogger.log("exportFieldIndexes done");
         } catch (Exception e) {
@@ -825,8 +832,9 @@ public class OccurrencesIndex {
 
         //this will fail on the occurrences_csv_fields_pairs... loads
         try {
-            System.out.println("!!!!!!!!!!!Exception expected here!!!!!!!!!!!!!!");
-            loadIndexes();
+            //System.out.println("!!!!!!!!!!!Exceptions expected here!!!!!!!!!!!!!!");
+            //loadIndexes();
+            loadSingleIndex();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -843,7 +851,7 @@ public class OccurrencesIndex {
             }
             //load single_index
             occurrences_csv_field_pairs_ToSingleIndex = new int[occurrences_csv_field_pairs_ConceptId.length];
-            IndexedRecord lookfor = new IndexedRecord("", 0, 0, 0, 0, (byte) -1);
+            IndexedRecord lookfor = new IndexedRecord("", 0, 0, (byte) -1);
             for (i = 0; i < occurrences_csv_field_pairs_ConceptId.length; i++) {
                 lookfor.name = occurrences_csv_field_pairs_ConceptId[i];
                 occurrences_csv_field_pairs_ToSingleIndex[i] = java.util.Arrays.binarySearch(single_index,
@@ -911,7 +919,73 @@ public class OccurrencesIndex {
         }
 
         fw_maps = null;
+
         System.gc();
+
+        return recordpos;
+    }
+
+    void convertPropertyFieldCSVsToDATs(int numberOfRecords) {
+        //convert attribute column txt files into arrays, then save
+        for (int i = 0; i < TabulationSettings.geojson_property_names.length; i++) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(index_path
+                        + TabulationSettings.geojson_property_names[i] + ".txt"));
+                String s;
+
+                int j = 0;
+
+                Object array = null;
+
+                switch (TabulationSettings.geojson_property_types[i]) {
+                    case 0: //double
+                        double[] d = new double[numberOfRecords];
+                        while ((s = br.readLine()) != null) {
+                            d[j] = ValueCorrection.correctToDouble(TabulationSettings.geojson_property_units[i], TabulationSettings.geojson_property_catagory[i], s);
+                            j++;
+                        }
+                        array = d;
+                        break;
+                    case 1: //int
+                        int[] ia = new int[numberOfRecords];
+                        while ((s = br.readLine()) != null) {
+                            ia[j] = ValueCorrection.correctToInt(TabulationSettings.geojson_property_units[i], TabulationSettings.geojson_property_catagory[i], s);
+                            j++;
+                        }
+                        array = ia;
+                        break;
+                    case 2: //boolean
+                        boolean[] ib = new boolean[numberOfRecords];
+                        while ((s = br.readLine()) != null) {
+                            try {
+                                if (s.length() == 0 || s.equals("0") || s.equalsIgnoreCase("n")
+                                        || s.equalsIgnoreCase("false") || s.equalsIgnoreCase("no")) {
+                                    ib[j] = false;
+                                } else {
+                                    ib[j] = true;
+                                }
+                            } catch (Exception e) {
+                            }
+                            j++;
+                        }
+                        array = ib;
+                        break;
+                    case 3: //string
+                        String[] is = new String[numberOfRecords];
+                        while ((s = br.readLine()) != null) {
+                            is[j] = s;
+                            j++;
+                        }
+                        array = is;
+                        break;
+                }
+
+                SpeciesColourOption.saveData(index_path, i, array);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -929,7 +1003,7 @@ public class OccurrencesIndex {
 
         loadIndexes();
 
-        IndexedRecord searchfor = new IndexedRecord(filter, 0, 0, 0, 0, (byte) 0);
+        IndexedRecord searchfor = new IndexedRecord(filter, 0, 0, (byte) 0);
         int pos = java.util.Arrays.binarySearch(single_index, searchfor,
                 new Comparator<IndexedRecord>() {
 
@@ -1523,32 +1597,35 @@ public class OccurrencesIndex {
     void makeSpeciesSortByRecordNumber() {
         if (speciesSortByRecordNumber == null) {
 
-            speciesSortByRecordNumber = all_indexes.get(all_indexes.size() - 1).clone();
+            speciesSortByRecordNumber = single_index.clone();
 
             //preserve original order in a secondary list, to be returned
-            long[] tmp = new long[speciesSortByRecordNumber.length];
+            int[] tmp = new int[speciesSortByRecordNumber.length];
             int i;
             for (i = 0; i < speciesSortByRecordNumber.length; i++) {
-                tmp[i] = speciesSortByRecordNumber[i].file_end;
-                speciesSortByRecordNumber[i].file_end = i;
+                tmp[i] = speciesSortByRecordNumber[i].record_end;
+                speciesSortByRecordNumber[i].record_end = i;
             }
 
             java.util.Arrays.sort(speciesSortByRecordNumber,
                     new Comparator<IndexedRecord>() {
 
                         public int compare(IndexedRecord r1, IndexedRecord r2) {
+                            if (r1.record_start == r2.record_start) {
+                                return r1.type - r2.type;
+                            }
                             return r1.record_start - r2.record_start;
                         }
                     });
 
             //return value to borrowed variable
-            long t;
+            int t;
             speciesSortByRecordNumberOrder = new int[speciesSortByRecordNumber.length];
             for (i = 0; i < speciesSortByRecordNumber.length; i++) {
-                t = speciesSortByRecordNumber[i].file_end;
-                speciesSortByRecordNumber[i].file_end = tmp[(int) t];
+                t = speciesSortByRecordNumber[i].record_end;
+                speciesSortByRecordNumber[i].record_end = tmp[t];
 
-                speciesSortByRecordNumberOrder[i] = (int) t;
+                speciesSortByRecordNumberOrder[i] = t;
             }
         }
     }
@@ -1579,22 +1656,14 @@ public class OccurrencesIndex {
             attributesMap = new HashMap<String, Object>();
         }
 
-        //precision
-        try {
-            RandomAccessFile raf = new RandomAccessFile(index_path
-                    + "u.dat", "r");
-            int records = (int) raf.length() / 4; //int's
-            byte[] b = new byte[(int) raf.length()];
-            raf.read(b);
-            raf.close();
-            ByteBuffer bb = ByteBuffer.wrap(b);
-            int[] d = new int[records];
-            for (int i = 0; i < records; i++) {
-                d[i] = bb.getInt();
+        //load attributes
+        for (int j = 0; j < TabulationSettings.geojson_property_names.length; j++) {
+            try {
+                Object data = SpeciesColourOption.loadData(index_path, j);
+                attributesMap.put(TabulationSettings.geojson_property_names[j], data);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            attributesMap.put("u", d);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -1807,6 +1876,9 @@ public class OccurrencesIndex {
         //check if it is up to date
         if (forceUpdate || !isUpToDate()) {
             occurrencesUpdate();
+        } else if (!isUpToDateFieldIndexes()) {
+            int recordcount = exportFieldIndexes();
+            convertPropertyFieldCSVsToDATs(recordcount);
         }
     }
 
@@ -1814,7 +1886,7 @@ public class OccurrencesIndex {
         return getPoints(filter, null);
     }
 
-    double[] getPoints(OccurrencesFilter filter, ArrayList<Object> extra) {
+    double[] getPoints(OccurrencesFilter filter, ArrayList<SpeciesColourOption> extra) {
         int[] r = getRecordNumbers(filter);
         double[] p = null;
         if (r != null) {
@@ -1825,52 +1897,15 @@ public class OccurrencesIndex {
             }
 
             if (extra != null) {
-                for (int j = 0; j < extra.size(); j += 2) {
-                    if (((String) extra.get(j)).equals("u")) {
-                        //TODO: more than uncertainty
-                        int[] uncertainty = (int[]) attributesMap.get("u"); //uncertainty
-                        double[] d = new double[r.length];
-                        for (int i = 0; i < r.length; i++) {
-                            if (uncertainty[r[i]] == Integer.MIN_VALUE) {
-                                d[i] = Double.NaN;
-                            } else {
-                                d[i] = uncertainty[r[i]];
-                            }
-
-                        }
-                        extra.set(j + 1, d);
-                    } else if (((String) extra.get(j)).startsWith("h")) {  //highlight flag
-                        //lookup by replacing 'h' with dataset hash
-                        String key = (String) extra.get(j);
-                        key = key.replace("h", getHash());
-                        IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
-                        boolean[] highlight = RecordSelectionLookup.getSelection(key);
-                        boolean[] h = new boolean[r.length];
-                        for (int i = 0; i < r.length; i++) {
-                            h[i] = highlight[r[i] - ir.record_start];
-                        }
-                        extra.set(j + 1, h);
-                    } else if (((String) extra.get(j)).startsWith("c")) {  //species hash at a specified taxon level
-                        String level = (String) extra.get(j);
-                        level = level.replace("c", "");
-                        int taxonLevel = Integer.parseInt(level);
-                        int[] h = new int[r.length];
-                        for (int i = 0; i < r.length; i++) {
-                            if (speciesNumberInRecordsOrder[r[i]] >= 0) {
-                                //set alpha
-                                h[i] = 0xFF000000 | SpeciesIndex.getHash(taxonLevel, speciesIndexLookup[speciesNumberInRecordsOrder[r[i]]]);
-                            } else {
-                                //white
-                                h[i] = 0xFFFFFFFF;
-                            }
-                        }
-                        extra.set(j + 1, h);
-                    } else if (((String) extra.get(j)).startsWith("i")) {  //SpeciesIndex lookup number
-                        int[] h = new int[r.length];
-                        for (int i = 0; i < r.length; i++) {
-                            h[i] = speciesIndexLookup[speciesNumberInRecordsOrder[r[i]]];
-                        }
-                        extra.set(j + 1, h);
+                for (int j = 0; j < extra.size(); j++) {
+                    IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
+                    if (extra.get(j).isHighlight()) {
+                        //lookup with dataset hash                        
+                        extra.get(j).assignHighlightData(r, ir.record_start, getHash());
+                    } else if (extra.get(j).isTaxon()) {
+                        extra.get(j).assignTaxon(r, speciesNumberInRecordsOrder, speciesIndexLookup);
+                    } else {
+                        extra.get(j).assignData(r, attributesMap.get(extra.get(j).getName()));
                     }
                 }
             }
@@ -1921,7 +1956,7 @@ public class OccurrencesIndex {
     }
 
     Vector<Record> getRecords(OccurrencesFilter filter) {
-        int[] uncertainty = (int[]) attributesMap.get("u");
+        int[] uncertainty = (int[]) ((Object[]) attributesMap.get("u"))[0];
         int j;
         int[] r = getRecordNumbers(filter);
         Vector<Record> vr = null;
@@ -2032,7 +2067,7 @@ public class OccurrencesIndex {
         int[] species = new int[SpeciesIndex.size()];
 
         int[] records = null;
-        if(filter.records != null) {
+        if (filter.records != null) {
             for (i = 0; i < filter.records.size(); i++) {
                 if (filter.records.get(i).getName().equals(getDatasetName())) {
                     records = filter.records.get(i).getRecords();
@@ -2046,22 +2081,28 @@ public class OccurrencesIndex {
             spos = 0;
             i = 0;
             while (i < records.length) {
-                //TODO: work out when best to use binary searching instead of seeking
                 int r = records[i];
 
-                while (spos < speciesSortByRecordNumber.length
-                        && r > speciesSortByRecordNumber[spos].record_end) {   //seek to next species
+                //move forward until the record is at the current position
+                //or while the next record is child of the current record (and no 'null'/'missing' child)
+                while ((spos < speciesSortByRecordNumber.length
+                        && r > speciesSortByRecordNumber[spos].record_end)
+                        || (spos + 1 < speciesSortByRecordNumber.length
+                        && r > speciesSortByRecordNumber[spos + 1].record_end
+                        && speciesSortByRecordNumber[spos].record_end >= speciesSortByRecordNumber[spos + 1].record_end)) {
                     spos++;
                 }
 
-
+                //end of list check, should not trigger
                 if (spos == speciesSortByRecordNumber.length) {
-                    spos--; //TODO: is this correct?
-                } else {
+                    spos--; //error
                 }
 
+                //update species counts
                 species[speciesIndexLookup[speciesSortByRecordNumberOrder[spos]]]++;
 
+                //any more records within this same species
+                //and not part of the next 'child'
                 spos++;
                 i++;
                 if (spos < speciesSortByRecordNumber.length) {
@@ -2139,26 +2180,26 @@ public class OccurrencesIndex {
         int i, j;
 
         int[] records = null;
-        if(filter.records != null) {
+        if (filter.records != null) {
             for (i = 0; i < filter.records.size(); i++) {
                 if (filter.records.get(i).getName().equals(getDatasetName())) {
                     records = filter.records.get(i).getRecords();
                 }
             }
         }
-        
+
         SimpleRegion region = filter.region;
         String lsid = filter.searchTerm;
 
         int[] r = null;
-        if(lsid != null && (r = RecordsLookup.getRecords(getHash() + lsid)) != null) {
+        if (lsid != null && (r = RecordsLookup.getRecords(getHash() + lsid)) != null) {
             //append r to records
-            if(records == null) {
+            if (records == null) {
                 records = r;
             } else {
-                int [] nr = new int[records.length + r.length];
-                System.arraycopy(records,0,nr,0,records.length);
-                System.arraycopy(r,0,nr,records.length,r.length);
+                int[] nr = new int[records.length + r.length];
+                System.arraycopy(records, 0, nr, 0, records.length);
+                System.arraycopy(r, 0, nr, records.length, r.length);
                 records = nr;
             }
 
@@ -2557,13 +2598,13 @@ public class OccurrencesIndex {
 
     public int registerHighlight(OccurrencesFilter filter, String key, String highlightPid, boolean include) {
         int[] r = getRecordNumbers(filter);
-        if (r != null) {            
+        if (r != null) {
             //lookup by replacing 'h' with dataset hash
             IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
             boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
             int pos = 0;
             for (int i = 0; i < r.length; i++) {
-                if(include != highlight[r[i] - ir.record_start]) {
+                if (include != highlight[r[i] - ir.record_start]) {
                     r[pos] = r[i];
                     pos++;
                 }
@@ -2583,8 +2624,6 @@ public class OccurrencesIndex {
 
         return count;
     }
-
-    Dataset dataset = null;
 
     private String getDatasetName() {
         if (dataset != null) {

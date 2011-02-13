@@ -23,6 +23,7 @@ import org.ala.spatial.analysis.index.BoundingBoxes;
 import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.index.OccurrencesFilter;
+import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.ShapeLookup;
@@ -114,9 +115,8 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/taxon/{name}", method = RequestMethod.GET)
-    public
-    //@ResponseBody
-    void getTaxonNames(@PathVariable("name") String name, HttpServletRequest req, HttpServletResponse response) {
+    public //@ResponseBody
+            void getTaxonNames(@PathVariable("name") String name, HttpServletRequest req, HttpServletResponse response) {
         StringBuffer slist = new StringBuffer();
         try {
 
@@ -140,7 +140,7 @@ public class SpeciesController {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
-        
+
         response.setContentType("text/plain;charset=UTF-8");
         ServletOutputStream o;
         try {
@@ -458,8 +458,8 @@ public class SpeciesController {
 
             ArrayList<OccurrenceRecordNumbers> orn = OccurrencesCollection.getRecordNumbers(new OccurrencesFilter(lsid, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
             int count = 0;
-            if(orn != null) {
-                for(OccurrenceRecordNumbers o : orn){
+            if (orn != null) {
+                for (OccurrenceRecordNumbers o : orn) {
                     count += o.getRecords().length;
                 }
             }
@@ -558,7 +558,7 @@ public class SpeciesController {
 
             System.out.println("area: " + area);
 
-            if(regionViewport != null) {
+            if (regionViewport != null) {
                 AndRegion ar = new AndRegion();
                 ArrayList<SimpleRegion> asr = new ArrayList<SimpleRegion>(2);
                 asr.add(region);
@@ -707,7 +707,7 @@ public class SpeciesController {
 
             String[] lsids = req.getParameterValues("lsid");
 
-            if(lsids == null) {
+            if (lsids == null) {
                 return "";
             }
 
@@ -726,17 +726,17 @@ public class SpeciesController {
             if (activearea != null) {
                 if (activearea.startsWith("ENVELOPE")) {
                     ArrayList<OccurrenceRecordNumbers> rec = FilteringService.getRecords(activearea);
-                    if(records == null || records.size() == 0) {
+                    if (records == null || records.size() == 0) {
                         records = rec;
-                    } else if(rec != null && rec.size() > 0) {
+                    } else if (rec != null && rec.size() > 0) {
                         //join
-                        for(int i=0;i<records.size();i++) {
-                            for(int j=0;j<rec.size();j++) {
-                                if(records.get(i).getName().equals(rec.get(j).getName())) {
-                                    int [] recA = rec.get(j).getRecords();
-                                    int [] recordsA = records.get(i).getRecords();
+                        for (int i = 0; i < records.size(); i++) {
+                            for (int j = 0; j < rec.size(); j++) {
+                                if (records.get(i).getName().equals(rec.get(j).getName())) {
+                                    int[] recA = rec.get(j).getRecords();
+                                    int[] recordsA = records.get(i).getRecords();
 
-                                    int [] newrec = new int[recA.length + recordsA.length];
+                                    int[] newrec = new int[recA.length + recordsA.length];
                                     System.arraycopy(recordsA, 0, newrec, 0, recordsA.length);
                                     System.arraycopy(recA, 0, newrec, recordsA.length, recA.length);
 
@@ -750,8 +750,8 @@ public class SpeciesController {
                     aaregion = SimpleShapeFile.parseWKT(activearea);
                 }
             }
-            if(aaregion != null) {
-                if(region == null) {
+            if (aaregion != null) {
+                if (region == null) {
                     region = aaregion;
                 } else {
                     AndRegion ar = new AndRegion();
@@ -772,7 +772,7 @@ public class SpeciesController {
                 if (lsid.equalsIgnoreCase("aa")) {
                     Vector dp = OccurrencesCollection.getRecords(new OccurrencesFilter(null, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
                     if (dp.size() > 0) {
-                        dataPoints.addAll(dp); 
+                        dataPoints.addAll(dp);
                     }
                 } else {
                     dataPoints.addAll(OccurrencesCollection.getRecords(new OccurrencesFilter(lsid, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER)));
@@ -805,9 +805,9 @@ public class SpeciesController {
         try {
             String id = String.valueOf(System.currentTimeMillis());
 
-            String [] lsids = req.getParameter("lsids").split(",");
+            String[] lsids = req.getParameter("lsids").split(",");
 
-            for(int i=0;i<lsids.length;i++) {
+            for (int i = 0; i < lsids.length; i++) {
                 lsids[i] = lsids[i].replaceAll("__", ".");
             }
 
@@ -831,7 +831,8 @@ public class SpeciesController {
 
             String areaParam = req.getParameter("area");
 
-            SimpleRegion region = null;;
+            SimpleRegion region = null;
+            ;
             areaParam = URLDecoder.decode(areaParam, "UTF-8");
 
             int count = 0;
@@ -866,13 +867,48 @@ public class SpeciesController {
             pid = URLDecoder.decode(pid, "UTF-8");
 
             int count = 0;
-            if(pid != null) {
-                count = OccurrencesCollection.registerHighlight(lsid, id, pid, (include!=null));
+            if (pid != null) {
+                count = OccurrencesCollection.registerHighlight(lsid, id, pid, (include != null));
             }
 
             System.out.println("successfully registered records in highlight: " + count);
 
             return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/colouroptions", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String speciesColourOptions(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String lsid = req.getParameter("lsid").replaceAll("__", ".");
+
+            String list = SpeciesColourOption.getColourOptions(lsid);
+
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/colourlegend", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String speciesColourLegend(HttpServletRequest req) {
+        try {
+            String lsid = URLDecoder.decode(req.getParameter("lsid"), "UTF-8").replaceAll("__", ".");
+            String colourMode = URLDecoder.decode(req.getParameter("colourmode"), "UTF-8");
+
+            String pid = SpeciesColourOption.getColourLegend(lsid, colourMode);
+
+            return pid;
         } catch (Exception e) {
             e.printStackTrace();
         }

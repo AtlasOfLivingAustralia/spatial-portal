@@ -28,6 +28,7 @@ import org.ala.spatial.analysis.index.IndexedRecord;
 import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.index.OccurrencesFilter;
+import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
@@ -531,7 +532,7 @@ public class WMSController {
         int size = 4;
         boolean uncertainty = false;
         String highlight = null;
-        int colourMode = -1;
+        String colourMode = null;
         for (String s : env.split(";")) {
             String[] pair = s.split(":");
             if (pair[0].equals("color")) {
@@ -552,7 +553,7 @@ public class WMSController {
             } else if (pair[0].equals("sel")) {
                 highlight = pair[1];
             } else if (pair[0].equals("colormode")) {
-                colourMode = Integer.parseInt(pair[1]);
+                colourMode = pair[1];
             }
         }
 
@@ -636,7 +637,7 @@ public class WMSController {
         /* TODO: buffering for sampleSpeciesPoints */
         double[] points = null;
 
-        double[] uncertainties = null;
+        int[] uncertainties = null;
         short[] uncertaintiesType = null;
 
         boolean[] listHighlight = null;
@@ -645,32 +646,34 @@ public class WMSController {
 
         if (lsid != null) {
             SamplingService ss = SamplingService.newForLSID(lsid);
-            ArrayList<Object> other = new ArrayList<Object>();
+            ArrayList<SpeciesColourOption> other = new ArrayList<SpeciesColourOption>();
             if (uncertainty) {
-                other.add("u"); //matches <geojson_property_names> for column 'uncertainty'
-                other.add(null); //placeholder for data
+                other.add(SpeciesColourOption.fromName("u", false));
             }
             if (highlight != null) {
-                other.add("h" + highlight);
-                other.add(null);
+                other.add(SpeciesColourOption.fromHighlight(highlight, true));
             }
-            if (colourMode >= 0) {
-                other.add("c" + colourMode);
-                other.add(null);
+            if (colourMode != null) {
+                other.add(SpeciesColourOption.fromName(colourMode, true));
             }
             points = ss.sampleSpeciesPoints(lsid, region, records, other);
             if (points != null && points.length > 0) {
-                for (int j = 0; j < other.size(); j += 2) {
-                    if (((String) other.get(j)).equals("u")) {
-                        uncertainties = (double[]) other.get(j + 1);
-                    } else if (((String) other.get(j)).startsWith("h")) {
-                        listHighlight = (boolean[]) other.get(j + 1);
-                    } else if (((String) other.get(j)).startsWith("c")) {
-                        colours = (int[]) other.get(j + 1);
+                for (int j = 0; j < other.size(); j++) {
+                    if (!other.get(j).isColourMode() && other.get(j).getName().equals("u")) {
+                        uncertainties = other.get(j).getIntArray();
+                    } else if (other.get(j).isHighlight()) {
+                        listHighlight = other.get(j).getBoolArray();
+                    } else {
+                        //colour mode!
+                        colours = other.get(j).getColours();
                     }
                 }
             }
-        } else { //points in 'r'
+        } else {
+            //lsid mandatory.
+            //use species/{type}/register service to create 'dummy'
+
+
 //TODO: create new function for sampling, allowing for 'other' fields
             Vector<Record> v = null;
             try {
@@ -683,24 +686,13 @@ public class WMSController {
             } else {
                 if (uncertainty) {
                     points = new double[v.size() * 2];
-                    uncertainties = new double[v.size()];
+                    uncertainties = new int[v.size()];
                     uncertaintiesType = new short[v.size()];
                     for (int j = 0; j < v.size(); j++) {
                         points[j * 2] = v.get(j).getLongitude();
                         points[j * 2 + 1] = v.get(j).getLatitude();
-                        try {
-                            //cap maximum uncertainty
-                            int unc = v.get(j).getUncertainity();
-                            if (unc == Integer.MIN_VALUE) {
-                                uncertainties[j] = Double.NaN;
-                            } else {
-                                uncertainties[j] = unc;
-                            }
 
-
-                        } catch (Exception e) {
-                            uncertainties[j] = Double.NaN;
-                        }
+                        uncertainties[j] = v.get(j).getUncertainity();
                     }
                 } else {
                     points = new double[v.size() * 2];
@@ -724,7 +716,7 @@ public class WMSController {
         if (uncertainty) {
             uncertaintiesType = new short[uncertainties.length];
             for (int j = 0; j < uncertainties.length; j++) {
-                if (Double.isNaN(uncertainties[j])) {
+                if (Integer.MIN_VALUE == uncertainties[j]) {
                     uncertaintiesType[j] = 1;
                     uncertainties[j] = 30000;
                 } else if (uncertainties[j] > 30000) {

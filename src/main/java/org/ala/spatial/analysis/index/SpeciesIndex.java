@@ -75,7 +75,7 @@ public class SpeciesIndex {
                 lookup[i] = singleIndex[pos].idx;
                 singleIndex[pos].count += addIndex[i].record_end - addIndex[i].record_start + 1;
                 singleIndex[pos].type = (byte) Math.min(addIndex[i].type, singleIndex[pos].type);
-                if(singleIndex[pos].parent < 0) {
+                if (singleIndex[pos].parent < 0) {
                     singleIndex[pos].parent = parents[i];
                 }
             }
@@ -334,7 +334,7 @@ public class SpeciesIndex {
                 + ((char) (((int) filter.charAt(filter.length() - 1)) - 1)) + ((char) 254));       //lower bound
         int upperpos = Arrays.binarySearch(speciesNames, filter.substring(0, filter.length() - 1)
                 + ((char) (((int) filter.charAt(filter.length() - 1)) + 1)));       //upper bound
-        IndexedRecord lookfor = new IndexedRecord("", 0, 0, 0, 0, (byte) -1);
+        IndexedRecord lookfor = new IndexedRecord("", 0, 0, (byte) -1);
 
         String[] matches_array = null;
 
@@ -483,10 +483,10 @@ public class SpeciesIndex {
      * @return LSID as String
      */
     static public String getLSID(String speciesName) {
-        String [] s = filterBySpeciesName(speciesName, 1);
-        if(s != null && s.length > 0) {
-            String [] words = s[0].split("/");
-            if(words.length > 1) {
+        String[] s = filterBySpeciesName(speciesName, 1);
+        if (s != null && s.length > 0) {
+            String[] words = s[0].split("/");
+            if (words.length > 1) {
                 int pos = findLSID(words[1].trim());
                 return getLSID(pos);
             }
@@ -562,46 +562,45 @@ public class SpeciesIndex {
             parents[i] = -1;
         }
 
-
         //After sorting a 'parent' is only 'before' a child.
         //Move back until the 'type' is < current type, then continue back
         //until passed one record without a parent assigned
-        IndexedRecord [] copyIndex = addIndex.clone();
-        //tag records
-        for(int i=0;i<copyIndex.length;i++) {
-            copyIndex[i].file_end = i;
+
+        IndexedRecord2[] copyIndex = new IndexedRecord2[addIndex.length];
+        for (int i = 0; i < copyIndex.length; i++) {
+            copyIndex[i] = new IndexedRecord2(addIndex[i].name, addIndex[i].record_start, addIndex[i].record_end, addIndex[i].type, i);
         }
         java.util.Arrays.sort(copyIndex,
-                new Comparator<IndexedRecord>() {
+                new Comparator<IndexedRecord2>() {
 
-                    public int compare(IndexedRecord r1, IndexedRecord r2) {  
-                        if(r1.record_start == r2.record_start) {
+                    public int compare(IndexedRecord2 r1, IndexedRecord2 r2) {
+                        if (r1.record_start == r2.record_start) {
                             return r1.type - r2.type;
                         }
-                        return r1.record_start  - r2.record_start;
+                        return r1.record_start - r2.record_start;
                     }
                 });
-        
+
         int start, end, j;
         for (int i = 1; i < copyIndex.length; i++) {
-            if(copyIndex[i].name.equals("urn:lsid:biodiversity.org.au:afd.taxon:558a729a-789b-4b00-a685-8843dc447319")){
+            if (copyIndex[i].name.equals("urn:lsid:biodiversity.org.au:afd.taxon:558a729a-789b-4b00-a685-8843dc447319")) {
                 i = i + 1;
                 i = i - 1;
             }
-            if(i > 0 && copyIndex[i].record_start == copyIndex[i-1].record_end + 1
-                    && copyIndex[i].type == copyIndex[i-1].type) {
-                parents[(int) copyIndex[i].file_end] = parents[(int) copyIndex[i-1].file_end];
+            if (i > 0 && copyIndex[i].record_start == copyIndex[i - 1].record_end + 1
+                    && copyIndex[i].type == copyIndex[i - 1].type) {
+                parents[(int) copyIndex[i].pos] = parents[(int) copyIndex[i - 1].pos];
                 continue;
             }
 
             start = copyIndex[i].record_start;
             end = copyIndex[i].record_end;
 
-            for (j = i-1; j == i-1 || parents[(int) copyIndex[j+1].file_end] != -1; j--) {
+            for (j = i - 1; j == i - 1 || parents[(int) copyIndex[j + 1].pos] != -1; j--) {
                 //is [j] a parent of [i]?
                 if (copyIndex[j].record_start <= start
-                        && copyIndex[j].record_end >= end) { 
-                    parents[(int) copyIndex[i].file_end] = (int) copyIndex[j].file_end;
+                        && copyIndex[j].record_end >= end) {
+                    parents[(int) copyIndex[i].pos] = (int) copyIndex[j].pos;
                     break;
                 }
             }
@@ -611,7 +610,7 @@ public class SpeciesIndex {
     }
 
     static int getHash(int parentLevel, int pos) {
-         while (pos >= 0 && singleIndex[singleIndexOrder[pos]].type > parentLevel) {
+        while (pos >= 0 && singleIndex[singleIndexOrder[pos]].type > parentLevel) {
             pos = singleIndex[singleIndexOrder[pos]].parent;
         }
 
@@ -620,5 +619,13 @@ public class SpeciesIndex {
         } else {
             return 0xFFFFFFFF;    //white
         }
+    }
+
+    static int getParentPos(int parentLevel, int pos) {
+        while (pos >= 0 && singleIndex[singleIndexOrder[pos]].type > parentLevel) {
+            pos = singleIndex[singleIndexOrder[pos]].parent;
+        }
+
+        return pos;
     }
 }
