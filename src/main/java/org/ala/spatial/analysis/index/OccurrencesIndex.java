@@ -822,9 +822,8 @@ public class OccurrencesIndex {
                     fw.append("\r\n");
                 }
                 fw.close();
-
-                fw_maps = null;
             }
+            fw_maps = null;
             SpatialLogger.log("exportFieldIndexes done");
         } catch (Exception e) {
             SpatialLogger.log("exportFieldIndexes, write", e.toString());
