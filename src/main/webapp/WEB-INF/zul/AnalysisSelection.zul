@@ -1,4 +1,6 @@
-    <?component name="envelopeForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
+<?component name="envelopeForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
+<?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?>
+
     <zk>
         <window id="selectionwindow" use="org.ala.spatial.analysis.web.SelectionController"
                 apply="org.ala.spatial.analysis.web.SelectionController">
@@ -64,15 +66,7 @@
                         <button image="/img/util_garbage.png" 
                             id="btnClearSelection" visible="true" />
                     </div>
-
-                </hbox>
-                <div sclass ="highlighted" width="95%" >
-                    <label id="lblArea" value="" />
-                    <html><![CDATA[
-                        <div id="jsarea"></div>
-                        <div id="jsarea2"></div>
-	            ]]></html>
-                </div>
+                </hbox>                
             </vbox>
 
             <div visible="false" id="areaInfo">
@@ -98,6 +92,9 @@
                     <textbox id="envelopeChanged" visible="false" />
                 </div>
             </div>
+
+            <separator />
+            <speciesListForm id="speciesListForm" />
 
             <textbox id="searchPoint" visible="false"/>
             <textbox id="searchSpeciesPoint" visible="false"/>

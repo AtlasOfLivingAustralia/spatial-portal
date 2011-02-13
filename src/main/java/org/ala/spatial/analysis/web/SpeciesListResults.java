@@ -26,18 +26,14 @@ public class SpeciesListResults extends UtilityComposer {
 
     public String pid;
     String shape;
-    
     public String[] results;
     public Button download;
     public Listbox popup_listbox_results;
     public Label results_label;
-    
     private String satServer;
     private SettingsSupplementary settingsSupplementary = null;
-
     Row rowUpdating;
     Row rowCounts;
-
     int results_count = 0;
     int results_count_occurrences = 0;
 
@@ -51,7 +47,7 @@ public class SpeciesListResults extends UtilityComposer {
 
     public void populateList() {
         updateParameters();
-        
+
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("/filtering/apply");
@@ -79,7 +75,7 @@ public class SpeciesListResults extends UtilityComposer {
             if (results.length > 200) {
                 tmp = java.util.Arrays.copyOf(results, 200);
                 results_label.setValue("preview of first 200 species found");
-            }else {
+            } else {
                 results_label.setValue("preview of all " + results.length + " species found");
             }
 
@@ -109,8 +105,18 @@ public class SpeciesListResults extends UtilityComposer {
                                 lc = new Listcell(ss[3]);
                                 lc.setParent(li);
                             }
+
+                            if (ss.length > 4) {
+                                lc = new Listcell(ss[4]);
+                                lc.setParent(li);
+                            }
+
+                            if (ss.length > 5) {
+                                lc = new Listcell(ss[5]);
+                                lc.setParent(li);
+                            }
                         }
-                    });          
+                    });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -127,7 +133,7 @@ public class SpeciesListResults extends UtilityComposer {
         }
 
         String spid = pid;
-        if(spid == null || spid.equals("none")){
+        if (spid == null || spid.equals("none")) {
             spid = String.valueOf(System.currentTimeMillis());
         }
 
@@ -187,5 +193,4 @@ public class SpeciesListResults extends UtilityComposer {
             }
         }
     }
-
 }

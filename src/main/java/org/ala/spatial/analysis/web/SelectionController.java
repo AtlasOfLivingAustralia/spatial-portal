@@ -143,7 +143,7 @@ public class SelectionController extends UtilityComposer {
     Comboitem ci10km;
     Comboitem ci20km;
     //displays area of active area
-    Label lblArea;
+    //Label lblArea; //moved to FilteringResultsWCController
     private String storedSize;
     boolean viewportListenerAdded = false;
     Window wInstructions = null;
@@ -684,27 +684,51 @@ public class SelectionController extends UtilityComposer {
                     lsids += "&";
                 }
             }
-           
+
             String reqUri;
 
-            double radius = 20000;
-            if (zoom > -1 && zoom <= 1) {
-                radius = 500000;
-            } else if (zoom > 1 && zoom <= 3) {
-                radius = 100000;
-            } else if (zoom > 3 && zoom <= 5) {
-                radius = 50000;
-            } else if (zoom > 5 && zoom <= 7) {
-                radius = 10000;
-            } else if (zoom > 7 && zoom <= 9) {
-                radius = 5000;
-            } else if (zoom > 9 && zoom <= 12) {
-                radius = 1000;
-            } else if (zoom > 12 && zoom <= 14) {
-                radius = 100;
-            } else if (zoom > 14) {
-                radius = 50;
+//            double radius = 20000;
+//            if (zoom > -1 && zoom <= 1) {
+//                radius = 500000;
+//            } else if (zoom > 1 && zoom <= 3) {
+//                radius = 100000;
+//            } else if (zoom > 3 && zoom <= 5) {
+//                radius = 50000;
+//            } else if (zoom > 5 && zoom <= 7) {
+//                radius = 10000;
+//            } else if (zoom > 7 && zoom <= 9) {
+//                radius = 5000;
+//            } else if (zoom > 9 && zoom <= 12) {
+//                radius = 1000;
+//            } else if (zoom > 12 && zoom <= 14) {
+//                radius = 100;
+//            } else if (zoom > 14) {
+//                radius = 50;
+//            }
+
+            //get max radius for visible points layers
+            int maxSize = 0;
+            List udl = getMapComposer().getPortalSession().getActiveLayers();
+            Iterator iudl = udl.iterator();
+            MapLayer mapLayer = null;
+            while (iudl.hasNext()) {
+                MapLayer ml = (MapLayer) iudl.next();
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md != null && md.getSpeciesLsid() != null
+                        && !ml.isClustered() && ml.isDisplayed()) {
+                    if (ml.getSizeVal() > maxSize) {
+                        maxSize = ml.getSizeVal();
+                    }
+                }
             }
+
+            //convert to radius in m at zoom, then back to longitude
+            String[] va = getMapComposer().getViewArea().replace("POLYGON((", "").replace("))", "").split(",");
+            String[] xy1 = va[0].split(" ");
+            String[] xy2 = va[2].split(" ");
+            double y1 = Double.parseDouble(xy1[1]);
+            double y2 = Double.parseDouble(xy2[1]);
+            double radius = convertPixelsToMeters(maxSize, Math.abs(y1 - y2) / 2 + Math.min(y1, y2), zoom);
 
             String wkt2 = createCircle(lon, lat, radius);
 
@@ -737,6 +761,10 @@ public class SelectionController extends UtilityComposer {
         //response = "alert('"+response+"'); ";
         response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
         Clients.evalJavaScript(response);
+    }
+
+    public double convertPixelsToMeters(int pixels, double latitude, int zoom) {
+        return ((Math.cos(latitude * Math.PI / 180.0) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom))) * pixels;
     }
 
     /**
@@ -1141,7 +1169,7 @@ public class SelectionController extends UtilityComposer {
     void updateSpeciesList(boolean populateSpeciesList) {
         try {
             FilteringResultsWCController win =
-                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("speciesListForm").getFellow("popup_results");
+                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf").getFellow("selectionwindow").getFellow("speciesListForm").getFellow("popup_results");
             //if (!populateSpeciesList) {
             win.refreshCount();
             //} else {
@@ -1159,20 +1187,20 @@ public class SelectionController extends UtilityComposer {
 
         String size = null;
 
-        if(area.toLowerCase().contains("envelope") || area.toLowerCase().contains("layer")) {
+        if (area.toLowerCase().contains("envelope") || area.toLowerCase().contains("layer")) {
             size = storedSize;
-        } else if(cbAreaSelection.getText().toLowerCase().contains("world")) {
+        } else if (cbAreaSelection.getText().toLowerCase().contains("world")) {
             size = "509600000"; //fixed value
         } else {
             //try as WKT
             size = getAreaOfWKT(area);
         }
 
-        if (size == null) {
-            lblArea.setValue("");
-        } else {
-            lblArea.setValue(size + " sq km");
-        }
+//        if (size == null) {
+//            lblArea.setValue("");
+//        } else {
+//            lblArea.setValue(size + " sq km");
+//        }
     }
 
     void onEnvelopeDone(boolean hide) {
@@ -1691,5 +1719,9 @@ public class SelectionController extends UtilityComposer {
             getMapComposer().showMessage("Unable to load file. Please try again. ");
             ex.printStackTrace();
         }
+    }
+
+    void updateActiveAreaInfo() {
+        updateSpeciesList(false); // true
     }
 }

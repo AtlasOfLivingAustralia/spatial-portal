@@ -199,14 +199,21 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <separator orient="vertical" />
                                                     <combobox id="cbColour" >
                                                         <comboitem label="User defined" id="ciColourUser" value="-1" />
-                                                        <comboitem label="Scientific Name" id="ciColourSN" value="7" />
-                                                        <comboitem label="Species" id="ciColourS" value="6" />
-                                                        <comboitem label="Genus" id="ciColourG" value="5" />
-                                                        <comboitem label="Family" id="ciColourF" value="4" />
-                                                        <comboitem label="Order" id="ciColourO" value="3" />
-                                                        <comboitem label="Class" id="ciColourC" value="2" />
-                                                        <comboitem label="Phylum" id="ciColourP" value="1" />
-                                                        <comboitem label="Kingdom" id="ciColourK" value="0" />
+                                                        <comboitem label="Scientific Name" value="taxon_name" />
+                                                        <comboitem label="Species" value="species" />
+                                                        <comboitem label="Genus" value="genus" />
+                                                        <comboitem label="Family" value="family" />
+                                                        <comboitem label="Order" value="order" />
+                                                        <comboitem label="Class" value="class" />
+                                                        <comboitem label="Phylum" value="phlum" />
+                                                        <comboitem label="Kingdom" value="kingdom" />
+                                                        <comboitem label="Uncertainty" value="u" />
+                                                        <comboitem label="Data Provider" value="p" />
+                                                        <comboitem label="Institution" value="in" />
+                                                        <comboitem label="Year" value="y" />
+                                                        <comboitem label="Collection" value="c" />
+                                                        <comboitem label="Altitude" value="a" />
+                                                        <comboitem label="Depth" value="d" />
                                                     </combobox>
                                                 </hbox>
                                                 <div id="divUserColours" >
@@ -333,6 +340,7 @@ border-bottom: none;
                                                     <vbox>
                                                     <hbox width="100%">
                                                         <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
+                                                            <separator />
                                                             <separator />
                                                             <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
                                                             <separator />
@@ -733,7 +741,7 @@ function displayArea(area) {
    $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
 }
 function displayArea2(area) {
-  $('#jsarea2').html('GM area: ' + addCommas(area.toFixed(2)) + ' sq km');
+  $('#jsarea2').html(addCommas(':' + area.toFixed(2)));
 }
 function addCommas(nStr) {
     nStr += '';

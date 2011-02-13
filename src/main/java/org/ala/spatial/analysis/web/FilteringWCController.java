@@ -104,13 +104,13 @@ public class FilteringWCController extends UtilityComposer {
         pid = getInfo("/filtering/init");
     }
 
-     public String getAreaSize() {
-	        if (activeAreaSize != null) {
-	            return activeAreaSize;
-	        } else {
-return null;
-}
-	    }
+    public String getAreaSize() {
+        if (activeAreaSize != null) {
+            return activeAreaSize;
+        } else {
+            return null;
+        }
+    }
 
     public String getPid() {
         if (selectedLayers.size() > 0) {
@@ -182,7 +182,7 @@ return null;
                     Listcell count = new Listcell(String.valueOf(f.count));
                     count.setStyle("text-align: right; ");
                     count.setParent(li);
-                   
+
                 }
             });
 
@@ -201,7 +201,7 @@ return null;
         }
 
         //reset active area size
-activeAreaSize = null;
+        activeAreaSize = null;
     }
 
     private SPLFilter getSPLFilter(String layername) {
@@ -335,7 +335,7 @@ activeAreaSize = null;
         listFix();
 
         //reset active area size
-activeAreaSize = null;
+        activeAreaSize = null;
     }
 
     public void onClick$btnClearSelection(Event event) {
@@ -728,7 +728,8 @@ activeAreaSize = null;
     void updateSpeciesList(int newCount, int newOccurrencesCount) {
         try {
             FilteringResultsWCController win =
-                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("speciesListForm").getFellow("popup_results");
+                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf") //AnalysisSelection
+                    .getFellow("speciesListForm").getFellow("popup_results");
             win.refreshCount(newCount, newOccurrencesCount);
         } catch (Exception e) {
             e.printStackTrace();

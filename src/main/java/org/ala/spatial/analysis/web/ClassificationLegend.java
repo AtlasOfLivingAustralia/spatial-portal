@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zul.Label;
 
 public class ClassificationLegend extends UtilityComposer {
 
@@ -45,7 +46,9 @@ public class ClassificationLegend extends UtilityComposer {
     public int legend_counter = 0;
     public Div colourChooser;
     public Listbox legend;
+    Label lblEdit;
     ArrayList<String> legend_lines;
+    boolean readonly = false;
 
     @Override
     public void afterCompose() {
@@ -62,6 +65,12 @@ public class ClassificationLegend extends UtilityComposer {
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(ClassificationLegend.class.getName()).log(Level.SEVERE, null, ex);
         }
+        readonly = (Executions.getCurrent().getArg().get("readonly")) != null;
+
+        if (readonly) {
+            lblEdit.setVisible(false);
+        }
+
         System.out.println("layer:" + layerLabel);
 
         buildLegend();
@@ -92,10 +101,15 @@ public class ClassificationLegend extends UtilityComposer {
             slist = get.getResponseBodyAsString();
 
             String[] lines = slist.split("\r\n");
+            if (lines.length == 1) {
+                lines = slist.split("\n");
+            }
             legend_lines = new ArrayList<String>();
             int i = 0;
             for (i = 1; i < lines.length; i++) {
-                legend_lines.add(lines[i]);
+                if (lines[i].split(",").length > 3) {
+                    legend_lines.add(lines[i]);
+                }
             }
 
             /* apply something to line onclick in lb */
@@ -104,7 +118,16 @@ public class ClassificationLegend extends UtilityComposer {
                 public void render(Listitem li, Object data) {
                     String s = (String) data;
                     String[] ss = s.split(",");
-                    Listcell lc = new Listcell("group " + ss[0]);
+                    Listcell lc;
+                    if (readonly) {
+                        if (ss[0].length() > 0) {
+                            lc = new Listcell(ss[0]);
+                        } else {
+                            lc = new Listcell("unknown");
+                        }
+                    } else {
+                        lc = new Listcell("group " + ss[0]);
+                    }
                     lc.setParent(li);
 
                     int red = Integer.parseInt(ss[1]);
@@ -116,13 +139,15 @@ public class ClassificationLegend extends UtilityComposer {
                             + "," + blue + "); color: rgb(" + red + "," + green
                             + "," + blue + ")");
                     lc.setParent(li);
-                    lc.addEventListener("onClick", new EventListener() {
+                    if (!readonly) {
+                        lc.addEventListener("onClick", new EventListener() {
 
-                        public void onEvent(Event event) throws Exception {
-                            // open colours selector
-                            openColours((Listcell) event.getTarget());
-                        }
-                    });
+                            public void onEvent(Event event) throws Exception {
+                                // open colours selector
+                                openColours((Listcell) event.getTarget());
+                            }
+                        });
+                    }
                 }
             });
 
@@ -161,6 +186,9 @@ public class ClassificationLegend extends UtilityComposer {
     }
 
     public void onClick$applyChange() {
+        if (readonly) {
+            return;
+        }
         System.out.println("applyChange");
         int red = redSlider.getCurpos();
         int green = greenSlider.getCurpos();

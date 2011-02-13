@@ -2836,7 +2836,8 @@ function loadKmlFile(name, kmlurl) {
 }
 
 function displayBiostorRecords() {
-    parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
+    //parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
+    parent.displayHTMLInformation("biostormsg",'updating...');
 
     var currBounds = map.getExtent().transform(map.projection, map.displayProjection);
 
@@ -2848,7 +2849,7 @@ function displayBiostorRecords() {
             html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
         }
         html += '</ol>';
-        parent.displayHTMLInformation("biostormsg",'Found ' + data.list.length + " documents.");
+        parent.displayHTMLInformation("biostormsg",":" + data.list.length);
         parent.displayHTMLInformation('biostorlist',html);
     });
 

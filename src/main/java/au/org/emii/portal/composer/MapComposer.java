@@ -201,18 +201,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public String tbxPrintHack;
     int mapZoomLevel = 4;
     private Hashtable activeLayerMapProperties;
-
     Div divUserColours;
     Combobox cbColour;
     Comboitem ciColourUser; //User selected colour
-    Comboitem ciColourSN;   //scientific name
-    Comboitem ciColourS;    //species
-    Comboitem ciColourG;    //genus
-    Comboitem ciColourF;    //family
-    Comboitem ciColourO;    //order
-    Comboitem ciColourC;    //class
-    Comboitem ciColourP;    //phylum
-    Comboitem ciColourK;    //kingdom
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -349,7 +340,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     }
                     envString += ";name:circle;size:" + sizeSlider.getCurpos();
                     envString += ";opacity:" + opacity;
-                    if(selectedLayer.getHighlight() != null) {
+                    if (selectedLayer.getHighlight() != null) {
                         envString += ";sel:" + selectedLayer.getHighlight();
                     } else if (chkUncertaintySize.isChecked()) {
                         envString += ";uncertainty:1";
@@ -462,7 +453,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         mapSpeciesFromAutocomplete(searchSpeciesAuto);
     }
 
-    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac){
+    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac) {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
@@ -492,11 +483,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
         //are there any distribution maps to map first?
         //Heptranchias
-        String [] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
-        if(wmsNames != null && wmsNames.length > 0) {
-            if(wmsNames.length > 1) {
-                for(int i=0;i<wmsNames.length;i++) {
-                    addWMSLayer(taxon + " map " + (i+1), wmsNames[i], 0.75f);
+        String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
+        if (wmsNames != null && wmsNames.length > 0) {
+            if (wmsNames.length > 1) {
+                for (int i = 0; i < wmsNames.length; i++) {
+                    addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f);
                 }
             } else {
                 addWMSLayer(taxon + " map", wmsNames[0], 0.75f);
@@ -1415,11 +1406,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         uncertainty.setVisible(true);
                     }
                 }
-                legendImg.setVisible(true);
+
                 legendLabel.setVisible(true);
                 legendImgUri.setVisible(false);
-                legendHtml.setVisible(false);
+                //legendHtml.setVisible(false);
                 colourChooser.setVisible(true);
+
+                if (cbColour.getSelectedItem() != ciColourUser && m.getMapLayerMetadata() != null
+                        && m.getMapLayerMetadata().getSpeciesLsid() != null
+                        && !m.isClustered()) {
+                    legendHtml.setVisible(true);
+                    legendImg.setVisible(false);
+
+                    showPointsColourModeLegend(m);
+                } else {
+                    legendImg.setVisible(true);
+                    legendHtml.setVisible(false);
+                }
             } else if (currentSelection.getSelectedStyle() != null) {
                 /* 1. classification legend has uri with ".zul" content
                  * 2. prediction legend works here
@@ -1482,7 +1485,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             hideLayerControls(null);
         }
-        
+
         if (m != null) {
             btnPointsCluster.setVisible(true);
         }
@@ -1629,6 +1632,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else if (!chkUncertaintySize.isChecked() && uncertaintyLegend.isVisible()) {
             uncertaintyLegend.setVisible(false);
         }
+
+        if (cbColour.getSelectedItem() != ciColourUser) {
+            if (cbColour.getSelectedItem() != ciColourUser && selectedLayer.getMapLayerMetadata() != null
+                    && selectedLayer.getMapLayerMetadata().getSpeciesLsid() != null
+                    && !selectedLayer.isClustered()) {
+                legendHtml.setVisible(true);
+                legendImg.setVisible(false);
+
+                showPointsColourModeLegend(selectedLayer);
+
+            } else {
+                legendImg.setVisible(true);
+                legendHtml.setVisible(false);
+            }
+        }
     }
 
     public void onScroll$sizeSlider() {
@@ -1640,7 +1658,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onCheck$chkUncertaintySize() {
         MapLayer selectedLayer = getActiveLayersSelection(true);
-        if(selectedLayer != null) {
+        if (selectedLayer != null) {
             selectedLayer.setHighlight(null);
         }
         updateLegendImage();
@@ -1686,7 +1704,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     envParams += "colormode:" + selectedLayer.getColourMode();
                 }
                 envParams += ";name:circle;size:" + size + ";opacity:" + opacity + "";
-                if(selectedLayer.getHighlight() != null) {
+                if (selectedLayer.getHighlight() != null) {
                     envParams += ";sel:" + selectedLayer.getHighlight();
                 } else if (uncertaintyCheck > 0) {
                     envParams += ";uncertainty:1";
@@ -1762,7 +1780,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // showtime!
         load();
 
-         //combobox defaults
+        //combobox defaults
         cbColour.setSelectedItem(ciColourUser);
     }
 
@@ -2639,10 +2657,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         System.out.println("Mapping: " + label + " with " + uri + filter);
 
         try {
-            if (safeToPerformMapAction()) {                
+            if (safeToPerformMapAction()) {
 
                 MapLayer gjLayer = getMapLayer(label);
-                
+
                 MapLayer mapLayer = null;
                 if (getMapLayer(label) == null) {
                     boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
@@ -3368,6 +3386,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             List userPoints = reader.readAll();
 
+            //if only one column treat it as a list of LSID's
+            if (((String[]) userPoints.get(0)).length == 1) {
+                continueLoadUserLSIDs(ud, data, reader, userPoints);
+                return;
+            }
+
             boolean hasHeader = false;
 
             // check if it has a header
@@ -3457,6 +3481,85 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             showMessage("Unable to load your file. Please try again.");
 
             System.out.println("unable to load user points: ");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
+        String satServer = null;
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+
+        try {
+            //don't care if it has a header
+
+            // check if the count of LSIDs goes over the threshold (+1).
+            int sizeToCheck = userPoints.size();
+            System.out.println("Checking user LSIDs size: " + sizeToCheck + " -> " + 50);
+            if (sizeToCheck > 50) {
+                showMessage("Cannot upload more than 50 LSIDs");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < userPoints.size(); i++) {
+                String[] up = (String[]) userPoints.get(i);
+                if (i > 0) {
+                    sb.append(",");
+                }
+                sb.append(up[0].replace(",", "").trim().toLowerCase());
+            }
+
+            String lsids = sb.toString();
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("/species/lsid/register");
+            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            String pid = get.getResponseBodyAsString();
+
+            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
+
+            ud.setFeatureCount(userPoints.size());
+            Long did = new Long(pid);
+            System.out.println("lval: " + did.longValue());
+            ud.setUploadedTimeInMs(did.longValue());
+
+            String metadata = "";
+            metadata += "User uploaded points \n";
+            metadata += "Name: " + ud.getName() + " \n";
+            metadata += "Description: " + ud.getDescription() + " \n";
+            metadata += "Date: " + ud.getDisplayTime() + " \n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+
+            MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user");
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(metadata);
+
+            // add it to the user session
+            Hashtable<String, UserData> htUserSpecies = (Hashtable) getSession().getAttribute("userpoints");
+            if (htUserSpecies == null) {
+                htUserSpecies = new Hashtable<String, UserData>();
+            }
+            htUserSpecies.put(pid, ud);
+            getSession().setAttribute("userpoints", htUserSpecies);
+
+            // close the reader and data streams
+            reader.close();
+            data.close();
+        } catch (Exception e) {
+            showMessage("Unable to load your file. Please try again.");
+
+            System.out.println("unable to load user LSIDs: ");
             e.printStackTrace(System.out);
         }
     }
@@ -3611,9 +3714,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-
     public void onChange$cbColour(Event event) {
         updateUserColourDiv();
+        updateLegendImage();
         applyChange();
     }
 
@@ -3631,25 +3734,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             cbColour.setDisabled(true);
         } else {
             cbColour.setDisabled(false);
-
-            if (currentSelection.getColourMode().equals(ciColourUser.getValue())) {
-                cbColour.setSelectedItem(ciColourUser);
-            } else if (currentSelection.getColourMode().equals(ciColourSN.getValue())) {
-                cbColour.setSelectedItem(ciColourSN);
-            } else if (currentSelection.getColourMode().equals(ciColourS.getValue())) {
-                cbColour.setSelectedItem(ciColourS);
-            } else if (currentSelection.getColourMode().equals(ciColourG.getValue())) {
-                cbColour.setSelectedItem(ciColourG);
-            } else if (currentSelection.getColourMode().equals(ciColourF.getValue())) {
-                cbColour.setSelectedItem(ciColourF);
-            } else if (currentSelection.getColourMode().equals(ciColourO.getValue())) {
-                cbColour.setSelectedItem(ciColourO);
-            } else if (currentSelection.getColourMode().equals(ciColourC.getValue())) {
-                cbColour.setSelectedItem(ciColourC);
-            } else if (currentSelection.getColourMode().equals(ciColourP.getValue())) {
-                cbColour.setSelectedItem(ciColourP);
-            } else if (currentSelection.getColourMode().equals(ciColourK.getValue())) {
-                cbColour.setSelectedItem(ciColourK);
+            for (int i = 0; i < cbColour.getItemCount(); i++) {
+                if (cbColour.getItemAtIndex(i).getValue().equals(currentSelection.getColourMode())) {
+                    cbColour.setSelectedIndex(i);
+                }
             }
             updateUserColourDiv();
         }
@@ -3665,14 +3753,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         while (iudl.hasNext()) {
             MapLayer ml = (MapLayer) iudl.next();
             MapLayerMetadata md = ml.getMapLayerMetadata();
-            if(md != null
-                && md.getSpeciesLsid() != null
-                && md.getSpeciesLsid().equals(data.getLsid())) {
+            if (md != null
+                    && md.getSpeciesLsid() != null
+                    && md.getSpeciesLsid().equals(data.getLsid())) {
 
-                if(ml.isClustered() || !ml.isDisplayed()) {
+                if (ml.isClustered() || !ml.isDisplayed()) {
                     //removeLayer;
                     openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
-                        + openLayersJavascript.removeMapLayer(ml));
+                            + openLayersJavascript.removeMapLayer(ml));
                 } else {
                     mapLayer = ml;
                 }
@@ -3681,11 +3769,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
-        if(mapLayer == null) {
+        if (mapLayer == null) {
             try {
                 deactiveLayer(getActiveLayersSelection(false), true, false, true);
             } catch (Exception e) {
-
             }
 
             //map as WMS points layer
@@ -3709,9 +3796,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             refreshActiveLayer(mapLayer);
             setupLayerControls(mapLayer);
 
-            for(int i=0;i<activeLayersList.getItemCount();i++) {
+            for (int i = 0; i < activeLayersList.getItemCount(); i++) {
                 Listitem item = (Listitem) activeLayersList.getItemAtIndex(i);
-                if(mapLayer == (MapLayer) item.getValue()) {
+                if (mapLayer == (MapLayer) item.getValue()) {
                     activeLayersList.setSelectedIndex(i);
                     break;
                 }
@@ -3721,5 +3808,53 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         return mapLayer;
+    }
+
+    private String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
+        try {
+            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/alaspatial/species/colourlegend?lsid="
+                    + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
+                    + "&colourmode="
+                    + URLEncoder.encode(colourmode, "UTF-8")); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+
+            int result = client.executeMethod(get);
+
+            //TODO: test results
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception ex) {
+            ex.printStackTrace(System.out);
+        }
+
+        return null;
+    }
+
+    private void showPointsColourModeLegend(MapLayer m) {
+        //remove all
+        while (legendHtml.getChildren().size() > 0) {
+            legendHtml.removeChild(legendHtml.getFirstChild());
+        }
+
+        //1. register legend
+        String pid = registerPointsColourModeLegend(m.getMapLayerMetadata().getSpeciesLsid(), (String) cbColour.getSelectedItem().getValue());
+
+        //put any parameters into map
+        Map map = new HashMap();
+        map.put("pid", pid);
+        map.put("layer", "points layer");
+        map.put("readonly", "true");
+
+        try {
+            Executions.createComponents(
+                    "/WEB-INF/zul/AnalysisClassificationLegend.zul", legendHtml, map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

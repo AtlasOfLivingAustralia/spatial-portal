@@ -1,8 +1,9 @@
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk> 
-    <window id="popup_results" 
+    <window id="popup_results"
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        use="org.ala.spatial.analysis.web.FilteringResultsWCController">
+        use="org.ala.spatial.analysis.web.FilteringResultsWCController"
+        xmlns:n="http://www.zkoss.org/2005/zk/native">
             
         <style>
                 .resultsCount {
@@ -14,91 +15,85 @@
                     text-align: center;
                 }                
         </style>
-
-        <tabbox>
-            <tabs>
-                <tab label="1*" />
-            </tabs>
-            <toolbar>                   
-                <button label="Produce species list" id="download" sclass="goButton" />
-                <button label="Produce sample" id="downloadsamplesPreview" sclass="goButton" />
-            </toolbar>
-            <tabpanels>
-                <tabpanel>
-                    <vbox>
-                        <separator />            
-                        <separator />
-                        <grid width="300px" style="border: 0;"  sizedByContent="true">
-                            <auxhead  style="border: 0;">
-                                <auxheader style="border: 0; font-weight: bold; text-align: center;"  label="Active area summary" colspan="2"/>
-                            </auxhead>
-                            <columns  style="border: 0;">
-                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Species Count" width="150px"/>
-                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Occurrences Count" width="150px"/>
-                            </columns>
-                            <rows  style="border: 0;">
-                                <row  style="text-align: center; border: 0;" id="rowCounts" visible="false">
-                                    <label sclass="resultsCount" id="results_label2_species" />
-                                    <label sclass="resultsCount" id="results_label2_occurrences" />
-                                </row>
-                                <row  style="text-align: center; border: 0;" spans="2" id="rowUpdating" visible="true">
-                                    <label sclass="resultsCount" value="... updating ..." />
-                                </row>
-                            </rows>
-                        </grid>
-                        <separator />
-                        <separator />
-                        <hbox>
-                            <button label="Map all species occurrences in Active Area" id="mapspecies" visible="false" sclass="goButton"/>
-                        </hbox>
-
-                        <div visible="true" >
-                            <div align="left" visible="true">
-                                <button label="LSID upload" sclass="goButton"
-                                    onClick="lsidupload.open=(lsidupload.open) ? false:true;" />
+        <n:table border="0" >
+            <n:tr height="18px" >
+                <n:td width="130px">
+                    <label id="lblArea" value="" visible="false" />
+                    <label value="GM active area (sq km)" />
+                </n:td>
+                <n:td width="80px">
+                    <html><![CDATA[
+                    <div id="jsarea" style="display:none;font-size:10px" ></div>
+                    <div id="jsarea2" class="z-label"></div>
+                    ]]></html>
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Species" />
+                </n:td>
+                <n:td>
+                    :<label id="results_label2_species" />
+                </n:td>
+                <n:td>
+                    <button label="Species list" id="download" sclass="goButton" />
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>                    
+                    <label value="Occurrences" />
+                </n:td>
+                <n:td>
+                    :<label id="results_label2_occurrences" />
+                </n:td>
+                <n:td>
+                    <hbox><button label="Sample" id="downloadsamplesPreview" sclass="goButton" /><button label="Map" id="mapspecies" disabled="true" sclass="goButton"/></hbox>
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Species Distributions" />
+                </n:td>
+                <n:td>
+                    <n:u>:<label id="sdLabel" onClick="sd.open=(sd.open) ? false:true;" /></n:u>
+                </n:td>
+                <n:td>
+                    <button id="sdDownload" label="Download list" sclass="goButton" />
+                </n:td>
+            </n:tr>            
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="BHL Documents" />
+                </n:td>
+                <n:td>
+                    <html><![CDATA[ <u><div id="biostormsg" class="z-label" onclick="if($('#biostorlist')[0].style.display=='none')$('#biostorlist')[0].style.display=''; else $('#biostorlist')[0].style.display='none';" ></div></u> ]]>
+                    </html>
+                </n:td>
+            </n:tr>
+            <n:tr>
+                <n:td colspan="3">
+                    <html><![CDATA[ <div id="biostorlist" style="display:none;font-size:10px"></div>]]>
+                    </html>
+                </n:td>
+            </n:tr>
+            <n:tr>
+                <n:td colspan="3">
+                    <panel id="sd" style="padding: 5px;" border="normal" open="false">
+                        <panelchildren>
+                            <vbox>
+                                <separator />
+                                <label value="Distribution Layers in the Active Area" />
+                                <textbox id="taSpeciesDistribution" multiline="true" width="600px" height="300px"/>
+                            </vbox>
                             <separator/>
+                            <div align="right">
+                                <button label="Hide" onClick="sd.open=false;" />
                             </div>
-                            <panel id="lsidupload" style="padding: 5px;" border="normal" open="false">
-                                <panelchildren>
-                                    <vbox>
-                                        <separator />
-                                        <label value="enter LSIDs (test code, only maps the points as a new layer)" />
-                                        <textbox id="taLSIDs" rows="6" cols="60" />
-                                        <button id="btnAddLSIDs" label="add layer with these LSIDs" />
-                                    </vbox>
-
-                                    <separator/>
-                                    <div align="right"><button label="Hide" onClick="lsidupload.open=false;" /></div>
-                                </panelchildren>
-                            </panel>
-                        </div>
-
-                        <div visible="true" >
-                            <div align="left" visible="true">
-                                <label id="sdLabel" /><button label="Show records" sclass="goButton"
-                                    onClick="sd.open=(sd.open) ? false:true;" /><button id="sdDownload" label="Download records" sclass="goButton" />
-                            <separator/>
-                            
-                            </div>
-                            <panel id="sd" style="padding: 5px;" border="normal" open="false">
-                                <panelchildren>
-                                    <vbox>
-                                        <separator />
-                                        <label value="Distribution Layers in the Active Area" />
-                                        <textbox id="taSpeciesDistribution" rows="6" cols="60" />
-                                    </vbox>
-                                    <separator/>
-                                    <div align="right"><button label="Hide" onClick="sd.open=false;" /></div>
-                                </panelchildren>
-                            </panel>
-                        </div>
-                    </vbox>
-                </tabpanel>
-            </tabpanels>
-        </tabbox>
-        <html><![CDATA[
-           <div id="biostormsg"></div>
-           <div id="biostorlist"></div>
-        ]]></html>
+                        </panelchildren>
+                    </panel>
+                </n:td>
+            </n:tr>
+        </n:table>
+        <separator />
     </window>
 </zk>

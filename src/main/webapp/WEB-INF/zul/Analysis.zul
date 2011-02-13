@@ -3,7 +3,7 @@
 <?component name="samplingForm" macro-uri="/WEB-INF/zul/AnalysisSampling.zul"?>
 <?component name="alocForm" macro-uri="/WEB-INF/zul/AnalysisALOC.zul"?>
 <?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
-<?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?>
+<!--?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?-->
 <?component name="scatterplotForm" macro-uri="/WEB-INF/zul/Scatterplot.zul"?>
 
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
@@ -29,7 +29,7 @@
         <tabbox id="analysisOptsTabbox" zindex="600" style="border:0px!important; border: solid 0px white;" width="95%"> <!-- mold="accordion-lite"  zclass="menuswitch"  -->
             <tabs>
                 <!-- species list -->
-                <tab id="speciesListTab" label="Species List" selected="true" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-species-tab/&quot;)" />
+                <!--tab id="speciesListTab" label="Species List" selected="true" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-species-tab/&quot;)" /-->
 
                 <!--  sampling  -->
                 <tab id="samplingTab" label="Sampling" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-sampling-tab/&quot;)" />
@@ -40,9 +40,8 @@
                 <!--  aloc -->
                 <tab id="alocTab" label="Classification" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
 
-
                 <!-- scatterplot -->
-                <tab id="scatterplotTab" label="Species/Environment Scatterplot" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
+                <tab id="scatterplotTab" label="Scatterplot" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
             </tabs>
             <toolbar>
                 <toolbarbutton id="analysisCXHelp"
@@ -54,9 +53,9 @@
                 </toolbarbutton>
             </toolbar>
             <tabpanels>
-                <tabpanel>
+                <!--tabpanel>
                     <speciesListForm id="speciesListForm" />
-                </tabpanel>
+                </tabpanel-->
                 <tabpanel>                   
                     <samplingForm id="asf" />
                 </tabpanel>

@@ -17,7 +17,6 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
-import org.zkoss.zul.Tabbox;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Row;
@@ -39,11 +38,12 @@ public class FilteringResultsWCController extends UtilityComposer {
     String shape;
     private String satServer;
     private SettingsSupplementary settingsSupplementary = null;
-    Row rowUpdating;
-    Row rowCounts;
+    //Row rowUpdating;
+    //Row rowCounts;
     int results_count = 0;
     int results_count_occurrences = 0;
     boolean addedListener = false;
+    Label lblArea;
 
     @Override
     public void afterCompose() {
@@ -77,8 +77,11 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     void setUpdatingCount(boolean set) {
-        rowUpdating.setVisible(set);
-        rowCounts.setVisible(!set);
+        //rowUpdating.setVisible(set);
+        //rowCounts.setVisible(!set);
+        results_label2_occurrences.setValue("updating...");
+        results_label2_species.setValue("updating...");
+
     }
 
     public void populateList() {
@@ -99,7 +102,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             if (results.length == 0 || results[0].trim().length() == 0) {
                 results_label2_species.setValue("0");
                 results_label2_occurrences.setValue("0");
-                mapspecies.setVisible(false);
+                mapspecies.setDisabled(true);
                 results = null;
                 return;
             }
@@ -109,20 +112,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     boolean isTabOpen() {
-        try {
-            Tabbox analysisOptsTabbox =
-                    (Tabbox) getParent() //htmlmacrocomponent
-                    .getParent() //tabpanel
-                    .getParent() //tabpanels
-                    .getParent(); //tabbox
-
-            if (analysisOptsTabbox.getSelectedTab().getIndex() == 0) {
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return true; //getMapComposer().getPortalSession().getCurrentNavigationTab() == PortalSession.LINK_TAB;
     }
 
     public void refreshCount() {
@@ -158,7 +148,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 //results_label.setValue("no species in active area");
                 results_label2_species.setValue("0");
                 results_label2_occurrences.setValue("0");
-                mapspecies.setVisible(false);
+                mapspecies.setDisabled(true);
                 results = null;
                 return;
             }
@@ -168,9 +158,9 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             // toggle the map button
             if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-                mapspecies.setVisible(true);
+                mapspecies.setDisabled(false);
             } else {
-                mapspecies.setVisible(false);
+                mapspecies.setDisabled(true);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -300,7 +290,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
             get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            
+
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 
@@ -429,13 +419,13 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         // toggle the map button
         if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-            mapspecies.setVisible(true);
+            mapspecies.setDisabled(false);
         } else {
-            mapspecies.setVisible(false);
+            mapspecies.setDisabled(true);
         }
     }
-
     Textbox taLSIDs;
+
     public void onClick$btnAddLSIDs(Event event) {
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
@@ -445,13 +435,13 @@ public class FilteringResultsWCController extends UtilityComposer {
             String lsids = taLSIDs.getValue().trim();
             lsids = lsids.replace("\n", ",");
             lsids = lsids.replace("\t", ",");
-            lsids = lsids.replace(" ","");
+            lsids = lsids.replace(" ", "");
 
-            String [] split = lsids.split(",");
+            String[] split = lsids.split(",");
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("/species/lsid/register");
-            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".","__"), "UTF-8"));
+            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
@@ -468,8 +458,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             e.printStackTrace();
         }
     }
-
     Textbox taSpeciesDistribution;
+
     public void intersectWithSpeciesDistributions() {
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
@@ -485,14 +475,14 @@ public class FilteringResultsWCController extends UtilityComposer {
             get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
-            if(result == 200) {
+            if (result == 200) {
                 String txt = get.getResponseBodyAsString();
                 taSpeciesDistribution.setText(txt);
-                String [] lines = txt.split("\n");
-                if(lines[0].length() == 0) {
-                    sdLabel.setValue("0 species distribution layers found");
+                String[] lines = txt.split("\n");
+                if (lines[0].length() == 0) {
+                    sdLabel.setValue("0");
                 } else {
-                    sdLabel.setValue(lines.length + " species distribution layers found");
+                    sdLabel.setValue(String.valueOf(lines.length));
                 }
             }
         } catch (Exception e) {
@@ -502,7 +492,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onClick$sdDownload(Event event) {
         String spid = pid;
-        if(spid == null || spid.equals("none")){
+        if (spid == null || spid.equals("none")) {
             spid = String.valueOf(System.currentTimeMillis());
         }
 

@@ -312,6 +312,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
     }
     
     private void uriResolver() {
+        /*
         logger.debug("uriResolver...");
         uriResolver.clear();
         List<Mapping> mappings = portalDocument.getPortal().getUriResolver().getMappingList();
@@ -342,7 +343,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
                 logger.info(String.format("enabling mapping '%s' ==> '%s'", uriId, targetUri));
                 uriResolver.put(uriId, targetUri);
             }
-        }
+        }*/
     }
 
     public UriResolver getUriResolver() {
