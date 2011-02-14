@@ -722,6 +722,9 @@ public class SelectionController extends UtilityComposer {
                 }
             }
 
+            //small buffer for circles not being circles
+            maxSize *= 1.2;
+
             //convert to radius in m at zoom, then back to longitude
             String[] va = getMapComposer().getViewArea().replace("POLYGON((", "").replace("))", "").split(",");
             String[] xy1 = va[0].split(" ");

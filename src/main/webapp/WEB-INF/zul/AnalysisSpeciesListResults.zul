@@ -10,7 +10,7 @@
             <label id="results_label" value=""/>
             <separator />
             <separator />
-            <listbox id="popup_listbox_results" fixedLayout="false" rows="15">
+            <listbox id="popup_listbox_results" rows="15">
                             <listhead sizable="true" >
                                 <listheader label="Family" ></listheader>
                                 <listheader label="Scientific name" ></listheader>

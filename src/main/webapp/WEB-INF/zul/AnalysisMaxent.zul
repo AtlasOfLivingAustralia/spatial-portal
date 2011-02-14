@@ -13,11 +13,11 @@
             }
         </style>
          <style>
-         .envlist .z-list-header-cnt input, .z-list-group-inner div input, .z-listheader-img {
+         .envlist .z-listheader-cnt input, .z-listgroup-inner div input, .z-listheader-img {
          display: none;
          }
 
-         .envlist div.z-list-cell-cnt {
+         .envlist div.z-listcell-cnt {
          font-size: 10px;
          }
 
@@ -30,8 +30,10 @@
                 <tab label="3" />
             </tabs>
              <toolbar>
-                <button  label="Produce model" id="btnRunMaxent" sclass="goButton"></button>
-                <button  label="Previous model" id="btnPreviousMaxent" sclass="goButton"></button>
+                 <hbox>
+                    <button label="Produce model" id="btnRunMaxent" sclass="goButton"></button>
+                    <button label="Previous model" id="btnPreviousMaxent" sclass="goButton"></button>
+                 </hbox>
                 </toolbar>
             <tabpanels>
                 <tabpanel>                   
@@ -48,13 +50,13 @@
                         <vbox>
                             <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
                             <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="92%" multiple="true" checkmark="true" height="400px">
-                    <listhead sizable="false">
-                        <listheader label="category"  />
-                        <listheader label="name" />
-                        <listheader label=" "  />
-                        <listheader label=" " width="10px" />
-                    </listhead>
-                 </listbox>
+                            <listhead>
+                                <listheader label="category"  />
+                                <listheader label="name" />
+                                <listheader label=" "  />
+                                <listheader label=" " width="10px" />
+                            </listhead>
+                         </listbox>
                         </vbox>
 
                 </tabpanel>

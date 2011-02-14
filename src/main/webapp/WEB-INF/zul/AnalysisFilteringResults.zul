@@ -4,17 +4,7 @@
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
         xmlns:n="http://www.zkoss.org/2005/zk/native">
-            
-        <style>
-                .resultsCount {
-                    font-size: 14px;
-                    background-color: #000000;
-                    color: #ffffff;
-                    padding: 4px;
-                    font-weight: bold;
-                    text-align: center;
-                }                
-        </style>
+        
         <n:table border="0" >
             <n:tr height="18px" >
                 <n:td width="130px">
@@ -33,10 +23,7 @@
                     <label value="Species" />
                 </n:td>
                 <n:td>
-                    :<label id="results_label2_species" />
-                </n:td>
-                <n:td>
-                    <button label="Species list" id="download" sclass="goButton" />
+                    <n:u>:<label id="results_label2_species" /></n:u>
                 </n:td>
             </n:tr>
             <n:tr height="18px" >
@@ -44,21 +31,18 @@
                     <label value="Occurrences" />
                 </n:td>
                 <n:td>
-                    :<label id="results_label2_occurrences" />
+                    <n:u>:<label id="results_label2_occurrences" /></n:u>
                 </n:td>
                 <n:td>
-                    <hbox><button label="Sample" id="downloadsamplesPreview" sclass="goButton" /><button label="Map" id="mapspecies" disabled="true" sclass="goButton"/></hbox>
+                    <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
                 </n:td>
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
-                    <label value="Species Distributions" />
+                    <label value="Expert distributions" />
                 </n:td>
                 <n:td>
-                    <n:u>:<label id="sdLabel" onClick="sd.open=(sd.open) ? false:true;" /></n:u>
-                </n:td>
-                <n:td>
-                    <button id="sdDownload" label="Download list" sclass="goButton" />
+                    <n:u>:<label id="sdLabel" /></n:u>
                 </n:td>
             </n:tr>            
             <n:tr height="18px" >
@@ -66,8 +50,12 @@
                     <label value="BHL Documents" />
                 </n:td>
                 <n:td>
-                    <html><![CDATA[ <u><div id="biostormsg" class="z-label" onclick="if($('#biostorlist')[0].style.display=='none')$('#biostorlist')[0].style.display=''; else $('#biostorlist')[0].style.display='none';" ></div></u> ]]>
-                    </html>
+                    <html><![CDATA[ <u><div id="biostormsg" class="z-label" 
+                        onclick="
+                            console.log($('#biostorlist')[0].innerHTML);
+                            if($('#biostorlist')[0].innerHTML.length > 20)
+                                zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openHTML', 'BHL Documents\n' + $('#biostorlist')[0].innerHTML));"
+                    ></div></u> ]]></html>
                 </n:td>
             </n:tr>
             <n:tr>
@@ -75,24 +63,7 @@
                     <html><![CDATA[ <div id="biostorlist" style="display:none;font-size:10px"></div>]]>
                     </html>
                 </n:td>
-            </n:tr>
-            <n:tr>
-                <n:td colspan="3">
-                    <panel id="sd" style="padding: 5px;" border="normal" open="false">
-                        <panelchildren>
-                            <vbox>
-                                <separator />
-                                <label value="Distribution Layers in the Active Area" />
-                                <textbox id="taSpeciesDistribution" multiline="true" width="600px" height="300px"/>
-                            </vbox>
-                            <separator/>
-                            <div align="right">
-                                <button label="Hide" onClick="sd.open=false;" />
-                            </div>
-                        </panelchildren>
-                    </panel>
-                </n:td>
-            </n:tr>
+            </n:tr>            
         </n:table>
         <separator />
     </window>

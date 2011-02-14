@@ -106,6 +106,7 @@ import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Html;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.West;
@@ -564,13 +565,39 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             // iframe in another id-space so can't be auto wired
             Iframe iframe = getExternalContentIframe();
-            iframe.setSrc(uri);
+            Html html = getExternalContentHtml();
 
-            //for the 'reset window' button
-            ((ExternalContentComposer) externalContentWindow).src = uri;
+            if(uri.charAt(0) == '*') {
+                //html content
+                uri = uri.substring(1);
 
-            //update linked button
-            ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setHref(uri);
+                //url
+                iframe.setHeight("0px");
+                iframe.setSrc("");
+
+                //content
+                html.setContent(uri);
+
+                //for the 'reset window' button
+                ((ExternalContentComposer) externalContentWindow).src = "";
+
+                //update linked button
+                ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setVisible(false);
+            } else {
+                //url
+                iframe.setHeight("100%");
+                iframe.setSrc(uri);
+                
+                //content
+                html.setContent("");
+
+                //for the 'reset window' button
+                ((ExternalContentComposer) externalContentWindow).src = uri;
+
+                //update linked button
+                ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setHref(uri);
+                ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setVisible(true);
+            }
 
             // use the link description as the popup caption
             ((Caption) externalContentWindow.getFellow("caption")).setLabel(
@@ -2787,6 +2814,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return (Iframe) externalContentWindow.getFellow("externalContentIframe");
     }
 
+    private Html getExternalContentHtml() {
+        return (Html) externalContentWindow.getFellow("externalContentHTML");
+    }
+
     public DesktopState getDesktopState() {
         return desktopState;
     }
@@ -3008,6 +3039,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int separator = s.lastIndexOf("\n");
         String url = (separator > 0) ? s.substring(0, separator).trim() : s;
         String header = (separator > 0) ? s.substring(separator).trim() : "";
+        activateLink(url, header, false);
+    }
+
+    /*
+     * for Events.echoEvent("openHTML",mapComposer,url as string)
+     *
+     * first line of String input is header
+     */
+    public void openHTML(Event event) {
+        String html = (String) event.getData();
+        String [] lines = html.split("\n");
+        String header = lines[0];
+        String url = "*" + html.substring(header.length()).trim();
         activateLink(url, header, false);
     }
 

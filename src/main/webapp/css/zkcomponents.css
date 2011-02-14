@@ -98,7 +98,7 @@ a {
 a:hover{
     color: grey;
 }
-tr.z-list-item, tr.z-list-item a, tr.z-list-item a:visited {
+tr.z-listitem, tr.z-listitem a, tr.z-listitem a:visited {
     color: #0b5888 !important;
 }
 a[rel="external"], a.external {
@@ -204,7 +204,7 @@ a[rel="external"], a.external {
     margin: 0;
 
 }
-.mestsearchContainer .z-list-cell-cnt {
+.mestsearchContainer .z-listcell-cnt {
     padding: 1px 10px;
 }
 
@@ -292,7 +292,7 @@ a[rel="external"], a.external {
 
 .z-west-header {
     font-size: 16px;
-    font-family: arial, "lucida console", sans-serif;
+    font-family: Verdana,Tahoma,Arial, "lucida console", sans-serif;
     padding-left: 10px;
     font-weight: bold;
     background-color: #375c79;
@@ -375,6 +375,10 @@ a[rel="external"], a.external {
     background:#FFFFFF url(../img/base-shadow.png) repeat-x scroll left bottom;
     border:0 none !important;
     padding-top:5px;
+}
+
+.z-toolbar-tabs {
+    background: transparent;
 }
 
 .z-tabs-scroll {
@@ -481,7 +485,7 @@ a[rel="external"], a.external {
 }
 
 
-.z-list-cell, .z-list-item .z-listbox-odd {
+.z-listcell, .z-listitem .z-listbox-odd {
     border-bottom: 1px dotted #ddd;
 }
 
@@ -490,19 +494,19 @@ a[rel="external"], a.external {
 tr.z-listbox-odd {
     background: white;
 }
-tr.z-list-cell, .z-list-cell-cnt{
+tr.z-listcell, .z-listcell-cnt{
     padding-right: 10px;
 }
-tr.z-list-item-disd *,td.z-list-cell-disd *{color:#C5CACB!important;cursor:default!important;}
-tr.z-list-item-disd a:visited,tr.z-list-item-disd a:hover,td.z-list-cell-disd a:visited,td.z-list-cell-disd a:hover{
+tr.z-listitem-disd *,td.z-listcell-disd *{color:#C5CACB!important;cursor:default!important;}
+tr.z-listitem-disd a:visited,tr.z-listitem-disd a:hover,td.z-listcell-disd a:visited,td.z-listcell-disd a:hover{
     text-decoration:none!important;cursor:default!important;border-color:#D0DEF0!important;}
-tr.z-list-item-seld{background-color:#B3C8E8;border:1px solid #6f97d2;}
+tr.z-listitem-seld{background-color:#B3C8E8;border:1px solid #6f97d2;}
 
-.mestsearchContainer tr.z-list-item-seld{
+.mestsearchContainer tr.z-listitem-seld{
     background: #B3C8E8;
 }
 
-tr.z-list-item-seld *{color:white;}
+tr.z-listitem-seld *{color:white;}
 
 .z-button  {
     font-size: 10px;
@@ -530,22 +534,22 @@ tr.z-list-item-seld *{color:white;}
     color: #333 !important;
 }
 
-tr.z-list-item-over{background:#dae7f6;}tr.z-list-item-over-seld{background:#6eadff;}
+tr.z-listitem-over{background:#dae7f6;}tr.z-listitem-over-seld{background:#6eadff;}
 
-.z-list-cell *  {
+.z-listcell *  {
     /* Ajay: hiding this so the images for the groupped listbox turn on */
     /*background-image: none;*/
 }
 /* Ajay: changing the width so the listbox groupped image displays */
-.z-list-group-img {
+.z-listgroup-img {
     width: 14px;
 }
 
-.z-list-cell img {
+.z-listcell img {
     padding-right: 6px;
 }
 
-.z-list-cell , .z-tree-row, .z-tree-cell{
+.z-listcell , .z-treerow, .z-treecell{
 
     border-bottom: 1px dotted #ddd;
 }
@@ -619,7 +623,7 @@ tr.z-list-item-over{background:#dae7f6;}tr.z-list-item-over-seld{background:#6ea
     margin: 5px 30px;
     text-align: center;
     color: white;
-    font-family: Arial,Helvetica,sans-serif;
+    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
 }
 
 #ft * {
@@ -660,14 +664,16 @@ tr.z-list-item-over{background:#dae7f6;}tr.z-list-item-over-seld{background:#6ea
     /*height:5em;*/
     /*width:127px;*/
     overflow:hidden;
-    background-color:#fff;
     border:1px solid #ccc;
     -moz-border-radius: 7px; /* FF1+ */
     -webkit-border-radius: 7px; /* Saf3+, Chrome */
     border-radius: 7px; /* Opera 10.5, IE 9 */
     background:transparent url(http://www.ala.org.au/wp-content/themes/ala/images/button_bg.png) right bottom repeat-x;
     line-height: 1em;
-    padding: 0px 5px;
+    padding: 5px;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
 }
 
 .goButton {

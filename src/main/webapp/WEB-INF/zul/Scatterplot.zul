@@ -2,13 +2,8 @@
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="ScatterplotPage"?>
 <zk>
     <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
-            apply="org.ala.spatial.analysis.web.SamplingWCController">
-
-        <style>
-            .ctxenvlist div.z-list-cell-cnt {
-                font-size: 10px;
-             }
-        </style>
+            apply="org.ala.spatial.analysis.web.ScatterplotWCController">
+       
         <div sclass="highlighted" visible="true" width="100%">
             <vbox width="100%" >
                 <vbox>
@@ -39,7 +34,7 @@
         <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px;"
             onmousedown="console.log(event); console.log(Event); drawMouseDown(event.clientX, event.clientY);"
             onmouseup="drawMouseUp(event.clientX, event.clientY);"
-            onmousemove="drawResize(event.clientX, event.clientY);" />
+            onmousemove="drawResize(event.clientX, event.clientY);"></div>
         <div id="drawnDiv" style="position: absolute; left: -1000px; top: -1000px; background-color: white; opacity: 0.2; width: 10px; height: 10px; border: black 2px solid;"></div>
         ]]></html>
     </hbox>

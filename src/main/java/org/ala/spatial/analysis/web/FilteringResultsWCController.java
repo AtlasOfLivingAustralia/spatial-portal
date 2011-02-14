@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Row;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -33,13 +34,13 @@ public class FilteringResultsWCController extends UtilityComposer {
     public Label results_label2_occurrences;
     public Label results_label2_species;
     public Label sdLabel;
+    String[] speciesDistributionText = null;
+    Window window = null;
     public String[] results = null;
     public String pid;
     String shape;
     private String satServer;
     private SettingsSupplementary settingsSupplementary = null;
-    //Row rowUpdating;
-    //Row rowCounts;
     int results_count = 0;
     int results_count_occurrences = 0;
     boolean addedListener = false;
@@ -102,7 +103,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             if (results.length == 0 || results[0].trim().length() == 0) {
                 results_label2_species.setValue("0");
                 results_label2_occurrences.setValue("0");
-                mapspecies.setDisabled(true);
+                mapspecies.setVisible(false);
                 results = null;
                 return;
             }
@@ -148,7 +149,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 //results_label.setValue("no species in active area");
                 results_label2_species.setValue("0");
                 results_label2_occurrences.setValue("0");
-                mapspecies.setDisabled(true);
+                mapspecies.setVisible(false);
                 results = null;
                 return;
             }
@@ -158,16 +159,16 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             // toggle the map button
             if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-                mapspecies.setDisabled(false);
+                mapspecies.setVisible(true);
             } else {
-                mapspecies.setDisabled(true);
+                mapspecies.setVisible(false);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    public void onClick$download() {
+    public void onClick$results_label2_species() {
         //preview species list
         SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", this, null);
         try {
@@ -206,7 +207,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    public void onClick$downloadsamplesPreview() {
+    public void onClick$results_label2_occurrences() {
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
@@ -419,9 +420,9 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         // toggle the map button
         if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
-            mapspecies.setDisabled(false);
+            mapspecies.setVisible(true);
         } else {
-            mapspecies.setDisabled(true);
+            mapspecies.setVisible(false);
         }
     }
     Textbox taLSIDs;
@@ -458,7 +459,6 @@ public class FilteringResultsWCController extends UtilityComposer {
             e.printStackTrace();
         }
     }
-    Textbox taSpeciesDistribution;
 
     public void intersectWithSpeciesDistributions() {
         if (settingsSupplementary != null) {
@@ -468,7 +468,6 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("ws/intersect/shape");
-            //sbProcessUrl.append("?area=" + URLEncoder.encode(shape, "UTF-8"));
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
@@ -477,16 +476,35 @@ public class FilteringResultsWCController extends UtilityComposer {
             int result = client.executeMethod(get);
             if (result == 200) {
                 String txt = get.getResponseBodyAsString();
-                taSpeciesDistribution.setText(txt);
                 String[] lines = txt.split("\n");
-                if (lines[0].length() == 0) {
+                if (lines[0].length() <= 1) {
                     sdLabel.setValue("0");
+                    speciesDistributionText = null;
                 } else {
-                    sdLabel.setValue(String.valueOf(lines.length));
+                    sdLabel.setValue(String.valueOf(lines.length - 1));
+                    speciesDistributionText = lines;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void onClick$sdLabel(Event event) {
+        int c = 0;
+        try {
+            c = Integer.parseInt(sdLabel.getValue());
+        } catch (Exception e) {
+        }
+        if (c > 0 && speciesDistributionText != null) {
+            DistributionsWCController window = (DistributionsWCController) Executions.createComponents("WEB-INF/zul/AnalysisDistributionResults.zul", this, null);
+
+            try {
+                window.doModal();
+                window.init(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -499,6 +517,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
         String sdate = date.format(new Date());
 
-        Filedownload.save(taSpeciesDistribution.getText(), "text/plain", "Species_distributions_" + sdate + "_" + spid + ".csv");
+        StringBuilder sb = new StringBuilder();
+        for (String s : speciesDistributionText) {
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            sb.append(s);
+        }
+        Filedownload.save(sb.toString(), "text/plain", "Species_distributions_" + sdate + "_" + spid + ".csv");
     }
 }
