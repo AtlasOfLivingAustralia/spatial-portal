@@ -40,8 +40,9 @@ public class ShapeIntersectionWSController {
             }
 
             if(region != null) {
+                String header = ShapeIntersectionService.getHeader();
                 int [] r = ShapeIntersectionService.getIntersections(region);
-                return ShapeIntersectionService.convertToString(r);
+                return header + "\n" + ShapeIntersectionService.convertToString(r);
             }
         } catch (Exception e) {
             e.printStackTrace(System.out);

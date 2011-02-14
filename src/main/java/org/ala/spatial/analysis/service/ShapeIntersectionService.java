@@ -146,6 +146,27 @@ public class ShapeIntersectionService {
 
         return sb.toString();
     }
+    
+    
+    public static String getHeader() {
+        String header = null;
+        
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(TabulationSettings.shape_intersection_files));
+            String s = br.readLine();
+            //remove first 2 columns (path to shape file, species name, wms get url)
+            //attached 'lsid' as first column
+            int p = s.indexOf(','); //first ','
+            p = s.indexOf(',',p+1); //2nd ','
+            p = s.indexOf(',',p+1); //3rd ','
+            header = "LSID," + s.substring(p+1);
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return header;
+    }
 }
 
 class ShapeGridContainer {
