@@ -16,9 +16,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd"
     xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
-    
-    <n:link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
-    <n:link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
+
+    <style src="css/zkcomponents.css" media="screen" />
+    <style src="css/zkprint.css" media="print" />
   
     <script defer="false" type="text/javascript">
         var mapLayers = null;
@@ -419,9 +419,9 @@ border-bottom: none;
                                         </toolbarbutton>
                                     </toolbar>
                                     <tabpanels>
-                                        <tabpanel>   
-                                            <div>
-                                                <vbox>
+                                        <tabpanel width="100%">
+                                            <div width="100%">
+                                                <vbox width="100%">
                                                     <label>Enter a scientific or common name</label>
                                                     <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
                                                         <comboitem label=""/>

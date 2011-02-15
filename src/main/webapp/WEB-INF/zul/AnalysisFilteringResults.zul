@@ -23,7 +23,7 @@
                     <label value="Species" />
                 </n:td>
                 <n:td>
-                    <n:u>:<label id="results_label2_species" /></n:u>
+                    <n:u>:<label id="results_label2_species" style="cursor:pointer;" /></n:u>
                 </n:td>
             </n:tr>
             <n:tr height="18px" >
@@ -31,7 +31,7 @@
                     <label value="Occurrences" />
                 </n:td>
                 <n:td>
-                    <n:u>:<label id="results_label2_occurrences" /></n:u>
+                    <n:u>:<label id="results_label2_occurrences" style="cursor:pointer;" /></n:u>
                 </n:td>
                 <n:td>
                     <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
@@ -42,17 +42,16 @@
                     <label value="Expert distributions" />
                 </n:td>
                 <n:td>
-                    <n:u>:<label id="sdLabel" /></n:u>
+                    <n:u>:<label id="sdLabel" style="cursor:pointer;" /></n:u>
                 </n:td>
             </n:tr>            
             <n:tr height="18px" >
                 <n:td>
-                    <label value="BHL Documents" />
+                    <label value="BHaL Documents" />
                 </n:td>
                 <n:td>
-                    <html><![CDATA[ <u><div id="biostormsg" class="z-label" 
-                        onclick="
-                            console.log($('#biostorlist')[0].innerHTML);
+                    <html><![CDATA[ <u><div id="biostormsg" class="z-label"  style="cursor:pointer;"
+                        onclick="                            
                             if($('#biostorlist')[0].innerHTML.length > 20)
                                 zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openHTML', 'BHL Documents\n' + $('#biostorlist')[0].innerHTML));"
                     ></div></u> ]]></html>
