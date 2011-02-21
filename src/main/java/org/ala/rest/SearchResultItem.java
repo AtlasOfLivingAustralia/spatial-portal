@@ -25,13 +25,8 @@ public class SearchResultItem implements Serializable {
     @XStreamAsAttribute
     String link;
     private static final Logger logger = Logging.getLogger("org.ala.rest.SearchResultItem");
-    //GazetteerConfig gc = GeoServerExtensions.bean(GazetteerConfig.class);
 
     SearchResultItem(String layerName, String name, String idAttribute1, Float score) {
-        this(layerName, name, idAttribute1, "", score);
-    }
-
-    SearchResultItem(String layerName, String name, String idAttribute1, String idAttribute2, Float score) {
         this.id = layerName + "/" + idAttribute1;
         if (idAttribute2.compareTo("") != 0) {
             this.id += "/" + idAttribute2;
@@ -39,7 +34,6 @@ public class SearchResultItem implements Serializable {
         this.name = name;
         this.layerName = layerName;
         this.idAttribute1 = idAttribute1;
-        this.idAttribute2 = idAttribute2;
         this.score = score;
         this.link = "/gazetteer/";
         this.link += this.id.replace(" ", "_") + ".json";
@@ -49,13 +43,13 @@ public class SearchResultItem implements Serializable {
 
         this.description = "";
         for (Fieldable field : fields) {
-            if (field.name().contentEquals("name")) {
+            if (field.name().contentEquals("description")){
+                this.description = description;
+            }
+            else if(field.name().contentEquals("name")) {
                 this.name = field.stringValue();
-            } else if (field.name().contentEquals("serial")) {
-                this.serial = field.stringValue();
-            } else if (field.name().contentEquals("state")) {
-                this.state = field.stringValue();
-            } else if (field.name().contentEquals("layerName")) {
+            }
+            else if (field.name().contentEquals("layerName")) {
                 GazetteerConfig gc = new GazetteerConfig();
                 //if a layer alias exists the id will always use the alias in preference to the layer name
                 String layerAlias = gc.getLayerAlias(field.stringValue());
@@ -67,23 +61,12 @@ public class SearchResultItem implements Serializable {
                 }
             } else if (field.name().contentEquals("idAttribute1")) {
                 this.idAttribute1 = field.stringValue();
-            } else if (field.name().contentEquals("idAttribute2")) {
-                this.idAttribute2 = field.stringValue();
-            } else {
-                this.description += field.stringValue() + ",";
             }
         }
         this.id = this.layerName + "/" + idAttribute1.replace(" ", "_");
 
-        if (idAttribute2 != null && idAttribute2.compareTo("") != 0){
-            this.id += "/" + idAttribute2.replace(" ", "_");
-        }
-
         this.score = score;
-        
-        if (!description.contentEquals("")) {
-            description = description.substring(0, description.length() - 1);
-        }
+
         if (includeLink == true) {
             this.link = "/gazetteer/";
             this.link += id + ".json";

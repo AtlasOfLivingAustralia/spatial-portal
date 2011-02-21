@@ -184,12 +184,7 @@ public class PointSearch {
                         name = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                     }
                     String id1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
-                    if (gc.getIdAttribute2Name(layerName).compareTo("") != 0) {
-                        String id2 = feature.getProperty(gc.getIdAttribute2Name(layerName)).getValue().toString();
-                        results.add(new SearchResultItem(layerName, name, id1, id2, new Float("1.0")));
-                    } else {
-                        results.add(new SearchResultItem(layerName, name, id1, new Float("1.0")));
-                    }
+                    results.add(new SearchResultItem(layerName, name, id1, new Float("1.0")));
                 }
             }
             features.close();
