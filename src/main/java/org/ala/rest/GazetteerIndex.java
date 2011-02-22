@@ -178,7 +178,7 @@ class IndexThread extends Thread {
                         } else {
                             description += "(" + layerAlias + " " + feature.getDefaultGeometryProperty().getType().getBinding().getSimpleName() + ")";
                         }
-                        featureDoc.add(new Field("Description", description, Store.YES, Index.NO));
+                        featureDoc.add(new Field("description", description, Store.YES, Index.NO));
                         logger.finer("Description added to index: " + description);
                         for (Property property : feature.getProperties()) {
                             if ((descriptionAttributes.contains(property.getName().toString())) && (property.getValue() != null)) {

@@ -19,7 +19,6 @@ public class SearchResultItem implements Serializable {
     String state;
     String layerName;
     String idAttribute1;
-    String idAttribute2;
     Float score;
     @XStreamAlias("xlink:href")
     @XStreamAsAttribute
@@ -28,9 +27,6 @@ public class SearchResultItem implements Serializable {
 
     SearchResultItem(String layerName, String name, String idAttribute1, Float score) {
         this.id = layerName + "/" + idAttribute1;
-        if (idAttribute2.compareTo("") != 0) {
-            this.id += "/" + idAttribute2;
-        }
         this.name = name;
         this.layerName = layerName;
         this.idAttribute1 = idAttribute1;
@@ -43,13 +39,13 @@ public class SearchResultItem implements Serializable {
 
         this.description = "";
         for (Fieldable field : fields) {
-            if (field.name().contentEquals("description")){
-                this.description = description;
+            if (field.name().toLowerCase().contentEquals("description")){
+                this.description = field.stringValue();
             }
-            else if(field.name().contentEquals("name")) {
+            else if(field.name().toLowerCase().contentEquals("name")) {
                 this.name = field.stringValue();
             }
-            else if (field.name().contentEquals("layerName")) {
+            else if (field.name().toLowerCase().contentEquals("layername")) {
                 GazetteerConfig gc = new GazetteerConfig();
                 //if a layer alias exists the id will always use the alias in preference to the layer name
                 String layerAlias = gc.getLayerAlias(field.stringValue());
@@ -59,7 +55,7 @@ public class SearchResultItem implements Serializable {
                 else{
                     this.layerName = layerAlias;
                 }
-            } else if (field.name().contentEquals("idAttribute1")) {
+            } else if (field.name().toLowerCase().contentEquals("idattribute1")) {
                 this.idAttribute1 = field.stringValue();
             }
         }

@@ -45,7 +45,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         String q = "";
         String lon = "";
         String lat = "";
-        int radius = 50;
+        int radius = 0;
         int count = 0;
         String wkt = "";
         String layer = "";
@@ -116,7 +116,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             String latlon = getRequest().getAttributes().get("latlon").toString();
             lat = latlon.split(",")[0];
             lon = latlon.split(",")[1];
-
+            if (radius == 0){
+                radius = 50;
+            }
             if (c_layer.compareTo("") == 0) {
                 cfs = new ClosestFeatureSearch(lon, lat, radius, c_count);
             } else {
@@ -137,8 +139,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             if (getRequest().getAttributes().containsKey("layer")) {
                 //search the specified layer
                 layer = getLayer(getRequest().getAttributes().get("layer").toString());
-                searchObj = new PointSearch(lon, lat, 0, layer); //0 Radius means not using radius?
-
+                searchObj = new PointSearch(lon, lat, 0, layer); //Radius of 0 means it performs a point in polygon search
             } else {
                 //search the default layers
                 searchObj = new PointSearch(lon, lat, 0);
@@ -178,10 +179,14 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             String xmlString = xstream.toXML(searchObj);
             getResponse().setEntity(format.toRepresentation(xmlString));
         } //Find me the nearest named feature
-        else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0) && (radius != 0) && (closestFeature.compareTo("true") == 0)) {
+        else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0) && (closestFeature.compareTo("true") == 0)) {
             //by default, only return the nearest item
             if (count == 0) {
                 count = 1;
+            }
+            //default to 50lm radius if none specified
+            if (radius == 0){
+                radius = 50;
             }
             logger.finer("We are performing a closest feature search");
             ClosestFeatureSearch cfs;
@@ -197,9 +202,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0)) {
             PointSearch searchObj;
             if (layers_arr.length > 0) {
-                searchObj = new PointSearch(lon, lat, radius, layers_arr);
+                searchObj = new PointSearch(lon, lat, 0, layers_arr);
             } else {
-                searchObj = new PointSearch(lon, lat, radius);
+                searchObj = new PointSearch(lon, lat, 0);
             }
             xstream.processAnnotations(PointSearch.class);
             String xmlString = xstream.toXML(searchObj);
