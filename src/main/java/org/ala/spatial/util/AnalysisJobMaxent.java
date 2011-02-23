@@ -149,12 +149,12 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
                 String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator;
                 for (int ei = 0; ei < envnameslist.length; ei++) {
-                    readReplace(pth + "species.html", envpathlist[ei], envnameslist[ei].replace(" ", "_"));
+                    readReplace(pth + "species.html", envpathlist[ei], Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" );
                     for (int j = 0; j < imgExtensions.length; j++) {
                         try {
                             FileUtils.moveFile(
                                     new File(pth_plots + "species_" + envpathlist[ei] + imgExtensions[j]),
-                                    new File(pth_plots + "species_" + envnameslist[ei].replace(" ", "_") + imgExtensions[j]));
+                                    new File(pth_plots + "species_" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" + imgExtensions[j]));
                         } catch (Exception ex) {
                         }
                     }
