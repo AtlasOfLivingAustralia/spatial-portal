@@ -110,25 +110,35 @@ public class Search {
 			//TODO: instead of 20 - should be variable and paging?
 			TopDocs topDocs = is.search(nameQuery, 20);
 
-
-
-
 			HashMap scoreDocs = new HashMap();
+
 			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
 				Document doc = is.doc(scoreDoc.doc);
 				if (doc.get("name").toLowerCase().startsWith(searchTerms.toLowerCase().replace("*","")))
 					scoreDoc.score += 3;
-				scoreDocs.put(scoreDoc.score, scoreDoc);
+				if (scoreDocs.containsKey(scoreDoc.score)) {
+					List docs = (List)scoreDocs.get(scoreDoc.score);
+					docs.add(scoreDoc);
+					scoreDocs.put(scoreDoc.score,docs);
+				}
+				else {
+					List docs = new ArrayList();
+					docs.add(scoreDoc);
+					scoreDocs.put(scoreDoc.score,docs);
+				}
+				
 			}
 
 			Object[] keys = scoreDocs.keySet().toArray();
 			Arrays.sort(keys);
-			for (int i =keys.length -1; i >= 0;i--) {
-				ScoreDoc scoreDoc = (ScoreDoc)scoreDocs.get(keys[i]);
-				Document doc = is.doc(scoreDoc.doc);
-				List<Fieldable> fields = doc.getFields();
-				float score = scoreDoc.score;
-				results.add(new SearchResultItem(fields, true, score));
+			for (int i = keys.length -1; i >= 0;i--) {
+				for(Object o : (List)scoreDocs.get(keys[i])) {
+					ScoreDoc scoreDoc = (ScoreDoc)o;
+					Document doc = is.doc(scoreDoc.doc);
+					List<Fieldable> fields = doc.getFields();
+					float score = scoreDoc.score;
+					results.add(new SearchResultItem(fields, true, score));
+				}
 			}
 			is.close();
 		} catch (IOException e1) {
