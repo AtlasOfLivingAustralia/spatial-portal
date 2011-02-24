@@ -184,7 +184,7 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             if (count == 0) {
                 count = 1;
             }
-            //default to 50lm radius if none specified
+            //default to 50m radius if none specified
             if (radius == 0){
                 radius = 50;
             }
@@ -202,9 +202,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
         else if ((lat.compareTo("") != 0) && (lon.compareTo("") != 0)) {
             PointSearch searchObj;
             if (layers_arr.length > 0) {
-                searchObj = new PointSearch(lon, lat, 0, layers_arr);
+                searchObj = new PointSearch(lon, lat, radius, layers_arr);
             } else {
-                searchObj = new PointSearch(lon, lat, 0);
+                searchObj = new PointSearch(lon, lat, radius);
             }
             xstream.processAnnotations(PointSearch.class);
             String xmlString = xstream.toXML(searchObj);

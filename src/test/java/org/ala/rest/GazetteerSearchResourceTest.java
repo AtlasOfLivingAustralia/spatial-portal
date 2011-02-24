@@ -140,10 +140,7 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 
     public void testSearchGetHyperlink() throws Exception {
         Document dom = getAsDOM("/rest/gazetteer/result.json?q=ashton");
-
-
         print(dom);
-
         //make assertions
 
     }
