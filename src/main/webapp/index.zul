@@ -88,7 +88,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <borderlayout width="100%">
             <north id="header" height="45">
             </north>
-            <west style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
+            <west title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true" autoscroll="true"
                    id="menus" collapsible="true" 
                    splittable="true" minsize="250">
                 <div id="westChild">
@@ -99,6 +99,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             label=""
                             image="img/buttonopen.png"
                             hoverImage="img/buttonopen-over.png"
+                            visible="false"
                             />
                         </div>
                     </div>
@@ -119,7 +120,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 id="hideLeftMenu"
                                 label=""
                                 image="img/buttonclose.png"
-                                hoverImage="img/buttonclose-over.png" />
+                                hoverImage="img/buttonclose-over.png"
+                                visible="false"
+                                />
                             </div>
 
                             <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
@@ -223,10 +226,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <style dynamic="true">
 
 			<!-- cut/hide the vertical borders in the grid rows -->
-                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell,div.z-grid
+                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
 {
 border: none;
-overflow: hidden;
 zoom: 1;
 background: white;
 border-top: none;
@@ -423,7 +425,7 @@ border-bottom: none;
                                             <div width="100%">
                                                 <vbox width="100%">
                                                     <label>Enter a scientific or common name</label>
-                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
+                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="320px" >
                                                         <comboitem label=""/>
                                                     </combobox>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
@@ -451,7 +453,7 @@ border-bottom: none;
                                             <div>
                                                 <vbox>
                                                     <label value="Enter a layer name or a keyword" />
-                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="92%" >
+                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true"  width="320px" >
                                                         <comboitem label=""/>
                                                     </combobox>
                                                     <label sclass="exampleText">e.g. Temperature</label>
@@ -480,15 +482,15 @@ border-bottom: none;
 
 
             <center id="center">
-                <div id="mapcontainer" width="100%" height="100%" >
+                <div id="mapcontainer" width="100%" height="100%" >                    
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
                         <hbox>
                             <n:ul id="cssdropdown" >
                                 <n:li id="mapopt" class="headlink goButton"><n:span id="selmap">Normal</n:span>
                                     <n:ul>
-                                        <n:li><n:a href="#" onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</n:a></n:li>
-                                        <n:li><n:a href="#" onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</n:a></n:li>
-                                        <n:li><n:a href="#" onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</n:a></n:li>
+                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</n:a></n:li>
+                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</n:a></n:li>
+                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</n:a></n:li>
                                     </n:ul>
                                 </n:li>
                             </n:ul>
@@ -501,12 +503,9 @@ border-bottom: none;
                     </div>
             
                     <div style="float:left" width="100%" height="100%" >
-                        <iframe id="mapIframe" width="100%" height="100%" name="mapFrame"  />
+                        <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
                     </div>
-                    <script defer="true" type="text/javascript">
-                        window.frames["mapFrame"].location.href = "";
-                        window.frames["mapFrame"].location.href = "./map2.html?";
-                    </script>
+                    
                     <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="true" >
                         <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"
                                 visible="true" style="float:right;margin-bottom:10px;" />
@@ -751,6 +750,28 @@ function addCommas(nStr) {
     }
     return x1;
 }
+
+
+//capture mouse events during window resize or move over an iframe
+var overlayon = false;
+function needOverlay() {
+    var zkresizing = parent.document.getElementById("zk_ddghost");
+    var zkmoving = parent.document.getElementById("zk_wndghost");
+
+    if(zkresizing != null && zkresizing.className.indexOf('drop') >= 0) {
+        //do nothing with drag/drop
+    } else if(!overlayon && (zkmoving != null || zkresizing != null)) {
+        //sit above zk (z-index:1800)
+        parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:white;opacity:0.01;filter:alpha(opacity=1);'></div>");
+        overlayon = true;
+    } else if(overlayon && zkmoving == null && zkresizing == null) {
+        overlayon = false;
+        parent.jq(parent.document.getElementById("overlay_")).remove();
+    }
+    setTimeout(needOverlay, 500);
+ }
+setTimeout(needOverlay, 500);  //start
+
           ]]>
         </script>
           <!-- script defer="false" type="text/javascript"><![CDATA[

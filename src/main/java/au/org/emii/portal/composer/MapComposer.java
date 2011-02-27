@@ -139,7 +139,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private static final String MENU_DEFAULT_WIDTH = "menu_default_width";
     private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";
     private static final String SPECIES_METADATA_URL = "species_metadata_url";
-    private static final String POINTS_CLUSTER_THRESHOLD = "points_cluster_threshold";
+    public static final String POINTS_CLUSTER_THRESHOLD = "points_cluster_threshold";
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
     public String geoServer;
@@ -169,7 +169,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Label greenLabel;
     private Label blueLabel;
     private Label sizeLabel;
-    private Listbox activeLayersList;
+    Listbox activeLayersList;
     private Div layerControls;
     private Div uncertainty;
     private Hbox uncertaintyLegend;
@@ -185,7 +185,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private MOTD motd = null;
     private OpenLayersJavascript openLayersJavascript = null;
     private HttpConnection httpConnection = null;
-    private ActiveLayerRenderer activeLayerRenderer = null;
+    ActiveLayerRenderer activeLayerRenderer = null;
     private PortalSessionUtilities portalSessionUtilities = null;
     private Settings settings = null;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
@@ -201,7 +201,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private HtmlMacroComponent leftMenuAnalysis;
     public String tbxPrintHack;
     int mapZoomLevel = 4;
-    private Hashtable activeLayerMapProperties;
+    Hashtable activeLayerMapProperties;
     Div divUserColours;
     Combobox cbColour;
     Comboitem ciColourUser; //User selected colour
@@ -212,7 +212,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     String tbxLayerLoaded;
     HashMap<String, EventListener> layerLoadedChangeEvents = new HashMap<String, EventListener>();
 
-    private void motd() {
+    void motd() {
         if (motd.isMotdEnabled()) {
             logger.debug("displayling MOTD");
             MOTDComposer composer = (MOTDComposer) Executions.createComponents("/WEB-INF/zul/MOTD.zul", this, null);
@@ -241,6 +241,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void safeToLoadMap(Event event) {
         mapLoaded("true");
+
+        //listen for map extents changes
+        EventListener el = new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                onReloadLayers(null);
+            }
+        };
+        getLeftmenuSearchComposer().addViewportEventListener("onReloadLayers", el);
     }
 
     public void zoomToExtent(MapLayer selectedLayer) {
@@ -951,7 +960,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //showCurrentMenu();
 
         activateNavigationTab(portalSession.getCurrentNavigationTab());
-        maximise();
+        //maximise();
 
     }
 
@@ -961,7 +970,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * 'please select map layers'
      * @param activeLayersList
      */
-    private void displayEmptyActiveLayers(Listbox activeLayersList) {
+    void displayEmptyActiveLayers(Listbox activeLayersList) {
         logger.debug("will display empty active layers list");
         activeLayersList.setItemRenderer(new EmptyActiveLayersRenderer());
         activeLayersList.setModel(new SimpleListModel(new String[]{languagePack.getLang("active_layers_empty")}));
@@ -1007,9 +1016,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     if (mapLayer.getMapLayerMetadata() == null) {
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                     }
-                    mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);
+                    mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);                    
                     addUserDefinedLayerToMenu(mapLayer, true);
-                    addedOk = true;
+                    addedOk = true;                    
                 }
             } else {
                 // fail
@@ -1513,8 +1522,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             hideLayerControls(null);
         }
 
-        if (m != null) {
+        if (m != null && m.getMapLayerMetadata() != null
+                && m.getMapLayerMetadata().getSpeciesLsid() != null) {
             btnPointsCluster.setVisible(true);
+            cbColour.setDisabled(false);
+        } else {
+            btnPointsCluster.setVisible(false);
+            cbColour.setDisabled(true);
         }
     }
 
@@ -1808,7 +1822,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         load();
 
         //combobox defaults
-        cbColour.setSelectedItem(ciColourUser);
+        if(cbColour != null) {
+            cbColour.setSelectedItem(ciColourUser);
+        }
     }
 
     /**
@@ -2220,7 +2236,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Executions.getCurrent().sendRedirect(null);
         }
     }
-
+/*
     public void onClick$hideLeftMenu() {
         getPortalSession().setMaximised(true);
         maximise();
@@ -2229,31 +2245,46 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void onClick$showLeftMenu() {
         getPortalSession().setMaximised(false);
         maximise();
-    }
+    }*/
 
     /**
      * Reload all species layers
      */
     public void onReloadLayers(Event event) {
-        String tbxReloadLayers = (String) event.getData();
-
-        //update this.mapZoomLevel
+        String tbxReloadLayers;
         boolean mapZoomChanged = true;
-        try {
-            int mapZoomLevelOld = mapZoomLevel;
-            String s = tbxReloadLayers;
-            int s1 = s.indexOf("z=");
-            int s2 = s.indexOf("&");
-            if (s1 >= 0) {
-                if (s2 >= 0) {
-                    mapZoomLevel = Integer.parseInt(s.substring(s1 + 2, s2));
-                } else {
-                    mapZoomLevel = Integer.parseInt(s.substring(s1 + 2));
+
+        if(event == null) {
+            mapZoomChanged = (mapZoomLevel != getLeftmenuSearchComposer().getZoom());
+            mapZoomLevel = getLeftmenuSearchComposer().getZoom();
+            
+            tbxReloadLayers = (new StringBuffer()).append("z=")
+                    .append(String.valueOf(mapZoomLevel))
+                    .append("&amp;b=")
+                    .append(getLeftmenuSearchComposer().getViewportBoundingBox().toString())
+                    .toString();
+        } else {
+            tbxReloadLayers = (String) event.getData();
+
+            //update this.mapZoomLevel
+            try {
+                int mapZoomLevelOld = mapZoomLevel;
+                String s = tbxReloadLayers;
+                int s1 = s.indexOf("z=");
+                int s2 = s.indexOf("&");
+                if (s1 >= 0) {
+                    if (s2 >= 0) {
+                        mapZoomLevel = Integer.parseInt(s.substring(s1 + 2, s2));
+                    } else {
+                        mapZoomLevel = Integer.parseInt(s.substring(s1 + 2));
+                    }
                 }
+                mapZoomChanged = (mapZoomLevelOld != mapZoomLevel);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            mapZoomChanged = (mapZoomLevelOld != mapZoomLevel);
-        } catch (Exception e) {
-            e.printStackTrace();
+            //System.out.println("tbxReloadLayers.getValue(): " + tbxReloadLayers);
+
         }
         String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         System.out.println("tbxReloadLayers.getValue(): " + tbxReloadLayers);
@@ -2396,10 +2427,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Maximise map display area - currently just hides the left menu
+     * Maximise map display area - currently just hides the left menumapNavigationTabContent
      * @param maximise
      */
-    private void maximise() {
+    void maximise() {
         boolean maximise = getPortalSession().isMaximised();
 
         if (maximise) {
@@ -2481,7 +2512,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return mapSpeciesByLsidCluster(lsid, species, "species");
     }
 
-    MapLayer mapSpeciesByLsidCluster(String lsid, String species, String rank) {
+    public MapLayer mapSpeciesByLsidCluster(String lsid, String species, String rank) {
         try {
             String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
 
@@ -3900,5 +3931,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public West getMenus() {
+        return menus;
     }
 }

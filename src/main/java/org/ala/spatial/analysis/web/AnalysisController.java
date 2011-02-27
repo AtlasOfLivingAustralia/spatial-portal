@@ -51,11 +51,11 @@ public class AnalysisController extends UtilityComposer {
 //        getMapComposer().setWestWidth(MENU_HALF_WIDTH);
 //    }
     public void onSelect$filteringTab() {
-        getMapComposer().setWestWidth(MENU_HALF_WIDTH);
+        //getMapComposer().setWestWidth(MENU_HALF_WIDTH);
     }
 
     public void onSelect$samplingTab() {
-        getMapComposer().setWestWidth(MENU_HALF_WIDTH);
+        //getMapComposer().setWestWidth(MENU_HALF_WIDTH);
     }
 
 //    public void onClick$speciesListTab() {
@@ -76,7 +76,7 @@ public class AnalysisController extends UtilityComposer {
     }
 
     public void onSelect$maxentTab() {
-        getMapComposer().setWestWidth(MENU_HALF_WIDTH);
+        //getMapComposer().setWestWidth(MENU_HALF_WIDTH);
     }
 
     public void onClick$maxentTab() {
@@ -94,7 +94,7 @@ public class AnalysisController extends UtilityComposer {
         maxentTabActive = false;
         alocTabActive = true;
         scatterplotActive = false;
-        getMapComposer().setWestWidth(MENU_HALF_WIDTH);
+        //getMapComposer().setWestWidth(MENU_HALF_WIDTH);
 
         ((ALOCWCController) af.getFellow("alocwindow")).callPullFromActiveLayers();
     }
@@ -105,7 +105,7 @@ public class AnalysisController extends UtilityComposer {
         maxentTabActive = false;
         alocTabActive = false;
         scatterplotActive = true;
-        getMapComposer().setWestWidth(MENU_HALF_WIDTH);
+        //getMapComposer().setWestWidth(MENU_HALF_WIDTH);
 
         ((ScatterplotWCController) scatterplotForm.getFellow("scatterplotwindow")).callPullFromActiveLayers();
     }

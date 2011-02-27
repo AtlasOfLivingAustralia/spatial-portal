@@ -367,6 +367,11 @@ public class LayerListComposer extends UtilityComposer {
                             }
 
                             mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
+
+                            //close parent if it is 'addlayerwindow'
+                            try {
+                                getRoot().getFellow("addlayerwindow").detach();
+                            } catch (Exception e) {}
                         }
                     });
 

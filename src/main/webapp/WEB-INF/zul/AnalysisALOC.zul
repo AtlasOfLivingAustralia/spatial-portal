@@ -5,15 +5,6 @@
     apply="org.ala.spatial.analysis.web.ALOCWCController"  width="100%">
 
         <style>
-            .z-loading {
-            top: 50% !important;
-            left: 45% !important;
-            align: center;
-            vertical-align: middle;
-            }
-        </style>
-
-        <style>
          .envlist .z-listheader-cnt input, .z-list-group-inner div input, .z-listheader-img  {
          display: none;
          }

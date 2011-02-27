@@ -5,14 +5,6 @@
         <window id="selectionwindow" use="org.ala.spatial.analysis.web.SelectionController"
                 apply="org.ala.spatial.analysis.web.SelectionController">
 
-            <style>
-                .z-loading {
-                top: 50% !important;
-                left: 45% !important;
-                align: center;
-                vertical-align: middle;
-                }
-            </style>
             <vbox>
                 <separator/>
                 <hbox width="95%">
@@ -44,8 +36,8 @@
                         </hbox>
                     </vbox>
                 </radiogroup>
-                <hbox width="95%">
-                    <combobox width="100%" id="cbAreaSelection" autodrop="true">
+                <hbox width="320px">
+                    <combobox width="200px" id="cbAreaSelection" autodrop="true">
                         <comboitem label="Draw bounding box..." id="ciBoundingBox" />
                         <comboitem label="Draw polygon..." id="ciPolygon" />
                         <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
@@ -57,14 +49,15 @@
                         <comboitem label="Box - World" id="ciBoxWorld" />
                         <comboitem label="Box - Current View" id="ciBoxCurrentView" />
                     </combobox>
-
-                    <div style="float: right">
+                    <separator orient="vertical" />
+                    <separator orient="vertical" />
+                    <div style="float: right" width="120px">
                         <button id="zoomtoextent" image="/img/zoom_in.png"
-                            tooltiptext="zoom to extent"/>
+                            tooltiptext="zoom to extent" width="30px" />
                         <button id="btnMetadata" image="/img/information.png"
-                            tooltiptext="more information"/>
+                            tooltiptext="more information" width="30px"/>
                         <button image="/img/util_garbage.png" 
-                            id="btnClearSelection" visible="true" />
+                            id="btnClearSelection" visible="true" width="30px"/>
                     </div>
                 </hbox>                
             </vbox>

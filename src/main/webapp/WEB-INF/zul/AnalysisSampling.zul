@@ -23,7 +23,7 @@
             <label value="Step 1: Select your species" />
             <vbox>
                 <label>Enter a scientific or common name</label>
-                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
+                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
                     <comboitem label=""/>
                 </combobox>
             </vbox>
@@ -37,7 +37,7 @@
                     <listhead >
                         <listheader label="category"  />
                         <listheader label="name" />
-                        <listheader label=" " />
+                        <listheader label=" " width="15px" />
                     </listhead>
                  </listbox>
             </vbox>

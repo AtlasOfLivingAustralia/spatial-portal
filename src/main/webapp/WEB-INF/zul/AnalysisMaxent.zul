@@ -3,15 +3,7 @@
 <zk>
     <window id="maxentwindow" use="org.ala.spatial.analysis.web.MaxentWCController" 
     apply="org.ala.spatial.analysis.web.MaxentWCController" >
-
-        <style>
-            .z-loading {
-            top: 50% !important;
-            left: 45% !important;
-            align: center;
-            vertical-align: middle;
-            }
-        </style>
+    
          <style>
          .envlist .z-listheader-cnt input, .z-listgroup-inner div input, .z-listheader-img {
          display: none;
@@ -40,7 +32,7 @@
                         <label value="Step 1: Select your species" />
                         <vbox>
                             <label>Enter a scientific or common name</label>                            
-                            <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
+                            <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
                                 <comboitem label=""/>
                             </combobox>
                         </vbox>                    
@@ -49,7 +41,7 @@
                         <label value="Step 2: Select your environmental layers" />
                         <vbox>
                             <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
-                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="300px" multiple="true" checkmark="true" height="400px">
+                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="92%" multiple="true" checkmark="true" height="400px">
                             <listhead>
                                 <listheader label="category"  />
                                 <listheader label="name" />

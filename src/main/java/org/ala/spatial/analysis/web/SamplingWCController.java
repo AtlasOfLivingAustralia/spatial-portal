@@ -61,7 +61,7 @@ public class SamplingWCController extends UtilityComposer {
     public void runsampling() {
         try {
             String taxon = cleanTaxon();
-            if (taxon == null || taxon.equals("")) {
+            if (getId().equals("samplingwindow") && (taxon == null || taxon.equals(""))) {
                 Messagebox.show("Please select a species in step 1.", "ALA Spatial Toolkit", Messagebox.OK, Messagebox.EXCLAMATION);
                 //highlight step 1                
                 tabboxsampling.setSelectedIndex(0);
@@ -95,7 +95,11 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
+            if(taxon == null) {
+                sbProcessUrl.append("taxonid=null");
+            } else {
+                sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
+            }
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
             String area = getMapComposer().getSelectionArea();
@@ -418,7 +422,8 @@ public class SamplingWCController extends UtilityComposer {
             }
         }
         
-        if (sac.getSelectedItem() != null && sac.getSelectedItem().getAnnotatedProperties() != null) {
+        if (sac.getSelectedItem() != null && sac.getSelectedItem().getAnnotatedProperties() != null
+                && sac.getSelectedItem().getAnnotatedProperties().size() > 0 ) {
             taxon = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 

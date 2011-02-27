@@ -47,7 +47,7 @@
             </n:tr>            
             <n:tr height="18px" >
                 <n:td>
-                    <label value="BHaL Documents" />
+                    <label value="BHL Documents" />
                 </n:td>
                 <n:td>
                     <html><![CDATA[ <u><div id="biostormsg" class="z-label"  style="cursor:pointer;"

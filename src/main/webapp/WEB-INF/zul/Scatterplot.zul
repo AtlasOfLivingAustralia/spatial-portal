@@ -1,109 +1,131 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="ScatterplotPage"?>
-<zk>
+<zk xmlns:w="http://www.zkoss.org/2005/zk/client">
+    <hbox>
+        <button sclass="goButton" id="btnScatOverlapped" label="+" onClick='
+            scatterplotwindow.setWidth("600px");
+            scatterplotwindow.setHeight("600px");
+            scatterplotwindow.setParent(scatterplotwindow.getRoot());
+            scatterplotwindow.setPosition("left,center");
+            scatterplotwindow.setSizable(true);scatterplotwindow.doOverlapped();
+            scatterplotwindow.setBorder("normal");
+            btnScatEmbedded.setVisible(true);
+            scatterplotwindow.getFellow("btnEmbedded").setVisible(true);
+            scatterplotwindow.getFellow("btnOverlapped").setVisible(false);
+            '
+            visible="false" />
+        <button sclass="goButton" id="btnScatEmbedded" label="embedded" onClick='
+            scatterplotwindow.setWidth("360px");
+            scatterplotwindow.setHeight("500px");
+            scatterplotwindow.setParent(btnScatEmbedded.getParent().getParent());
+            scatterplotwindow.setSizable(false);scatterplotwindow.doEmbedded();
+            scatterplotwindow.setBorder("none");
+            btnScatEmbedded.setVisible(false);
+            scatterplotwindow.getFellow("btnEmbedded").setVisible(false);
+            scatterplotwindow.getFellow("btnOverlapped").setVisible(true);
+            '
+            visible="false"/>
+    </hbox>
     <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
-            apply="org.ala.spatial.analysis.web.ScatterplotWCController">
-       
-        <div sclass="highlighted" visible="true" width="100%">
-            <vbox width="100%" >
-                <vbox>
-                    <label>Enter a scientific or common name</label>
-                    <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
-                        <comboitem label=""/>
-                    </combobox>
-                </vbox>
+            apply="org.ala.spatial.analysis.web.ScatterplotWCController"
+            width="340px"
+            height="500px"
+            title="Scatterplot"
+            >
+        <caption id="scatCaption" visible="true" >
+            <toolbarbutton id="btnEmbedded" label="Embedded" visible="false" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatEmbedded")[0]),"onClick", null));'/>
+            <toolbarbutton id="btnOverlapped" label="Overlapped" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatOverlapped")[0]),"onClick", null));'/>
+        </caption>
+        <div id="scatControls" visible="true" width="325px">
+            <vbox >
+                <label>Enter a scientific or common name</label>
+                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
+                    <comboitem label=""/>
+                </combobox>
                 <separator />
-                <hbox width="100%">
-                    <label value="Layer 1" />
-                    <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" >
-                    </combobox>
-                </hbox>
-                <separator />
-                <hbox width="100%">
-                    <label value="Layer 2" />
-                    <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" >
-                    </combobox>
-                 </hbox>
+                <label value="Select two environmental layers" />
+                <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
+                </combobox>
+                <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
+                </combobox>
             </vbox>
         </div>
-
-<div width="300px" height="300px" >
-    <hbox>
-        <image id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
+        <vbox height="110px">
+            <separator />
+            <div id="scatterplotDownloads" visible="false">
+                <button sclass="goButton" label="Download as image" id="scatterplotImageDownload" />
+                <button sclass="goButton" label="Download as csv" id="scatterplotDataDownload" />
+            </div>
+            <separator />
+            <hbox>
+                <label id="tbxSelectionCount" />
+                <div id="scatterplotButtons" visible="false">
+                    <button sclass="goButton" label="add in/out layers to map" id="addNewLayers" />
+                </div>
+            </hbox>
+            <label id="tbxRange" />
+            <label id="tbxDomain" />
+        </vbox>
+        
+        <div id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
         <html><![CDATA[
-        <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px;"
-            onmousedown="console.log(event); console.log(Event); drawMouseDown(event.clientX, event.clientY);"
-            onmouseup="drawMouseUp(event.clientX, event.clientY);"
-            onmousemove="drawResize(event.clientX, event.clientY);"></div>
-        <div id="drawnDiv" style="position: absolute; left: -1000px; top: -1000px; background-color: white; opacity: 0.2; width: 10px; height: 10px; border: black 2px solid;"></div>
-        ]]></html>
-    </hbox>
-</div>
-<separator />
-<vbox>
-<label id="tbxSelectionCount" />
-<label id="tbxRange" />
-<label id="tbxDomain" />
-<separator />
-<button label="add selected records to map" id="addUnSelectedRecords" visible="false" />
-<button label="add unselected records to map" id="addSelectedRecords" visible="false" />
-</vbox>
-<textbox id="tbxChartSelection" visible="false"/>
+        <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px; -webkit-user-select: none;-webkit-user-drag: none; -moz-user-select: none; "
+            onmousedown="drawMouseDown(event);"
+            onmouseup="drawMouseUp(event);"
+            onmousemove="drawResize(event);"></div>        
+        ]]>
+        </html>
 
-<separator sclass="hr" height="10px" />
-
-<script type="text/JavaScript"><![CDATA[
+        <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
+        <textbox id="tbxChartSelection" visible="false" height="265px" />
+        <script type="text/JavaScript"><![CDATA[
 var startx = 0;
 var starty = 0;
+var endx = 0;
+var endy = 0;
 var resizing = false;
 
-function drawMouseDown(x, y) {
-    console.log(x + "," + y);
-    startx = x - $("#chartDiv").offset().left;
-    starty = y - $("#chartDiv").offset().top;
-    console.log(startx + "," + starty);
+function drawMouseDown(e) {
+    startx = e.clientX;
+    starty = e.clientY;
     resizing = true;
+
+    drawResize(e);
 }
 
-function drawMouseUp(x, y) {
-    resizing = false;
-
-    //send coords to server
-    var d = document.getElementById("drawnDiv");
-    var x = d.style.left;
-    var y = d.style.top;
-    var w = d.style.width;
-    var h = d.style.height;
-
-    chartSelection(x, y, w, h);
-}
-
-function drawResize(x, y) {
+function drawMouseUp() {
     if(resizing) {
-        x = x - $("#chartDiv").offset().left;
-        y = y - $("#chartDiv").offset().top;
-        var d = document.getElementById("drawnDiv");
-        d.style.left = Math.min(startx, x) + "px";
-        d.style.top = Math.min(starty, y) + "px";
-        d.style.width = Math.abs(x - startx) + "px";
-        d.style.height = Math.abs(y - starty) + "px"
+        resizing = false;
+        chartSelection(startx, starty, endx, endy);
+    } else {
+        clearSelection();
+    }
+}
+
+function drawResize(e) {
+    if(resizing) {
+        endx = e.clientX;
+        endy = e.clientY;
     }
 }
 
 function clearSelection() {
-    var d = document.getElementById("drawnDiv");
-    d.style.left = "-1000px";
-    d.style.top = "-1000px";
-    d.style.width = "1px";
-    d.style.height = "1px"
+    resizing = false;
 }
 
 function chartSelection(x1, y1, x2, y2) {
-    var value = x1 + "," + y1 + "," + x2 + "," + y2;
+    x1 = x1 + "";
+    x2 = x2 + "";
+    y1 = y1 + "";
+    y2 = y2 + "";
+    var value = (x1.replace("px","")-$(jq('$chartImg')[0]).offset().left)
+        + "," + (y1.replace("px","")-$(jq('$chartImg')[0]).offset().top)
+        + "," + (x2.replace("px","")-$(jq('$chartImg')[0]).offset().left)
+        + "," + (y2.replace("px","")-$(jq('$chartImg')[0]).offset().top);
     zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
 }
  ]]>
         </script>
-        
+
     </window>
 </zk>

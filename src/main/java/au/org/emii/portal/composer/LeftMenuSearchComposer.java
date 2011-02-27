@@ -14,6 +14,7 @@ public class LeftMenuSearchComposer extends UtilityComposer {
     private double south;
     private double east;
     private double west;
+    private int zoom;
 
     //map of event listeners for viewport changes (west Doublebox onchange)
     HashMap<String, EventListener> viewportChangeEvents = new HashMap<String,EventListener>();
@@ -31,6 +32,10 @@ public class LeftMenuSearchComposer extends UtilityComposer {
         bbox.setMaxLongitude((float)east);
         return bbox;
     }
+
+    public int getZoom() {
+        return zoom;
+    };
     
     public void setExtents(Event event) {
         String [] extents = ((String) event.getData()).split(",");
@@ -38,8 +43,15 @@ public class LeftMenuSearchComposer extends UtilityComposer {
         north = Double.parseDouble(extents[1]);
         east = Double.parseDouble(extents[2]);
         south = Double.parseDouble(extents[3]);
+
+        zoom = Integer.parseInt(extents[4]);
         
-        Events.echoEvent("triggerViewportChange", this, null);
+        //Events.echoEvent("triggerViewportChange", this, null);
+        try {
+            triggerViewportChange(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void triggerViewportChange(Event e) throws Exception {

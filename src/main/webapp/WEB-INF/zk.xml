@@ -53,5 +53,9 @@
         <description>ZK performance monitor</description>
         <listener-class>cz.datalite.zkspring.monitor.ZKPerformanceMeter</listener-class>
     </listener-->
+    
+    <!--client-config>
+        <debug-js>true</debug-js>
+    </client-config-->
         
 </zk>

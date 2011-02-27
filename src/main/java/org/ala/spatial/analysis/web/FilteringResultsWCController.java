@@ -78,11 +78,11 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     void setUpdatingCount(boolean set) {
-        //rowUpdating.setVisible(set);
-        //rowCounts.setVisible(!set);
-        results_label2_occurrences.setValue("updating...");
-        results_label2_species.setValue("updating...");
-
+        if(set) {
+            results_label2_occurrences.setValue("updating...");
+            results_label2_species.setValue("updating...");
+            sdLabel.setValue("updating...");
+        }
     }
 
     public void populateList() {
@@ -123,7 +123,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         setUpdatingCount(true);
-        Events.echoEvent("onRefreshCount", this, null);
+
+        //Events.echoEvent("onRefreshCount", this, null);
+        try {
+            onRefreshCount(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void onRefreshCount(Event e) throws Exception {
@@ -143,7 +149,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             results_count = Integer.parseInt(out[0]);
             results_count_occurrences = Integer.parseInt(out[1]);
 
-            setUpdatingCount(false);
+            //setUpdatingCount(false);
 
             if (results_count == 0) {
                 //results_label.setValue("no species in active area");
@@ -154,8 +160,8 @@ public class FilteringResultsWCController extends UtilityComposer {
                 return;
             }
 
-            results_label2_species.setValue(String.valueOf(results_count));
-            results_label2_occurrences.setValue(String.valueOf(results_count_occurrences));
+            results_label2_species.setValue(String.format("%,d", results_count));
+            results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
 
             // toggle the map button
             if (results_count > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
@@ -208,6 +214,15 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$results_label2_occurrences() {
+        /*SamplingWCController window = (SamplingWCController) Executions.createComponents("WEB-INF/zul/AnalysisSampling.zul", getMapComposer().getParent(), null);
+        window.callPullFromActiveLayers();
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
+
+        
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
@@ -409,13 +424,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         results_count = newCount;
         results_count_occurrences = newOccurrencesCount;
         if (results_count == 0) {
-            results_label2_species.setValue(String.valueOf(results_count));
-            results_label2_occurrences.setValue(String.valueOf(results_count_occurrences));
+            results_label2_species.setValue(String.format("%,d", results_count));
+            results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
             results = null;
         }
 
-        results_label2_species.setValue(String.valueOf(results_count));
-        results_label2_occurrences.setValue(String.valueOf(results_count_occurrences));
+        results_label2_species.setValue(String.format("%,d", results_count));
+        results_label2_occurrences.setValue(String.format("%,d", results_count_occurrences));
         setUpdatingCount(false);
 
         // toggle the map button
@@ -481,7 +496,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                     sdLabel.setValue("0");
                     speciesDistributionText = null;
                 } else {
-                    sdLabel.setValue(String.valueOf(lines.length - 1));
+                    sdLabel.setValue(String.format("%,d", lines.length - 1));
                     speciesDistributionText = lines;
                 }
             }

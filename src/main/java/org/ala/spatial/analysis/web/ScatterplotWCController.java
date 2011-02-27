@@ -9,6 +9,9 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.net.URLEncoder;
 import net.sf.json.JSONObject;
@@ -29,13 +32,23 @@ import org.zkoss.image.AImage;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Textbox;
 import java.awt.geom.Rectangle2D;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.util.List;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.jfree.chart.annotations.XYBoxAnnotation;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.ui.RectangleEdge;
+import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Div;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Label;
 
 /**
@@ -47,7 +60,7 @@ public class ScatterplotWCController extends UtilityComposer {
     private SettingsSupplementary settingsSupplementary = null;
     String satServer;
     Chart chart;
-    Image chartImg;
+    Div chartImg;
     SpeciesAutoComplete sac;
     EnvLayersCombobox cbLayer1;
     EnvLayersCombobox cbLayer2;
@@ -60,9 +73,14 @@ public class ScatterplotWCController extends UtilityComposer {
     XYPlot plot;
     ChartRenderingInfo chartRenderingInfo;
     LayersUtil layersUtil;
-    Button addSelectedRecords;
-    Button addUnSelectedRecords;
+    Div scatterplotButtons;
+    Div scatterplotDownloads;
     MapLayer mapLayer = null;
+    private XYBoxAnnotation annotation;
+    DefaultXYDataset xyDataset;
+
+    String imagePath;
+    String results;
 
     @Override
     public void afterCompose() {
@@ -73,6 +91,26 @@ public class ScatterplotWCController extends UtilityComposer {
         }
 
         layersUtil = new LayersUtil(getMapComposer(), satServer);
+
+        this.addEventListener("onSize", new EventListener() {
+
+            @Override
+            public void onEvent(Event event) throws Exception {
+                redraw();
+            }
+        });
+    }
+
+    @Override
+    public void doEmbedded() {
+        super.doEmbedded();
+        redraw();
+    }
+
+    @Override
+    public void doOverlapped() {
+        super.doOverlapped();
+        redraw();
     }
 
     public void onChange$sac(Event event) {
@@ -106,7 +144,7 @@ public class ScatterplotWCController extends UtilityComposer {
         data.setSpeciesName(taxon);
 
         //only add it to the map if this was signaled from an event
-        if(event != null) {
+        if (event != null) {
             getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
         }
 
@@ -208,10 +246,15 @@ public class ScatterplotWCController extends UtilityComposer {
              */
 
             //chart area is wrong, but better than the above
-            double x1 = plot.getRangeAxis().java2DToValue(coordsDbl[0], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.BOTTOM);
-            double x2 = plot.getRangeAxis().java2DToValue(coordsDbl[2] + coordsDbl[0], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.BOTTOM);
-            double y1 = plot.getDomainAxis().java2DToValue(coordsDbl[1], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.LEFT);
-            double y2 = plot.getDomainAxis().java2DToValue(coordsDbl[3] + coordsDbl[1], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.LEFT);
+            double tx1 = plot.getRangeAxis().java2DToValue(coordsDbl[0], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.BOTTOM);
+            double tx2 = plot.getRangeAxis().java2DToValue(coordsDbl[2], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.BOTTOM);
+            double ty1 = plot.getDomainAxis().java2DToValue(coordsDbl[1], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.LEFT);
+            double ty2 = plot.getDomainAxis().java2DToValue(coordsDbl[3], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.LEFT);
+            double x1 = Math.min(tx1,tx2);
+            double x2 = Math.max(tx1,tx2);
+            double y1 = Math.min(ty1,ty2);
+            double y2 = Math.max(ty1,ty2);
+
 
             registerScatterPlotSelection(x1, x2, y1, y2);
 
@@ -227,8 +270,12 @@ public class ScatterplotWCController extends UtilityComposer {
             getMapComposer().applyChange(mapLayer);
 
             tbxChartSelection.setText("");
-            tbxDomain.setValue(String.format("%s: %g - %g", data.getLayer1Name(), x1, x2));
-            tbxRange.setValue(String.format("%s: %g - %g", data.getLayer2Name(), y2, y1));
+            tbxDomain.setValue(String.format("%s: %g - %g", data.getLayer1Name(), y1, y2));
+            tbxRange.setValue(String.format("%s: %g - %g", data.getLayer2Name(), x1, x2));
+
+            annotation = new XYBoxAnnotation(y1,x1,y2,x2);
+
+            redraw();
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
@@ -238,6 +285,8 @@ public class ScatterplotWCController extends UtilityComposer {
 
     private void updateScatterplot() {
         try {
+            clearSelection();
+            
             getScatterplotData();
 
             if (data.getLsid() != null && data.getLsid().length() > 0
@@ -255,45 +304,97 @@ public class ScatterplotWCController extends UtilityComposer {
 
                 int result = client.executeMethod(get);
                 String slist = get.getResponseBodyAsString();
+                results = slist;
 
                 String[] lines = slist.split("\n");
 
-                DefaultXYDataset xyDataset = new DefaultXYDataset();
+                xyDataset = new DefaultXYDataset();
                 //XYModel xymodel = new SimpleXYModel();
                 double[][] dbl = new double[2][lines.length - 1];
                 for (int i = 1; i < lines.length; i++) {   //skip header
                     String[] words = lines[i].split(",");
 
                     try {
-                        dbl[0][i - 1] = Double.parseDouble(words[2]);
-                        dbl[1][i - 1] = Double.parseDouble(words[3]);
+                        dbl[0][i - 1] = Double.parseDouble(words[0]);
+                        dbl[1][i - 1] = Double.parseDouble(words[1]);
                         //      xymodel.addValue(sac.getText(), Double.parseDouble(words[2]), Double.parseDouble(words[3]));
                     } catch (Exception e) {
                         //e.printStackTrace();
                     }
                 }
                 xyDataset.addSeries("lsid", dbl);
+                annotation = null;
 
-                jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer1Name(), xyDataset, PlotOrientation.HORIZONTAL, false, false, false);
-                plot = (XYPlot) jChart.getPlot();
-                plot.setForegroundAlpha(0.5f);
-                chartRenderingInfo = new ChartRenderingInfo();
-
-                int width = Integer.parseInt(chartImg.getWidth().replace("px", ""));
-                int height = Integer.parseInt(chartImg.getHeight().replace("px", ""));
-                BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
-                byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
-
-                AImage image = new AImage("scatterplot", bytes);
-                chartImg.setContent(image);
-                chartImg.setVisible(true);
-
-                //chart.setModel((ChartModel) xymodel);
+                redraw();
             }
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
             getMapComposer().applyChange();
+        }
+    }
+
+    void redraw() {
+        getScatterplotData();
+        
+        if (data.getLsid() != null && data.getLsid().length() > 0
+                    && data.getLayer1() != null && data.getLayer1().length() > 0
+                    && data.getLayer2() != null && data.getLayer2().length() > 0) {
+            try {
+                jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyDataset, PlotOrientation.HORIZONTAL, false, false, false);
+                jChart.setBackgroundPaint(Color.white);
+                plot = (XYPlot) jChart.getPlot();
+                if (annotation != null) {
+                    plot.addAnnotation(annotation);
+                }
+                plot.setForegroundAlpha(0.5f);
+                Font axisfont = new Font("Arial",Font.PLAIN,9);
+                Font titlefont = new Font("Arial",Font.BOLD,11);
+                plot.getDomainAxis().setLabelFont(axisfont);
+                plot.getDomainAxis().setTickLabelFont(axisfont);
+                plot.getRangeAxis().setLabelFont(axisfont);
+                plot.getRangeAxis().setTickLabelFont(axisfont);
+                jChart.getTitle().setFont(titlefont);
+
+                chartRenderingInfo = new ChartRenderingInfo();
+
+                int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
+                int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px",""));
+                BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
+                byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
+
+                //save to file
+                String uid = String.valueOf(System.currentTimeMillis());
+                String pth = this.settingsSupplementary.getValue("print_output_path");
+                String htmlurl = settingsSupplementary.getValue("print_output_url");
+
+                imagePath = pth + uid + ".png";
+
+                try {
+                    FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
+                    fos.write(bytes);
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                //chartImg.setStyle("background-image: url(" + htmlurl + uid + ".png)");
+                chartImg.setWidth(width + "px");
+                chartImg.setHeight(height + "px");
+                String script = "var cd = document.getElementById('chartDiv');cd.style.backgroundImage='url(" + htmlurl + uid + ".png)';cd.style.width='" + width + "px';cd.style.height='" + height + "px';";
+                Clients.evalJavaScript(script);
+
+                /*AImage image = new AImage("scatterplot", bytes);
+                chartImg.setContent(image);*/
+                chartImg.setVisible(true);
+                scatterplotDownloads.setVisible(true);
+
+                //chart.setModel((ChartModel) xymodel);
+            } catch (Exception e) {
+                e.printStackTrace();
+                clearSelection();
+                getMapComposer().applyChange();
+            }
         }
     }
 
@@ -304,13 +405,15 @@ public class ScatterplotWCController extends UtilityComposer {
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
                 StringBuffer sbProcessUrl = new StringBuffer();
                 sbProcessUrl.append(satServer).append("/alaspatial/ws/sampling/scatterplot/register?");
-                sbProcessUrl.append("taxonid=").append(URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
-                String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
-                sbProcessUrl.append("&envlist=").append(URLEncoder.encode(sbenvsel, "UTF-8"));
+                sbProcessUrl.append("lsid=").append(URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
+                //String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
+                sbProcessUrl.append("&param1=double,").append(URLEncoder.encode(data.getLayer1(), "UTF-8")).append(",").append(y1).append(",").append(y2);
+                sbProcessUrl.append("&param2=double,").append(URLEncoder.encode(data.getLayer2(), "UTF-8")).append(",").append(x1).append(",").append(x2);
+                /*
                 if (data.getPid() != null && data.getPid().length() > 0) {
-                    sbProcessUrl.append("&pid=").append(URLEncoder.encode(data.getPid(), "UTF-8"));
+                sbProcessUrl.append("&pid=").append(URLEncoder.encode(data.getPid(), "UTF-8"));
                 }
-                sbProcessUrl.append("&bounds=").append(y1).append(",").append(y2).append(",").append(x1).append(",").append(x2);
+                sbProcessUrl.append("&bounds=").append(y1).append(",").append(y2).append(",").append(x1).append(",").append(x2);*/
 
                 System.out.println(sbProcessUrl.toString());
 
@@ -338,10 +441,7 @@ public class ScatterplotWCController extends UtilityComposer {
         tbxSelectionCount.setValue("Records selected: " + txt);
 
         try {
-            if (Integer.parseInt(txt) > 0) {
-                addSelectedRecords.setVisible(true);
-                addUnSelectedRecords.setVisible(true);
-            }
+            scatterplotButtons.setVisible(true);
         } catch (Exception e) {
         }
     }
@@ -354,13 +454,13 @@ public class ScatterplotWCController extends UtilityComposer {
         getScatterplotData().setEnabled(false);
 
         chartImg.setVisible(false);
+        scatterplotDownloads.setVisible(false);
 
         mapLayer = null;
 
         getMapComposer().getOpenLayersJavascript().execute("clearSelection()");
 
-        addUnSelectedRecords.setVisible(false);
-        addSelectedRecords.setVisible(false);
+        scatterplotButtons.setVisible(false);
     }
 
     /**
@@ -368,7 +468,7 @@ public class ScatterplotWCController extends UtilityComposer {
      */
     public void callPullFromActiveLayers() {
         //get top species and list of env/ctx layers
-        if (sac.getSelectedItem() == null) {
+        if (sac.getSelectedItem() == null || sac.getSelectedItem().getValue() == null) {
             //String species = layersUtil.getFirstSpeciesLayer();
             String speciesandlsid = layersUtil.getFirstSpeciesLsidLayer();
             String species = null;
@@ -437,13 +537,29 @@ public class ScatterplotWCController extends UtilityComposer {
     }
 
     public void onClick$addSelectedRecords(Event event) {
-        String id = addSelectedRecords(true);
+        String id = addSelectedRecords(false);
         getMapComposer().mapSpeciesByLsid(id, "Scatterplot Selected " + data.getSpeciesName());
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
-        String id = addSelectedRecords(false);
+        String id = addSelectedRecords(true);
         getMapComposer().mapSpeciesByLsid(id, "Scatterplot Unselected " + data.getSpeciesName());
+    }
+
+    public void onClick$addNewLayers(Event event) {
+        onClick$addUnSelectedRecords(null);
+        onClick$addSelectedRecords(null);
+    }
+
+    public void onClick$scatterplotImageDownload(Event event) {
+        try {
+            Filedownload.save(new File(imagePath), "image/png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void onClick$scatterplotDataDownload(Event event) {
+        Filedownload.save(results, "text/plain", data.getSpeciesName() + "_" + data.getLayer1Name() + "_" + data.getLayer2Name() + ".csv");
     }
 
     String addSelectedRecords(boolean include) {
@@ -456,12 +572,12 @@ public class ScatterplotWCController extends UtilityComposer {
             if (include) {
                 sbProcessUrl.append("&include=1");
             }
-            
+
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            
+
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
 

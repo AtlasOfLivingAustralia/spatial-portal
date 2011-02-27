@@ -56,4 +56,13 @@ public class BoundingBox implements Serializable, Cloneable {
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
+
+        @Override
+        public String toString() {
+            return new StringBuffer(String.valueOf(minLongitude))
+                    .append(String.valueOf(minLatitude))
+                    .append(String.valueOf(maxLongitude))
+                    .append(String.valueOf(maxLatitude))
+                    .toString();
+        }
 }

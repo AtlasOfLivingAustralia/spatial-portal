@@ -62,7 +62,7 @@ zk.eru={};zk.erusp={};
 </div>
 
 		<div id="z_5a_5" class="z-border-layout" style="width:100%;" z.zcls="z-border-layout" z.type="zkex.zul.borderlayout.BorderLayout2"><div id="z_5a_6" z.type="zkex.zul.borderlayout.LayoutRegion2"><div id="z_5a_6!real" class="z-north " style="height:100;" z.zcls="z-north" z.cid="z_5a_7" z.pos="north" z.flex="false" z.mars="0,0,0,0" z.cmars="5,5,5,5" z.colps="false" z.open="true" z.splt="false" z.maxs="2000" z.mins="0" z.autoscl="false"><div id="z_5a_6!cave" class="z-north-body"><div id="z_5a_7">
-					<img id="z_5a_8" z.type="zul.widget.Img" style="float:left;" src="/webportal/img/ncris.gif"/></div></div></div><div id="z_5a_6!split" class="z-north-splt""></div></div><div id="z_5a_9" z.type="zkex.zul.borderlayout.LayoutRegion2"><div id="z_5a_9!real" class="z-center " z.zcls="z-center" z.cid="z_5a_a" z.pos="center" z.flex="false" z.mars="0,0,0,0" z.cmars="5,5,5,5" z.colps="false" z.open="true" z.splt="false" z.maxs="2000" z.mins="0" z.autoscl="false"><div id="z_5a_9!cave" class="z-center-body"><div id="z_5a_a" class="msgcenter">
+					</div></div></div><div id="z_5a_6!split" class="z-north-splt""></div></div><div id="z_5a_9" z.type="zkex.zul.borderlayout.LayoutRegion2"><div id="z_5a_9!real" class="z-center " z.zcls="z-center" z.cid="z_5a_a" z.pos="center" z.flex="false" z.mars="0,0,0,0" z.cmars="5,5,5,5" z.colps="false" z.open="true" z.splt="false" z.maxs="2000" z.mins="0" z.autoscl="false"><div id="z_5a_9!cave" class="z-center-body"><div id="z_5a_a" class="msgcenter">
 				<div id="z_5a_b" >
 				<span id="z_5a_c" class="h1 z-label" z.zcls="z-label" class="z-label">Sorry, The web portal is not available at the moment.</span>
                                 

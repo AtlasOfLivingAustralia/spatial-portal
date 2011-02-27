@@ -20,8 +20,8 @@ public class LegendComposer extends UtilityComposer {
 	private MapLayer mapLayer = null;
 	
 	private Image image;
-	private Image stickyIcon;
-	private Label description;
+	public Image stickyIcon;
+	public Label description;
 	
 	private final static String WINDOW_STACKING_BOUNDARY = "window_stacking_boundary";
 	

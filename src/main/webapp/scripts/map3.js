@@ -361,7 +361,7 @@ function buildMapReal() {
 
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
-        parent.reloadSpecies();
+        //parent.reloadSpecies();
         if (!activeAreaPresent) {
             parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000); 
             var verts = map.getExtent().toGeometry().getVertices();
