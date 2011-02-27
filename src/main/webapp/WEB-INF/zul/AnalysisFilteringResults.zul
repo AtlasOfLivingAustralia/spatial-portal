@@ -23,7 +23,7 @@
                     <label value="Species" />
                 </n:td>
                 <n:td>
-                    <n:u>:<label id="results_label2_species" style="cursor:pointer;" /></n:u>
+                    <n:u><label id="results_label2_species" style="cursor:pointer;" /></n:u>
                 </n:td>
             </n:tr>
             <n:tr height="18px" >
@@ -31,7 +31,7 @@
                     <label value="Occurrences" />
                 </n:td>
                 <n:td>
-                    <n:u>:<label id="results_label2_occurrences" style="cursor:pointer;" /></n:u>
+                    <n:u><label id="results_label2_occurrences" style="cursor:pointer;" /></n:u>
                 </n:td>
                 <n:td>
                     <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
@@ -42,7 +42,7 @@
                     <label value="Expert distributions" />
                 </n:td>
                 <n:td>
-                    <n:u>:<label id="sdLabel" style="cursor:pointer;" /></n:u>
+                    <n:u><label id="sdLabel" style="cursor:pointer;" /></n:u>
                 </n:td>
             </n:tr>            
             <n:tr height="18px" >

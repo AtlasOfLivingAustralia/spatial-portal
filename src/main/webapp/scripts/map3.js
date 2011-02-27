@@ -2849,7 +2849,7 @@ function displayBiostorRecords() {
             html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
         }
         html += '</ol>';
-        parent.displayHTMLInformation("biostormsg","<u>:" + data.list.length + "</u>");
+        parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
         parent.displayHTMLInformation('biostorlist',html);
     });
 

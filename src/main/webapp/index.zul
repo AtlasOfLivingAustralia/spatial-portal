@@ -737,7 +737,7 @@ function displayArea(area) {
    $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
 }
 function displayArea2(area) {
-  $('#jsarea2').html(addCommas(':' + area.toFixed(2)));
+  $('#jsarea2').html(addCommas('' + area.toFixed(2)));
 }
 function addCommas(nStr) {
     nStr += '';
