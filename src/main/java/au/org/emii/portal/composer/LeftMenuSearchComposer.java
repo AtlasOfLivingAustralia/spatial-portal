@@ -46,12 +46,7 @@ public class LeftMenuSearchComposer extends UtilityComposer {
 
         zoom = Integer.parseInt(extents[4]);
         
-        //Events.echoEvent("triggerViewportChange", this, null);
-        try {
-            triggerViewportChange(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Events.echoEvent("triggerViewportChange", this, null);
     }
 
     public void triggerViewportChange(Event e) throws Exception {

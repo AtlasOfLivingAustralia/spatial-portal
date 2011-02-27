@@ -50,11 +50,13 @@
                 </combobox>
             </vbox>
         </div>
-        <vbox height="110px">
+        <vbox height="130px">
             <separator />
             <div id="scatterplotDownloads" visible="false">
-                <button sclass="goButton" label="Download as image" id="scatterplotImageDownload" />
-                <button sclass="goButton" label="Download as csv" id="scatterplotDataDownload" />
+                <hbox>
+                    <button sclass="goButton" label="Download as image" id="scatterplotImageDownload" />
+                    <button sclass="goButton" label="Download as csv" id="scatterplotDataDownload" />
+                </hbox>
             </div>
             <separator />
             <hbox>
@@ -77,7 +79,7 @@
         </html>
 
         <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
-        <textbox id="tbxChartSelection" visible="false" height="265px" />
+        <textbox id="tbxChartSelection" visible="false" height="285px" />
         <script type="text/JavaScript"><![CDATA[
 var startx = 0;
 var starty = 0;
