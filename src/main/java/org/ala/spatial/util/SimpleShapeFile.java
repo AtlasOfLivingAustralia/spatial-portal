@@ -91,6 +91,55 @@ public class SimpleShapeFile extends Object implements Serializable {
     }
 
     /**
+     * Constructor for a SimpleShapeFile, requires .dbf and .shp files present
+     * on the fileprefix provided.
+     *
+     * @param fileprefix file path for valid files after appending .shp and .dbf
+     */
+    SimpleShapeFile(String fileprefix, boolean loadDbf) {
+        //If fileprefix exists as-is it is probably a saved SimpleShapeFile
+        if (loadRegion(fileprefix)) {
+            //previously saved region loaded
+        } else {
+            /* read dbf */
+            if (loadDbf) {
+                dbf = new DBF(fileprefix + ".dbf");
+            }
+
+            /* read shape header */
+            shapeheader = new ShapeHeader(fileprefix);
+
+            /* read shape records */
+            shaperecords = new ShapeRecords(fileprefix, shapeheader.getShapeType());
+
+            /* get ComplexRegion list from shape records */
+            regions = shaperecords.getRegions();
+
+            /* create shapes reference for intersections */
+            if (loadDbf) {
+                shapesreference = new ShapesReference(shaperecords);
+            }
+        }
+    }
+
+    public static SimpleRegion readRegions(String shapeFileName) {
+        SimpleShapeFile ssf = new SimpleShapeFile(shapeFileName, false);
+
+        if (ssf.regions.size() == 1) {
+            return ssf.regions.get(0);
+        } else {
+            ComplexRegion r = new ComplexRegion();
+            for (int i = 0; i < ssf.regions.size(); i++) {
+                for (int j = 0; j < ssf.regions.get(i).simpleregions.size(); j++) {
+                    r.addPolygon(ssf.regions.get(i).simpleregions.get(j).getPoints());
+                }
+            }
+            return r;
+        }
+
+    }
+
+    /**
      * save partial file (enough to reload and use intersect function)
      *
      * @param filename
@@ -372,7 +421,7 @@ public class SimpleShapeFile extends Object implements Serializable {
         });
 
         /* setup for thread count */
-        int threadcount = TabulationSettings.analysis_threads;
+        int threadcount = TabulationSettings.analysis_threads + 5;
         ArrayList<Integer> threadstart = new ArrayList(threadcount * 10);
         int step = (int) Math.ceil(points.length / (double) (threadcount * 10));
         if (step % 2 != 0) {
@@ -978,16 +1027,20 @@ class ShapeRecords extends Object implements Serializable {
                 }
 
                 /* speed up for polygons with lots of points */
-                if (points_count > 20) {	//TODO: don't use arbitary numbers
-                    /*double [][] bb = sr.getBoundingBox();
-                    int width = (int)((bb[1][0] - bb[0][0])*20);
-                    int height = (int)((bb[1][1] - bb[0][1])*20);
-                    if(width > 100){width=100;}
-                    if(height > 100){height=100;}
-                    if(width > 3 && height > 3){
-                    sr.useMask(width,height);
-                    }*/
-                    sr.useMask(100, 50);
+                if (points_count > 20) {
+                    double[][] bb = sr.getBoundingBox();
+                    int width = (int) ((bb[1][0] - bb[0][0]) * 3);
+                    int height = (int) ((bb[1][1] - bb[0][1]) * 3);
+                    if (width > 200) {
+                        width = 200;
+                    }
+                    if (height > 200) {
+                        height = 200;
+                    }
+                    if (width > 3 && height > 3) {
+                        sr.useMask(width, height, Integer.MAX_VALUE);
+                    }
+                    //sr.useMask(100, 50);
                 }
 
                 sra.add(sr);
@@ -1877,7 +1930,7 @@ class ShapesReference extends Object implements Serializable {
         for (int j = 0; j < sra.size(); j++) {
             ComplexRegion s = sra.get(j);
             int[][] map = s.getOverlapGridCells_Box(
-                    boundingbox_all[0][0], boundingbox_all[0][1], boundingbox_all[1][0], boundingbox_all[1][1], mask_dimension, mask_dimension, s.getBoundingBox(), null);
+                    boundingbox_all[0][0], boundingbox_all[0][1], boundingbox_all[1][0], boundingbox_all[1][1], mask_dimension, mask_dimension, s.getBoundingBox(), null, false);
 
             for (int i = 0; i < map.length; i++) {
                 if (mask[map[i][0]][map[i][1]] == null) {

@@ -102,6 +102,10 @@
 		<from>/tabulation.zul</from>
 		<to>/tabulation.zul</to>
 	</rule>
+        <rule>
+		<from>/scatterplot.html</from>
+		<to>/scatterplot.html</to>
+	</rule>
 	<rule>
 		<from>/images/**</from>
 		<to>/images/$1</to>

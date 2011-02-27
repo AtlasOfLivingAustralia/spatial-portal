@@ -92,12 +92,15 @@ public class OccurrencesCollection {
             }
         }
 
-        double[] ps = new double[count];
-        int p = 0;
-        for (int i = 0; i < ap.size(); i++) {
-            for (double d : ap.get(i)) {
-                ps[p] = d;
-                p++;
+        double[] ps;
+        if(ap.size() == 1) {
+            ps = ap.get(0);
+        } else {
+            ps = new double[count];
+            int p = 0;
+            for (int i = 0; i < ap.size(); i++) {
+                System.arraycopy(ap.get(i),0,ps,p,ap.get(i).length);
+                p += ap.get(i).length;
             }
         }
 
@@ -168,8 +171,8 @@ public class OccurrencesCollection {
         return SpeciesIndex.getFirstName(species);
     }
 
-    public static String getCommonNames(String name, String[] aslist) {
-        return SpeciesIndex.getCommonNames(name, aslist);
+    public static String getCommonNames(String name, String[] aslist, int maxRecords) {
+        return SpeciesIndex.getCommonNames(name, aslist, maxRecords);
     }
 
     public static ArrayList<OccurrenceRecordNumbers> lookup(String key, String value) {
@@ -321,12 +324,12 @@ public class OccurrencesCollection {
      * @param y2
      * @return number of records highlighted as int
      */
-    public static int highlightLsid(String keyEnd, String lsid, String layer1, double x1, double x2, String layer2, double y1, double y2) {
+    public static int highlightLsid(String keyEnd, String lsid, Object [] filters) {
         int count = 0;
 
         for (Dataset d : datasets) {
             if (d.isEnabled() && d.isReady()) {
-                count += d.getOccurrencesIndex().highlightLsid(keyEnd, lsid, layer1, x1, x2, layer2, y1, y2);
+                count += d.getOccurrencesIndex().highlightLsid(keyEnd, lsid, filters);
             }
         }
         return count;

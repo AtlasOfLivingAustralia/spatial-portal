@@ -385,7 +385,7 @@ public class SamplingIndex {
             String filenameI = index_path
                     + CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
 
-            ArrayList<String> output = new ArrayList<String>(records.length);
+            String [] output = new String[records.length];
 
             if ((new File(filenameD)).exists()) {
                 /* if continous file name sampling file exists, get values from it */
@@ -396,9 +396,9 @@ public class SamplingIndex {
 
                     f = raf.readFloat();
                     if (Float.isNaN(f)) {
-                        output.add("");
+                        output[k] = "";
                     } else {
-                        output.add(String.valueOf(f));
+                        output[k] = String.valueOf(f);
                     }
                 }
                 raf.close();
@@ -412,19 +412,79 @@ public class SamplingIndex {
                     raf.seek(records[k] * 2);
                     short v = raf.readShort();
                     if (v >= 0 && v < lookup_values.length) {
-                        output.add(lookup_values[v]);
+                        output[k] = lookup_values[v];
                     } else {
-                        output.add("");
+                        output[k] = "";
+                    }
+                }
+                raf.close();
+            }
+            return output;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * gets sampling intersection records for a layer from a list
+     * of records
+     *
+     * TODO: read properly - needs a change to the write functions as well
+     *
+     * @param layer layer name as String
+     * @param records array of records as int [] to read
+     * @return records as String []
+     */
+    public int[] getRecordsInt(String layer_name, int[] records) {
+        /*
+         * gridded data is 4byte float
+         * catagorical data is 4byte int
+         */
+        try {
+
+            String filenameD = index_path
+                    + "SAM_D_" + layer_name + ".dat";
+            String filenameI = index_path
+                    + CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
+
+            int [] output = new int[records.length];
+
+            if ((new File(filenameD)).exists()) {
+                /* if continous file name sampling file exists, get values from it */
+                RandomAccessFile raf = new RandomAccessFile(filenameD, "r");
+                for (int k = 0; k < records.length; k++) {
+                    raf.seek(records[k] * 4);
+                    float f;
+
+                    f = raf.readFloat();
+                    if (Float.isNaN(f)) {
+                        output[k] = Integer.MIN_VALUE;
+                    } else {
+                        output[k] = (int) f;
+                    }
+                }
+                raf.close();
+            } else if ((new File(filenameI)).exists()) {
+                String[] lookup_values = getLayerCatagories(
+                        Layers.getLayer(layer_name));
+
+                /* if continous file name sampling file exists, get values from it */
+                RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
+                for (int k = 0; k < records.length; k++) {
+                    raf.seek(records[k] * 2);
+                    short v = raf.readShort();
+                    if (v >= 0 && v < lookup_values.length) {
+                        output[k] = v;
+                    } else {
+                        output[k] = -1;
                     }
                 }
                 raf.close();
             }
 
-            if (output.size() > 0) {
-                String str[] = new String[output.size()];
-                output.toArray(str);
-                return str;
-            }
+            return output;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -438,7 +498,7 @@ public class SamplingIndex {
      * @param layer
      * @return
      */
-    public String[] getLayerCatagories(Layer layer) {
+    public static String[] getLayerCatagories(Layer layer) {
         /* test for valid layer input */
         if (layer == null || layer.fields == null || layer.fields.length < 1) {
             return null;

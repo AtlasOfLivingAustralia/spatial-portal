@@ -240,7 +240,7 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
     }
 
     @Override
-    int highlightLsid(String keyEnd, String lsid, String layer1, double x1, double x2, String layer2, double y1, double y2) {
+    int highlightLsid(String keyEnd, String lsid, Object [] filters) {
         return 0;
         /* TODO: finish this function
         SamplingIndex ss = new SamplingIndex(index_path, getPointsPairs());

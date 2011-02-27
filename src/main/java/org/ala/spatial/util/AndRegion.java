@@ -32,6 +32,7 @@ public class AndRegion extends SimpleRegion implements Serializable {
      *
      * @return number of points as int
      */
+    @Override
     public int getNumberOfPoints() {
         int count = 0;
         for(SimpleRegion sr : andRegions) {
@@ -47,6 +48,7 @@ public class AndRegion extends SimpleRegion implements Serializable {
      * with [][0] longitude and [][1] latitude
      * minimum values at [0][], maximum values at [1][0]
      */
+    @Override
     public double[][] getBoundingBox() {
         if(bounding_box == null) {
             for(SimpleRegion sr : andRegions) {
@@ -82,7 +84,8 @@ public class AndRegion extends SimpleRegion implements Serializable {
      * @return points of this object if it is a polygon as double[][]
      * otherwise returns null.
      */
-    public double[][] getPoints() {
+    @Override
+    public float[][] getPoints() {
         //of no use to AndRegion
         return null;
     }
@@ -96,6 +99,7 @@ public class AndRegion extends SimpleRegion implements Serializable {
      * @param latitude
      * @return true iff point is within or on the edge of this SimpleRegion
      */
+    @Override
     public boolean isWithin(double longitude, double latitude) {
         for(SimpleRegion sr : andRegions) {
             if(!sr.isWithin(longitude, latitude)){
@@ -125,6 +129,7 @@ public class AndRegion extends SimpleRegion implements Serializable {
      * within the specified region of the specified resolution beginning at 0,0
      * for minimum longitude and latitude through to xres,yres for maximums
      */
+    @Override
     public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
         if(getWidth() <= 0 || getHeight() <= 0){
             return null;
@@ -179,18 +184,22 @@ public class AndRegion extends SimpleRegion implements Serializable {
         return null;
     }
 
+    @Override
     public double getWidth() {
         return bounding_box[1][0] - bounding_box[0][0];
     }
 
+    @Override
     public double getHeight() {
         return bounding_box[1][1] - bounding_box[0][1];
     }
 
+    @Override
     public int getType() {
         return type;
     }
 
+    @Override
     public void setAttribute(String name, Object value) {
         if (attributes == null) {
             attributes = new HashMap<String, Object>();
@@ -198,6 +207,7 @@ public class AndRegion extends SimpleRegion implements Serializable {
         attributes.put(name, value);
     }
 
+    @Override
     public Object getAttribute(String name) {
         if (attributes != null) {
             return attributes.get(name);

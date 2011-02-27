@@ -42,9 +42,7 @@ public class DatasetMonitor extends Thread {
      * Auto update, load and enable most recent versions.
      *
      */
-    public void initDatasetFiles() {
-        ShapeIntersectionService.init();
-        
+    public void initDatasetFiles() {        
         dataset_files = new ArrayList<String>();
         path = new File(TabulationSettings.occurrences_config_path);
 

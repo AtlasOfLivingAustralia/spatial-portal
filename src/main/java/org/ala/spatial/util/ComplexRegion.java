@@ -20,8 +20,19 @@ public class ComplexRegion extends SimpleRegion {
             cr.addPolygon(SimpleRegion.parseSimpleRegion(s).getPoints());
         }
 
-        //TODO: use dynamic mask sizes
-        cr.useMask(50, 50);
+        /* speed up for polygons with lots of points */
+        double[][] bb = cr.getBoundingBox();
+        int width = (int) ((bb[1][0] - bb[0][0]) * 3);
+        int height = (int) ((bb[1][1] - bb[0][1]) * 3);
+        if (width > 200) {
+            width = 200;
+        }
+        if (height > 200) {
+            height = 200;
+        }
+        if (width > 3 && height > 3) {
+            cr.useMask(width, height, 100);
+        }
 
         return cr;
     }
@@ -41,6 +52,7 @@ public class ComplexRegion extends SimpleRegion {
      * array for speeding up isWithin
      */
     byte[][] mask;
+    Object[][] maskDepth;
     /**
      * mask height
      */
@@ -148,6 +160,57 @@ public class ComplexRegion extends SimpleRegion {
     }
 
     /**
+     * adds a new polygon
+     *
+     * note: if a mask is in use must call <code>useMask</code> again
+     * @param points_ points = double[n][2]
+     * where
+     * 	n is number of points
+     *  [][0] is longitude
+     *  [][1] is latitude
+     */
+    public void addPolygon(float[][] points_) {
+        //fix extents
+        for (int i = 0; i < points_.length; i++) {
+            //adjust to -360 and 360
+            while (points_[i][0] < -360) {
+                points_[i][0] += 360;
+            }
+            while (points_[i][0] > 360) {
+                points_[i][0] -= 360;
+            }
+            while (points_[i][1] < -360) {
+                points_[i][1] += 360;
+            }
+            while (points_[i][1] > 360) {
+                points_[i][1] -= 360;
+            }
+        }
+
+        SimpleRegion sr = new SimpleRegion();
+        sr.setPolygon(points_);
+
+        simpleregions.add(sr);
+
+        /* update boundingbox_all */
+        double[][] bb = sr.getBoundingBox();
+        if (simpleregions.size() == 1 || boundingbox_all[0][0] > bb[0][0]) {
+            boundingbox_all[0][0] = bb[0][0];
+        }
+        if (simpleregions.size() == 1 || boundingbox_all[1][0] < bb[1][0]) {
+            boundingbox_all[1][0] = bb[1][0];
+        }
+        if (simpleregions.size() == 1 || boundingbox_all[0][1] > bb[0][1]) {
+            boundingbox_all[0][1] = bb[0][1];
+        }
+        if (simpleregions.size() == 1 || boundingbox_all[1][1] < bb[1][1]) {
+            boundingbox_all[1][1] = bb[1][1];
+        }
+
+        bounding_box = boundingbox_all;
+    }
+
+    /**
      * returns true when the point provided is within the ComplexRegion
      *
      * uses <code>mask</code> when available
@@ -168,10 +231,18 @@ public class ComplexRegion extends SimpleRegion {
             return false;
         }
 
-        /* use mask if exists */
+        int count_in = 0;       //count of regions overlapping the point
         if (mask != null) {
+            /* use mask if exists */
             int long1 = (int) Math.floor((longitude - boundingbox_all[0][0]) * mask_long_multiplier);
             int lat1 = (int) Math.floor((latitude - boundingbox_all[0][1]) * mask_lat_multiplier);
+
+            if (long1 == mask[0].length) {
+                long1--;
+            }
+            if (lat1 == mask.length) {
+                lat1--;
+            }
 
             if (mask[lat1][long1] == SimpleRegion.GI_FULLY_PRESENT) {
                 return true;
@@ -179,10 +250,24 @@ public class ComplexRegion extends SimpleRegion {
                     || mask[lat1][long1] == SimpleRegion.GI_ABSENCE) {
                 return false;
             }
+            //partial, try maskDepth and sum overlaps
+            if (maskDepth != null && maskDepth[lat1][long1] != null) {
+                int[] d = (int[]) maskDepth[lat1][long1];
+                for (int i = 0; i < d.length; i++) {
+                    if (simpleregions.get(d[i]).isWithin(longitude, latitude)) {
+                        count_in++;
+                    }
+                }
+                /* true iif within an odd number of regions */
+                if (count_in % 2 == 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         }
 
         /* check for all SimpleRegions */
-        int count_in = 0;
         for (SimpleRegion sr : simpleregions) {
             if (sr.isWithin(longitude, latitude)) {
                 count_in++;
@@ -207,7 +292,7 @@ public class ComplexRegion extends SimpleRegion {
      * @param width
      * @param height
      */
-    public void useMask(int width, int height) {
+    public void useMask(int width, int height, int depthThreashold) {
         int i, j;
 
         /* class variables assignment */
@@ -220,11 +305,17 @@ public class ComplexRegion extends SimpleRegion {
 
         /* end result mask */
         mask = new byte[height][width];
+        ArrayList<Integer>[][] md = null;
+        if (simpleregions.size() > depthThreashold) {
+            //use mask depth as well
+            md = new ArrayList[height][width];
+        }
 
         /* temp mask for current SimpleRegion */
         byte[][] shapemask = new byte[height][width];
 
-        for (SimpleRegion sr : simpleregions) {
+        for (int k = 0; k < simpleregions.size(); k++) {
+            SimpleRegion sr = simpleregions.get(k);
             sr.getOverlapGridCells(boundingbox_all[0][0], boundingbox_all[0][1], boundingbox_all[1][0], boundingbox_all[1][1], width, height, shapemask);
 
             //shapemask into mask
@@ -232,16 +323,44 @@ public class ComplexRegion extends SimpleRegion {
                 for (j = 0; j < width; j++) {
                     if (shapemask[i][j] == 1 || mask[i][j] == 1) {
                         mask[i][j] = 1;				//partially inside
+                        if (md != null) {
+                            if (md[i][j] == null) {
+                                md[i][j] = new ArrayList<Integer>();
+                            }
+                            md[i][j].add(k);
+                        }
                     } else if (shapemask[i][j] == 2) {
                         if (mask[i][j] == 2) {
                             mask[i][j] = 3;			//completely inside
                         } else {
                             mask[i][j] = 2;			//completely outside (inside of a cutout region)
                         }
+                        if (md != null) {
+                            if (md[i][j] == null) {
+                                md[i][j] = new ArrayList<Integer>();
+                            }
+                            md[i][j].add(k);
+                        }
                     }
 
                     /* reset shapemask for next part */
                     shapemask[i][j] = 0;
+                }
+            }
+        }
+
+        //maskDepth to int[]
+        if (md != null) {
+            maskDepth = new Object[md.length][md[0].length];
+            for (i = 0; i < height; i++) {
+                for (j = 0; j < width; j++) {
+                    if (md[i][j] != null) {
+                        int[] d = new int[md[i][j].size()];
+                        for (int k = 0; k < d.length; k++) {
+                            d[k] = md[i][j].get(k);
+                        }
+                        maskDepth[i][j] = d;
+                    }
                 }
             }
         }
@@ -336,7 +455,7 @@ public class ComplexRegion extends SimpleRegion {
     return getOverlapGridCellsActual(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map);
     }*/
     @Override
-    public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
+    public int[][] getOverlapGridCells(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
         int i, j;
 
         int[][] output = null;
@@ -353,60 +472,67 @@ public class ComplexRegion extends SimpleRegion {
                 }
             }
         }
-        byte[][] shapemask = new byte[height][width];
+        /*byte[][] shapemask = new byte[height][width];
 
         for (SimpleRegion sr : simpleregions) {
-            int[][] cells = sr.getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, shapemask);
+        int[][] cells = sr.getOverlapGridCells(longitude1, latitude1, longitude2, latitude2, width, height, shapemask);
 
-            //merge shapemask into thee_state_map
-            //for (i = 0; i < height; i++) {
-            //    for (j = 0; j < width; j++) {
-            if (cells != null) {
-                for (int k = 0; k < cells.length; k++) {
-                    i = cells[k][1];
-                    j = cells[k][0];
-                    if (shapemask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT
-                            || mask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
-                        //partially inside
-                        mask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;
-                    } else if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
-                        if (mask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
-                            //completely outside (inside of a cutout region)
-                            mask[i][j] = SimpleRegion.GI_ABSENCE;
-                        } else {
-                            //completely inside
-                            mask[i][j] = SimpleRegion.GI_FULLY_PRESENT;
-                        }
-                    }
-                }
-            }
+        //merge shapemask into thee_state_map
+        //for (i = 0; i < height; i++) {
+        //    for (j = 0; j < width; j++) {
+        if (cells != null) {
+        for (int k = 0; k < cells.length; k++) {
+        i = cells[k][1];
+        j = cells[k][0];
+        if (shapemask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT
+        || mask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
+        //partially inside
+        mask[i][j] = SimpleRegion.GI_PARTIALLY_PRESENT;
+        } else if (shapemask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
+        if (mask[i][j] == SimpleRegion.GI_FULLY_PRESENT) {
+        //completely outside (inside of a cutout region)
+        mask[i][j] = SimpleRegion.GI_ABSENCE;
+        } else {
+        //completely inside
+        mask[i][j] = SimpleRegion.GI_FULLY_PRESENT;
+        }
+        }
+        shapemask[i][j] = SimpleRegion.GI_ABSENCE;
+        }
+        }
         }
 
         //count cells full or partial
         int count = 0;
         for (i = 0; i < height; i++) {
-            for (j = 0; j < width; j++) {
-                if (mask[i][j] != SimpleRegion.GI_UNDEFINED
-                        && mask[i][j] != SimpleRegion.GI_ABSENCE) {
-                    count++;
-                }
-            }
+        for (j = 0; j < width; j++) {
+        if (mask[i][j] != SimpleRegion.GI_UNDEFINED
+        && mask[i][j] != SimpleRegion.GI_ABSENCE) {
+        count++;
+        }
+        }
         }
 
         //populate output for cells full or partial
         output = new int[count][2];
         count = 0;
         for (i = 0; i < height; i++) {
-            for (j = 0; j < width; j++) {
-                if (mask[i][j] != SimpleRegion.GI_UNDEFINED
-                        && mask[i][j] != SimpleRegion.GI_ABSENCE) {
-                    output[count][0] = j;
-                    output[count][1] = i;
-                    count++;
-                }
-            }
+        for (j = 0; j < width; j++) {
+        if (mask[i][j] != SimpleRegion.GI_UNDEFINED
+        && mask[i][j] != SimpleRegion.GI_ABSENCE) {
+        output[count][0] = j;
+        output[count][1] = i;
+        count++;
+        }
+        }
+        }*/
+
+        for (SimpleRegion sr : simpleregions) {
+            sr.getOverlapGridCells_Acc(longitude1, latitude1, longitude2, latitude2, width, height, mask);
         }
 
-        return output;
+        int[][] cells = fillAccMask(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, noCellsReturned);
+
+        return cells;
     }
 }

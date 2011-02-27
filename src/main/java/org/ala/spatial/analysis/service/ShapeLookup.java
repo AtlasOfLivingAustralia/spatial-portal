@@ -121,6 +121,9 @@ public class ShapeLookup {
 
     public static boolean addShape(String id, String table, String value) {
         LayerFilter lf = FilteringIndex.getLayerFilter(table);
+        if(lf == null) {
+            return false;
+        }
         int pos = java.util.Arrays.binarySearch(lf.catagory_names, value);
 
         //does it exist?

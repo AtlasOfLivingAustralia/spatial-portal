@@ -1,5 +1,6 @@
 package org.ala.spatial.analysis.index;
 
+import org.ala.spatial.analysis.service.ShapeIntersectionService;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.TabulationSettings;
@@ -47,6 +48,9 @@ public class Indexing {
                 Grid g = new Grid(TabulationSettings.environmental_data_path + l.name);
                 g.printMinMax();
             }
+        } else if (args.length > 0 && args[0].equals("shape_distributions")) {
+            TabulationSettings.load();
+            ShapeIntersectionService.init();
         } else {
 
             /* print usage */
@@ -79,7 +83,9 @@ public class Indexing {
                 "	",
                 "test_grid_min_max",
                 "       load each grid file and test min/max in header with",
-                "       min/max in loaded data"
+                "       min/max in loaded data",
+                "shape_distributions",
+                "       index shape distributions"
             };
 
             for (String s : usage) {

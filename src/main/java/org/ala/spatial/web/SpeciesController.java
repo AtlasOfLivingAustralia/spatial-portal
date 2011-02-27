@@ -134,7 +134,7 @@ public class SpeciesController {
                 slist.append(s).append("\n");
             }
 
-            String s = OccurrencesCollection.getCommonNames(name, aslist);
+            String s = OccurrencesCollection.getCommonNames(name, aslist, 40 - ((aslist==null)?0:aslist.length));
             slist.append(s);
 
         } catch (Exception e) {

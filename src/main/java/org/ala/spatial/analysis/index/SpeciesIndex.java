@@ -407,7 +407,7 @@ public class SpeciesIndex {
      * @param index_finds list of strings containing LSIDs to be excluded.  Can be null.
      * @return '\n' separated String of 'commonName / index(LSID) / scientificName / count'
      */
-    static public String getCommonNames(String name, String[] index_finds) {
+    static public String getCommonNames(String name, String[] index_finds, int maxRecords) {
         if (name == null) {
             return "";
         }
@@ -421,8 +421,9 @@ public class SpeciesIndex {
 
         //Test with 'contains' for a-z only
         //and a 'contains' against lowercase for international characters
+        int findCount = 0;
 
-        for (int i = 0; i < common_names_indexed.length; i++) {
+        for (int i = 0; i < common_names_indexed.length && findCount < maxRecords; i++) {
             if ((nameLowerCase.length() > 0 && common_names_indexed[i].nameAZ.contains(nameLowerCase))
                     || common_names_indexed[i].nameLowerCase.contains(name)) {
                 String lsid = singleIndex[common_names_indexed[i].index].lsid;
@@ -456,6 +457,8 @@ public class SpeciesIndex {
                     sn = sn.substring(0, 1).toUpperCase() + sn.substring(1).toLowerCase();
 
                     sb.append(common_names_indexed[i].name).append(" / ").append(lsid).append(" / ").append(type).append(": ").append(sn).append(" / found ").append(count).append("\n");
+
+                    findCount++;
                 }
             }
         }

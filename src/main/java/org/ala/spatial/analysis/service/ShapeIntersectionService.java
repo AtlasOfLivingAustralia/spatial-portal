@@ -6,9 +6,15 @@ package org.ala.spatial.analysis.service;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.analysis.index.SpeciesIndex;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
@@ -43,9 +49,8 @@ public class ShapeIntersectionService {
                     try {
                         if ((new File(words[0] + ".shp")).exists()
                                 || (new File(words[0])).exists()) {
-                            ShapeGridContainer sgc = new ShapeGridContainer(words[0], words[1], words[2], append);
+                            ShapeGridContainer sgc = new ShapeGridContainer(words[0], words[1], words[2], append, false);
                             lookupData.add(sgc);
-                            System.out.println("loaded: " + words[0]);
                         } else {
                             System.out.println("no shape file at: " + words[0]);
                         }
@@ -66,17 +71,23 @@ public class ShapeIntersectionService {
     }
 
     public static int[] getIntersections(SimpleRegion region) {
+        long start = System.currentTimeMillis();
+
         ShapeGridContainer sgc = new ShapeGridContainer(region);
+
+        long p1 = System.currentTimeMillis();
 
         //if any cells overlap, include
         int[] intersections = new int[lookupData.size()];
         int pos = 0;
         for (int i = 0; i < lookupData.size(); i++) {
-            if (lookupData.get(i).getGrid().intersects(sgc.getGrid())) {
+            if (lookupData.get(i).getGrid() != null && lookupData.get(i).getGrid().intersects(sgc.getGrid())) {
                 intersections[pos] = i;
                 pos++;
             }
         }
+
+        System.out.println("ShapeIntersectionService intersect in init:" + (p1-start) + "ms compare:" + (System.currentTimeMillis() - p1) + "ms");
 
         if (pos > 0) {
             return java.util.Arrays.copyOf(intersections, pos);
@@ -146,20 +157,19 @@ public class ShapeIntersectionService {
 
         return sb.toString();
     }
-    
-    
+
     public static String getHeader() {
         String header = null;
-        
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(TabulationSettings.shape_intersection_files));
             String s = br.readLine();
             //remove first 2 columns (path to shape file, species name, wms get url)
             //attached 'lsid' as first column
             int p = s.indexOf(','); //first ','
-            p = s.indexOf(',',p+1); //2nd ','
-            p = s.indexOf(',',p+1); //3rd ','
-            header = "LSID," + s.substring(p+1);
+            p = s.indexOf(',', p + 1); //2nd ','
+            p = s.indexOf(',', p + 1); //3rd ','
+            header = "LSID," + s.substring(p + 1);
             br.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -167,25 +177,67 @@ public class ShapeIntersectionService {
 
         return header;
     }
+
+    public static void start() {
+        init();
+
+        Thread t = new Thread() {
+
+            @Override
+            public void run() {
+
+                long start = System.currentTimeMillis();
+
+                LinkedBlockingQueue<ShapeGridContainer> lbq = new LinkedBlockingQueue<ShapeGridContainer>();
+                lbq.addAll(lookupData);
+                CountDownLatch cdl = new CountDownLatch(lbq.size());
+                ShapeGridLoader[] sgl = new ShapeGridLoader[TabulationSettings.analysis_threads];
+                for (int i = 0; i < sgl.length; i++) {
+                    sgl[i] = new ShapeGridLoader(lbq, cdl);
+                    sgl[i].start();
+                }
+
+                try {
+                    cdl.await();
+                } catch (Exception e) {
+                }
+
+                for (int i = 0; i < sgl.length; i++) {
+                    sgl[i].interrupt();
+                }
+
+                System.out.println("ShapeIntersectionService ready in: " + (System.currentTimeMillis() - start) + "ms");
+            }
+        };
+        t.start();
+    }
 }
 
 class ShapeGridContainer {
 
     BitSet grid;
+    String shapeFileName;
     String speciesName;
     String lsid;
     String data;
     String wmsGet;
 
     public ShapeGridContainer(SimpleRegion region) {
-        byte[][] mask = new byte[720][720];
-        int[][] cells = region.getOverlapGridCells(-180, -90, 180, 90, 720, 720, mask);
+        long t1 = System.currentTimeMillis();
+        byte[][] mask = new byte[TabulationSettings.grd_ncols][TabulationSettings.grd_nrows];
+        long t2 = System.currentTimeMillis();
+        region.getOverlapGridCells(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax, TabulationSettings.grd_nrows, TabulationSettings.grd_ncols, mask, true);
+        long t3 = System.currentTimeMillis();
 
         lsid = null;
         speciesName = null;
         data = null;
 
         grid = maskToBitSet(mask);
+
+        System.out.println("shapegridcontain(region) new:" + (t2-t1) + "ms to_grid:" + (t3-t2) + "ms + to_mask:" + (System.currentTimeMillis() - t3) + "ms");
+
+        //region.saveGridAsImage(mask);
     }
 
     public String getLsid() {
@@ -203,16 +255,43 @@ class ShapeGridContainer {
         return data;
     }
 
-    public ShapeGridContainer(String shapeFileName, String speciesName, String wmsGet, String data) {
+    public ShapeGridContainer(String shapeFileName, String speciesName, String wmsGet, String data, boolean loadNow) {
+        this.shapeFileName = shapeFileName;
         this.speciesName = speciesName;
         this.data = data;
         this.wmsGet = wmsGet;
 
-        SimpleShapeFile ssf = new SimpleShapeFile(shapeFileName);
+        if (loadNow) {
+            loadNow();
+        } else {
+            grid = null;
+        }
+    }
 
-        Tile[] tiles = ssf.getTileList(0, -180, -90, 180, 90, 720, 720);
+    public void loadNow() {
+        if (grid == null) {
+            SimpleRegion region = SimpleShapeFile.readRegions(shapeFileName);
 
-        grid = tilesToBitSet(tiles);
+            //get mask
+            try {
+                File maskFile = new File(TabulationSettings.index_path + "IM_" + shapeFileName.substring(shapeFileName.lastIndexOf(File.separator)+1));
+                if((maskFile).exists()) {
+                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(maskFile));
+                    grid = (BitSet) ois.readObject();
+                    ois.close();
+                } else {
+                    byte[][] mask = new byte[TabulationSettings.grd_ncols][TabulationSettings.grd_nrows];
+                    int [][] cells = region.getOverlapGridCells(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax, TabulationSettings.grd_nrows, TabulationSettings.grd_ncols, mask);
+                    grid = maskToBitSet(mask);
+
+                    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(maskFile));
+                    oos.writeObject(grid);
+                    oos.close();              
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     BitSet maskToBitSet(byte[][] mask) {
@@ -221,12 +300,12 @@ class ShapeGridContainer {
 
         BitSet bs = new BitSet(len1 * len2);
 
-        for (int i = 0; i < len1; i++) {
+        for (int i = 0, k = len1 - 1; i < len1; i++, k--) {
             for (int j = 0; j < len2; j++) {
                 if (mask[i][j] == SimpleRegion.GI_FULLY_PRESENT
                         || mask[i][j] == SimpleRegion.GI_PARTIALLY_PRESENT) {
                     //to align with Tile: (height - 1 - i) * width + j)
-                    bs.set((len1 - 1 - i) * len2 + j);
+                    bs.set(k * len2 + j);
                 }
             }
         }
@@ -235,8 +314,8 @@ class ShapeGridContainer {
     }
 
     private BitSet tilesToBitSet(Tile[] tiles) {
-        int len1 = 720;
-        int len2 = 720;
+        int len1 = TabulationSettings.grd_nrows;
+        int len2 = TabulationSettings.grd_ncols;
 
         BitSet bs = new BitSet(len1 * len2);
 
@@ -249,5 +328,36 @@ class ShapeGridContainer {
 
     public BitSet getGrid() {
         return grid;
+    }
+}
+
+class ShapeGridLoader extends Thread {
+
+    LinkedBlockingQueue<ShapeGridContainer> lbq;
+    CountDownLatch cdl;
+
+    public ShapeGridLoader(LinkedBlockingQueue<ShapeGridContainer> lbq, CountDownLatch cdl) {
+        this.lbq = lbq;
+        this.cdl = cdl;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (true) {
+                long start = System.currentTimeMillis();
+                ShapeGridContainer sgc = lbq.take();
+                try {
+                    sgc.loadNow();
+                    System.out.println("loaded: " + sgc.shapeFileName + " in " + (System.currentTimeMillis() - start) + "ms");
+                } catch (Exception e) {
+                    System.out.println("failed to load: " + sgc.shapeFileName);
+                }
+                cdl.countDown();
+            }
+        } catch (InterruptedException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

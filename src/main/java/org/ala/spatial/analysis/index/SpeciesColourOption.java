@@ -650,4 +650,68 @@ public class SpeciesColourOption {
         }
         return colours;
     }
+
+    boolean[] getFiltered(Object [] object) {
+        boolean [] highlight = null;
+        String [] sa;
+        int [] ia;
+        int imin, imax;
+        double dmin, dmax;
+        boolean b;
+        int i, j;
+
+        switch (type) {
+            case 0: //double
+                if (dArray != null) {
+                    highlight = new boolean[dArray.length];
+                    dmin = (Double) object[0];
+                    dmax = (Double) object[1];
+                    for(i=0;i<dArray.length;i++) {
+                        highlight[i] = (dArray[i] <= dmax && dArray[i] >= dmin) ||
+                                (Double.isNaN(dArray[i]) && dmax >= 0 && dmin <= 0);
+                    }
+                }
+                break;
+            case 1: //int
+                if (iArray != null) {
+                    highlight = new boolean[iArray.length];
+                    imin = (Integer) object[0];
+                    imax = (Integer) object[1];
+                    for(i=0;i<iArray.length;i++) {
+                        highlight[i] = (iArray[i] <= imax && iArray[i] >= imin)
+                                || (iArray[i] == Integer.MIN_VALUE && imax >= 0 && imin <= 0);
+                    }
+                }
+                break;
+            case 3: //string, appending lookup values
+                if(iArray != null) {
+                    highlight = new boolean[iArray.length];
+                    //strings to ints
+                    sa = (String[]) object[0];
+                    ia = new int[sa.length];
+                    for(i=0;i<sa.length;i++) {
+                        ia[i] = java.util.Arrays.binarySearch(sArray, sa[i]);
+                    }
+                    for(i=0;i<iArray.length;i++) {
+                        for(j=0;j<ia.length;j++) {
+                            if(iArray[i] == ia[j]) {
+                                highlight[i] = true;
+                            }
+                        }
+                    }
+                }
+                break;
+            case 2: //boolean
+                if (bArray != null) {
+                    b = (Boolean) object[0];
+                    highlight = new boolean[iArray.length];
+                    for(i=0;i<iArray.length;i++) {
+                        highlight[i] = bArray[i] == b;
+                    }
+                }
+                break;
+        }
+        
+        return highlight;
+    }
 }

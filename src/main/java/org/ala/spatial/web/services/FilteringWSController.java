@@ -401,13 +401,13 @@ public class FilteringWSController {
                 return;// "";  //error
             }
 
-            System.out.println("[[[]]] getlist: " + pid + " " + shape);
+            //System.out.println("[[[]]] getlist: " + pid + " " + shape);
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String list = FilteringService.getSpeciesList(pid, region);
             long endtime = System.currentTimeMillis();
-            System.out.println("getSpeciesCount().length=" + list.length() + " in " + (endtime - starttime) + "ms");
+            //System.out.println("getSpeciesCount().length=" + list.length() + " in " + (endtime - starttime) + "ms");
 
             response.setContentType("text/plain;charset=UTF-8");
             ServletOutputStream outStream = response.getOutputStream();

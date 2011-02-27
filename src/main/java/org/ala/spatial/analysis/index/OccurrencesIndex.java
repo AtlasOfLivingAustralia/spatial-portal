@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.analysis.cluster.Record;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
@@ -1896,11 +1897,11 @@ public class OccurrencesIndex {
             }
 
             if (extra != null) {
-                for (int j = 0; j < extra.size(); j++) {
-                    IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
+                for (int j = 0; j < extra.size(); j++) {                    
                     if (extra.get(j).isHighlight()) {
-                        //lookup with dataset hash                        
-                        extra.get(j).assignHighlightData(r, ir.record_start, getHash());
+                        //lookup with dataset hash and species offset
+                        IndexedRecord ir = (filter.searchTerm==null)?null:filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
+                        extra.get(j).assignHighlightData(r, (ir==null)?0:ir.record_start, getHash());
                     } else if (extra.get(j).isTaxon()) {
                         extra.get(j).assignTaxon(r, speciesNumberInRecordsOrder, speciesIndexLookup);
                     } else {
@@ -1916,7 +1917,29 @@ public class OccurrencesIndex {
         return String.valueOf(index_path.hashCode());
     }
 
-    int highlightLsid(String keyEnd, String lsid, String layer1, double x1, double x2, String layer2, double y1, double y2) {
+    /**
+     * for any lsid associated records, register the 'highlight' bool flag
+     * for filters to be applied:
+     *
+     * filter is Object []
+     *      environmental layer
+     *          { String layername, Double min, Double max }
+     *      contextual layer
+     *          { String layername, String [] valid values }
+     *      attribute layer
+     *          { String SpeciesColourOption name, Object values}
+     *              where Object is String [] for string types
+     *              and Object is Double [2] for double types
+     *              and Object is Integer [2] for int types
+     *
+     *
+     * @param keyEnd
+     * @param lsid
+     * @param filters list of valid filter objects
+     * @return
+     */
+    int highlightLsid(String keyEnd, String lsid, Object [] filters) {
+        //String layer1, double x1, double x2, String layer2, double y1, double y2
         SamplingIndex ss = new SamplingIndex(index_path, null);
         int[] r = getRecordNumbers(new OccurrencesFilter(lsid, PART_SIZE_MAX)); //TODO: config limited
         if (r == null || r.length == 0) {
@@ -1924,31 +1947,81 @@ public class OccurrencesIndex {
             return 0;
         }
 
-        float[] d1 = ss.getRecordsFloat(layer1, r);
-        float[] d2 = ss.getRecordsFloat(layer2, r);
-
-        double minX = Math.min(x1, x2);
-        double maxX = Math.max(x1, x2);
-        double minY = Math.min(y1, y2);
-        double maxY = Math.max(y1, y2);
-
-        boolean[] highlight = new boolean[r.length];
+        int len = r.length;
+        int numFilters = filters.length;
         int count = 0;
-        for (int i = 0; i < r.length; i++) {
-            if (Float.isNaN(d1[i])) {
-                d1[i] = 0;
-            }
-            if (Float.isNaN(d2[i])) {
-                d2[i] = 0;
-            }
 
-            if (d1[i] <= maxX && d1[i] >= minX
-                    && d2[i] <= maxY && d2[i] >= minY) {
+        byte[] highlightCount = new byte[len];
+
+        for(int j=0;j<numFilters;j++) {
+            Object [] f = (Object[]) filters[j];
+            if(f.length == 2) { //sco or contextual
+                SpeciesColourOption sco = SpeciesColourOption.fromName((String) f[0], false);
+                if(sco != null) {
+                    sco.assignData(r, attributesMap.get(sco.getName()));
+                    boolean [] h = sco.getFiltered((Object[]) f[1]);
+                    for (int i = 0; i < len; i++) {
+                        if(h[i]){
+                            highlightCount[i]++;
+                        }
+                    }
+                } else { //contextual
+                    String layername = (String) f[0];
+                    String [] filteredCategories = (String []) f[1];
+                    String[] lookup_values = SamplingIndex.getLayerCatagories(
+                        Layers.getLayer(layername));
+
+                    int [] selection = new int[filteredCategories.length];
+                    for(int i=0;i<selection.length;i++) {
+                        selection[i] = java.util.Arrays.binarySearch(lookup_values, filteredCategories[i]);
+                        if(selection[i] < 0) {
+                            selection[i] = -1;
+                        }
+                    }
+
+                    //get data
+                    int [] cat = ss.getRecordsInt(layername, r);
+                    for (int i = 0; i < len; i++) {
+                        for(int k=0;k<selection.length;k++) {
+                            if(selection[k] == cat[i]) {
+                                highlightCount[i]++;
+                            }
+                        }
+                    }
+                }
+            } else if(f.length == 3) { //environmental
+                float[] d = ss.getRecordsFloat((String) f[0], r);
+                double min = Math.min((Double)f[1], (Double)f[2]);
+                double max = Math.max((Double)f[1], (Double)f[2]);
+
+                for (int i = 0; i < len; i++) {
+                    if(d[i] <= max && d[i] >= min) {
+                        highlightCount[i]++;
+                    } else if(Float.isNaN(d[i]) && max >= 0 && min <=0) {
+                        highlightCount[i]++;
+                    }
+                }
+            }
+        }
+
+        boolean[] highlight = new boolean[len];
+
+        //AND
+        for(int i=0;i<len;i++) {
+            if(highlightCount[i] == numFilters) {
                 highlight[i] = true;
                 count++;
             }
         }
 
+//        //OR
+//        for(int i=0;i<highlight.length;i++) {
+//            if(count[i] > 0) {
+//                highlight[i] = true;
+//                count++;
+//            }
+//        }
+        
         RecordSelectionLookup.addSelection(getHash() + keyEnd, highlight);
 
         return count;
@@ -2064,6 +2137,7 @@ public class OccurrencesIndex {
         int i, j;
         int spos = 0;
         int[] species = new int[SpeciesIndex.size()];
+        int[] speciesIntermediate = new int[SpeciesIndex.size()];
 
         int[] records = null;
         if (filter.records != null) {
@@ -2098,7 +2172,7 @@ public class OccurrencesIndex {
                 }
 
                 //update species counts
-                species[speciesIndexLookup[speciesSortByRecordNumberOrder[spos]]]++;
+                speciesIntermediate[speciesNumberInRecordsOrder[spos]]++;
 
                 //any more records within this same species
                 //and not part of the next 'child'
@@ -2107,7 +2181,7 @@ public class OccurrencesIndex {
                 if (spos < speciesSortByRecordNumber.length) {
                     while (i < records.length
                             && records[i] < speciesSortByRecordNumber[spos].record_start) {
-                        species[speciesIndexLookup[speciesSortByRecordNumberOrder[spos - 1]]]++;
+                        speciesIntermediate[speciesNumberInRecordsOrder[spos - 1]]++;
                         i++;
                     }
                 } else {
@@ -2122,17 +2196,18 @@ public class OccurrencesIndex {
             if (ia != null) {
                 for (i = 0; i < ia.length; i++) {
                     if (speciesNumberInRecordsOrder[ia[i]] >= 0) {
-                        species[speciesIndexLookup[speciesNumberInRecordsOrder[ia[i]]]]++;
+                        speciesIntermediate[speciesNumberInRecordsOrder[ia[i]]]++;
                     }
                 }
             } else {
                 /* make overlay grid from this region */
                 byte[][] mask = new byte[720][720];
                 int[][] cells = region.getOverlapGridCells(-180, -90, 180, 90, 720, 720, mask);
-
+                double x, y;
+                int start, end, k;
                 for (i = 0; i < cells.length; i++) {
-                    int start = grid_key[cells[i][1]][cells[i][0]];
-                    int end = start;
+                    start = grid_key[cells[i][1]][cells[i][0]];
+                    end = start;
 
                     if (cells[i][0] < (720 - 1)) {
                         // not last record on a grid_key row, use limit on next line
@@ -2150,20 +2225,42 @@ public class OccurrencesIndex {
                     if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_FULLY_PRESENT) {
                         for (j = start; j < end; j++) {
                             if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {
-                                species[speciesIndexLookup[speciesNumberInRecordsOrder[grid_points_idx[j]]]]++;
+                                speciesIntermediate[speciesNumberInRecordsOrder[grid_points_idx[j]]]++;
                             }
                         }
                     } else if (mask[cells[i][1]][cells[i][0]] == SimpleRegion.GI_PARTIALLY_PRESENT) {
-                        for (j = start; j < end; j++) {
-                            if (region.isWithin(all_points[grid_points_idx[j]][0], all_points[grid_points_idx[j]][1])) {
-                                if (speciesNumberInRecordsOrder[grid_points_idx[j]] >= 0) {
-                                    species[speciesIndexLookup[speciesNumberInRecordsOrder[grid_points_idx[j]]]]++;
+                        for (j = start; j < end; /*inc inside loop*/) {
+                            k = grid_points_idx[j];
+                            x = all_points[k][0];
+                            y = all_points[k][1];
+                            if (region.isWithin(x, y)) {
+                                if (speciesNumberInRecordsOrder[k] >= 0) {
+                                    speciesIntermediate[speciesNumberInRecordsOrder[k]]++;
                                 }
+                                j++;
+                                k = grid_points_idx[j];
+                                //pickup duplicated locations
+                                while(j < end
+                                        && all_points[k][0] == x
+                                        && all_points[k][1] == y) {
+                                    if (speciesNumberInRecordsOrder[k] >= 0) {
+                                        speciesIntermediate[speciesNumberInRecordsOrder[k]]++;
+                                    }
+                                    j++;
+                                    k = grid_points_idx[j];
+                                }
+                            } else {
+                                j++;
                             }
                         }
                     }
                 }
             }
+        }
+
+        //consolidate intermediate
+        for(i=0;i<speciesIntermediate.length;i++) {
+            species[speciesIndexLookup[i]] = speciesIntermediate[i];
         }
 
         return species;

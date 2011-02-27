@@ -125,7 +125,15 @@ public class OccurrenceLayers {
         float max = Float.MAX_VALUE * -1;
         float min = Float.MAX_VALUE;
 
-        try {
+        try {            
+            ArrayList<SpeciesColourOption> extra = new ArrayList<SpeciesColourOption>();
+            extra.add(SpeciesColourOption.fromName("taxon_name", false)); //request for SpeciesIndex lookup number
+            //region
+            SimpleRegion region = new SimpleRegion();
+            region.setBox(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
+            double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(region, Integer.MAX_VALUE), extra);
+            int[] speciesLookupNumber = extra.get(0).getIntArray();
+
             RandomAccessFile raf = new RandomAccessFile(
                     TabulationSettings.index_path + "layer_species_av_" + cell_offset + ".gri", "rw");
             int top_height = 0;
@@ -145,17 +153,6 @@ public class OccurrenceLayers {
                 int row_end = (current_height > 0) ? cell_offset + height : height;
 
                 BitSet[][] actual_grid = new BitSet[TabulationSettings.grd_ncols][grd_nrows];
-
-                ArrayList<SpeciesColourOption> extra = new ArrayList<SpeciesColourOption>();
-                extra.add(SpeciesColourOption.fromName("i", false)); //request for SpeciesIndex lookup number
-
-                //region
-                SimpleRegion region = new SimpleRegion();
-                region.setBox(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
-
-                double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(region, Integer.MAX_VALUE), extra);
-
-                int[] speciesLookupNumber = extra.get(0).getIntArray();
 
                 int x, y;
                 for (int i = 0; i < points.length; i += 2) {

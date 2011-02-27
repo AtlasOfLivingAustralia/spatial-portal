@@ -252,7 +252,7 @@ public class FilteringIndex extends Object {
 
                 /* load all valid values and add to records with species number and
                  * original record index*/
-                for (i = 0; i < number_of_records; i++) {
+                for (int j = 0; j < number_of_records; j++) {
 
                     /* split up record line for extraction of:
                      *  species name (2 before last value)
@@ -902,7 +902,7 @@ public class FilteringIndex extends Object {
         /* write as object*/
         try {
             FileOutputStream fos = new FileOutputStream(
-                    index_path + "SPL_IMG_T_" + l.name + ".dat");
+                    TabulationSettings.index_path + "SPL_IMG_T_" + l.name + ".dat");
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(data);
@@ -1103,7 +1103,7 @@ public class FilteringIndex extends Object {
         int i;
         for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
             if (forceUpdate || !isUpToDateCatagorical(TabulationSettings.geo_tables[i].name)) {
-                layers.add(TabulationSettings.geo_tables[i].name);
+            //    layers.add(TabulationSettings.geo_tables[i].name);
             }
         }
         for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
