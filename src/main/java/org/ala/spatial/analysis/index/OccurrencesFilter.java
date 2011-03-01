@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.index;
 
 import java.util.ArrayList;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.TabulationSettings;
 
@@ -54,7 +55,7 @@ public class OccurrencesFilter {
         if (layers != null) {
             this.columns = new ArrayList<String>(layers.length);
             for (String s : layers) {
-                this.columns.add(s);
+                this.columns.add(Layers.getLayer(s).name);
             }
         }
     }

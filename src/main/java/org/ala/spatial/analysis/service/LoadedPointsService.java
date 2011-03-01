@@ -132,7 +132,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    static String getSampling(String id, Layer[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
+    static public String getSampling(String id, Layer[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             return lp.getSampling(layers, region, records, max_rows);

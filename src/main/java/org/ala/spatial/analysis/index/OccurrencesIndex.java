@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.ala.spatial.analysis.cluster.Record;
+import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
 import org.ala.spatial.util.SimpleRegion;
@@ -1888,6 +1889,7 @@ public class OccurrencesIndex {
 
     double[] getPoints(OccurrencesFilter filter, ArrayList<SpeciesColourOption> extra) {
         int[] r = getRecordNumbers(filter);
+
         double[] p = null;
         if (r != null) {
             p = new double[r.length * 2];
@@ -1899,9 +1901,29 @@ public class OccurrencesIndex {
             if (extra != null) {
                 for (int j = 0; j < extra.size(); j++) {                    
                     if (extra.get(j).isHighlight()) {
-                        //lookup with dataset hash and species offset
-                        IndexedRecord ir = (filter.searchTerm==null)?null:filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
-                        extra.get(j).assignHighlightData(r, (ir==null)?0:ir.record_start, getHash());
+                        //treat lsid matches different to fake-lsid-lists
+                        if(filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
+                            //lookup with dataset hash and species offset
+                            IndexedRecord ir = filterSpeciesRecords(filter.searchTerm);
+                            extra.get(j).assignHighlightData(r, (ir==null)?0:ir.record_start, getHash());
+                        } else if(filter.searchTerm != null) {
+                            //'highlight' are stored by 'searchTerm' only,
+                            //retrieve whole records and translate r to
+                            //all 'highlight' records
+                            int [] rAll = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
+                            int [] r2 = new int[r.length];
+                            int rpos = 0;
+                            for(int i=0;i<rAll.length;i++) {
+                                if(r[rpos] == rAll[i]) {
+                                    r2[rpos] = i;
+                                    rpos++;
+                                    if(rpos >= r.length) {
+                                        break;
+                                    }
+                                }
+                            }
+                            extra.get(j).assignHighlightData(r2, 0, getHash());
+                        } //cannot get 'highlight' without searchTerm
                     } else if (extra.get(j).isTaxon()) {
                         extra.get(j).assignTaxon(r, speciesNumberInRecordsOrder, speciesIndexLookup);
                     } else {
@@ -1966,10 +1988,10 @@ public class OccurrencesIndex {
                         }
                     }
                 } else { //contextual
-                    String layername = (String) f[0];
+                    Layer layer = Layers.getLayer((String) f[0]);
                     String [] filteredCategories = (String []) f[1];
                     String[] lookup_values = SamplingIndex.getLayerCatagories(
-                        Layers.getLayer(layername));
+                        layer);
 
                     int [] selection = new int[filteredCategories.length];
                     for(int i=0;i<selection.length;i++) {
@@ -1980,7 +2002,7 @@ public class OccurrencesIndex {
                     }
 
                     //get data
-                    int [] cat = ss.getRecordsInt(layername, r);
+                    int [] cat = ss.getRecordsInt(layer.name, r);
                     for (int i = 0; i < len; i++) {
                         for(int k=0;k<selection.length;k++) {
                             if(selection[k] == cat[i]) {
@@ -1990,7 +2012,7 @@ public class OccurrencesIndex {
                     }
                 }
             } else if(f.length == 3) { //environmental
-                float[] d = ss.getRecordsFloat((String) f[0], r);
+                float[] d = ss.getRecordsFloat(Layers.getLayer((String) f[0]).name, r);
                 double min = Math.min((Double)f[1], (Double)f[2]);
                 double max = Math.max((Double)f[1], (Double)f[2]);
 
@@ -2695,17 +2717,23 @@ public class OccurrencesIndex {
     public int registerHighlight(OccurrencesFilter filter, String key, String highlightPid, boolean include) {
         int[] r = getRecordNumbers(filter);
         if (r != null) {
-            //lookup by replacing 'h' with dataset hash
-            IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
-            boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
-            int pos = 0;
-            for (int i = 0; i < r.length; i++) {
-                if (include != highlight[r[i] - ir.record_start]) {
-                    r[pos] = r[i];
-                    pos++;
+            if(filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
+                //lookup by replacing 'h' with dataset hash
+                IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
+                boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
+                int pos = 0;
+                for (int i = 0; i < r.length; i++) {
+                    if (include != highlight[r[i] - ir.record_start]) {
+                        r[pos] = r[i];
+                        pos++;
+                    }
                 }
-            }
-            r = java.util.Arrays.copyOf(r, pos);
+                r = java.util.Arrays.copyOf(r, pos);
+            } else if(filter.searchTerm != null) {
+                //'highlight' are stored by 'searchTerm' only,
+                //retrieve whole records already produced
+                r = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
+            } //cannot get 'highlight' without searchTerm
         }
 
         int count = 0;

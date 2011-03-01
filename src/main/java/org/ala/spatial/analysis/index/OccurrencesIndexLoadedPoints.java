@@ -6,6 +6,8 @@ import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.analysis.service.LoadedPointsService;
 import org.ala.spatial.analysis.service.SamplingLoadedPointsService;
 import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 
 /**
@@ -241,26 +243,98 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
 
     @Override
     int highlightLsid(String keyEnd, String lsid, Object [] filters) {
-        return 0;
-        /* TODO: finish this function
-        SamplingIndex ss = new SamplingIndex(index_path, getPointsPairs());
+        //String layer1, double x1, double x2, String layer2, double y1, double y2
         int[] r = getRecordNumbers(new OccurrencesFilter(lsid, PART_SIZE_MAX)); //TODO: config limited
-        float [] d1 = ss.getRecordsFloat(layer1, r);
-        float [] d2 = ss.getRecordsFloat(layer2, r);
+        if (r == null || r.length == 0) {
+            RecordSelectionLookup.addSelection(getHash() + keyEnd, null);
+            return 0;
+        }
 
-        boolean [] highlight = new boolean[r.length];
+        int len = r.length;
+        int numFilters = filters.length;
         int count = 0;
-        for(int i=0;i<r.length;i++) {
-            if(d1[i] <= x2 && d1[i] >= x1
-                    && d2[i] <= y2 && d2[i] >= y1) {
-                highlight[i] = true;
-                count ++;
+
+        byte[] highlightCount = new byte[len];
+
+        for(int j=0;j<numFilters;j++) {
+            Object [] f = (Object[]) filters[j];
+            if(f.length == 2) { //sco or contextual
+                SpeciesColourOption sco = SpeciesColourOption.fromName((String) f[0], false);
+                if(sco != null) {
+                    sco.assignData(r, attributesMap.get(sco.getName()));
+                    boolean [] h = sco.getFiltered((Object[]) f[1]);
+                    for (int i = 0; i < len; i++) {
+                        if(h[i]){
+                            highlightCount[i]++;
+                        }
+                    }
+                } else { //contextual
+                    Layer layer = Layers.getLayer((String) f[0]);
+                    String [] filteredCategories = (String []) f[1];
+                    
+                    //get data
+                    //int [] cat = ss.getRecordsInt(layer.name, r);
+                    Layer [] ls = new Layer[1];
+                    ls[0] = layer;
+                    String [] s = LoadedPointsService.getSampling(lsid,
+                            ls, null, null, PART_SIZE_MAX).split("\n");//TODO: max record count
+
+                    for (int i = 0; i < len; i++) {
+                        String [] sr = s[i+1].split(",");  //s has a header, so +1
+                        String v = sr[sr.length-1];
+                        for(int k=0;k<filteredCategories.length;k++) {                            
+                            if(filteredCategories[k].equalsIgnoreCase(v)) {
+                                highlightCount[i]++;
+                            }
+                        }
+                    }
+                }
+            } else if(f.length == 3) { //environmental
+                double min = Math.min((Double)f[1], (Double)f[2]);
+                double max = Math.max((Double)f[1], (Double)f[2]);
+
+                Layer [] ls = new Layer[1];
+                ls[0] = Layers.getLayer((String) f[0]);
+                String [] s = LoadedPointsService.getSampling(lsid,
+                            ls, null, null, PART_SIZE_MAX).split("\n");//TODO: max record count
+
+                for (int i = 0; i < len; i++) {
+                    String [] sr = s[i+1].split(",");  //s has a header, so +1
+                    double d = 0;
+                    try {
+                        d = Double.parseDouble(sr[sr.length-1]);
+                    } catch (Exception e) {}
+
+                    if(d <= max && d >= min) {
+                        highlightCount[i]++;
+                    } else if(Double.isNaN(d) && max >= 0 && min <=0) {
+                        highlightCount[i]++;
+                    }
+                }
             }
         }
 
+        boolean[] highlight = new boolean[len];
+
+        //AND
+        for(int i=0;i<len;i++) {
+            if(highlightCount[i] == numFilters) {
+                highlight[i] = true;
+                count++;
+            }
+        }
+
+//        //OR
+//        for(int i=0;i<highlight.length;i++) {
+//            if(count[i] > 0) {
+//                highlight[i] = true;
+//                count++;
+//            }
+//        }
+
         RecordSelectionLookup.addSelection(getHash() + keyEnd, highlight);
 
-        return count;*/
+        return count;
     }
 
     public int registerLSID(String key, String[] lsid) {
