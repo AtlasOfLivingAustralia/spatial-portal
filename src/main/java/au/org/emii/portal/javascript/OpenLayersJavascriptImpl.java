@@ -922,10 +922,11 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void setAdditionalScript(String additionalScript) {
-        if (additionalScript != null) {
-            this.additionalScript = additionalScript;
-        } else {
+        if (this.additionalScript == null) {
             this.additionalScript = "";
+        }
+        if (additionalScript != null) {
+            this.additionalScript += additionalScript;
         }
     }
 

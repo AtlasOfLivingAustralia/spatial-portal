@@ -3885,6 +3885,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return mapLayer;
     }
 
+    /*
+     * remove it + map it
+     */
+    public void removeLayerHighlight(ScatterplotData data, String rank) {
+        List udl = getMapComposer().getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        MapLayer mapLayer = null;
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md != null
+                    && md.getSpeciesLsid() != null
+                    && md.getSpeciesLsid().equals(data.getLsid())
+                    && ml.getHighlight() != null) {
+
+                ml.setHighlight(null);
+
+                if (!ml.isClustered() && ml.isDisplayed()) {
+                    applyChange(ml);
+                }
+
+                break;
+            }
+        }
+    }
+
     private String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
         try {
             String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);

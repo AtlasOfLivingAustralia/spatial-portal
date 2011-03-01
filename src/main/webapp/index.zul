@@ -515,7 +515,7 @@ border-bottom: none;
                 </div>
             </center>
 
-            <south id="south">
+            <south id="south" visible="false">
                 <footer id="footer" />
             </south>
         </borderlayout>

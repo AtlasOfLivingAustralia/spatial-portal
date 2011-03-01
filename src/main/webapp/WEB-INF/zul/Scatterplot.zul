@@ -14,7 +14,7 @@
             scatterplotwindow.getFellow("btnOverlapped").setVisible(false);
             '
             visible="false" />
-        <button sclass="goButton" id="btnScatEmbedded" label="embedded" onClick='
+        <button sclass="goButton" id="btnScatEmbedded" label="Docked" onClick='
             scatterplotwindow.setWidth("360px");
             scatterplotwindow.setHeight("500px");
             scatterplotwindow.setParent(btnScatEmbedded.getParent().getParent());
@@ -33,8 +33,8 @@
             title="Scatterplot"
             >
         <caption id="scatCaption" visible="true" >
-            <toolbarbutton id="btnEmbedded" label="Embedded" visible="false" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatEmbedded")[0]),"onClick", null));'/>
-            <toolbarbutton id="btnOverlapped" label="Overlapped" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatOverlapped")[0]),"onClick", null));'/>
+            <toolbarbutton id="btnEmbedded" label="Docked" visible="false" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatEmbedded")[0]),"onClick", null));'/>
+            <toolbarbutton id="btnOverlapped" label="Floating" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatOverlapped")[0]),"onClick", null));'/>
         </caption>
         <div id="scatControls" visible="true" width="325px">
             <vbox >
@@ -54,8 +54,8 @@
             <separator />
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
-                    <button sclass="goButton" label="Download as image" id="scatterplotImageDownload" />
-                    <button sclass="goButton" label="Download as csv" id="scatterplotDataDownload" />
+                    <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />
+                    <button sclass="goButton" label="View data" id="scatterplotDataDownload" />
                 </hbox>
             </div>
             <separator />
@@ -71,10 +71,11 @@
         
         <div id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
         <html><![CDATA[
-        <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px; -webkit-user-select: none;-webkit-user-drag: none; -moz-user-select: none; "
+        <div id="chartDivBack" style="position:absolute;float:left;width: 300px; height: 300px;"> </div>
+        <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px;"
             onmousedown="drawMouseDown(event);"
             onmouseup="drawMouseUp(event);"
-            onmousemove="drawResize(event);"></div>        
+            onmousemove="drawResize(event);"></div>
         ]]>
         </html>
 

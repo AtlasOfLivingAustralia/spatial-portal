@@ -36,14 +36,18 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.util.Hashtable;
 import java.util.List;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
+import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jfree.chart.annotations.XYBoxAnnotation;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.ui.RectangleEdge;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
@@ -78,7 +82,7 @@ public class ScatterplotWCController extends UtilityComposer {
     MapLayer mapLayer = null;
     private XYBoxAnnotation annotation;
     DefaultXYDataset xyDataset;
-
+    int selectionCount;
     String imagePath;
     String results;
 
@@ -116,6 +120,11 @@ public class ScatterplotWCController extends UtilityComposer {
     public void onChange$sac(Event event) {
         getScatterplotData();
 
+        //remove any previous layer highlighted now
+        if (data.getLsid() != null) {
+            getMapComposer().removeLayerHighlight(data, "species");
+        }
+
         data.setLsid(null);
         data.setSpeciesName(null);
 
@@ -145,10 +154,16 @@ public class ScatterplotWCController extends UtilityComposer {
 
         //only add it to the map if this was signaled from an event
         if (event != null) {
-            getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
+            Events.echoEvent("doSpeciesChange",this, null);
+        } else {
+            Events.echoEvent("updateScatterplot",this, null);
         }
+    }
 
-        updateScatterplot();
+    public void doSpeciesChange(Event event) {
+        getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
+
+        Events.echoEvent("updateScatterplot",this, null);
     }
 
     public void onChange$cbLayer1(Event event) {
@@ -160,7 +175,7 @@ public class ScatterplotWCController extends UtilityComposer {
             data.setLayer1Name(cbLayer1.getText());
         }
 
-        updateScatterplot();
+        updateScatterplot(null);
     }
 
     public void onChange$cbLayer2(Event event) {
@@ -172,7 +187,7 @@ public class ScatterplotWCController extends UtilityComposer {
             data.setLayer2Name(cbLayer2.getText());
         }
 
-        updateScatterplot();
+        updateScatterplot(null);
     }
 
     public ScatterplotData getScatterplotData() {
@@ -188,7 +203,7 @@ public class ScatterplotWCController extends UtilityComposer {
         cbLayer1.setText(data.getLayer1Name());
         cbLayer2.setText(data.getLayer2Name());
 
-        updateScatterplot();
+        updateScatterplot(null);
 
         if (!data.isEnabled()) {
             clearSelection();
@@ -250,10 +265,10 @@ public class ScatterplotWCController extends UtilityComposer {
             double tx2 = plot.getRangeAxis().java2DToValue(coordsDbl[2], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.BOTTOM);
             double ty1 = plot.getDomainAxis().java2DToValue(coordsDbl[1], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.LEFT);
             double ty2 = plot.getDomainAxis().java2DToValue(coordsDbl[3], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.LEFT);
-            double x1 = Math.min(tx1,tx2);
-            double x2 = Math.max(tx1,tx2);
-            double y1 = Math.min(ty1,ty2);
-            double y2 = Math.max(ty1,ty2);
+            double x1 = Math.min(tx1, tx2);
+            double x2 = Math.max(tx1, tx2);
+            double y1 = Math.min(ty1, ty2);
+            double y2 = Math.max(ty1, ty2);
 
 
             registerScatterPlotSelection(x1, x2, y1, y2);
@@ -273,7 +288,7 @@ public class ScatterplotWCController extends UtilityComposer {
             tbxDomain.setValue(String.format("%s: %g - %g", data.getLayer1Name(), y1, y2));
             tbxRange.setValue(String.format("%s: %g - %g", data.getLayer2Name(), x1, x2));
 
-            annotation = new XYBoxAnnotation(y1,x1,y2,x2);
+            annotation = new XYBoxAnnotation(y1, x1, y2, x2);
 
             redraw();
         } catch (Exception e) {
@@ -283,10 +298,10 @@ public class ScatterplotWCController extends UtilityComposer {
         }
     }
 
-    private void updateScatterplot() {
+    public void updateScatterplot(Event event) {
         try {
             clearSelection();
-            
+
             getScatterplotData();
 
             if (data.getLsid() != null && data.getLsid().length() > 0
@@ -336,10 +351,10 @@ public class ScatterplotWCController extends UtilityComposer {
 
     void redraw() {
         getScatterplotData();
-        
+
         if (data.getLsid() != null && data.getLsid().length() > 0
-                    && data.getLayer1() != null && data.getLayer1().length() > 0
-                    && data.getLayer2() != null && data.getLayer2().length() > 0) {
+                && data.getLayer1() != null && data.getLayer1().length() > 0
+                && data.getLayer2() != null && data.getLayer2().length() > 0) {
             try {
                 jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyDataset, PlotOrientation.HORIZONTAL, false, false, false);
                 jChart.setBackgroundPaint(Color.white);
@@ -348,8 +363,8 @@ public class ScatterplotWCController extends UtilityComposer {
                     plot.addAnnotation(annotation);
                 }
                 plot.setForegroundAlpha(0.5f);
-                Font axisfont = new Font("Arial",Font.PLAIN,9);
-                Font titlefont = new Font("Arial",Font.BOLD,11);
+                Font axisfont = new Font("Arial", Font.PLAIN, 9);
+                Font titlefont = new Font("Arial", Font.BOLD, 11);
                 plot.getDomainAxis().setLabelFont(axisfont);
                 plot.getDomainAxis().setTickLabelFont(axisfont);
                 plot.getRangeAxis().setLabelFont(axisfont);
@@ -359,7 +374,7 @@ public class ScatterplotWCController extends UtilityComposer {
                 chartRenderingInfo = new ChartRenderingInfo();
 
                 int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
-                int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px",""));
+                int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
                 BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
                 byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
 
@@ -381,7 +396,14 @@ public class ScatterplotWCController extends UtilityComposer {
                 //chartImg.setStyle("background-image: url(" + htmlurl + uid + ".png)");
                 chartImg.setWidth(width + "px");
                 chartImg.setHeight(height + "px");
-                String script = "var cd = document.getElementById('chartDiv');cd.style.backgroundImage='url(" + htmlurl + uid + ".png)';cd.style.width='" + width + "px';cd.style.height='" + height + "px';";
+                String script = "var cd = document.getElementById('chartDiv');"
+                        + "var ci = document.getElementById('chartDivBack');"
+                        + "cd.style.backgroundImage='url("
+                        + htmlurl + uid + ".png)';cd.style.width='"
+                        + width + "px';cd.style.height='" + height + "px';"
+                        + "ci.style.backgroundImage=cd.style.backgroundImage;"
+                        + "ci.style.width=cd.style.width;"
+                        + "ci.style.height=cd.style.height;";
                 Clients.evalJavaScript(script);
 
                 /*AImage image = new AImage("scatterplot", bytes);
@@ -438,6 +460,7 @@ public class ScatterplotWCController extends UtilityComposer {
     }
 
     void updateCount(String txt) {
+        selectionCount = Integer.parseInt(txt);
         tbxSelectionCount.setValue("Records selected: " + txt);
 
         try {
@@ -538,12 +561,29 @@ public class ScatterplotWCController extends UtilityComposer {
 
     public void onClick$addSelectedRecords(Event event) {
         String id = addSelectedRecords(false);
-        getMapComposer().mapSpeciesByLsid(id, "Scatterplot Selected " + data.getSpeciesName());
+        addUserLayer(id, "Scatterplot Selected " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
         String id = addSelectedRecords(true);
-        getMapComposer().mapSpeciesByLsid(id, "Scatterplot Unselected " + data.getSpeciesName());
+        addUserLayer(id, "Scatterplot Unselected " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
+    }
+
+    void addUserLayer(String id, String layername, String description, int numRecords) {
+        layername = StringUtils.capitalize(layername);
+
+        getMapComposer().mapSpeciesByLsid(id, layername);
+
+        UserData ud = new UserData(layername, description, "scatterplot");
+        ud.setFeatureCount(numRecords);
+
+        // add it to the user session
+        Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+        if (htUserSpecies == null) {
+            htUserSpecies = new Hashtable<String, UserData>();
+        }
+        htUserSpecies.put(id, ud);
+        getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
     }
 
     public void onClick$addNewLayers(Event event) {
@@ -558,8 +598,18 @@ public class ScatterplotWCController extends UtilityComposer {
             e.printStackTrace();
         }
     }
+
     public void onClick$scatterplotDataDownload(Event event) {
-        Filedownload.save(results, "text/plain", data.getSpeciesName() + "_" + data.getLayer1Name() + "_" + data.getLayer2Name() + ".csv");
+        //preview species list
+        ScatterplotResults window = (ScatterplotResults) Executions.createComponents("WEB-INF/zul/AnalysisScatterplotResults.zul", this, null);
+        window.populateList(data.getLayer1Name(), data.getLayer2Name(), results);
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //Filedownload.save(results, "text/plain", data.getSpeciesName() + "_" + data.getLayer1Name() + "_" + data.getLayer2Name() + ".csv");
     }
 
     String addSelectedRecords(boolean include) {
