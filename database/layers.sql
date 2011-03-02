@@ -17,7 +17,7 @@ DROP TABLE if exists layers;
 
 -- IMPORTANT!! YOU MUST UPDATE THIS SEQUENCE WHEN ADDING NEW LAYERS
 
-ALTER SEQUENCE layers_id_seq RESTART WITH 914;
+ALTER SEQUENCE layers_id_seq RESTART WITH 915;
 
 CREATE TABLE layers (
     id integer DEFAULT nextval('layers_id_seq'::regclass) NOT NULL,
@@ -813,6 +813,7 @@ INSERT INTO layers VALUES (910, 'ger_s2s_priority_area_billabong_creek_v01', 'ge
 INSERT INTO layers VALUES (911, 'ger_s2s_priority_areas_v05', 'ger s2s priority areas', 'Contextual', 'GER', '/data/ala/shapefiles/ger', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'S2S Priority Areas v05', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ger_s2s_priority_areas_v05&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'GER', NULL, '911', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
 INSERT INTO layers VALUES (912, 'ger_slopes_to_summit', 'ger slopes to summit', 'Contextual', 'GER', '/data/ala/shapefiles/ger', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'Slopes to summit', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ger_slopes_to_summit&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'GER', NULL, '912', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
 INSERT INTO layers VALUES (913, 'ger_upper_hunter_focus_area_v2', 'ger upper hunter focus area', 'Contextual', 'GER', '/data/ala/shapefiles/ger', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'Upper Hunter Focus Area v2', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ger_upper_hunter_focus_area_v2&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'GER', NULL, '913', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
+INSERT INTO layers VALUES (914, 'ibra_sub_merged', 'IBRA sub regions', 'Contextual', 'IBRA Sub', '/data/ala/shapefiles/ibra_sub', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'IBRA Sub Regions', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ibra_sub_merged&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Biodiversity', 'Region', '913', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
 
 --
 -- TOC entry 3161 (class 2606 OID 57194)
