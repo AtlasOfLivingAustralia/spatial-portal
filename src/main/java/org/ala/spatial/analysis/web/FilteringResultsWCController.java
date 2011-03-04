@@ -229,7 +229,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         //validate with 'occurrences count'
         if (results_count_occurrences > settingsSupplementary.getValueAsInt("max_record_count_download")) {
-            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area.  Cannot produce sample for more than " + settingsSupplementary.getValueAsInt("max_record_count_download") + " occurrences.");
+            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area. Cannot \nproduce sample for more than " + settingsSupplementary.getValueAsInt("max_record_count_download") + " occurrences.");
             return;
         }
 

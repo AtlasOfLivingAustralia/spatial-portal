@@ -2681,7 +2681,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         int uncertaintyCheck = 0; //0 == false default
 
-        int size = 8;
+        int size = 3;
         float opacity = (float) 0.8;
 
         if (activeLayerMapProperties != null) {

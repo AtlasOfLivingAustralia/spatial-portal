@@ -488,7 +488,9 @@ border-bottom: none;
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
                         <hbox>
                             <n:ul id="cssdropdown" >
-                                <n:li id="mapopt" class="headlink goButton"><n:span id="selmap">Normal</n:span>
+                                <n:li id="mapopt" class="headlink goButton">
+                                    <n:span><n:span id="selmap">Normal</n:span> 
+                                    <n:span style="float:right">&#8711;</n:span></n:span>
                                     <n:ul>
                                         <n:li><n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</n:a></n:li>
                                         <n:li><n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</n:a></n:li>
@@ -508,7 +510,7 @@ border-bottom: none;
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
                     </div>
                     
-                    <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="true" >
+                    <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="false" >
                         <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"
                                 visible="true" style="float:right;margin-bottom:10px;" />
                         <image 	id="layerSwitcherHide" src="/img/layer-switcher-minimize.png"

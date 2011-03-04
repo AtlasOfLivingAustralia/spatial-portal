@@ -394,7 +394,7 @@ public class SelectionController extends UtilityComposer {
         }
     }
 
-    public void onChange$cbAreaSelection() {
+    public void onSelect$cbAreaSelection(Event event) {
         lastTool = cbAreaSelection.getSelectedItem();
         System.out.println("cbAreaSelection: " + cbAreaSelection.getSelectedItem().getLabel());
 
