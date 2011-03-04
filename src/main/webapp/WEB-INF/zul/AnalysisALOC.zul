@@ -45,7 +45,7 @@
                     <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
                 </hbox>
                 <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
-                <listbox sclass="envlist" id="lbListLayers" fixedLayout="false" use="org.ala.spatial.analysis.web.EnvironmentalList" width="95%" multiple="true" checkmark="true" height="400px">
+                <listbox sclass="envlist" id="lbListLayers" fixedLayout="false" use="org.ala.spatial.analysis.web.EnvironmentalList" width="340px" multiple="true" checkmark="true" height="400px">
                     <listhead>
                         <listheader label="category"  />
                         <listheader label="name" />

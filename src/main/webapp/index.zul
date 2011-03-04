@@ -69,6 +69,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <doublebox id="westReal" visible="false" />
         <doublebox id="eastReal" visible="false" />
 
+        <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
+
         <script defer="true" type="text/JavaScript" src="scripts/index.js" />
                 
         <!-- external content (Links) popup -->

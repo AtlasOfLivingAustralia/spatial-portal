@@ -71,8 +71,8 @@
         
         <div id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
         <html><![CDATA[
-        <div id="chartDivBack" style="position:absolute;float:left;width: 300px; height: 300px;"> </div>
-        <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px;"
+        <div id="chartDivBack" style="position:absolute;float:left;width: 300px; height: 300px;-webkit-user-select: none;-webkit-user-drag: none; -moz-user-select: none; "> </div>
+        <div id="chartDiv" style="position:absolute;float:left;width: 300px; height: 300px; -webkit-user-select: none;-webkit-user-drag: none; -moz-user-select: none; "
             onmousedown="drawMouseDown(event);"
             onmouseup="drawMouseUp(event);"
             onmousemove="drawResize(event);"></div>

@@ -576,7 +576,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Iframe iframe = getExternalContentIframe();
             Html html = getExternalContentHtml();
 
-            if(uri.charAt(0) == '*') {
+            if (uri.charAt(0) == '*') {
                 //html content
                 uri = uri.substring(1);
 
@@ -596,7 +596,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //url
                 iframe.setHeight("100%");
                 iframe.setSrc(uri);
-                
+
                 //content
                 html.setContent("");
 
@@ -1016,9 +1016,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     if (mapLayer.getMapLayerMetadata() == null) {
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                     }
-                    mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);                    
+                    mapLayer.getMapLayerMetadata().setMoreInfo(metadata + "\n" + label);
                     addUserDefinedLayerToMenu(mapLayer, true);
-                    addedOk = true;                    
+                    addedOk = true;
                 }
             } else {
                 // fail
@@ -1822,7 +1822,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         load();
 
         //combobox defaults
-        if(cbColour != null) {
+        if (cbColour != null) {
             cbColour.setSelectedItem(ciColourUser);
         }
     }
@@ -2236,15 +2236,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             Executions.getCurrent().sendRedirect(null);
         }
     }
-/*
+    /*
     public void onClick$hideLeftMenu() {
-        getPortalSession().setMaximised(true);
-        maximise();
+    getPortalSession().setMaximised(true);
+    maximise();
     }
 
     public void onClick$showLeftMenu() {
-        getPortalSession().setMaximised(false);
-        maximise();
+    getPortalSession().setMaximised(false);
+    maximise();
     }*/
 
     /**
@@ -2254,15 +2254,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         String tbxReloadLayers;
         boolean mapZoomChanged = true;
 
-        if(event == null) {
+        if (event == null) {
             mapZoomChanged = (mapZoomLevel != getLeftmenuSearchComposer().getZoom());
             mapZoomLevel = getLeftmenuSearchComposer().getZoom();
-            
-            tbxReloadLayers = (new StringBuffer()).append("z=")
-                    .append(String.valueOf(mapZoomLevel))
-                    .append("&amp;b=")
-                    .append(getLeftmenuSearchComposer().getViewportBoundingBox().toString())
-                    .toString();
+
+            tbxReloadLayers = (new StringBuffer()).append("z=").append(String.valueOf(mapZoomLevel)).append("&amp;b=").append(getLeftmenuSearchComposer().getViewportBoundingBox().toString()).toString();
         } else {
             tbxReloadLayers = (String) event.getData();
 
@@ -2534,7 +2530,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             sbProcessUrl.append("/id/").append(System.currentTimeMillis());
             sbProcessUrl.append("/now");
             sbProcessUrl.append("?z=").append(String.valueOf(mapZoomLevel));
-            sbProcessUrl.append("&m=").append(String.valueOf(8));
+            sbProcessUrl.append("&m=").append(String.valueOf(3));
             MapLayer ml = addGeoJSONLayer(species, satServer + "/alaspatial/" + sbProcessUrl.toString(), true);
 
             if (ml != null) {
@@ -2731,7 +2727,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         ml.setBlueVal(b);
                         ml.setGreenVal(g);
                         ml.setRedVal(r);
-                        ml.setSizeVal(8);
+                        ml.setSizeVal(3);
                         ml.setOpacity(opacity);
 
                         ml.setClustered(false);
@@ -3080,7 +3076,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     public void openHTML(Event event) {
         String html = (String) event.getData();
-        String [] lines = html.split("\n");
+        String[] lines = html.split("\n");
         String header = lines[0];
         String url = "*" + html.substring(header.length()).trim();
         activateLink(url, header, false);
@@ -3825,6 +3821,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         List udl = getMapComposer().getPortalSession().getActiveLayers();
         Iterator iudl = udl.iterator();
         MapLayer mapLayer = null;
+        boolean unselectLayer = false;
+        boolean remapLayer = true;
+
+        //find layer matching data.getLsid()
         while (iudl.hasNext()) {
             MapLayer ml = (MapLayer) iudl.next();
             MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -3832,24 +3832,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     && md.getSpeciesLsid() != null
                     && md.getSpeciesLsid().equals(data.getLsid())) {
 
+                mapLayer = ml;
+
                 if (ml.isClustered() || !ml.isDisplayed()) {
                     //removeLayer;
                     openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
                             + openLayersJavascript.removeMapLayer(ml));
+                    unselectLayer = true;
                 } else {
-                    mapLayer = ml;
+                    remapLayer = false;
                 }
 
                 break;
             }
         }
 
-        if (mapLayer == null) {
+        if (unselectLayer && mapLayer != null) {
             try {
-                deactiveLayer(getActiveLayersSelection(false), true, false, true);
+                deactiveLayer(mapLayer, true, false, true);
             } catch (Exception e) {
             }
+        }
 
+        if (remapLayer) {
             //map as WMS points layer
             mapLayer = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "");
             if (mapLayer != null) {
@@ -3866,7 +3871,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
-        // reopen the layer controls
+        // reopen the layer controls for this layer
         try {
             refreshActiveLayer(mapLayer);
             setupLayerControls(mapLayer);

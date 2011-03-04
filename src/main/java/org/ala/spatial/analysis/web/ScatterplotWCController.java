@@ -169,11 +169,18 @@ public class ScatterplotWCController extends UtilityComposer {
     public void onChange$cbLayer1(Event event) {
         getScatterplotData();
 
+        //remove any previous layer highlighted now
+        if (data.getLsid() != null) {
+            getMapComposer().removeLayerHighlight(data, "species");
+        }
+
         if (cbLayer1.getItemCount() > 0 && cbLayer1.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayer1.getSelectedItem().getValue();
             data.setLayer1(jo.getString("name"));
             data.setLayer1Name(cbLayer1.getText());
         }
+
+        clearSelection();
 
         updateScatterplot(null);
     }
@@ -181,11 +188,18 @@ public class ScatterplotWCController extends UtilityComposer {
     public void onChange$cbLayer2(Event event) {
         getScatterplotData();
 
+        //remove any previous layer highlighted now
+        if (data.getLsid() != null) {
+            getMapComposer().removeLayerHighlight(data, "species");
+        }
+
         if (cbLayer2.getItemCount() > 0 && cbLayer2.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) cbLayer2.getSelectedItem().getValue();
             data.setLayer2(jo.getString("name"));
             data.setLayer2Name(cbLayer2.getText());
         }
+
+        clearSelection();
 
         updateScatterplot(null);
     }
@@ -330,8 +344,8 @@ public class ScatterplotWCController extends UtilityComposer {
                     String[] words = lines[i].split(",");
 
                     try {
-                        dbl[0][i - 1] = Double.parseDouble(words[0]);
-                        dbl[1][i - 1] = Double.parseDouble(words[1]);
+                        dbl[0][i - 1] = Double.parseDouble(words[words.length-2]);
+                        dbl[1][i - 1] = Double.parseDouble(words[words.length-1]);
                         //      xymodel.addValue(sac.getText(), Double.parseDouble(words[2]), Double.parseDouble(words[3]));
                     } catch (Exception e) {
                         //e.printStackTrace();

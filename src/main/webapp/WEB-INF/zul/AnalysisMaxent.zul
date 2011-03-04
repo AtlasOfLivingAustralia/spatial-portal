@@ -41,7 +41,7 @@
                         <label value="Step 2: Select your environmental layers" />
                         <vbox>
                             <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
-                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="92%" multiple="true" checkmark="true" height="400px">
+                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="340px" multiple="true" checkmark="true" height="400px">
                             <listhead>
                                 <listheader label="category"  />
                                 <listheader label="name" />

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Required;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
+import org.apache.log4j.Priority;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -881,6 +882,9 @@ public class LayerUtilitiesImpl implements LayerUtilities {
                     name = uri.substring(a + 7, uri.length());
                 }
             }
+
+            //don't use gwc/service/ because it is returning the wrong boundingbox
+            server = server.replace("gwc/service/","");
 
             //make getcapabilities uri
             String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wms", WMS_1_0_0);

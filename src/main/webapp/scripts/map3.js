@@ -963,7 +963,7 @@ function showInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
+    $.get(proxy_script + parent.jq('$sat_url')[0].innerHTML + "/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
 
         $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
             var occinfo = data.occurrence;
@@ -1111,7 +1111,7 @@ function showClusterInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
+    $.get(proxy_script + parent.jq('$sat_url')[0].innerHTML + "/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
 
         $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
             displaySpeciesInfo(data, prevBtn, nextBtn, curr, currFeature.attributes["count"]);

@@ -33,7 +33,7 @@
                    value="Step 2: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
                 <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
-                <listbox sclass="ctxenvlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
+                <listbox sclass="ctxenvlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="340px" multiple="true" checkmark="true" height="400px">
                     <listhead >
                         <listheader label="category"  />
                         <listheader label="name" />
