@@ -99,7 +99,7 @@ public class OccurrencesSpeciesList {
                         .append(SpeciesIndex.getCommonNames(i)).append("*")
                         .append(SpeciesIndex.getTaxonRank(i)).append("*")
                         .append(SpeciesIndex.getLSID(i)).append("*")
-                        .append(SpeciesIndex.getCount(i)).toString();
+                        .append(speciesCounts[i]).toString();
                 p++;
             }
         }
