@@ -86,7 +86,7 @@ public class ScatterplotResults extends UtilityComposer {
 
     public void onClick$btnDownload() {
         StringBuffer sb = new StringBuffer();
-        sb.append(header1.getLabel() + "," + header2.getLabel()).append("\r\n");
+        //sb.append(header1.getLabel() + "," + header2.getLabel()).append("\r\n");
         sb.append(data.replace("\n", "\r\n"));
 
         String spid = pid;
