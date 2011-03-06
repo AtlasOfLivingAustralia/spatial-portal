@@ -224,18 +224,19 @@ public class HeatMapIndex {
         }
     }
 
-    static void extraIndexes() {
-        //TODO: fix for new index
-        /*
+    static void extraIndexes() {        
         String pth = TabulationSettings.base_output_dir + "output" + File.separator + "sampling" + File.separator;
         File baseDir = new File(pth);
-        String[] lookups = OccurrencesIndex.listLookups();
+        String[] lookups = OccurrencesCollection.listLookups();
         LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>();
-        for (int i = 0; i < lookups.length && i < OccurrencesIndex.extra_indexes.length; i++) {
-            System.out.println("extra index: " + lookups[i] + " size=" + OccurrencesIndex.extra_indexes[i].keySet().size());
-            for (String value : OccurrencesIndex.extra_indexes[i].keySet()) {
-                if(!value.contains("\\")){ //filter out occurrences if N\A
-                    lbq.add(lookups[i] + "|" + value);
+        for (int i = 0; i < lookups.length; i++) {
+            String [] keySet = OccurrencesCollection.listLookupKeys(lookups[i]);
+            if(keySet != null) {
+                System.out.println("extra index: " + lookups[i] + " size=" + keySet.length);
+                for (String value : keySet) {
+                    if(!value.contains("\\")){ //filter out occurrences if N\A
+                        lbq.add(lookups[i] + "|" + value);
+                    }
                 }
             }
         }
@@ -259,8 +260,6 @@ public class HeatMapIndex {
         for(int i=0;i<et.length;i++){
             et[i].interrupt();
         }
-         *
-         */
     }
 
     private static class ExtraThread extends Thread {
@@ -292,24 +291,13 @@ public class HeatMapIndex {
             }
         }
 
-        void process(File baseDir, String key, String value) {
-            /* //TODO: fix for new index
+        void process(File baseDir, String key, String value) {            
             long start = System.currentTimeMillis();
             String outputfile = baseDir + File.separator + value + ".png";
 
-            int[] recs = OccurrencesIndex.lookup(key, value);
+            double [] points = OccurrencesCollection.getPoints(/*SpeciesColourOption.fromMode(key, false)*/ key, value);
             //System.out.println("[" + key + "," + value + "," + ((recs == null)?0:recs.length) + "]");
-            if (recs != null && recs.length > 500) {
-
-                int[] finalRecs = recs;
-
-                double[][] pts = OccurrencesIndex.getPointsPairs();
-
-                double[] points = new double[finalRecs.length * 2];
-                for (int i = 0; i < finalRecs.length * 2; i += 2) {
-                    points[i] = pts[finalRecs[i / 2]][0];
-                    points[i + 1] = pts[finalRecs[i / 2]][1];
-                }
+            if (points != null && points.length > 1000) {
 
                 //FileUtils.deleteQuietly(new File(baseDir.getAbsolutePath() + File.separator + value + ".png"));
                 //FileUtils.deleteQuietly(new File(baseDir.getAbsolutePath() + File.separator + "legend_" + value + ".png"));
@@ -320,8 +308,8 @@ public class HeatMapIndex {
                 hm.drawOuput(outputfile, true);
 
                 long end = System.currentTimeMillis();
-                System.out.println("E," + recs.length + "," + (end - start));
-            }*/
+                System.out.println("E," + points.length/2 + "," + (end - start));
+            }
         }
     }
 }

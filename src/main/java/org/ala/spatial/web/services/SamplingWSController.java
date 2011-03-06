@@ -492,6 +492,8 @@ public class SamplingWSController {
 
             //last 2 columns; layer1, layer2
             for (int i = 0; i < results.length; i++) {
+                //include occurrenceID
+                sbResults.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",");
                 for (int j = results[i].length - 2; j < results[i].length; j++) {
                     if (results[i][j] != null) {
                         sbResults.append(results[i][j]);

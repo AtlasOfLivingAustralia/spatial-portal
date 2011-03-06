@@ -5,6 +5,7 @@
 package org.ala.spatial.analysis.index;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 import java.util.Vector;
 import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.util.SimpleRegion;
@@ -52,12 +53,45 @@ public class OccurrencesCollection {
             }
         }
 
-        double[] ps = new double[count];
-        int p = 0;
-        for (int i = 0; i < ap.size(); i++) {
-            for (double d : ap.get(i)) {
-                ps[p] = d;
-                p++;
+        double[] ps;
+        if(ap.size() == 1) {
+            ps = ap.get(0);
+        } else {
+            ps = new double[count];
+            int p = 0;
+            for (int i = 0; i < ap.size(); i++) {
+                System.arraycopy(ap.get(i),0,ps,p,ap.get(i).length);
+                p += ap.get(i).length;
+            }
+        }
+
+        return ps;
+    }
+
+    public static double[] getPoints(/*SpeciesColourOption sco*/ String lookupName, String key) {
+        ArrayList<double[]> ap = new ArrayList<double[]>();
+
+        //get OccurrenceSpecies from all enabled and ready datasets
+        int count = 0;
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                double[] p = d.getOccurrencesIndex().getPoints(/*sco*/ lookupName, key);
+                if (p != null) {
+                    count += p.length;
+                    ap.add(p);
+                }
+            }
+        }
+
+        double[] ps;
+        if(ap.size() == 1) {
+            ps = ap.get(0);
+        } else {
+            ps = new double[count];
+            int p = 0;
+            for (int i = 0; i < ap.size(); i++) {
+                System.arraycopy(ap.get(i),0,ps,p,ap.get(i).length);
+                p += ap.get(i).length;
             }
         }
 
@@ -381,5 +415,57 @@ public class OccurrencesCollection {
 
     public static String getColourLegend(String lsid, String colourMode) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    static String[] listLookups() {
+        TreeSet<String> ts = new TreeSet<String>();
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                String [] as = d.getOccurrencesIndex().listLookups();
+                if(as != null) {
+                    for(String s : as) {
+                        ts.add(s);
+                    }
+                }
+            }
+        }
+
+        if(ts.size() == 0) {
+            return null;
+        } else {
+            String [] as = new String[ts.size()];
+            int p = 0;
+            for(String s : ts) {
+                as[p] = s;
+                p++;
+            }
+            return as;
+        }
+    }
+
+    static String[] listLookupKeys(String lookupName) {
+        TreeSet<String> ts = new TreeSet<String>();
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                String [] as = d.getOccurrencesIndex().listLookupKeys(lookupName);
+                if(as != null) {
+                    for(String s : as) {
+                        ts.add(s);
+                    }
+                }
+            }
+        }
+
+        if(ts.size() == 0) {
+            return null;
+        } else {
+            String [] as = new String[ts.size()];
+            int p = 0;
+            for(String s : ts) {
+                as[p] = s;
+                p++;
+            }
+            return as;
+        }
     }
 }

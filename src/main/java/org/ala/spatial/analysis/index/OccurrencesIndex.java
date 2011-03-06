@@ -1935,6 +1935,62 @@ public class OccurrencesIndex {
         return p;
     }
 
+    double[] getPoints(/*SpeciesColourOption sco*/ String lookupName, String key) {
+        //TODO: move away from extra_index        
+        for (int i = 0; i < TabulationSettings.occurrences_csv_fields_lookups.length; i++) {
+            if(TabulationSettings.occurrences_csv_fields_lookups[i].equalsIgnoreCase(lookupName)) {
+                int [] r = (int[]) extra_indexes[i].get(key);
+                double[] d = new double[r.length*2];
+                int pos = 0;
+                for(int j=0;j<r.length;j++) {
+                    d[pos] = all_points[r[j]][0];
+                    d[pos + 1] = all_points[r[j]][1];
+                    pos += 2;
+                }
+                return d;
+            }
+        }
+        
+        return null;
+
+
+        /*
+        Object [] o = (Object []) attributesMap.get(sco.getName());
+        String[] sArray = (String[]) o[0];
+        int[] input3 = (int[]) o[1];
+        int lookForIndex = -1;
+        for(int i=0;i<sArray.length;i++) {
+            if(sArray[i].equalsIgnoreCase(key)) {
+                lookForIndex = i;
+                break;
+            }
+        }
+
+        if(lookForIndex >= 0) {
+            //count
+            int count = 0;
+            for(int i=0;i<input3.length;i++) {
+                if(input3[i] == lookForIndex) {
+                    count++;
+                }
+            }
+
+            //get
+            double[] d = new double[count*2];
+            int pos = 0;
+            for(int i=0;i<input3.length;i++) {
+                if(input3[i] == lookForIndex) {
+                    d[pos] = all_points[i][0];
+                    d[pos + 1] = all_points[i][1];
+                    pos += 2;
+                }
+            }
+            return d;
+        }
+
+        return null;*/
+    }
+
     String getHash() {
         return String.valueOf(index_path.hashCode());
     }
@@ -2754,5 +2810,32 @@ public class OccurrencesIndex {
             return dataset.getUniqueName();
         }
         return "";
+    }
+
+    String[] listLookupKeys(String lookupName) {
+        String [] lookupNames = listLookups();
+        if(lookupNames == null) {
+            return null;
+        }
+        HashMap<String, Object> hm = null;
+        for(int i=0;i<lookupNames.length && i < extra_indexes.length;i++) {
+            if(lookupNames[i].equalsIgnoreCase(lookupName)) {
+                hm = extra_indexes[i];
+                break;
+            }
+        }
+
+        if(hm != null) {
+            String [] keys = new String[hm.keySet().size()];
+            int p = 0;
+            for(String s : hm.keySet()) {
+                keys[p] = s;
+                p++;
+            }
+
+            return keys;
+        }
+
+        return null;
     }
 }

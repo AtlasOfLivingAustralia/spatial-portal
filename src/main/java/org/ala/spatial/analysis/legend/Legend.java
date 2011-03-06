@@ -181,7 +181,7 @@ public abstract class Legend {
      * @param d asc sorted float []
      * @return colour of d after applying cutoff's.
      */
-    int getColour(float d) {
+    public int getColour(float d) {
         if (Float.isNaN(d)) {
             return 0xFFFFFFFF;
         }

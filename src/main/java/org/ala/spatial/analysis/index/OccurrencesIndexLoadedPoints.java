@@ -348,4 +348,16 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
     public int registerRecords(String key, ArrayList<OccurrenceRecordNumbers> records) {
         return 0;
     }
+
+    double[] getPoints(/*SpeciesColourOption sco*/ String lookupName, String key) {
+        return null;
+    }
+
+    String[] listLookups() {
+        return null;
+    }
+
+    public int[] lookup(String lookupName, String key) {
+        return null;
+    }
 }

@@ -665,7 +665,7 @@ public class WMSController {
                         listHighlight = other.get(j).getBoolArray();
                     } else {
                         //colour mode!
-                        colours = other.get(j).getColours();
+                        colours = other.get(j).getColours(lsid);
                     }
                 }
             }
@@ -751,7 +751,7 @@ public class WMSController {
                     g.fillOval(x - size, y - size, pointWidth, pointWidth);
                 }
             } else {
-                int prevColour = -1;
+                int prevColour = colours[0] + 1;    //!= colours[0]
                 for (i = 0; i < points.length; i += 2) {
                     if (colours[i / 2] != prevColour) {
                         g.setColor(new Color(colours[i / 2]));
