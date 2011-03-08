@@ -1525,7 +1525,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (m != null && m.getMapLayerMetadata() != null
                 && m.getMapLayerMetadata().getSpeciesLsid() != null) {
             btnPointsCluster.setVisible(true);
-            cbColour.setDisabled(false);
+            cbColour.setDisabled(m.isClustered());
         } else {
             btnPointsCluster.setVisible(false);
             cbColour.setDisabled(true);
@@ -1674,19 +1674,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             uncertaintyLegend.setVisible(false);
         }
 
-        if (cbColour.getSelectedItem() != ciColourUser) {
-            if (cbColour.getSelectedItem() != ciColourUser && selectedLayer.getMapLayerMetadata() != null
-                    && selectedLayer.getMapLayerMetadata().getSpeciesLsid() != null
-                    && !selectedLayer.isClustered()) {
-                legendHtml.setVisible(true);
-                legendImg.setVisible(false);
+        if (cbColour.getSelectedItem() != ciColourUser && selectedLayer.getMapLayerMetadata() != null
+                && selectedLayer.getMapLayerMetadata().getSpeciesLsid() != null
+                && !selectedLayer.isClustered()) {
+            legendHtml.setVisible(true);
+            legendImg.setVisible(false);
 
-                showPointsColourModeLegend(selectedLayer);
+            showPointsColourModeLegend(selectedLayer);
 
-            } else {
-                legendImg.setVisible(true);
-                legendHtml.setVisible(false);
-            }
+        } else {
+            legendImg.setVisible(true);
+            legendHtml.setVisible(false);
         }
     }
 

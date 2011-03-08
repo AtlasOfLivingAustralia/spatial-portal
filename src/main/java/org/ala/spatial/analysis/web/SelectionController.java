@@ -600,7 +600,7 @@ public class SelectionController extends UtilityComposer {
                     }
 
                     JSONObject jo = layerlist.getJSONObject(j);
-                    System.out.println("********" + jo.getString("name"));
+                   // System.out.println("********" + jo.getString("name"));
                     if (ml != null && jo.getString("type") != null
                             && jo.getString("type").length() > 0
                             && jo.getString("type").equalsIgnoreCase("contextual")
@@ -610,9 +610,24 @@ public class SelectionController extends UtilityComposer {
                         System.out.println(ml.getName());
                         String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, geoServer);
                         System.out.println(featureURI);
+                        if(featureURI == null) {
+                            continue;
+                        }
+                        //if it is a filtered layer, expect the filter as part of the new uri.
+                        boolean passedFilterCheck = true;
+                        try {
+                            String filter = ml.getUri().replaceAll("^.*cql_filter=", "").replaceFirst("^.*='","").replaceAll("'.*","");
+                            if(filter != null && filter.length() > 0) {
+                                passedFilterCheck = featureURI.toLowerCase().contains(filter.toLowerCase().replace(" ","_"));
+                            }
+                        } catch (Exception e) {
+                        }
+                        if(!passedFilterCheck) {
+                            continue;
+                        }
+
+
                         //add feature to the map as a new layer
-
-
                         String feature_text = getWktFromURI(featureURI, true);
 
                         String json = readGeoJSON(featureURI);
