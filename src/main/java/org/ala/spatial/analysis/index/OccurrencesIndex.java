@@ -2127,13 +2127,17 @@ public class OccurrencesIndex {
 
         if (r != null) {
             als = new ArrayList<String>(r.length);
-            String[] sr = getSortedRecords(r);
+            int [] rcopy = r;
+            if(filter.maxRecords < r.length) {
+                rcopy = java.util.Arrays.copyOf(r, filter.maxRecords);
+            }
+            String[] sr = getSortedRecords(rcopy);
 
             //get extra columns data
             ArrayList<String[]> samplingColumns = new ArrayList<String[]>();
             if (filter.columns != null) {
                 for (int i = 0; i < filter.columns.size(); i++) {
-                    samplingColumns.add(si.getRecords(filter.columns.get(i), r));
+                    samplingColumns.add(si.getRecords(filter.columns.get(i), rcopy));
                 }
             }
 
@@ -2232,39 +2236,9 @@ public class OccurrencesIndex {
             spos = 0;
             i = 0;
             while (i < records.length) {
-                int r = records[i];
-
-                //move forward until the record is at the current position
-                //or while the next record is child of the current record (and no 'null'/'missing' child)
-                while ((spos < speciesSortByRecordNumber.length
-                        && r > speciesSortByRecordNumber[spos].record_end)
-                        || (spos + 1 < speciesSortByRecordNumber.length
-                        && r > speciesSortByRecordNumber[spos + 1].record_end
-                        && speciesSortByRecordNumber[spos].record_end >= speciesSortByRecordNumber[spos + 1].record_end)) {
-                    spos++;
-                }
-
-                //end of list check, should not trigger
-                if (spos == speciesSortByRecordNumber.length) {
-                    spos--; //error
-                }
-
                 //update species counts
-                speciesIntermediate[speciesNumberInRecordsOrder[spos]]++;
-
-                //any more records within this same species
-                //and not part of the next 'child'
-                spos++;
+                speciesIntermediate[speciesNumberInRecordsOrder[records[i]]]++;
                 i++;
-                if (spos < speciesSortByRecordNumber.length) {
-                    while (i < records.length
-                            && records[i] < speciesSortByRecordNumber[spos].record_start) {
-                        speciesIntermediate[speciesNumberInRecordsOrder[spos - 1]]++;
-                        i++;
-                    }
-                } else {
-                    break;
-                }
             }
         } else {
             //use region, no records

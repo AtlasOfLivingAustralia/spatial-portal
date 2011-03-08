@@ -367,18 +367,19 @@ public class FilteringService implements Serializable {
             }
 
             //any species distributions?
-            int [] r = ShapeIntersectionService.getIntersections(region);
-            if(r != null) {
-                String [] lsids = ShapeIntersectionService.convertToLsids(r);
-                String str = sb.toString();
-                for(int i=0;i<lsids.length;i++) {
-                    if(!str.contains(lsids[i])) {
-                        //append the missing entry
-                        sb.append(OccurrencesSpeciesList.getSpeciesListEntryFromADistribution(lsids[i])).append("|");
+            if(region != null) {
+                int [] r = ShapeIntersectionService.getIntersections(region);
+                if(r != null) {
+                    String [] lsids = ShapeIntersectionService.convertToLsids(r);
+                    String str = sb.toString();
+                    for(int i=0;i<lsids.length;i++) {
+                        if(!str.contains(lsids[i])) {
+                            //append the missing entry
+                            sb.append(OccurrencesSpeciesList.getSpeciesListEntryFromADistribution(lsids[i])).append("|");
+                        }
                     }
                 }
             }
-
             output = sb.toString();
         }
 
