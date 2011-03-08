@@ -181,7 +181,9 @@ class IndexThread extends Thread {
                         featureDoc.add(new Field("description", description, Store.YES, Index.NO));
                         logger.finer("Description added to index: " + description);
                         for (Property property : feature.getProperties()) {
-                            if ((descriptionAttributes.contains(property.getName().toString())) && (property.getValue() != null)) {
+                            if ((descriptionAttributes.contains(property.getName().toString())) && (property.getValue() != null)
+                                    && property.getName().toString().compareTo("name") != 0) {
+                                logger.finer("Added property " + property.getName());
                                 featureDoc.add(new Field(property.getName().toString(), property.getValue().toString(), Store.YES, Index.NO));
                             }
                         }

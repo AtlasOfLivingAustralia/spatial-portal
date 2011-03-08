@@ -184,6 +184,9 @@ public class PointSearch {
                         name = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
                     }
                     String id1 = feature.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
+                    if (gc.getLayerAlias(layerName).compareTo("") != 0){
+                        layerName = gc.getLayerAlias(layerName);
+                    }
                     results.add(new SearchResultItem(layerName, name, id1, new Float("1.0")));
                 }
             }
