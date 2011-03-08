@@ -98,14 +98,25 @@ public class Search {
 			if (type.compareTo("id") == 0) {
 				searchFields = new String[]{"id", "layerName"};
 				logger.finer("searching based on id");
+                                logger.finer("search terms are " + searchTerms);
 			}
 
-			searchTerms.replace("_", " ");
+			searchTerms = searchTerms.replace("_", " ");
+
+                        //escape lucene reserved symbols
+                        searchTerms = searchTerms.replace("(", "\\(");
+                        searchTerms = searchTerms.replace(")", "\\)");
+                        searchTerms = searchTerms.replace("{", "\\{");
+                        searchTerms = searchTerms.replace("}", "\\}");
+                        searchTerms = searchTerms.replace("+", "\\+");
+                        searchTerms = searchTerms.replace("-", "\\-");
+                        searchTerms = searchTerms.replace("^", "\\^");
+
+                        //searchTerms = searchTerms.replace("*", "\\*");
 
 			MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_CURRENT, searchFields, new StandardAnalyzer(Version.LUCENE_CURRENT));
 			qp.setDefaultOperator(qp.AND_OPERATOR);
 			Query nameQuery = qp.parse(searchTerms.toLowerCase() + " AND " + layerSearch);
-
 
 			//TODO: instead of 20 - should be variable and paging?
 			TopDocs topDocs = is.search(nameQuery, 20);
@@ -114,8 +125,9 @@ public class Search {
 
 			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
 				Document doc = is.doc(scoreDoc.doc);
-				if (doc.get("name").toLowerCase().startsWith(searchTerms.toLowerCase().replace("*","")))
+                                if (doc.get("name").toLowerCase().startsWith(searchTerms.toLowerCase().replace("*",""))){
 					scoreDoc.score += 3;
+                                }
 				if (scoreDocs.containsKey(scoreDoc.score)) {
 					List docs = (List)scoreDocs.get(scoreDoc.score);
 					docs.add(scoreDoc);
