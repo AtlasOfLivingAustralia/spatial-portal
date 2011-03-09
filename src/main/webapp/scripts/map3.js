@@ -364,7 +364,7 @@ function buildMapReal() {
         //parent.reloadSpecies();
         if (!activeAreaPresent) {
             parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000); 
-            var verts = map.getExtent().toGeometry().getVertices();
+            var verts = map.getExtent().toGeometry().clone().getVertices();
             var gll = new Array();
             if (verts.length > 0) {
                 for (var v=0; v<verts.length; v++) {
@@ -1303,9 +1303,9 @@ function onPopupClose(evt) {
 function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
     //    alert(name);
     var in_options = {
-        'internalProjection': map.baseLayer.projection,
+                'internalProjection': map.baseLayer.projection,
         'externalProjection': new OpenLayers.Projection("EPSG:4326")
-    };
+            };
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -1339,7 +1339,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
 
     if (name=="Active Area") {
         parent.displayArea((wktLayer.features[0].geometry.getGeodesicArea(map.projection)/1000)/1000);
-        var verts = wktLayer.features[0].geometry.getVertices();
+        var verts = wktLayer.features[0].geometry.clone().getVertices();
         var gll = new Array();
         if (verts.length > 0) {
             for (var v=0; v<verts.length; v++) {
@@ -1348,7 +1348,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
             }
         }
         parent.displayArea2((google.maps.geometry.spherical.computeArea(gll)/1000)/1000);
-        activeAreaPresent = true; 
+        activeAreaPresent = true;
     }
 
     return wktLayer;
@@ -1573,7 +1573,7 @@ function removeFromSelectControl(lyrname) {
     if (lyrname=="Active Area") {
         activeAreaPresent = false;
         parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000);
-        var verts = map.getExtent().toGeometry().getVertices();
+        var verts = map.getExtent().toGeometry().clone().getVertices();
         var gll = new Array();
         if (verts.length > 0) {
             for (var v=0; v<verts.length; v++) {

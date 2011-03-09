@@ -3,8 +3,8 @@
 <zk xmlns:w="http://www.zkoss.org/2005/zk/client">
     <hbox>
         <button sclass="goButton" id="btnScatOverlapped" label="+" onClick='
-            scatterplotwindow.setWidth("600px");
-            scatterplotwindow.setHeight("600px");
+            scatterplotwindow.setWidth("500px");
+            scatterplotwindow.setHeight("800px");
             scatterplotwindow.setParent(scatterplotwindow.getRoot());
             scatterplotwindow.setPosition("left,center");
             scatterplotwindow.setSizable(true);scatterplotwindow.doOverlapped();
@@ -15,8 +15,8 @@
             '
             visible="false" />
         <button sclass="goButton" id="btnScatEmbedded" label="Docked" onClick='
-            scatterplotwindow.setWidth("360px");
-            scatterplotwindow.setHeight("500px");
+            scatterplotwindow.setWidth("340px");
+            scatterplotwindow.setHeight("650px");
             scatterplotwindow.setParent(btnScatEmbedded.getParent().getParent());
             scatterplotwindow.setSizable(false);scatterplotwindow.doEmbedded();
             scatterplotwindow.setBorder("none");
@@ -29,7 +29,7 @@
     <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
             apply="org.ala.spatial.analysis.web.ScatterplotWCController"
             width="340px"
-            height="500px"
+            height="650px"
             title="Scatterplot"
             >
         <caption id="scatCaption" visible="true" >

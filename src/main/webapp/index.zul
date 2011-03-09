@@ -510,7 +510,7 @@ border-bottom: none;
                     <div style="float:left" width="100%" height="100%" >
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
                     </div>
-                    
+
                     <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="false" >
                         <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"
                                 visible="true" style="float:right;margin-bottom:10px;" />
@@ -564,21 +564,24 @@ border-bottom: none;
                             var m = document.getElementById(zk.Widget.$(jq('$menus')[0]).uuid + "-real");
 
                             var w = m.style.width;
-                            var diff = (w.substring(0,w.length-2))*1 - h2[6]*1;
+                            var diff = (w.substring(0,w.length-2))*1 - h2[6]*1 + 10;
                             m.style.width = h2[6] + "px";
 
                             var p = document.getElementById(zk.Widget.$(jq('$menus')[0]).uuid + "-split");
                             p.style.width = h2[6] + "px";
                             p.style.left = h2[6] + "px";
+                            p.style.display = "none";
 
                             var n = document.getElementById(zk.Widget.$(jq('$center')[0]).uuid + "-real");
                             w = n.style.width;
+                            var l = n.style.left;
+                            l = (l.substring(0,l.length-2)*1);
                             var val = diff + w.substring(0,w.length-2)*1;
                             n.style.width = val + "px";
 
                             n.style.top = "0px";
                             w = n.style.height;
-                            val2 = w.substring(0,w.length-2)*1 + 68;
+                            val2 = w.substring(0,w.length-2)*1;
                             n.style.height = val2 + "px";
 
                             w = n.style.left;
@@ -592,6 +595,10 @@ border-bottom: none;
                             n.style.left =  val + "px";
                             n.style.top = "0px";
                             n.style.height = val2 + "px";
+
+                            mapFrame.document.getElementById("zoomtolocation").style.display="none";
+
+                            jQuery('.z-center')[0].style.border = "0px";
                         }
                     }
                 }

@@ -86,6 +86,7 @@ import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ShapefileReader;
 import org.ala.spatial.util.Zipper;
 import org.zkoss.util.media.Media;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.Fileupload;
 
@@ -265,7 +266,6 @@ public class SelectionController extends UtilityComposer {
             });
 
 
-
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
             wInstructions.setClosable(true);
             wInstructions.doOverlapped();
@@ -290,9 +290,13 @@ public class SelectionController extends UtilityComposer {
             //  }
 
             (new Separator()).setParent(vbox);
+
+           
+
             fileUpload = new Fileupload();
             //fileUpload.setMaxsize(5000000);
             fileUpload.setLabel("Upload Shapefile");
+            fileUpload.setUpload("true");
             fileUpload.setParent(vbox);
 
             fileUpload.addEventListener("onUpload", new EventListener() {
@@ -310,10 +314,28 @@ public class SelectionController extends UtilityComposer {
                 }
             });
 
+            (new Separator()).setParent(vbox);
+            (new Separator()).setParent(vbox);
+            Button b = new Button("Cancel Map Tool");
+            b.setParent(vbox);
+            b.setSclass("goButton");
+            b.addEventListener("onClick", new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    onClick$btnClearSelection(null);
+                    wInstructions.detach();
+                }
+            });
+
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
-            wInstructions.setClosable(true);
-            wInstructions.doOverlapped();
+            wInstructions.setClosable(true);            
             wInstructions.setPosition("top,center");
+            try {
+                wInstructions.doModal();
+            } catch (Exception e) {
+                wInstructions.doOverlapped();
+                e.printStackTrace();
+            }
 
             return;
         }
@@ -350,6 +372,13 @@ public class SelectionController extends UtilityComposer {
             wInstructions.doOverlapped();
             wInstructions.setPosition("top,center");
         }
+    }
+
+    public void showInstructions(Event event) {
+        wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
+        wInstructions.setClosable(true);
+        wInstructions.doOverlapped();
+        wInstructions.setPosition("top,center");
     }
 
     public void onClick$zoomtoextent(Event event) {

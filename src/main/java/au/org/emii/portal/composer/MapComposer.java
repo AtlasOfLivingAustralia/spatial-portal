@@ -448,15 +448,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //add feature to the map as a new layer
         MapLayer mapLayer = addGeoJSON(label, geoServer + link);
 
-        JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-        String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+        if(mapLayer != null) {  //might be a duplicate layer making mapLayer == null
+            JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+            String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
 
-        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
-        mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
+            mapLayer.setMapLayerMetadata(new MapLayerMetadata());
+            mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
 
-        updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
+            updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
 
-        gazetteerAuto.setValue("");
+            gazetteerAuto.setValue("");
+        }
     }
 
     public void onChange$searchSpeciesAuto() {

@@ -124,12 +124,12 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         setUpdatingCount(true);
 
-        //Events.echoEvent("onRefreshCount", this, null);
-        try {
+        Events.echoEvent("onRefreshCount", this, null);
+        /*try {
             onRefreshCount(null);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void onRefreshCount(Event e) throws Exception {
