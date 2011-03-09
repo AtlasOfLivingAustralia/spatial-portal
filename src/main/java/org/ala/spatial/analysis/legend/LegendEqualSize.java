@@ -16,7 +16,9 @@ public class LegendEqualSize extends Legend {
     @Override
     public void generate(float[] d) {
         init(d);
-
+        if(Float.isNaN(max)) {
+            return;
+        }
         int divisions = 10;
 
         cutoffs = new float[divisions];

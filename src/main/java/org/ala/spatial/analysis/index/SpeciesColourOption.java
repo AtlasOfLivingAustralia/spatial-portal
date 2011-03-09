@@ -11,9 +11,13 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import org.ala.spatial.analysis.legend.Legend;
 import org.ala.spatial.analysis.service.LayerImgService;
+import org.ala.spatial.analysis.service.LoadedPointsService;
+import org.ala.spatial.analysis.service.SamplingLoadedPointsService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.util.TabulationSettings;
 
@@ -44,6 +48,7 @@ public class SpeciesColourOption {
     boolean colourMode;
     double dMin, dMax;
     int iMin, iMax;
+    Legend legend;
 
     void makeSArrayHash() {
         sArrayHash = new int[sArray.length];
@@ -73,15 +78,48 @@ public class SpeciesColourOption {
     }
 
     public static String getColourLegend(String lsid, String colourMode) {
-        ArrayList<SpeciesColourOption> other = new ArrayList<SpeciesColourOption>();
-        other.add(SpeciesColourOption.fromName(colourMode, true));
-        SamplingService ss = SamplingService.newForLSID(lsid);
-        double[] points = ss.sampleSpeciesPoints(lsid, null, null, other);
         String legend = null;
-        if (points != null && points.length > 0) {
-            for (int j = 0; j < other.size(); j++) {
-                //colour mode!
-                legend = other.get(0).getLegendString();
+
+        Object[] o = LayerVariableDistribution.getLsidDistribution(lsid, colourMode);
+        if (o.length == 1) {
+            //continous value legends
+            Legend l = (Legend) o[0];
+            StringBuilder legendString = new StringBuilder();
+            if (l == null) {
+                //handle absence of a legend, e.g. all NaN values
+                legendString.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+            } else {
+                float[] cutoffs = l.getCutoffFloats();
+                float[] minmax = l.getMinMax();
+                float min = minmax[0];
+                float max = minmax[1];
+                switch (SpeciesColourOption.fromName(colourMode, true).type) {
+                    case 0: //double
+                        legendString.append(min).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
+                        legendString.append(max).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
+                        legendString.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                        break;
+                    case 1: //int
+                        legendString.append(String.format("%.0f", min)).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
+                        legendString.append(String.format("%.0f", max)).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
+                        legendString.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                        break;
+
+                }
+            }
+            legend = legendString.toString();
+        } else {
+            //categorical value legends
+            ArrayList<SpeciesColourOption> other = new ArrayList<SpeciesColourOption>();
+            other.add(SpeciesColourOption.fromName(colourMode, true));
+            SamplingService ss = SamplingService.newForLSID(lsid);
+            double[] points = ss.sampleSpeciesPoints(lsid, null, null, other);
+
+            if (points != null && points.length > 0) {
+                for (int j = 0; j < other.size(); j++) {
+                    //colour mode!
+                    legend = other.get(0).getLegendString();
+                }
             }
         }
         if (legend != null) {
@@ -99,8 +137,6 @@ public class SpeciesColourOption {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-
         }
         return null;
     }
@@ -249,6 +285,10 @@ public class SpeciesColourOption {
             }
         }
 
+        if (mode.equalsIgnoreCase("10")) {   //general case for level 10
+            return new SpeciesColourOption(mode, "General categories", 3, null, false, 10, colourMode);
+        }
+
         return null;
     }
 
@@ -266,18 +306,30 @@ public class SpeciesColourOption {
             }
         }
 
+        if (name.equalsIgnoreCase("10")) {   //general case for level 10
+            return new SpeciesColourOption(name, "General categories", 3, null, false, 10, colourMode);
+        }
+
         return null;
     }
 
     public static String getColourOptions(String lsid) {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < TabulationSettings.geojson_property_display_names.length; i++) {
-            sb.append(TabulationSettings.geojson_property_display_names[i]).append("\n");
+        //is is user loaded points?
+        if (SamplingLoadedPointsService.isLoadedPointsLSID(lsid)) {
+            return "";
         }
 
+        //otherwise
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("General Categories,10");
+
         for (int i = 1; i < TabulationSettings.occurrences_csv_field_pairs.length; i += 2) {
-            sb.append(TabulationSettings.occurrences_csv_field_pairs[i]).append("\n");
+            sb.append(TabulationSettings.occurrences_csv_field_pairs[i]).append(",").append(TabulationSettings.occurrences_csv_field_pairs[i - 1]).append("\n");
+        }
+
+        for (int i = 0; i < TabulationSettings.geojson_property_display_names.length; i++) {
+            sb.append(TabulationSettings.geojson_property_display_names[i]).append(",").append(TabulationSettings.geojson_property_names[i]).append("\n");
         }
 
         return sb.toString();
@@ -440,7 +492,13 @@ public class SpeciesColourOption {
         }
     }
 
-    public int[] getColours() {
+    public int[] getColours(String lsid) {
+        if (legend == null) {
+            Object[] o = LayerVariableDistribution.getLsidDistribution(lsid, name);
+            if (o.length == 1) {
+                legend = (Legend) o[0];
+            }
+        }
         int[] colours = null;
         switch (type) {
             case 0: //double
@@ -465,29 +523,45 @@ public class SpeciesColourOption {
 
     int[] dblColours() {
         int[] c = new int[dArray.length];
-        //double range = dMax - dMin;
-        for (int i = 0; i < dArray.length; i++) {
-            c[i] = Legend.getColour(dArray[i], dMin, dMax);
-            //c[i] = 0xFF000000 | (int) (((dArray[i] - dMin) / range) * 0x00FFFFFF);
+        if (legend == null) {
+            //double range = dMax - dMin;
+            for (int i = 0; i < dArray.length; i++) {
+                c[i] = Legend.getColour(dArray[i], dMin, dMax);
+                //c[i] = 0xFF000000 | (int) (((dArray[i] - dMin) / range) * 0x00FFFFFF);
+            }
+        } else {
+            for (int i = 0; i < dArray.length; i++) {
+                c[i] = legend.getColour((float) dArray[i]);
+            }
         }
         return c;
     }
 
     int[] intColours() {
         int[] c = new int[iArray.length];
-        //double range = iMax - iMin;
-        double logIMin = Math.log10(iMin);
-        if (logIMin < 0) {
-            logIMin = 0;
-        }
-        double logIMax = Math.log10(iMax);
-        for (int i = 0; i < iArray.length; i++) {
-            if (iArray[i] != Integer.MIN_VALUE) {
-                c[i] = Legend.getLinearColour(Math.log10(iArray[i]), logIMin, logIMax, startColour, endColour);
-            } else {
-                c[i] = 0xFF000000;
+        if (legend == null) {
+            //double range = iMax - iMin;
+            double logIMin = Math.log10(iMin);
+            if (logIMin < 0) {
+                logIMin = 0;
             }
-            //c[i] = 0xFF000000 | (int) (((iArray[i] - iMin) / range) * 0x00FFFFFF);
+            double logIMax = Math.log10(iMax);
+            for (int i = 0; i < iArray.length; i++) {
+                if (iArray[i] != Integer.MIN_VALUE) {
+                    c[i] = Legend.getLinearColour(Math.log10(iArray[i]), logIMin, logIMax, startColour, endColour);
+                } else {
+                    c[i] = 0xFF000000;
+                }
+                //c[i] = 0xFF000000 | (int) (((iArray[i] - iMin) / range) * 0x00FFFFFF);
+            }
+        } else {
+            for (int i = 0; i < iArray.length; i++) {
+                if (iArray[i] != Integer.MIN_VALUE) {
+                    c[i] = legend.getColour((float) iArray[i]);
+                } else {
+                    c[i] = 0xFF000000;
+                }
+            }
         }
         return c;
     }
@@ -604,10 +678,24 @@ public class SpeciesColourOption {
             flag[iArray[i]] = true;
         }
 
+        //calculate counts
+        Object[] o = getCategoryBreakdown();
+        String[] labels = (String[]) o[0];
+        int[] counts = (int[]) o[1];
+
         //iterate and write
         for (int i = 0; i < flag.length; i++) {
             if (flag[i]) {
-                legend.append(sArray[i]).append(",").append(RGBcsv(sArrayHash[i])).append("\n");
+                //get count value
+                int count = 0;
+                for (int j = 0; j < labels.length; j++) {
+                    if (labels[j].equalsIgnoreCase(sArray[i])) {
+                        count = counts[j];
+                        break;
+                    }
+                }
+
+                legend.append(sArray[i]).append(",").append(RGBcsv(sArrayHash[i])).append(",").append(count).append("\n");
             }
         }
 
@@ -615,6 +703,7 @@ public class SpeciesColourOption {
     }
 
     String taxonLegend() {
+        TreeMap<String, String> legendItems = new TreeMap<String, String>();
         StringBuilder legend = new StringBuilder();
 
         //copy & sort
@@ -624,13 +713,54 @@ public class SpeciesColourOption {
         }
         java.util.Arrays.sort(iList);
 
+        //calculate counts
+        Object[] o = getCategoryBreakdown();
+        String[] labels = (String[]) o[0];
+        int[] counts = (int[]) o[1];
+
         for (int i = 0; i < iList.length; i++) {
             if (i == 0 || iList[i - 1] != iList[i]) {
-                if (iList[i] >= 0) {
-                    legend.append(SpeciesIndex.getScientificName(iList[i])).append(",").append(RGBcsv(SpeciesIndex.getHash(taxon, iList[i]))).append("\n");
+                String label;
+                int hash;
+                hash = SpeciesIndex.getHash(taxon, iList[i]);
+                if (taxon < 10) {
+                    if (iList[i] >= 0) {
+                        label = SpeciesIndex.getScientificName(iList[i]);
+                    } else {
+                        label = "unknown";
+                    }
                 } else {
-                    legend.append("unknown").append(",").append(RGBcsv(SpeciesIndex.getHash(taxon, iList[i]))).append("\n");
+                    if (iList[i] >= 0) {
+                        label = SpeciesIndex.getScientificNameLevel10(iList[i]);
+                    } else {
+                        label = "unknown";
+                    }
                 }
+
+                //get count value
+                int count = 0;
+                for (int j = 0; j < labels.length; j++) {
+                    if (labels[j].equalsIgnoreCase(label)) {
+                        count = counts[j];
+                        break;
+                    }
+                }
+
+                String value = legendItems.get(label);
+                if (value != null) {
+                    count += Integer.parseInt(value.split(",")[3].trim());
+                }
+                legendItems.put(label, (new StringBuilder()).append(RGBcsv(hash)).append(",").append(count).append("\n").toString());
+            }
+        }
+
+        //merge to string
+        for (Entry<String, String> e : legendItems.entrySet()) {
+            if (taxon >= 10) {
+                //remove sorting prefix (2 characters)
+                legend.append(e.getKey().substring(2) + "," + e.getValue());
+            } else {
+                legend.append(e.getKey() + "," + e.getValue());
             }
         }
 
@@ -651,10 +781,10 @@ public class SpeciesColourOption {
         return colours;
     }
 
-    boolean[] getFiltered(Object [] object) {
-        boolean [] highlight = null;
-        String [] sa;
-        int [] ia;
+    boolean[] getFiltered(Object[] object) {
+        boolean[] highlight = null;
+        String[] sa;
+        int[] ia;
         int imin, imax;
         double dmin, dmax;
         boolean b;
@@ -666,9 +796,9 @@ public class SpeciesColourOption {
                     highlight = new boolean[dArray.length];
                     dmin = (Double) object[0];
                     dmax = (Double) object[1];
-                    for(i=0;i<dArray.length;i++) {
-                        highlight[i] = (dArray[i] <= dmax && dArray[i] >= dmin) ||
-                                (Double.isNaN(dArray[i]) && dmax >= 0 && dmin <= 0);
+                    for (i = 0; i < dArray.length; i++) {
+                        highlight[i] = (dArray[i] <= dmax && dArray[i] >= dmin)
+                                || (Double.isNaN(dArray[i]) && dmax >= 0 && dmin <= 0);
                     }
                 }
                 break;
@@ -677,24 +807,24 @@ public class SpeciesColourOption {
                     highlight = new boolean[iArray.length];
                     imin = (Integer) object[0];
                     imax = (Integer) object[1];
-                    for(i=0;i<iArray.length;i++) {
+                    for (i = 0; i < iArray.length; i++) {
                         highlight[i] = (iArray[i] <= imax && iArray[i] >= imin)
                                 || (iArray[i] == Integer.MIN_VALUE && imax >= 0 && imin <= 0);
                     }
                 }
                 break;
             case 3: //string, appending lookup values
-                if(iArray != null) {
+                if (iArray != null) {
                     highlight = new boolean[iArray.length];
                     //strings to ints
                     sa = (String[]) object[0];
                     ia = new int[sa.length];
-                    for(i=0;i<sa.length;i++) {
+                    for (i = 0; i < sa.length; i++) {
                         ia[i] = java.util.Arrays.binarySearch(sArray, sa[i]);
                     }
-                    for(i=0;i<iArray.length;i++) {
-                        for(j=0;j<ia.length;j++) {
-                            if(iArray[i] == ia[j]) {
+                    for (i = 0; i < iArray.length; i++) {
+                        for (j = 0; j < ia.length; j++) {
+                            if (iArray[i] == ia[j]) {
                                 highlight[i] = true;
                             }
                         }
@@ -705,13 +835,89 @@ public class SpeciesColourOption {
                 if (bArray != null) {
                     b = (Boolean) object[0];
                     highlight = new boolean[iArray.length];
-                    for(i=0;i<iArray.length;i++) {
+                    for (i = 0; i < iArray.length; i++) {
                         highlight[i] = bArray[i] == b;
                     }
                 }
                 break;
         }
-        
+
         return highlight;
+    }
+
+    boolean isContinous() {
+        return dArray != null || (iArray != null && sArray == null && !isTaxon());
+    }
+
+    boolean isDbl() {
+        return dArray != null;
+    }
+
+    boolean isInt() {
+        return iArray != null && sArray == null && !isTaxon();
+    }
+
+    boolean isStr() {
+        return sArray != null || isTaxon();
+    }
+
+    boolean isBool() {
+        return bArray != null;
+    }
+
+    Object[] getCategoryBreakdown() {
+        int[] counts;
+        String[] labels;
+        int pos = 0;
+        if (isTaxon()) {
+            //copy & sort
+            int[] iList = new int[iArray.length];
+            int max = 0;
+            for (int i = 0; i < iArray.length; i++) {
+                iList[i] = SpeciesIndex.getParentPos(taxon, iArray[i]);
+                if (iList[i] > max) {
+                    max = iList[i];
+                }
+            }
+            counts = new int[max + 2];    //+1 for array, +1 for 'unknown'
+            for (int i = 0; i < iList.length; i++) {
+                counts[iList[i] + 1]++;   //unknown has value -1
+            }
+            labels = new String[max + 2];
+            for (int i = 0; i < counts.length; i++) {
+                if (counts[i] > 0) {
+                    counts[pos] = counts[i];
+                    if (i == 0) { //unknown
+                        labels[pos] = "unknown";
+                    } else {
+                        if (taxon < 10) {
+                            labels[pos] = SpeciesIndex.getScientificName(i - 1);
+                        } else {
+                            labels[pos] = SpeciesIndex.getScientificNameLevel10(i - 1);
+                        }
+                    }
+                    pos++;
+                }
+            }
+        } else {
+            counts = new int[sArray.length];
+            int[] ia = getIntArray();
+            for (int i = 0; i < ia.length; i++) {
+                counts[ia[i]]++;
+            }
+            labels = new String[counts.length];
+            for (int i = 0; i < counts.length; i++) {
+                if (counts[i] > 0) {
+                    counts[pos] = counts[i];
+                    labels[pos] = sArray[i];
+                    pos++;
+                }
+            }
+        }
+        counts = java.util.Arrays.copyOf(counts, pos);
+        labels = java.util.Arrays.copyOf(labels, pos);
+
+        Object[] o = {labels, counts};
+        return o;
     }
 }

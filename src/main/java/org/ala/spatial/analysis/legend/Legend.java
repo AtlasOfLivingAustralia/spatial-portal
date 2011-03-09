@@ -86,8 +86,11 @@ public abstract class Legend {
         }
 
         lastValue = numberOfRecords;
-
-        max = d[numberOfRecords - 1];
+        if(numberOfRecords == 0) {
+            max = Float.NaN;
+        } else {
+            max = d[numberOfRecords - 1];
+        }
     }
 
     /**
@@ -96,6 +99,9 @@ public abstract class Legend {
      * @param d float [] sorted in ascending order
      */
     void determineGroupSizes(float[] d) {
+        if(cutoffs == null) {
+            return;
+        }
         groupSizes = new int[cutoffs.length];
 
         int cutoffPos = 0;
@@ -118,6 +124,9 @@ public abstract class Legend {
      * @return
      */
     double evaluateStdDev(float[] d) {
+        if(Float.isNaN(max)) {
+            return Double.NaN;
+        }
         determineGroupSizes(d);
 
         float stdev = 0;
@@ -295,5 +304,22 @@ public abstract class Legend {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * get cutoff's
+     * @return cutoff upper segment values as float[] (missing min value)
+     */
+    public float[] getCutoffFloats() {
+        return cutoffs;
+    }
+
+    /**
+     * 
+     * @return float[] of [min, max] 
+     */
+    public float[] getMinMax() {
+        float [] f = {min, max};
+        return f;
     }
 }

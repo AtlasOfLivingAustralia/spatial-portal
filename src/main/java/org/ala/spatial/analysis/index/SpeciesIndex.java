@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import org.ala.spatial.util.TabulationSettings;
 
@@ -51,6 +53,19 @@ public class SpeciesIndex {
      * singleIndex idx for each speciesNames record
      */
     static int[] speciesNamesToIdx;
+    /**
+     * top level indexes for pre-defined groupings
+     */
+    static int[] level10;
+    static String[] level10lookup; //display names
+    static int[] level10colours; //colours
+    /**
+     * pre-defined groupings from
+     *
+     */
+    static String[] level10names = {"Animalia","Mammalia","Aves","Reptilia","Amphibia","Agnatha","Chrondrichthyes","Osteichthyes","Actinopterygii","Sarcopterygii","Insecta","Plantae","Fungi","Chromista","Protozoa","Bacteria"};
+    static String[] level10displayNames = {"01Animals","02Mammals","03Birds","04Reptiles","05Amphibians","06Fish","06Fish","06Fish","06Fish","06Fish","07Insects","08Plants","09Fungi","10Chromista","11Protozoa","12Bacteria"};
+    static int[] level10displayColours = {0x00B0F0,0x0033CC,0x66FF33,0x00B050,0x215967,0xFF0000,0xFF0000,0xFF0000,0xFF0000,0xFF0000,0x800080,0xCC00CC,0xFF6600,0x974700,0xFFC000,0xFFFF00};
 
     static public void init() {
     }
@@ -96,9 +111,39 @@ public class SpeciesIndex {
             }
         }
 
+        initLevel10();
+
         System.out.println("SpeciesIndex size: " + singleIndex.length);
 
         return lookup;
+    }
+
+    static void initLevel10() {
+        TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+        for(int i=0;i<level10names.length;i++) {
+            String lsid = getLSID(level10names[i]);
+            if(lsid != null) {
+                int pos = findLSID(lsid);
+                if(pos >= 0) {
+                    map.put(pos, level10displayNames[i]);
+                }
+            }
+        }
+        level10 = new int[map.size()];
+        level10lookup = new String[map.size()];
+        level10colours = new int[map.size()];
+        int pos = 0;
+        for(Entry<Integer, String> e : map.entrySet()) {
+            level10[pos] = e.getKey();
+            level10lookup[pos] = e.getValue();
+            for(int i=0;i<level10displayNames.length;i++) {
+                if(level10lookup[pos].equals(level10displayNames[i])) {
+                    level10colours[pos] = level10displayColours[i]; //level10displayNames[i].hashCode()
+                    break;
+                }
+            }
+            pos++;
+        }
     }
 
     static public void remove(IndexedRecord[] addIndex) {
@@ -529,6 +574,23 @@ public class SpeciesIndex {
         //return "undefined";
     }
 
+    /**
+     * return scientific name for record with the level10 index, otherwise empty string
+     *
+     * @param species_idx as int
+     * @return scientific name or "Other"
+     */
+    static public String getScientificNameLevel10(int pos) {
+        int p = java.util.Arrays.binarySearch(level10, pos);
+        if(p >= 0) {
+            return level10lookup[p];
+        } else {
+            return "99Other";
+        }
+
+        //return "undefined";
+    }
+
     private static void buildNamesIndex() {
         SpeciesIndexRecord[] sir = singleIndex.clone();
 
@@ -613,20 +675,40 @@ public class SpeciesIndex {
     }
 
     static int getHash(int parentLevel, int pos) {
-        while (pos >= 0 && singleIndex[singleIndexOrder[pos]].type > parentLevel) {
-            pos = singleIndex[singleIndexOrder[pos]].parent;
+        if(parentLevel >= 10) {
+            //match to level10 members
+            while(pos >= 0 && java.util.Arrays.binarySearch(level10, pos) < 0) {
+                pos = singleIndex[singleIndexOrder[pos]].parent;
+            }
+            if(pos >= 0) {
+                //need hash of displayname because of duplicates
+                int p = java.util.Arrays.binarySearch(level10, pos);
+                if(p >= 0) {
+                    return level10colours[p];
+                }
+            }
+        } else {
+            while (pos >= 0 && singleIndex[singleIndexOrder[pos]].type > parentLevel) {
+                pos = singleIndex[singleIndexOrder[pos]].parent;
+            }
+            if (pos >= 0) {
+                return singleIndex[singleIndexOrder[pos]].hash;
+            }
         }
 
-        if (pos >= 0) {
-            return singleIndex[singleIndexOrder[pos]].hash;
-        } else {
-            return 0xFFFFFFFF;    //white
-        }
+        return 0xFFFFFFFF;    //white
     }
 
     static int getParentPos(int parentLevel, int pos) {
-        while (pos >= 0 && singleIndex[singleIndexOrder[pos]].type > parentLevel) {
-            pos = singleIndex[singleIndexOrder[pos]].parent;
+        if(parentLevel >= 10) {
+            //match to level10 members
+            while(pos >= 0 && java.util.Arrays.binarySearch(level10, pos) < 0) {
+                pos = singleIndex[singleIndexOrder[pos]].parent;
+            }
+        } else {
+            while (pos >= 0 && singleIndex[singleIndexOrder[pos]].type > parentLevel) {
+                pos = singleIndex[singleIndexOrder[pos]].parent;
+            }
         }
 
         return pos;
