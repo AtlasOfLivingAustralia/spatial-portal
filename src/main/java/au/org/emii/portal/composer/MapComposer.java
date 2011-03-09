@@ -3324,10 +3324,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             String name = ud.getName();
 
+            System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'"); 
+
             // check the content-type
+            // TODO: check why LB is sending 'application/spc' mime-type. remove from future use. 
             if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
                 loadUserPoints(ud, m.getReaderData());
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL)) {
+            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
                 byte[] csvdata = m.getByteData();
                 loadUserPoints(ud, new StringReader(new String(csvdata)));
             } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {

@@ -9,7 +9,7 @@
             <n:tr height="18px" >
                 <n:td width="130px">
                     <label id="lblArea" value="" visible="false" />
-                    <label value="GM active area (sq km)" />
+                    <label value="Area (sq km)" />
                 </n:td>
                 <n:td width="80px">
                     <html><![CDATA[
