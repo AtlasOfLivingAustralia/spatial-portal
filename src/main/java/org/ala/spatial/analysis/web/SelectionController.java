@@ -274,7 +274,7 @@ public class SelectionController extends UtilityComposer {
             return;
         }
 
-        if (text != null && text.length > 0 && toolname.contains("shapefile")) {
+        if (text != null && text.length > 0 && toolname.toLowerCase().contains("shapefile")) {
             wInstructions = new Window(toolname, "normal", false);
             wInstructions.setWidth("500px");
             wInstructions.setClosable(false);
@@ -292,6 +292,7 @@ public class SelectionController extends UtilityComposer {
             (new Separator()).setParent(vbox);
             fileUpload = new Fileupload();
             //fileUpload.setMaxsize(5000000);
+            fileUpload.setLabel("Upload Shapefile");
             fileUpload.setParent(vbox);
 
             fileUpload.addEventListener("onUpload", new EventListener() {

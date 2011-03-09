@@ -17,6 +17,7 @@
             <listhead>
                 <listheader label="group"></listheader>
                 <listheader label="colour" width="50px"></listheader>
+                <listheader id="countheader" label="count" width="40px"></listheader>
             </listhead>
         </listbox>
         <div id="colourChooser" visible="false">

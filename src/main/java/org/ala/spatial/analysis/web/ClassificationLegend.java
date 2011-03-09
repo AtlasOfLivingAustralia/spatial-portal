@@ -29,6 +29,7 @@ import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Label;
+import org.zkoss.zul.Listheader;
 
 public class ClassificationLegend extends UtilityComposer {
 
@@ -49,6 +50,7 @@ public class ClassificationLegend extends UtilityComposer {
     Label lblEdit;
     ArrayList<String> legend_lines;
     boolean readonly = false;
+    Listheader countheader;
 
     @Override
     public void afterCompose() {
@@ -139,6 +141,16 @@ public class ClassificationLegend extends UtilityComposer {
                             + "," + blue + "); color: rgb(" + red + "," + green
                             + "," + blue + ")");
                     lc.setParent(li);
+
+                    //count
+                    if(ss.length > 4) {
+                        countheader.setVisible(true);
+                        lc = new Listcell(ss[4]);
+                        lc.setParent(li);
+                    } else {
+                        countheader.setVisible(false);
+                    }
+
                     if (!readonly) {
                         lc.addEventListener("onClick", new EventListener() {
 

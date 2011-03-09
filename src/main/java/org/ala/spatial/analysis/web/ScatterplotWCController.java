@@ -344,12 +344,18 @@ public class ScatterplotWCController extends UtilityComposer {
                     String[] words = lines[i].split(",");
 
                     try {
-                        dbl[0][i - 1] = Double.parseDouble(words[words.length-2]);
-                        dbl[1][i - 1] = Double.parseDouble(words[words.length-1]);
-                        //      xymodel.addValue(sac.getText(), Double.parseDouble(words[2]), Double.parseDouble(words[3]));
+                        if(words.length > 1) {
+                            dbl[1][i - 1] = Double.parseDouble(words[words.length-1]);
+                        }
                     } catch (Exception e) {
-                        //e.printStackTrace();
                     }
+                    try {
+                        if(words.length > 2) {
+                            dbl[0][i - 1] = Double.parseDouble(words[words.length-2]);
+                        }
+                    } catch (Exception e) {
+                    }
+                   
                 }
                 xyDataset.addSeries("lsid", dbl);
                 annotation = null;
@@ -389,6 +395,11 @@ public class ScatterplotWCController extends UtilityComposer {
 
                 int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
                 int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
+                if(height > width) {
+                    height = width;
+                } else {
+                    width = height;
+                }
                 BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
                 byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
 
@@ -412,10 +423,11 @@ public class ScatterplotWCController extends UtilityComposer {
                 chartImg.setHeight(height + "px");
                 String script = "var cd = document.getElementById('chartDiv');"
                         + "var ci = document.getElementById('chartDivBack');"
+                        //+ "ci.style.backgroundImage=cd.style.backgroundImage;"
                         + "cd.style.backgroundImage='url("
-                        + htmlurl + uid + ".png)';cd.style.width='"
-                        + width + "px';cd.style.height='" + height + "px';"
-                        + "ci.style.backgroundImage=cd.style.backgroundImage;"
+                        + htmlurl + uid + ".png)'"
+                        + ";cd.style.width='"
+                        + width + "px';cd.style.height='" + height + "px';"                       
                         + "ci.style.width=cd.style.width;"
                         + "ci.style.height=cd.style.height;";
                 Clients.evalJavaScript(script);

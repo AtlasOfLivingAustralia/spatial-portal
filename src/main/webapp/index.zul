@@ -92,7 +92,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </north>
             <west title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true" autoscroll="true"
                    id="menus" collapsible="true" 
-                   splittable="true" minsize="250">
+                   splittable="true" minsize="250" width="400px">
                 <div id="westChild">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
                         <div zclass="closebox" zindex="500" left="2px" top="2px">
@@ -200,6 +200,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <separator orient="vertical" />
                                                     <combobox id="cbColour" >
                                                         <comboitem label="User defined" id="ciColourUser" value="-1" />
+                                                        <comboitem label="General Categories" value="10" />
                                                         <comboitem label="Scientific Name" value="taxon_name" />
                                                         <comboitem label="Species" value="species" />
                                                         <comboitem label="Genus" value="genus" />

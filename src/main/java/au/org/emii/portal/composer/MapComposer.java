@@ -1525,7 +1525,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (m != null && m.getMapLayerMetadata() != null
                 && m.getMapLayerMetadata().getSpeciesLsid() != null) {
             btnPointsCluster.setVisible(true);
-            cbColour.setDisabled(m.isClustered());
+            cbColour.setDisabled(m.isClustered() || isUserUploadedCoordinates(m));
         } else {
             btnPointsCluster.setVisible(false);
             cbColour.setDisabled(true);
@@ -3487,10 +3487,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             StringBuffer sbUIds = new StringBuffer();
             StringBuffer sbUPoints = new StringBuffer();
+            int counter = 1;
             for (int i = 0; i < userPoints.size(); i++) {
                 String[] up = (String[]) userPoints.get(i);
-                sbUIds.append(up[0] + "\n");
-                sbUPoints.append(up[1] + "," + up[2] + "\n");
+                if(up.length > 2) {
+                    sbUIds.append(up[0] + "\n");
+                    sbUPoints.append(up[1] + "," + up[2] + "\n");
+                } else if(up.length > 1) {
+                    sbUIds.append(counter + "\n");
+                    sbUPoints.append(up[0] + "," + up[1] + "\n");
+                    counter++;
+                }
             }
 
             System.out.println("Loading points into alaspatial");
@@ -3801,7 +3808,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     private void updateComboBoxesColour(MapLayer currentSelection) {
-        if (currentSelection.isClustered()) {
+        if (currentSelection.isClustered() || isUserUploadedCoordinates(currentSelection)) {
             cbColour.setSelectedItem(ciColourUser);
             cbColour.setDisabled(true);
         } else {
@@ -3967,5 +3974,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public West getMenus() {
         return menus;
+    }
+
+    private boolean isUserUploadedCoordinates(MapLayer currentSelection) {
+        //check for user uploaded coordinates
+        boolean isUserUploadedCoordinates = false;
+        try {
+            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+            String lsid = currentSelection.getMapLayerMetadata().getSpeciesLsid();
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".","__"),"UTF-8"));
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            if(slist != null && slist.length() == 0) {
+                isUserUploadedCoordinates = true;
+            }
+        }catch(Exception e) {
+
+        }
+        return isUserUploadedCoordinates;
     }
 }

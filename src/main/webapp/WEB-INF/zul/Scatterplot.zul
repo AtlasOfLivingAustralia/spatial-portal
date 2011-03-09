@@ -125,6 +125,10 @@ function chartSelection(x1, y1, x2, y2) {
         + "," + (y1.replace("px","")-$(jq('$chartImg')[0]).offset().top)
         + "," + (x2.replace("px","")-$(jq('$chartImg')[0]).offset().left)
         + "," + (y2.replace("px","")-$(jq('$chartImg')[0]).offset().top);
+    //for delay in new background being returned
+    var d1 = document.getElementById("chartDiv");
+    var d2 = document.getElementById("chartDivBack");
+    d2.style.backgroundImage = d1.style.backgroundImage;
     zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
 }
  ]]>
