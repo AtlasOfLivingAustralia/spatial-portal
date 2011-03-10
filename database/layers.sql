@@ -17,7 +17,7 @@ DROP TABLE if exists layers;
 
 -- IMPORTANT!! YOU MUST UPDATE THIS SEQUENCE WHEN ADDING NEW LAYERS
 
-ALTER SEQUENCE layers_id_seq RESTART WITH 915;
+ALTER SEQUENCE layers_id_seq RESTART WITH 916;
 
 CREATE TABLE layers (
     id integer DEFAULT nextval('layers_id_seq'::regclass) NOT NULL,
@@ -833,7 +833,7 @@ INSERT INTO layers VALUES (911, 'ger_s2s_priority_areas_v05', 'S2S Priority Area
 --
 INSERT INTO layers VALUES (913, 'ger_upper_hunter_focus_area_v2', 'Upper Hunter Focus Area v2', 'Contextual', 'GER', '/data/ala/shapefiles/ger', NULL, -44.37221, 109.50300, -8.19402, 157.28139, 'GER Hunter Partnership Focus Area 1 was developed in consultation with the partner steering committee and using mapping of habitat and corridor models undertaking by the Landscape Modelling and Decision Support Section (Armidale) in NSW DECCW.', true, 'Upper Hunter Focus Area v2', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ger_upper_hunter_focus_area_v2&format=image/png&styles=', NULL, '0', '99', 'class', '', 'http://www.greateasternranges.org.au/', 'GER', 'Priority and management', '913', '2010-09-24', '2010-09-24', 'eng', NULL, 'custodian', 1, 'http://www.greateasternranges.org.au/contact-us/director-rob-dunn-great-eastern-ranges-enquiries', 'Permission required to re-distribute derivative works. Please contact GER Initiative.', 'http://www.greateasternranges.org.au/');
 
-INSERT INTO layers VALUES (914, 'ibra_sub_merged', 'IBRA sub regions', 'Contextual', 'IBRA Sub', '/data/ala/shapefiles/ibra_sub', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'IBRA Sub Regions', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ibra_sub_merged&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Biodiversity', 'Region', '913', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
+INSERT INTO layers VALUES (914, 'ibra_sub_merged', 'IBRA sub regions', 'Contextual', 'IBRA Sub', '/data/ala/shapefiles/ibra_sub', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'IBRA Sub Regions', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ibra_sub_merged&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Biodiversity', 'Region', '914', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
 update layers
 
 set
@@ -855,6 +855,8 @@ description = 'Interim Biogeographic Regionalisation for Australia (IBRA), Versi
 , source_link = 'http://www.environment.gov.au/metadataexplorer/details.jsp?goTo=details&docId={58A10165-225B-4710-99AC-E975ACF490C9}&mode=ME&loggedIn=false'
 
 where name = 'ibra_sub_merged';
+INSERT INTO layers VALUES (915, 'ramsar', 'RAMSAR wetland regions', 'Contextual', 'RAMSAR wetlands', '/data/ala/shapefiles/ramsar', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'RAMSAR wetland regions', 'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ramsar&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Area Management', 'Biodiversity', '915', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
+
 
 
 --
