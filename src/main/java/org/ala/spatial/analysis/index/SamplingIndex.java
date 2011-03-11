@@ -346,7 +346,11 @@ public class SamplingIndex {
                 for (i = record_start; i <= record_end; i++) {
                     v = raf.readShort();
                     if (v >= 0 && v < lookup_values.length) {
-                        output[p++] = lookup_values[v];
+                        output[p] = lookup_values[v];
+                        if(output[p] != null) {
+                            output[p] = output[p].replace(",",".");
+                        }
+                        p++;
                     } else {
                         output[p++] = "";
                     }
@@ -523,6 +527,11 @@ public class SamplingIndex {
 
                 /* split by new line */
                 String[] lines = str.split("\n");
+                for(int i=0;i<lines.length;i++) {
+                    if(lines[i] != null) {
+                        lines[i] = lines[i].replace(",",".");
+                    }
+                }
                 return lines;
             } catch (Exception e) {
                 SpatialLogger.log("getLayerExtents(" + layer.name + "), catagorical",
@@ -649,8 +658,8 @@ public class SamplingIndex {
                 }
                 raf.close();
             } else if ((new File(filenameI)).exists()) {
-                String[] lookup_values = getLayerCatagories(
-                        Layers.getLayer(layer_name));
+//                String[] lookup_values = getLayerCatagories(
+//                        Layers.getLayer(layer_name));
 
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
