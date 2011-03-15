@@ -780,7 +780,7 @@ public class Grid { //  implements Serializable
                         afile.seek(pos * size);
                         ret[i] = afile.readByte();
                         if(ret[i] < 0) {
-                            ret[i] -= 256;
+                            ret[i] += 256;
                         }
                     } else {
                         ret[i] = Float.NaN;
