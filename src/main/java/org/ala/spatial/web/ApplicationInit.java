@@ -4,6 +4,7 @@ package org.ala.spatial.web;
 import javax.servlet.ServletContextEvent;
 import org.ala.spatial.analysis.index.DatasetMonitor;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
+import org.ala.spatial.analysis.service.ShapeIntersectionService;
 import org.ala.spatial.util.TabulationSettings;
 
 import org.springframework.web.context.ContextLoaderListener;
@@ -22,6 +23,9 @@ public class ApplicationInit extends ContextLoaderListener {
     public void contextInitialized(ServletContextEvent sce) {
         TabulationSettings.load();
         OccurrencesCollection.init();
+
+        ShapeIntersectionService.start();
+
         DatasetMonitor dm = new DatasetMonitor();
         dm.start();
 

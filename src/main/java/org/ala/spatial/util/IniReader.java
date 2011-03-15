@@ -73,7 +73,8 @@ public class IniReader{
 					document.put(currentSection + "\\" + key, value);
 					
 				}
-			}			
+			}
+                        in.close();
 		}catch(Exception e){
 			//log error
 			SpatialLogger.log("IniReader",e.toString());

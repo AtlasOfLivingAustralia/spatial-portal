@@ -102,6 +102,17 @@ public abstract class Legend {
         if(cutoffs == null) {
             return;
         }
+
+        //fix cutoffs
+        for(int i=1;i<cutoffs.length;i++) {
+            if(cutoffs[i] <= cutoffs[i-1]) {
+                for(int j=i;j<cutoffs.length;j++) {
+                    cutoffs[j] = cutoffs[i-1];
+                }
+                break;
+            }
+        }
+
         groupSizes = new int[cutoffs.length];
 
         int cutoffPos = 0;
@@ -192,7 +203,7 @@ public abstract class Legend {
      */
     public int getColour(float d) {
         if (Float.isNaN(d)) {
-            return 0xFFFFFFFF;
+            return 0xFF000000; //black
         }
         int pos = java.util.Arrays.binarySearch(cutoffs, d);
         if (pos < 0) {
@@ -210,6 +221,12 @@ public abstract class Legend {
             }
 
             //translate value to 0-1 position between the colours
+            if(upper == lower) {
+                while(pos > 0 && cutoffs[pos - 1] == lower) {
+                    pos--;
+                }
+                return colours[pos];
+            }
             double v = (d - lower) / (upper - lower);
             double vt = 1 - v;
 

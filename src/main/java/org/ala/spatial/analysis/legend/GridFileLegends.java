@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.analysis.legend;
 
+import java.io.File;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.TabulationSettings;
 
@@ -27,44 +28,51 @@ public class GridFileLegends {
         float[] dsorted = d.clone();
         java.util.Arrays.sort(dsorted);
 
-        Legend[] legends = new Legend[4];
-        legends[3] = new LegendEqualSize();
-        legends[1] = new LegendEvenInterval();
-        legends[2] = new LegendEvenIntervalLog();
-        legends[0] = new LegendEvenIntervalLog10();
+//        Legend[] legends = new Legend[4];
+//        legends[3] = new LegendEqualSize();
+//        legends[1] = new LegendEvenInterval();
+//        legends[2] = new LegendEvenIntervalLog();
+//        legends[0] = new LegendEvenIntervalLog10();
+        Legend [] legends = new Legend[1];
+        legends[0] = new LegendEqualSize();
 
+        System.out.println(output_name);
         for (int i = 0; i < legends.length; i++) {
             legends[i].generate(dsorted);
             legends[i].determineGroupSizes(dsorted);
             double e2 = legends[i].evaluateStdDev(dsorted);
-            System.out.print(legends[i].getCutoffs());
-            legends[i].exportImage(d, g.ncols, output_name + "_" + legends[i].getTypeName() + ".jpg", 4);
+            //System.out.print(legends[i].getCutoffs());
+            try {
+                (new File(output_name + "_" + legends[i].getTypeName() + ".jpg")).delete();
+            } catch (Exception e) {}
+            legends[i].exportImage(d, g.ncols, output_name + "_" + legends[i].getTypeName() + ".jpg", 8);
             legends[i].exportLegend(output_name + "_" + legends[i].getTypeName() + "_legend.txt");
-            System.out.println("stddev: " + e2);
+            //System.out.println("stddev: " + e2);
         }
     }
 
     static public void main(String[] args) {
+        if(args.length != 1) {
+            System.out.println("Generates thumbnail image for environmental layer files.");
+            System.out.println("parameters: output_directory");
+            return;
+        }
         TabulationSettings.load();
 
-        String dir = "d:\\";
+        String dir = args[0];
 
-        /*//produce legend for each environmental file
+        //produce legend for each environmental file
         for(int i=0;i<TabulationSettings.environmental_data_files.length;i++) {
-        new GridFileLegends(
-        TabulationSettings.environmental_data_files[i].name,
-        dir + TabulationSettings.environmental_data_files[i].display_name);
-        }*/
+            new GridFileLegends(
+                TabulationSettings.environmental_data_files[i].name,
+                dir + TabulationSettings.environmental_data_files[i].name);
+        }
 
-        //specific environmental files
-        //new GridFileLegends("slope_length", dir + "SlopeLength");
-        //new GridFileLegends("substrate_mrrtf", dir + "RidgeTopFlatness");
-        //new GridFileLegends("aspect", dir + "Aspect");
-        //new GridFileLegends("substrate_mrvbf", dir + "Valley bottom flatness");
-        //new GridFileLegends("substrate_roughness", dir + "Topographic roughness");
-        //new GridFileLegends("substrate_relief", dir + "Topographic relief");
-        new GridFileLegends("ALA-SPATIAL_layer_occurrence_av_1", dir + "Occurrence Density");
-        new GridFileLegends("ALA-SPATIAL_layer_species_av_1", dir + "Species Richness");
-
+//        String [] layer = {"add_nrm"};
+//        for(int i=0;i<layer.length;i++) {
+//        new GridFileLegends(
+//        layer[i],
+//        dir + layer[i]);
+//        }
     }
 }
