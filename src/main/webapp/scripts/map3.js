@@ -2836,6 +2836,8 @@ function loadKmlFile(name, kmlurl) {
 }
 
 function displayBiostorRecords() {
+    return false;
+    
     //parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
     parent.displayHTMLInformation("biostormsg",'updating...');
 
