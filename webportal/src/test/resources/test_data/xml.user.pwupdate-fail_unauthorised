@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<error id="service-not-allowed">
+   <message>Service not allowed</message>
+   <class>ServiceNotAllowedEx</class>
+   <stack>
+      <at class="jeeves.server.dispatchers.ServiceManager" file="ServiceManager.java"
+          line="374"
+          method="dispatch"/>
+      <at class="jeeves.server.JeevesEngine" file="JeevesEngine.java" line="621"
+          method="dispatch"/>
+      <at class="jeeves.server.sources.http.JeevesServlet" file="JeevesServlet.java"
+          line="174"
+          method="execute"/>
+      <at class="jeeves.server.sources.http.JeevesServlet" file="JeevesServlet.java"
+          line="89"
+          method="doGet"/>
+      <at class="javax.servlet.http.HttpServlet" file="HttpServlet.java" line="596"
+          method="service"/>
+      <at class="javax.servlet.http.HttpServlet" file="HttpServlet.java" line="689"
+          method="service"/>
+      <at class="org.mortbay.jetty.servlet.ServletHolder" file="ServletHolder.java"
+          line="427"
+          method="handle"/>
+      <at class="org.mortbay.jetty.servlet.WebApplicationHandler$CachedChain"
+          file="WebApplicationHandler.java"
+          line="830"
+          method="doFilter"/>
+      <at class="com.jspbook.GZIPFilter" file="GZIPFilter.java" line="70"
+          method="doFilter"/>
+      <at class="org.mortbay.jetty.servlet.WebApplicationHandler$CachedChain"
+          file="WebApplicationHandler.java"
+          line="821"
+          method="doFilter"/>
+   </stack>
+   <object>xml.user.pwupdate</object>
+   <request>
+      <language>en</language>
+      <service>xml.user.pwupdate</service>
+   </request>
+</error>
