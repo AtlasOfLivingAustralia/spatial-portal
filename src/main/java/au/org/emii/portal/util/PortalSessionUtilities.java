@@ -5,21 +5,11 @@
 package au.org.emii.portal.util;
 
 import au.org.emii.portal.value.BoundingBox;
-import au.org.emii.portal.menu.Facility;
-import au.org.emii.portal.menu.Link;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.session.PortalSession;
-import au.org.emii.portal.menu.Region;
-import au.org.emii.portal.menu.TreeChildIdentifier;
-import au.org.emii.portal.menu.TreeMenuItem;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.lang.LanguagePack;
-import au.org.emii.portal.menu.MenuGroup;
-import au.org.emii.portal.menu.MenuItem;
 import au.org.emii.portal.settings.Settings;
-import au.org.emii.portal.userdata.UserMap;
-import au.org.emii.portal.value.SearchCatalogue;
-import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -53,109 +43,13 @@ public class PortalSessionUtilities {
         return listUtilities.findInList(id, portalSession.getUserDefinedLayers());
     }
 
-    public MapLayer getBaseLayerById(PortalSession portalSession, String id) {
-        return listUtilities.findInList(id, portalSession.getBaseLayers());
-    }
-
-    public Link getLinkById(PortalSession portalSession, String id) {
-        return listUtilities.findInList(id, portalSession.getLinks());
-    }
-
     /**
      * return the current bounding box - either the default bounding box
      * or the regional bounding box if a region has been selected
      * @return
      */
     public BoundingBox getCurrentBoundingBox(PortalSession portalSession) {
-
-        BoundingBox bbox;
-        String id = portalSession.getSelectedMenuId();
-        if ((portalSession.getTabForCurrentMenu() == PortalSession.LAYER_REGION_TAB) && (id != null)) {
-            Region region = portalSession.getRegions().get(id);
-            if (region == null) {
-                logger.warn(
-                        "VIEW_REGION is selected but no bounding box is available for region id="
-                        + id + " will continue anyway using the default bounding box");
-                bbox = portalSession.getDefaultBoundingBox();
-            } else {
-                bbox = region.getBoundingBox();
-            }
-
-        } else {
-            bbox = portalSession.getDefaultBoundingBox();
-        }
-
-        return bbox;
-    }
-
-    public MenuGroup getMenu(PortalSession portalSession, int view, String id) {
-
-        MenuGroup menu = null;
-
-        if (view == PortalSession.LAYER_USER_TAB) {
-            menu = portalSession.getMenuForUserDefined();
-        } else {
-            Facility selectedView = null;
-            boolean proceed = false;
-
-            switch (view) {
-                case PortalSession.LAYER_FACILITY_TAB:
-                    selectedView = portalSession.getFacilities().get(id);
-                    proceed = true;
-                    break;
-                case PortalSession.LAYER_REGION_TAB:
-                    selectedView = portalSession.getRegions().get(id);
-                    proceed = true;
-                    break;
-                case PortalSession.LAYER_REALTIME_TAB:
-                    selectedView = portalSession.getRealtimes().get(id);
-                    proceed = true;
-                    break;
-                default:
-                    logger.error("menu for was requested for unsupported view: " + view);
-                    proceed = false;
-            }
-
-            if (proceed) {
-                if (selectedView == null) {
-                    logger.warn("no facility available for id=" + id + " view=" + view);
-                } else {
-                    menu = selectedView.getMenu();
-                }
-            }
-        }
-        return menu;
-    }
-
-    public Facility getSelectedFacilityOrRegion(PortalSession portalSession, String id) {
-        Facility selected;
-        switch (portalSession.getCurrentLayerTab()) {
-            case PortalSession.LAYER_FACILITY_TAB:
-                selected = portalSession.getFacilities().get(id);
-                break;
-            case PortalSession.LAYER_REGION_TAB:
-                selected = portalSession.getRegions().get(id);
-                break;
-            default:
-                selected = null;
-                break;
-        }
-        return selected;
-    }
-
-    public void initUserDefinedMenu(PortalSession portalSession) {
-        if (portalSession.getUserDefinedMenu() == null) {
-            MenuGroup userDefinedMenu = new MenuGroup();
-
-            userDefinedMenu.setId(settingsSupplementary.getValue("user_defined_layer_group_id"));
-
-            // these are from the lang pack and describe the root menu
-            // item which never gets rendered AFAIK
-            userDefinedMenu.setName(languagePack.getLang("user_defined_layer_group_label"));
-            userDefinedMenu.setDescription(languagePack.getLang("user_defined_layer_group_label"));
-
-            portalSession.setUserDefinedMenu(userDefinedMenu);
-        }
+        return portalSession.getDefaultBoundingBox();
     }
 
     public ListUtilities getListUtilities() {
@@ -181,72 +75,15 @@ public class PortalSessionUtilities {
 
         if (portalSession == null) {
             dump.append("*** Null portal session (usually indicates error loading) ***");
-        } else {
-            dump.append("FACILITIES:\n");
-            if (portalSession.getFacilities() != null) {
-                for (Facility facility : portalSession.getFacilities().values()) {
-                    dump.append(facility.dump());
-                }
-            }
-
-            dump.append("REGIONS:\n");
-            if (portalSession.getRegions() != null) {
-                for (Region region : portalSession.getRegions().values()) {
-                    dump.append(region.dump() + "\n");
-                }
-            }
-
+        } else {            
             dump.append("\nMAPLAYERS (from DataSource declaration");
             if (portalSession.getMapLayers() != null) {
                 for (MapLayer mapLayer : portalSession.getMapLayers()) {
                     dump.append(mapLayer.dump("") + "\n");
                 }
             }
-
-            dump.append("\nBASELAYERS (from DataSource declaration):\n");
-            if (portalSession.getBaseLayers() != null) {
-                for (MapLayer baseLayer : portalSession.getBaseLayers()) {
-                    dump.append(baseLayer.dump() + "\n");
-                }
-            }
-
-            dump.append("\nLINKS (from DataSource declaration):\n");
-            if (portalSession.getLinks() != null) {
-                for (Link link : portalSession.getLinks()) {
-                    dump.append(link.dump() + "\n");
-                }
-            }
         }
         return dump.toString();
-    }
-
-    public MenuItem addUserDefinedMapLayer(PortalSession portalSession, MapLayer mapLayer) {
-        initUserDefinedMenu(portalSession);
-
-        // add to the list (like a datasource)
-        portalSession.getUserDefinedLayers().add(mapLayer);
-
-        // create and add a holder for it and insert into the menu
-        MenuItem item = new MenuItem(mapLayer);
-        portalSession.getUserDefinedMenu().addChild(item);
-        return item;
-    }
-
-    public TreeChildIdentifier removeUserDefinedMapLayer(PortalSession portalSession, MenuItem itemToRemove) {
-        TreeMenuItem parent = null;
-        TreeChildIdentifier id = null;
-        if ((itemToRemove != null) && itemToRemove.isValueMapLayerInstance()) {
-            portalSession.getUserDefinedLayers().remove(itemToRemove.getValueAsMapLayer());
-
-            parent = findInTree(portalSession.getUserDefinedMenu(), (Object) itemToRemove);
-            // nuke the layer from the list
-
-            if (parent != null) {
-                id = new TreeChildIdentifier(parent, parent.getChildren().indexOf(itemToRemove));
-                parent.getChildren().remove(itemToRemove);
-            }
-        }
-        return id;
     }
 
     public MapLayer getMapLayerByIdAndLayer(PortalSession portalSession, String id, String layer) {
@@ -260,42 +97,6 @@ public class PortalSessionUtilities {
         }
 
         return target;
-    }
-
-    /**
-     * Recursive find in tree.  Returns PARENT of found item
-     * @param list
-     * @param targetValue
-     * @return
-     */
-    private <T extends TreeMenuItem> TreeMenuItem findInTree(T root, Object targetValue) {
-        TreeMenuItem parent = null;
-        if (root != null) {
-            int childCount = root.getChildCount();
-            int i = 0;
-            // compare THIS tree item first...
-            if (root.getConcreteType() == TreeMenuItem.CONCRETE_TYPE_MENUITEM) {
-                MenuItem rootMenuItem = (MenuItem) root;
-
-                // comparison is against whole holder+value combo...
-                //if (rootMenuItem.getValue() == targetValue) {
-                if (rootMenuItem == targetValue) {
-                    // found the item
-                    parent = rootMenuItem.getParent();
-                }
-            } else {
-                logger.debug(
-                        "item is not a menuitem - couldn't do comparison: Type is " + root.getConcreteType());
-            }
-
-            if (!root.isLeaf()) {
-                while ((parent == null) && (i < childCount)) {
-                    parent = findInTree((TreeMenuItem) root.getChild(i), targetValue);
-                    i++;
-                }
-            }
-        }
-        return parent;
     }
 
     /**
@@ -368,79 +169,12 @@ public class PortalSessionUtilities {
         return tab;
     }
 
-    public SearchCatalogue getSelectedSearchCatalogue(PortalSession portalSession) {
-        return settings.getSearchCatalogues().get(portalSession.getSelectedSearchCatalogueId());
-    }
-
     public Settings getSettings() {
         return settings;
     }
 
     public void setSettings(Settings settings) {
         this.settings = settings;
-    }
-
-    public void updatePortalSession(PortalSession portalSession, UserMap userMap) {
-        //if you get a map then you need to put it all
-        //into a PortalSession then load it
-
-        // bounding box
-        if (userMap.getbBox() == null) {
-            logger.warn("skipping null saved bounding box - should never happen");
-        } else {
-            portalSession.setDefaultBoundingbox(userMap.getbBox());
-        }
-
-        // baselayer
-        MapLayer baseLayer = userMap.getCurrentBaseLayer();
-        if (baseLayer == null) {
-            logger.warn("null baselayer in user session");
-        } else {
-            MapLayer found = getBaseLayerById(portalSession, baseLayer.getId());
-            if (found == null) {
-                logger.debug("baselayer no longer exists: " + baseLayer.getId());
-            }
-            portalSession.setCurrentBaseLayer(found);
-        }
-
-        // active layers
-        for (MapLayer mapLayer : userMap.getActiveLayers()) {
-            String id = mapLayer.getId();
-            logger.debug("reactivate mapLayer " + id);
-
-            MapLayer target = getMapLayerByUriAndLayer(portalSession, mapLayer.getUri(), mapLayer.getLayer());
-            if (target == null) {
-                logger.debug("can't reload saved map layer - not here: " + mapLayer.getId());
-            } else {
-                // put back view/no view
-                target.setDisplayed(mapLayer.isDisplayed());
-
-                // put back in list of layers
-                portalSession.addMapLayer(target);
-
-                // put in active layers list
-                portalSession.getActiveLayers().add(target);
-
-                target.setListedInActiveLayers(true);
-            }
-        }
-
-        // user defined layers
-        List<MapLayer> userDefinedLayers = userMap.getUserDefinedLayers();
-        if (userDefinedLayers == null) {
-            logger.warn("null list of user defined layers - not added");
-        } else {
-            for (MapLayer mapLayer : userDefinedLayers) {
-                addUserDefinedMapLayer(portalSession, mapLayer);
-
-                if (mapLayer.isDisplayed()) {
-                    portalSession.getActiveLayers().add(mapLayer);
-                    mapLayer.setListedInActiveLayers(true);
-                }
-
-                logger.debug("added userdefined map layer : " + mapLayer.getId());
-            }
-        }
     }
 
     /**

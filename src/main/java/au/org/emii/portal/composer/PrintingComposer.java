@@ -6,6 +6,8 @@
 package au.org.emii.portal.composer;
 
 import au.org.emii.portal.util.SessionPrint;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
@@ -35,6 +37,8 @@ public class PrintingComposer extends UtilityComposer {
         
         cbFormat.setSelectedIndex(0);
         cbResolution.setSelectedIndex(0);
+
+        txtHeader.setValue((new SimpleDateFormat("dd/MM/yyyy")).format(new Date()));
     }
 
     public void onClick$btnExport(Event event) {

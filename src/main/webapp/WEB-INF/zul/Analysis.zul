@@ -3,34 +3,22 @@
 <?component name="samplingForm" macro-uri="/WEB-INF/zul/AnalysisSampling.zul"?>
 <?component name="alocForm" macro-uri="/WEB-INF/zul/AnalysisALOC.zul"?>
 <?component name="selectionForm" macro-uri="/WEB-INF/zul/AnalysisSelection.zul"?>
-<?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?>
+<!--?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?-->
+<?component name="scatterplotForm" macro-uri="/WEB-INF/zul/Scatterplot.zul"?>
+<!--?component name="chartForm" macro-uri="/WEB-INF/zul/Chart.zul"?-->
 
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
 <zk>
-    <window id="analysiswindow" use="org.ala.spatial.analysis.web.AnalysisController" apply="org.ala.spatial.analysis.web.AnalysisController" >
-        <style>
-            .z-loading {
-            top: 50% !important;
-            left: 45% !important;
-            align: center;
-            vertical-align: middle;
-            }
-            .overflowContent {
-                height: 200px;
-                overflow: auto; 
-            }
-        </style>
-
-        <!--  <label value="Analysis Tools"  sclass="h2 title"/> -->
+    <window id="analysiswindow" use="org.ala.spatial.analysis.web.AnalysisController" apply="org.ala.spatial.analysis.web.AnalysisController" >       
+       
         <selectionForm id="sf" />
         <separator />
         <separator />
         <separator />
-
         <tabbox id="analysisOptsTabbox" zindex="600" style="border:0px!important; border: solid 0px white;" width="95%"> <!-- mold="accordion-lite"  zclass="menuswitch"  -->
             <tabs>
                 <!-- species list -->
-                <tab id="speciesListTab" label="Species List" selected="true" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-species-tab/&quot;)" />
+                <!--tab id="speciesListTab" label="Species List" selected="true" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-species-tab/&quot;)" /-->
 
                 <!--  sampling  -->
                 <tab id="samplingTab" label="Sampling" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-sampling-tab/&quot;)" />
@@ -40,6 +28,12 @@
 
                 <!--  aloc -->
                 <tab id="alocTab" label="Classification" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
+
+                <!-- scatterplot -->
+                <tab id="scatterplotTab" label="Scatterplot" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />
+
+                <!-- chart 
+                <tab id="chartTab" label="Chart" onClick="analysisCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/analysis-classification-tab/&quot;)" />-->
             </tabs>
             <toolbar>
                 <toolbarbutton id="analysisCXHelp"
@@ -47,222 +41,28 @@
                     sclass="helpButton"
                     tooltiptext="ALA Spatial Portal Help"
                     forward="onClick=onActivateLink()" >
-                        <custom-attributes link="${settingsSupplementary.values.help_url}/spatial-portal-help/analysis-species-tab/" />
+                    <custom-attributes link="${settingsSupplementary.values.help_url}/spatial-portal-help/analysis-species-tab/" />
                 </toolbarbutton>
             </toolbar>
             <tabpanels>
-                <tabpanel>
-                    <panel id="helpSpeciesList" border="normal" open="false" style="padding: 1px" >
-                        <panelchildren sclass="overflowContent">
-                            <div align="right">
-                                <button label="x" onClick="helpSpeciesList.open=false;" />
-                            </div>
-                            <html style="white-space: normal;"><![CDATA[
-                Generates a list all species (Family, scientific name and common name where present) within the Active Area. Two options are available-
-<br /><br />
-<ol>
-<li>
-The species list can be downloaded as a CSV file. This is basically what is known as a checklist.
-</li><li>
-The individual observations of those species can also be downloaded as a zipped (compressed) CSV file. The observations records contain all the public information known to the Atlas of Living Australia.
-</li></ol>                            ]]></html>
-                        </panelchildren>
-                    </panel>
-                    <button label="Produce species list"
-                    onClick="org.ala.spatial.analysis.web.FilteringResultsWCController.open();" visible="false"/>
-
+                <!--tabpanel>
                     <speciesListForm id="speciesListForm" />
-                </tabpanel>
-                <tabpanel>
-                    <panel id="helpSampling" border="normal" open="false" style="padding: 1px" >
-                        <panelchildren sclass="overflowContent">
-                            <div align="right">
-                                <button label="x" onClick="helpSampling.open=false;" />
-                            </div>
-                            <html style="white-space: normal;"><![CDATA[
-                This tool samples environmental and contextual data layers at
-                locations defined by species observations. Think of this tool as
-                driving a sample tool through a user-selected set of layers at
-                the locations of all user-selected species and reading off the
-                values at that point. "The output is a CSV-formatted file of the
-                locations and environmental/contextual values."
-
-                <br /><br />
-
-                <strong>Process</strong>
-                <ol>
-                    <li>
-                        Select a species of interest. This will immediately
-                        identify the geographic locations where this species has
-                        been observed or sampled.
-                    </li>
-                    <li>
-                        Select the environmental and contextual layers you want
-                        sampled at the geographic locations. Environmental data
-                        will return a numeric value, for example a value of mean
-                        annual temperature at each of the locations defined by
-                        the species. Sampling contextual layers will return a
-                        category/class, for example, a land-use category.
-                        Clicking on the layer name will link to metadata describing
-                        that layer.
-                    </li>
-                    <li>
-                        When all layers have been selected, click run and when
-                        the sampling is completed, a window will display the samples.
-                    </li>
-                    <li>
-                        Click download to download the CSV-format file to your system.
-                    </li>
-                </ol>
-                            ]]></html>
-                        </panelchildren>
-                    </panel>
+                </tabpanel-->
+                <tabpanel>                   
                     <samplingForm id="asf" />
                 </tabpanel>
-
-
-                <tabpanel>
-                    <panel id="helpPrediction" border="normal" open="false" style="padding: 5px" >
-                        <panelchildren sclass="overflowContent">
-                            <div align="right">
-                                <button label="x" onClick="helpPrediction.open=false;" />
-                            </div>
-                            <html style="white-space: normal;"><![CDATA[
-                This tool uses Maxent to produce predictive analysis models
-                based for a set of taxon based on environmental values.
-
-                <br /><br />
-
-                <strong>Process</strong>
-                <ol>
-                    <li>
-                        Begin by typing in a scientific name (e.g. Macropus rufus)
-                        or a common name (e.g. Red kangaroo)
-                        A list of possible values will be automatically displayed
-                        for selection. Select your option.
-                    </li>
-                    <li>
-                        From the list of available Environmental layers, select
-                        your desired layers.
-                    </li>
-                    <li>
-                        Select your optional parameters. This allows you to run
-                        Maxent with additional parameters.
-                        At this current stage, only a subset of the parameters
-                        are available for analysis, future versions may have
-                        more options available for analysis.
-                    </li>
-                    <li>
-                        Click on the 'Start Maxent' button to run Maxent.
-                    </li>
-                    <li>
-                        <b>Output</b>: Once the process is completed, a
-                        prediction model is generated and displayed on the screen.
-                        A description, generated by Maxent, is also available for
-                        a detailed view of the analysis output.
-                    </li>
-                </ol>
-                            ]]></html>
-                        </panelchildren>
-                    </panel>
+                <tabpanel>                   
                     <maxentForm id="mf" />
                 </tabpanel>
-
-
                 <tabpanel>
-
-                    <panel id="helpAloc" border="normal" open="false" style="padding: 5px; ">
-                        <panelchildren sclass="overflowContent">
-                            <div align="right">
-                                <button label="x" onClick="helpAloc.open=false;" />
-                            </div>
-                            <html style="white-space: normal;"><![CDATA[
-            <p>
-                ALOC (short for allocation) is an efficient classification method
-                for large volumes of data. Think of it as combining multiple layers
-                of environmental data (e.g., mean annual temperature, slope, precipitation)
-                into one new layer.  You select the environmental layers, the number
-                of groups and ALOC produces a map of the resulting groups.
-            </p>
-            <p>
-                The Process
-            </p>
-            <ol>
-                <li>
-                    Select the environmental layers to be used for the classification.
-                    The layers must contain continuous values such as temperature,
-                    precipitation or slope. Any number of layers can be selected
-                    to be classified.
-                </li>
-                <li>
-                    Select the number of groups that you want produced.
-                </li>
-                <li>
-                    Press the 'Generate Classification' button.
-                </li>
-                <li>
-                    A map will be produced with the requested number of groups.
-                    The colours of the groups are not arbitrary: the differences
-                    between group colours is intended to represent differences
-                    between the groups.
-                </li>
-            </ol>
-            <p>
-                The Method
-            </p>
-            <p>
-                ALOC uses the following steps to produce a classification
-            </p>
-            <ol>
-                <li>
-                    Build a set of seed groups that are greater than a threshold
-                    distance apart (using Gower Metric)
-                </li>
-                <li>
-                    Allocate all points on the map to the seed groups
-                </li>
-                <li>
-                    Calculate the group centroids
-                </li>
-                <li>
-                    Iterate by removing each point from its allocated group,
-                    calculate the association (Gower Metric) to all groups and
-                    then allocate it to the closest group.
-                </li>
-                <li>
-                    Repeat 4 until no points change groups
-                </li>
-                <li>
-                    The colours are produced by a Principal Component Analysis
-                    using the inter-group distances (dissimilarity based on all
-                    the layers).
-                </li>
-            </ol>
-            <p>
-                References
-            </p>
-            <ul>
-                <li>
-                    Belbin, L., Marshall, C. and Faith, D.P. (1983). Representing
-                    relationships by the automatic assignment of colour. Australian
-                    Computer Journal, 15, 4, 160-163.
-                </li>
-                <li>
-                    Belbin, L. (1987). The Use of Non-hierarchical Allocation
-                    Methods for Clustering Large Sets of Data. Australian Computing
-                    Journal, 19, 1, 32-41.
-                </li>
-                <li>
-                    Gower J.C. (1967). Multivariate analysis and multidimensional
-                    geometry. The Statistician 17, 1, 13-28.
-                </li>
-            </ul>
-                            ]]></html>
-                        </panelchildren>
-                    </panel>
-
                     <alocForm id="af" />
                 </tabpanel>
+                <tabpanel>
+                    <scatterplotForm id="scatterplotForm" />
+                </tabpanel>
+                <!--tabpanel>
+                    <chartForm id="chartForm" />
+                </tabpanel-->
             </tabpanels>
         </tabbox>
     </window>

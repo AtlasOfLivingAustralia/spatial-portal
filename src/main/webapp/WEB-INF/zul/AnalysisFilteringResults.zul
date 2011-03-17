@@ -1,98 +1,73 @@
 <?page title="Species List Tool" contentType="text/html;charset=UTF-8" id="AnalysisFilteringPage"?>
 <zk> 
-    <window
-   
-        id="popup_results" 
+    <window id="popup_results"
         apply="org.ala.spatial.analysis.web.FilteringResultsWCController"
         use="org.ala.spatial.analysis.web.FilteringResultsWCController"
-        >
-        <style>
-                .resultsCount {
-                    font-size: 14px;
-                    background-color: #000000;
-                    color: #ffffff;
-                    padding: 4px;
-                    font-weight: bold;
-                    text-align: center;
-                }
-                
-        </style>
-
-        <tabbox>
-            <tabs>
-                <tab label="1*" />
-            </tabs>
-            <toolbar>
-                   
-                <button label="Produce species list" id="download" sclass="goButton" />
-                <button label="Produce sample" id="downloadsamplesPreview" sclass="goButton" />
-
-
-            </toolbar>
-            <tabpanels>
-                <tabpanel>
-
-
-                    <vbox>
-                        <separator />
-            
-                        <separator />
-
-                        <grid width="300px" style="border: 0;">
-                            <auxhead  style="border: 0;">
-                                <auxheader style="border: 0; font-weight: bold; text-align: center;"  label="Active area summary" colspan="2"/>
-                            </auxhead>
-                            <columns  style="border: 0;">
-                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Species Count" width="150px"/>
-                                <column  style="border: 0;text-align: center; font-weight: bold;" label="Occurrences Count" width="150px"/>
-                            </columns>
-                            <rows  style="border: 0;">
-                                <row  style="text-align: center; border: 0;" id="rowCounts" visible="false">
-                                    <label sclass="resultsCount" id="results_label2_species" />
-                                    <label sclass="resultsCount" id="results_label2_occurrences" />
-                                </row>
-                                <row  style="text-align: center; border: 0;" spans="2" id="rowUpdating" visible="true">
-                                    <label sclass="resultsCount" value="... updating ..." />
-                                </row>
-                            </rows>
-                        </grid>
-
-
-
-                        <separator />
-                        <separator />
-                        <hbox>
-                            <button label="Map all species occurrences in Active Area" id="mapspecies" visible="false" sclass="goButton"/>
-                        </hbox>
-                        <separator />
-                        <label style="font-weight: bold" id="results_label" visible="false" />
-                        <!-- listbox id="popup_listbox_results" width="95%" rows="15" visible="false">
-                            <listhead>
-                                <listheader label="Family" ></listheader>
-                                <listheader label="Scientific name" ></listheader>
-                                <listheader label="Common name/s" ></listheader>
-                                <listheader label="Taxon rank" ></listheader>
-                            </listhead>
-                        </listbox -->
-
-        <!--    <textbox
-                   multiline="true"
-                   id="popup_textbox_results" width="500px" height="200px" readonly="true" visible="false"/>
-                   -->
-                        <separator/>
-
-                        <html><![CDATA[
-                            <div id="biostormsg"></div>
-                            <div id="biostorlist"></div>
-                        ]]></html>
-
-
-        <!--    <div align="right">
-                <button label="close" onClick="popup_results.detach();" />
-            </div> -->
-                    </vbox>
-                </tabpanel>
-            </tabpanels>
-        </tabbox>
+        xmlns:n="http://www.zkoss.org/2005/zk/native">
+        
+        <n:table border="0" >
+            <n:tr height="18px" >
+                <n:td width="130px">
+                    <label id="lblArea" value="" visible="false" />
+                    <label value="Area (sq km)" />
+                </n:td>
+                <n:td width="80px">
+                    <html><![CDATA[
+                    <div id="jsarea" style="display:none;font-size:10px" ></div>
+                    <div id="jsarea2" class="z-label"></div>
+                    ]]></html>
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <label value="Species" />
+                </n:td>
+                <n:td>
+                    <n:u><label id="results_label2_species" style="cursor:pointer;" /></n:u>
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>                    
+                    <label value="Occurrences" />
+                </n:td>
+                <n:td>
+                    <n:u><label id="results_label2_occurrences" style="cursor:pointer;" /></n:u>
+                </n:td>
+                <n:td>
+                    <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
+                <n:td>
+                    <html><![CDATA[ <u><div style="cursor:pointer;" class="z-label"
+                        onclick="zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', 'http://www.cmar.csiro.au/datacentre/modelled_fish_distributions.htm\nCMAR &quot;Expert Assessed&quot; Modelled Fish Distributions'));"
+                    >Expert distributions</div></u> ]]></html>
+                </n:td>
+                <n:td>
+                    <n:u><label id="sdLabel" style="cursor:pointer;" /></n:u>
+                </n:td>
+            </n:tr>            
+            <n:tr height="18px" >
+                <n:td>
+                    <html><![CDATA[ <u><div style="cursor:pointer;" class="z-label"
+                        onclick="zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', 'http://www.biostor.org\nBiostor documents'));"
+                    >Biostor documents</div></u> ]]></html>
+                </n:td>
+                <n:td>
+                    <html><![CDATA[ <u><div id="biostormsg" class="z-label"  style="cursor:pointer;"
+                        onclick="                            
+                            if($('#biostorlist')[0].innerHTML.length > 20)
+                                zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openHTML', 'Biostor Documents\n' + $('#biostorlist')[0].innerHTML));"
+                    ></div></u> ]]></html>
+                </n:td>
+            </n:tr>
+            <n:tr>
+                <n:td colspan="3">
+                    <html><![CDATA[ <div id="biostorlist" style="display:none;font-size:10px"></div>]]>
+                    </html>
+                </n:td>
+            </n:tr>            
+        </n:table>
+        <separator />
     </window>
 </zk>

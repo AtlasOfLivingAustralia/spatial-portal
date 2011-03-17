@@ -1,252 +1,147 @@
-<!--<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>-->
-<!-- <?page title="Selection" contentType="text/html;charset=UTF-8" id="AnalysisSelectionPage"?>-->
 <?component name="envelopeForm" macro-uri="/WEB-INF/zul/AnalysisFiltering.zul"?>
-<zk>
+<?component name="speciesListForm" macro-uri="/WEB-INF/zul/AnalysisFilteringResults.zul"?>
 
-    <window id="selectionwindow" use="org.ala.spatial.analysis.web.SelectionController"
-            apply="org.ala.spatial.analysis.web.SelectionController">
+    <zk>
+        <window id="selectionwindow" use="org.ala.spatial.analysis.web.SelectionController"
+                apply="org.ala.spatial.analysis.web.SelectionController">
 
+            <vbox>
+                <separator/>
+                <hbox width="95%">
+                    <div style="float: left; margin-left: 5px;">
+                        <html><![CDATA[<b>Active Area</b>]]>
+                        </html>
+                    </div>
+                </hbox>
+                <separator/>
+                <radiogroup id="rgAreaSelection" visible="false">
+                    <vbox>
+                        <hbox>
+                            <radio label="User-defined &lt;b&gt;box&lt;/b&gt;" id="rdoBoxSelection"/>
+                        </hbox>
+                        <hbox>
+                            <radio label="User-defined &lt;b&gt;polygon&lt;/b&gt;" id="rdoPolygonSelection"/>
+                        </hbox>
+                        <hbox>
+                            <radio label="User-defined &lt;b&gt;point&lt;/b&gt; and &lt;b&gt;radius&lt;/b&gt;" id="rdoPointRadiusSelection"/>
+                        </hbox>
+                        <hbox>
+                            <radio label="User-defined &lt;b&gt;radius&lt;/b&gt; from &lt;b&gt;address&lt;/b&gt;" id="rdoAddressRadiusSelection"/>
+                        </hbox>
+                        <hbox>
+                            <radio label="Predefined (displayed) &lt;b&gt;map polygon&lt;/b&gt;" id="rdoExistingFeatureSelection"/>
+                        </hbox>
+                        <hbox>
+                            <radio label="User-defined &lt;b&gt;environmental envelope&lt;/b&gt;" id="rdoEnvironmentalEnvelope"/>
+                        </hbox>
+                    </vbox>
+                </radiogroup>
+                <hbox width="320px">
+                    <combobox width="200px" id="cbAreaSelection" autodrop="true">
+                        <comboitem label="Draw bounding box..." id="ciBoundingBox" />
+                        <comboitem label="Draw polygon..." id="ciPolygon" />
+                        <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
+                        <comboitem label="Create radius from address..." id="ciAddressRadiusSelection"/>
+                        <comboitem label="Select predefined (displayed) map polygon..." id="ciMapPolygon" />
+                        <comboitem label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
+                        <comboitem label="Upload Shapefile..." id="ciUploadShapefile" />
+                        <comboitem label="Box - Australia" id="ciBoxAustralia" />
+                        <comboitem label="Box - World" id="ciBoxWorld" />
+                        <comboitem label="Box - Current View" id="ciBoxCurrentView" />
+                    </combobox>
+                    <separator orient="vertical" />
+                    <separator orient="vertical" />
+                    <div style="float: right" width="120px">
+                        <button id="zoomtoextent" image="/img/zoom_in.png"
+                            tooltiptext="zoom to extent" width="30px" />
+                        <button id="btnMetadata" image="/img/information.png"
+                            tooltiptext="more information" width="30px"/>
+                        <button image="/img/util_garbage.png" 
+                            id="btnClearSelection" visible="true" width="30px"/>
+                    </div>
+                </hbox>                
+            </vbox>
 
-        <style>
-            .z-loading {
-            top: 50% !important;
-            left: 45% !important;
-            align: center;
-            vertical-align: middle;
-            }
-        </style>
-
-        <html visible="false" style="white-space: normal;"><![CDATA[
-An area can be defined by any of the options below. Once defined, the area can be used to identify what species or observation records occur there, or be used within the Analysis tab functions. These areas will also be displayed in the Layers tab and can be deselected or deleted.
-        ]]>
-        </html>
-
-
-        <vbox>
-            <separator/>
-            <hbox width="95%">
-                <div style="float: left;  margin-left: 5px;">
-                    <html><![CDATA[<b>Active Area</b>]]>
-                    </html>
+            <div visible="false" id="areaInfo">
+                <div sclass="highlighted" visible="false" >
+                    <label sclass="word-wrap"
+                           style="white-space: normal; padding: 5px"
+                           multiline="true" id="instructions" value="" visible="true" />
                 </div>
-                <!--
-                <div style="float: right; ">
-                    <button label="reset active area" id="btnClearSelection" visible="true" />
+                <div id="polygonInfo" sclass="highlighted" visible="true" width="90%" >
+                    <vbox>
+                        <hbox>
+                            <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
+                            <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
+                        </hbox>
+                        <hbox>
+                            <button label="Show Species" id="btnShowSpecies" visible="false" sclass="goButton" />
+
+                        </hbox>
+                    </vbox>
                 </div>
-                -->
-            </hbox>
-            <separator/>
-
-            <radiogroup id="rgAreaSelection" visible="false">
-                <vbox>
-                    <hbox>
-                        <radio label="User-defined &lt;b&gt;box&lt;/b&gt;" id="rdoBoxSelection"/>
-                        <!--<html><![CDATA[User-defined <b>box</b>]]></html>-->
-                    </hbox>
-                    <!--<radio label="From current view" id="rdoExtentsSelection"/> -->
-                    <hbox>
-                        <radio label="User-defined &lt;b&gt;polygon&lt;/b&gt;" id="rdoPolygonSelection"/>
-                        <!--<html><![CDATA[User-defined <b>polygon</b>]]></html>-->
-                    </hbox>
-                    <hbox>
-                        <radio label="User-defined &lt;b&gt;point&lt;/b&gt; and &lt;b&gt;radius&lt;/b&gt;" id="rdoPointRadiusSelection"/>
-                        <!--<html><![CDATA[User-defined <b>point</b> and <b>radius</b>]]></html>-->
-                    </hbox>
-                    <hbox>
-                        <radio label="User-defined &lt;b&gt;radius&lt;/b&gt; from &lt;b&gt;address&lt;/b&gt;" id="rdoAddressRadiusSelection"/>
-
-                    </hbox>
-                    <hbox>
-                        <radio label="Predefined (displayed) &lt;b&gt;map polygon&lt;/b&gt;" id="rdoExistingFeatureSelection"/>
-                        <!--<html><![CDATA[Predefined (displayed) <b>map polygon</b>]]></html>-->
-                    </hbox>
-                    <!--<radio label="From existing feature class" id="rdoExistingFeatureClassSelection"/> -->
-                    <hbox>
-                        <radio label="User-defined &lt;b&gt;environmental envelope&lt;/b&gt;" id="rdoEnvironmentalEnvelope"/>
-                        <!-- <html><![CDATA[User-defined <b>environmental envelope</b>]]></html>-->
-                    </hbox>
-                </vbox>
-                <!--<button label="Polygon Selection" id="btnPolygonSelection"/>
-
-        <button label="Box Selection" id="btnBoxSelection"/>
-
-        <button label="Clear Selection" id="btnClearSelection"/> -->
-            </radiogroup>
-            <hbox width="95%">
-                <combobox width="100%" id="cbAreaSelection" autodrop="true">
-                    <comboitem label="Draw bounding box..." id="ciBoundingBox" />
-                    <comboitem label="Draw polygon..." id="ciPolygon" />
-                    <comboitem label="Draw point and radius..." id="ciPointAndRadius" />
-                    <comboitem label="Create radius from address..." id="ciAddressRadiusSelection"/>
-                    <comboitem label="Select predefined (displayed) map polygon..." id="ciMapPolygon" />
-                    <comboitem label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
-                    <comboitem label="Upload Shapefile..." id="ciUploadShapefile" />
-                    <comboitem label="Box - Australia" id="ciBoxAustralia" />
-                    <comboitem label="Box - World" id="ciBoxWorld" />
-                    <comboitem label="Box - Current View" id="ciBoxCurrentView" />
-                </combobox>
-
-                <div style="float: right">
-                    <button id="zoomtoextent" image="/img/zoom_in.png"
-                        tooltiptext="zoom to extent"/>
-                    <button id="btnMetadata" image="/img/information.png"
-                        tooltiptext="more information"/>
-                    <button image="/img/util_garbage.png"
-                        id="btnClearSelection" visible="true" />
+                <div id="envelopeInfo" visible="false">
+                    <envelopeForm id="envelopeWindow" />
+                    <textbox id="envelopeChanged" visible="false" />
                 </div>
-
-            </hbox>
-            <div sclass ="highlighted" width="95%" >
-                <label id="lblArea" value="" />
-                <html><![CDATA[
-                    <div id="jsarea"></div>
-                    <div id="jsarea2"></div>
-                ]]></html>                
             </div>
-        </vbox>
 
-        <div visible="false" id="areaInfo">
-            <div sclass="highlighted" visible="false" >
-                <label sclass="word-wrap"
-                       style="white-space: normal; padding: 5px"
-                       multiline="true" id="instructions" value="" visible="true" />
-            </div>
-            <div id="polygonInfo" sclass="highlighted" visible="true" width="90%" >
-                <vbox>
-                    <hbox>
-                        <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
-                        <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
-                    </hbox>
-                    <hbox>
-                        <button label="Show Species" id="btnShowSpecies" visible="false" sclass="goButton" />
+            <separator />
+            <speciesListForm id="speciesListForm" />
 
-                    </hbox>
-                </vbox>
-            </div>
-            <div id="envelopeInfo" visible="false">
-                <envelopeForm id="envelopeWindow" />
-                <textbox id="envelopeChanged" visible="false" />
-            </div>
-        </div>
+            <textbox id="searchPoint" visible="false"/>
+            <textbox id="searchSpeciesPoint" visible="false"/>
+            <textbox id="selectionGeom" visible="false"/>
+            <textbox id="boxGeom" visible="false"/>
+            <script type="text/javascript">
+                function setSearchPointAnalysis(point_orig) {
+                    var point = point_orig.clone();
 
-        <textbox id="searchPoint" visible="false"/>
-        <textbox id="searchSpeciesPoint" visible="false"/>
-        <textbox id="selectionGeom" visible="false"/>
-        <textbox id="boxGeom" visible="false"/>
-        <script type="text/javascript">
-            function setSearchPointAnalysis(point_orig) {
-                var point = point_orig.clone();
-                
-                // transform the point from Google Projection to EPSG:4326
-                var mapObj = window.frames.mapFrame.map;
-                point.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxSearchPoint = $e('${searchPoint.uuid}');
-                tbxSearchPoint.value = point.lon + "," + point.lat;
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSearchPoint.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSearchPoint.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSearchPoint.fireEvent('onblur');
-                    tbxSearchPoint.fireEvent('onchange');
+                    // transform the point from Google Projection to EPSG:4326
+                    var mapObj = window.frames.mapFrame.map;
+                    point.transform(mapObj.projection, mapObj.displayProjection);
+                    var value = point.lon + "," + point.lat;
+                    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchPoint', value));
                 }
-            }
 
-            function setSpeciesSearchPointAnalysis(point_orig) {
-                var point = point_orig.clone();
+                function setSpeciesSearchPointAnalysis(point_orig) {
+                    var point = point_orig.clone();
 
-                // transform the point from Google Projection to EPSG:4326
-                var mapObj = window.frames.mapFrame.map;
-                point.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxSpeciesSearchPoint = $e('${searchSpeciesPoint.uuid}');
-                tbxSpeciesSearchPoint.value = point.lon + "," + point.lat;
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSpeciesSearchPoint.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSpeciesSearchPoint.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSpeciesSearchPoint.fireEvent('onblur');
-                    tbxSpeciesSearchPoint.fireEvent('onchange');
+                    // transform the point from Google Projection to EPSG:4326
+                    var mapObj = window.frames.mapFrame.map;
+                    point.transform(mapObj.projection, mapObj.displayProjection);                
+                    var value = point.lon + "," + point.lat;
+                    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchSpeciesPoint', value));
                 }
-            }
 
-            function setSelectionGeometry(geometry_orig) {
-                var geometry = geometry_orig.clone();
-                
-                // transform the geometry from Google Projection to EPSG:4326
-                var mapObj = window.frames.mapFrame.map;
-                geometry.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxSelectionGeom = $e('${selectionGeom.uuid}');
-                tbxSelectionGeom.value = geometry;
+                function setSelectionGeometry(geometry_orig) {
+                    var geometry = geometry_orig.clone();
 
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSelectionGeom.fireEvent('onblur');
-                    tbxSelectionGeom.fireEvent('onchange');
+                    // transform the geometry from Google Projection to EPSG:4326
+                    var mapObj = window.frames.mapFrame.map;
+                    geometry.transform(mapObj.projection, mapObj.displayProjection);
+                    var value = geometry.toString();
+                    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value));   
                 }
-            }
 
-            function setSelectionLayerGeometry(geometry_orig) {            
-                var geometry = geometry_orig;
+                function setSelectionLayerGeometry(geometry_orig) {            
+                    var geometry = geometry_orig;
 
-                var mapObj = window.frames.mapFrame.map;
-                var tbxSelectionGeom = $e('${selectionGeom.uuid}');
-                tbxSelectionGeom.value = "LAYER(" + geometry + ")";
-
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxSelectionGeom.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxSelectionGeom.fireEvent('onblur');
-                    tbxSelectionGeom.fireEvent('onchange');
+                    var mapObj = window.frames.mapFrame.map;
+                    var value = "LAYER(" + geometry.toString() + ")";
+                    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value)); 
                 }
-            }
 
-            function setBoxGeometry(geometry_orig) {
-                var geometry = geometry_orig.clone();
-                
-                // transform the geometry from Google Projection to EPSG:4326
-                var mapObj = window.frames.mapFrame.map;
-                geometry.transform(mapObj.projection, mapObj.displayProjection);
-                var tbxBoxGeom = $e('${boxGeom.uuid}');
-                tbxBoxGeom.value = geometry;
+                function setBoxGeometry(geometry_orig) {
+                    var geometry = geometry_orig.clone();
 
-                if (document.createEvent) {
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent( 'blur', false, false);
-                    tbxBoxGeom.dispatchEvent(evt);
-
-                    var evt2 = document.createEvent('HTMLEvents');
-                    evt2.initEvent( 'change', false, false);
-                    tbxBoxGeom.dispatchEvent(evt2);
-                } else if (document.createEventObject) {
-                    tbxBoxGeom.fireEvent('onblur');
-                    tbxBoxGeom.fireEvent('onchange');
+                    // transform the geometry from Google Projection to EPSG:4326
+                    var mapObj = window.frames.mapFrame.map;
+                    geometry.transform(mapObj.projection, mapObj.displayProjection);
+                    var value = geometry.toString(); 
+                    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onBoxGeom', value));
                 }
-            }
-        </script>
-    </window>
+            </script>
+        </window>
 
-</zk>
+    </zk>

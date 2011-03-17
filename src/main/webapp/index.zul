@@ -1,13 +1,10 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
-<?component name="addLayer" macro-uri="/WEB-INF/zul/AddLayer.zul"?>
+<?script type="text/javascript" src="index.js.dsp"?>
+
 <?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
 <?component name="leftMenuAnalysis" macro-uri="/WEB-INF/zul/Analysis.zul"?>
 <?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/leftMenuLinks.zul"?>
-<?component name="leftMenuMap" macro-uri="/WEB-INF/zul/leftMenuMap.zul"?>
-<?component name="layerListTab" macro-uri="/WEB-INF/zul/leftMapLayers.zul"?>
-<?component name="featureInfo" macro-uri="/WEB-INF/zul/featureInfo.zul"?>
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
-<?component name="animationControlsComposer" macro-uri="/WEB-INF/zul/AnimationControls.zul"?>
 <?component name="layerList" macro-uri="/WEB-INF/zul/layers.zul"?>
 
 <?page id="MapZul" title="${portalNaming.portalName}" cacheable="false"
@@ -17,20 +14,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
 <zk xmlns="http://www.zkoss.org/2005/zul" xmlns:h="http://www.w3.org/1999/xhtml"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd"
+    xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
 
-    <html><![CDATA[
-            <link rel="stylesheet" href="css/zkcomponents.css" type="text/css" media="screen" />
-            <link rel="stylesheet" href="css/zkprint.css" type="text/css" media="print" />
-            <!-- <link rel="stylesheet" href="css/alastyles.css" type="text/css" media="screen" /> -->
-        ]]>
-    </html>
-
-    <!-- style src="css/zkprint.css" media="print" /-->
-    <script src="/scripts/jquery-1.2.6.min.js" type="text/javascript"></script>
-    <script src="/scripts/jqDnR.js" type="text/javascript"></script>
-
-    <script type="text/javascript">
+    <style src="css/zkcomponents.css" media="screen" />
+    <style src="css/zkprint.css" media="print" />
+  
+    <script defer="false" type="text/javascript">
         var mapLayers = null;
         var currFeature = null;
         var map = null;
@@ -44,8 +34,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         var safeToLoadMapId = null;
         var registerLayer = null;
         var tmpvars;
-        var disableDepthServlet= ${settings.disableDepthServlet};
-
+        var disableDepthServlet= ${settings.disableDepthServlet};           
 
         var wms100 = ${layerUtilities.wms100};
         var wms110 = ${layerUtilities.wms110};
@@ -56,11 +45,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         var georss = ${layerUtilities.georss};
         var kml = ${layerUtilities.kml};
         var unsupported =${layerUtilities.unsupported};
-
-
-
     </script>
-
 
     <window id="mapPortalPage" width="100%" height="100%"
             use="au.org.emii.portal.composer.MapComposer" apply="au.org.emii.portal.composer.MapComposer"
@@ -73,140 +58,25 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         -->
         <div id="rawMessageHackHolder" visible="false">
             <iframe id="rawMessageIframeHack" width="100%" height="250px" />
-        </div>
+        </div> 
 
 
         <!--  flag indicating whether safe to load map (OL library loaded) -->
-        <textbox visible="false" id="safeToLoadMap" value="false" />
-        <script type="text/javascript">
-            var safeToLoadMapId = '${safeToLoadMap.uuid}';
-
-            function updateSafeToLoadMap(status) {
-                    document.getElementById(safeToLoadMapId).value = status;
-                    try{
-                        zkTxbox.updateChange($e(safeToLoadMapId), false);
-                    }catch(err){
-                        setTimeout(function() { updateSafeToLoadMap(status); }, 1000);
-                    }
-            }
-        </script>
+        <!-- textbox visible="true" id="safeToLoadMap" value="false" / -->
+        
         <doublebox id="southReal" visible="false" />
         <doublebox id="northReal" visible="false" />
         <doublebox id="westReal" visible="false" />
         <doublebox id="eastReal" visible="false" />
 
-        <!-- textboxes to hold polygon geometry
-        the value is set by setPolygonGeometry, which notifies the server by generating an onChange
-        -->
-        <textbox id="polyGeom" visible="false"/>
-        <textbox id="tbxTabSelection" visible="false"/>
-        <textbox id="tbxReloadLayers" visible="false"/>
-        <script type="text/JavaScript">
-            function roundNumber(num, dec) {
-            var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
-            return result;
-            }
+        <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
 
-             function setSearchPoint(lon,lat) {
-                if (setSearchPointAnalysis != undefined) {
-                    setSearchPointAnalysis(lon,lat)
-                }
-            }
-
-             function setSpeciesSearchPoint(lonlat) {
-                if (setSpeciesSearchPointAnalysis != undefined) {
-                    setSpeciesSearchPointAnalysis(lonlat)
-                }
-            }
-
-            function setExtent() {
-
-
-            if (getGeographicExtentControls != undefined) {
-            getGeographicExtentControls();
-            }
-
-
-            }
-
-            function setPolygonGeometry(geometry) {
-            if (setSelectionGeometry != undefined) {
-            setSelectionGeometry(geometry);
-            }
-            }
-
-            function setLayerGeometry(geometry) {
-            if (setSelectionLayerGeometry != undefined) {
-            setSelectionLayerGeometry(geometry);
-            }
-            }
-
-            function setRegionGeometry(geometry) {
-            if (setBoxGeometry != undefined) {
-            setBoxGeometry(geometry);
-            }
-
-            }
-
-            function setAreaTabSelected() {
-            var tbxTabSelection =  $e('${tbxTabSelection.uuid}');
-            var currentTime = new Date();
-            tbxTabSelection.value = "area" + currentTime.getSeconds();
-
-            if (document.createEvent) {
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent( 'blur', false, false);
-            tbxTabSelection.dispatchEvent(evt);
-
-            var evt2 = document.createEvent('HTMLEvents');
-            evt2.initEvent( 'change', false, false);
-            tbxTabSelection.dispatchEvent(evt2);
-            }
-            else if (document.createEventObject) {
-            tbxTabSelection.fireEvent('onblur');
-            tbxTabSelection.fireEvent('onchange');
-            }
-
-            //	tbxTabSelection.value = "";
-            }
-
-            function reloadSpecies() {
-          //  return;
-
-        var tbxReloadLayers = $e('${tbxReloadLayers.uuid}');
-        var currentTime = new Date();
-        tbxReloadLayers.value = "z=" + map.zoom + "&amp;b=" + map.getExtent().toBBOX();
-
-        if (document.createEvent) {
-          var evt = document.createEvent('HTMLEvents');
-          evt.initEvent( 'blur', false, false);
-          tbxReloadLayers.dispatchEvent(evt);
-
-          var evt2 = document.createEvent('HTMLEvents');
-          evt2.initEvent( 'change', false, false);
-          tbxReloadLayers.dispatchEvent(evt2);
-        } else if (document.createEventObject) {
-          tbxReloadLayers.fireEvent('onblur');
-          tbxReloadLayers.fireEvent('onchange');
-        }
-      }
-        function showInfo(curr) {
-            window.mapFrame.showInfo(curr);
-        }
-
-        function showInfoOne() {
-            window.mapFrame.showInfoOne();
-        }
-        </script>
-
-        <textbox id="tbxPrintHack" visible="false"/>
-        <textbox id="tbxLayerLoaded" visible="false"/>
-
+        <script defer="true" type="text/JavaScript" src="scripts/index.js" />
+                
         <!-- external content (Links) popup -->
         <window id="externalContentWindow" visible="false" width="80%"
                 height="80%" border="normal" sizable="true"
-                use="au.org.emii.portal.composer.ExternalContentComposer"
-                apply="au.org.emii.portal.composer.ExternalContentComposer">
+                use="au.org.emii.portal.composer.ExternalContentComposer" >
             <caption id="caption">
                 <toolbarbutton id="reset" label="Reset Window" />
                 <toolbarbutton id="breakout" label="Open in new Window" target="_blank" />
@@ -214,105 +84,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </caption>
             <separator />
             <iframe id="externalContentIframe" width="100%" height="100%" />
+            <html id="externalContentHTML" ></html>
         </window>
 
         <borderlayout width="100%">
             <north id="header" height="45">
-
-                <div>
-                    <!--  top right menu links -->
-                    <div sclass="toplinks">
-                        <zk if="${! settings.disablePortalUsers}">
-                            <toolbarbutton label="Logout"
-                                           zclass="leftmenu_ahref"
-                                           id="logoutButton" visible="${session.attributes.portalSession.portalUser.loggedIn}" />
-                            <toolbarbutton label="Login"
-                                           tooltiptext="Login and view your stored searches and maps" zclass="leftmenu_ahref"
-                                           id="loginButton"  visible="${! session.attributes.portalSession.portalUser.loggedIn}" />
-
-                        </zk>
-
-                        <zk forEach="${session.attributes.portalSession.staticMenuLinks}" if="${! settings.disableTopLinks}">
-
-                            <!--  external links -->
-                            <toolbarbutton if="${each.external}" label="${each.name}"
-                                           tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
-
-                            <!--  internal links -->
-                            <toolbarbutton if="${! each.external}" label="${each.name}"
-                                           tooltiptext="${each.description}" zclass="leftmenu_ahref"
-                                           forward="onClick=onActivateLink()" >
-                                <custom-attributes link="${each}" />
-                            </toolbarbutton>
-
-                        </zk>
-                    </div>
-
-
-
-                    <label sclass="tmpHeader" value="Explore the Spatial Portal" visible="false" />
-
-
-                    <div sclass="highlighted spaced" visible="false" >
-                        This form should be hidden
-                        <textbox id="extUrl"/>
-                        <separator />
-                        <textbox id="extSld"/>
-                        <separator />
-                        <textbox id="extCql"  />
-                        <separator />
-                        <textbox id="extLabel" />
-                        <separator />
-                        <textbox id="extLayer" />
-                        <separator />
-                        <textbox id="extType" />
-                        <separator />
-                        <textbox id="extSubmit"  />
-                        <separator />
-                    </div>
-                    <script type="text/javascript">
-
-                        // for external KML etc layers
-                        function setExtLayer(url,label,type) {
-                        document.getElementById('${extUrl.uuid}').value = url;
-                        document.getElementById('${extLabel.uuid}').value = label;
-                        document.getElementById('${extType.uuid}').value = type;
-                        document.getElementById('${extSubmit.uuid}').value = true;
-                        updateExtLayers();
-
-                        return false;
-                        }
-                        // for external WMS layers
-                        function setExtWmsLayer(url,label,type,layer,sld,cql) {
-                        document.getElementById('${extUrl.uuid}').value = url;
-                        document.getElementById('${extSld.uuid}').value = sld;
-                        document.getElementById('${extCql.uuid}').value = cql;
-                        document.getElementById('${extLabel.uuid}').value = label;
-                        document.getElementById('${extLayer.uuid}').value = layer;
-                        document.getElementById('${extType.uuid}').value = type;
-                        document.getElementById('${extSubmit.uuid}').value = true;
-                        updateExtLayers();
-
-                        return false;
-                        }
-                        function updateExtLayers() {
-                        try {
-                        zkTxbox.updateChange($e('${extUrl.uuid}'), false);
-                        zkTxbox.updateChange($e('${extSld.uuid}'), false);
-                        zkTxbox.updateChange($e('${extCql.uuid}'), false);
-                        zkTxbox.updateChange($e('${extLabel.uuid}'), false);
-                        zkTxbox.updateChange($e('${extLayer.uuid}'), false);
-                        zkTxbox.updateChange($e('${extType.uuid}'), false);
-                        zkTxbox.updateChange($e('${extSubmit.uuid}'), false);
-                        } catch (err) {
-                        }
-                        }
-                    </script>
-                </div>
             </north>
-            <west 	style="overflow:auto;" title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true"
-                   id="menus" collapsible="true"
-                   splittable="true" minsize="250">
+            <west title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true" autoscroll="true"
+                   id="menus" collapsible="true" 
+                   splittable="true" minsize="250" width="400px">
                 <div id="westChild">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
                         <div zclass="closebox" zindex="500" left="2px" top="2px">
@@ -321,6 +101,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             label=""
                             image="img/buttonopen.png"
                             hoverImage="img/buttonopen-over.png"
+                            visible="false"
                             />
                         </div>
                     </div>
@@ -332,9 +113,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <div zclass="closebox" zindex="500" width="22px" top="5px">
                                 <toolbarbutton label="Help"
                                            sclass="helpButtonMain"
-                                           tooltiptext="ALA Spatial Portal Help"
-                                           forward="onClick=onActivateLink()" >
-                                <!--<custom-attributes link="http://emii1.its.utas.edu.au/drupal/" />-->
+                                           tooltiptext="ALA Spatial Portal Help" 
+                                           forward="onClick=onActivateLink()" >                                
                                     <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/species-maps-help/" />
                                     <custom-attributes label="Help" />
                                 </toolbarbutton>
@@ -342,16 +122,16 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 id="hideLeftMenu"
                                 label=""
                                 image="img/buttonclose.png"
-                                hoverImage="img/buttonclose-over.png" />
+                                hoverImage="img/buttonclose-over.png"
+                                visible="false"
+                                />
                             </div>
 
                             <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
                                 <tabs>
                                     <tab id="startNavigationTab" label="Start" />
                                     <tab id="mapNavigationTab" label="Map" />
-                                <!--<tab id="areaNavigationTab" label="Area" />-->
-                                    <tab id="linkNavigationTab" label="Analysis" if="${! settings.disableLinks}" />
-                                <!--<tab id="layerNavigationTab" label="Layers" if="${! settings.disableLayers}" />-->
+                                    <tab id="linkNavigationTab" label="Analysis" />
                                 </tabs>
                             </tabbox>
                         </div>
@@ -360,78 +140,25 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <leftMenuLinks id="leftMenuLinks" />
                         </div>
                         <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
-                            <!-- <leftMenuMap id="leftMenuMap" /> -->
-                            <div>
-                                <div align="right" visible="false">
-                                    <button image="/img/help.png" sclass="helpButton"
-                                    onClick="help.open=(help.open) ? false:true;" />
-                                </div>
-                                <separator/>
-                                <panel id="help" border="normal" open="false" style="padding: 5px" >
-                                    <panelchildren>
-                                        <html style="white-space: normal;"><![CDATA[
-                                <p>
-                                This tab enables spatial features known to the Atlas
-                                to be mapped. The location of species (or genus, family, order or class)
-                                occurences can be mapped as point features. Clicking on the species
-                                location on the map will pop-up information about that occurence and
-                                link to related data.
-                                </p>
-                                <p>
-                                The Atlas maintains a list of Australian gazetteer features
-                                compled by <a href="https://www.ga.gov.au/products/servlet/controller?event=GEOCAT_DETAILS&catno=65589" target="_blank">Geoscience Australia</a>.
-                                These have been augmented by additional areas.
-                                </p>
-                                <p>
-                                The Atlas also has a library of environmental (gridded data with
-                                continuous values) and 'contextual' layers (polygonal data with class
-                                values) that can be mapped and used in analysis. The Atlas also
-                                supports a THREDDS catalogue and a user-defined WMS service.
-                                </p>
-                                ]]>
-                                        </html>
-                                        <separator/>
-                                        <div align="right">
-                                            <button label="hide help" onClick="help.open=false;" />
-                                        </div>
-                                    </panelchildren>
-                                </panel>
-                                <div id="layerNavigationTabContent" visible="true"> <!-- visible=${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LAYER_TAB}" -->
-
+                            <div>                                
+                                <separator/>                                
+                                <div id="layerNavigationTabContent" visible="true"> 
                                     <hbox width="95%">
-                                        <div style="float: left; margin-left: 5px;" >
+                                        <div style="float: left margin-left: 5px" >
                                             <label style="font-weight: bold" value="Active Layers"  />
                                         </div>
-                                        <div style="float:right" visible="false"><!--button id="reloadPortal" label="Reset Map" sclass="h3" /-->
+                                        <div style="float:right" visible="false">
                                         </div>
-
-
                                     </hbox>
-
                                     <separator/>
-
-                            <!--  baselayer selection -->
-                                    <div sclass="highlighted" visible="false">
-                                        <label value="Base Layer" sclass="h3" />
-                                        <listbox id="baseLayerList" mold="select" />
-                                    </div>
-
-
+                  
                             <!-- active layers -->
                                     <div id="activeLayersHolder">
                                         <listbox id="activeLayersList" />
                                     </div>
 
                                     <div id="layerControls" sclass="highlighted" visible="false">
-                                        <hbox  width="100%">
-                                    <!--<hbox  align="left" style="float:left">
-                                        <button id="zoomExtent" label="Zoom to layer extent" />
-                                    </hbox>-->
-
-                                            <hbox  align="right" visible="false" >
-                                                <button id="closeLayerControls" label="Close Legend" />
-                                            </hbox>
-                                        </hbox>
+                                        
                                 <!-- opacity-->
                                         <div id="opacityControls" >
                                             <vbox>
@@ -446,13 +173,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                         <label id="opacityLabel" />
                                                     </div>
 
-                                                </hbox>
-                                                <hbox>
-
-                                                    <div id="styleControls" style="margin-top:0px" visible="false">
-                                                        <label value="Style:" sclass="h3 inputlabel" />
-                                                        <combobox id="styleList" itemRenderer="au.org.emii.portal.databinding.StyleRenderer" readonly="true" />
-                                                    </div>
                                                 </hbox>
                                             </vbox>
                                         </div>
@@ -475,16 +195,43 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </hbox>
                                             </div>
                                             <div id="colourChooser" visible="false">
-
                                                 <hbox>
-                                                    <label value="Colours:" sclass="h3" />
+                                                    <label value="Colour:" sclass="h3" />
+                                                    <separator orient="vertical" />
+                                                    <combobox id="cbColour" >
+                                                        <comboitem label="User defined" id="ciColourUser" value="-1" />
+                                                        <comboitem label="General Categories" value="10" />
+                                                        <comboitem label="Scientific Name" value="taxon_name" />
+                                                        <comboitem label="Species" value="species" />
+                                                        <comboitem label="Genus" value="genus" />
+                                                        <comboitem label="Family" value="family" />
+                                                        <comboitem label="Order" value="order" />
+                                                        <comboitem label="Class" value="class" />
+                                                        <comboitem label="Phylum" value="phylum" />
+                                                        <comboitem label="Kingdom" value="kingdom" />
+                                                        <comboitem label="Uncertainty" value="u" />
+                                                        <comboitem label="Data Provider" value="p" />
+                                                        <comboitem label="Institution" value="in" />
+                                                        <comboitem label="Year" value="y" />
+                                                        <comboitem label="Collection" value="c" />
+                                                        <comboitem label="Altitude" value="a" />
+                                                        <comboitem label="Depth" value="d" />
+                                                    </combobox>
+                                                </hbox>
+                                                <div id="divUserColours" >
+                                                    <separator />
+                                                <hbox >
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
+                                                    <separator orient="vertical" />
                                                     <style dynamic="true">
 
 			<!-- cut/hide the vertical borders in the grid rows -->
-                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell,div.z-grid
+                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
 {
 border: none;
-overflow: hidden;
 zoom: 1;
 background: white;
 border-top: none;
@@ -492,7 +239,7 @@ border-left: none;
 border-right: none;
 border-bottom: none;
 }
-
+    
                                                     </style>
                                                     <grid id="cpGrid" width="280px" sclass="noborder" >
                                                         <rows>
@@ -589,9 +336,13 @@ border-bottom: none;
                                                             <label id="blueLabel" />
                                                         </div>
                                                     </hbox>
-                                                    <separator />
+                                                    </vbox>
+                                                    </div>
+                                                    <vbox>
                                                     <hbox width="100%">
                                                         <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
+                                                            <separator />
+                                                            <separator />
                                                             <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
                                                             <separator />
                                                             <hbox id="uncertaintyLegend" visible="false">
@@ -642,61 +393,13 @@ border-bottom: none;
                                             </div>
                                             <div id="legendHtml" visible="true"/>
                                         </div>
-
-                                    <!--<separator sclass="hr" height="2px" />
-
-                                 <div align="right" width="90%">
-                                        <button id="applyChange" label="Apply" />
-                                    </div>
-                                -->
-
-                                        <div id="transectControl" visible="false" >
-                                            <separator sclass="hr" height="10px" />
-                                            <label value="Turn on transect graphing for this layer" />
-                                            <image id="turnonTransectDrawing" src="img/draw.png" style="width:16px" />
-                                        </div>
-                                    <!--  animation  -->
-                                        <animationControlsComposer id="animationControlsComposer" />
                                     </div>
 
                                 <!--  reset / save map buttons -->
-                                    <div align="right" style="margin-right:5px;" sclass="resetdiv" >
-                                        <button id="saveMap" label="Save Map" sclass="h3" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}" />
-                                        <label  id="saveMapAdvice" value="Login to save this map!"   sclass="h5 spacedUp" visible="${!settings.disablePortalUsers and !session.attributes.portalSession.portalUser.loggedIn}" />
-
+                                <separator />
+                                    <div align="right" style="margin-right:5px;" >
                                         <button id="removeAllLayers" label="Remove All Layers" sclass="goButton" />
                                     </div>
-
-                                    <div sclass="highlighted" id="saveLoadMapContainer" visible="${!settings.disablePortalUsers and session.attributes.portalSession.portalUser.loggedIn}">
-                                    <!--Dialog to save map as.. -->
-                                        <div  id="createMapcont" visible="false" >
-                                            <label sclass="h4" value="Map Name:" />
-                                            <textbox id="createSavedMap" sclass="inputspace" constraint="no empty" maxlength="28"  width="150px" />
-                                            <button id="mapSave" label="Save"  />
-
-                                        </div>
-                                        <label id="createSavedMapError" sclass="h3 error"  visible="false" value="Please give your map a name" />
-                                        <label id="createSavedMapAdvice" sclass="h4 "  visible="false" value="You have no Saved Maps yet!" />
-
-
-                                    <!--Dialog to load maps-->
-                                        <div  id="loadMapcont" visible="true" >
-                                            <listbox id="savedMaps" sclass="inputspace" mold="select" width="200px"></listbox>
-                                            <button label="Load" id="loadSavedMapButton" />
-                                            <button label="Delete" id="mapDel" />
-                                        </div>
-                                    </div>
-
-
-                                <!--separator height="20px" /-->
-
-                                        <!--  save Map dialog box -->
-                                    <tree id="saveMaps">
-                                        <treecols>
-                                            <treecol width="90%" />
-                                            <treecol width="10%" />
-                                        </treecols>
-                                    </tree>
 
                                 <!-- contains the user parameters -->
                                     <textbox id="userparams" visible="false" multiline="true" value="${param}" />
@@ -706,14 +409,12 @@ border-bottom: none;
                                 <separator/>
 
                                 <separator bar="true"/>
-                                <tabbox id="mapOptsTabbox" width="95%"><!-- height="300px" mold="accordion-lite" -->
+                                <tabbox id="mapOptsTabbox" width="95%">
                                     <tabs>
                                         <tab label="Species" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-species-tab/&quot;)" />
                                         <tab label="Locations" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-locations-tab/&quot;)" />
                                         <tab label="Layers" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-layers-tab/&quot;)" />
                                         <tab label="Custom" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-layers-tab/&quot;)" visible="false" />
-            <!-- <tab id="realtimeTab" label="Layers" if="${! settings.disableRealtime}" visible="false" /> -->
-            <!-- <tab label="Map WMS layer" visible="false" /> -->
                                     </tabs>
                                     <toolbar>
                                         <toolbarbutton id="mapCXHelp"
@@ -723,80 +424,20 @@ border-bottom: none;
                                         </toolbarbutton>
                                     </toolbar>
                                     <tabpanels>
-                                        <tabpanel>
-                                            <panel id="helpSpecies" border="normal" open="false" style="padding: 5px" >
-                                                <panelchildren>
-                                                    <div align="right">
-                                                        <button label="X" onClick="helpSpecies.open=false;" />
-                                                    </div>
-                                                    <html style="white-space: normal;"><![CDATA[
-                                                    <p>
-                                                        Help for Species
-                                                    </p>
-                                                ]]>
-                                                    </html>
-                                                </panelchildren>
-                                            </panel>
-                                            <div>
-                                            <!--
-                                            <radiogroup id="rdgNameSearchType" >
-                                                <hbox>
-                                                    <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
-                                                    <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
-                                                </hbox>
-                                            </radiogroup>
-                                            -->
-                                                <vbox>
+                                        <tabpanel width="100%">
+                                            <div width="100%">
+                                                <vbox width="100%">
                                                     <label>Enter a scientific or common name</label>
-
-                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
+                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="320px" >
                                                         <comboitem label=""/>
                                                     </combobox>
-
-                                                    <button id="btnSearchSpecies" label="Add to map"  visible="false"/>
                                                     <label sclass="exampleText">e.g. Macropus rufus</label>
                                                 </vbox>
-
-                                                <html>
-                                                <![CDATA[ <br> ]]>
-                                                </html>
-                                                <button id="btnUploadSpecies" label="Upload species file" />
-                                                <html>
-                                                <![CDATA[ <br> ]]>
-                                                </html>
                                             </div>
-
-                                            <div id="facilityControls">
-                                                <zk forEach="${session.attributes.portalSession.facilities}">
-                                                    <div visible="false">
-                                                        <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                           tooltiptext="${each.value.description}" sclass="tabheader"
-                                                           forward="onCheck=onSelectFacility()">
-
-                                                            <custom-attributes systemId="${each.value.id}" />
-                                                        </radio>
-                                                        <tree id="tree_${each.value.id}" />
-                                                    </div>
-                                                </zk>
-
-                                            </div>
-
-
+                                            <separator />
+                                            <button id="btnUploadSpecies" label="Upload species file" sclass="goButton" />
                                         </tabpanel>
-                                        <tabpanel> <!--  style="height: 800px; overflow: scroll" -->
-                                            <panel id="helpLocation" border="normal" open="false" style="padding: 5px" >
-                                                <panelchildren>
-                                                    <div align="right">
-                                                        <button label="x" onClick="helpLocation.open=false;" />
-                                                    </div>
-                                                    <html style="white-space: normal;"><![CDATA[
-                                                    <p>
-                                                        Help for Location
-                                                    </p>
-                                                ]]>
-                                                    </html>
-                                                </panelchildren>
-                                            </panel>
+                                        <tabpanel> 
                                             <div>
                                                 <vbox>
                                                     <label value="Enter place name" />
@@ -804,39 +445,18 @@ border-bottom: none;
                                                         <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="320px">
                                                             <comboitem label=""/>
                                                         </combobox>
-                                                    <!-- <button id="gazSearch" label="Add to Map" /> -->
                                                         <label id="resultGaz" />
                                                     </hbox>
-                                                    <listbox id="gazetteerResults" fixedLayout="true" visible="false">
-                                                        <listhead>
-                                                            <listheader label="Name"/>
-                                                            <listheader label="View" />
-                                                        </listhead>
-                                                    </listbox>
                                                     <label sclass="exampleText">e.g. Australian Capital Territory</label>
                                                 </vbox>
                                             </div>
                                         </tabpanel>
-                                        <tabpanel> <!--  height="800px" style="border: 1px solid red; height: 800px; overflow: auto" -->
+                                        <tabpanel>            
                                             <!-- layers -->
-                                            <!-- <layerListTab id="layerListTab" /> -->
-                                            <panel id="helpLayers" border="normal" open="false" style="padding: 5px" >
-                                                <panelchildren>
-                                                    <div align="right">
-                                                        <button label="x" onClick="helpLayers.open=false;" />
-                                                    </div>
-                                                    <html style="white-space: normal;"><![CDATA[
-                                                    <p>
-                                                        Help for Layers
-                                                    </p>
-                                                ]]>
-                                                    </html>
-                                                </panelchildren>
-                                            </panel>
                                             <div>
                                                 <vbox>
                                                     <label value="Enter a layer name or a keyword" />
-                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="92%" >
+                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true"  width="320px" >
                                                         <comboitem label=""/>
                                                     </combobox>
                                                     <label sclass="exampleText">e.g. Temperature</label>
@@ -845,92 +465,11 @@ border-bottom: none;
 
                                             <separator />
                                             <layerList id="layerList" />
-
-                                            <panel id="pnlLayers" border="normal" open="true" style="height: 600px; padding: 5px" visible="false">
-                                                <panelchildren>
-                                            <!-- <include src="/layers.zul" /> -->
-                                                    <tree id="tree" multiple="false" checkmark="false">
-                                                        <treecols>
-                                                            <treecol width="16px" />
-                                                            <treecol width="16px" />
-                                                            <treecol />
-                                                        </treecols>
-
-                                                    </tree>
-                                                </panelchildren>
-                                            </panel>
-                                        <!--
-                                        <div id="realtimeControls">
-                                            <zk forEach="${session.attributes.portalSession.realtimes}">
-                                                <div>
-                                                    <radio id="radio_${each.value.id}" label="${each.value.name}"
-                                                           tooltiptext="${each.value.description}" sclass="tabheader"
-                                                           forward="onCheck=onSelectRealtime()">
-                                                        <custom-attributes systemId="${each.value.id}" />
-                                                    </radio>
-                                                    <tree id="tree_${each.value.id}" />
-                                                </div>
-                                            </zk>
-                                        </div>
-                                        -->
-
-                                        </tabpanel>
-
-                                        <!--
-                                        <tabpanel  id="customData" visible="false" >
-                                            <div>
-                                                <fileupload id="btnFileUpload" maxsize="5000000" />
-                                            </div>
-                                        </tabpanel>
-                                        -->
-
-                                        <tabpanel  id="userTabPanel" visible="false" >
-                                        <!--<div align="right" style="margin-right:5px;" sclass="resetdiv">
-                                            <button id="addExtLayersButton" label="Add Layers from a WMS server" />
-                                        </div>-->
-                                            <div zclass="tabpanel_cnt" id="addLayer" visible="true">
-                                                <addLayer id="addLayerMacro" />
-                                            </div>
-                                            <tree id="tree_user">
-                                                <treecols>
-                                                    <treecol width="90%" />
-                                                    <treecol width="10%" />
-                                                </treecols>
-                                            </tree>
                                         </tabpanel>
                                     </tabpanels>
-
-
-
                                 </tabbox>
-
-                                <separator />
-                                <button label="save as image" action="onclick: printHack('');"  visible="false"/>
                             </div>
-
                         </div>
-                        <!--  <div id="areaNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.AREA_TAB}">
-                        <label sclass="h2 title" value="Define your area of interest" /> -->
-
-                        <!-- <tabbox > mold="accordion-lite"
-                            <tabs> -->
-
-                                <!-- selection tools -->
-                            <!--    <tab id="selectionTab" label="Selection"  />
-
-                            </tabs>
-                            <tabpanels>
-                                <tabpanel>
-                                    <selectionForm id="sf" />
-                                </tabpanel>
-
-                            </tabpanels>
-                        </tabbox>
-
-
-                    </div> -->
-
-
                         <div id="linkNavigationTabContent"
                              visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
                             <leftMenuAnalysis id="leftMenuAnalysis" />
@@ -940,53 +479,39 @@ border-bottom: none;
                              visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
                             <leftMenuSearch id="leftMenuSearch" />
                         </div>
-
                     </div>
                 </div>
             </west>
 
 
             <center id="center">
-                <div id="mapcontainer" width="100%" height="100%" >
+                <div id="mapcontainer" width="100%" height="100%" >                    
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
-                        <!--
-                        <button id="switchMinimal" label="Minimal" action="onclick: changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
-                        <button id="switchNormal" label="Map" action="onclick: changeBaseLayer('normal'); window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
-                        <button id="switchSatellite" label="Satellite" action="onclick: changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;" sclass="goButton"/>
-                        <button id="goUserLoc" label="Zoom to my location" action="onclick: goToUserLocation()" sclass="goButton"/>
-                        <separator orient="vertical" spacing="20px" />
-                        <button label="Download map" action="onclick: printHack('');" sclass="goButton"/>
-                        <button id="reloadPortal" label="Reset map" sclass="goButton"/>
-                        -->
                         <hbox>
-                            <html><![CDATA[
-                        <ul id="cssdropdown">
-                            <li id="mapopt" class="headlink goButton"><span id="selmap">Normal</span>
-                                <ul>
-                                    <li><a href="#" onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</a></li>
-                                    <li><a href="#" onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</a></li>
-                                    <li><a href="#" onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                        ]]>
-                            </html>
-                            <button label="Zoom to my location" action="onclick: goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
+                            <n:ul id="cssdropdown" >
+                                <n:li id="mapopt" class="headlink goButton">
+                                    <n:span><n:span id="selmap">Normal</n:span> 
+                                    <n:span style="float:right">&#8711;</n:span></n:span>
+                                    <n:ul>
+                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</n:a></n:li>
+                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</n:a></n:li>
+                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</n:a></n:li>
+                                    </n:ul>
+                                </n:li>
+                            </n:ul>
+                            <button label="Zoom to my location"  w:onClick="goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
                             <separator orient="vertical" spacing="2px" />
-                            <button label="Download map" action="onclick: printHack('');" sclass="goButton" image="img/picture_save.png" />
+                            <button label="Download map" w:onClick="printHack('')" sclass="goButton" image="img/picture_save.png" />
                             <separator orient="vertical" spacing="1px" />
                             <button id="reloadPortal" label="Reset map" sclass="goButton" image="img/arrow_refresh.png" />
-                        </hbox>
+                            </hbox>
+                    </div>
+            
+                    <div style="float:left" width="100%" height="100%" >
+                        <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
                     </div>
 
-                    <div style="float:left" width="100%" height="100%" >
-                        <iframe id="mapIframe" width="100%" height="100%" name="mapFrame"  />
-                    </div>
-                    <script type="text/javascript">
-                        window.frames["mapFrame"].location.href = "";
-                        window.frames["mapFrame"].location.href = "./map2.html?";
-                    </script>
-                    <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="true" >
+                    <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="false" >
                         <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"
                                 visible="true" style="float:right;margin-bottom:10px;" />
                         <image 	id="layerSwitcherHide" src="/img/layer-switcher-minimize.png"
@@ -995,227 +520,202 @@ border-bottom: none;
                 </div>
             </center>
 
-
-            <south id="south">
+            <south id="south" visible="false">
                 <footer id="footer" />
             </south>
         </borderlayout>
 
-        <script type="text/javascript"><![CDATA[
-            var retryFixExtent = 0;
-            function fixExtent(a,b,c,d) {
-                map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d),true);
+        <script defer="false" type="text/javascript"><![CDATA[
+        var retryFixExtent = 0;
+        function fixExtent(a,b,c,d) {
+            map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d),true);
 
-                //does not always stick
-                if(retryFixExtent < 1) {
-                    retryFixExtent++;
-                    setTimeout(function() { fixExtent(a,b,c,d); }, 2000);
-                }
+            //does not always stick
+            if(retryFixExtent < 1) {
+                retryFixExtent++;
+                setTimeout(function() { fixExtent(a,b,c,d); }, 2000);
             }
+        }
+        
+        var onIframeMapFullyLoaded = function() {
+            //update screen widths before map is loaded (hide header)
+            var h0 = window.location.href.split('?');
+            if(h0.length > 1){
+                var h1 = h0[1].split("&");
+                var i;
+                for(i=0;i<h1.length;i++){
+                    if(h1[i].substring(0,2) == "p="){
+                        h1[i] = h1[i].substring(2,h1[i].length);
+                        var h2 = h1[i].split(",");
+                        if(h2.length > 6) {
+                            //style adjustment
+                            document.getElementsByTagName("body")[0].style.margin = "0px";
+                            document.getElementsByTagName("html")[0].style.margin = "0px";
 
-            var onIframeMapFullyLoaded = function() {
-                //update screen widths before map is loaded (hide header)
-                var h0 = window.location.href.split('?');
-                if(h0.length > 1){
-                    var h1 = h0[1].split("&");
-                    var i;
-                    for(i=0;i<h1.length;i++){
-                        if(h1[i].substring(0,2) == "p="){
-                            h1[i] = h1[i].substring(2,h1[i].length);
-                            var h2 = h1[i].split(",");
-                            if(h2.length > 6) {
-                                //style adjustment
-                                document.getElementsByTagName("body")[0].style.margin = "0px";
-                                document.getElementsByTagName("html")[0].style.margin = "0px";
+                            //hide map buttons
+                            var q = jq('$mapbuttons')[0];
+                            q.style.display="none";
 
-                                //hide map buttons
-                                var q = $e('${mapbuttons.uuid}');
-                                q.style.display="none";
+                            //hide north
+                            q = document.getElementById(zk.Widget.$(jq('$header')[0]).uuid + "-real");
+                            q.style.height="0px";
 
-                                //hide north
-                                q = $e('${header.uuid}' + '!real');
-                                q.style.height="0px";
+                            //set west
+                            var m = document.getElementById(zk.Widget.$(jq('$menus')[0]).uuid + "-real");
 
-                                //set west
-                                var m = $e('${menus.uuid}' + '!real');
-                                var w = m.style.width;
-                                var diff = (w.substring(0,w.length-2))*1 - h2[6]*1;
-                                m.style.width = h2[6] + "px";
+                            var w = m.style.width;
+                            var diff = (w.substring(0,w.length-2))*1 - h2[6]*1 + 10;
+                            m.style.width = h2[6] + "px";
 
-                                var p = $e('${menus.uuid}' + '!split');
-                                p.style.width = h2[6] + "px";
-                                p.style.left = h2[6] + "px";
+                            var p = document.getElementById(zk.Widget.$(jq('$menus')[0]).uuid + "-split");
+                            p.style.width = h2[6] + "px";
+                            p.style.left = h2[6] + "px";
+                            p.style.display = "none";
 
-                                var n = $e('${center.uuid}' + '!real');
-                                w = n.style.width;
-                                var val = diff + w.substring(0,w.length-2)*1;
-                                n.style.width = val + "px";
+                            var n = document.getElementById(zk.Widget.$(jq('$center')[0]).uuid + "-real");
+                            w = n.style.width;
+                            var l = n.style.left;
+                            l = (l.substring(0,l.length-2)*1);
+                            var val = diff + w.substring(0,w.length-2)*1;
+                            n.style.width = val + "px";
 
-                                n.style.top = "0px";
-                                w = n.style.height;
-                                val2 = w.substring(0,w.length-2)*1 + 68;
-                                n.style.height = val2 + "px";
+                            n.style.top = "0px";
+                            w = n.style.height;
+                            val2 = w.substring(0,w.length-2)*1;
+                            n.style.height = val2 + "px";
 
-                                w = n.style.left;
-                                val = w.substring(0,w.length-2)*1 - diff;
-                                n.style.left =  val + "px";
+                            w = n.style.left;
+                            val = w.substring(0,w.length-2)*1 - diff;
+                            n.style.left =  val + "px";
 
-                                var n = $e('${center.uuid}' + '!cave');
-                                w = n.style.width;
-                                var val = diff + w.substring(0,w.length-2)*1;
-                                n.style.width = val + "px";
-                                n.style.left =  val + "px";
-                                n.style.top = "0px";
-                                n.style.height = val2 + "px";
-                            }
+                            var n = document.getElementById(zk.Widget.$(jq('$center')[0]).uuid + "-cave");
+                            w = n.style.width;
+                            var val = diff + w.substring(0,w.length-2)*1;
+                            n.style.width = val + "px";
+                            n.style.left =  val + "px";
+                            n.style.top = "0px";
+                            n.style.height = val2 + "px";
+
+                            mapFrame.document.getElementById("zoomtolocation").style.display="none";
+
+                            jQuery('.z-center')[0].style.border = "0px";
                         }
                     }
                 }
+            }
 
-                ${session.attributes.portalSession.onIframeMapFullyLoaded}
+            ${session.attributes.portalSession.onIframeMapFullyLoaded};
+            
+            map = window.mapFrame.map;
+            mapFrame = window.mapFrame;
 
-                //update map extents
-                var printing = false;
-                var h0 = window.location.href.split('?');
-                if(h0.length > 1){
-                    var h1 = h0[1].split("&");
-                    var i;
-                    for(i=0;i<h1.length;i++){
-                        if(h1[i].substring(0,2) == "p="){
-                            printing = true;
-                            h1[i] = h1[i].substring(2,h1[i].length);
-                            var h2 = h1[i].split(",");
-                            if(h2.length > 5){
-                                fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
-                                //map.zoomToExtent(new OpenLayers.Bounds(1*h2[2],1*h2[3],1*h2[4],1*h2[5]), true);
+            //update map extents
+            var printing = false;
+            var h0 = window.location.href.split('?');
+            if(h0.length > 1){
+                var h1 = h0[1].split("&");
+                var i;
+                for(i=0;i<h1.length;i++){
+                    if(h1[i].substring(0,2) == "p="){
+                        printing = true;
+                        h1[i] = h1[i].substring(2,h1[i].length);
+                        var h2 = h1[i].split(",");
+                        if(h2.length > 5){                           
+                            fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
+                            //map.zoomToExtent(new OpenLayers.Bounds(1*h2[2],1*h2[3],1*h2[4],1*h2[5]), true);
 
-                                while(map.controls.length > 0){
-                                    map.controls[0].deactivate();
-                                    map.removeControl(map.controls[0]);
+                            while(map.controls.length > 0){
+                                map.controls[0].deactivate();
+                                map.removeControl(map.controls[0]);
+                            }
+
+                            window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
+                        }
+
+                        if(h2.length > 7 && currentbaselayertxt != h2[7]) {                                
+                            changeBaseLayer(h2[7]);
+                        }
+
+                        //draw grid
+                        if(h2.length > 8){
+                            if (h2[8] != '0' && h2[8] != '0.0') {
+                                var ctrl = new OpenLayers.Control.Graticule({
+                                    numPoints: 2,
+                                    labelled: true,
+                                    visible: true
+                                });
+                                ctrl.labelSymbolizer.fontColor = "white";
+                                if(h2.length > 9) {
+                                    ctrl.labelSymbolizer.fontSize = "15";
+                                    ctrl.labelSymbolizer.fontWeight = "bold";
+                                    ctrl.lineSymbolizer.strokeWidth = 2;
+
+                                    //resize scale text
+                                    mapFrame.document.getElementById("mapscale").style.fontSize = "15px"
+                                    mapFrame.document.getElementById("mapscale").style.fontWeight = "bold"
+
+                                } else {
+                                    ctrl.lineSymbolizer.strokeWidth = 1;
                                 }
-
-                                window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
+                                ctrl.lineSymbolizer.strokeColor = "white";
+                                ctrl.lineSymbolizer.strokeOpacity = 0.6;
+                                map.addControl(ctrl);
                             }
+                        }
 
-                            if(h2.length > 7 && currentbaselayertxt != h2[7]) {
-                                changeBaseLayer(h2[7]);
-                            }
-
-                            //draw grid
-                            if(h2.length > 8){
-                                if (h2[8] != '0' && h2[8] != '0.0') {
-                                    var ctrl = new OpenLayers.Control.Graticule({
-                                          numPoints: 2,
-                                          labelled: true,
-                                          visible: true
-                                      });
-                                    ctrl.labelSymbolizer.fontColor = "white";
-                                    if(h2.length > 9) {
-                                        ctrl.labelSymbolizer.fontSize = "15";
-                                        ctrl.labelSymbolizer.fontWeight = "bold";
-                                        ctrl.lineSymbolizer.strokeWidth = 2;
-
-                                        //resize scale text
-                                        mapFrame.document.getElementById("mapscale").style.fontSize = "15px"
-                                        mapFrame.document.getElementById("mapscale").style.fontWeight = "bold"
-
-                                    } else {
-                                        ctrl.lineSymbolizer.strokeWidth = 1;
-                                    }
-                                    ctrl.lineSymbolizer.strokeColor = "white";                                    
-                                    ctrl.lineSymbolizer.strokeOpacity = 0.6;
-                                    map.addControl(ctrl);
+                        //scale circles
+                        if(h2.length > 9){
+                            var scaleby = 1.0*(h2[9]);
+                            var vl = map.getLayersByClass("OpenLayers.Layer.Vector");
+                            for (var i = 0; i < vl.length; i++) {
+                                var f = vl[i].features;
+                                if(vl[i].style.pointRadius != undefined) {
+                                    vl[i].style.pointRadius *= scaleby;
                                 }
-                            }
-
-                            //scale circles
-                            if(h2.length > 9){
-                                var scaleby = 1.0*(h2[9]);
-                                var vl = map.getLayersByClass("OpenLayers.Layer.Vector");
-                                for (var i = 0; i < vl.length; i++) {
-                                    var f = vl[i].features;
-                                    if(vl[i].style.pointRadius != undefined) {
-                                        vl[i].style.pointRadius *= scaleby;
-                                    }
-                                    for(var j=0;j<f.length;j++){
-                                        if(f[j].geometry.toString().indexOf('POINT') == 0) {
-                                            if(f[j].style.pointRadius != undefined) {
-                                                f[j].style.pointRadius *= scaleby;
-                                            }
+                                for(var j=0;j<f.length;j++){
+                                    if(f[j].geometry.toString().indexOf('POINT') == 0) {
+                                        if(f[j].style.pointRadius != undefined) {
+                                            f[j].style.pointRadius *= scaleby;
                                         }
                                     }
-                                    vl[i].redraw(true);
                                 }
-                            }
-
-                            //scale text?
-                            //...
+                                vl[i].redraw(true);
+                            }                                
                         }
+
+                    //scale text?
+                    //...
                     }
                 }
-
-                //use session state extents for printing
-                if (!printing) {
-                    window.mapFrame.loadBaseMap();
-                }
-
-                 map.signalLayerLoaded = function (layerName) {
-
-                        var tbx = $e('${tbxLayerLoaded.uuid}');
-                        tbx.value = layerName;
-
-                        if (document.createEvent) {
-                        var evt = document.createEvent('HTMLEvents');
-                        evt.initEvent( 'blur', false, false);
-                        tbx.dispatchEvent(evt);
-
-                        var evt2 = document.createEvent('HTMLEvents');
-                        evt2.initEvent( 'change', false, false);
-                        tbx.dispatchEvent(evt2);
-                        } else if (document.createEventObject) {
-                        tbx.fireEvent('onblur');
-                        tbx.fireEvent('onchange');
-                        }
-                    }
-
-            };
-
-            jQuery('.hidden_image :hidden').show();
-
-            if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
-                jQuery('.z-north').show();
-                jQuery('.z-south').show();
             }
 
-            ]]>
-        </script>
-
-        <script type="text/JavaScript"><![CDATA[
-            function printHack(o) {
-            var tbx = $e('${tbxPrintHack.uuid}');
-
-            //session variables not in session
-            var size = map.getSize().w + "," + (document.body.clientHeight-68); //document.body.clientWidth + "," + document.body.clientHeight;
-            var extent = map.getExtent().toBBOX();
-            var lhsWidth = 0;//$e('${menus.uuid}' + '!real').style.width;
-            var basemap = currentbaselayertxt
-            var mapHTML = size + "," + extent + "," + lhsWidth + "," + currentbaselayertxt;
-
-            tbx.value = mapHTML;
-
-            if (document.createEvent) {
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent( 'blur', false, false);
-            tbx.dispatchEvent(evt);
-
-            var evt2 = document.createEvent('HTMLEvents');
-            evt2.initEvent( 'change', false, false);
-            tbx.dispatchEvent(evt2);
-            } else if (document.createEventObject) {
-            tbx.fireEvent('onblur');
-            tbx.fireEvent('onchange');
+            //use session state extents for printing
+            if (!printing) {
+                window.mapFrame.loadBaseMap();
             }
+
+            map.signalLayerLoaded = function (layerName) {
+                zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onLayerLoaded', layerName));
             }
+        };
+
+jQuery('.hidden_image :hidden').show();
+
+if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
+    jQuery('.z-north').show();
+    jQuery('.z-south').show();
+}    
+        
+function printHack(o) {
+    //session variables not in session
+    var size = map.getSize().w + "," + (document.body.clientHeight-68); 
+    var extent = map.getExtent().toBBOX();
+    var lhsWidth = 0;
+    var basemap = currentbaselayertxt
+    var mapHTML = size + "," + extent + "," + lhsWidth + "," + currentbaselayertxt;
+    
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$onPrint', mapHTML));
+}
 function changeBaseLayer(type) {
     currentbaselayertxt = type;
     if (type == 'normal') {
@@ -1228,64 +728,73 @@ function changeBaseLayer(type) {
 }
 
 function showSpeciesInfo(occids, lon, lat) {
-    window.mapFrame.showSpeciesInfo(occids, lon, lat);
+    window.mapFrame.showSpeciesInfo(occids, lon, lat); 
 }
+
 
 function goToUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position){
-            window.mapFrame.goToLocation(position.coords.longitude, position.coords.latitude, 10);
+            window.mapFrame.goToLocation(position.coords.longitude, position.coords.latitude, 15);
         });
     } else {
-        alert("Unable to determine your location"); 
+        alert("Unable to determine your location");
     }
 }
 
 function displayHTMLInformation(element, info) {
-   $('#'+element).html(info);
+    $('#'+element).html(info);
 }
 function displayArea(area) {
    $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
 }
 function displayArea2(area) {
-   $('#jsarea2').html('GM area: ' + addCommas(area.toFixed(2)) + ' sq km');
+  $('#jsarea2').html(addCommas('' + area.toFixed(2)));
 }
 function addCommas(nStr) {
-	nStr += '';
-	x = nStr.split('.');
-	x1 = x[0];
-	x2 = x.length > 1 ? '.' + x[1] : '';
-	var rgx = /(\d+)(\d{3})/;
-	while (rgx.test(x1)) {
-		x1 = x1.replace(rgx, '$1' + ',' + '$2');
-	}
-	return x1 + x2;
+    nStr += '';
+    x = nStr.split('.');
+    x1 = x[0];
+    x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1;
 }
 
-	// this part is for enabling the slide-down
-        // effect for the map-selection 
-        $(document).ready(function(){
-		$('#cssdropdown li.headlink').hover(
-			function() { $('ul', this).css('display', 'block'); },
-			function() { $('ul', this).css('display', 'none'); });
-	});
 
-            ]]>
+//capture mouse events during window resize or move over an iframe
+var overlayon = false;
+function needOverlay() {
+    var zkresizing = parent.document.getElementById("zk_ddghost");
+    var zkmoving = parent.document.getElementById("zk_wndghost");
+
+    if(zkresizing != null && zkresizing.className.indexOf('drop') >= 0) {
+        //do nothing with drag/drop
+    } else if(!overlayon && (zkmoving != null || zkresizing != null)) {
+        //sit above zk (z-index:1800)
+        parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:white;opacity:0.01;filter:alpha(opacity=1);'></div>");
+        overlayon = true;
+    } else if(overlayon && zkmoving == null && zkresizing == null) {
+        overlayon = false;
+        parent.jq(parent.document.getElementById("overlay_")).remove();
+    }
+    setTimeout(needOverlay, 500);
+ }
+setTimeout(needOverlay, 500);  //start
+
+          ]]>
         </script>
-
-        <script type="text/javascript"><![CDATA[
+          <!-- script defer="false" type="text/javascript"><![CDATA[
+            
        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-       document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'<http://google-analytics.com/ga.js'> type='text/javascript'%3E%3C/script%3E"));
-       </script>
-       <script type="text/javascript">
+       document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'<http://google-analytics.com/ga.js'> type='text/javascript'%3E%3C/script%3E"));       
        var pageTracker = _gat._getTracker("UA-4355440-1");
        pageTracker._initData();
        pageTracker._trackPageview();
        ]]>
-        </script>
-
+        </script -->
     </window>
-
-
 </zk>
 

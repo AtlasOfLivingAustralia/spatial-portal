@@ -22,14 +22,14 @@ import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Image;
-import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Slider;
 import java.util.ArrayList;
 import org.ala.spatial.util.CommonData;
-
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zul.Label;
+import org.zkoss.zul.Listheader;
 
 public class ClassificationLegend extends UtilityComposer {
 
@@ -37,25 +37,24 @@ public class ClassificationLegend extends UtilityComposer {
     String pid = "";
     String layerLabel = "";
     String imagePath = "";
-    MapComposer mc;
     private String satServer = "";
     public Slider redSlider;
     public Slider greenSlider;
     public Slider blueSlider;
     public int colours_index;
-    public Button applyChange;
     public Listcell legend_cell;
     public Image sampleColour;
     public int legend_counter = 0;
     public Div colourChooser;
     public Listbox legend;
+    Label lblEdit;
     ArrayList<String> legend_lines;
+    boolean readonly = false;
+    Listheader countheader;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        mc = getThisMapComposer();
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
@@ -68,6 +67,12 @@ public class ClassificationLegend extends UtilityComposer {
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(ClassificationLegend.class.getName()).log(Level.SEVERE, null, ex);
         }
+        readonly = (Executions.getCurrent().getArg().get("readonly")) != null;
+
+        if (readonly) {
+            lblEdit.setVisible(false);
+        }
+
         System.out.println("layer:" + layerLabel);
 
         buildLegend();
@@ -98,19 +103,33 @@ public class ClassificationLegend extends UtilityComposer {
             slist = get.getResponseBodyAsString();
 
             String[] lines = slist.split("\r\n");
+            if (lines.length == 1) {
+                lines = slist.split("\n");
+            }
             legend_lines = new ArrayList<String>();
             int i = 0;
             for (i = 1; i < lines.length; i++) {
-                legend_lines.add(lines[i]);
+                if (lines[i].split(",").length > 3) {
+                    legend_lines.add(lines[i]);
+                }
             }
-  
+
             /* apply something to line onclick in lb */
             legend.setItemRenderer(new ListitemRenderer() {
 
                 public void render(Listitem li, Object data) {
                     String s = (String) data;
                     String[] ss = s.split(",");
-                    Listcell lc = new Listcell("group " + ss[0]);
+                    Listcell lc;
+                    if (readonly) {
+                        if (ss[0].length() > 0) {
+                            lc = new Listcell(ss[0]);
+                        } else {
+                            lc = new Listcell("unknown");
+                        }
+                    } else {
+                        lc = new Listcell("group " + ss[0]);
+                    }
                     lc.setParent(li);
 
                     int red = Integer.parseInt(ss[1]);
@@ -122,13 +141,25 @@ public class ClassificationLegend extends UtilityComposer {
                             + "," + blue + "); color: rgb(" + red + "," + green
                             + "," + blue + ")");
                     lc.setParent(li);
-                    lc.addEventListener("onClick", new EventListener() {
 
-                        public void onEvent(Event event) throws Exception {
-                            // open colours selector
-                            openColours((Listcell) event.getTarget());
-                        }
-                    });
+                    //count
+                    if(ss.length > 4) {
+                        countheader.setVisible(true);
+                        lc = new Listcell(ss[4]);
+                        lc.setParent(li);
+                    } else {
+                        countheader.setVisible(false);
+                    }
+
+                    if (!readonly) {
+                        lc.addEventListener("onClick", new EventListener() {
+
+                            public void onEvent(Event event) throws Exception {
+                                // open colours selector
+                                openColours((Listcell) event.getTarget());
+                            }
+                        });
+                    }
                 }
             });
 
@@ -167,6 +198,9 @@ public class ClassificationLegend extends UtilityComposer {
     }
 
     public void onClick$applyChange() {
+        if (readonly) {
+            return;
+        }
         System.out.println("applyChange");
         int red = redSlider.getCurpos();
         int green = greenSlider.getCurpos();
@@ -265,7 +299,7 @@ public class ClassificationLegend extends UtilityComposer {
         bbox.add(154.00000000084);
         bbox.add(-9.0);
 
-        mc.addImageLayer(pid, layerLabel, imagePath, opacity, bbox);
+        getMapComposer().addImageLayer(pid, layerLabel, imagePath, opacity, bbox);
 
     }
 }

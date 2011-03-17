@@ -2,12 +2,10 @@ package au.org.emii.portal.event;
 
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
-import au.org.emii.portal.javascript.OpenLayersJavascriptImpl;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.composer.MapComposer;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
-import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;

@@ -7,7 +7,6 @@ package au.org.emii.portal.javascript;
 
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
 
 /**

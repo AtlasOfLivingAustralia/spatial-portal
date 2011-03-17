@@ -6,8 +6,6 @@
 package au.org.emii.portal.util;
 
 import au.org.emii.portal.config.xmlbeans.AbstractService;
-import au.org.emii.portal.config.xmlbeans.MestAccountManager;
-import au.org.emii.portal.config.xmlbeans.SearchCatalogue;
 
 /**
  *
@@ -41,8 +39,4 @@ public interface UriResolver {
     public String resolve(String id);
 
     public String resolve(AbstractService service);
-
-    public String resolve(SearchCatalogue searchCatalogue);
-
-    public String resolve(MestAccountManager mestAccountManager);
 }

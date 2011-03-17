@@ -21,36 +21,6 @@
     <context:property-placeholder />
 
 
-
-    <!-- Xml Web Service processor - Jersey implementation -->
-    <bean id="xmlWebService" class="au.org.emii.portal.webservice.XmlWebServiceJerseyImpl" scope="prototype">
-        <property name="settings" ref="settings" />
-    </bean>
-
-
-    <!-- User Info Service - for looking up user details (name, address, etc) -->
-    <bean   id="userInfoService" factory-bean="masterServiceFactory"
-            factory-method="createUserInfoService"  scope="prototype"  />
-
-    <!-- Login Service - for logging a user into the portal -->
-    <bean   id="portalUserLoginService" factory-bean="masterServiceFactory"
-            factory-method="createPortalUserLoginService" scope="prototype"  />
-
-    <!-- Registration Service - for registering users with the mest -->
-    <bean   id="registrationService" factory-bean="masterServiceFactory"
-            factory-method="createRegistrationService"  scope="prototype"  />
-
-    <!-- Logout service -->
-    <bean   id="logoutService" class="au.org.emii.portal.service.LogoutServiceImpl" />
-
-    <!-- forgotten password -->
-    <bean   id="forgottenPasswordService" factory-bean="masterServiceFactory"
-            factory-method="createForgottenPasswordService"  scope="prototype"  />
-
-    <!-- admin console login service -->
-    <bean   id="adminConsoleLoginService" factory-bean="masterServiceFactory"
-            factory-method="createAdminConsoleLoginService" scope="prototype"  />
-
     <!--
     Aspect to check a setter is not setting a null value
     -->
@@ -133,14 +103,7 @@
         <property name="httpAuthenticateProxy" ref="httpAuthenticateProxy" />
         <property name="settings" ref="settings" />
         <property name="settingsSupplementary" ref="settingsSupplementary" />
-        <property name="mestSearchKeywords" ref="mestSearchKeywords" />
-        <property name="layerGroupFactory" ref="layerGroupFactory" />
         <property name="portalSessionUtilities" ref="portalSessionUtilities" />
-        <property name="masterServiceFactoryConfigurer" ref="masterServiceFactory" />
-        <property name="mestServiceFactory" ref="mestServiceFactory" />
-        <property name="propertiesServiceFactory" ref="propertiesServiceFactory" />
-        <property name="searchCatalogueFactory" ref="searchCatalogueFactory" />
-        <property name="mestConfigurationFactory" ref="mestConfigurationFactory" />
     </bean>
 
     <bean id="layerUtilities" class="au.org.emii.portal.util.LayerUtilitiesImpl">
@@ -160,19 +123,10 @@
     <property name="animationHeight" value="#{settingsSupplementary.values['animation_height']}" />
     -->
 
-    <bean id="imageTester" class="au.org.emii.portal.wms.ImageTesterImpl">
-        <property name="languagePack" ref="languagePack" />
-        <property name="layerUtilities" ref="layerUtilities" />
-        <property name="httpConnection" ref="httpConnection" />
-    </bean>
-
     <bean id="remoteMap" class="au.org.emii.portal.wms.RemoteMapImpl" scope="prototype">
         <property name="uriResolver" ref="uriResolver" />
         <property name="languagePack" ref="languagePack" />
         <property name="layerUtilities" ref="layerUtilities" />
-        <property name="imageTester" ref="imageTester" />
-        <property name="genericServiceAndBaseLayerSupport" ref="genericServiceAndBaseLayerSupport" />
-        <property name="discoveryProcessorFactory" ref="discoveryProcessorFactory" />
         <property name="httpConnection" ref="httpConnection" />
         <property name="geoJSONUtilities" ref="geoJSONUtilities" />
     </bean>
@@ -197,21 +151,12 @@
         <property name="settings" ref="settings" />
     </bean>
 
-    <bean id="mestSearchKeywords" class="au.org.emii.portal.mest.webservice.MestSearchKeywordsImpl">
-        <property name="httpConnection" ref="httpConnection" />
-    </bean>
-
     <bean id="httpAuthenticateProxy" class="au.org.emii.portal.net.HttpAuthenticateProxy">
         <property name="settings" ref="settings" />
     </bean>
 
     <bean id="propertiesWriter" class="au.org.emii.portal.util.PropertiesWriterImpl">
         <property name="languagePack" ref="languagePack" />
-    </bean>
-
-    <bean id="genericServiceAndBaseLayerSupport" class="au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport">
-        <property name="layerUtilities" ref="layerUtilities" />
-        <property name="uriResolver" ref="uriResolver" />
     </bean>
 
     <bean id="wmsSupport" class="au.org.emii.portal.wms.WMSSupport" abstract="true">
@@ -223,9 +168,6 @@
 
 
     <bean id="wMSSupport_1_3_0" class="au.org.emii.portal.wms.WMSSupport_1_3_0" parent="wmsSupport" scope="prototype" />
-    <bean id="wMSSupport_1_1_1" class="au.org.emii.portal.wms.WMSSupport_1_1_1" parent="wmsSupport" scope="prototype" />
-    <bean id="wMSSupport_1_1_0" class="au.org.emii.portal.wms.WMSSupport_1_1_0" parent="wmsSupport" scope="prototype" />
-    <bean id="wMSSupport_1_0_0" class="au.org.emii.portal.wms.WMSSupport_1_0_0" parent="wmsSupport" scope="prototype" />
     <bean id="ncWMSSupport" class="au.org.emii.portal.wms.NcWMSSupport" parent="wmsSupport" scope="prototype" />
     <bean id="threddsSupport" class="au.org.emii.portal.wms.ThreddsSupport" parent="wmsSupport" scope="prototype" />
 
@@ -233,24 +175,6 @@
         <property name="propertiesWriter" ref="propertiesWriter" />
         <property name="settings" ref="settings" />
     </bean>
-
-    <bean id="mapLayerItemRenderer" class="au.org.emii.portal.databinding.MapLayerItemRenderer">
-        <property name="languagePack" ref="languagePack" />
-        <property name="layerUtilities" ref="layerUtilities" />
-    </bean>
-
-    <bean id="userDefinedMapLayerItemRenderer" class="au.org.emii.portal.databinding.UserDefinedMapLayerItemRenderer" parent="mapLayerItemRenderer">
-        <property name="userDefinedMapLayerRemoveEventListener" ref="userDefinedMapLayerRemoveEventListener" />
-    </bean>
-
-    <bean id="userDefinedMapLayerRemoveEventListener" class="au.org.emii.portal.event.UserDefinedMapLayerRemoveEventListener">
-        <property name="openLayersJavascript" ref="openLayersJavascript" />
-    </bean>
-
-    <bean id="availableLayersListItemRenderer" class="au.org.emii.portal.databinding.AvailableLayersListItemRenderer">
-        <property name="layerUtilities" ref="layerUtilities" />
-    </bean>
-
 
     <bean id="activeLayerRenderer" class="au.org.emii.portal.databinding.ActiveLayerRenderer" >
         <property name="languagePack" ref="languagePack" />
@@ -261,15 +185,6 @@
     <bean id="visibilityToggleEventListener" class="au.org.emii.portal.event.VisibilityToggleEventListener">
         <property name="openLayersJavascript" ref="openLayersJavascript" />
     </bean>
-
-    <bean id="searchCatalogueFactory" class="au.org.emii.portal.factory.SearchCatalogFactoryImpl">
-        <property name="uriResolver" ref="uriResolver" />
-        <property name="settings" ref="settings" />
-        <lookup-method name="createSearchCatalogueInstance" bean="searchCatalogue"/>
-    </bean>
-
-    <bean id="searchCatalogue" class="au.org.emii.portal.value.SearchCatalogueImpl" />
-
 
     <bean id="listUtilities" class="au.org.emii.portal.util.ListUtilities" />
 
@@ -284,32 +199,4 @@
         <property name="portalSessionUtilities" ref="portalSessionUtilities" />
     </bean>
 
-    <bean id="layerGroupFactory" class="au.org.emii.portal.util.LayerGroupFactory">
-        <property name="portalSessionUtilities" ref="portalSessionUtilities" />
-    </bean>
-
-    <bean id="masterServiceFactory" class="au.org.emii.portal.factory.MasterServiceFactoryImpl" />
-    <bean id="mestServiceFactory" class="au.org.emii.portal.factory.MestServiceFactory">
-        <lookup-method name="createXmlWebService" bean="xmlWebService"/>
-    </bean>
-    <bean id="propertiesServiceFactory" class="au.org.emii.portal.factory.PropertiesServiceFactory">
-        <property name="propertiesWriter" ref="propertiesWriter" />
-    </bean>
-
-    <bean id="mestConfigurationFactory" class="au.org.emii.portal.factory.MestConfigurationFactoryImpl">
-        <lookup-method name="createInstance" bean="mestConfiguration" />
-    </bean>
-
-    <bean id="mestConfiguration" class="au.org.emii.portal.mest.MestConfigurationImpl" scope="prototype" />
-
-    <bean id="discoveryProcessorFactory" class="au.org.emii.portal.factory.DiscoveryProcessorFactoryImpl">
-        <lookup-method name="createNcWmsSupport" bean="ncWMSSupport" />
-        <lookup-method name="createThreddsSupport" bean="threddsSupport" />
-        <lookup-method name="createWmsSupport_1_0_0" bean="wMSSupport_1_0_0" />
-        <lookup-method name="createWmsSupport_1_1_0" bean="wMSSupport_1_1_0" />
-        <lookup-method name="createWmsSupport_1_1_1" bean="wMSSupport_1_1_1" />
-        <lookup-method name="createWmsSupport_1_3_0" bean="wMSSupport_1_3_0" />
-    </bean>
-
-    
 </beans>

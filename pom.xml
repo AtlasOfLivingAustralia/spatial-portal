@@ -1,4 +1,3 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -8,10 +7,24 @@
     <version>2.0.0</version>
 
 
-    <name>ALA Spatial Portal </name>
+    <name>ZK5 ALA Spatial Portal </name>
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
     <dependencies>
+        <!-- alaspatial styles -->
+        <!--
+        <dependency>
+            <groupId>org.ala.spatial</groupId>
+            <artifactId>alaspatial</artifactId>
+            <version>1.00</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.13</version>
+        </dependency>
+
         <dependency>
             <groupId>geoGoogle</groupId>
             <artifactId>geoGoogle</artifactId>
@@ -89,7 +102,7 @@
             <artifactId>spring-jdbc</artifactId>
             <version>${springVersion}</version>
         </dependency>
-       
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
@@ -167,33 +180,21 @@
 
         <dependency>
             <groupId>org.zkoss.zk</groupId>
-            <artifactId>zkex</artifactId>
-            <version>${zkVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.zkoss.zk</groupId>
-            <artifactId>zkmax</artifactId>
-            <version>${zkVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.zkoss.zk</groupId>
             <artifactId>zkplus</artifactId>
             <version>${zkVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.zkoss.zk</groupId>
-            <artifactId>zkspring</artifactId>
-            <version>1.2.0-RC-2010-05-20</version>
+            <artifactId>zkspring-core</artifactId>
+            <version>3.0RC-FL-2010-08-10</version>
         </dependency>
-
         <dependency>
             <groupId>org.zkoss.zk</groupId>
-            <artifactId>zml</artifactId>
-            <version>${zkVersion}</version>
+            <artifactId>zkspring-security</artifactId>
+            <version>3.0RC-FL-2010-08-10</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.zkoss.zk</groupId>
@@ -245,7 +246,7 @@
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
         </dependency>
-        
+
         <!--
 
         Http client 4.0.1 doesn't work with proxies without reworking stage2
@@ -458,9 +459,19 @@
             <name>Repository for library Library[hibernate-support]</name>
         </repository>
         <repository>
+            <url>http://mavensync.zkoss.org/maven2/</url>
+            <id>zkoss</id>
+            <name>Repository for ZK5</name>
+        </repository>
+        <repository>
             <id>osgeo</id>
             <name>OpenGeo GeoTools Repository</name>
             <url>http://repo.opengeo.org/</url>
+        </repository>
+        <repository>
+            <id>jboss</id>
+            <name>jboss</name>
+            <url>http://repository.jboss.org/maven2/</url>
         </repository>
         <repository>
             <id>unknown-jars-temp-repo</id>
@@ -503,18 +514,9 @@
     <properties>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <springVersion>3.0.1.RELEASE</springVersion>
-        <zkVersion>3.6.3</zkVersion>
+        <zkVersion>5.0.5</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
         <geotools.version>2.6-SNAPSHOT</geotools.version>
     </properties>
 </project>
-
-
-
-
-
-
-
-
-

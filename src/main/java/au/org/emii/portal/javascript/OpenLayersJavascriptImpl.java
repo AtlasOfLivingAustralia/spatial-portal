@@ -9,13 +9,8 @@ import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
 import java.util.List;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.util.Clients;
 
@@ -162,12 +157,12 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
     @Override
     public String zoomGeoJsonExtent(MapLayer ml) {
         String script = "";
-        if(ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getBboxString() != null){
+        if (ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getBboxString() != null) {
             //cluster
             script = "window.mapFrame.map.zoomToExtent(new OpenLayers.Bounds.fromString('"
                     + ml.getMapLayerMetadata().getBboxString()
                     + "').transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()))";
-        }else {
+        } else {
             script = "window.mapFrame.zoomBoundsGeoJSON('" + ml.getName().replaceAll("'", "\\'") + "')";
         }
 
@@ -542,45 +537,13 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         return wrapWithSafeToProceed(getAdditionalScript() + script.toString());
     }
 
-//    @Override
-//    public String defineKMLMapLayer(MapLayer layer) {
-//        /* can't have a GeoRSS baselayer so we don't need to decide where to store
-//         * the layer definition
-//         */
-//        String script =
-//                "	mapLayers['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.GML("
-//                + "		'" + layer.getNameJS() + "', "
-//                + "		'" + layer.getUriJS() + "', "
-//                + "		{"
-//                + "			transparent: true, "
-//                + //"			projection: new OpenLayers.Projection('EPSG:3032'), " +
-//                //"			projection: new OpenLayers.Projection('EPSG:6326'), " +
-//                "			internalProjection: new OpenLayers.Projection('ESPG:4326'), "
-//                + "			externalProjection: new OpenLayers.Projection('ESPG:3032'), "
-//                + "			format: OpenLayers.Format.KML, "
-//                + "			formatOptions: { "
-//                + "				extractStyles: true, "
-//                + "				extractAttributes: true"
-//                + "			} "
-//                + "		}, "
-//                + "		{ "
-//                + "			opacity:" + layer.getOpacity() + ","
-//                + "			wrapDateLine: true "
-//                + "		}  "
-//                + "	);"
-//                + // register for loading images...
-//                "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
-//
-//        return wrapWithSafeToProceed(script);
-//    }
-//
     @Override
     public String defineKMLMapLayer(MapLayer layer) {
         /* can't have a GeoRSS baselayer so we don't need to decide where to store
          * the layer definition
          */
         String script =
-                "	mapLayers['" + layer.getUniqueIdJS() + "'] = window.mapFrame.loadKmlFile('"+layer.getNameJS()+"','"+layer.getUriJS()+"');"
+                "	mapLayers['" + layer.getUniqueIdJS() + "'] = window.mapFrame.loadKmlFile('" + layer.getNameJS() + "','" + layer.getUriJS() + "');"
                 + // register for loading images...
                 "registerLayer(mapLayers['" + layer.getUniqueIdJS() + "']);";
 
@@ -712,7 +675,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         }
 
         //extend to add ogc filter
-        if(layer.getMapLayerMetadata() != null && layer.getMapLayerMetadata().getBbox() == null) {
+        if (layer.getMapLayerMetadata() != null && layer.getMapLayerMetadata().getBbox() == null) {
             List<Double> bbox = layerUtilities.getBBoxIndex(layer.getUri());
             if (bbox == null) {
                 bbox = new ArrayList(4);
@@ -722,15 +685,15 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 bbox.add(box[2]);
                 bbox.add(box[3]);
             }
-            if (bbox != null) {
+            if (bbox != null && layer.getMapLayerMetadata() != null) {
                 layer.getMapLayerMetadata().setBbox(bbox);
             }
         }
-        
+
         String script =
                 "	" + associativeArray + "['" + layer.getUniqueIdJS() + "'] = new OpenLayers.Layer.WMS("
                 + "		'" + layer.getNameJS() + "', "
-                + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&","wms\\/reflect?") + "', "
+                + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', "
                 + "		{"
                 + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
                 + "			layers: '" + layer.getLayerJS() + "', "
@@ -741,7 +704,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + wmsVersionDeclaration(layer) + //","
                 "		}, "
                 + "		{ "
-          //      + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
+                //      + "             " + "maxExtent: (new OpenLayers.Bounds(" + bbox.get(0) + "," + bbox.get(1) + "," + bbox.get(2) + "," + bbox.get(3) + ")).transform(new OpenLayers.Projection('EPSG:4326'),map.getProjectionObject()),"
                 + "			isBaseLayer: " + layer.isBaseLayer() + ", "
                 + "			opacity: " + layer.getOpacity() + ", "
                 + "			queryable: " + layer.isQueryable() + ", "
@@ -959,10 +922,11 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
 
     @Override
     public void setAdditionalScript(String additionalScript) {
-        if (additionalScript != null) {
-            this.additionalScript = additionalScript;
-        } else {
+        if (this.additionalScript == null) {
             this.additionalScript = "";
+        }
+        if (additionalScript != null) {
+            this.additionalScript += additionalScript;
         }
     }
 

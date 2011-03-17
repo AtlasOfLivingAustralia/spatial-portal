@@ -6,7 +6,6 @@
 package au.org.emii.portal.util;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Required;
 
 /**
  *

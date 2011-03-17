@@ -18,20 +18,6 @@ import java.util.Hashtable;
  */
 public interface RemoteMap {
 
-    MapLayer autoDiscover(String name, float opacity, String uri, String version);
-
-    /**
-     * Autodiscover a wms servers layers
-     * @param name
-     * @param opacity
-     * @param uri
-     * @param version
-     * @return
-     */
-    MapLayer autoDiscover(String id, String name, float opacity, String uri, String version);
-
-    MapLayer baseLayer(BaseLayer baseLayer);
-
     /**
      * Create a MapLayer instance and test that an image can be read from
      * the URI.
@@ -58,22 +44,4 @@ public interface RemoteMap {
     MapLayer createGeoJSONLayerWithGeoJSON(String label, String uri, String json);
 
     MapLayer createWKTLayer(String wkt, String label);
-
-    /**
-     * Discovery of nested services
-     * @param discovery
-     * @return
-     */
-    MapLayer discover(Discovery discovery, boolean displayAllChildren, boolean queryableDisabled, boolean quiet);
-
-    String getDiscoveryErrorMessage();
-
-    String getDiscoveryErrorMessageSimple();
-
-    String getLastUriAttempted();
-
-    int getLastWMSVersionAttempted();
-
-    MapLayer service(Service service);
-
 }

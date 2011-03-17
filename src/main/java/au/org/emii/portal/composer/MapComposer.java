@@ -2,36 +2,20 @@ package au.org.emii.portal.composer;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.databinding.ActiveLayerRenderer;
-import au.org.emii.portal.databinding.BaseLayerListRenderer;
 import au.org.emii.portal.request.DesktopState;
 import au.org.emii.portal.databinding.EmptyActiveLayersRenderer;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import au.org.emii.portal.net.HttpConnection;
-import au.org.emii.portal.wms.ImageTester;
-import au.org.emii.portal.menu.Link;
 import au.org.emii.portal.motd.MOTD;
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.databinding.MapLayerItemRenderer;
-import au.org.emii.portal.databinding.MapLayerModel;
-import au.org.emii.portal.menu.MenuGroup;
-import au.org.emii.portal.menu.MenuItem;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.wms.RemoteMap;
 import au.org.emii.portal.session.StringMedia;
-import au.org.emii.portal.menu.TreeChildIdentifier;
-import au.org.emii.portal.databinding.UserDefinedMapLayerItemRenderer;
-import au.org.emii.portal.userdata.UserMap;
-import au.org.emii.portal.util.Validate;
-import au.org.emii.portal.service.LogoutService;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.lang.LanguagePack;
 import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.session.PortalUser;
-import au.org.emii.portal.userdata.DaoRegistry;
-import au.org.emii.portal.userdata.UserDataDao;
-import au.org.emii.portal.userdata.UserDataDaoImpl;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
@@ -59,8 +43,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -76,10 +58,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.AutoComplete;
-import org.ala.spatial.gazetteer.GazetteerSearchController;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
@@ -88,11 +68,11 @@ import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.LegendMaker;
+import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
 import org.geotools.data.FeatureSource;
@@ -101,12 +81,10 @@ import org.geotools.data.FileDataStoreFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
-import org.springframework.util.NumberUtils;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
-import org.zkoss.zk.ui.Path;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
@@ -118,7 +96,6 @@ import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
-import org.zkoss.zkex.zul.West;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Caption;
 import org.zkoss.zul.Checkbox;
@@ -129,29 +106,21 @@ import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Html;
 import org.zkoss.zul.Iframe;
 import org.zkoss.zul.Image;
+import org.zkoss.zul.West;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.Radio;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.SimpleListModel;
-import org.zkoss.zul.SimpleTreeModel;
-import org.zkoss.zul.SimpleTreeNode;
 import org.zkoss.zul.Slider;
 import org.zkoss.zul.Tab;
-import org.zkoss.zul.Tabbox;
-import org.zkoss.zul.Tabpanel;
 import org.zkoss.zul.Toolbarbutton;
-import org.zkoss.zul.Tree;
-import org.zkoss.zul.Treecell;
-import org.zkoss.zul.Treeitem;
-import org.zkoss.zul.TreeitemRenderer;
-import org.zkoss.zul.Treerow;
 import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.api.Textbox;
@@ -170,7 +139,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private static final String MENU_DEFAULT_WIDTH = "menu_default_width";
     private static final String MENU_MINIMISED_WIDTH = "menu_minimised_width";
     private static final String SPECIES_METADATA_URL = "species_metadata_url";
-    private static  final String POINTS_CLUSTER_THRESHOLD = "points_cluster_threshold";
+    public static final String POINTS_CLUSTER_THRESHOLD = "points_cluster_threshold";
     private static final long serialVersionUID = 1L;
     private RemoteMap remoteMap = null;
     public String geoServer;
@@ -181,29 +150,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Window externalContentWindow;
     private Iframe rawMessageIframeHack;
     private Div rawMessageHackHolder;
-    private Tabbox mainTab;
-    private Tabbox accordionMenu;
-    // private Tab layerNavigationTab;
-    private Tab searchNavigationTab;
     private Tab linkNavigationTab;
-    //private Tab areaNavigationTab;
     private Tab startNavigationTab;
     private Tab mapNavigationTab;
-    private Tab facilitiesTab;
-    private Tab regionsTab;
-    private Tab userTab;
-    private Tab realtimeTab;
-    private Combobox styleList;
-    //private Component layerNavigationTabContent;
-    private Component searchNavigationTabContent;
     private Component linkNavigationTabContent;
     private Component mapNavigationTabContent;
-    //private Component areaNavigationTabContent;
     private Component startNavigationTabContent;
-    private Tabpanel facilitiesTabPanel;
-    private Tabpanel regionsTabPanel;
-    private Tabpanel userTabPanel;
-    private Tabpanel realtimeTabPanel;
     private Slider opacitySlider;
     private Label opacityLabel;
     private Slider redSlider;
@@ -212,85 +164,32 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Slider sizeSlider;
     private Checkbox chkUncertaintySize;
     public Button btnPointsCluster;
-    private Div uncertainty;
-    private Hbox uncertaintyLegend;
+    private Label lblFupload;
     private Label redLabel;
     private Label greenLabel;
     private Label blueLabel;
     private Label sizeLabel;
-    private Listbox activeLayersList;
+    Listbox activeLayersList;
     private Div layerControls;
-    private Listbox baseLayerList;
-    private Div styleControls;
-    private Div transectControl;
-    private HtmlMacroComponent animationControlsComposer;
-    private Component searchPage;
-    private Textbox safeToLoadMap;
-    private Image layerSwitcherShow;
-    private Image layerSwitcherHide;
-    private Div layerSwitcherContainer;
-    private Div activeLayersHolder;
+    private Div uncertainty;
+    private Hbox uncertaintyLegend;
     private West menus;
     private Div westContent;
     private Div westMinimised;
-    private Textbox extUrl;
-    private Textbox extSld;
-    private Textbox extLabel;
-    private Textbox extLayer;
-    private Textbox extType;
-    private Textbox extSubmit;
-    private Textbox extCql;
-    private Div addLayer;
-    private Button addExtLayersButton;
-    private Button saveMap;
-    private Button mapSave;
-    private Button zoomExtent;
-    private Button btnSearchSpecies;
-    private Textbox createSavedMap;
-    private Button loadSavedMapButton;
-    private Button closeLayerControls;
-    private Div loadMapcont;
-    private Div saveLoadMapContainer;
-    private Label createSavedMapAdvice;
-    private Div createMapcont;
-    private Listbox savedMaps;
-    private Label saveMapAdvice;
-    private Label createSavedMapError;
-    private Toolbarbutton loginButton;
-    private Toolbarbutton logoutButton;
-    private Button printButton;
     private LayersAutoComplete lac;
-    private Textbox speciesLsid;
     private Textbox userparams;
-    private Tree tree;
-    private Textbox tbxReloadLayers;
-    /**
-     * Logout service spring bean - autowired
-     */
-    private LogoutService logoutService = null;
     /*
      * User data object to allow for the saving of maps and searches
      */
-    private UserDataDao userDataManager = null;
     private LanguagePack languagePack = null;
     private MOTD motd = null;
     private OpenLayersJavascript openLayersJavascript = null;
     private HttpConnection httpConnection = null;
-    private ImageTester imageTester = null;
-    private MapLayerItemRenderer mapLayerItemRenderer = null;
-    private UserDefinedMapLayerItemRenderer userDefinedMapLayerItemRenderer = null;
-    private ActiveLayerRenderer activeLayerRenderer = null;
+    ActiveLayerRenderer activeLayerRenderer = null;
     private PortalSessionUtilities portalSessionUtilities = null;
     private Settings settings = null;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
     //additional controls for the ALA Species Search stuff
-    private Radio rdoCommonSearch;
-    private Radio rdoScientificSearch;
-    private Button gazSearch;
-    private Textbox placeName;
-    private Label resultGaz;
-    private Listbox gazetteerResults;
-    private GazetteerSearchController gazetteerSearchWindow;
     private AutoComplete gazetteerAuto;
     private SpeciesAutoComplete searchSpeciesAuto;
     private Div colourChooser;
@@ -299,48 +198,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Image legendImgUri;
     private Div legendHtml;
     private Label legendLabel;
-    private Button applyChange;
-    private Tab filteringTab;
-    private Tab selectionTab;
-    private Textbox tbxArea;
     private HtmlMacroComponent leftMenuAnalysis;
-    //private HtmlMacroComponent ff;
-    //private HtmlMacroComponent sf;
-    public Textbox tbxPrintHack;
+    public String tbxPrintHack;
     int mapZoomLevel = 4;
-    private Hashtable activeLayerMapProperties;
-    private Label lblFupload;
-    private Button btnUploadSpecies;
+    Hashtable activeLayerMapProperties;
+    Div divUserColours;
+    Combobox cbColour;
+    Comboitem ciColourUser; //User selected colour
 
     /*
      * for capturing layer loaded events signaling listeners
      */
-    public Textbox tbxLayerLoaded;
+    String tbxLayerLoaded;
     HashMap<String, EventListener> layerLoadedChangeEvents = new HashMap<String, EventListener>();
 
-    public UserDataDao getUserDataManager() {
-        if (userDataManager == null) {
-            userDataManager = DaoRegistry.getUserDataDao();
-        }
-
-        return userDataManager;
-
-    }
-
-    public void onCreate() {
-
-        if (!settings.isDisablePortalUsers() && getPortalSession().isLoggedIn()) {
-            userDataManager.fetchUser(getPortalSession().getPortalUser().getUsername());
-            updateUserMapList();
-        }
-
-    }
-
-    public void setUserDataManager(UserDataDaoImpl userDataManager) {
-        this.userDataManager = userDataManager;
-    }
-
-    private void motd() {
+    void motd() {
         if (motd.isMotdEnabled()) {
             logger.debug("displayling MOTD");
             MOTDComposer composer = (MOTDComposer) Executions.createComponents("/WEB-INF/zul/MOTD.zul", this, null);
@@ -367,43 +239,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void onChange$safeToLoadMap() {
-        mapLoaded(safeToLoadMap.getValue());
-    }
+    public void safeToLoadMap(Event event) {
+        mapLoaded("true");
 
-    public void onSelect$mainTab() {
-        Session session = (Session) Sessions.getCurrent();
-        if (mainTab.getSelectedTab().getId().equalsIgnoreCase("linkNavigationTab")) {
-            session.setAttribute("default_menus_width", menus.getWidth());
-            menus.setWidth("30%"); // 800px
-        } else {
-            menus.setWidth((String) session.getAttribute("default_menus_width"));
-        }
-    }
+        //listen for map extents changes
+        EventListener el = new EventListener() {
 
-    /**
-     * Region tab click
-     */
-    public void onClick$regionsTab() {
-        selectView(PortalSession.LAYER_REGION_TAB);
-    }
-
-    public void onClick$facilitiesTab() {
-        selectView(PortalSession.LAYER_FACILITY_TAB);
-    }
-
-    public void onClick$realtimeTab() {
-        selectView(PortalSession.LAYER_REALTIME_TAB);
-    }
-
-    public void onClick$userTab() {
-        selectView(PortalSession.LAYER_USER_TAB);
-    }
-
-    public void onClick$addExtLayersButton() {
-        addLayer.setVisible(true);
-        addExtLayersButton.setVisible(false);
-
+            public void onEvent(Event event) throws Exception {
+                onReloadLayers(null);
+            }
+        };
+        getLeftmenuSearchComposer().addViewportEventListener("onReloadLayers", el);
     }
 
     public void zoomToExtent(MapLayer selectedLayer) {
@@ -425,11 +271,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         opacitySlider.setCurpos(percentage);
         opacityLabel.setValue(percentage + "%");
 
-        onClick$applyChange();
+        applyChange();
     }
 
-    public void onClick$applyChange() {
+    public void applyChange() {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
+        applyChange(selectedLayer);
+    }
+
+    public void applyChange(MapLayer selectedLayer) {
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             float opacity = ((float) opacitySlider.getCurpos()) / 100;
             selectedLayer.setOpacity(opacity);
@@ -446,6 +296,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 selectedLayer.setBlueVal(blueSlider.getCurpos());
                 selectedLayer.setSizeVal(sizeSlider.getCurpos());
                 selectedLayer.setSizeUncertain(chkUncertaintySize.isChecked());
+
+                selectedLayer.setColourMode((String) cbColour.getSelectedItem().getValue());
 
                 Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
                 String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
@@ -490,9 +342,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else {
                     System.out.println("nothing:" + selectedLayer.getType());
                     //selectedLayer.setEnvParams("color:" + rgbColour + ";name:circle;size:8");
-                    String envString = "color:" + hexColour + ";name:circle;size:" + sizeSlider.getCurpos();
+                    String envString = "";
+                    if (selectedLayer.getColourMode().equals("-1")) {
+                        envString += "color:" + hexColour;
+                    } else {
+                        envString += "colormode:" + selectedLayer.getColourMode();
+                    }
+                    envString += ";name:circle;size:" + sizeSlider.getCurpos();
                     envString += ";opacity:" + opacity;
-                    if (chkUncertaintySize.isChecked()) {
+                    if (selectedLayer.getHighlight() != null) {
+                        envString += ";sel:" + selectedLayer.getHighlight();
+                    } else if (chkUncertaintySize.isChecked()) {
                         envString += ";uncertainty:1";
                     }
                     selectedLayer.setEnvParams(envString);
@@ -534,54 +394,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    /*public void onClick$legendImg() {
-    //toggle the colourChooser div
-    if (colourChooser.isVisible()) {
-    colourChooser.setVisible(false);
-    } else {
-    colourChooser.setVisible(true);
-    }
-    }*/
-    public void onClick$btnSearchSpecies() {
-        //get the selected species and see if we can map it
-        //get the params from the controls
-
-        String sSearchTerm = searchSpeciesAuto.getValue();
-        String sSearchType = null;
-
-        Session session = (Session) Sessions.getCurrent();
-
-        /*
-        if (rdoCommonSearch.isChecked()) {
-        searchCommonName(sSearchTerm);
-        } else {
-        mapSpeciesByName(sSearchTerm);
-        }
-         *
-         */
-
-        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
-        if (spVal.trim().startsWith("Scientific")) {
-            //myci.setValue(spVal[1].trim().substring(spVal[1].trim().indexOf(":")).trim());
-            sSearchTerm = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim();
-            //  mapSpeciesByName(sSearchTerm, searchSpeciesAuto.getValue());
-        } else {
-            //   mapSpeciesByName(sSearchTerm);
-        }
-        mapSpeciesByLsid((String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), sSearchTerm);
-
-        btnSearchSpecies.setVisible(false);
-        searchSpeciesAuto.setValue(""); 
-
-    }
-
-    public void onClick$selectionTab() {
-        System.out.println("area:" + getSelectionArea());
-        if (!selectionTab.isSelected()) {
-            selectionTab.setSelected(true);
-        }
-    }
-
     public String getSelectionArea() {
         HtmlMacroComponent sf = (HtmlMacroComponent) ((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).getSelectionHtmlMacroComponent();
         return ((SelectionController) sf.getFellow("selectionwindow")).getGeom();
@@ -598,16 +410,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return area;
     }
 
-    public void onClick$closeLayerControls() {
-        layerControls.setVisible(false);
-        activeLayersList.clearSelection();
-
-    }
-
     /**
      * Adds the currently selected gazetteer feature to the map
      */
-    //public void onClick$gazSearch() {
     public void onChange$gazetteerAuto() {
 
         Comboitem ci = gazetteerAuto.getSelectedItem();
@@ -639,38 +444,42 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             return;
         }
 
+
         //add feature to the map as a new layer
         MapLayer mapLayer = addGeoJSON(label, geoServer + link);
 
-        JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-        String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
-        
-        mapLayer.setMapLayerMetadata(new MapLayerMetadata());
-        mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink); 
+        if(mapLayer != null) {  //might be a duplicate layer making mapLayer == null
+            JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+            String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
 
-        updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
+            mapLayer.setMapLayerMetadata(new MapLayerMetadata());
+            mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
 
-        gazetteerAuto.setValue("");
+            updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
 
-
+            gazetteerAuto.setValue("");
+        }
     }
 
     public void onChange$searchSpeciesAuto() {
+        mapSpeciesFromAutocomplete(searchSpeciesAuto);
+    }
 
+    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac) {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
-        if (searchSpeciesAuto.getSelectedItem() == null
-                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
-                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
+        if (sac.getSelectedItem() == null
+                || sac.getSelectedItem().getAnnotatedProperties() == null
+                || sac.getSelectedItem().getAnnotatedProperties().size() == 0) {
             return;
         }
 
         //btnSearchSpecies.setVisible(true);
-        String taxon = searchSpeciesAuto.getValue();
+        String taxon = sac.getValue();
         String rank = "";
 
-        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
+        String spVal = sac.getSelectedItem().getDescription();
         if (spVal.trim().contains(": ")) {
             taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
@@ -682,39 +491,38 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
             rank = "taxon";
         }
-        mapSpeciesByLsid((String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
 
+        String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
+        //are there any distribution maps to map first?
+        //Heptranchias
+        String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
+        if (wmsNames != null && wmsNames.length > 0) {
+            if (wmsNames.length > 1) {
+                for (int i = 0; i < wmsNames.length; i++) {
+                    addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f);
+                }
+            } else {
+                addWMSLayer(taxon + " map", wmsNames[0], 0.75f);
+            }
+        }
+
+        //map species
+        mapSpeciesByLsid(lsid, taxon, rank);
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
-
     }
 
     public void onChange$lac() {
-
         if (lac.getItemCount() > 0 && lac.getSelectedItem() != null) {
             JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
             String metadata = "";
-            /*
-            if (jo.getString("metadatapath") != null && !jo.getString("metadatapath").trim().equals("")) {
-            metadata = jo.getString("metadatapath");
-            } else {
-            metadata += "Name: " + jo.getString("displayname") + "\n";
-            metadata += "Source: " + jo.getString("source") + "\n";
-            metadata += "Classification1: " + jo.getString("classification1") + "\n";
-            }
-             */
+
             metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + jo.getString("uid");
             addWMSLayer(jo.getString("displayname"), jo.getString("displaypath"), (float) 0.75, metadata);
             lac.setValue("");
 
             updateUserLogMapLayer("env - search - add", jo.getString("uid") + "|" + jo.getString("displayname"));
         }
-
-    }
-
-    public void closeAddLayerDiv() {
-        addLayer.setVisible(false);
-        addExtLayersButton.setVisible(true);
     }
 
     /**
@@ -761,63 +569,46 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void activateMenuItem(MenuItem item) {
-        logger.debug("activate MenuItem: " + item.getId());
-        if (item.isValueMapLayerInstance()) {
-            activateLayer(item.getValueAsMapLayer(), true);
-        } else if (item.isValueLinkInstance()) {
-            activateLink(item.getValueAsLink());
-        } else if (!item.isValueSet()) {
-            logger.info(
-                    "Can't activate menu item - null value instance");
-
-        } else {
-            logger.info(
-                    "Can't activate menu item - unsupported value type: "
-                    + String.valueOf(item.getValue()));
-        }
-    }
-
-    /**
-     * Radio buttons are generated dynamically so we can't autowire
-     * them.
-     * @param id
-     * @return
-     */
-    private Radio getRadioButton(String id) {
-        return (id == null) ? null : (Radio) getFellow("radio_" + id);
-    }
-
-    public void selectView(int view) {
-        PortalSession ps = getPortalSession();
-        ps.setLayerTab(view);
-
-        // if we changed to the user defined view, we need to
-        // load the menu too
-        if (view == PortalSession.LAYER_USER_TAB) {
-            showMenu(view, null);
-        } else {
-            // showMenu call does this for us when we display the user defined menu
-            ps.setDisplayingUserDefinedMenuTree(false);
-        }
-    }
-
     public void activateLink(String uri, String label, boolean isExternal) {
         if (isExternal) {
             // change browsers current location
-            Clients.evalJavaScript(
-                    "window.location.href ='" + uri + "';");
+            Clients.evalJavaScript("window.location.href ='" + uri + "';");
         } else {
-
             // iframe in another id-space so can't be auto wired
             Iframe iframe = getExternalContentIframe();
-            iframe.setSrc(uri);
+            Html html = getExternalContentHtml();
 
-            //for the 'reset window' button
-            ((ExternalContentComposer) externalContentWindow).src = uri;
+            if (uri.charAt(0) == '*') {
+                //html content
+                uri = uri.substring(1);
 
-            //update linked button
-            ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setHref(uri);
+                //url
+                iframe.setHeight("0px");
+                iframe.setSrc("");
+
+                //content
+                html.setContent(uri);
+
+                //for the 'reset window' button
+                ((ExternalContentComposer) externalContentWindow).src = "";
+
+                //update linked button
+                ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setVisible(false);
+            } else {
+                //url
+                iframe.setHeight("100%");
+                iframe.setSrc(uri);
+
+                //content
+                html.setContent("");
+
+                //for the 'reset window' button
+                ((ExternalContentComposer) externalContentWindow).src = uri;
+
+                //update linked button
+                ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setHref(uri);
+                ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setVisible(true);
+            }
 
             // use the link description as the popup caption
             ((Caption) externalContentWindow.getFellow("caption")).setLabel(
@@ -825,24 +616,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             externalContentWindow.setPosition("center");
             externalContentWindow.doOverlapped();
         }
-    }
-
-    public void activateLink(Link link) {
-        logger.debug("activate Link " + link.getId());
-
-        activateLink(link.getUri(), link.getDescription(), link.isExternal());
-
-    }
-
-    public void activateBaseLayer(String id) {
-        PortalSession portalSession = getPortalSession();
-        MapLayer baseLayer = portalSessionUtilities.getBaseLayerById(portalSession, id);
-        portalSession.setCurrentBaseLayer(baseLayer);
-        activateBaseLayer(baseLayer);
-    }
-
-    public void activateBaseLayer(MapLayer baseLayer) {
-        openLayersJavascript.activateMapLayerNow(baseLayer);
     }
 
     public boolean activateLayer(MapLayer mapLayer, boolean doJavaScript) {
@@ -861,31 +634,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
         boolean layerAdded = false;
 
+        /* switch to the ListModelList if we are currently using simplelistmodel
+         * to display the 'no layers selected' message
+         *
+         * If the model is already an instance of ListModelList then
+         * the model should already have the data it needs so just
+         * fire the update event.
+         */
+        if (!(activeLayersList.getModel() instanceof ListModelList)) {
+            logger.debug("changing model for Active Layers to ListModelList");
+            /* this is the first item being added to the list so we make
+             * it a new ListModelList instance based on live data
+             */
+            activeLayersList.setModel(new ListModelList(activeLayers, true));
+        }
+
         if (!activeLayers.contains(mapLayer) && mapLayer.isDisplayable()) {
-            // layer not already active - add it
-            if (!skipTree) {
-                ((MapLayerModel) getMenuTree().getModel()).changeSelection(mapLayer, true);
-            }
 
             /* assume we want to display on the map straight away - set checkbox
              * to true
              */
             activeLayersList.setItemRenderer(activeLayerRenderer);
-
-            /* switch to the ListModelList if we are currently using simplelistmodel
-             * to display the 'no layers selected' message
-             *
-             * If the model is already an instance of ListModelList then
-             * the model should already have the data it needs so just
-             * fire the update event.
-             */
-            if (!(activeLayersList.getModel() instanceof ListModelList)) {
-                logger.debug("changing model for Active Layers to ListModelList");
-                /* this is the first item being added to the list so we make
-                 * it a new ListModelList instance based on live data
-                 */
-                activeLayersList.setModel(new ListModelList(activeLayers, true));
-            }
 
 
             /* use the MODEL facade to add the new layer (it's not smart enough
@@ -924,23 +693,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void deactiveLayer(MapLayer itemToRemove, boolean updateMapAndLayerControls, boolean recursive, boolean updateOnly) {
         if (itemToRemove != null) {
             boolean deListedInActiveLayers = false;
-
-            /* redraw the current menu tree if contains
-             * the item we are removing, otherwise just
-             * leave deListedInActiveLayers flag as it
-             * is which marks the layer as not being
-             * in active layers anymore so the tree
-             * renderer will pick this up next time a
-             * redraw of the menu is requested
-             */
-            Tree menuTree = getMenuTree();
-            if (menuTree != null) {
-                MapLayerModel treemodel = (MapLayerModel) menuTree.getModel();
-                if (treemodel != null && treemodel.isHoldingMapLayer(itemToRemove)) {
-                    treemodel.changeSelection(itemToRemove, false);
-                    deListedInActiveLayers = true;
-                }
-            }
 
             // update the active layers list
             List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
@@ -1001,23 +753,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (itemToRemove != null) {
             boolean deListedInActiveLayers = false;
 
-            /* redraw the current menu tree if contains
-             * the item we are removing, otherwise just
-             * leave deListedInActiveLayers flag as it
-             * is which marks the layer as not being
-             * in active layers anymore so the tree
-             * renderer will pick this up next time a
-             * redraw of the menu is requested
-             */
-            Tree menuTree = getMenuTree();
-            if (menuTree != null) {
-                MapLayerModel treemodel = (MapLayerModel) menuTree.getModel();
-                if (treemodel != null && treemodel.isHoldingMapLayer(itemToRemove)) {
-                    treemodel.changeSelection(itemToRemove, false);
-                    deListedInActiveLayers = true;
-                }
-            }
-
             // update the active layers list
             List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
             if (activeLayers != null) {
@@ -1050,45 +785,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // hide layer controls
         hideLayerControls(null);
-    }
-
-    /**
-     * Removes a MapLayer instance from the user defined menu in
-     * portal session and then updates the relevant tree menu
-     * @param itemToRemove
-     */
-    public void removeUserDefinedMenuItem(MenuItem itemToRemove) {
-        if (itemToRemove != null && (itemToRemove.isValueMapLayerInstance())) {
-            /* for the zk tree to pickup modifications, we have
-             * to manipulate the underlying data through it's
-             * model.  We can only do this if we are currently
-             * displaying the user defined menu tree though,
-             * otherwise, we have to remove the data directly
-             * ourself.
-             */
-            PortalSession ps = getPortalSession();
-            TreeChildIdentifier tci = portalSessionUtilities.removeUserDefinedMapLayer(ps, itemToRemove);
-            Tree userDefinedMenu = getMenuTree("user");
-            if (tci != null) {
-                if (userDefinedMenu != null) {
-                    MapLayerModel model = (MapLayerModel) userDefinedMenu.getModel();
-                    if (model != null) {
-                        // we remove the item at the position corresponding to the
-                        // list entry in PortalSession
-                        model.updateTreeItemRemoved(tci.getTreeMenuItem(), tci.getIndex());
-                    } else {
-                        logger.warn(
-                                "null model detected for user defined tree menu - should never happen");
-                    }
-                } else {
-                    logger.info("menutree for 'user' is null - can't update");
-                }
-            } else {
-                logger.info("item not found in portalSession.userDefinedMenu; id=" + itemToRemove.getId());
-            }
-        } else {
-            logger.info("itemToRemove is null or does not contain a MapLayer instance in it's value field");
-        }
     }
 
     /**
@@ -1132,35 +828,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         Window window = (Window) Executions.createComponents("WEB-INF/zul/ErrorMessageWithDetail.zul", null, params);
         window.doOverlapped();
-    }
-
-    /**
-     * Show message for broken wms server
-     * @param rm
-     */
-    public void errorMessageBrokenWMSServer(RemoteMap rm) {
-        showMessage(
-                languagePack.getLang("wms_server_added_error"),
-                rm.getDiscoveryErrorMessageSimple(),
-                rm.getDiscoveryErrorMessage(),
-                "Link to WMS server",
-                rm.getLastUriAttempted(),
-                "Raw data from location",
-                httpConnection.readRawData(rm.getLastUriAttempted()));
-    }
-
-    /**
-     * Show message for broken WMS layer
-     */
-    public void errorMessageBrokenWMSLayer(ImageTester it) {
-        showMessage(
-                languagePack.getLang("wms_layer_added_error"),
-                it.getErrorMessageSimple(),
-                it.getErrorMessage(),
-                "Link to test image",
-                it.getLastUriAttempted(),
-                "Raw image data",
-                httpConnection.readRawData(it.getLastUriAttempted()));
     }
 
     /**
@@ -1242,7 +909,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
          * window and put it back where we found it in the index.zul
          * page - not pretty or efficient but works a treat!
          */
-        //rawMessageIframeHack.setParent(rawMessageHackHolder);
+        rawMessageIframeHack.setParent(rawMessageHackHolder);
     }
 
     /**
@@ -1253,47 +920,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     public void addUserDefinedLayerToMenu(MapLayer mapLayer, boolean activate) {
         if (safeToPerformMapAction()) {
-            PortalSession portalSession = getPortalSession();
-            MenuItem menuItem = portalSessionUtilities.addUserDefinedMapLayer(portalSession, mapLayer);
+            // activate the layer in openlayers and display in active layers without
+            // updating the tree (because its not displayed)
+            activateLayer(mapLayer, true, true);
 
-            if (portalSession.isDisplayingUserDefinedMenuTree()) {
-                logger.debug("user defined menu is being displayed - updating menus");
-                Tree menu = getMenuTree("user");
-                if (menu != null) {
-                    MapLayerModel mapLayerModel = (MapLayerModel) menu.getModel();
-                    if (mapLayerModel != null) {
-                        logger.debug("asking tree to update");
-                        if (!mapLayerModel.updateTreeItemAdded(menuItem)) {
-                            /* we requested the tree be updated (repainted) but it failed -
-                             * we still need to sync its tree to the model though so we
-                             * touch its model property, otherwise the next step (state
-                             * changes) will fail
-                             */
-                            menu.setModel(new MapLayerModel(portalSession.getMenuForUserDefined()));
-                        }
-                        if (activate) {
-                            logger.debug("marking layer as displayed in active layers");
-                            mapLayerModel.changeSelection(mapLayer, true);
-                            activateLayer(mapLayer, true, false);
-                        }
-                    }
-                } else {
-                    logger.info(
-                            "user defined menu is null - it shouldn't be.  No update done");
-                }
-            } else if (activate) {
-                // activate the layer in openlayers and display in active layers without
-                // updating the tree (because its not displayed)
-                activateLayer(mapLayer, true, true);
-
-                // we must tell any future tree menus that the map layer is already
-                // displayed as we didn't use changeSelection()
-                mapLayer.setListedInActiveLayers(true);
-                //mapLayer.setQueryable(_visible);
-            }
+            // we must tell any future tree menus that the map layer is already
+            // displayed as we didn't use changeSelection()
+            mapLayer.setListedInActiveLayers(true);
 
             logger.debug("leaving addUserDefinedLayerToMenu");
-            updateUserDefinedView();
         }
     }
 
@@ -1312,13 +947,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         PortalSession portalSession = getPortalSession();
         List<MapLayer> activeLayers = portalSession.getActiveLayers();
 
-        // base layers drop down list
-        baseLayerList.setModel(new ListModelList(portalSession.getBaseLayers()));
-        baseLayerList.setItemRenderer(new BaseLayerListRenderer());
-        baseLayerList.setSelectedIndex(
-                portalSession.getIndexOfCurrentBaseLayer());
-
-
         // model and renderer for active layers list
         ListModelList activeLayerModel = new ListModelList(activeLayers, true);
 
@@ -1331,105 +959,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             activeLayersList.setItemRenderer(activeLayerRenderer);
         }
 
-        // select the radiobutton for the current active region/facility
-        // if we are not displaying the user defined menu
-        if (!portalSession.isDisplayingUserDefinedMenuTree()) {
-            if (portalSession.getSelectedMenuId() != null) {
-                getRadioButton(portalSession.getSelectedMenuId()).setChecked(true);
-            } else {
-                logger.warn("No default facility or region set in portal session - no default menu will be selected");
-            }
-        }
-
-        // select the correct accordian tab for above
-        // accordionMenu.setSelectedPanel(
-        //        getTabpanel(portalSession.getCurrentLayerTab()));
-
-        showCurrentMenu();
-
-        updateUserDefinedView();
-
+        //showCurrentMenu();
 
         activateNavigationTab(portalSession.getCurrentNavigationTab());
-        maximise();
+        //maximise();
 
-    }
-
-    public void updateUserDefinedView() {
-        PortalSession portalSession = getPortalSession();
-        if (!settings.isDisableUserDefined()) {
-            boolean display = portalSession.isUserDefinedViewDisplayable();
-
-            getTabpanel(PortalSession.LAYER_USER_TAB).setVisible(display);
-            //getTab(PortalSession.MAP_TAB).setVisible(display);
-        }
-    }
-
-    public void showCurrentMenu() {
-        PortalSession portalSession = getPortalSession();
-        String menuId = portalSession.getSelectedMenuId();
-        int view = portalSession.getTabForCurrentMenu();
-
-        showMenu(view, menuId);
-    }
-
-    private void onActivateTab(int view, boolean activate) {
-        Tab tab = getTab(view);
-        if (tab != null) {
-            tab.setSelected(activate);
-        } else {
-            logger.warn("no tab found for view " + view);
-        }
-    }
-
-    private Tab getTab(int view) {
-        Tab tab;
-        switch (view) {
-            case PortalSession.LAYER_FACILITY_TAB:
-                tab = facilitiesTab;
-                break;
-            case PortalSession.LAYER_REGION_TAB:
-                tab = regionsTab;
-                break;
-            case PortalSession.LAYER_USER_TAB:
-                tab = userTab;
-                break;
-            case PortalSession.LAYER_REALTIME_TAB:
-                tab = realtimeTab;
-                break;
-            default:
-                logger.warn(
-                        "Tab panel ID requested for unknown view: "
-                        + view + " will default to Facility");
-                tab = facilitiesTab;
-        }
-
-        return tab;
-    }
-
-    private Tabpanel getTabpanel(int view) {
-        Tabpanel tabpanel;
-        switch (view) {
-            case PortalSession.LAYER_FACILITY_TAB:
-                tabpanel = facilitiesTabPanel;
-                break;
-            case PortalSession.LAYER_REGION_TAB:
-                tabpanel = regionsTabPanel;
-                break;
-            case PortalSession.LAYER_USER_TAB:
-                tabpanel = userTabPanel;
-                break;
-            case PortalSession.LAYER_REALTIME_TAB:
-                tabpanel = realtimeTabPanel;
-                break;
-            default:
-                logger.warn(
-                        "Tab panel ID requested for unknown view: "
-                        + view + " will default to Facility");
-                tabpanel = facilitiesTabPanel;
-        }
-
-        return tabpanel;
     }
 
     /**
@@ -1438,53 +972,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * 'please select map layers'
      * @param activeLayersList
      */
-    private void displayEmptyActiveLayers(Listbox activeLayersList) {
+    void displayEmptyActiveLayers(Listbox activeLayersList) {
         logger.debug("will display empty active layers list");
         activeLayersList.setItemRenderer(new EmptyActiveLayersRenderer());
         activeLayersList.setModel(new SimpleListModel(new String[]{languagePack.getLang("active_layers_empty")}));
-    }
-
-    public void onChange$extSubmit() {
-        logger.debug("onchange for id extSubmit");
-        extSubmit.setValue("");
-        String uri = extUrl.getValue();
-        String sld = extSld.getValue();
-        String cql = extCql.getValue();
-        String name = extLabel.getValue();
-        String layer = extLayer.getValue();
-        String type = extType.getValue();
-        String format = "image/png"; // todo: allow as a param
-
-        PortalSession ps = getPortalSession();
-
-        if (Validate.empty(uri) || Validate.empty(name) || Validate.empty(type)) {
-            showMessage(languagePack.getLang("ext_layer_creation_failure2"));
-            logger.error("A external layer was requested and failed with: uri=" + uri + " name=" + name + " type=" + type + " layer=" + layer);
-        } else {
-            if (portalSessionUtilities.getUserDefinedById(ps, uri) == null) {
-
-                MapLayer mapLayer = null;
-
-                if (!Validate.empty(layer)) {
-                    // This is a WMS request
-                    mapLayer = genericServiceAndBaseLayerSupport.createMapLayer(name, name, type, uri, layer, format, sld, cql);
-                } else {
-                    // KML request
-                    mapLayer = genericServiceAndBaseLayerSupport.createMapLayer(name, name, type, uri);
-                }
-
-                if (mapLayer == null) {
-                    logger.debug("The layer " + name + " couldnt be created");
-                    showMessage(languagePack.getLang("ext_layer_creation_failure"));
-                } else {
-
-                    addUserDefinedLayerToMenu(mapLayer, true);
-                }
-            } else {
-                showMessage(languagePack.getLang("wms_layer_already_exists"));
-            }
-        }
-
     }
 
     /**
@@ -1520,7 +1011,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer.setDefaultStyleLegendUri(uri);
                 if (mapLayer == null) {
                     // fail
-                    errorMessageBrokenWMSLayer(imageTester);
+                    //errorMessageBrokenWMSLayer(imageTester);
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
@@ -1558,7 +1049,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
                 if (mapLayer == null) {
                     // fail
-                    errorMessageBrokenWMSLayer(imageTester);
+                    //errorMessageBrokenWMSLayer(imageTester);
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
@@ -1588,44 +1079,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Overridden to allow for the adding of a OGC Filter
-     * Add a WMS layer identified by the given parameters to the menu system
-     * and activate it
-     * @param label Name of map layer
-     * @param uri URI for the WMS service
-     * @param layers layers to ask the WMS for
-     * @param imageFormat MIME type of the image we will get back
-     * @param opacity 0 for invisible, 1 for solid
-     */
-    /*
-    public boolean addWMSLayer(String label, String uri, float opacity, String filter) {
-    boolean addedOk = false;
-    if (safeToPerformMapAction()) {
-    //if (getPortalSession().getUserDefinedById(uri) == null) {
-    if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-    MapLayer mapLayer = remoteMap.createAndTestWMSLayer(label, uri, opacity);
-    if (mapLayer == null) {
-    // fail
-    errorMessageBrokenWMSLayer(imageTester);
-    logger.info("adding WMS layer failed ");
-    } else {
-    // ok
-    addUserDefinedLayerToMenu(mapLayer, true);
-    addedOk = true;
-    }
-    } else {
-    // fail
-    showMessage(languagePack.getLang("wms_layer_already_exists"));
-    logger.info(
-    "refusing to add a new layer with URI " + uri
-    + " because it already exists in the menu");
-    }
-    }
-    return addedOk;
-    }
-     * 
-     */
-    /**
      * Overridden to allow for the adding servers from known Servers ie can be queried
      * Add a WMS layer identified by the given parameters to the menu system
      * and activate it
@@ -1649,7 +1102,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 mapLayer.setBaseLayer(false);
                 if (mapLayer == null) {
                     // fail
-                    errorMessageBrokenWMSLayer(imageTester);
+                    //errorMessageBrokenWMSLayer(imageTester);
                     logger.info("adding WMS layer failed ");
                 } else {
                     // ok
@@ -1742,100 +1195,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 //call this to add it to the map and also put it in the active layer list
                 activateLayer(imageLayer, true, true);
-                //addUserDefinedLayerToMenu(imageLayer, true);
 
                 addedOk = true;
-
-
             } else {
                 System.out.println("refreshing exisiting layer");
                 imageLayer.setUri(uri); // + "&_lt=" + System.currentTimeMillis());
                 imageLayer.setOpacity(opacity); // (float) 0.75
 
-                // layer already exists, so lets just update that.
-                //refreshActiveLayer(imageLayer);
-                //Clients.evalJavaScript(
-                //        "map.getLayersByName('" + label + "')[0].setUrl('" + uri + "');");
                 openLayersJavascript.reloadMapLayerNow(imageLayer);
 
                 addedOk = true;
             }
         }
 
-        return addedOk;
-    }
-
-    /**
-     * Select a tab and activate it - same as if a user clicked
-     * it in the gui.  There is no corresponding deactivate
-     * method as you can acheive the same effect by selecting
-     * another tab
-     * @param view
-     */
-    public void selectAndActivateTab(int view) {
-        selectView(view);
-
-        // simulate user clicking open on the tab...
-        onActivateTab(view, true);
-    }
-
-    /**
-     * Add a WMS server to the menu system
-     * @param name Name for the root menu item or null to obtain from capabilities
-     * document
-     * @param uri URI to query for getCapabilities document - will be mangled
-     * if autodiscovery was enabled by the version parameter (see below)
-     * @param version one of ("auto", "1.3.0", "1.1.1", "1.1.0", "1.0.0") if
-     * auto is used, the version will be automatically discovered and the url
-     * will be mangled to add the required components
-     * @param opacity default opacity to be used for all layers discovered
-     * @param hostnameInDescription if set to true, the hostname will be appended
-     * to the description for the root mapLayer
-     * @return true if adding was successful, otherwise false
-     */
-    public boolean addWMSServer(String name, String uri, String version, float opacity, boolean hostnameInDescription) {
-        boolean addedOk = false;
-        if (safeToPerformMapAction()) {
-            /*
-             * First check that the URI is unique within the system (as an ID) - otherwise
-             * there will be problems eg if the user adds a duplicate uri
-             */
-            if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-
-                // make sure all layers are displayed for ud layers
-                MapLayer mapLayer = remoteMap.autoDiscover(name, opacity, uri, version);
-
-                // and add it to the map if we got a mapLayer back..
-                if (mapLayer != null) {
-                    // ok
-
-                    // append the hostname to the description (top level only)
-                    if (hostnameInDescription) {
-                        try {
-                            String hostnameDescription = languagePack.getCompoundLang(
-                                    "user_defined_layer_description",
-                                    new Object[]{new URL(uri).getHost()});
-                            mapLayer.appendDescription(hostnameDescription, true);
-                        } // should never happen since we used it to discover from earlier...
-                        catch (MalformedURLException e) {
-                        }
-                    }
-
-                    addUserDefinedLayerToMenu(mapLayer, false);
-                    addedOk = true;
-                } else {
-                    // error
-                    errorMessageBrokenWMSServer(remoteMap);
-                    logger.info("no data/invalid data received from map server - refusing to add");
-                }
-            } else {
-                // error
-                showMessage(languagePack.getLang("wms_server_already_exists"));
-                logger.info(
-                        "refusing to add a new layer with URI " + uri
-                        + " because it already exists in the menu");
-            }
-        }
         return addedOk;
     }
 
@@ -1926,15 +1298,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             case PortalSession.LAYER_TAB:
                 component = startNavigationTab;
                 break;
-            case PortalSession.SEARCH_TAB:
-                component = searchNavigationTab;
-                break;
             case PortalSession.LINK_TAB:
                 component = linkNavigationTab;
                 break;
-            /*case PortalSession.AREA_TAB:
-            component = areaNavigationTab;
-            break;*/
             case PortalSession.MAP_TAB:
                 component = mapNavigationTab;
                 break;
@@ -1955,15 +1321,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             case PortalSession.LAYER_TAB:
                 component = startNavigationTabContent;
                 break;
-            case PortalSession.SEARCH_TAB:
-                component = searchNavigationTabContent;
-                break;
             case PortalSession.LINK_TAB:
                 component = linkNavigationTabContent;
                 break;
-            /*case PortalSession.AREA_TAB:
-            component = areaNavigationTabContent;
-            break;*/
             case PortalSession.MAP_TAB:
                 component = mapNavigationTabContent;
                 break;
@@ -1977,13 +1337,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return component;
     }
 
-    /*public void onClick$layerNavigationTab() {
-    activateNavigationTab(PortalSession.LAYER_TAB);
-    }
-    
-    public void onClick$areaNavigationTab() {
-    activateNavigationTab(PortalSession.AREA_TAB);
-    }*/
     public void onClick$mapNavigationTab() {
         activateNavigationTab(PortalSession.MAP_TAB);
     }
@@ -1992,16 +1345,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activateNavigationTab(PortalSession.START_TAB);
     }
 
-    /*public void onClick$searchNavigationTab() {
-    activateNavigationTab(PortalSession.SEARCH_TAB);
-    }*/
     public void onClick$linkNavigationTab() {
         ((AnalysisController) leftMenuAnalysis.getFellow("analysiswindow")).callPullFromActiveLayers();
         activateNavigationTab(PortalSession.LINK_TAB);
-    }
-
-    public void onSelect$baseLayerList() {
-        changeBaseLayer((String) baseLayerList.getSelectedItem().getValue());
     }
 
     public void activateNavigationTab(int tab) {
@@ -2027,29 +1373,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             newTab.setSelected(true);
             newContent.setVisible(true);
         }
-
-        // redraw current menu if change was to layers tab
-        // ajay: updated to add MAP_TAB as the UI has changed. 
-        if (tab == PortalSession.LAYER_TAB || tab == PortalSession.MAP_TAB) {
-            // fix for #90
-            logger.debug("forced redraw of current tree menu");
-            Tree menu = getMenuTree();
-            if (menu != null) {
-                menu.setModel(menu.getModel());
-            } else {
-                logger.warn("detected null menu - should never happen");
-            }
-
-        }
     }
 
-    public void onSelect$activeLayersList(ForwardEvent event) {
-        // updateLayerControls();
-
-        // hide layer controls
-        hideLayerControls(null);
-    }
-
+    /* public void onSelect$activeLayersList(ForwardEvent event) {
+    // hide layer controls
+    hideLayerControls(null);
+    }*/
     public void setupLayerControls(MapLayer m) {
 
         MapLayer currentSelection = m;
@@ -2072,30 +1401,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             slider.setCurpos(percentage);
             opacityLabel.setValue(percentage + "%");
 
-            /*
-             * populate the list of styles
-             */
-            if (currentSelection.hasStyles() && currentSelection.isNcWmsType()) {
-                styleList.setModel(new ListModelList(currentSelection.getStyles()));
-                logger.debug("select style: " + currentSelection.getSelectedSystemStyleName());
-                styleList.setValue(currentSelection.getSelectedSystemStyleName());
-                styleControls.setVisible(true);
-            } else {
-                styleControls.setVisible(false);
-            }
-
-            /*
-             * switch the transect drawing div
-             */
-            if (currentSelection.isNcWmsType()) {
-                transectControl.setVisible(true);
-            } else {
-                transectControl.setVisible(false);
-            }
-
-            // show animation controls if needed
-            getAnimationControlsComposer().updateAnimationControls(currentSelection);
-
             if (currentSelection.isDynamicStyle()) {
                 LegendMaker lm = new LegendMaker();
                 int red = currentSelection.getRedVal();
@@ -2111,11 +1416,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 blueSlider.setCurpos(blue);
                 sizeSlider.setCurpos(size); //size scale
                 chkUncertaintySize.setChecked(sizeUncertain);
+                //chkPointsCluster.setChecked(currentSelection.isClustered());
+
+                updateComboBoxesColour(currentSelection);
 
                 blueLabel.setValue(String.valueOf(blue));
                 redLabel.setValue(String.valueOf(red));
                 greenLabel.setValue(String.valueOf(green));
                 sizeLabel.setValue(String.valueOf(size));
+
+                if (currentSelection.getColourMode().equals("-1")) {
+                    divUserColours.setVisible(true);
+                } else {
+                    divUserColours.setVisible(false);
+                }
 
                 if (currentSelection.getGeometryType() != GeoJSONUtilities.POINT) {
                     legendImg.setContent(lm.singleRectImage(c, 50, 50, 45, 45));
@@ -2130,11 +1444,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         uncertainty.setVisible(true);
                     }
                 }
-                legendImg.setVisible(true);
+
                 legendLabel.setVisible(true);
                 legendImgUri.setVisible(false);
-                legendHtml.setVisible(false);
+                //legendHtml.setVisible(false);
                 colourChooser.setVisible(true);
+
+                if (cbColour.getSelectedItem() != ciColourUser && m.getMapLayerMetadata() != null
+                        && m.getMapLayerMetadata().getSpeciesLsid() != null
+                        && !m.isClustered()) {
+                    legendHtml.setVisible(true);
+                    legendImg.setVisible(false);
+
+                    showPointsColourModeLegend(m);
+                } else {
+                    legendImg.setVisible(true);
+                    legendHtml.setVisible(false);
+                }
             } else if (currentSelection.getSelectedStyle() != null) {
                 /* 1. classification legend has uri with ".zul" content
                  * 2. prediction legend works here
@@ -2198,14 +1524,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             hideLayerControls(null);
         }
 
-        // TODO: fix the points/cluster toggle for active area
-        if (m != null) {
+        if (m != null && m.getMapLayerMetadata() != null
+                && m.getMapLayerMetadata().getSpeciesLsid() != null) {
             btnPointsCluster.setVisible(true);
-//            if (m.getName().equalsIgnoreCase("Species in Active area")) {
-//                btnPointsCluster.setVisible(false);
-//            } else {
-//                btnPointsCluster.setVisible(true);
-//            }
+            cbColour.setDisabled(m.isClustered() || isUserUploadedCoordinates(m));
+        } else {
+            btnPointsCluster.setVisible(false);
+            cbColour.setDisabled(true);
         }
     }
 
@@ -2250,7 +1575,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * At the moment this shows/hides the opacity controls
      */
     public void updateLayerControls() {
-
         MapLayer currentSelection = getActiveLayersSelection(false);
         setupLayerControls(currentSelection);
     }
@@ -2262,19 +1586,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (loaded) {
             //openLayersJavascript.execute("window.mapFrame.loadBaseMap();");
             openLayersJavascript.setAdditionalScript("window.mapFrame.loadBaseMap();");
-            System.out.println("---------------------------------------------");
-            System.out.println("---------------------------------------------");
             System.out.println("map is now loaded. let's try mapping.");
             MapLayer ml = loadUrlParameters();
-            System.out.println("---------------------------------------------");
-            System.out.println("---------------------------------------------");
-//            if (ml != null) {
-//                openLayersJavascript.setAdditionalScript(openLayersJavascript.zoomGeoJsonExtent(ml));
-//            } else {
-//                openLayersJavascript.setAdditionalScript("");
-//            }
             openLayersJavascript.setAdditionalScript("");
-
         }
     }
 
@@ -2335,128 +1649,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return (String) event.getOrigin().getTarget().getAttribute("systemId");
     }
 
-    public void onSelectRegion(ForwardEvent event) {
-        selectRegion(getSystemId(event), true);
-    }
-
-    public void selectRegion(String id, boolean doJavascript) {
-        showMenu(PortalSession.LAYER_REGION_TAB, id);
-        if (doJavascript) {
-            openLayersJavascript.zoomToBoundingBoxNow(getPortalSession().getRegions().get(id).getBoundingBox());
-        }
-    }
-
-    public void onSelectFacility(ForwardEvent event) {
-        showMenu(PortalSession.LAYER_FACILITY_TAB, getSystemId(event));
-    }
-
-    public void onSelectUser(ForwardEvent event) {
-        showMenu(PortalSession.LAYER_USER_TAB, null);
-    }
-
-    public void onSelectRealtime(ForwardEvent event) {
-        showMenu(PortalSession.LAYER_REALTIME_TAB, getSystemId(event));
-    }
-
-    private void showMenu(MenuGroup menu, TreeitemRenderer renderer) {
-        Tree menuTree = getMenuTree();
-        if (menu != null) {
-            MapLayerModel mapLayerModel = new MapLayerModel(menu);
-            menuTree.setTreeitemRenderer(renderer);
-            menuTree.setModel(mapLayerModel);
-            logger.debug("menu set to: \n" + menu.dump(" "));
-        }
-
-
-
-    }
-
-    /**
-     * Show the tree menu for the given view
-     * @param id
-     * @param menu
-     */
-    private void showMenu(int view, String menuId) {
-        PortalSession portalSession = getPortalSession();
-        TreeitemRenderer renderer = null;
-        MenuGroup menu = null;
-        boolean okToChangeMenu = false;
-        boolean displayUserDefined = false;
-
-        // hide the old tree if one exists
-        Tree oldMenu = getMenuTree();
-
-        if (oldMenu != null) {
-            getMenuTree().setModel(null);
-        }
-
-        // update portalSession to select new menu
-        switch (view) {
-            case PortalSession.LAYER_FACILITY_TAB:
-            case PortalSession.LAYER_REALTIME_TAB:
-            case PortalSession.LAYER_REGION_TAB:
-                if (menuId == null) {
-                    logger.warn("null menuId for view other than VIEW_USER - can't display menu");
-                    okToChangeMenu = false;
-                } else {
-                    portalSession.setSelectedMenuId(menuId);
-                    renderer = mapLayerItemRenderer;
-                    okToChangeMenu = true;
-                    displayUserDefined = false;
-                }
-                break;
-            case PortalSession.LAYER_USER_TAB:
-                // use a special renderer for user defined layers - adds a
-                // remove icon
-                renderer = userDefinedMapLayerItemRenderer;
-                okToChangeMenu = true;
-                displayUserDefined = true;
-                break;
-            default:
-                logger.warn(
-                        "Unkown view requested: " + portalSession.getCurrentLayerTab()
-                        + " will do nothing");
-        }
-
-        if (okToChangeMenu) {
-            portalSession.setDisplayingUserDefinedMenuTree(displayUserDefined);
-            portalSession.setTabForCurrentMenu(view);
-            menu = portalSessionUtilities.getMenu(portalSession, view, menuId);
-            showMenu(menu, renderer);
-        }
-    }
-
-    /**
-     * Get the combobox for MEST search - is within another
-     * id-space so can't be autowired.  Probably shouldn't be
-     * done in this class at all.  Waiting for search stuff
-     * to be autowired before rewrite...
-     * @return
-     */
-    private Combobox getMESTSearchTermsCombobox() {
-        return (Combobox) getFellow("leftMenuSearch").getFellow("leftSearch").getFellow("txtsearch");
-    }
-
-    private Tree getMenuTree(String id) {
-        return (id == null) ? null : (Tree) getFellow("tree_" + id);
-    }
-
-    /**
-     * Only one may be displayed at a time, so return the
-     * one that is currently active
-     * @return
-     */
-    private Tree getMenuTree() {
-        PortalSession portalSession = getPortalSession();
-        Tree menu;
-        if (portalSession.isDisplayingUserDefinedMenuTree()) {
-            menu = getMenuTree("user");
-        } else {
-            menu = getMenuTree(portalSession.getSelectedMenuId());
-        }
-        return menu;
-    }
-
     public void updateLegendImage() {
         LegendMaker lm = new LegendMaker();
         int red = redSlider.getCurpos();
@@ -2478,11 +1670,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 uncertainty.setVisible(true);
             }
         }
-
-        if(chkUncertaintySize.isChecked() && !uncertaintyLegend.isVisible()) {
+        if (chkUncertaintySize.isChecked() && !uncertaintyLegend.isVisible()) {
             uncertaintyLegend.setVisible(true);
-        } else if(!chkUncertaintySize.isChecked() && uncertaintyLegend.isVisible()){
+        } else if (!chkUncertaintySize.isChecked() && uncertaintyLegend.isVisible()) {
             uncertaintyLegend.setVisible(false);
+        }
+
+        if (cbColour.getSelectedItem() != ciColourUser && selectedLayer.getMapLayerMetadata() != null
+                && selectedLayer.getMapLayerMetadata().getSpeciesLsid() != null
+                && !selectedLayer.isClustered()) {
+            legendHtml.setVisible(true);
+            legendImg.setVisible(false);
+
+            showPointsColourModeLegend(selectedLayer);
+
+        } else {
+            legendImg.setVisible(true);
+            legendHtml.setVisible(false);
         }
     }
 
@@ -2490,23 +1694,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int size = sizeSlider.getCurpos();
         sizeLabel.setValue(String.valueOf(size));
         updateLegendImage();
-        onClick$applyChange();
+        applyChange();
     }
 
     public void onCheck$chkUncertaintySize() {
+        MapLayer selectedLayer = getActiveLayersSelection(true);
+        if (selectedLayer != null) {
+            selectedLayer.setHighlight(null);
+        }
         updateLegendImage();
-        onClick$applyChange();
+        applyChange();
     }
 
     public void onClick$btnPointsCluster() {
-        System.out.println("calling togglePointsCluster");
         togglePointsCluster();
     }
 
     private void togglePointsCluster() {
-
-        System.out.println("in togglePointsCluster");
-
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         MapLayerMetadata md = selectedLayer.getMapLayerMetadata();
         if (md != null) {
@@ -2519,7 +1723,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             int blue = selectedLayer.getBlueVal();
             int size = selectedLayer.getSizeVal();
             float opacity = selectedLayer.getOpacity();
-            int uncertaintyCheck = (selectedLayer.getSizeUncertain())?1:0;
+            int uncertaintyCheck = (selectedLayer.getSizeUncertain()) ? 1 : 0;
             String envParams = selectedLayer.getEnvParams();
             String envName = selectedLayer.getEnvName();
             String envColour = selectedLayer.getEnvColour();
@@ -2534,8 +1738,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (envParams == null) {
                 Color c = new Color(red, green, blue);
                 String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
-                envParams = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity + "";
-                if (uncertaintyCheck > 0) {
+                envParams = "";
+                if (selectedLayer.getColourMode().equals("-1")) {
+                    envParams += "color:" + hexColour;
+                } else {
+                    envParams += "colormode:" + selectedLayer.getColourMode();
+                }
+                envParams += ";name:circle;size:" + size + ";opacity:" + opacity + "";
+                if (selectedLayer.getHighlight() != null) {
+                    envParams += ";sel:" + selectedLayer.getHighlight();
+                } else if (uncertaintyCheck > 0) {
                     envParams += ";uncertainty:1";
                 }
             }
@@ -2553,106 +1765,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     + openLayersJavascript.removeMapLayer(selectedLayer));
 
             MapLayer convLayer = null;
-            System.out.println("selectedLayer.getName(): " + selectedLayer.getName());
-            if (selectedLayer.getName().equalsIgnoreCase("Species in Active area")) {
 
-                deactiveLayer(selectedLayer, true, false, true);
+            deactiveLayer(selectedLayer, true, false, true);
 
-                System.out.println("Is an active area");
-
-                boolean isClustered = selectedLayer.isClustered();
-                String pid = "none";
-                String aarank = "activearea";
-
-                if (selectedLayer.getMapLayerMetadata() != null) {
-                    pid = selectedLayer.getMapLayerMetadata().getSpeciesLsid();
-                    aarank = selectedLayer.getMapLayerMetadata().getSpeciesRank();
-                }
-
-                if (isClustered) {
-                    //convLayer = loadSpeciesInActiveArea(pid, 1, false);
-                    convLayer = mapSpeciesWMSByFilter("Species in Active area", "area='" + md.getUnits() + "'");
-                    convLayer.getMapLayerMetadata().setUnits(md.getUnits());
-
-                    convLayer.setClustered(false);
-                    btnPointsCluster.setLabel("Display species as clusters");
-                } else {
-                    //convLayer = loadSpeciesInActiveArea(pid, 201, true);
-
-                    try {
-                        String area = md.getUnits();
-                        String polygon = getSelectionAreaPolygon();
-
-                        StringBuffer sbProcessUrl = new StringBuffer();
-
-                        //clustering
-                        MapLayerMetadata md2 = new MapLayerMetadata();
-                        md2.setLayerExtent(getMapComposer().getViewArea(), 0.2);
-
-                        sbProcessUrl.append("species");
-                        sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area, "UTF-8"));
-                        String id = String.valueOf(System.currentTimeMillis());
-                        sbProcessUrl.append("/id/").append(URLEncoder.encode(id, "UTF-8"));
-                        sbProcessUrl.append("/now");
-                        sbProcessUrl.append("?z=").append(String.valueOf(getMapZoom()));
-                        sbProcessUrl.append("&a=").append(URLEncoder.encode(md2.getLayerExtentString(), "UTF-8"));
-                        sbProcessUrl.append("&m=").append(String.valueOf(8));
-                        MapLayer ml = getMapComposer().addGeoJSONLayer("Species in Active area",
-                                settingsSupplementary.getValue(CommonData.SAT_URL)
-                                + "/alaspatial/" + sbProcessUrl.toString(), true);
-
-                        ml.setClustered(true);
-                        btnPointsCluster.setLabel("Display species as points");
-
-                        if (ml.getMapLayerMetadata() == null) {
-                            ml.setMapLayerMetadata(new MapLayerMetadata());
-                        }
-
-                        ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
-
-                        //TODO: don't use setUnits
-                        ml.getMapLayerMetadata().setUnits(md.getUnits());
-
-                        //get bounding box for active area
-                        try {
-                            MapLayerMetadata md3 = new MapLayerMetadata();
-                            md3.setLayerExtent(polygon, 0);
-                            double[] d = md3.getLayerExtent();
-
-                            List<Double> bb = new ArrayList<Double>();
-                            for (int i = 0; i < d.length; i++) {
-                                bb.add(d[i]);
-                            }
-                            md2.setBbox(bb);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        convLayer = ml;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+            if (selectedLayer.isClustered()) {
+                convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
             } else {
-
-                System.out.println("Not an active area");
-                deactiveLayer(selectedLayer, true, false, true);
-
-                if (selectedLayer.isClustered()) {
-                    System.out.println("calling lsidfilter with:");
-                    System.out.println("lsid: " + lsid);
-                    System.out.println("species: " + species);
-                    System.out.println("rank: " + rank);
-                    convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
-                } else {
-                    System.out.println("calling lsidcluster with:");
-                    System.out.println("lsid: " + lsid);
-                    System.out.println("species: " + species);
-                    convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
-                }
+                convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
             }
-
-            //deactiveLayer(selectedLayer, true, false, true);
 
             // reopen the layer controls
             try {
@@ -2665,7 +1785,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             // now remove the colour settings
             activeLayerMapProperties = null;
-
         }
     }
 
@@ -2673,14 +1792,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int blue = blueSlider.getCurpos();
         blueLabel.setValue(String.valueOf(blue));
         updateLegendImage();
-        onClick$applyChange();
+        applyChange();
     }
 
     public void onScroll$redSlider() {
         int red = redSlider.getCurpos();
         redLabel.setValue(String.valueOf(red));
         updateLegendImage();
-        onClick$applyChange();
+        applyChange();
 
     }
 
@@ -2688,23 +1807,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int green = greenSlider.getCurpos();
         greenLabel.setValue(String.valueOf(green));
         updateLegendImage();
-        onClick$applyChange();
-    }
-
-    /*
-     * image clicked for transect drawing across NCWMS layers
-     */
-    public void onClick$turnonTransectDrawing() {
-        MapLayer selectedLayer = this.getActiveLayersSelection(true);
-        openLayersJavascript.initialiseTransectDrawing(selectedLayer);
-
-    }
-
-    public void changeBaseLayer(String id) {
-        if (safeToPerformMapAction()) {
-            logger.debug("user requests change of baselayer to " + id);
-            this.activateBaseLayer(id);
-        }
+        applyChange();
     }
 
     //-- AfterCompose --//
@@ -2718,197 +1821,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // showtime!
         load();
 
-        //loadLayerTree();
-    }
-
-    private void loadLayerTree() {
-        //Object llist = Sessions.getCurrent().getAttribute("layerlist");
-
-        ArrayList top = new ArrayList();
-        ArrayList cat1 = new ArrayList();
-        ArrayList cat2 = new ArrayList();
-
-        Hashtable htCat1 = new Hashtable();
-        Hashtable htCat2 = new Hashtable();
-
-        JSONArray layerlist = CommonData.getLayerListJSONArray();//JSONArray.fromObject(llist);
-        for (int i = 0; i < layerlist.size(); i++) {
-            JSONObject jo = layerlist.getJSONObject(i);
-
-            if (!jo.getBoolean("enabled")) {
-                continue;
-            }
-
-            SimpleTreeNode stn = new SimpleTreeNode(jo, new ArrayList());
-            addToMap(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
-
+        //combobox defaults
+        if (cbColour != null) {
+            cbColour.setSelectedItem(ciColourUser);
         }
-
-        System.out.println("ht1.size: " + htCat1.size());
-
-        Enumeration it2 = htCat2.keys();
-        while (it2.hasMoreElements()) {
-            String catKey = (String) it2.nextElement();
-            JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
-            SimpleTreeNode cat = new SimpleTreeNode(joCat, (ArrayList) htCat2.get(catKey));
-            //cat2.add(cat);
-            top.add(cat);
-        }
-
-//        Enumeration it1 = htCat1.keys();
-//        while(it1.hasMoreElements()) {
-//            String catKey = (String) it1.nextElement();
-//            JSONObject joCat = JSONObject.fromObject("{displayname:'"+catKey+"'}");
-//            SimpleTreeNode cat = new SimpleTreeNode(joCat,(ArrayList) htCat1.get(catKey));
-//            top.add(cat);
-//        }
-        SimpleTreeNode root = new SimpleTreeNode("ROOT", top);
-        SimpleTreeModel stm = new SimpleTreeModel(root);
-        tree.setModel(stm);
-
-        tree.setTreeitemRenderer(new TreeitemRenderer() {
-
-            @Override
-            public void render(Treeitem item, Object data) throws Exception {
-
-                SimpleTreeNode t = (SimpleTreeNode) data;
-
-                JSONObject joLayer = JSONObject.fromObject(t.getData());
-
-                Treerow tr = null;
-                /*
-                 * Since only one treerow is allowed, if treerow is not null,
-                 * append treecells to it. If treerow is null, construct a new
-                 * treerow and attach it to item.
-                 */
-                if (item.getTreerow() == null) {
-                    tr = new Treerow();
-                    tr.setParent(item);
-                } else {
-                    tr = item.getTreerow();
-                    tr.getChildren().clear();
-                }
-
-                Treecell tcAdd = new Treecell();
-                Treecell tcInfo = new Treecell();
-
-                if (!joLayer.getString("type").equals("node")) {
-
-                    // add the "add" button
-                    //tcAdd = new Treecell();
-                    tcAdd.setImage("/img/add.png");
-
-                    // add the "info" button
-                    //tcInfo = new Treecell();
-                    tcInfo.setImage("/img/information.png");
-
-                    // set the layer data for the row
-                    tr.setAttribute("lyr", joLayer);
-                } else {
-                }
-
-                Treecell tcName = new Treecell(joLayer.getString("displayname"));
-                //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
-
-
-                // Attach onclick events:
-                if (!joLayer.getString("type").equals("node")) {
-
-                    tcAdd.addEventListener("onClick", new EventListener() {
-
-                        @Override
-                        public void onEvent(Event event) throws Exception {
-                            Object o = event.getTarget().getId();
-                            Treecell tc = (Treecell) event.getTarget();
-                            JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
-                            System.out.println("Loading layer: " + joLayer.getString("displayname") + " from " + joLayer.getString("displaypath"));
-
-                            String metadata = joLayer.getString("metadatapath");
-                            if (metadata.equals("")) {
-                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
-                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
-                                metadata += "Source: " + joLayer.getString("source") + "\n";
-                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
-                            }
-
-                            addWMSLayer(joLayer.getString("displayname"),
-                                    joLayer.getString("displaypath"),
-                                    (float) 0.75, metadata);
-                        }
-                    });
-
-
-                    tcInfo.addEventListener("onClick", new EventListener() {
-
-                        @Override
-                        public void onEvent(Event event) throws Exception {
-                            Object o = event.getTarget().getId();
-                            Treecell tc = (Treecell) event.getTarget();
-                            JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
-                            String metadata = joLayer.getString("metadatapath");
-                            if (metadata.equals("")) {
-                                metadata += "Name: " + joLayer.getString("displayname") + "\n";
-                                metadata += "Classification: " + joLayer.getString("classification1") + "\n";
-                                metadata += "Source: " + joLayer.getString("source") + "\n";
-                                metadata += "Sample: " + joLayer.getString("displaypath") + "\n";
-                            }
-
-                            System.out.println("Loading layer info: " + joLayer.getString("displayname") + " from " + metadata);
-                            if (metadata.startsWith("http://")) {
-                                // send the user to the BIE page for the species
-                                Clients.evalJavaScript("window.open('"
-                                        + metadata
-                                        + "', 'metadataWindow');");
-                            } else if (metadata.length() > 0) {
-                                //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
-                                showMessage(metadata);
-                            } else {
-                                showMessage("Metadata currently unavailable");
-                            }
-                        }
-                    });
-                }
-
-                //Attach treecells to treerow
-                //if (tcAdd != null) {
-                tcAdd.setParent(tr);
-                //}
-                //if (tcInfo != null) {
-                tcInfo.setParent(tr);
-                //}
-                tcName.setParent(tr);
-                item.setOpen(false);
-            }
-        });
-
-
-    }
-
-    private void addToMap(Hashtable htCat1, Hashtable htCat2, String cat1, String cat2, SimpleTreeNode stn) {
-
-        if (cat1.trim().equals("")) {
-            cat1 = "Other";
-        }
-        if (cat2.trim().equals("")) {
-            cat2 = "Other";
-        }
-
-        ArrayList alCat2 = (ArrayList) htCat2.get(cat2);
-        if (alCat2 == null) {
-            alCat2 = new ArrayList();
-        }
-        alCat2.add(stn);
-        htCat2.put(cat2, alCat2);
-
-        ArrayList alCat1 = (ArrayList) htCat1.get(cat1);
-        if (alCat1 == null) {
-            alCat1 = new ArrayList();
-        }
-        JSONObject joCat = JSONObject.fromObject("{displayname:'" + cat2 + "',type:'node'}");
-        SimpleTreeNode cat = new SimpleTreeNode(joCat, alCat2);
-        alCat1.add(cat);
-        htCat1.put(cat1, alCat1);
-
     }
 
     /**
@@ -2967,7 +1883,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private MapLayer loadUrlParameters() {
         MapLayer ml = null;
         try {
-
             boolean showLayerTab = false;
 
             System.out.println("User params: " + userparams.getValue());
@@ -3023,52 +1938,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String uri = (String) oLink;
             String label = (String) component.getAttribute("label");
             this.activateLink(uri, label, false);
-        } else {
-            Link link = (Link) oLink;
-            logger.debug("activate link: " + link.getId());
-            this.activateLink(link);
-        }
-    }
-
-    public void onClick$loginButton() {
-        logger.debug("activate login: ");
-        Window internalContentWindow = new Window();
-        internalContentWindow = (Window) Executions.createComponents("WEB-INF/zul/login.zul", null, null);
-        internalContentWindow.setPosition("center");
-        internalContentWindow.doHighlighted();
-    }
-
-    public void onClick$logoutButton() {
-        logger.debug("logout user: ");
-        // do logout
-        logoutService.logout(getPortalSession());
-        logoutActions();
-    }
-
-    public void addLayerFromMest(String udLabelValue, String udUriValue,
-            String udLayersValue, String udImageFormatValue,
-            float udOpacityValue) {
-
-        if (safeToPerformMapAction()) {
-            this.addWMSLayer(udLabelValue, udUriValue, udOpacityValue);
-        }
-    }
-
-    public void addServerToMap(String serverName, String uri, String version, float opacity) {
-        if (safeToPerformMapAction()) {
-            this.addWMSServer(serverName, uri, version, opacity, false);
         }
     }
 
     public MapLayer addGeoJSON(String labelValue, String uriValue) {
         if (safeToPerformMapAction()) {
-
             return this.addGeoJSONLayer(labelValue, uriValue, false);
-
         } else {
             return null;
         }
-
     }
 
     public MapLayer addWKTLayer(String wkt, String label) {
@@ -3105,44 +1983,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return mapLayer;
     }
 
-    public MapLayer addGeoJSONLayerOld(String label, String uri) {
-        MapLayer mapLayer = null;
-
-        if (safeToPerformMapAction()) {
-            //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
-            if (getMapLayer(label) == null) {
-                mapLayer = remoteMap.createGeoJSONLayer(label, uri, false);
-                if (mapLayer == null) {
-                    // fail
-                    //hide error, might be clustering zoom in; showMessage("No mappable features available");
-                    logger.info("adding GEOJSON layer failed ");
-                } else {
-                    mapLayer.setDisplayable(true);
-                    mapLayer.setOpacity((float) 0.4);
-                    mapLayer.setQueryable(true);
-                    mapLayer.setDynamicStyle(true);
-
-                    activateLayer(mapLayer, true, true);
-
-                    // we must tell any future tree menus that the map layer is already
-                    // displayed as we didn't use changeSelection()
-                    mapLayer.setListedInActiveLayers(true);
-                }
-            } else {
-                //need to cleanup any additional scripts outstanding
-                openLayersJavascript.useAdditionalScript();
-
-                // fail
-                //showMessage("GeoJSON layer already exists");
-                logger.info(
-                        "refusing to add a new layer with URI " + uri
-                        + " because it already exists in the menu");
-            }
-        }
-
-        return mapLayer;
-    }
-
     public MapLayer addGeoJSONLayer(String label, String uri, boolean points_type) {
         return addGeoJSONLayer(label, uri, "", false, points_type);
     }
@@ -3152,7 +1992,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (safeToPerformMapAction()) {
             MapLayer gjLayer = getMapLayer(label);
-            if (label.equalsIgnoreCase("Species in Active area") || forceReload) {
+            if (forceReload) {
                 if (gjLayer != null) {
                     System.out.println("removing existing layer: " + gjLayer.getName());
                     openLayersJavascript.setAdditionalScript(
@@ -3186,8 +2026,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     // check if it's a different url
                     // if it is, then it is ok to add
                     // and assume the previous is removed.
-                    //System.out.println("mlExisting.getUri(): " + mlExisting.getUri());
-                    //System.out.println("mlExisting.newUri:   " + uri);
                     okToAdd = true;
                 } else {
                 }
@@ -3245,12 +2083,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (safeToPerformMapAction()) {
             MapLayer gjLayer = getMapLayer(label);
-            if (label.equalsIgnoreCase("Species in Active area") || forceReload) {
+            if (forceReload) {
                 if (gjLayer != null) {
                     System.out.println("removing existing layer: " + gjLayer.getName());
                     openLayersJavascript.setAdditionalScript(
                             openLayersJavascript.removeMapLayer(gjLayer));
-                } //else {
+                }
                 mapLayer = remoteMap.createGeoJSONLayerWithGeoJSON(label, uri, json);
                 if (mapLayer == null) {
                     // fail
@@ -3268,9 +2106,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     // displayed as we didn't use changeSelection()
                     mapLayer.setListedInActiveLayers(true);
                 }
-                //}
             } else {
-                //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
                 if (getMapLayer(label) == null) {
                     mapLayer = remoteMap.createGeoJSONLayerWithGeoJSON(label, uri, json);
                     if (mapLayer == null) {
@@ -3373,9 +2209,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     void reloadPortal() {
         // grab the portaluser instance so that logged in users stay logged in...
         PortalSession portalSession = getPortalSession();
-        PortalUser portalUser = portalSession.getPortalUser();
+        //PortalUser portalUser = portalSession.getPortalUser();
 
-        // remove the old species filters 
+        // remove the old species filters
         getSession().removeAttribute("speciesfilters");
 
         // create a new session from the master session
@@ -3396,170 +2232,64 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 logger.error("error redirecting to error page", ex);
             }
         } else {
-            // all good - put the portal user back in, then force a page reload
-            portalSession.setPortalUser(portalUser);
+            // all good - put the portal user back in, then force a page reload            
             Executions.getCurrent().sendRedirect(null);
         }
     }
-
-    /**
-     * Change the style for the map layer selected in active layers
-     */
-    public void onChange$styleList() {
-
-        // layer
-        MapLayer mapLayer = this.getActiveLayersSelection(true);
-        if (mapLayer != null) {
-
-            // get the index of the selected style
-            int style = styleList.getSelectedIndex();
-
-            // tell the maplayer about it
-            mapLayer.setSelectedStyleIndex(style);
-
-            // update any displayed legends
-            LegendComposer lc = desktopState.getVisibleLegendByMapLayer(mapLayer);
-            if (lc != null) {
-                lc.update();
-            }
-
-            openLayersJavascript.reloadMapLayerNow(mapLayer);
-        } else {
-            logger.info(
-                    "user requested change style but no maplayer is "
-                    + "selected in active layers");
-        }
-    }
-
-    public void onClick$layerSwitcherShow() {
-        logger.debug("show layer switcher");
-        toggleLayerSwitcher(true);
-    }
-
-    public void onClick$layerSwitcherHide() {
-        logger.debug("hide layer switcher");
-        toggleLayerSwitcher(false);
-
-    }
-
+    /*
     public void onClick$hideLeftMenu() {
-        getPortalSession().setMaximised(true);
-        maximise();
+    getPortalSession().setMaximised(true);
+    maximise();
     }
 
     public void onClick$showLeftMenu() {
-        getPortalSession().setMaximised(false);
-        maximise();
-    }
-
-    public void onClick$saveMap() {
-        saveLoadMapContainer.setVisible(true);
-        createMapcont.setVisible(true);
-        saveMap.setVisible(false);
-    }
-
-    public void onClick$mapDel() {
-        Listitem selectedMap = savedMaps.getSelectedItem();
-
-        if (selectedMap == null) {
-            logger.debug("you suck arsehole!!!");
-        } else {
-            String mapName = StringEscapeUtils.escapeSql((String) selectedMap.getValue());
-            getUserDataManager().deleteMap(mapName);
-            updateUserMapList();
-        }
-
-
-    }
-
-    public void onClick$loadSavedMapButton() {
-        PortalSession portalSession = getPortalSession();
-        PortalSession newPortalSession = getMasterPortalSession();
-        List<MapLayer> activeByDefault = newPortalSession.getActiveLayers();
-        Listitem selectedMap = savedMaps.getSelectedItem();
-
-        if (selectedMap == null) {
-            logger.debug("you suck!!!");
-        } else {
-            // deactivate any active by default layers
-            while (activeByDefault.size() > 0) {
-                MapLayer mapLayer = activeByDefault.get(0);
-                mapLayer.setListedInActiveLayers(false);
-                mapLayer.setDisplayed(false);
-                activeByDefault.remove(mapLayer);
-            }
-
-            String mapName = (String) selectedMap.getValue();
-            logger.debug("load saved map " + mapName);
-            UserMap uMap = getUserDataManager().fetchUserMapByName(mapName);
-            portalSessionUtilities.updatePortalSession(newPortalSession, uMap);
-
-            // put user back
-            newPortalSession.setPortalUser(portalSession.getPortalUser());
-
-            // replace session
-            setPortalSession(newPortalSession);
-
-            openLayersJavascript.zoomToBoundingBox(uMap.getbBox());
-
-            // refresh page
-            Executions.sendRedirect("/");
-        }
-    }
-
-    public void onClick$mapSave() {
-
-        if (createSavedMap.getText().length() < 1) {
-            createSavedMapError.setValue("Please give your map a name");
-            createSavedMapError.setVisible(true);
-        } else {
-            String mapNameEscaped = StringEscapeUtils.escapeSql(createSavedMap.getText());
-
-            if (getUserDataManager().checkMapName(mapNameEscaped)) {
-                getUserDataManager().saveMap(mapNameEscaped);
-                mapSave.setVisible(true);
-                createSavedMapError.setVisible(false);
-                createMapcont.setVisible(false);
-                saveMap.setVisible(true);
-                updateUserMapList();
-            } else {
-                createSavedMapError.setValue("Map name already exists");
-                createSavedMapError.setVisible(true);
-            }
-        }
-    }
+    getPortalSession().setMaximised(false);
+    maximise();
+    }*/
 
     /**
      * Reload all species layers
      */
-    public void onChange$tbxReloadLayers() {
-        //update this.mapZoomLevel
+    public void onReloadLayers(Event event) {
+        String tbxReloadLayers;
         boolean mapZoomChanged = true;
-        try {
-            int mapZoomLevelOld = mapZoomLevel;
-            String s = tbxReloadLayers.getValue();
-            int s1 = s.indexOf("z=");
-            int s2 = s.indexOf("&");
-            if (s1 >= 0) {
-                if (s2 >= 0) {
-                    mapZoomLevel = Integer.parseInt(s.substring(s1 + 2, s2));
-                } else {
-                    mapZoomLevel = Integer.parseInt(s.substring(s1 + 2));
+
+        if (event == null) {
+            mapZoomChanged = (mapZoomLevel != getLeftmenuSearchComposer().getZoom());
+            mapZoomLevel = getLeftmenuSearchComposer().getZoom();
+
+            tbxReloadLayers = (new StringBuffer()).append("z=").append(String.valueOf(mapZoomLevel)).append("&amp;b=").append(getLeftmenuSearchComposer().getViewportBoundingBox().toString()).toString();
+        } else {
+            tbxReloadLayers = (String) event.getData();
+
+            //update this.mapZoomLevel
+            try {
+                int mapZoomLevelOld = mapZoomLevel;
+                String s = tbxReloadLayers;
+                int s1 = s.indexOf("z=");
+                int s2 = s.indexOf("&");
+                if (s1 >= 0) {
+                    if (s2 >= 0) {
+                        mapZoomLevel = Integer.parseInt(s.substring(s1 + 2, s2));
+                    } else {
+                        mapZoomLevel = Integer.parseInt(s.substring(s1 + 2));
+                    }
                 }
+                mapZoomChanged = (mapZoomLevelOld != mapZoomLevel);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            mapZoomChanged = (mapZoomLevelOld != mapZoomLevel);
-        } catch (Exception e) {
-            e.printStackTrace();
+            //System.out.println("tbxReloadLayers.getValue(): " + tbxReloadLayers);
+
         }
         String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        System.out.println("tbxReloadLayers.getValue(): " + tbxReloadLayers.getValue());
+        System.out.println("tbxReloadLayers.getValue(): " + tbxReloadLayers);
         // iterate thru' active map layers
         List udl = getPortalSession().getActiveLayers();
         Iterator iudl = udl.iterator();
         Vector<String> processedLayers = new Vector();
         String reloadScript = "";
         while (iudl.hasNext()) {
-            //try {
             MapLayer ml = (MapLayer) iudl.next();
             if (processedLayers.contains(ml.getName())) {
                 System.out.println(ml.getName() + " already processed.");
@@ -3570,12 +2300,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     && ml.getGeometryType() == GeoJSONUtilities.POINT
                     && ml.getMapLayerMetadata() != null) {
                 if (ml.getGeoJSON() != null && ml.getGeoJSON().length() > 0) {
-                    //addGeoJSONLayer(ml.getName(), ml.getUri() + "?" + tbxReloadLayers.getValue(), "", true);
                     String baseuri = ml.getUri();
                     if (baseuri.indexOf("?z=") > -1) {
                         baseuri = baseuri.substring(0, baseuri.indexOf("?z="));
                     }
-                    //ml.setUri(ml.getUri() + "?" + tbxReloadLayers.getValue());
 
                     String reqUri = "";
 
@@ -3596,7 +2324,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                                 sbProcessUrl.append("/now");
                                 reqUri = satServer + "/alaspatial/"
                                         + sbProcessUrl.toString()
-                                        + "?" + tbxReloadLayers.getValue() + "&m="
+                                        + "?" + tbxReloadLayers + "&m="
                                         + (ml.getSizeVal() * 2);
                             }
                         } else {
@@ -3604,7 +2332,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             if (mapZoomChanged || ml.getMapLayerMetadata().isOutside(getViewArea())) {
                                 ml.getMapLayerMetadata().setLayerExtent(getViewArea(), 0.2);
 
-                                reqUri = ml.getUri() + "?" + tbxReloadLayers.getValue()
+                                reqUri = ml.getUri() + "?" + tbxReloadLayers
                                         + "&a=" + URLEncoder.encode(ml.getMapLayerMetadata().getLayerExtentString(), "UTF-8")
                                         + "&m=" + (ml.getSizeVal() * 2);
                             }
@@ -3614,7 +2342,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         e.printStackTrace(System.out);
                     }
 
-                    System.out.println("Got reqUri: " + reqUri);
                     if (reqUri.length() > 0) {
                         try {
                             HttpClient client = new HttpClient();
@@ -3645,14 +2372,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     /**
-     * Use the onChange for tbxTabSelection to decide selected tab
-     * tbxTabSelection change event can be triggered via javascript
-     */
-    // public void onChange$tbxTabSelection() {
-    //    areaNavigationTab.setSelected(_visible);
-    //    onClick$areaNavigationTab();
-    // }
-    /**
      * generate pdf for from innerHTML of printHack txtbox
      *
      * dependant on whatever the ends up being on the map tab
@@ -3661,7 +2380,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      *
      *
      */
-    public void onChange$tbxPrintHack() {
+    public void onClick$onPrint(Event event) {
+        tbxPrintHack = (String) event.getData();
         PrintingComposer composer = (PrintingComposer) Executions.createComponents("/WEB-INF/zul/Printing.zul", this, null);
         try {
             composer.doModal();
@@ -3675,7 +2395,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /**
      * watch for layer loaded signals
      */
-    public void onChange$tbxLayerLoaded() {
+    public void onLayerLoaded(Event event) {
+        tbxLayerLoaded = (String) event.getData();
         for (EventListener el : layerLoadedChangeEvents.values()) {
             try {
                 el.onEvent(null);
@@ -3686,7 +2407,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public String getLayerLoaded() {
-        return tbxLayerLoaded.getValue();
+        return tbxLayerLoaded;
     }
 
     public void addLayerLoadedEventListener(String eventName, EventListener eventListener) {
@@ -3697,297 +2418,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         layerLoadedChangeEvents.remove(eventName);
     }
 
-    public void updateUserMapList() {
-
-        Boolean entries = false;
-
-        //clear the list so we don't get multiples
-        savedMaps.getItems().clear();
-
-        for (UserMap um : getUserDataManager().getUserMaps()) {
-            savedMaps.appendItem(um.getMapname(), um.getMapname());
-            entries = true;
-        }
-        // dont show the list if its empty
-        if (!entries) {
-            loadMapcont.setVisible(false);
-            createSavedMapAdvice.setVisible(true);
-        } else {
-            loadMapcont.setVisible(true);
-            createSavedMapAdvice.setVisible(false);
-            savedMaps.setSelectedIndex(0);
-        }
-    }
-
-    public void logoutActions() {
-        saveLoadMapContainer.setVisible(false);
-        saveMapAdvice.setVisible(true);
-        saveMap.setVisible(false);
-        logoutButton.setVisible(false);
-        loginButton.setVisible(true);
-        getLeftmenuSearchComposer().logoutActions();
-    }
-
-    public void loginActions() {
-        saveLoadMapContainer.setVisible(true);
-        saveMapAdvice.setVisible(false);
-        saveMap.setVisible(true);
-        logoutButton.setVisible(true);
-        loginButton.setVisible(false);
-
-        //get the users list of maps and searches
-        getUserDataManager().fetchUser(getPortalSession().getPortalUser().getUsername());
-        updateUserMapList();
-        getLeftmenuSearchComposer().loginActions();
-    }
-
     public void setWestWidth(String width) {
         menus.setWidth(width);
     }
 
     /**
-     * Maximise map display area - currently just hides the left menu
+     * Maximise map display area - currently just hides the left menumapNavigationTabContent
      * @param maximise
      */
-    private void maximise() {
+    void maximise() {
         boolean maximise = getPortalSession().isMaximised();
 
         if (maximise) {
-            //westContent.setParent(leftMenuHolder);
             menus.setWidth(settingsSupplementary.getValue(MENU_MINIMISED_WIDTH));
             menus.setBorder("none");
             menus.setStyle("overflow: hidden");
         } else {
-            //westContent.setParent(menus);
             menus.setWidth(settingsSupplementary.getValue(MENU_DEFAULT_WIDTH));
             menus.setBorder("normal");
             menus.setStyle("overflow: auto");
-
-            // must also hide the switcher...
-            toggleLayerSwitcher(false);
         }
         westContent.setVisible(!maximise);
         westMinimised.setVisible(maximise);
         menus.setSplittable(!maximise);
-        layerSwitcherContainer.setVisible(maximise);
-    }
-
-    public void onCheck$rdoCommonSearch() {
-        searchSpeciesAuto.setSearchCommon(true);
-        searchSpeciesAuto.getItems().clear();
-        btnSearchSpecies.setLabel("Search");
-        btnSearchSpecies.setVisible(true);
-    }
-
-    public void onCheck$rdoScientificSearch() {
-        searchSpeciesAuto.setSearchCommon(false);
-        searchSpeciesAuto.getItems().clear();
-        btnSearchSpecies.setLabel("Add to map");
-        btnSearchSpecies.setVisible(false);
-    }
-
-    public void searchCommonName(String searchTerm) {
-
-        Session session = (Session) Sessions.getCurrent();
-
-        session.setAttribute("searchTerm", searchTerm);
-        session.setAttribute("searchType", "common");
-
-        Window win = new Window();
-        win.detach();
-
-        win = (Window) Path.getComponent("/searchResults");
-
-        if (win == null) {
-            win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
-        } else {
-            win.detach();
-            win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
-        }
-
-        win.setTitle("Search Results for " + searchTerm);
-        win.setMaximizable(true);
-        win.setClosable(true);
-        win.setSizable(true);
-        win.setPosition("center");
-        win.doOverlapped();
-    }
-
-    public void onSearchSpecies(ForwardEvent event) {
-
-        //get the params from the controls
-
-        String sSearchTerm = searchSpeciesAuto.getValue();
-        String sSearchType = null;
-
-        Session session = (Session) Sessions.getCurrent();
-
-        if (rdoCommonSearch.isChecked()) {
-            sSearchType = "common";
-        } else {
-            sSearchType = "scientific";
-        }
-
-        session.setAttribute("searchTerm", sSearchTerm);
-        session.setAttribute("searchType", sSearchType);
-
-        Window win = new Window();
-        win.detach();
-
-        win = (Window) Path.getComponent("/searchResults");
-
-        if (win == null) {
-            win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
-        } else {
-            win.detach();
-            win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/SpeciesNameSearchResults.zul", null, null);
-        }
-
-        win.setTitle("Search Results for " + sSearchTerm);
-        win.setMaximizable(true);
-        win.setClosable(true);
-        win.setSizable(true);
-        win.setPosition("center");
-        win.doOverlapped();
-    }
-
-    private void toggleLayerSwitcher(boolean show) {
-        layerSwitcherHide.setVisible(show);
-        layerSwitcherShow.setVisible(!show);
-
-        if (show) {
-            layerSwitcherContainer.setWidth(settingsSupplementary.getValue(MENU_DEFAULT_WIDTH));
-            layerSwitcherContainer.setClass("layerSwitcherContainer");
-            activeLayersList.setParent(layerSwitcherContainer);
-            activeLayersList.setHeight("200px");
-
-            // force the width or we get a big blue box hiding the list
-            // because the sizes zk uses will be based on the previous
-            // width (90% of 20px == 2px)
-            logger.debug("old width:" + activeLayersList.getWidth());
-            activeLayersList.setWidth(settingsSupplementary.getValue(MENU_DEFAULT_WIDTH));
-        } else {
-            activeLayersList.setWidth(null);
-            activeLayersList.setHeight(null);
-            activeLayersList.setParent(activeLayersHolder);
-            layerSwitcherContainer.setWidth(null);
-            layerSwitcherContainer.setClass("layerSwitcherContainer_min");
-        }
-    }
-
-    public MapLayer loadSpeciesInActiveArea(String pid, int results_count_occurrences, boolean cluster) {
-        String satServer = "http://spatial.ala.org.au";
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
-        MapLayer ml = null;
-
-        try {
-            //String area = getMapComposer().getViewArea();
-            String area = getSelectionArea();
-            String polygon = getSelectionAreaPolygon();
-
-            StringBuffer sbProcessUrl = new StringBuffer();
-            //use cutoff instead of user option; //if(!getMapComposer().useClustering()){
-            if (cluster || (Executions.getCurrent().isExplorer() && results_count_occurrences > 200)) {
-                //clustering
-                MapLayerMetadata md = new MapLayerMetadata();
-                md.setLayerExtent(getViewArea(), 0.2);
-
-                sbProcessUrl.append("species");
-                sbProcessUrl.append("/cluster/area/").append(URLEncoder.encode(area, "UTF-8"));
-                String id = String.valueOf(System.currentTimeMillis());
-                sbProcessUrl.append("/id/").append(URLEncoder.encode(id, "UTF-8"));
-                sbProcessUrl.append("/now");
-                sbProcessUrl.append("?z=").append(String.valueOf(getMapZoom()));
-                sbProcessUrl.append("&a=").append(URLEncoder.encode(md.getLayerExtentString(), "UTF-8"));
-                sbProcessUrl.append("&m=").append(String.valueOf(8));
-                ml = addGeoJSONLayer("Species in Active area", CommonData.SAT_URL + "/alaspatial/" + sbProcessUrl.toString(), true);
-
-                if (ml.getMapLayerMetadata() == null) {
-                    ml.setMapLayerMetadata(new MapLayerMetadata());
-                }
-                ml.getMapLayerMetadata().setSpeciesLsid(pid);
-                ml.getMapLayerMetadata().setSpeciesRank("activearea");
-                ml.setClustered(true);
-
-                ml.getMapLayerMetadata().setLayerExtent(polygon, 0.2);
-
-                //get bounding box for active area
-                try {
-                    MapLayerMetadata md2 = new MapLayerMetadata();
-                    md2.setLayerExtent(polygon, 0);
-                    double[] d = md2.getLayerExtent();
-
-                    List<Double> bb = new ArrayList<Double>();
-                    for (int i = 0; i < d.length; i++) {
-                        bb.add(d[i]);
-                    }
-                    md.setBbox(bb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                //points
-                /*
-                sbProcessUrl.append("/filtering/apply");
-                sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-                sbProcessUrl.append("/samples/geojson");
-                sbProcessUrl.append("?area=").append(URLEncoder.encode(area, "UTF-8"));
-                String slist = getInfo(sbProcessUrl.toString());
-                //getMapComposer().addGeoJSONLayer("Species in Active area", satServer + "/alaspatial/" + geojsonfile);
-                System.out.println("onMapSpecies: " + slist);
-                String[] results = slist.split("\n");
-                addGeoJSONLayerProgressBar("Species in Active area", satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), null);//set progress bar with maximum
-                ml = getMapLayer("Species in Active area");
-                 *
-                 */
-                String cql = ""; // CQL_FILTER=
-                cql += "WITHIN(the_geom," + area + ")";
-                //cql += "speciesconceptid='urn:lsid:biodiversity.org.au:afd.taxon:aa745ff0-c776-4d0e-851d-369ba0e6f537'";
-
-
-                System.out.println("Mapping mapcomposer.activearea: \n" + area);
-
-                ml = mapSpeciesWMSByFilter("Species in Active area", cql);
-
-            }
-            //updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ml;
-    }
-
-    private String getInfo(String urlPart) {
-        String satServer = "http://spatial.ala.org.au";
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
-        try {
-            HttpClient client = new HttpClient();
-
-            GetMethod get = new GetMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(get);
-
-            //TODO: confirm result
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
     }
 
     public MapLayer mapSpeciesByLsid(String lsid, String species) {
@@ -3996,17 +2449,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public MapLayer mapSpeciesByLsid(String lsid, String species, String rank) {
         if (species == null || (lsid != null && species.equalsIgnoreCase(lsid))) {
-            //species = LayersUtil.getScientificNameRank(lsid);
             String speciesrank = LayersUtil.getScientificNameRank(lsid);
             species = speciesrank.split(",")[0];
             rank = speciesrank.split(",")[1];
+
+            if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
+                rank = "taxon";
+            }
         }
 
-        if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
-            rank = "taxon";
-        }
-
-        //use # of points cutoff; //        
+        //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
         MapLayer ml = null;
         if (countOfLsid(lsid) > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD) || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
             ml = mapSpeciesByLsidCluster(lsid, species, rank);
@@ -4056,7 +2508,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return mapSpeciesByLsidCluster(lsid, species, "species");
     }
 
-    MapLayer mapSpeciesByLsidCluster(String lsid, String species, String rank) {
+    public MapLayer mapSpeciesByLsidCluster(String lsid, String species, String rank) {
         try {
             String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
 
@@ -4078,7 +2530,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             sbProcessUrl.append("/id/").append(System.currentTimeMillis());
             sbProcessUrl.append("/now");
             sbProcessUrl.append("?z=").append(String.valueOf(mapZoomLevel));
-            sbProcessUrl.append("&m=").append(String.valueOf(8));
+            sbProcessUrl.append("&m=").append(String.valueOf(3));
             MapLayer ml = addGeoJSONLayer(species, satServer + "/alaspatial/" + sbProcessUrl.toString(), true);
 
             if (ml != null) {
@@ -4099,12 +2551,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 ml.setClustered(true);
 
                 btnPointsCluster.setLabel("Display species as points");
+                updateComboBoxesColour(ml);
             }
 
             return ml;
 
         } catch (Exception ex) {
-            //logger.debug(ex.getMessage());
             System.out.println("Opps error in mapsSpeciesByLsid");
             ex.printStackTrace(System.out);
         }
@@ -4112,7 +2564,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     void addLsidBoundingBoxToMetadata(MapLayerMetadata md, String lsid) {
-        //get bounding box for lsid        
+        //get bounding box for lsid
         List<Double> bb = new ArrayList<Double>();
 
         try {
@@ -4167,12 +2619,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String slist = post.getResponseBodyAsString();
             String[] results = slist.split("\n");
 
-            System.out.println("mapspeciesbylsidpoints:" + satServer + "/alaspatial/" + sbProcessUrl.toString());
-            System.out.println("mapSpeciesByLsidPoints: " + slist);
-
             addGeoJSONLayerProgressBar(species, satServer + "/alaspatial/" + results[0], "", false, Integer.parseInt(results[1]), lsid);//set progress bar with maximum
         } catch (Exception ex) {
-            //logger.debug(ex.getMessage());
             System.out.println("Opps error in mapsSpeciesByLsid");
             ex.printStackTrace(System.out);
         }
@@ -4180,15 +2628,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank) {
-
-        // double check that if the species is loaded by the user,
-        // for now, load them as clusters
-        //if (rank.equals("user")) {
-        //    return mapSpeciesByLsidCluster(lsid, species, rank);
-        //}
-
         String filter = rank + "conceptid='" + lsid + "'";
-        //filter = rank+"='"+species+"'";
+
         MapLayer ml = mapSpeciesWMSByFilter(species, filter);
 
         if (ml != null) {
@@ -4207,13 +2648,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             ml.setClustered(false);
             btnPointsCluster.setLabel("Display species as clusters");
+            updateComboBoxesColour(ml);
 
+            lsid = StringUtils.replace(lsid, ".", "__");
             try {
-                lsid = StringUtils.replace(lsid, ".", "__");
                 lsid = URLEncoder.encode(lsid, "UTF-8");
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(MapComposer.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
             addLsidBoundingBoxToMetadata(md, lsid);
         }
 
@@ -4238,7 +2681,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         int uncertaintyCheck = 0; //0 == false default
 
-        int size = 8;
+        int size = 3;
         float opacity = (float) 0.8;
 
         if (activeLayerMapProperties != null) {
@@ -4253,20 +2696,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
         String envString = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity;
-
         if (uncertaintyCheck > 0) {
             envString += ";uncertainty:1";
         }
 
-        //uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
-        //geoServer = "http://localhost:8080";
-        // uri = geoServer + "/geoserver/wms?";
-
-        //uri = "http://localhost:8084/alaspatial/ws/wms/reflect?";
-
+        //uri = geoServer + "/geoserver/wms?";
         uri = settingsSupplementary.getValue(CommonData.SAT_URL)
                 + "/alaspatial/ws/wms/reflect?";
-
         uri += "service=WMS&version=1.1.0&request=GetMap&styles=&format=image/png";
         uri += "&layers=ALA:occurrences";
         uri += "&transparent=true"; // "&env=" + envString +
@@ -4276,36 +2712,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         try {
             if (safeToPerformMapAction()) {
-                /*
-                boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
-                if (addedOk) {
-                MapLayer ml = getMapLayer(label);
-                ml.setDynamicStyle(true);
-                ml.setEnvParams(envString);
-                ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
-
-                ml.setBlueVal(b);
-                ml.setGreenVal(g);
-                ml.setRedVal(r);
-                ml.setSizeVal(8);
-                ml.setOpacity(opacity);
-
-                return ml;
-                }
-                 *
-                 */
 
                 MapLayer gjLayer = getMapLayer(label);
-                if (label.equalsIgnoreCase("Species in Active area")) {
-                    if (gjLayer != null) {
-                        System.out.println("removing existing layer: " + gjLayer.getName());
 
-                        openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
-                                + openLayersJavascript.removeMapLayer(gjLayer));
-
-                        deactiveLayer(gjLayer, true, false, true);
-
-                    } //else {
+                MapLayer mapLayer = null;
+                if (getMapLayer(label) == null) {
                     boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
                     if (addedOk) {
                         MapLayer ml = getMapLayer(label);
@@ -4316,28 +2727,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         ml.setBlueVal(b);
                         ml.setGreenVal(g);
                         ml.setRedVal(r);
-                        ml.setSizeVal(8);
+                        ml.setSizeVal(3);
                         ml.setOpacity(opacity);
 
                         ml.setClustered(false);
                         btnPointsCluster.setLabel("Display species as clusters");
+                        updateComboBoxesColour(ml);
 
                         MapLayerMetadata md = ml.getMapLayerMetadata();
                         if (md == null) {
                             md = new MapLayerMetadata();
                             ml.setMapLayerMetadata(md);
-                        }
-
-                        //TODO: make new variable in MapLayerMetadata for
-                        // mapping 'Species in Active area' as WMS from alaspatial
-                        md.setUnits(filter);
-
-                        // reopen the layer controls
-                        try {
-                            refreshActiveLayer(ml);
-                            setupLayerControls(ml);
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
 
                         return ml;
@@ -4347,54 +2747,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         logger.info("adding WMS layer failed ");
                     }
                 } else {
-                    MapLayer mapLayer = null;
-                    if (getMapLayer(label) == null) {
-                        boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString);
-                        if (addedOk) {
-                            MapLayer ml = getMapLayer(label);
-                            ml.setDynamicStyle(true);
-                            ml.setEnvParams(envString);
-                            ml.setGeometryType(GeoJSONUtilities.POINT); // for the sizechooser
+                    //need to cleanup any additional scripts outstanding
+                    openLayersJavascript.useAdditionalScript();
 
-                            ml.setBlueVal(b);
-                            ml.setGreenVal(g);
-                            ml.setRedVal(r);
-                            ml.setSizeVal(8);
-                            ml.setOpacity(opacity);
-
-                            ml.setClustered(false);
-                            btnPointsCluster.setLabel("Display species as clusters");
-
-                            MapLayerMetadata md = ml.getMapLayerMetadata();
-                            if (md == null) {
-                                md = new MapLayerMetadata();
-                                ml.setMapLayerMetadata(md);
-                            }
-
-                            //TODO: make new variable in MapLayerMetadata for
-                            // mapping 'Species in Active area' as WMS from alaspatial
-                            md.setUnits(filter);
-
-                            return ml;
-                        } else {
-                            // fail
-                            //hide error, might be clustering zoom in;  showMessage("No mappable features available");
-                            logger.info("adding WMS layer failed ");
-                        }
-                    } else {
-                        //need to cleanup any additional scripts outstanding
-                        openLayersJavascript.useAdditionalScript();
-
-                        // fail
-                        //showMessage("GeoJSON layer already exists");
-                        logger.info(
-                                "refusing to add a new layer with URI " + uri
-                                + " because it already exists in the menu");
-                    }
+                    // fail
+                    //showMessage("GeoJSON layer already exists");
+                    logger.info(
+                            "refusing to add a new layer with URI " + uri
+                            + " because it already exists in the menu");
                 }
             }
         } catch (Exception ex) {
-            //logger.debug(ex.getMessage());
             System.out.println("error mapSpeciesByNameRank:");
             ex.printStackTrace(System.out);
         }
@@ -4409,40 +2772,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return mapSpeciesByNameRank(speciesName, "scientificname", commonName);
     }
 
-    public MapLayer mapSpeciesByNameRankOld(String speciesName, String speciesRank, String commonName) {
-        String filter;
-        String uri;
-        String layerName = "ALA:occurrences";
-        String sld = "species_point";
-
-        if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-        } else {
-            return null;
-        }
-        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
-
-        //contruct the filter in cql
-        //have to check the Genus name is in Capitals
-        filter = speciesRank + " eq '" + StringUtils.capitalize(speciesName.trim()) + "'";
-
-        String label = speciesName;
-        if (StringUtils.isNotBlank(commonName)) {
-            label += " (" + commonName + ")";
-        }
-
-        System.out.println("Mapping: " + label);
-
-        try {
-            return addGeoJSON(label, uri + URLEncoder.encode(filter, "UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            //logger.debug(ex.getMessage());
-            System.out.println("error mapSpeciesByNameRank:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
-    }
-
     public MapLayer mapSpeciesByNameRank(String speciesName, String speciesRank, String commonName) {
         String filter;
         String uri;
@@ -4454,7 +2783,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             return null;
         }
-        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
+
+        uri = settingsSupplementary.getValue(CommonData.SAT_URL)
+                + "/alaspatial/ws/wms/reflect?";
 
         //contruct the filter in cql
         //have to check the Genus name is in Capitals
@@ -4482,13 +2813,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } else {
             return null;
         }
-
-        //uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
-
-        //uri = "http://localhost:8084/alaspatial/ws/wms/reflect?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
-
-        uri = settingsSupplementary.getValue(CommonData.SAT_URL)
-                + "/alaspatial/ws/wms/reflect?";
+        uri = geoServer + "/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ALA:occurrences&outputFormat=json&CQL_FILTER=";
 
         System.out.println("Mapping: " + label + " with " + uri);
 
@@ -4504,19 +2829,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
-    /**
-     * Handy getter to handle typecasting the AnimationControlsComposer
-     * macro component.
-     *
-     * You can't just set the type of the macro component to be it's
-     * real type in it's field declaration, you have to use
-     * HtmlMacroComponent (or Component) or it won't be autowired.
-     * @return
-     */
-    public AnimationControlsComposer getAnimationControlsComposer() {
-        return (AnimationControlsComposer) animationControlsComposer.getFellow("animationControls");
-    }
-
     public LeftMenuSearchComposer getLeftmenuSearchComposer() {
         return (LeftMenuSearchComposer) getFellow("leftMenuSearch").getFellow("leftSearch");
     }
@@ -4527,6 +2839,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     private Iframe getExternalContentIframe() {
         return (Iframe) externalContentWindow.getFellow("externalContentIframe");
+    }
+
+    private Html getExternalContentHtml() {
+        return (Html) externalContentWindow.getFellow("externalContentHTML");
     }
 
     public DesktopState getDesktopState() {
@@ -4551,15 +2867,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void setRawMessageHackHolder(Div rawMessageHackHolder) {
         this.rawMessageHackHolder = rawMessageHackHolder;
-    }
-
-    /**
-     * Toggle showing the the login button and hiding the logout button
-     * @param show true to show login and hide logout, false to do the opposite
-     */
-    public void toggleLoginButton(boolean show) {
-        loginButton.setVisible(show);
-        logoutButton.setVisible(!show);
     }
 
     public LanguagePack getLanguagePack() {
@@ -4610,22 +2917,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         this.remoteMap = remoteMap;
     }
 
-    public ImageTester getImageTester() {
-        return imageTester;
-    }
-
-    public void setImageTester(ImageTester imageTester) {
-        this.imageTester = imageTester;
-    }
-
-    public MapLayerItemRenderer getMapLayerItemRenderer() {
-        return mapLayerItemRenderer;
-    }
-
-    public void setMapLayerItemRenderer(MapLayerItemRenderer mapLayerItemRenderer) {
-        this.mapLayerItemRenderer = mapLayerItemRenderer;
-    }
-
     public ActiveLayerRenderer getActiveLayerRenderer() {
         return activeLayerRenderer;
     }
@@ -4656,7 +2947,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     SessionPrint print(String header, double grid, String format, int resolution, boolean preview) {
         //tbxPrintHack is 'screen width, screen height, map extents'
-        String p = tbxPrintHack.getValue();
+        String p = tbxPrintHack;
         System.out.println("tbxPrintHack:" + p);
         String[] ps = p.split(",");
 
@@ -4771,35 +3062,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * for Events.echoEvent("openUrl",mapComposer,url as string)
      */
     public void openUrl(Event event) {
-        //browsers don't like popups so these two don't work well
-        /*Clients.evalJavaScript("alert('hello'); window.open('"
-        + (String)event.getData()
-        + "', '_blank');");*/
-        //Executions.getCurrent().sendRedirect((String)event.getData(), "_blank");
-
-        /*
-        Window w = new Window("Metadata", "normal", false);
-        w.setWidth("80%");
-        w.setClosable(true);
-        
-        Iframe iframe = new Iframe();
-        iframe.setWidth("95%");
-        iframe.setHeight("90%");
-        iframe.setSrc((String) event.getData());
-        iframe.setParent(w);
-        
-        w.setParent(getMapComposer().getFellow("mapIframe").getParent());
-        w.setPosition("top,center");
-        try {
-        w.doModal();
-        } catch (Exception e) {
-        e.printStackTrace();
-        }*/
-
         String s = (String) event.getData();
         int separator = s.lastIndexOf("\n");
         String url = (separator > 0) ? s.substring(0, separator).trim() : s;
         String header = (separator > 0) ? s.substring(separator).trim() : "";
+        activateLink(url, header, false);
+    }
+
+    /*
+     * for Events.echoEvent("openHTML",mapComposer,url as string)
+     *
+     * first line of String input is header
+     */
+    public void openHTML(Event event) {
+        String html = (String) event.getData();
+        String[] lines = html.split("\n");
+        String header = lines[0];
+        String url = "*" + html.substring(header.length()).trim();
         activateLink(url, header, false);
     }
 
@@ -4821,9 +3100,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return Sessions.getCurrent();
     }
 
-//    public boolean useClustering() {
-//        return chkPointsCluster.isChecked();
-//    }
     public int getMapZoom() {
         return mapZoomLevel;
     }
@@ -4925,7 +3201,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         logger.info(msg);
         MDC.clear();
-        //SaveHttpServletRequest.put((HttpServletRequest) Executions.getCurrent().getNativeRequest());
     }
 
     /**
@@ -4982,7 +3257,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             blueLabel.setValue(String.valueOf(b));
 
             updateLegendImage();
-            onClick$applyChange();
+            applyChange();
         }
     }
 
@@ -5011,35 +3286,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void processMultipleMedias(Media[] media) {
-        try {
-            Messagebox.show("Processng...", "Error",
-                    Messagebox.OK, Messagebox.ERROR);
-            System.out.println("Loading files");
-            if (media != null) {
-                for (int i = 0; i < media.length; i++) {
-                    if (media[i] instanceof org.zkoss.util.media.AMedia) {
-                        lblFupload.setValue(media[i].getName());
-                        Messagebox.show("File uploaded: " + media[i].getName(), "File upload successful",
-                                Messagebox.OK, Messagebox.INFORMATION);
-                        System.out.println("Valid file(s) successfully uploaded");
-                    } else {
-                        Messagebox.show("Not a valid upload: " + media, "Error",
-                                Messagebox.OK, Messagebox.ERROR);
-                        System.out.println("not a valid file(s)");
-                    }
-                }
-            } else {
-                Messagebox.show("No attachment", "Error",
-                        Messagebox.OK, Messagebox.ERROR);
-                System.out.println("No attachment(s)");
-            }
-        } catch (Exception e) {
-            System.out.println("Unable to process media: ");
-            e.printStackTrace(System.out);
-        }
-    }
-
     public void onUpload$btnFileUpload(Event event) {
         doFileUpload("", event);
     }
@@ -5049,7 +3295,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void doFileUpload(UserData ud, Event event) {
-        //UploadEvent ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
         UploadEvent ue = null;
         if (event.getName().equals("onUpload")) {
             ue = (UploadEvent) event;
@@ -5064,32 +3309,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
         try {
             Media m = ue.getMedia();
-
             if (ud == null) {
                 ud = new UserData(m.getName());
             }
             if (ud.getName().trim().equals("")) {
                 ud.setName(m.getName());
             }
-            ud.setFilename(m.getName()); 
-            //processMedia(m);
+            ud.setFilename(m.getName());
 
-            //String coords = m.getStringData(); // new String(m.getByteData())
-            //int count = coords.split("\n").length;
-
-            if(ud.getName() == null || ud.getName().length() == 0) {
+            if (ud.getName() == null || ud.getName().length() == 0) {
                 ud.setName(m.getName());
             }
-            if(ud.getDescription() == null || ud.getDescription().length() == 0) {
+            if (ud.getDescription() == null || ud.getDescription().length() == 0) {
                 ud.setDescription(m.getName());
             }
 
             String name = ud.getName();
 
+            System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'"); 
+
             // check the content-type
+            // TODO: check why LB is sending 'application/spc' mime-type. remove from future use. 
             if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
                 loadUserPoints(ud, m.getReaderData());
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL)) {
+            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
                 byte[] csvdata = m.getByteData();
                 loadUserPoints(ud, new StringReader(new String(csvdata)));
             } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {
@@ -5102,7 +3345,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 unzipFile(m.getName(), m.getStreamData());
             }
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -5120,13 +3362,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         Vbox vbox = new Vbox();
         vbox.setParent(wInstructions);
-        //  for (int i = 0; i < text.length; i++) {
         Label l1 = new Label("1. Enter a name for the dataset");
         l1.setParent(vbox);
         l1.setMultiline(true);
         l1.setSclass("word-wrap");
         l1.setStyle("white-space: normal; padding: 5px");
-        //  }
 
         tbName = new org.zkoss.zul.Textbox();
         tbName.setParent(vbox);
@@ -5159,7 +3399,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         l2.setMultiline(true);
         l2.setSclass("word-wrap");
         l2.setStyle("white-space: normal; padding: 5px");
-        //  }
 
         tbDesc = new org.zkoss.zul.Textbox();
         tbDesc.setParent(vbox);
@@ -5174,15 +3413,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         (new Separator()).setParent(vbox);
         Fileupload fileUpload = new Fileupload();
-        //fileUpload.setMaxsize(60000); // 5000000
+        //fileUpload.setMaxsize(60000);
         getDesktop().getWebApp().getConfiguration().setMaxUploadSize(60000);
         fileUpload.setParent(vbox);
+        fileUpload.setLabel("Upload File");
+        fileUpload.setUpload("true");
 
         fileUpload.addEventListener("onUpload", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
-                //onUpload$btnFileUpload(event);
-
                 UserData ud = new UserData(tbName.getValue(), tbDesc.getValue(), "points");
                 doFileUpload(ud, event);
                 wInstructions.detach();
@@ -5202,7 +3441,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         wInstructions.setPosition("top,center");
 
         return;
-
     }
 
     public void loadUserPoints(String name, Reader data) {
@@ -5210,27 +3448,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void loadUserPoints(UserData ud, Reader data) {
-        String satServer = null;//"http://spatial-dev.ala.org.au";
+        String satServer = null;
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
 
         try {
-
             // Read a line in to check if it's a valid file
             // if it throw's an error, then it's not a valid csv file
-
             CSVReader reader = new CSVReader(data);
-//            HeaderColumnNameTranslateMappingStrategy hms = new HeaderColumnNameTranslateMappingStrategy();
-//            hms.captureHeader(reader);
-//            Map<String, String> csvheader = hms.getColumnMapping();
-//            Iterator<String> it = csvheader.keySet().iterator();
-//            System.out.println("CSV Header");
-//            while (it.hasNext()) {
-//                String key = it.next();
-//                System.out.println(key);
-//            }
+
             List userPoints = reader.readAll();
+
+            //if only one column treat it as a list of LSID's
+            if (((String[]) userPoints.get(0)).length == 1) {
+                continueLoadUserLSIDs(ud, data, reader, userPoints);
+                return;
+            }
 
             boolean hasHeader = false;
 
@@ -5243,23 +3477,29 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 hasHeader = true;
             }
 
-            System.out.println("hasHeader: " + hasHeader); 
+            System.out.println("hasHeader: " + hasHeader);
 
             // check if the count of points goes over the threshold.
-            int sizeToCheck = (hasHeader)?userPoints.size()-1:userPoints.size(); 
+            int sizeToCheck = (hasHeader) ? userPoints.size() - 1 : userPoints.size();
             System.out.println("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
             if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
                 showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
-                return; 
+                return;
             }
-
 
             StringBuffer sbUIds = new StringBuffer();
             StringBuffer sbUPoints = new StringBuffer();
+            int counter = 1;
             for (int i = 0; i < userPoints.size(); i++) {
                 String[] up = (String[]) userPoints.get(i);
-                sbUIds.append(up[0] + "\n");
-                sbUPoints.append(up[1] + "," + up[2] + "\n");
+                if(up.length > 2) {
+                    sbUIds.append(up[0] + "\n");
+                    sbUPoints.append(up[1] + "," + up[2] + "\n");
+                } else if(up.length > 1) {
+                    sbUIds.append(counter + "\n");
+                    sbUPoints.append(up[0] + "," + up[1] + "\n");
+                    counter++;
+                }
             }
 
             System.out.println("Loading points into alaspatial");
@@ -5275,11 +3515,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             int result = client.executeMethod(post);
             String slist = post.getResponseBodyAsString();
-//            String slist = "1111";
-
-//            if (slist != null && result == 200) {
-//                sac.setSelection(m.getName(), slist, count);
-//            }
 
             System.out.println("uploaded points name: " + ud.getName() + " lsid: " + slist);
 
@@ -5292,7 +3527,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             metadata += "User uploaded points \n";
             metadata += "Name: " + ud.getName() + " \n";
             metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Filename: " + ud.getFilename() + " \n";
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
@@ -5302,7 +3536,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else {
                 ml = mapSpeciesByLsidFilter(slist, ud.getName(), "user");
             }
-
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
@@ -5329,6 +3562,85 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             showMessage("Unable to load your file. Please try again.");
 
             System.out.println("unable to load user points: ");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
+        String satServer = null;
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+
+        try {
+            //don't care if it has a header
+
+            // check if the count of LSIDs goes over the threshold (+1).
+            int sizeToCheck = userPoints.size();
+            System.out.println("Checking user LSIDs size: " + sizeToCheck + " -> " + 50);
+            if (sizeToCheck > 50) {
+                showMessage("Cannot upload more than 50 LSIDs");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < userPoints.size(); i++) {
+                String[] up = (String[]) userPoints.get(i);
+                if (i > 0) {
+                    sb.append(",");
+                }
+                sb.append(up[0].replace(",", "").trim().toLowerCase());
+            }
+
+            String lsids = sb.toString();
+
+            StringBuffer sbProcessUrl = new StringBuffer();
+            sbProcessUrl.append("/species/lsid/register");
+            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
+
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            String pid = get.getResponseBodyAsString();
+
+            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
+
+            ud.setFeatureCount(userPoints.size());
+            Long did = new Long(pid);
+            System.out.println("lval: " + did.longValue());
+            ud.setUploadedTimeInMs(did.longValue());
+
+            String metadata = "";
+            metadata += "User uploaded points \n";
+            metadata += "Name: " + ud.getName() + " \n";
+            metadata += "Description: " + ud.getDescription() + " \n";
+            metadata += "Date: " + ud.getDisplayTime() + " \n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+
+            MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user");
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(metadata);
+
+            // add it to the user session
+            Hashtable<String, UserData> htUserSpecies = (Hashtable) getSession().getAttribute("userpoints");
+            if (htUserSpecies == null) {
+                htUserSpecies = new Hashtable<String, UserData>();
+            }
+            htUserSpecies.put(pid, ud);
+            getSession().setAttribute("userpoints", htUserSpecies);
+
+            // close the reader and data streams
+            reader.close();
+            data.close();
+        } catch (Exception e) {
+            showMessage("Unable to load your file. Please try again.");
+
+            System.out.println("unable to load user LSIDs: ");
             e.printStackTrace(System.out);
         }
     }
@@ -5368,8 +3680,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         try {
 
             String id = String.valueOf(System.currentTimeMillis());
-            StringBuffer sbKmlLayer = new StringBuffer();
-            //String kmlpath = "/data/ala/runtime/output/layers/" + id + "/" + name;
             String kmlpath = "/data/ala/runtime/output/layers/" + id + "/";
             File kmlfilepath = new File(kmlpath);
             kmlfilepath.mkdirs();
@@ -5379,20 +3689,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             out.close();
 
             String kmlurl = "http://spatial-dev.ala.org.au/output/layers/" + id + "/" + name;
-
-//            sbKmlLayer.append("map.addLayer(new OpenLayers.Layer.GML(\"KML\", \"" + kmlurl + "\", ");
-//            sbKmlLayer.append("   {");
-//            sbKmlLayer.append("    format: OpenLayers.Format.KML, ");
-//            sbKmlLayer.append("    formatOptions: {");
-//            sbKmlLayer.append("      extractStyles: true, ");
-//            sbKmlLayer.append("      extractAttributes: true,");
-//            sbKmlLayer.append("      maxDepth: 2");
-//            sbKmlLayer.append("    }");
-//            sbKmlLayer.append("   }));");
-//
-//            openLayersJavascript.execute(
-//                    openLayersJavascript.iFrameReferences
-//                    + sbKmlLayer.toString());
 
             MapLayer mapLayer = genericServiceAndBaseLayerSupport.createMapLayer("User-defined kml layer", "User-defined layer", "KML", kmlurl);
 
@@ -5468,9 +3764,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // no need to close the input stream as it gets closed
         // in the caller function.
-        // just close the output stream. 
+        // just close the output stream.
         out.close();
-
     }
 
     private void loadUserShapefile(File shpfile) {
@@ -5485,27 +3780,221 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             FeatureCollection featureCollection = featureSource.getFeatures();
             FeatureIterator it = featureCollection.features();
             while (it.hasNext()) {
-                //System.out.println("======================================");
-                //System.out.println("Feature: ");
                 SimpleFeature feature = (SimpleFeature) it.next();
-                //System.out.println(feature.getID());
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
                 WKTWriter wkt = new WKTWriter();
-                //System.out.println(wkt.writeFormatted(geom));
                 addWKTLayer(wkt.write(geom), feature.getID());
                 break;
             }
             featureCollection.close(it);
-            //System.out.println("======================================");
-
-
-
-
         } catch (Exception e) {
             showMessage("Unable to load your file. Please try again.");
 
             System.out.println("unable to load user shapefile: ");
             e.printStackTrace(System.out);
         }
+    }
+
+    public void onChange$cbColour(Event event) {
+        updateUserColourDiv();
+        updateLegendImage();
+        applyChange();
+    }
+
+    void updateUserColourDiv() {
+        if (cbColour.getSelectedItem() == ciColourUser) {
+            divUserColours.setVisible(true);
+        } else {
+            divUserColours.setVisible(false);
+        }
+    }
+
+    private void updateComboBoxesColour(MapLayer currentSelection) {
+        if (currentSelection.isClustered() || isUserUploadedCoordinates(currentSelection)) {
+            cbColour.setSelectedItem(ciColourUser);
+            cbColour.setDisabled(true);
+        } else {
+            cbColour.setDisabled(false);
+            for (int i = 0; i < cbColour.getItemCount(); i++) {
+                if (cbColour.getItemAtIndex(i).getValue().equals(currentSelection.getColourMode())) {
+                    cbColour.setSelectedIndex(i);
+                }
+            }
+            updateUserColourDiv();
+        }
+    }
+
+    /*
+     * remove it + map it
+     */
+    public MapLayer activateLayerForScatterplot(ScatterplotData data, String rank) {
+        List udl = getMapComposer().getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        MapLayer mapLayer = null;
+        boolean unselectLayer = false;
+        boolean remapLayer = true;
+
+        //find layer matching data.getLsid()
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md != null
+                    && md.getSpeciesLsid() != null
+                    && md.getSpeciesLsid().equals(data.getLsid())) {
+
+                mapLayer = ml;
+
+                if (ml.isClustered() || !ml.isDisplayed()) {
+                    //removeLayer;
+                    openLayersJavascript.setAdditionalScript(openLayersJavascript.iFrameReferences
+                            + openLayersJavascript.removeMapLayer(ml));
+                    unselectLayer = true;
+                } else {
+                    remapLayer = false;
+                }
+
+                break;
+            }
+        }
+
+        if (unselectLayer && mapLayer != null) {
+            try {
+                deactiveLayer(mapLayer, true, false, true);
+            } catch (Exception e) {
+            }
+        }
+
+        if (remapLayer) {
+            //map as WMS points layer
+            mapLayer = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "");
+            if (mapLayer != null) {
+                MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    mapLayer.setMapLayerMetadata(md);
+                }
+                md.setSpeciesLsid(data.getLsid());
+                md.setSpeciesDisplayName(data.getSpeciesName());
+                md.setSpeciesRank(rank);
+
+                updateUserLogMapSpecies(data.getLsid());
+            }
+        }
+
+        // reopen the layer controls for this layer
+        try {
+            refreshActiveLayer(mapLayer);
+            setupLayerControls(mapLayer);
+
+            for (int i = 0; i < activeLayersList.getItemCount(); i++) {
+                Listitem item = (Listitem) activeLayersList.getItemAtIndex(i);
+                if (mapLayer == (MapLayer) item.getValue()) {
+                    activeLayersList.setSelectedIndex(i);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return mapLayer;
+    }
+
+    /*
+     * remove it + map it
+     */
+    public void removeLayerHighlight(ScatterplotData data, String rank) {
+        List udl = getMapComposer().getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        MapLayer mapLayer = null;
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md != null
+                    && md.getSpeciesLsid() != null
+                    && md.getSpeciesLsid().equals(data.getLsid())
+                    && ml.getHighlight() != null) {
+
+                ml.setHighlight(null);
+
+                if (!ml.isClustered() && ml.isDisplayed()) {
+                    applyChange(ml);
+                }
+
+                break;
+            }
+        }
+    }
+
+    private String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
+        try {
+            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/alaspatial/species/colourlegend?lsid="
+                    + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
+                    + "&colourmode="
+                    + URLEncoder.encode(colourmode, "UTF-8")); // testurl
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+
+            int result = client.executeMethod(get);
+
+            //TODO: test results
+            String slist = get.getResponseBodyAsString();
+
+            return slist;
+        } catch (Exception ex) {
+            ex.printStackTrace(System.out);
+        }
+
+        return null;
+    }
+
+    private void showPointsColourModeLegend(MapLayer m) {
+        //remove all
+        while (legendHtml.getChildren().size() > 0) {
+            legendHtml.removeChild(legendHtml.getFirstChild());
+        }
+
+        //1. register legend
+        String pid = registerPointsColourModeLegend(m.getMapLayerMetadata().getSpeciesLsid(), (String) cbColour.getSelectedItem().getValue());
+
+        //put any parameters into map
+        Map map = new HashMap();
+        map.put("pid", pid);
+        map.put("layer", "points layer");
+        map.put("readonly", "true");
+
+        try {
+            Executions.createComponents(
+                    "/WEB-INF/zul/AnalysisClassificationLegend.zul", legendHtml, map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public West getMenus() {
+        return menus;
+    }
+
+    private boolean isUserUploadedCoordinates(MapLayer currentSelection) {
+        //check for user uploaded coordinates
+        boolean isUserUploadedCoordinates = false;
+        try {
+            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+            String lsid = currentSelection.getMapLayerMetadata().getSpeciesLsid();
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".","__"),"UTF-8"));
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            if(slist != null && slist.length() == 0) {
+                isUserUploadedCoordinates = true;
+            }
+        }catch(Exception e) {
+
+        }
+        return isUserUploadedCoordinates;
     }
 }

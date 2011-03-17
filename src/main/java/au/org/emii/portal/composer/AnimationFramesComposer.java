@@ -1,8 +1,6 @@
 package au.org.emii.portal.composer;
 
 import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.composer.AnimationControlsComposer;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Radiogroup;
 
@@ -54,11 +52,11 @@ public class AnimationFramesComposer extends UtilityComposer {
 	}
 	
 	public AnimationControlsComposer getAnimationControlsComposer() {
-		return ((MapComposer) Executions.getCurrent()
+		return null; /*((MapComposer) Executions.getCurrent()
 				.getDesktop()
 					.getPage("MapZul")
 						.getFellow("mapPortalPage")
-		).getAnimationControlsComposer();
+		).getAnimationControlsComposer();*/
 	}
 
 	public MapLayer getActiveLayer() {

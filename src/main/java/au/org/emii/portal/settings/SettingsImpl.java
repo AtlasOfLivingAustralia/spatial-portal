@@ -9,10 +9,6 @@ import au.org.emii.portal.util.ResolveHostName;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.aspect.CheckNotNull;
 import au.org.emii.portal.aspect.LogSetterValue;
-import au.org.emii.portal.mest.MestConfiguration;
-import au.org.emii.portal.value.SearchCatalogue;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -172,11 +168,6 @@ public class SettingsImpl implements Settings {
     private int cacheMaxAge = 0;
 
     /**
-     * Loaded MEST configurations
-     */
-    private Map<String, MestConfiguration> mestConfigurations = null;
-
-    /**
      * Portal name - from portal.properties.  This isn't in the config file
      * because we always want to know our name, even if the config file is
      * missing or invalid
@@ -192,57 +183,6 @@ public class SettingsImpl implements Settings {
      * Host name (for this host) resolver - spring injected
      */
     private ResolveHostName resolveHostName = null;
-
-    // ====== extra settings ==========
-    private boolean disableAdminConsole = false;
-    private boolean disablePortalUsers = false;
-
-    /**
-     * Disable the search system?
-     */
-    private boolean disableSearch = false;
-    /**
-     * Disable the login/user accounts system
-     */
-    private boolean disableLogin = false;
-    /**
-     * Disable the realtime tab (left menu)
-     */
-    private boolean disableRealtime = false;
-    /**
-     * Disable the region tab (left menu)
-     */
-    private boolean disableRegion = false;
-    /**
-     * Disable the gazetteer tab (left menu)
-     */
-    private boolean disableGazetteer = false;
-    /**
-     * Disable the facility tab (left menu)
-     */
-    private boolean disableFacility = false;
-
-    /**
-     * Disable layers menu - left hand side
-     */
-    private boolean disableLayers = false;
-
-    /**
-     * Disable user defined menu - left hand side
-     */
-    private boolean disableUserDefined = false;
-
-    /**
-     * Disable links menu - left hand side
-     */
-    private boolean disableLinks = false;
-
-    /**
-     * Disable the top links - at the top of the screen on the right
-     */
-    private boolean disableTopLinks = false;
-
-    private Map<String, SearchCatalogue> searchCatalogues = null;
 
     /**
      * Path to configuration directory - from environment dir
@@ -327,17 +267,6 @@ public class SettingsImpl implements Settings {
     @LogSetterValue
     public void setDisableDepthServlet(boolean disableDepthServlet) {
         this.disableDepthServlet = disableDepthServlet;
-    }
-
-    @Override
-    public Map<String, MestConfiguration> getMestConfigurations() {
-        return mestConfigurations;
-    }
-
-    @Override
-    @CheckNotNull
-    public void setMestConfigurations(Map<String, MestConfiguration> mestConfigurations) {
-        this.mestConfigurations = mestConfigurations;
     }
 
     @Override
@@ -515,127 +444,6 @@ public class SettingsImpl implements Settings {
     @LogSetterValue
     public void setPortalName(String portalName) {
         this.portalName = portalName;
-    }
-
-    @Override
-    public boolean isDisableAdminConsole() {
-        return disableAdminConsole;
-    }
-
-    @Override
-    public void setDisableAdminConsole(boolean disableAdminConsole) {
-        this.disableAdminConsole = disableAdminConsole;
-    }
-
-    @Override
-    public boolean isDisableFacility() {
-        return disableFacility;
-    }
-
-    @Override
-    public void setDisableFacility(boolean disableFacility) {
-        this.disableFacility = disableFacility;
-    }
-
-    @Override
-    public boolean isDisableLayers() {
-        return disableLayers;
-    }
-
-    @Override
-    public void setDisableLayers(boolean disableLayers) {
-        this.disableLayers = disableLayers;
-    }
-
-    @Override
-    public boolean isDisableLinks() {
-        return disableLinks;
-    }
-
-    @Override
-    public void setDisableLinks(boolean disableLinks) {
-        this.disableLinks = disableLinks;
-    }
-
-    @Override
-    public boolean isDisablePortalUsers() {
-        return disablePortalUsers;
-    }
-
-    @Override
-    public void setDisablePortalUsers(boolean disablePortalUsers) {
-        this.disablePortalUsers = disablePortalUsers;
-    }
-
-    @Override
-    public boolean isDisableRealtime() {
-        return disableRealtime;
-    }
-
-    @Override
-    public void setDisableRealtime(boolean disableRealtime) {
-        this.disableRealtime = disableRealtime;
-    }
-
-    @Override
-    public boolean isDisableRegion() {
-        return disableRegion;
-    }
-
-    @Override
-    public void setDisableRegion(boolean disableRegion) {
-        this.disableRegion = disableRegion;
-    }
-
-    @Override
-    public boolean isDisableGazetteer() {
-        return disableGazetteer;
-    }
-
-    @Override
-    public void setDisableGazetteer(boolean disableGazetteer) {
-        this.disableGazetteer = disableGazetteer;
-    }
-
-    @Override
-    public boolean isDisableSearch() {
-        return disableSearch;
-    }
-
-    @Override
-    public void setDisableSearch(boolean disableSearch) {
-        this.disableSearch = disableSearch;
-    }
-
-    @Override
-    public boolean isDisableUserDefined() {
-        return disableUserDefined;
-    }
-
-    @Override
-    public void setDisableUserDefined(boolean disableUserDefined) {
-        this.disableUserDefined = disableUserDefined;
-    }
-
-    @Override
-    public boolean isDisableTopLinks() {
-        return disableTopLinks;
-    }
-
-    @Override
-    public void setDisableTopLinks(boolean disableTopLinks) {
-        this.disableTopLinks = disableTopLinks;
-    }
-
-    @Override
-    public Map<String, SearchCatalogue> getSearchCatalogues() {
-        return searchCatalogues;
-    }
-
-    @Override
-    @CheckNotNull
-    public void setSearchCatalogues(Map<String, SearchCatalogue> searchCatalogues) {
-        this.searchCatalogues = searchCatalogues;
     }
 
     public String getConfigPath() {

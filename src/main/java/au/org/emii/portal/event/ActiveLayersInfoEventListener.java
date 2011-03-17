@@ -2,13 +2,10 @@ package au.org.emii.portal.event;
 
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.util.LayerUtilitiesImpl;
 import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Listitem;
 
 public class ActiveLayersInfoEventListener extends PortalEvent implements EventListener {
@@ -22,25 +19,16 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
             MapLayer activeLayer = (MapLayer) listItem.getValue();
 
             if (activeLayer != null) {
-                //mapComposer.deactiveLayer(activeLayer, true, false);
-
-                //System.out.println("activeLayer.metdata: " + activeLayer.getMapLayerMetadata().getMoreInfo());
                 if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
                     // send the user to the BIE page for the species
-                    //System.out.println("attempting to open metadata in new window:" + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
-                    /*Clients.evalJavaScript("window.open('"
-                            + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__",".")
-                            + "', 'metadataWindow');");
-                    Executions.getCurrent().sendRedirect(activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."), "_blank");*/
-                    logger.debug("opening the following url " + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
-                    Events.echoEvent("openUrl", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo().replace("__","."));
+                    logger.debug("opening the following url " + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
+                    Events.echoEvent("openUrl", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
 
                 } else if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
-                    //mapComposer.showMessage("Metadata",activeLayer.getMapLayerMetadata().getMoreInfo(),"");
                     logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
                     mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
                 } else {

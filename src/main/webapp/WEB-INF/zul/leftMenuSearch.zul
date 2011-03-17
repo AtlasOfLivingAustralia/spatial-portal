@@ -1,170 +1,36 @@
 <?page id="MESTsearchPage" title="map" cacheable="false"
 	language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
 <zk>
-	<window id="leftSearch"
-		apply="au.org.emii.portal.composer.LeftMenuSearchComposer"
+    <window id="leftSearch"
 		use="au.org.emii.portal.composer.LeftMenuSearchComposer">
 
-		<label value="Free text search" sclass="h2 title" />
+        <div visible="false">
+            <doublebox id="north" constraint="no empty" />
+            <doublebox id="west" constraint="no empty" />
+            <doublebox id="east" constraint="no empty"/>
+            <doublebox id="south" constraint="no empty" />
+            <intbox id="zoom" constraint="no empty" />
 
+        <script type="text/javascript">
+            function getGeographicExtentControls() {
+                // transform the extents from Google Projection to EPSG:4326
+                var mapObj = window.frames.mapFrame.map;
+                var extent = mapObj.getExtent().transform(mapObj.projection, mapObj.displayProjection);
+                extent = extent.toArray()
+                    document.getElementById('${north.uuid}').value = roundNumber(extent[3],3);
+                    document.getElementById('${east.uuid}').value = roundNumber(extent[2],3);
+                    document.getElementById('${south.uuid}').value = roundNumber(extent[1],3);
+                    document.getElementById('${west.uuid}').value = roundNumber(extent[0],3);
+                    document.getElementById('${zoom.uuid}').value = mapObj.getZoom();
 
-
-		<!--  Saved searches container -->
-
-		
-
-		<!--  MEST Keyword container -->
-		<div sclass="highlighted">
-			<label value="Add keywords:" sclass="h4" />
-			<combobox id="txtsearch" autodrop="true" width="240px"
-				name="txtsearch" tooltip="true"
-				tooltiptext="Free text search from the metadata atabase"
-				forward="onOK=onTextsearch"
-                constraint="no empty" />
-            <label id="txtsearchError" sclass="error" visible="false" value="You must enter a search term" />
-		</div>
-
-
-
-		<hbox spacing="80">
-			<checkbox id="chkBBOX" label="Use geographic extent"
-				checked="false">
-			</checkbox>
-		</hbox>
-
-		
-		<div sclass="highlighted" id="geoDiv" visible="false">
-			<label value="Geographical Extent" sclass="h3" />
-
-			<div width="75%" sclass="floatcentre">
-				<space />
-				<hbox spacing="80">
-					<space spacing="45px" />
-					<label value="N" sclass="h4" />
-					<doublebox cols="20" id="north" name="N"
-						maxlength="20" tabindex="1" constraint="no empty">
-					</doublebox>
-					<separator spacing="20px" />
-				</hbox>
-				<hbox>
-					<label sclass="h4" value="W" />
-					<doublebox cols="20" tabindex="2" maxlength="20"
-						id="west" name="W" constraint="no empty" />
-					<space spacing="10px" />
-					<separator spacing="20px" />
-					<doublebox tabindex="3" cols="20" maxlength="20"
-						id="east" name="E" constraint="no empty"/>
-					<label sclass="h4" value="E" />
-				</hbox>
-				<hbox>
-					<space spacing="45px" />
-					<label value="S" sclass="h4" />
-					<doublebox tabindex="4" maxlength="20" cols="20"
-						id="south" name="S" constraint="no empty" />
-				</hbox>
-
-				<script type="text/javascript">
-					function roundNumber(num, dec) {
-                                            var result =
-                                            Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
-                                            return result;
-                                        }
-                                        
-                                        function getGeographicExtentControls() {
-                                            //var extent = window.frames.mapFrame.map.getExtent();
-                                            // transform the extents from Google Projection to EPSG:4326
-                                            var mapObj = window.frames.mapFrame.map;
-                                            var extent = mapObj.getExtent().transform(mapObj.projection, mapObj.displayProjection);
-                                            extent = extent.toArray()
-                                            document.getElementById('${north.uuid}').value = roundNumber(extent[3],3);
-                                            document.getElementById('${east.uuid}').value = roundNumber(extent[2],3);
-                                            document.getElementById('${south.uuid}').value = roundNumber(extent[1],3);
-                                            document.getElementById('${west.uuid}').value = roundNumber(extent[0],3);
-                                            try {
-                                                zkTxbox.updateChange($e('${west.uuid}'), false);
-                                                zkTxbox.updateChange($e('${north.uuid}'), false);
-                                                zkTxbox.updateChange($e('${east.uuid}'), false);
-                                                zkTxbox.updateChange($e('${south.uuid}'), false);
-                                            } catch (err) {}
-
-					}
-
-
-				</script>
-
-			</div>
-			<div sclass="spaced">
-				<label sclass="h5"
-					value="Hint: Hold SHIFT while dragging on the map!" />
-			</div>
-		</div>
-
-		<hbox spacing="80">
-			<checkbox id="chkDate" label="Use Date range"
-				checked="false">
-			</checkbox>
-		</hbox>
-
-
-		<div sclass="highlighted" id="dateDiv" visible="false">
-			<div sclass="spaced">
-				<label value="Date Range" sclass="h3" />
-				<separator height="15px" />
-				<label value="From:" sclass="h4 inputlabel" />
-				<datebox id="startdate" format="yyyy-MM-dd" cols="16"
-					name="startdate" lenient="true"
-					tooltiptext="Enter a single date for data current on that day. Default is today"
-					tooltip="true" />
-			</div>
-			<div sclass="spaced">
-				<label value="To:" sclass="h4 inputlabel" />
-				<datebox id="enddate" format="yyyy-MM-dd" cols="16"
-					name="enddate" lenient="true"
-					tooltiptext="Enter a single date for data current on that day. Default is today"
-					tooltip="true" />
-			</div>
-		</div>
-        <label id="dateRangeError" sclass="error" visible="false"  value="Please select a valid date range" />
-		
-               
-
-        <!--  reset / save search buttons -->
-       
-		<div align="right" style="margin-right:5px;" sclass="resetdiv" >
-			<!--<button id="saveMap" label="Save Map" sclass="h3" visible="${session.attributes.portalSession.portalUser.loggedIn}" />  -->
-			<label id="saveSearchAdvice"
-				value="Login to save this search!" sclass="h5 spacedUp"
-				 visible="${!settings.disablePortalUsers and !session.attributes.portalSession.loggedIn}" />
-            <label id="saveSearchAdviceLoggedin"
-				value="Save your search via the search results!" sclass="h5 spacedUp"
-				 visible="${!settings.disablePortalUsers and session.attributes.portalSession.loggedIn}" />
-                <button label="Search" id="btnSearch"
-				tooltiptext="Search of the metadata database" />
-		</div>
-
-		
-
-                 <!--Dialog to load search-->
-                <div id="savedSearchCont"  sclass="highlighted" visible="${!settings.disablePortalUsers and session.attributes.portalSession.loggedIn}" >
-                    <div  id="loadSavedSearchcont" visible="false" >
-                        <listbox id="savedSearches" mold="select"  width="150px" sclass="spacedUp" ></listbox>
-                        <button id="searchLoad" label="Load"  />
-                        <button id="searchDel" label="Delete"  />
-                    </div>
-                    <label id="savedSearchesAdvice" sclass="h5" value="No saved searches yet!" />
-                </div>
-
-		<separator />
-
-		<div sclass="highlighted" visible="false">
-
-			For 'advanced' search facilities please use the
-			<separator />
-			<toolbarbutton target="_blank" label="ALA Mest database."
-				href="http://imosmest.aodn.org.au/geonetwork/srv/en/main.home?tab=advanced"
-				sclass="external" />
-		</div>
-
-	</window>
-
+                zAu.send(new zk.Event(zk.Widget.$(jq('$leftSearch')[0]), 'setExtents',
+                        roundNumber(extent[0],3) + "," +
+                        roundNumber(extent[3],3) + "," +
+                        roundNumber(extent[2],3) + "," +
+                        roundNumber(extent[1],3) + "," +
+                        mapObj.getZoom()));
+            }
+        </script>
+        </div>
+    </window>
 </zk>

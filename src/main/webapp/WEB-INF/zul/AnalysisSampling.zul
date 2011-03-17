@@ -5,63 +5,42 @@
             apply="org.ala.spatial.analysis.web.SamplingWCController">
 
         <style>
-            .ctxenvlist div.z-list-cell-cnt {
+            .ctxenvlist .z-listcell-cnt {
                 font-size: 10px;
              }
+             
         </style>
-        <div sclass="highlighted" visible="false" >
-            <vbox>
-                <label value="Step 1: Restrict area" />
-                <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
-            </vbox>
-        </div>
-
         <tabbox id="tabboxsampling">
             <tabs>
                 <tab label="1*" />
                 <tab label="2" />
-                <tab label="Produce sample" onClick="samplingwindow.produce();" visible="false"/>
             </tabs>
             <toolbar>
-                <button label="Produce sample" onClick="samplingwindow.produce();" sclass="goButton"></button>
+                <button id="btnSample" label="Produce sample" sclass="goButton"></button>
                 </toolbar>
             <tabpanels>
                 <tabpanel>
             <label value="Step 1: Select your species" />
             <vbox>
                 <label>Enter a scientific or common name</label>
-                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
+                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
                     <comboitem label=""/>
                 </combobox>
             </vbox>
             </tabpanel>
-        <tabpanel>
-       
+        <tabpanel>       
             <label multiline="true" sclass="word-wrap" style="white-space: normal;"
                    value="Step 2: Select the environmental and contextual layers that are to be sampled at species locations" />
             <vbox>
-                <hbox>
-                    <textbox id="tbenvfilter" visible="false" />
-                    <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
-                </hbox>
-                <!-- listbox id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="90%" >
-                    <listhead>
-                        <listheader label="Select layers" />
-                    </listhead>
-
-                </listbox -->
                 <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
-                <listbox sclass="ctxenvlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
-                    <listhead sizable="true" >
+                <listbox sclass="ctxenvlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="340px" multiple="true" checkmark="true" height="400px">
+                    <listhead >
                         <listheader label="category"  />
                         <listheader label="name" />
-                        <listheader label=" " />
+                        <listheader label=" " width="15px" />
                     </listhead>
                  </listbox>
             </vbox>
-        </tabpanel>
-        <tabpanel>
-            <button label="Produce sample" id="btnPreview" sclass="goButton" visible="false"/>
         </tabpanel>
         </tabpanels>
      </tabbox>
@@ -71,7 +50,7 @@
             <label value="Results Preview"/>
             <separator />
             <separator />
-            <grid id="results_gridbox" width="100%" height="300px">
+            <grid id="results_gridbox" height="300px" sizedByContent="true">
                 <rows id="results_rows" />
             </grid>
 

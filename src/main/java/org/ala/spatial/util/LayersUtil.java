@@ -3,7 +3,6 @@ package org.ala.spatial.util;
 import java.net.URLEncoder;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
@@ -23,20 +21,19 @@ import org.apache.commons.lang.StringUtils;
  * - contextual layer names
  *
  * can maintain minimum distance between selected and remaining layers.
- * 
+ *
  * used to autocomplete layer entries
- * 
+ *
  * @author adam
  *
  */
 public class LayersUtil {
 
     public static final String LAYER_TYPE_CSV = "text/csv";
+    public static final String LAYER_TYPE_KML = "application/vnd.google-earth.kml+xml";
     public static final String LAYER_TYPE_CSV_EXCEL = "text/x-comma-separated-values";
     public static final String LAYER_TYPE_EXCEL = "application/vnd.ms-excel";
-    public static final String LAYER_TYPE_KML = "application/vnd.google-earth.kml+xml";
     public static final String LAYER_TYPE_ZIP = "application/zip";
-
     /**
      * MapComposer for retrieving active layer names
      */
@@ -57,7 +54,6 @@ public class LayersUtil {
      * populated on first getEnvironmentalLayers call
      */
     String[] environmentalLayerNames = null;
-
     private static String[] commonTaxonRanks = new String[]{
         "cultivar",
         "superfamily",
@@ -72,7 +68,7 @@ public class LayersUtil {
         "variety",
         "form",
         "series",
-        "tribe" 
+        "tribe"
     };
 
     /**
@@ -204,22 +200,7 @@ public class LayersUtil {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
-
         return false;
-    }
-
-    public Entry<String, UserData> getUserData(String displayName) {
-        //check against user uploaded records
-        Hashtable<String, UserData> htUserSpecies = (Hashtable) mc.getSession().getAttribute("userpoints");
-        if (htUserSpecies != null) {
-            for(Entry<String, UserData> entry : htUserSpecies.entrySet()) {
-                if(entry.getValue().getName().equalsIgnoreCase(displayName)){
-                    return entry;
-                }
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -256,8 +237,8 @@ public class LayersUtil {
 
     /**
      * Check if the species is a pest species
-     * @param lsid LSID of the species 
-     * @return 
+     * @param lsid LSID of the species
+     * @return
      */
     static public boolean isPestSpecies(String lsid) {
 
@@ -331,9 +312,9 @@ public class LayersUtil {
             String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
             String rank = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("rankString");
 
-            System.out.println("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank)); 
+            System.out.println("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank));
             if (Arrays.binarySearch(commonTaxonRanks, rank) > -1) {
-                rank = "taxon"; 
+                rank = "taxon";
             }
 
             return scientficName + "," + rank;
@@ -438,5 +419,19 @@ public class LayersUtil {
         contextualLayerNames = CommonData.getContextualLayers();
 
         return contextualLayerNames;
+    }
+
+    public Entry<String, UserData> getUserData(String displayName) {
+        //check against user uploaded records
+        Hashtable<String, UserData> htUserSpecies = (Hashtable) mc.getSession().getAttribute("userpoints");
+        if (htUserSpecies != null) {
+            for (Entry<String, UserData> entry : htUserSpecies.entrySet()) {
+                if (entry.getValue().getName().equalsIgnoreCase(displayName)) {
+                    return entry;
+                }
+            }
+        }
+
+        return null;
     }
 }

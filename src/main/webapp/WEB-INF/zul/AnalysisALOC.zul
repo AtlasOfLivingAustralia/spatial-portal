@@ -1,24 +1,15 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
-
-    <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" apply="org.ala.spatial.analysis.web.ALOCWCController" >
-
-        <style>
-            .z-loading {
-            top: 50% !important;
-            left: 45% !important;
-            align: center;
-            vertical-align: middle;
-            }
-        </style>
+    <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" 
+    apply="org.ala.spatial.analysis.web.ALOCWCController"  width="100%">
 
         <style>
-         .envlist .z-list-header-cnt input, .z-list-group-inner div input {
+         .envlist .z-listheader-cnt input, .z-list-group-inner div input, .z-listheader-img  {
          display: none;
          }
 
-         .envlist div.z-list-cell-cnt {
+         .envlist div.z-listcell-cnt {
          font-size: 10px;
          }
 
@@ -40,20 +31,22 @@
                 <tab label="2" />
             </tabs>
             <toolbar>
-                <button id="btnProduce" label="Produce classification" sclass="goButton"></button>
-                <button  label="Previous classification" id="previousModel" sclass="goButton"></button>
+                <hbox>
+                    <button id="btnProduce" label="Produce classification" sclass="goButton"></button>
+                    <button  label="Previous classification" id="previousModel" sclass="goButton"></button>
+                </hbox>
                 </toolbar>
             <tabpanels>
                 <tabpanel>        
             <label value="Step 1: Select two or more environmental layers" />
-            <vbox>
+            <vbox width="100%">
                 <hbox>
                     <textbox id="tbenvfilter" visible="false" />
                     <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
                 </hbox>
                 <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
-                <listbox sclass="envlist" id="lbListLayers" fixedLayout="false" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
-                    <listhead sizable="true" >
+                <listbox sclass="envlist" id="lbListLayers" fixedLayout="false" use="org.ala.spatial.analysis.web.EnvironmentalList" width="340px" multiple="true" checkmark="true" height="400px">
+                    <listhead>
                         <listheader label="category"  />
                         <listheader label="name" />
                         <listheader label=" "  />

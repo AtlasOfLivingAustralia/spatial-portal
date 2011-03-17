@@ -1,0 +1,32 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+   
+    <window id="scatterplotresultswindow" title="Scatterplot Preview" border="normal"
+    use="org.ala.spatial.analysis.web.ScatterplotResults"
+            apply="org.ala.spatial.analysis.web.ScatterplotResults"
+            closable="true" mode="embedded" width="90%">
+
+             <separator />
+            <label id="results_label" value=""/>
+            <separator />
+            <separator />
+            <listbox id="popup_listbox_results" height="400px">
+                            <listhead sizable="true" visible="false">
+                                <listheader id="header2" label="" ></listheader>
+                                <listheader id="header1" label="" ></listheader>
+                                <listheader label="" ></listheader>
+                            </listhead>
+                        </listbox>
+
+            <hbox>
+                <hbox>
+                    <separator/>
+                    <separator/>
+                    <button id="btnDownload" label="Download" sclass="goButton" />
+                </hbox>
+                <separator/>
+                <separator/>
+                <div align="right"><button label="Close" onClick="scatterplotresultswindow.detach()" sclass="goButton" /> </div>
+            </hbox>
+    </window>
+</zk>

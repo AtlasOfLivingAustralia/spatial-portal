@@ -14,8 +14,7 @@
 
 
 
-	<window id="mapPortalPage" width="100%" height="100%"
-		style="overflow:hidden;">
+	<window id="mapPortalPage" width="100%" height="100%">
 		<div id="rawMessageHackHolder" visible="false">
 			<iframe id="rawMessageIframeHack" width="100%" height="250px" />
 		</div>
@@ -24,24 +23,20 @@
 			<north id="header" height="100">
 
 				<div>
-					<image src="img/ncris.gif" style="float:left;" />
-
 					<!--  static menu links -->
 					<div sclass="toplinks">
-						<zk forEach="${session.attributes.portalSession.staticMenuLinks}">
+						<!-- zk forEach="${session.attributes.portalSession.staticMenuLinks}">
 
-							<!--  external links -->
 							<toolbarbutton if="${each.external}" label="${each.name}"
 								tooltiptext="${each.description}" zclass="leftmenu_ahref" href="${each.uri}" />
 
-							<!--  internal links -->
 							<toolbarbutton if="${! each.external}" label="${each.name}"
 								tooltiptext="${each.description}" zclass="leftmenu_ahref"
 								forward="onClick=onActivateLink()">
 								<custom-attributes link="${each}" />
 							</toolbarbutton>
 
-						</zk>
+						</zk -->
 						
 						
 					</div>

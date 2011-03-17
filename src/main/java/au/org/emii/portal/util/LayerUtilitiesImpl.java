@@ -2,12 +2,9 @@ package au.org.emii.portal.util;
 
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.net.HttpConnection;
-import au.org.emii.portal.util.Validate;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.UnsupportedEncodingException;
-import java.io.InputStream;
-import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.BreakIterator;
@@ -15,35 +12,20 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
-import au.org.emii.portal.net.HttpConnectionImpl;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import net.opengis.wms.BoundingBoxDocument.BoundingBox;
-
 import org.apache.log4j.Logger;
-import org.apache.xmlbeans.XmlException;
 import org.springframework.beans.factory.annotation.Required;
-
-import net.opengis.wms.LayerDocument;
-import net.opengis.wms.WMSCapabilitiesDocument;
-import net.opengis.wms.LayerDocument.Layer;
-import net.opengis.wms.StyleDocument.Style;
-import net.opengis.wms.WMSCapabilitiesDocument.WMSCapabilities;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.log4j.Priority;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -72,7 +54,6 @@ import org.xml.sax.SAXException;
 public class LayerUtilitiesImpl implements LayerUtilities {
 
     private Logger logger = Logger.getLogger(getClass());
-
     private final static String GEOSERVER_REGEXP = "[Gg][Ee][Oo][Ss][Ee][Rr][Vv][Ee][Rr]";
     private final static String NCWMS_REGEXP = "[Nn][Cc][Ww][Mm][Ss]";
     private final static String IMAGE_FORMAT_REGEXP = "[Ff][Oo][Rr][Mm][Aa][Tt]";
@@ -80,11 +61,9 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     private final static String LAYER_REGEXP = "[Ll][Aa][Yy][Ee][Rr]";
     private final static String VERSION_REGEXP = "[Vv][Ee][Rr][Ss][Ii][Oo][Nn]";
     private ArrayList<String> versions = null;
-
     private Settings settings = null;
     private SettingsSupplementary settingsSupplementary = null;
     private ResolveHostName resolveHostname = null;
-
     private List<Double> worldBBox = null;
 
     public LayerUtilitiesImpl() {
@@ -806,7 +785,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         return sb.toString();
     }
 
-        /**
+    /**
      * Attempt to turn a regular getmap URI into a legend uri,
      * then set the default legend uri to the generated value
      * @param uri
@@ -870,7 +849,6 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         this.settingsSupplementary = settingsSupplementary;
     }
 
-
     /**
      * get bounding box for wms getlayer uri from GetCapabilities response
      *
@@ -881,52 +859,55 @@ public class LayerUtilitiesImpl implements LayerUtilities {
     public List<Double> getBBox(String uri) {
         try {
             List<Double> bbox = new ArrayList<Double>();
-            
+
             //extract server uri
             String server = "";
             int q = uri.indexOf('?');
             if (q > 0) {
-                server = uri.substring(0, uri.substring(0,q).lastIndexOf('/')+1);
+                server = uri.substring(0, uri.substring(0, q).lastIndexOf('/') + 1);
             } else {
-                server = uri.substring(0, uri.lastIndexOf('/')+1);
+                server = uri.substring(0, uri.lastIndexOf('/') + 1);
             }
 
             //extract layer name
             String name = "";
             int a = uri.toLowerCase().indexOf("layers=");
-            if( a > 0){
-                int b = uri.toLowerCase().substring(a,uri.length()).indexOf("&");
+            if (a > 0) {
+                int b = uri.toLowerCase().substring(a, uri.length()).indexOf("&");
                 if (b > 0) {
                     //name is between a+len(layer=) and a+b
-                    name = uri.substring(a+7,a+b);
+                    name = uri.substring(a + 7, a + b);
                 } else {
                     //name is between a+len(layer=) and len(uri)
-                    name = uri.substring(a+7,uri.length());
-                }               
+                    name = uri.substring(a + 7, uri.length());
+                }
             }
-            
+
+            //don't use gwc/service/ because it is returning the wrong boundingbox
+            server = server.replace("gwc/service/","");
+
             //make getcapabilities uri
             String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wms", WMS_1_0_0);
 
             //get boundingbox for this layer by checking against each title and name
             Document doc = parseXml(wmsget);
-            if(doc == null) {
+            if (doc == null) {
                 return worldBBox;
             }
             NodeList nl = doc.getElementsByTagName("Layer");
-            int i,j;
-            for (i=0;i<nl.getLength();i++){
+            int i, j;
+            for (i = 0; i < nl.getLength(); i++) {
                 NodeList layer = nl.item(i).getChildNodes();
                 boolean match = false;
-                for(j=0;j<layer.getLength();j++){
-                    if(layer.item(j).getNodeName().equals("Name")
+                for (j = 0; j < layer.getLength(); j++) {
+                    if (layer.item(j).getNodeName().equals("Name")
                             || layer.item(j).getNodeName().equals("Title")) {
                         if (layer.item(j).getTextContent().equalsIgnoreCase(name)) {
                             match = true;
                         }
                     } else if (match
                             && (layer.item(j).getNodeName().equals("BoundingBox")
-                                || layer.item(j).getNodeName().equals("LatLonBoundingBox"))) {
+                            || layer.item(j).getNodeName().equals("LatLonBoundingBox"))) {
                         bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("minx").getNodeValue()));
                         bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("miny").getNodeValue()));
                         bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("maxx").getNodeValue()));
@@ -937,20 +918,20 @@ public class LayerUtilitiesImpl implements LayerUtilities {
             }
             return bbox;
         } catch (Exception ex) {
-           // java.util.logging.Logger.getLogger(LayerUtilitiesImpl.class.getName()).log(Level.SEVERE, null, ex);
+            // java.util.logging.Logger.getLogger(LayerUtilitiesImpl.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
         return worldBBox;
     }
 
     public List<Double> getBBoxIndex(String uri) {
-         //get bounds of layer
+        //get bounds of layer
         List<Double> bbox = new ArrayList(4);
 
         try {
             JSONArray layerlist = CommonData.getLayerListJSONArray();
 
-            for (int i=0;i<layerlist.size();i++) {
+            for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
                 if (jo.getString("displaypath").equals(uri)) {
                     bbox.add(Double.parseDouble(jo.getString("minlongitude")));
@@ -961,9 +942,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
                     return bbox;
                 }
             }
-        }
-        catch(Exception e) {
-
+        } catch (Exception e) {
         }
         bbox = getBBox(uri);
         return bbox;
@@ -975,75 +954,67 @@ public class LayerUtilitiesImpl implements LayerUtilities {
      * original in: WMSSupportNonXmlBeans.java
      */
     protected Document parseXml(String discoveryUri) {
-        		boolean parseError = false;
-                        boolean readError = false;
-                        String lastErrorMessage = "";
+        boolean parseError = false;
+        boolean readError = false;
+        String lastErrorMessage = "";
 
-                        HttpConnection httpConnection = null;
-    
-		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+        HttpConnection httpConnection = null;
 
-		/*
-		 * Everything on the internet says set the next variable to true but if I
-		 * do this, I can't select the xpath variable I want (which is in another
-		 * namespace) - setting namespace aware to false fixes things...
-		 */
-		domFactory.setNamespaceAware(false);
+        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+
+        /*
+         * Everything on the internet says set the next variable to true but if I
+         * do this, I can't select the xpath variable I want (which is in another
+         * namespace) - setting namespace aware to false fixes things...
+         */
+        domFactory.setNamespaceAware(false);
 
 
-		/*
-		 * DISABLE DTD Validation
-		 * ======================
-		 * By default, the DTD is processed when we parse the XML and this has the effect
-		 * of setting queryable="0" as a defalt attribute on all layers.  Popular implementations
-		 * (mapserver) just leave off the queryable attribute on layers which ARE queryable, thus
-		 * marking them as non-queryable.
-		 *
-		 * The solution is to totally disable DTD validation, - here's where I found out how to
-		 * do it:
-		 *
-		 * http://stackoverflow.com/questions/582352/how-can-i-ignore-dtd-validation-but-keep-the-doctype-when-writing-an-xml-file
-		 */
-		//careful... this next line will sneakily re-enable namespaces and break everything
-		//domFactory.setAttribute("http://xml.org/sax/features/namespaces", true);
-		domFactory.setAttribute("http://xml.org/sax/features/validation", false);
-		domFactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-		domFactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        /*
+         * DISABLE DTD Validation
+         * ======================
+         * By default, the DTD is processed when we parse the XML and this has the effect
+         * of setting queryable="0" as a defalt attribute on all layers.  Popular implementations
+         * (mapserver) just leave off the queryable attribute on layers which ARE queryable, thus
+         * marking them as non-queryable.
+         *
+         * The solution is to totally disable DTD validation, - here's where I found out how to
+         * do it:
+         *
+         * http://stackoverflow.com/questions/582352/how-can-i-ignore-dtd-validation-but-keep-the-doctype-when-writing-an-xml-file
+         */
+        //careful... this next line will sneakily re-enable namespaces and break everything
+        //domFactory.setAttribute("http://xml.org/sax/features/namespaces", true);
+        domFactory.setAttribute("http://xml.org/sax/features/validation", false);
+        domFactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+        domFactory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
-		DocumentBuilder documentBuilder = null;
-		Document document = null;
-		try {
-			documentBuilder = domFactory.newDocumentBuilder();
-			documentBuilder.setEntityResolver(null);
+        DocumentBuilder documentBuilder = null;
+        Document document = null;
+        try {
+            documentBuilder = domFactory.newDocumentBuilder();
+            documentBuilder.setEntityResolver(null);
+            document = documentBuilder.parse(discoveryUri);//.parse(is);
 
-			// configure an InputStream with a timeout
-			/*remove, httpConnection not being initialised
-                        InputStream is = httpConnection.configureURLConnection(discoveryUri).getInputStream();
-                        */
-			document = documentBuilder.parse(discoveryUri);//.parse(is);
+        } catch (SAXException e) {
+            parseError = true;
+            lastErrorMessage = "Unable to parse a GetCapabilities document from '" + discoveryUri
+                    + "' (parser error - is XML well formed?)";
+        } catch (ParserConfigurationException e) {
+            parseError = true;
+            lastErrorMessage = "Unable to parse a GetCapabilities document from '"
+                    + discoveryUri + "' (parser configuration error)";
+        } catch (IOException e) {
+            readError = true;
+            // for 404 errors, the message will be the requested url
+            lastErrorMessage = "IO error connecting to server at '" + discoveryUri + "'.  Root cause: "
+                    + e.getMessage();
+        }
 
-		}
-		catch (SAXException e) {
-			parseError = true;
-			lastErrorMessage = "Unable to parse a GetCapabilities document from '" + discoveryUri +
-                                "' (parser error - is XML well formed?)";
-		}
-		catch (ParserConfigurationException e) {
-			parseError = true;
-			lastErrorMessage = "Unable to parse a GetCapabilities document from '" +
-                                discoveryUri + "' (parser configuration error)";
-		}
-		catch (IOException e) {
-			readError = true;
-                        // for 404 errors, the message will be the requested url
-			lastErrorMessage = "IO error connecting to server at '" + discoveryUri + "'.  Root cause: "
-                                + e.getMessage();
-		}
-
-		// discard broken documents
-		if (readError || parseError) {
-			document = null;
-		}
-		return document;
-	}
+        // discard broken documents
+        if (readError || parseError) {
+            document = null;
+        }
+        return document;
+    }
 }

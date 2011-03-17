@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
  * @author Adam
  */
 public class SessionPrint {
+
     final int dpi = 200;
     final double margin_north = .4;  //A4 portrait top
     final double margin_south = .4;  //A4 portrait bottom
@@ -23,7 +24,6 @@ public class SessionPrint {
     final double margin_west = .4;   //A4 portrait left
     final double page_width = 8.27;  //A4 width
     final double page_height = 11.69;//A4 height
-
     String server;
     String height;
     String width;
@@ -36,13 +36,11 @@ public class SessionPrint {
     String jpgFilename;
     String sessionid;
     String zoom;
-
     String header;
     int resolution;
     String format;
     double grid;
     double scaleBy;
-
     MapComposer mc;
 
     public SessionPrint(String server, String height, String width, String htmlpth, String htmlurl, String uid, String jsessionid, String zoom, String header, double grid, String format, int resolution, MapComposer mc_) {
@@ -66,53 +64,36 @@ public class SessionPrint {
 
         //resolution == 0 (current)
         //resolution == 1 (print: width up to 4962px, height up to 7014px = A4 600dpi)
-        if(resolution == 1) {
-            /*int maxW = (int)(8.27 * dpi);
-            int maxH = (int)(11.69 * dpi);
+        if (resolution == 1) {
+            int maxW = (int) ((page_width - margin_west - margin_east) * dpi);  //A4 in inches
+            int maxH = (int) ((page_height - margin_north - margin_south) * dpi);
             double w = Double.parseDouble(width);
             double h = Double.parseDouble(height);
-            if (w/h > maxW/maxH) {
-                //limit by w
-                scaleBy = maxW/w;
-                h = h * maxW/w;
-                w = maxW;
-            } else {
-                //limit by h
-                scaleBy = maxH/h;
-                w = w * maxH/h;
-                h = maxH;
-            }*/
-
-            int maxW = (int)((page_width - margin_west - margin_east) * dpi); 
-            int maxH = (int)((page_height - margin_north - margin_south) * dpi);
-            double w = Double.parseDouble(width);
-            double h = Double.parseDouble(height);
-            if(w > h) {               //swap to produce largest possible A4 map
+            if (w > h) {               //swap to produce largest possible A4 map
                 int tmp = maxH;
                 maxH = maxW;
                 maxW = tmp;
             }
-            if (w/h > maxW/maxH) {
+            if (w / h > maxW / maxH) {
                 //limit by w
-                scaleBy = maxW/w;
-                h = h * maxW/w;
+                scaleBy = maxW / w;
+                h = h * maxW / w;
                 w = maxW;
             } else {
                 //limit by h
-                scaleBy = maxH/h;
-                w = w * maxH/h;
+                scaleBy = maxH / h;
+                w = w * maxH / h;
                 h = maxH;
             }
+            this.width = String.valueOf((int) w);
+            this.height = String.valueOf((int) h);
 
-            this.width = String.valueOf((int)w);
-            this.height = String.valueOf((int)h);
-            
         } else {
             scaleBy = 1.0;
         }
     }
 
-    public String getWidth(){
+    public String getWidth() {
         return width;
     }
 
@@ -121,13 +102,13 @@ public class SessionPrint {
     }
 
     public String getImageFilename() {
-       if(format.equalsIgnoreCase("png")){
+        if (format.equalsIgnoreCase("png")) {
             return imgFilename;
-        } else if(format.equalsIgnoreCase("pdf")){
+        } else if (format.equalsIgnoreCase("pdf")) {
             return pdfFilename;
-       } else {
-           return jpgFilename;
-       }
+        } else {
+            return jpgFilename;
+        }
     }
 
     public void print() {
@@ -157,7 +138,7 @@ public class SessionPrint {
         }
         html.append("<iframe style='border:none' src='");
         html.append(server + "?p=" + width + "," + height + "," + zoom + "," + grid);
-        
+
         //if printing put out scale factor
         if (resolution > 0) {
             html.append("," + scaleBy);
@@ -220,7 +201,7 @@ public class SessionPrint {
             //wait for output file to be created (max 45s then retry twice)
             int retry = 0;
             long now;
-            while(!img.exists() && retry < 3){
+            while (!img.exists() && retry < 3) {
                 Process proc = runtime.exec(cmd);
                 //StreamReaderThread srtError = new StreamReaderThread(proc.getErrorStream());
                 //StreamReaderThread srtInput = new StreamReaderThread(proc.getInputStream());
@@ -248,7 +229,7 @@ public class SessionPrint {
             if (resolution == 1) { //print resolution
                 now += 15000;
             }
-            while(now > System.currentTimeMillis());
+            while (now > System.currentTimeMillis());
 
             return;
         } catch (Exception e) {
@@ -262,26 +243,26 @@ public class SessionPrint {
             return;
         }
 
+
         //TODO: dynamic path and settings
         //String cmd = "/mnt/ala/printing/wkhtmltoimage"
-        String [][] cmdsScreen = {
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,imgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,jpgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,pdfFilename}};
+        String[][] cmdsScreen = {
+            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, imgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, jpgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, pdfFilename}};
 
-        String [][] cmdsPrint = {
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,imgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),imgFilename,jpgFilename},
-            {mc.getSettingsSupplementary().getValue("convert_cmd"),"-density",dpi + "x" + dpi,"-units","pixelsperinch",imgFilename,pdfFilename}};
+        String[][] cmdsPrint = {
+            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, imgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"), imgFilename, jpgFilename},
+            {mc.getSettingsSupplementary().getValue("convert_cmd"), "-density", dpi + "x" + dpi, "-units", "pixelsperinch", imgFilename, pdfFilename}};
 
         try {
-
-            String [][] cmds = cmdsScreen;
-            if(resolution == 1){
+            String[][] cmds = cmdsScreen;
+            if (resolution == 1) {
                 cmds = cmdsPrint;
             }
 
-            for (String [] cmd : cmds) {
+            for (String[] cmd : cmds) {
                 System.out.println("running cmd: " + cmd[0] + " " + cmd[1] + " " + cmd[2]);
 
                 Runtime runtime = Runtime.getRuntime();
@@ -296,7 +277,7 @@ public class SessionPrint {
                 if (resolution == 1) { //print resolution
                     now += 2000;
                 }
-                while(now > System.currentTimeMillis());
+                while (now > System.currentTimeMillis());
             }
 
             return;
@@ -312,10 +293,11 @@ public class SessionPrint {
 }
 
 class StreamReaderThread implements Runnable {
+
     Thread t;
     InputStream inputStream;
 
-    public StreamReaderThread(InputStream is){
+    public StreamReaderThread(InputStream is) {
         t = new Thread(this);
         inputStream = is;
         t.run();
@@ -324,16 +306,14 @@ class StreamReaderThread implements Runnable {
     @Override
     public void run() {
         try {
-                InputStreamReader isr = new InputStreamReader(inputStream);
-                BufferedReader br = new BufferedReader(isr);
-                String line;
-                while ((line = br.readLine()) != null) {
-                    System.out.println(line);
-                }
-        }catch (Exception e){
+            InputStreamReader isr = new InputStreamReader(inputStream);
+            BufferedReader br = new BufferedReader(isr);
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 }

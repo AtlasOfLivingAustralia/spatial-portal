@@ -464,7 +464,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
 
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomin
 {
-    top: 78px! important;
+    top: 98px! important;
     left: 11px! important;
     background-position: -1900px 0;
 }
@@ -477,7 +477,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
 #controlPanZoom #OpenLayers\002E Control\002E PanZoomBar_2_zoomout
 {
     /*top: 219px! important;*/
-    top: 299px! important;
+    top: 319px! important;
     left: 11px! important;
     background-position: -2100px 0;
 }
@@ -493,7 +493,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
 
 #controlPanZoom #OpenLayers_Control_PanZoomBar_ZoombarOpenLayers\002E Map_8
 {
-    top: 99px! important;
+    top: 119px! important;
     left: 11px! important;
     background: url('../img/panelPanZoom.gif') no-repeat 0 0! important;
     width: 21px! important;
@@ -612,5 +612,17 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     height: 250px;
 }
 
+#zoomtolocation {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-image: url('../img/74-location.png');
+    width: 16px! important;
+    height: 16px! important;
+    cursor: pointer;
+
+    z-index: 110;
+    top: 80px! important;
+    left: 22px! important;
+}
 
 

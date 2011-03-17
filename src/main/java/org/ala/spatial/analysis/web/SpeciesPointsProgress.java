@@ -6,7 +6,6 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.menu.MapLayer;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
@@ -83,40 +82,6 @@ public class SpeciesPointsProgress extends UtilityComposer {
     }
 
     public void onTimer$timer(Event e) {
-        /*if (!getGeojson.isAlive() && !layerReady) {
-            MapLayer ml;
-            if(parts_count == 1){
-                ml = getMapComposer().addGeoJSONLayerProgressBarReady(label, url + "_0", params, forceReload, getGeojson.getGeojson(), lsid);
-            }else {
-                ml = getMapComposer().appendGeoJSONLayerProgressBarReady(label, url, parts_count-1, params, forceReload, getGeojson.getGeojson(), lsid);
-            }
-            urlname = url + "_0" + "::" + label;
-            jobprogress.setValue(100);  //finished, just waiting now
-            jobstatus.setValue("Rendering part " + (parts_count) + " of " + (partsCount));
-            //btnCancel.setVisible(false);
-            layerReady = true;
-        }
-        if (loaded) {
-            //any more?            
-            boolean more = true;
-            if(parts_count < partsCount){
-                getGeojson = new GetGeojson(url + "_" + parts_count, getMapComposer());
-                parts_count++;
-
-                getGeojson.start();
-
-                jobstatus.setValue("getting part " + (parts_count) + " of " + (partsCount));
-
-                layerReady = false;                
-                loaded = false;
-            } else {         
-                jobstatus.setValue("finishing");
-                timer.stop();
-                getMapComposer().removeLayerLoadedEventListener("progressbar:" + label);
-                this.detach();
-            }
-            return;
-        }*/
         if (loaded) {
             //any more?
             if(parts_count < partsCount){
@@ -148,21 +113,11 @@ public class SpeciesPointsProgress extends UtilityComposer {
     }
 
     public void onClick$btnCancel(Event e) {
-    //    try {
-    //        getGeojson.interrupt();
-    //        getGeojson.stop();
-    //    } catch (Exception ex) {
-    //    }
         getMapComposer().removeLayerLoadedEventListener("progressbar:" + label);
         this.detach();
     }
 
     public void onClick$btnHide(Event e) {
-       // try {
-       //     getGeojson.interrupt();
-       //     getGeojson.stop();
-       // } catch (Exception ex) {
-       // }
         getMapComposer().removeLayerLoadedEventListener("progressbar:" + label);
         this.detach();
     }

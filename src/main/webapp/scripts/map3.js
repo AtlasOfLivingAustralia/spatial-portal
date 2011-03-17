@@ -361,10 +361,10 @@ function buildMapReal() {
 
     map.events.register("moveend" , map, function (e) {
         parent.setExtent();
-        parent.reloadSpecies();
+        //parent.reloadSpecies();
         if (!activeAreaPresent) {
             parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000); 
-            var verts = map.getExtent().toGeometry().getVertices();
+            var verts = map.getExtent().toGeometry().clone().getVertices();
             var gll = new Array();
             if (verts.length > 0) {
                 for (var v=0; v<verts.length; v++) {
@@ -574,9 +574,9 @@ function addFeatureSelectionTool() {
 
 
 function pointSearch(e) {
-    //alert("point search");
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
     parent.setSearchPoint(lonlat);
+
 }
 
 function removePointSearch() {
@@ -963,7 +963,7 @@ function showInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
+    $.get(proxy_script + parent.jq('$sat_url')[0].innerHTML + "/alaspatial/species/cluster/id/" + currFeature.gid + "/cluster/" + currFeature.cid + "/idx/" + curr, function(occ_id) {
 
         $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
             var occinfo = data.occurrence;
@@ -1111,7 +1111,7 @@ function showClusterInfo(curr) {
         }
     } catch (err) {}
 
-    $.get(proxy_script + "http://spatial-dev.ala.org.au/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
+    $.get(proxy_script + parent.jq('$sat_url')[0].innerHTML + "/alaspatial/species/cluster/id/" + currFeature.attributes["gid"] + "/cluster/" + currFeature.attributes["cid"] + "/idx/" + curr, function(occ_id) {
 
         $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
             displaySpeciesInfo(data, prevBtn, nextBtn, curr, currFeature.attributes["count"]);
@@ -1303,9 +1303,9 @@ function onPopupClose(evt) {
 function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
     //    alert(name);
     var in_options = {
-        'internalProjection': map.baseLayer.projection,
+                'internalProjection': map.baseLayer.projection,
         'externalProjection': new OpenLayers.Projection("EPSG:4326")
-    };
+            };
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -1339,7 +1339,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
 
     if (name=="Active Area") {
         parent.displayArea((wktLayer.features[0].geometry.getGeodesicArea(map.projection)/1000)/1000);
-        var verts = wktLayer.features[0].geometry.getVertices();
+        var verts = wktLayer.features[0].geometry.clone().getVertices();
         var gll = new Array();
         if (verts.length > 0) {
             for (var v=0; v<verts.length; v++) {
@@ -1348,7 +1348,7 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
             }
         }
         parent.displayArea2((google.maps.geometry.spherical.computeArea(gll)/1000)/1000);
-        activeAreaPresent = true; 
+        activeAreaPresent = true;
     }
 
     return wktLayer;
@@ -1573,7 +1573,7 @@ function removeFromSelectControl(lyrname) {
     if (lyrname=="Active Area") {
         activeAreaPresent = false;
         parent.displayArea(map.getExtent().toGeometry().getGeodesicArea(map.projection)/1000/1000);
-        var verts = map.getExtent().toGeometry().getVertices();
+        var verts = map.getExtent().toGeometry().clone().getVertices();
         var gll = new Array();
         if (verts.length > 0) {
             for (var v=0; v<verts.length; v++) {
@@ -2836,7 +2836,10 @@ function loadKmlFile(name, kmlurl) {
 }
 
 function displayBiostorRecords() {
-    parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
+    return false;
+    
+    //parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
+    parent.displayHTMLInformation("biostormsg",'updating...');
 
     var currBounds = map.getExtent().transform(map.projection, map.displayProjection);
 
@@ -2848,7 +2851,7 @@ function displayBiostorRecords() {
             html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
         }
         html += '</ol>';
-        parent.displayHTMLInformation("biostormsg",'Found ' + data.list.length + " documents.");
+        parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
         parent.displayHTMLInformation('biostorlist',html);
     });
 

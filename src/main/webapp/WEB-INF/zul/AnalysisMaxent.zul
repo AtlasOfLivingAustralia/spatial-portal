@@ -1,117 +1,64 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="AnalysisMaxentPage"?>
 <zk>
-    <window id="maxentwindow" use="org.ala.spatial.analysis.web.MaxentWCController" apply="org.ala.spatial.analysis.web.MaxentWCController" >
-
-        <style>
-            .z-loading {
-            top: 50% !important;
-            left: 45% !important;
-            align: center;
-            vertical-align: middle;
-            }
-        </style>
+    <window id="maxentwindow" use="org.ala.spatial.analysis.web.MaxentWCController" 
+    apply="org.ala.spatial.analysis.web.MaxentWCController" >
+    
          <style>
-         .envlist .z-list-header-cnt input, .z-list-group-inner div input {
+         .envlist .z-listheader-cnt input, .z-listgroup-inner div input, .z-listheader-img {
          display: none;
          }
 
-         .envlist div.z-list-cell-cnt {
+         .envlist div.z-listcell-cnt {
          font-size: 10px;
          }
 
         </style>
-        <div sclass="highlighted" visible="false" >
-            <vbox>
-                <label value="Step 1: Restrict area" />
-                <checkbox id="useArea" label="Use area defined under the Area tab" onCheck="" />
-            </vbox>
-        </div>
-
 
         <tabbox id="tabboxmaxent">
             <tabs>
                 <tab label="1*" />
                 <tab label="2*" />
                 <tab label="3" />
-                <tab label="Produce model" onClick="maxentwindow.produce();" visible="false"/>
             </tabs>
              <toolbar>
-                <button  label="Produce model" onClick="maxentwindow.produce();" sclass="goButton"></button>
-                <button  label="Previous model" onClick="maxentwindow.previousModel();" sclass="goButton"></button>
+                 <hbox>
+                    <button label="Produce model" id="btnRunMaxent" sclass="goButton"></button>
+                    <button label="Previous model" id="btnPreviousMaxent" sclass="goButton"></button>
+                 </hbox>
                 </toolbar>
             <tabpanels>
-                <tabpanel>
-                    <!-- <label value="Step 1: Select your species " /> -->
-        <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 1: Select your species" /> -->
-                   
+                <tabpanel>                   
                         <label value="Step 1: Select your species" />
                         <vbox>
-                            <label>Enter a scientific or common name</label>
-                            <!--
-                <radiogroup id="rdgNameSearchType" >
-                    <hbox>
-                        <radio id="rdoCommonSearch" label="Common Name" selected="false"/>
-                        <radio id="rdoScientificSearch" label="Scientific Name"  selected="true"/>
-                    </hbox>
-                </radiogroup>
-                -->
-                            <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="92%" >
+                            <label>Enter a scientific or common name</label>                            
+                            <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
                                 <comboitem label=""/>
                             </combobox>
-                            <!-- <button id="btnMapSpecies" label="Add to Map" visible="true" /> -->
-                <!-- <label value="Note: Please make sure the first character is an upper-case" /> -->
-                        </vbox>
-                        <!--  </groupbox> -->
-                    
+                        </vbox>                    
                 </tabpanel>
-
                 <tabpanel>
-                    <!-- <separator bar="true" /> <label value="Step 2: Select your environmental layers" /> -->
-        <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 2: Select your environmental layers" />-->
                         <label value="Step 2: Select your environmental layers" />
                         <vbox>
-                            <hbox>
-                                <textbox id="tbenvfilter" visible="false" />
-                                <button id="btenvfilterclear" label="Clear filter" visible="false" sclass="goButton" />
-                            </hbox>
-                            <!-- listbox visible="false" id="lbenvlayers" multiple="true" checkmark="true" fixedLayout="false" height="200px" width="250px" >
-                                <listhead>
-                                    <listheader label="Select layers" />
-                                </listhead>
-
-                            </listbox -->
                             <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
-                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="90%" multiple="true" checkmark="true" height="400px">
-                    <listhead sizable="false">
-                        <listheader label="category"  />
-                        <listheader label="name" />
-                        <listheader label=" "  />
-                        <listheader label=" " width="10px" />
-                    </listhead>
-                 </listbox>
+                            <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="330px" multiple="true" checkmark="true" height="400px">
+                            <listhead>
+                                <listheader label="category"  />
+                                <listheader label="name" />
+                                <listheader label=" "  />
+                                <listheader label=" " width="10px" />
+                            </listhead>
+                         </listbox>
                         </vbox>
-                        <!-- </groupbox> -->
 
                 </tabpanel>
-
                 <tabpanel>
-                    <!-- <separator bar="true" /> <label value="Step 3: Select your optional parameters" /> -->
-                    
-        <!-- <groupbox mold="3d" style="width: 95%; padding: 5px">
-            <caption label="Step 3: Select your optional parameters" /> -->
-
                         Step 3: MaxEnt optional parameters.
                     <separator />
-                        <!-- <label value="Step 3: Select your optional parameters" /> -->
                         <vbox>
-                            <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" visible="false" />
+                            <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" />
                             <checkbox id="chkRCurves" label="Create response curves" checked="true" />
-                        </vbox>
-                        <!-- </groupbox> -->
-                   
+                        </vbox>                   
                         <vbox>
                             <separator />
                             <hbox>
@@ -119,59 +66,8 @@
                                 <textbox id="txtTestPercentage" value="0" />
                             </hbox>
                         </vbox>
-                  
-
-                </tabpanel>
-                <tabpanel>
-
-                    <textbox id="trun" value="${msets}" visible="false" />
-
-                    <separator bar="true"/>
-
-                    <progressmeter id="progress" value="42" visible="false" />
-
-                    <button id="startmaxent" label="Produce model" sclass="goButton" visible="false">
-                        <!--
-            <attribute name="onClick">{
-                final Window win = (Window) Executions.createComponents(
-                "/maxentwizard.zul", null, null);
-                win.setMinwidth(450);
-                //win.setWidth(450);
-                win.setMinheight(400);
-                win.setClosable(true);
-                win.setSizable(true);
-                win.doModal();
-            }</attribute>
-            -->
-                    </button>
-
-                    <separator />
-
-                    <vbox>
-                        <label id="status" value="Status: Waiting to start..." visible="false" />
-                        <button id="btnInfo" label="Show maxent information" visible="false" />
-                        <label id="infourl" value="" visible="false" />
-                    </vbox>
-
-                    <tabbox id="outputtab" visible="false" height="700px">
-                        <tabs>
-                            <tab id="mapframetab" label="Map" closable="false" />
-                            <tab id="infotab" label="Info" closable="false" />
-                        </tabs>
-                        <tabpanels>
-                            <tabpanel height="700px">
-                                <iframe id="mapframe" src="" width="750px" height="600px" visible="true" />
-                            </tabpanel>
-                            <tabpanel height="700px">
-                                <iframe id="infoframe" src="" width="750px" height="600px" visible="true" />
-                            </tabpanel>
-                        </tabpanels>
-                    </tabbox>
-
-                </tabpanel>
+                </tabpanel>                
             </tabpanels>
         </tabbox>
-
-
     </window>
 </zk>

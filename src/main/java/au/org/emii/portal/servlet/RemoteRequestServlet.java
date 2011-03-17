@@ -1,7 +1,6 @@
 package au.org.emii.portal.servlet;
 
 import au.org.emii.portal.net.HttpConnection;
-import au.org.emii.portal.net.HttpConnectionImpl;
 import au.org.emii.portal.config.ConfigurationLoaderStage1Impl;
 import au.org.emii.portal.settings.Settings;
 

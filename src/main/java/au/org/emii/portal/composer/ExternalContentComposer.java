@@ -1,73 +1,42 @@
 package au.org.emii.portal.composer;
 
-import au.org.emii.portal.javascript.OpenLayersJavascript;
-import au.org.emii.portal.composer.UtilityComposer;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Iframe;
-import org.zkoss.zul.Toolbarbutton;
+import org.zkoss.zul.Window;
 
-public class ExternalContentComposer extends UtilityComposer {
+public class ExternalContentComposer extends Window {
 
     private static final long serialVersionUID = 1L;
-    private Iframe externalContentIframe;
-    private OpenLayersJavascript openLayersJavascript = null;
-    Toolbarbutton hide;
     String src;
 
     @Override
-    public void afterCompose() {
-        super.afterCompose();
+    public void doOverlapped() {
+        super.doOverlapped();
 
-        hide.setFocus(true);
-    }
+        this.getFellow("hide").addEventListener("onClick", new EventListener() {
 
-    /**
-     * Breakout the external content window to be a new browser window
-     * instead (SUBJECT TO POPUP BLOCKING!)
-     */
-    /*
-     * Setting toolbarbutton.href instead.  For popup blocking.
-     *
-     * Downside is that clicking no longer closes this window.
-     *
-    public void onClick$breakout() {
-    // find the uri from the iframe...
-    logger.debug("breakout external content");
-    String uri = externalContentIframe.getSrc();
-    if (uri != null) {
-    setVisible(false);
-    openLayersJavascript.popupWindowNow(uri, getTitle());
-    }
-    else {
-    logger.info("onBreakoutExternalContent called when there is no src set in iframe");
-    }
+            public void onEvent(Event event) throws Exception {
+                ((Iframe)event.getTarget() //toolbarbutton
+                        .getParent() //control
+                        .getParent().getFellow("externalContentIframe")).setSrc("/img/loading_small.gif");
 
-    }*/
-    /**
-     * resets the src of the iframe
-     */
-    public void onClick$reset() {
-        externalContentIframe.setSrc("/img/loading_small.gif");
-        Events.echoEvent("setSrc", this, null);
+                event.getTarget() //toolbarbutton
+                        .getParent() //control
+                        .getParent().setVisible(false); //window
+            }
+        });
+        
+        this.getFellow("reset").addEventListener("onClick", new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                Events.echoEvent("setSrc", event.getTarget().getParent().getParent(), null);
+            }
+        });
     }
 
     public void setSrc(Event event) {
-        externalContentIframe.setSrc(src);
-    }
-
-    @Override
-    public void onClick$hide() {
-        //reset frame src
-        externalContentIframe.setSrc("/img/loading_small.gif");
-        super.onClick$hide();
-    }
-
-    public OpenLayersJavascript getOpenLayersJavascript() {
-        return openLayersJavascript;
-    }
-
-    public void setOpenLayersJavascript(OpenLayersJavascript openLayersJavascript) {
-        this.openLayersJavascript = openLayersJavascript;
+        ((Iframe)getFellow("externalContentIframe")).setSrc(src);
     }
 }

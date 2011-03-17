@@ -104,7 +104,7 @@ public class MapLayerMetadata implements Serializable {
      * @param polygon WKT for a rectangular polygon.
      * @param expandFactor
      */
-    public void setLayerExtent(String polygon, double expandFactor){
+    public void setLayerExtent(String polygon, double expandFactor) {
         layerExtent = polygonToExtents(polygon);
         double fw = expandFactor * (layerExtent[2] - layerExtent[0]);
         double fh = expandFactor * (layerExtent[3] - layerExtent[1]);
@@ -120,7 +120,7 @@ public class MapLayerMetadata implements Serializable {
      * @return
      */
     public String getLayerExtentString() {
-        if(layerExtent != null){
+        if (layerExtent != null) {
             return "POLYGON((" + layerExtent[0] + " " + layerExtent[1] + ","
                     + layerExtent[2] + " " + layerExtent[1] + ","
                     + layerExtent[2] + " " + layerExtent[3] + ","
@@ -343,34 +343,45 @@ public class MapLayerMetadata implements Serializable {
     }
 
     public boolean isOutside(String viewArea) {
-        double [] vArea = polygonToExtents(viewArea);
+        double[] vArea = polygonToExtents(viewArea);
+        if(vArea == null) {
+            return false;
+        }
         return !(vArea[0] >= layerExtent[0] && vArea[2] <= layerExtent[2]
                 && vArea[1] >= layerExtent[1] && vArea[3] <= layerExtent[3]);
     }
 
-    double [] polygonToExtents(String polygon){
-        try{
-            double [] extents = new double[4];
-            String s = polygon.replace("POLYGON((", "").replace("))","").replace(","," ").replace("MULTI(","").replace(")","").replace("(","");
-            String [] sa = s.split(" ");
+    double[] polygonToExtents(String polygon) {
+        try {
+            double[] extents = new double[4];
+            String s = polygon.replace("POLYGON((", "").replace("))", "").replace(",", " ").replace("MULTI(", "").replace(")", "").replace("(", "");
+            String[] sa = s.split(" ");
             double long1 = Double.parseDouble(sa[0]);
             double lat1 = Double.parseDouble(sa[1]);
             double long2 = Double.parseDouble(sa[0]);
             double lat2 = Double.parseDouble(sa[1]);
-            for(int i=0;i<sa.length;i+=2){
+            for (int i = 0; i < sa.length; i += 2) {
                 double lng = Double.parseDouble(sa[i]);
-                double lat = Double.parseDouble(sa[i+1]);
-                if(lng < long1) long1 = lng;
-                if(lng > long2) long2 = lng;
-                if(lat < lat1) lat1 = lat;
-                if(lat > lat2) lat2 = lat;
+                double lat = Double.parseDouble(sa[i + 1]);
+                if (lng < long1) {
+                    long1 = lng;
+                }
+                if (lng > long2) {
+                    long2 = lng;
+                }
+                if (lat < lat1) {
+                    lat1 = lat;
+                }
+                if (lat > lat2) {
+                    lat2 = lat;
+                }
             }
-            extents[0] = Math.min(long1,long2);
-            extents[2] = Math.max(long1,long2);
-            extents[1] = Math.min(lat1,lat2);
-            extents[3] = Math.max(lat1,lat2);
-           return extents;
-        }catch(Exception e){
+            extents[0] = Math.min(long1, long2);
+            extents[2] = Math.max(long1, long2);
+            extents[1] = Math.min(lat1, lat2);
+            extents[3] = Math.max(lat1, lat2);
+            return extents;
+        } catch (Exception e) {
             System.out.println("polygonToExtents: " + polygon);
             e.printStackTrace();
         }

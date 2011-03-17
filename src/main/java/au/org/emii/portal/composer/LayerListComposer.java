@@ -95,16 +95,6 @@ public class LayerListComposer extends UtilityComposer {
     public void iterateAndLoad2() {
         try {
 
-            //   System.out.println(llist);
-
-            //String llist = (String) Sessions.getCurrent().getAttribute("layerlist");
-
-            //Object llist = Sessions.getCurrent().getAttribute("layerlist");
-
-            //if (llist == null) {
-            //    llist = CommonData.getLayerList();
-            //}
-
             ArrayList top = new ArrayList();
 
             TreeMap htCat1 = new TreeMap();
@@ -119,8 +109,6 @@ public class LayerListComposer extends UtilityComposer {
                     continue;
                 }
 
-                //System.out.println("TYPE:"+jo.getString("type"));
-
                 List classNodes = new ArrayList();
                 if (jo.getString("type").equalsIgnoreCase("Contextual")) {
                     classNodes = getContextualClasses(jo);
@@ -134,9 +122,6 @@ public class LayerListComposer extends UtilityComposer {
                 addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
 
             }
-
-            //System.out.println("ht1.size: " + htCat1.size());
-            //System.out.println("ht2.size: " + htCat2.size());
 
             Iterator it1 = htCat1.keySet().iterator();
             while (it1.hasNext()) {
@@ -382,6 +367,11 @@ public class LayerListComposer extends UtilityComposer {
                             }
 
                             mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
+
+                            //close parent if it is 'addlayerwindow'
+                            try {
+                                getRoot().getFellow("addlayerwindow").detach();
+                            } catch (Exception e) {}
                         }
                     });
 
@@ -396,9 +386,6 @@ public class LayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
 
                             String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
-//                                Clients.evalJavaScript("window.open('"
-//                                        + metadata
-//                                        + "', 'metadataWindow');");
 
                             mc.activateLink(metadata, "Metadata", false);
 
@@ -408,9 +395,6 @@ public class LayerListComposer extends UtilityComposer {
                     });
                 }
 
-                //Attach treecells to treerow
-                //tcAdd.setParent(tr);
-                //tcInfo.setParent(tr);
                 tcName.setParent(tr);
                 item.setOpen(false);
             }

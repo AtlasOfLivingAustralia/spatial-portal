@@ -26,7 +26,6 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Doublebox;
@@ -105,20 +104,20 @@ public class FilteringWCController extends UtilityComposer {
         pid = getInfo("/filtering/init");
     }
 
+    public String getAreaSize() {
+        if (activeAreaSize != null) {
+            return activeAreaSize;
+        } else {
+            return null;
+        }
+    }
+
     public String getPid() {
         if (selectedLayers.size() > 0) {
             //TODO: 'apply' only if required  //applyFilter(true);
             return pid;
         } else {
             return "";
-        }
-    }
-
-    public String getAreaSize() {
-        if (activeAreaSize != null) {
-            return activeAreaSize;
-        } else {
-            return null;
         }
     }
 
@@ -183,24 +182,7 @@ public class FilteringWCController extends UtilityComposer {
                     Listcell count = new Listcell(String.valueOf(f.count));
                     count.setStyle("text-align: right; ");
                     count.setParent(li);
-                    /* species list tab exists
-                    count.addEventListener("onClick", new EventListener() {
 
-                    public void onEvent(Event event) throws Exception {
-                    if (!((Listcell) event.getTarget()).getLabel().equals("0")
-                    && !((Listitem) event.getTarget().getParent()).isDisabled()) {
-
-                    if (lbSelLayers.getItemCount() > 0) {
-                    applyFilterEvented();
-                    java.util.Map args = new java.util.HashMap();
-                    args.put("pid", pid);
-                    Window win = (Window) Executions.createComponents(
-                    "/WEB-INF/zul/AnalysisFilteringResults.zul", null, args);
-                    win.doModal();
-                    }
-                    }
-                    }
-                    });*/
                 }
             });
 
@@ -678,23 +660,23 @@ public class FilteringWCController extends UtilityComposer {
 
     public void onLater(Event event) throws Exception {
         applyFilterEvented();
-        Clients.showBusy("", false);
+        //Clients.showBusy("", false);
         updateActiveArea(false);
     }
 
     public void onLateron(Event event) throws Exception {
         applyFilterEvented();
         doAdd("");
-        Clients.showBusy("", false);
+        //Clients.showBusy("", false);
     }
 
     public void applyFilter() {
-        Clients.showBusy("Applying filter...", true);
+        //Clients.showBusy("Applying filter...", true);
         if (lbSelLayers.getItemCount() == 0) {
             return;
         }
 
-        Clients.showBusy("Applying filter...", true);
+        //Clients.showBusy("Applying filter...", true);
         Events.echoEvent("onLater", this, null);
     }
 
@@ -709,7 +691,7 @@ public class FilteringWCController extends UtilityComposer {
         }
 
         if (doAdd) {
-            Clients.showBusy("Applying filter...", true);
+            //Clients.showBusy("Applying filter...", true);
             Events.echoEvent("onLateron", this, null);
         } else {
             applyFilter();
@@ -746,7 +728,8 @@ public class FilteringWCController extends UtilityComposer {
     void updateSpeciesList(int newCount, int newOccurrencesCount) {
         try {
             FilteringResultsWCController win =
-                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("speciesListForm").getFellow("popup_results");
+                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf") //AnalysisSelection
+                    .getFellow("speciesListForm").getFellow("popup_results");
             win.refreshCount(newCount, newOccurrencesCount);
         } catch (Exception e) {
             e.printStackTrace();

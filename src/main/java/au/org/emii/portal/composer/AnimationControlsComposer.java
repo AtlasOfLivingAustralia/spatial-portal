@@ -1,7 +1,6 @@
 package au.org.emii.portal.composer;
 
 import au.org.emii.portal.menu.AnimationSelection;
-import au.org.emii.portal.wms.ImageTester;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -24,9 +23,7 @@ import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Window;
-
 import au.org.emii.zk.DateboxPlus;
-import java.util.ArrayList;
 
 public class AnimationControlsComposer extends GenericAutowireAutoforwardComposer {
 
@@ -57,7 +54,6 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
     private OpenLayersJavascript openLayersJavascript = null;
     private LayerUtilities layerUtilities = null;
     private SettingsSupplementary settingsSupplementary = null;
-    private ImageTester imageTester = null;
     private NcWMSSupport ncWMSSupport = null;
     private ThreddsSupport threddsSupport = null;
 
@@ -172,7 +168,7 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
 
     public void activateAnimation(MapLayer activeLayer) {
         MapComposer mc = getMapComposer();
-        if (imageTester.testAnimationImage(activeLayer)) {
+        //if (imageTester.testAnimationImage(activeLayer)) {
             // we requested the image and it checks out ok
 
             // mark the layer as animated, hide the 'start' button
@@ -190,9 +186,9 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
                     + openLayersJavascript.animate(activeLayer)
                     + openLayersJavascript.updateMapLayerIndexes(
                     mc.getPortalSession().getActiveLayers()));
-        } else {
-            mc.errorMessageBrokenWMSLayer(imageTester);
-        }
+        //} else {
+        //    mc.errorMessageBrokenWMSLayer(imageTester);
+        //}
     }
 
     private void updateAnimationStartStopButtons(MapLayer mapLayer) {
@@ -357,11 +353,11 @@ public class AnimationControlsComposer extends GenericAutowireAutoforwardCompose
         this.settingsSupplementary = settingsSupplementary;
     }
 
-    public ImageTester getImageTester() {
+    /*public ImageTester getImageTester() {
         return imageTester;
     }
 
     public void setImageTester(ImageTester imageTester) {
         this.imageTester = imageTester;
-    }
+    }*/
 }
