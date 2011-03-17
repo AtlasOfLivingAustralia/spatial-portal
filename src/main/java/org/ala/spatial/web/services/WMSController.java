@@ -371,7 +371,7 @@ public class WMSController {
         // check if the legend file exists,
         // if so, then its a heatmap
         // else it's a point map
-        if (legUrl.equalsIgnoreCase("check")) {
+        if (type.equalsIgnoreCase("check")) {
             String legfile = baseDir + File.separator + "legend_" + mapUrl;
             File legFile = new File(legfile);
             if (legFile.exists()) {
