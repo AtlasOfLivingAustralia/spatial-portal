@@ -20,10 +20,19 @@ public class LegendEvenIntervalLog extends Legend {
         }
         int divisions = 10;
 
+        //prevent negative number assignment
+        float offset = (min<1)?1 - min:0;
+        float tmax = max + offset;
+        float tmin = min + offset;
+        double lmin = Math.log(tmin);
+        double lmax = Math.log(tmax);
+        double lrange = lmax - lmin;
+
         cutoffs = new float[divisions];
 
         for(int i=0;i<divisions;i++){
-            cutoffs[i] = (float) Math.pow(Math.E,Math.log(max) * ((i + 1) / (double) (divisions)));
+            cutoffs[i] = (float) Math.pow(Math.E, lmin + lrange * ((i + 1) / (double) (divisions)))
+                    - offset;
         }
 
         //fix max

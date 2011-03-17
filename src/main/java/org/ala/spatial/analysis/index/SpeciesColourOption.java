@@ -87,7 +87,7 @@ public class SpeciesColourOption {
             StringBuilder legendString = new StringBuilder();
             if (l == null) {
                 //handle absence of a legend, e.g. all NaN values
-                legendString.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
             } else {
                 float[] cutoffs = l.getCutoffFloats();
                 float[] minmax = l.getMinMax();
@@ -97,12 +97,12 @@ public class SpeciesColourOption {
                     case 0: //double
                         legendString.append(min).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
                         legendString.append(max).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
-                        legendString.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                        legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
                         break;
                     case 1: //int
                         legendString.append(String.format("%.0f", min)).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
                         legendString.append(String.format("%.0f", max)).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
-                        legendString.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                        legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
                         break;
 
                 }
@@ -478,7 +478,7 @@ public class SpeciesColourOption {
             for (int i = 0; i < r.length; i++) {
                 if (speciesNumberInRecordsOrder[r[i]] >= 0) {
                     //set alpha
-                    //iArray[i] = 0xFF000000 | SpeciesIndex.getHash(taxon, speciesIndexLookup[speciesNumberInRecordsOrder[r[i]]]);
+                    //iArray[i] = 0xFFFFFFFF | SpeciesIndex.getHash(taxon, speciesIndexLookup[speciesNumberInRecordsOrder[r[i]]]);
                     iArray[i] = speciesIndexLookup[speciesNumberInRecordsOrder[r[i]]];
                 } else {
                     //white
@@ -527,7 +527,7 @@ public class SpeciesColourOption {
             //double range = dMax - dMin;
             for (int i = 0; i < dArray.length; i++) {
                 c[i] = Legend.getColour(dArray[i], dMin, dMax);
-                //c[i] = 0xFF000000 | (int) (((dArray[i] - dMin) / range) * 0x00FFFFFF);
+                //c[i] = 0xFFFFFFFF | (int) (((dArray[i] - dMin) / range) * 0x00FFFFFF);
             }
         } else {
             for (int i = 0; i < dArray.length; i++) {
@@ -540,26 +540,36 @@ public class SpeciesColourOption {
     int[] intColours() {
         int[] c = new int[iArray.length];
         if (legend == null) {
-            //double range = iMax - iMin;
-            double logIMin = Math.log10(iMin);
+            double offset = 0;
+            if(iMin < 1) {
+                offset = 1 - iMin;
+            }
+            double logIMin = Math.log10(iMin + offset);
             if (logIMin < 0) {
                 logIMin = 0;
             }
-            double logIMax = Math.log10(iMax);
+            double logIMax = Math.log10(iMax + offset);
             for (int i = 0; i < iArray.length; i++) {
                 if (iArray[i] != Integer.MIN_VALUE) {
-                    c[i] = Legend.getLinearColour(Math.log10(iArray[i]), logIMin, logIMax, startColour, endColour);
+                    c[i] = Legend.getLinearColour(Math.log10(iArray[i] + offset), logIMin, logIMax, startColour, endColour);
                 } else {
-                    c[i] = 0xFF000000;
+                    c[i] = 0xFFFFFFFF;
                 }
-                //c[i] = 0xFF000000 | (int) (((iArray[i] - iMin) / range) * 0x00FFFFFF);
+                //c[i] = 0xFFFFFFFF | (int) (((iArray[i] - iMin) / range) * 0x00FFFFFF);
             }
         } else {
+            double offset = 0;
+            if(legend.getMinMax()[0] < 1) {
+                offset = 1 - legend.getMinMax()[0];
+            }
+            double min = Math.log10(legend.getMinMax()[0] + offset + 1);
+            double max = Math.log10(legend.getMinMax()[1] + offset);
             for (int i = 0; i < iArray.length; i++) {
                 if (iArray[i] != Integer.MIN_VALUE) {
-                    c[i] = legend.getColour((float) iArray[i]);
+                    //c[i] = legend.getColour((float) iArray[i]);
+                    c[i] = Legend.getLinearColour(Math.log10(iArray[i]) + offset, min, max, startColour, endColour);
                 } else {
-                    c[i] = 0xFF000000;
+                    c[i] = 0xFFFFFFFF;
                 }
             }
         }
@@ -638,16 +648,16 @@ public class SpeciesColourOption {
             case 0: //double
                 legend.append(dMin).append(",").append(RGBcsv(Legend.getLinearColour(dMin, dMin, dMax, startColour, endColour))).append("\n");
                 legend.append(dMax).append(",").append(RGBcsv(Legend.getLinearColour(dMax, dMin, dMax, startColour, endColour))).append("\n");
-                legend.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                legend.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
                 break;
             case 1: //int
                 legend.append(iMin).append(",").append(RGBcsv(Legend.getLinearColour(Math.log10(iMin), Math.log10(iMin), Math.log10(iMax), startColour, endColour))).append("\n");
                 legend.append(iMax).append(",").append(RGBcsv(Legend.getLinearColour(Math.log10(iMax), Math.log10(iMin), Math.log10(iMax), startColour, endColour))).append("\n");
-                legend.append("unknown").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                legend.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
                 break;
             case 2: //boolean
                 legend.append("true").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
-                legend.append("false").append(",").append(RGBcsv(0xFF000000)).append("\n");
+                legend.append("false").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
                 break;
             case 3: //string
                 if (isTaxon()) {

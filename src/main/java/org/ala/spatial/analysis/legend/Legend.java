@@ -20,16 +20,20 @@ public abstract class Legend {
      *
      * There are groups+1 colours
      */
-    final static int[] colours = {0x00ffffff, 0x00009999, 0x0099FF66, 0x00FFFF66, 0x00FFFF00, 0x00FF9900, 0x00FF6600, 0x00FF6666, 0x00FF3300, 0x00CC33FF, 0x00FF33FF};
+    final static int[] colours = {0x00002DD0,0x00005BA2,0x00008C73,0x0000B944,0x0000E716,0x00A0FF00,0x00FFFF00,0x00FFC814,0x00FFA000,0x00FF5B00,0x00FF0000};
 
     /*
      * for determining the records that are equal to the maximum value
      */
     float[] cutoffs;
     /**
-     * number of group members
+     * number of group members by Unique Value
      */
     int[] groupSizes;
+    /**
+     * number of group members by Area
+     */
+    int[] groupSizesArea;
 
     /*
      * min/max values
@@ -126,9 +130,13 @@ public abstract class Legend {
                 groupSizes[cutoffPos]++;    //max cutoff == max value
             }
         }
+
+        groupSizesArea = determineGroupSizesArea(d);
     }
 
     /**
+     * range better on features
+     *
      * lower is better
      *
      * @param d
@@ -144,6 +152,72 @@ public abstract class Legend {
         float mean = numberOfUniqueValues / (float) groupSizes.length;
         for (int i = 0; i < groupSizes.length; i++) {
             stdev += Math.pow(groupSizes[i] - mean, 2) / (float) groupSizes.length;
+        }
+
+        stdev = (float) Math.sqrt(stdev);
+
+        return stdev;
+    }
+    
+    /**
+     * size is represented by number of unique values.
+     *
+     * @param d float [] sorted in ascending order
+     */
+    int[] determineGroupSizesArea(float[] d) {
+        if(cutoffs == null) {
+            return null;
+        }
+
+        //fix cutoffs
+        for(int i=1;i<cutoffs.length;i++) {
+            if(cutoffs[i] <= cutoffs[i-1]) {
+                for(int j=i;j<cutoffs.length;j++) {
+                    cutoffs[j] = cutoffs[i-1];
+                }
+                break;
+            }
+        }
+
+        int [] grpSizes = new int[cutoffs.length];
+
+        int cutoffPos = 0;
+        for (int i = 0; i < d.length; i++) {
+            if (Float.isNaN(d[i])) {
+                continue;
+            }
+            while (d[i] > cutoffs[cutoffPos]) {
+                cutoffPos++;
+            }
+            grpSizes[cutoffPos]++;
+        }
+        
+        return grpSizes;
+    }
+
+    /**
+     * range better on area
+     *
+     * lower is better
+     *
+     * @param d
+     * @return
+     */
+    double evaluateStdDevArea(float[] d) {
+        if(Float.isNaN(max)) {
+            return Double.NaN;
+        }
+
+        int [] grpSizes = determineGroupSizesArea(d);
+        int sum = 0;
+        for(int i=0;i<grpSizes.length;i++) {
+            sum += grpSizes[i];
+        }
+
+        double stdev = 0;
+        double mean = sum / (double) grpSizes.length;
+        for (int i = 0; i < grpSizes.length; i++) {
+            stdev += Math.pow(grpSizes[i] - mean, 2) / (double) grpSizes.length;
         }
 
         stdev = (float) Math.sqrt(stdev);
@@ -203,7 +277,7 @@ public abstract class Legend {
      */
     public int getColour(float d) {
         if (Float.isNaN(d)) {
-            return 0xFF000000; //black
+            return 0xFFFFFFFF; //black
         }
         int pos = java.util.Arrays.binarySearch(cutoffs, d);
         if (pos < 0) {
@@ -250,7 +324,7 @@ public abstract class Legend {
      */
     public static int getColour(double d, double min, double max) {
         if (Double.isNaN(d) || d < min || d > max) {
-            return 0xFF000000;
+            return 0xFFFFFFFF;
         }
         double range = max - min;
         double a = (d - min) / range;
@@ -296,7 +370,7 @@ public abstract class Legend {
      */
     public String getCutoffs() {
         StringBuffer sb = new StringBuffer();
-        System.out.println(getTypeName());
+        //System.out.println(getTypeName());
         for (int i = 0; i < cutoffs.length; i++) {
             if (groupSizes != null) {
                 sb.append(String.valueOf(cutoffs[i])).append("\t").append(String.valueOf(groupSizes[i])).append("\n");

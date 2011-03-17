@@ -79,14 +79,18 @@ public class OccurrenceLayers {
                             count++;
                         }
                     }
-                    value = sum / (float) count;
-                    if (max < value) {
-                        max = value;
+                    if(count == 0) {
+                        bb.putFloat(0);
+                    } else {
+                        value = sum / (float) count;
+                        if (max < value) {
+                            max = value;
+                        }
+                        if (min > value) {
+                            min = value;
+                        }
+                        bb.putFloat(value);
                     }
-                    if (min > value) {
-                        min = value;
-                    }
-                    bb.putFloat(value);
                 }
             }
             raf.write(b);
@@ -196,14 +200,18 @@ public class OccurrenceLayers {
                                 }
                             }
                         }
-                        value = countSet(sum) / (float) count;
-                        if (max < value) {
-                            max = value;
+                        if(count == 0) {
+                            bb.putFloat(0);
+                        } else {
+                            value = countSet(sum) / (float) count;
+                            if (max < value) {
+                                max = value;
+                            }
+                            if (min > value) {
+                                min = value;
+                            }
+                            bb.putFloat(value);
                         }
-                        if (min > value) {
-                            min = value;
-                        }
-                        bb.putFloat(value);
                     }
                 }
                 raf.write(b);
