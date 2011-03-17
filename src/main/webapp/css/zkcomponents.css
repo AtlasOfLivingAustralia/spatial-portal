@@ -773,3 +773,36 @@ closebox a.helpButtonMain:hover {
 /*******************************/
 /* MAP SELECTOR DROPDOWN START */
 /*******************************/
+
+
+/*******************************/
+/* scatterplot start           */
+/*******************************/
+.chartDiv {
+    position:absolute;
+    float:left;
+    width: 320px;
+    height: 320px;
+    padding:0;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -moz-user-select: none;
+    cursor: crosshair; 
+}
+#rband {
+    position:absolute;
+    display:none;
+    width:0px;
+    height:0px;
+    padding:0;
+    cursor: crosshair; 
+    border: 2px solid red;
+    background-color: white;
+    opacity: 0.50;
+    filter: alpha(opacity=50);
+}
+/*******************************/
+/* scatterplot end             */
+/*******************************/
+
+
