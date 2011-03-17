@@ -71,34 +71,9 @@
         
         <div id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
         <html><![CDATA[
-        <style type="text/css">
-            .chartDiv {
-                position:absolute;
-                float:left;
-                width: 320px;
-                height: 320px;
-                padding:0;
-                -webkit-user-select: none;
-                -webkit-user-drag: none;
-                -moz-user-select: none;
-            }
-            #rband {
-                position:absolute;
-                display:none; 
-                width:0px;
-                height:0px;
-                padding:0;
-                border:2px solid red;
-                background-color: red;
-                opacity: 0.4;
-            }
-        </style>
         <div id="chartDivBack" class="chartDiv"></div>
         <div id="chartDiv" class="chartDiv"></div>
-            <div id="rband"></div>
-            <!-- onmousedown="drawMouseDown(event);"
-            onmouseup="drawMouseUp(event);"
-            onmousemove="drawResize(event);" -->
+        <div id="rband"></div>
         ]]>
         </html>
 
@@ -118,21 +93,21 @@ $(document).ready(function() {
         event.preventDefault();
         doMouseDown(event);
 
-        $('#chartDiv').bind('mousemove',function(event){
+        $('#chartDiv, #rband').bind('mousemove',function(event){
             doMouseDrag(event);
         });
 
-        $('#chartDiv').bind('mouseup',function(event){
+        $('#chartDiv, #rband').bind('mouseup',function(event){
             doMouseUp(event);
-            $('#chartDiv').unbind('mousemove');
-            $('#chartDiv').unbind('mouseup');
+            $('#chartDiv, #rband').unbind('mousemove');
+            $('#chartDiv, #rband').unbind('mouseup');
         });
 
-        $('#rband').bind('mouseup',function(event){
-            doMouseUp(event);
-            $('#rband').unbind('mousemove');
-            $('#rband').unbind('mouseup');
-        });
+        //$('#rband').bind('mouseup',function(event){
+        //    doMouseUp(event);
+        //    $('#rband').unbind('mousemove');
+        //    $('#rband').unbind('mouseup');
+        //});
     });
 });
 
@@ -172,12 +147,10 @@ function doMouseDrag(event) {
         }
 
         $('#rband').offset({ top: top, left: left });
-        $("#rband").css(
-            {
-                'width'  :    width,
-                'height' :    height
-            }
-        );
+        $("#rband").css({
+            'width'  :    width,
+            'height' :    height
+        });
     } else {
         clearSelection();
     }
@@ -186,65 +159,9 @@ function doMouseDrag(event) {
 function doMouseUp(event) {
     if(resizing){
         resizing = false;
-        $("#rband").css({
-            'width'  : 0,
-            'height' : 0
-        }).hide();
-
         chartSelection(startx, starty, endx, endy);
     }
 }
-
-/*
-function drawMouseDown(e) {
-console.log(e); 
-    startx = e.clientX;
-    starty = e.clientY;
-    resizing = true;
-
-    chdiv = document.getElementById('chartDiv');
-
-    rband = document.getElementById('rband');
-    rband.style.width='0px';
-    rband.style.height='0px';
-    //rband.style.pixelLeft=startx;
-    //rband.style.pixelTop=starty;
-    //rband.style.left= (parseInt(rband.style.left) + startx) + 'px';
-    //rband.style.top= (parseInt(rband.style.top) + starty) + 'px';
-    //rband.style.left=(startx-testSize2) + 'px';
-    //rband.style.top=(starty-testSize) + 'px';
-    //rband.style.left=(startx-chdiv.offsetLeft) + 'px';
-    //rband.style.top=(starty-chdiv.offsetTop) + 'px';
-    rband.style.left=(startx) + 'px';
-    rband.style.top=(starty) + 'px';
-    rband.style.visibility='visible';
-
-    drawResize(e);
-}
-
-function drawMouseUp() {
-    if(resizing) {
-        resizing = false;
-        chartSelection(startx, starty, endx, endy);
-    } else {
-        clearSelection();
-    }
-}
-
-function drawResize(e) {
-    if(resizing) {
-        endx = e.clientX;
-        endy = e.clientY;
-
-        console.log('sxy: ' + startx + ',' + starty + ' -> exy: ' + endx + ', ' + endy);
-
-        rband.style.width = (endx - parseInt(rband.style.left)) + 'px';
-        rband.style.height = (endy - parseInt(rband.style.top)) + 'px';
-
-        console.log(rband.style.width + "," + rband.style.height); 
-
-    }
-}*/
 
 function clearSelection() {
     resizing = false;
@@ -264,6 +181,12 @@ function chartSelection(x1, y1, x2, y2) {
     var d2 = document.getElementById("chartDivBack");
     d2.style.backgroundImage = d1.style.backgroundImage;
     zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
+
+    $("#rband").css({
+        'width'  : 0,
+        'height' : 0
+    }).hide();
+
 }
  ]]>
         </script>
