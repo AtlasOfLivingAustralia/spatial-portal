@@ -18,12 +18,17 @@ when displayed along the right edge of the screen.
 	-->
 	<window use="au.org.emii.portal.composer.LegendComposer"
 	apply="au.org.emii.portal.composer.LegendComposer">
-		<image src="${languagePack.langMap.sticky_popup_icon}"
-			id="stickyIcon" />
-		<separator/>
-		<image id="image" />
-		<separator/>
-		<label id="description" />
+            <hbox>
+                <div width="1px" height="100px" />
+                <vbox>
+                    <image src="${languagePack.langMap.sticky_popup_icon}"
+                            id="stickyIcon" />
+                    <separator/>
+                    <image id="image" />
+                    <separator/>
+                    <label id="description" />
+                </vbox>
+            </hbox>
 	</window>
 </popup>
 </zk>
