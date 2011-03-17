@@ -1,0 +1,110 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.ala.rest</groupId>
+  <artifactId>gazetteer-search</artifactId>
+  <packaging>jar</packaging>
+  <version>2.0-SNAPSHOT</version>
+  <name>gazetteer-search</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <geotools.version>2.6-SNAPSHOT</geotools.version>
+    <geoserver.version>2.0.3-SNAPSHOT</geoserver.version>
+</properties>
+
+  <dependencies>
+<!--      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-jdbc-postgis</artifactId>
+        <version>${geotools.version}</version>
+    </dependency> -->
+
+    <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-shapefile</artifactId>
+        <version>${geotools.version}</version>
+    </dependency>
+
+   <!-- <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-data</artifactId>
+        <version>${geotools.version}</version>
+    </dependency> -->
+     
+    <dependency>
+      <groupId>org.geoserver</groupId>
+      <artifactId>rest</artifactId>
+      <version>${geoserver.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geoserver</groupId>
+      <artifactId>wfs</artifactId>
+      <version>${geoserver.version}</version>
+    </dependency>
+  	<dependency>
+      <groupId>org.geoserver</groupId>
+      <artifactId>main</artifactId>
+      <version>${geoserver.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geoserver</groupId>
+      <artifactId>main</artifactId>
+      <version>${geoserver.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.mockrunner</groupId>
+      <artifactId>mockrunner</artifactId>
+      <version>0.3.1</version>
+     <scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.lucene</groupId>
+    	<artifactId>lucene-core</artifactId>
+    	<version>3.0.1</version>
+    </dependency>
+  </dependencies>
+  <repositories>
+    <!-- ALA repository -->
+   <!-- <repository>
+      <id>ala-repository</id>
+      <name>ala-repository</name>
+      <url>http://maven.ala.org.au/repository</url>
+    </repository> -->
+   <!-- Geotools -->
+  <!-- <repository>
+      <id>getoools-repository</id>
+      <name>getools-repository</name>
+      <url>http://maven.geotools/repository/org/geotools/</url>
+    </repository> -->
+
+  </repositories>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+     </plugin>
+   </plugins>
+  </build>
+  <reporting>
+        <plugins>
+                 <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>2.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
+</project>

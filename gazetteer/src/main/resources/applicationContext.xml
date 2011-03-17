@@ -1,0 +1,123 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+ <beans>
+  
+    <bean id="gazetteerConfig" class="org.ala.rest.GazetteerConfig"/>
+
+    <bean id="gazetteerIndex" class="org.ala.rest.GazetteerIndex"/>
+
+    <bean id="search" class="org.ala.rest.SearchResource"/>
+
+    <bean id="upload" class="org.ala.rest.UserFeaturesResource"/>
+
+    <bean id="searchMapping" class="org.geoserver.rest.RESTMapping">
+       <property name="routes">
+          <map>
+            <entry>
+              <key><value>/points</value></key>
+              <value>upload</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/result.{format}</value></key>
+              <value>search</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/result</value></key>
+              <value>search</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/search.{format}</value></key>
+              <value>search</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/search</value></key>
+              <value>search</value>
+            </entry>
+              <entry>
+              <key><value>/gazetteer/latlon/{latlon}</value></key>
+              <value>search</value>
+            </entry>
+            <entry>
+                <key><value>/gazetteer/latlon/{latlon}/{closest}</value></key>
+                <value>search</value>
+            </entry>
+            <entry>
+                <key><value>/gazetteer/latlon/{latlon}/{closest}/{count}</value></key>
+                <value>search</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/latlon/{latlon}</value></key>
+              <value>search</value>
+            </entry>
+            <entry>
+                <key><value>/gazetteer/{layer}/latlon/{latlon}/{closest}</value></key>
+                <value>search</value>
+            </entry>
+            <entry>
+                <key><value>/gazetteer/{layer}/latlon/{latlon}/{closest}/{count}</value></key>
+                <value>search</value>
+            </entry>
+         </map>
+      </property>
+    </bean>
+
+     <bean id="featureService" class="org.ala.rest.FeatureServiceResource"/>
+
+    <bean id="featureServiceMapping" class="org.geoserver.rest.RESTMapping">
+       <property name="routes">
+          <map>
+            <entry>
+              <key><value>/</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}.{type}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}</value></key>
+              <value>featureService</value>
+            </entry> 
+            <entry>
+              <key><value>/gazetteer/{layer}/features</value></key>
+              <value>featureService</value>
+            </entry>
+             <entry>
+              <key><value>/gazetteer/{layer}/features/{page}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+             <entry>
+              <key><value>/gazetteer/{layer}/features/{page}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}/{id2}.{format}</value></key>
+              <value>featureService</value>
+            </entry>
+            <entry>
+              <key><value>/gazetteer/{layer}/{id1}/{id2}</value></key>
+              <value>featureService</value>
+           </entry>
+
+         </map>
+      </property>
+    </bean>
+    
+</beans>
+
