@@ -1,0 +1,43 @@
+<gazetteer-synonyms>
+<layer name="aus1">
+        <feature>
+                <idAttribute1>Australian Capital Territory</idAttribute1>
+                <synonym>ACT</synonym>
+        </feature>
+
+        <feature>
+                <idAttribute1>New South Wales</idAttribute1>
+                <synonym>NSW</synonym>
+        </feature>
+
+        <feature>
+                <idAttribute1>Northern Territory</idAttribute1>
+                <synonym>NT</synonym>
+        </feature>
+
+        <feature>
+                <idAttribute1>Queensland</idAttribute1>
+                <synonym>QLD</synonym>
+        </feature>
+
+        <feature>
+                <idAttribute1>South Australia</idAttribute1>
+                <synonym>SA</synonym>
+        </feature>
+
+        <feature>
+                <idAttribute1>Tasmania</idAttribute1>
+                <synonym>TAS</synonym>
+        </feature>
+
+        <feature>
+                <idAttribute1>Victoria</idAttribute1>
+                <synonym>VIC</synonym>
+        </feature>
+
+        <feature>
+                <idAttribute1>Western Australia</idAttribute1>
+                <synonym>WA</synonym>
+        </feature>
+</layer>
+</gazetteer-synonyms>
