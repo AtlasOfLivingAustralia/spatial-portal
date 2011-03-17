@@ -8,7 +8,7 @@
   <name>gazetteer-search</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <geotools.version>2.7-SNAPSHOT</geotools.version>
+    <geotools.version>2.6-SNAPSHOT</geotools.version>
     <geoserver.version>2.0.3-SNAPSHOT</geoserver.version>
 </properties>
 
@@ -24,7 +24,12 @@
         <artifactId>gt-shapefile</artifactId>
         <version>${geotools.version}</version>
     </dependency>
-    
+
+   <!-- <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-data</artifactId>
+        <version>${geotools.version}</version>
+    </dependency> -->
      
     <dependency>
       <groupId>org.geoserver</groupId>
@@ -69,11 +74,18 @@
   </dependencies>
   <repositories>
     <!-- ALA repository -->
-    <repository>
+   <!-- <repository>
       <id>ala-repository</id>
       <name>ala-repository</name>
       <url>http://maven.ala.org.au/repository</url>
-    </repository> 
+    </repository> -->
+   <!-- Geotools -->
+  <!-- <repository>
+      <id>getoools-repository</id>
+      <name>getools-repository</name>
+      <url>http://maven.geotools/repository/org/geotools/</url>
+    </repository> -->
+
   </repositories>
   <build>
     <plugins>

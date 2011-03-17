@@ -8,9 +8,15 @@
 
     <bean id="search" class="org.ala.rest.SearchResource"/>
 
+    <bean id="upload" class="org.ala.rest.UserFeaturesResource"/>
+
     <bean id="searchMapping" class="org.geoserver.rest.RESTMapping">
        <property name="routes">
           <map>
+            <entry>
+              <key><value>/points</value></key>
+              <value>upload</value>
+            </entry>
             <entry>
               <key><value>/gazetteer/result.{format}</value></key>
               <value>search</value>

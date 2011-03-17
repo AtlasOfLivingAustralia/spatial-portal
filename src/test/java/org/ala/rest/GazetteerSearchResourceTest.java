@@ -4,8 +4,8 @@ import org.geoserver.test.GeoServerTestSupport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import net.sf.json.JSON;
-import net.sf.json.JSONObject;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -24,6 +24,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.geoserver.data.test.MockData;
+import org.restlet.data.MediaType;
 import org.w3c.dom.NodeList;
 
 public class GazetteerSearchResourceTest extends GeoServerTestSupport {
@@ -42,7 +43,7 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
     public MockData buildTestData() throws Exception {
         MockData dataDirectory = super.buildTestData();
         FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParentFile().getParent(), "gazetteer.xml"), dataDirectory.getDataDirectoryRoot());
-       // FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParentFile().getParent(), "synonyms.xml"), dataDirectory.getDataDirectoryRoot());
+        FileUtils.copyFileToDirectory(new File(dataDirectory.getDataDirectoryRoot().getParentFile().getParent(), "gazetteer-synonyms.xml"), dataDirectory.getDataDirectoryRoot());
         return dataDirectory;
     }
 
@@ -145,23 +146,15 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
 
     }
 
-// GJ: This one no longer works ...
- //  public void testMultiFieldID() throws Exception {
-//      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
- //       JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton/117.json");
-  //      print(json);
-   // }
-    public void testFeatureServiceJSON() throws Exception {
-//      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
-        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton.json");
-        print(json);
-    }
-
-    public void testFeatureServiceWhiteSpaceInName() throws Exception {
-//      FileUtils.copyFileToDirectory(new File(GeoserverDataDirectory.getGeoserverDataDirectory().getParent(),"gazetteer.xml"), GeoserverDataDirectory.getGeoserverDataDirectory());
-        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Goose_Island.json");
-        print(json);
-    }
+//    public void testFeatureServiceJSON() throws Exception {
+//        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Ashton.json");
+//        print(json);
+//    }
+//
+//    public void testFeatureServiceWhiteSpaceInName() throws Exception {
+//        JSON json = getAsJSON("/rest/gazetteer/NamedPlaces/Goose_Island.json");
+//        print(json);
+//    }
 
      public void testPointSearchLegacy() throws Exception {
         System.out.println("Testing Legacy point search ...");
@@ -212,56 +205,70 @@ public class GazetteerSearchResourceTest extends GeoServerTestSupport {
         System.out.println("*************");
     }
 
-
-    public void testGazetteerFeatureIndex() throws Exception {
-        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
-        if (file.exists()) {
-            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
-            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
-            Query nameQuery = qp.parse("Ash*");
-
-            TopDocs topDocs = is.search(nameQuery, 20);
-
-            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                org.apache.lucene.document.Document doc = is.doc(scoreDoc.doc);
-                List<Fieldable> fields = doc.getFields();
-                for (Fieldable field : fields) {
-                    System.out.println(field.name() + ": " + field.stringValue());
-                }
-                System.out.println("---------------------------------------------");
-            }
-
-            System.out.println("---------------------------------------------");
-            System.out.println("Total hits: " + topDocs.totalHits);
-            System.out.println("---------------------------------------------");
-        } else {
-            assertTrue(0 == 1);
-        }
+    public void testFeaturePost() throws Exception {
+	 System.out.println("TESTING POST");
+       InputStream is  =  post("/rest/points","{ \"type\": \"MultiPoint\",\"coordinates\": [  [0.003,0.0017],[0.0017,0.003],[100.0, 0.0], [101.0, 1.0] ] }","text/json"); //<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+	//InputStream is  =  post("/rest/points","{ \"type\": \"MultiPoint\",\"coordinates\": [100.0, 0.0, 101.0, 1.0] }","text/json");
+       //print();
+       System.out.println("...DONE");
     }
 
-    public void testGazetteerClassIndex() throws Exception {
-        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-class-index");
-        if (file.exists()) {
-            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
-            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "layer", new StandardAnalyzer(Version.LUCENE_CURRENT));
-            Query nameQuery = qp.parse("NamedPlaces");
-
-            TopDocs topDocs = is.search(nameQuery, 20);
-
-            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                org.apache.lucene.document.Document doc = is.doc(scoreDoc.doc);
-                List<Fieldable> fields = doc.getFields();
-                for (Fieldable field : fields) {
-                    System.out.println(field.name() + ": " + field.stringValue());
-                }
-                System.out.println("---------------------------------------------");
-            }
-
-            System.out.println("---------------------------------------------");
-            System.out.println("Total hits: " + topDocs.totalHits);
-            System.out.println("---------------------------------------------");
-        } else {
-            assertTrue(0 == 1);
-        }
+    public void testFeatureGet() throws Exception {
+	System.out.println("TESTING GET");
+       Document dom = getAsDOM("/rest/points");
+       print(dom);
     }
+
+//    public void testGazetteerFeatureIndex() throws Exception {
+//        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-index");
+//        if (file.exists()) {
+//            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
+//            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "name", new StandardAnalyzer(Version.LUCENE_CURRENT));
+//            Query nameQuery = qp.parse("Ash*");
+//
+//            TopDocs topDocs = is.search(nameQuery, 20);
+//
+//            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+//                org.apache.lucene.document.Document doc = is.doc(scoreDoc.doc);
+//                List<Fieldable> fields = doc.getFields();
+//                for (Fieldable field : fields) {
+//                    System.out.println(field.name() + ": " + field.stringValue());
+//                }
+//                System.out.println("---------------------------------------------");
+//            }
+//
+//            System.out.println("---------------------------------------------");
+//            System.out.println("Total hits: " + topDocs.totalHits);
+//            System.out.println("---------------------------------------------");
+//        } else {
+//            assertTrue(0 == 1);
+//        }
+//    }
+//
+//    public void testGazetteerClassIndex() throws Exception {
+//        File file = new File(GeoserverDataDirectory.getGeoserverDataDirectory(), "gazetteer-class-index");
+//
+//	if (file.exists()) {
+//            IndexSearcher is = new IndexSearcher(FSDirectory.open(file));
+//            QueryParser qp = new QueryParser(Version.LUCENE_CURRENT, "layer", new StandardAnalyzer(Version.LUCENE_CURRENT));
+//            Query nameQuery = qp.parse("NamedPlaces");
+//
+//            TopDocs topDocs = is.search(nameQuery, 20);
+//
+//            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+//                org.apache.lucene.document.Document doc = is.doc(scoreDoc.doc);
+//                List<Fieldable> fields = doc.getFields();
+//                for (Fieldable field : fields) {
+//                    System.out.println(field.name() + ": " + field.stringValue());
+//                }
+//                System.out.println("---------------------------------------------");
+//            }
+//
+//            System.out.println("---------------------------------------------");
+//            System.out.println("Total hits: " + topDocs.totalHits);
+//            System.out.println("---------------------------------------------");
+//        } else {
+//            assertTrue(0 == 1);
+//        }
+//    }
 }
