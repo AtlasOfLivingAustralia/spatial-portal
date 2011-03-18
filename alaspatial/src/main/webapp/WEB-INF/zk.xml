@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : zk.xml
+    Created on : March 29, 2010, 3:23 PM
+    Author     : ajay
+    Description:
+        Purpose of the document follows.
+-->
+
+<zk>
+    <system-config>
+        <disable-event-thread/>
+    </system-config>
+</zk>
