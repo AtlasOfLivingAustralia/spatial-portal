@@ -200,6 +200,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <separator orient="vertical" />
                                                     <combobox id="cbColour" >
                                                         <comboitem label="User defined" id="ciColourUser" value="-1" />
+                                                        <comboitem label="Density Grid" value="grid" />
                                                         <comboitem label="General Categories" value="10" />
                                                         <comboitem label="Scientific Name" value="taxon_name" />
                                                         <comboitem label="Species" value="species" />

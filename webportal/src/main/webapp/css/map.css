@@ -625,4 +625,28 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
     left: 22px! important;
 }
 
+#hoverTool {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-image: url('../img/overview_replacement_off.gif');
+    width: 16px! important;
+    height: 16px! important;
+    cursor: pointer;
+
+    z-index: 110;
+    top: 350px! important;
+    left: 22px! important;
+}
+
+#hoverOutput {
+    position: absolute;
+    width: 300px! important;
+    height: 80px! important;
+    cursor: pointer;
+
+    z-index: 110;
+    top: 350px! important;
+    left: 42px! important;
+}
+
 
