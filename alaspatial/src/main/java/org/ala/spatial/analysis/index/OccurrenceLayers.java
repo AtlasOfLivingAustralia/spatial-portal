@@ -113,9 +113,9 @@ public class OccurrenceLayers {
             fw.append("\n\n[Data]\nDataType=FLT4BYTES");
             fw.append("\nMinValue=").append(String.valueOf((int) Math.floor(min)));
             fw.append("\nMaxValue=").append(String.valueOf((int) Math.ceil(max)));
-            fw.append("\nNoDataValue=0");
-            fw.append("\nTransparent=0");
-            fw.append("\nUnits=");
+            fw.append("\nNoDataValue=-9999");
+            //fw.append("\nTransparent=0");
+            //fw.append("\nUnits=");
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,8 +196,8 @@ public class OccurrenceLayers {
                             for (y = ystart; y < yend; y++) {
                                 if (actual_grid[x][y] != null) {
                                     sum.or(actual_grid[x][y]);
-                                    count++;
                                 }
+                                count++;
                             }
                         }
                         if(count == 0) {
@@ -240,9 +240,9 @@ public class OccurrenceLayers {
             fw.append("\n\n[Data]\nDataType=FLT4BYTES");
             fw.append("\nMinValue=").append(String.valueOf((int) Math.floor(min)));
             fw.append("\nMaxValue=").append(String.valueOf((int) Math.ceil(max)));
-            fw.append("\nNoDataValue=0");
-            fw.append("\nTransparent=0");
-            fw.append("\nUnits=");
+            fw.append("\nNoDataValue=-9999");
+            //fw.append("\nTransparent=0");
+            //fw.append("\nUnits=");
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -278,6 +278,6 @@ public class OccurrenceLayers {
         }
 
         makeOccurrenceCountLayer(size);
-        makeSpeciesCountLayer(size);
+        //makeSpeciesCountLayer(size);
     }
 }

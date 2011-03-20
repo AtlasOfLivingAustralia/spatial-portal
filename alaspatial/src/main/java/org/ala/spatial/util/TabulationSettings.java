@@ -125,6 +125,10 @@ public class TabulationSettings {
     public static String base_output_dir;
     public static String base_output_url;
     /**
+    * base files directory where all the general files for links to users go
+    */
+    public static String base_files_dir;
+    /**
      * maxent path
      */
     public static String maxent_cmdpth;
@@ -417,6 +421,9 @@ public class TabulationSettings {
         base_output_url = xr.getValue("base_output_url");
         System.out.println("base_output_dir: " + base_output_dir + " at " + base_output_url);
 
+        base_files_dir = xr.getValue("base_files_dir");
+        System.out.println("base_files_dir: " + base_files_dir);
+        
         try {
             MAX_RECORD_COUNT_DOWNLOAD = Integer.parseInt(xr.getValue("max_record_count_download"));
         } catch (NumberFormatException nfe) {

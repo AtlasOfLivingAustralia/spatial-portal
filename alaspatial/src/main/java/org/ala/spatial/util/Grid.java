@@ -11,14 +11,14 @@ import org.apache.commons.io.FileUtils;
 /**
  * Grid.java
  * Created on June 24, 2005, 4:12 PM
- * 
+ *
  * @author Robert Hijmans, rhijmans@berkeley.edu
- * 
+ *
  * Updated 15/2/2010, Adam
- * 
+ *
  * Interface for .gri/.grd files for now
  */
-public class Grid { //  implements Serializable    
+public class Grid { //  implements Serializable
 
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
     final double noDataValueDefault = -3.4E38;
@@ -272,7 +272,6 @@ public class Grid { //  implements Serializable
         }
 
         setdatatype(ir.getStringValue("Data", "DataType"));
-        //System.out.println("grd datatype=" + datatype);
         maxval = (float) ir.getDoubleValue("Data", "MaxValue");
         minval = (float) ir.getDoubleValue("Data", "MinValue");
         ncols = ir.getIntegerValue("GeoReference", "Columns");
@@ -373,7 +372,6 @@ public class Grid { //  implements Serializable
             }
         } catch (Exception e) {
             //log error - probably a file error
-            System.out.println("GRID: " + e.toString());
             e.printStackTrace();
         }
         grid_data = ret;
@@ -410,7 +408,6 @@ public class Grid { //  implements Serializable
             } else {
                 bb.order(ByteOrder.BIG_ENDIAN);
             }
-            System.out.println("WRITING FLOAT: " + length + " records to " + newfilename);
             for (i = 0; i < length; i++) {
                 if (Double.isNaN(dfiltered[i])) {
                     bb.putFloat((float) noDataValueDefault);
@@ -456,7 +453,6 @@ public class Grid { //  implements Serializable
             } else {
                 bb.order(ByteOrder.BIG_ENDIAN);
             }
-            System.out.println("WRITING FLOAT: " + length + " records to " + newfilename);
             for (i = 0; i < length; i++) {
                 if (Double.isNaN(dfiltered[i])) {
                     bb.putFloat((float) noDataValueDefault);
@@ -518,15 +514,14 @@ public class Grid { //  implements Serializable
 
     /**
      * do get values of grid for provided points.
-     * 
-     * loads whole grid file as double[] in process 
-     * 
+     *
+     * loads whole grid file as double[] in process
+     *
      * @param points
      * @return
      */
     public float[] getValues2(double[][] points) {
         if (points == null || points.length == 0) {
-            System.out.println("exit getValues2:" + points);
             return null;
         }
 
@@ -538,8 +533,6 @@ public class Grid { //  implements Serializable
         int glen = grid.length;
         int length = points.length;
         int i, pos;
-
-        System.out.println(filename + ", " + datatype + ":" + points.length);
 
         //points loop
         for (i = 0; i < length; i++) {
@@ -729,8 +722,6 @@ public class Grid { //  implements Serializable
 
         //confirm inputs since they come from somewhere else
         if (points == null || points.length == 0) {
-            //System.out.println("err with points");
-            //log error
             return null;
         }
 
@@ -742,15 +733,11 @@ public class Grid { //  implements Serializable
 
         float[] ret = new float[points.length];
 
-        //System.out.println("expecting " + points.length + " env values with datatype " + datatype);
-
         int length = points.length;
         int size, i, pos;
         byte[] b;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");
-
-        System.out.println(filename + ", " + datatype + ":" + points.length);
 
         try { //read of random access file can throw an exception
             if (!f2.exists()) {
@@ -849,23 +836,16 @@ public class Grid { //  implements Serializable
             } else if (datatype.equalsIgnoreCase("FLOAT")) {
                 size = 4;
                 b = new byte[size];
-                System.out.println("FLOAT: " + length);
                 for (i = 0; i < length; i++) {
                     pos = getcellnumber(points[i][0], points[i][1]);
                     if (pos >= 0) {
                         afile.seek(pos * size);
                         afile.read(b);
-                        /*if (byteorderLSB) {
-                        ret[i] = Float.intBitsToFloat((b[3] << 24) | (b[2] << 16) + (b[1] << 8) + b[0]);
-                        } else {
-                        ret[i] = Float.intBitsToFloat((b[0] << 24) | (b[1] << 16) + (b[2] << 8) + b[3]);
-                        }*/
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
                         }
                         ret[i] = bb.getFloat();
-                        //ret[i] = afile.readFloat();
                     } else {
                         //System.out.println("missing env: lng=" + points[i][0] + " lat=" + points[i][0] + " pos=" + pos);
                         ret[i] = Float.NaN;
@@ -880,17 +860,6 @@ public class Grid { //  implements Serializable
                     if (pos >= 0) {
                         afile.seek(pos * size);
                         afile.read(b);
-                        /*if (byteorderLSB) {                            
-                        ret[i] = (float) Double.longBitsToDouble(((long) b[7] << 56) + ((long) b[6] << 48)
-                        + ((long) b[5] << 40) + ((long) b[4] << 32)
-                        + ((long) b[3] << 24) + ((long) b[2] << 16)
-                        + ((long) b[1] << 8) + b[0]);
-                        } else {                            
-                        ret[i] = (float) Double.longBitsToDouble(((long) b[0] << 56) + ((long) b[1] << 48)
-                        + ((long) b[2] << 40) + ((long) b[3] << 32)
-                        + ((long) b[4] << 24) + ((long) b[5] << 16)
-                        + ((long) b[6] << 8) + b[7]);
-                        }*/
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -912,15 +881,13 @@ public class Grid { //  implements Serializable
             //replace not a number
             for (i = 0; i < length; i++) {
                 if ((float) ret[i] == (float) nodatavalue) {
-                    //System.out.println("replacing missing value: " + ret[i]);
                     ret[i] = Float.NaN;
                 }
             }
 
             afile.close();
         } catch (Exception e) {
-            //log error - probably a file error
-            //System.out.println("GRID: " + e.toString());
+            e.printStackTrace();
         }
         return ret;
     }
@@ -950,7 +917,7 @@ public class Grid { //  implements Serializable
             }
 
             byte[] b = new byte[(int) afile.length()];
-            
+
             ByteBuffer bb = ByteBuffer.wrap(b);
 
             if (byteorderLSB) {
@@ -1023,7 +990,7 @@ public class Grid { //  implements Serializable
                 // / should not happen
                 System.out.println("unsupported grid data type: " + datatype);
             }
-            
+
             afile.write(bb.array());
             afile.close();
         } catch (Exception e) {
@@ -1066,7 +1033,7 @@ public class Grid { //  implements Serializable
         String newfilename = filename.substring(0, filename.lastIndexOf(File.separator) + 1) + dirname + filename.substring(filename.lastIndexOf(File.separator));
 
         try { //read of random access file can throw an exception
-            
+
             String nodata = String.valueOf(noDataValueDefault);
             int size = 4;
             if (datatype.equals("BYTE")) {

@@ -27,7 +27,7 @@ public class BoundingBoxes {
 
             double[] p = OccurrencesCollection.getPoints(new OccurrencesFilter(lsid, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
 
-            if (p != null) {
+            if (p != null && p.length >= 2) {
                 double minx = p[0];
                 double miny = p[1];
                 double maxx = minx;

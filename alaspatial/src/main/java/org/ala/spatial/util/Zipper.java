@@ -1,23 +1,29 @@
 package org.ala.spatial.util;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
  * Zipper helper class to zip up files.
  * Quick zipper helper class
- * 
+ *
  * @author ajay
  */
 public class Zipper {
 
     /**
-     * zipFile method for zipping a single file. Provide an zip filename. 
-     * 
+     * zipFile method for zipping a single file. Provide an zip filename.
+     *
      * @param infile Input file to be zipped
      * @param outfile Output zipped filename
      */
@@ -29,7 +35,7 @@ public class Zipper {
     /**
      * zipFile method for zipping a single file. Output filename generated
      * based on the input file
-     * 
+     *
      * @param infile Input file to be zipped
      * @return Output zipped filename
      */
@@ -46,7 +52,7 @@ public class Zipper {
      * zipFiles method to zip a bunch of files. Output filename to be provided.
      *
      * @param infiles Input files to be zipped
-     * @param filenames Human-readable filenames 
+     * @param filenames Human-readable filenames
      * @param outfile Output zipped filename
      */
     public static void zipFiles(String[] infiles, String[] filenames, String outfile) {
@@ -63,10 +69,10 @@ public class Zipper {
                 if (filenames != null) {
                     if (filenames.length == infiles.length) {
                         if (!filenames[i].trim().equalsIgnoreCase("")) {
-                            fname = filenames[i]; 
+                            fname = filenames[i];
                         }
                     }
-                    
+
                 }
                 out.putNextEntry(new ZipEntry(fname));
                 // Transfer bytes from the file to the ZIP file
@@ -82,12 +88,12 @@ public class Zipper {
             out.close();
         } catch (IOException e) {
         }
-        
+
     }
 
     /**
      * zipFiles method to zip a bunch of files. Output filename to be provided.
-     * 
+     *
      * @param infiles Input files to be zipped
      * @param outfile Output zipped filename
      */
@@ -95,10 +101,71 @@ public class Zipper {
         zipFiles(infiles, null, outfile);
     }
 
+
+    /**
+     * Unzip a file
+     *
+     * @param name Name of the file without the path
+     * @param data InputStream data
+     * @param basepath String path where the file will be unzipped to
+     * @param createDirectory If the unzipped file should be unzipped into it's own folder or the base folder
+     * @return
+     */
+    public static boolean unzipFile(String name, InputStream data, String basepath, boolean createDirectory) {
+        try {
+            String outputpath = basepath;
+
+            if (createDirectory) {
+                String zipfilename = name.substring(0, name.lastIndexOf("."));
+                outputpath += zipfilename + "/";
+                File outputDir = new File(outputpath);
+                outputDir.mkdirs();
+            }
+
+            ZipInputStream zis = new ZipInputStream(data);
+            ZipEntry ze = null;
+            String shpfile = "";
+            String type = "";
+
+            while ((ze = zis.getNextEntry()) != null) {
+                System.out.println("ze.file: " + ze.getName());
+                String fname = outputpath + ze.getName();
+                copyInputStream(zis, new BufferedOutputStream(new FileOutputStream(fname)));
+                zis.closeEntry();
+            }
+            zis.close();
+
+        } catch (Exception e) {
+            //showMessage("Unable to load your file. Please try again.");
+
+            System.out.println("unable to load user kml: ");
+            e.printStackTrace(System.out);
+
+            return false;
+
+        }
+
+        return true;
+    }
+
+    private static void copyInputStream(InputStream in, OutputStream out) throws IOException, Exception {
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = in.read(buffer)) > -1) {
+            out.write(buffer, 0, len);
+        }
+
+        // no need to close the input stream as it gets closed
+        // in the caller function.
+        // just close the output stream.
+        out.close();
+
+    }
+
     /**
      * Run as a separate class
-     * 
-     * @param args command line or method inputs 
+     *
+     * @param args command line or method inputs
      */
     public static void main(String[] args) {
         /*
@@ -107,27 +174,27 @@ public class Zipper {
 
         outfile = zipFile(infile);
         System.out.println("outfile: " + outfile);
-         * 
+         *
          */
 
-        
+
         //Grid g = new Grid("/Users/ajay/projects/data/modelling/WorldClimCurrent/10minutes/world_10_bio01");
         Grid g = new Grid("/Users/ajay/projects/data/modelling/erosivity");
         System.out.println("rows: " + g.nrows);
         System.out.println("cols: " + g.ncols);
         System.out.println("v: " + g.minval);
         System.out.println("v: " + g.maxval);
-        System.out.println("size: " + g.xres + " x " + g.yres); 
+        System.out.println("size: " + g.xres + " x " + g.yres);
 
         float[] dv = g.getGrid();
 
         System.out.println("values:\n" + dv.length);
-        for (int i=0; i<dv.length; i++) {
-            System.out.println(dv[i]); 
+        for (int i = 0; i < dv.length; i++) {
+            System.out.println(dv[i]);
         }
 
 
-        System.out.println("Static methods available. "); 
+        System.out.println("Static methods available. ");
 
 
     }

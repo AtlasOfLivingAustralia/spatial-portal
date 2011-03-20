@@ -80,45 +80,53 @@ public class SpeciesColourOption {
     public static String getColourLegend(String lsid, String colourMode) {
         String legend = null;
 
-        Object[] o = LayerVariableDistribution.getLsidDistribution(lsid, colourMode);
-        if (o.length == 1) {
-            //continous value legends
-            Legend l = (Legend) o[0];
+        //legend for 'grid' colourMode
+        if(colourMode.equalsIgnoreCase("grid")) {
             StringBuilder legendString = new StringBuilder();
-            if (l == null) {
-                //handle absence of a legend, e.g. all NaN values
-                legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
-            } else {
-                float[] cutoffs = l.getCutoffFloats();
-                float[] minmax = l.getMinMax();
-                float min = minmax[0];
-                float max = minmax[1];
-                switch (SpeciesColourOption.fromName(colourMode, true).type) {
-                    case 0: //double
-                        legendString.append(min).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
-                        legendString.append(max).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
-                        legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
-                        break;
-                    case 1: //int
-                        legendString.append(String.format("%.0f", min)).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
-                        legendString.append(String.format("%.0f", max)).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
-                        legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
-                        break;
-
-                }
-            }
+            legendString.append(0).append(",").append(RGBcsv(Legend.getLinearColour(0, 0, 500, startColour, endColour))).append("\n");
+            legendString.append("500+").append(",").append(RGBcsv(Legend.getLinearColour(500, 0, 500, startColour, endColour))).append("\n");
             legend = legendString.toString();
         } else {
-            //categorical value legends
-            ArrayList<SpeciesColourOption> other = new ArrayList<SpeciesColourOption>();
-            other.add(SpeciesColourOption.fromName(colourMode, true));
-            SamplingService ss = SamplingService.newForLSID(lsid);
-            double[] points = ss.sampleSpeciesPoints(lsid, null, null, other);
+            Object[] o = LayerVariableDistribution.getLsidDistribution(lsid, colourMode);
+            if (o.length == 1) {
+                //continous value legends
+                Legend l = (Legend) o[0];
+                StringBuilder legendString = new StringBuilder();
+                if (l == null) {
+                    //handle absence of a legend, e.g. all NaN values
+                    legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
+                } else {
+                    float[] cutoffs = l.getCutoffFloats();
+                    float[] minmax = l.getMinMax();
+                    float min = minmax[0];
+                    float max = minmax[1];
+                    switch (SpeciesColourOption.fromName(colourMode, true).type) {
+                        case 0: //double
+                            legendString.append(min).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
+                            legendString.append(max).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
+                            legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
+                            break;
+                        case 1: //int
+                            legendString.append(String.format("%.0f", min)).append(",").append(RGBcsv(Legend.getLinearColour(min, min, max, startColour, endColour))).append("\n");
+                            legendString.append(String.format("%.0f", max)).append(",").append(RGBcsv(Legend.getLinearColour(max, min, max, startColour, endColour))).append("\n");
+                            legendString.append("unknown").append(",").append(RGBcsv(0xFFFFFFFF)).append("\n");
+                            break;
 
-            if (points != null && points.length > 0) {
-                for (int j = 0; j < other.size(); j++) {
-                    //colour mode!
-                    legend = other.get(0).getLegendString();
+                    }
+                }
+                legend = legendString.toString();
+            } else {
+                //categorical value legends
+                ArrayList<SpeciesColourOption> other = new ArrayList<SpeciesColourOption>();
+                other.add(SpeciesColourOption.fromName(colourMode, true));
+                SamplingService ss = SamplingService.newForLSID(lsid);
+                double[] points = ss.sampleSpeciesPoints(lsid, null, null, other);
+
+                if (points != null && points.length > 0) {
+                    for (int j = 0; j < other.size(); j++) {
+                        //colour mode!
+                        legend = other.get(0).getLegendString();
+                    }
                 }
             }
         }

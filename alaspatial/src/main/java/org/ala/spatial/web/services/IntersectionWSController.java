@@ -5,9 +5,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.ShapeIntersectionService;
+import org.ala.spatial.util.Grid;
+import org.ala.spatial.util.Layer;
+import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
+import org.ala.spatial.util.TabulationSettings;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 @RequestMapping("/ws/intersect")
-public class ShapeIntersectionWSController {
+public class IntersectionWSController {
 
     /*
      * returns result of species distribution maps intersection with param area
@@ -89,6 +93,52 @@ public class ShapeIntersectionWSController {
     String list(HttpServletRequest req) {
         try {
             return ShapeIntersectionService.list();
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+        return "";
+    }
+
+    @RequestMapping(value = "/layer", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String intersectLayer(HttpServletRequest req) {
+        try {
+            long start = System.currentTimeMillis();
+
+            String [] envlist = URLDecoder.decode(req.getParameter("layers"),"UTF-8").split(",");
+            String [] latlong = URLDecoder.decode(req.getParameter("latlong"),"UTF-8").split(",");
+            String useCached = req.getParameter("useCached");
+
+            Layer [] layers = Layers.getLayers(envlist);
+            double [][] point = {{ Double.parseDouble(latlong[1]), Double.parseDouble(latlong[0]) }};
+
+            StringBuilder sb = new StringBuilder();
+            for(Layer l : layers) {
+                if(l != null && l.type.equalsIgnoreCase("environmental")) {
+                    Grid grid;
+                    if(useCached != null && useCached.equals("1")) {
+                        //to use WHOLE grid/caching
+                        grid = Grid.getGrid(TabulationSettings.environmental_data_path + l.name);
+                    } else {
+                        //to use ini re-read + seek in grid file
+                        grid = new Grid(TabulationSettings.environmental_data_path + l.name);
+                    }
+
+                    float [] value = grid.getValues(point);
+                    if(value != null) {
+                        if(Float.isNaN(value[0])) {
+                            sb.append(l.display_name).append("\t").append("no data").append("\n");
+                        } else {
+                            sb.append(l.display_name).append("\t").append(value[0]).append("\n");
+                        }
+                    }
+                }
+            }
+
+            System.out.println("envlayers intersect: n=" + envlist.length + " t=" + (System.currentTimeMillis() - start) + "ms");
+
+            return sb.toString();
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
