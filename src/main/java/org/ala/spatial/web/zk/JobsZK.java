@@ -3,6 +3,7 @@ package org.ala.spatial.web.zk;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URLEncoder;
+import org.ala.spatial.analysis.index.DatasetMonitor;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.ala.spatial.util.TabulationSettings;
@@ -43,6 +44,7 @@ public class JobsZK extends GenericForwardComposer {
 
         TabulationSettings.load();
 
+        System.out.println("***************** ***********");
         setMemoryLabel();
 
         onClick$refreshButton(null);
@@ -154,7 +156,7 @@ public class JobsZK extends GenericForwardComposer {
         System.gc();
         setMemoryLabel();
     }
-
+    
     void setMemoryLabel(){
         lMemUsage.setValue("Memory usage (total/used/free):" + (Runtime.getRuntime().totalMemory()/1024/1024) + "MB / " + (Runtime.getRuntime().totalMemory()/1024/1024 - Runtime.getRuntime().freeMemory()/1024/1024) + "MB / " + (Runtime.getRuntime().freeMemory()/1024/1024) + "MB");
     }
@@ -213,6 +215,9 @@ public class JobsZK extends GenericForwardComposer {
     }
 
     public void onClick$btnClearCache(Event event){
+        DatasetMonitor dm = new DatasetMonitor();
+        dm.start();
+
         String pth = TabulationSettings.base_output_dir + "output" + File.separator + "sampling" + File.separator;
         File dir = new File(pth);
         String [] f = dir.list(new FilenameFilter() {

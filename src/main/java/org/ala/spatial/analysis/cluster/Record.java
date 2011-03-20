@@ -8,23 +8,23 @@ public class Record {
 
     private double latitude;
     private double longitude;
-    private String uncertainity;
-    private String id;
+    private int uncertainity;
+    private long id;
     private String name;
 
-    public Record(String id, String name, double longitude, double latitude, String uncertainity) {
+    public Record(long id, String name, double longitude, double latitude, int uncertainity) {
         this.id = id;
         this.name = name;
         this.longitude = longitude;
         this.latitude = latitude;
-        this.uncertainity = uncertainity; 
+        this.uncertainity = uncertainity;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -44,27 +44,26 @@ public class Record {
         this.longitude = longitude;
     }
 
-//    public String getName() {
-//        return name;
-//    }
+    public String getName() {
+        return name;
+    }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getUncertainity() {
+    public int getUncertainity() {
         return uncertainity;
     }
 
-    public void setUncertainity(String uncertainity) {
+    public void setUncertainity(int uncertainity) {
         this.uncertainity = uncertainity;
     }
 
     @Override
     public String toString() {
-        return id + "_" + name + " at " 
+        return id + "_" + name + " at "
                 + longitude + ", " + latitude
                 + "=> precision: " + uncertainity;
     }
-
 }

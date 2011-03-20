@@ -25,7 +25,7 @@ import org.ala.spatial.util.TabulationSettings;
  * @author adam
  *
  */
-public class SamplingIndex implements AnalysisIndexService {
+public class SamplingIndex {
 
     /**
      * prefix for continous/environmental sampling index files
@@ -50,48 +50,37 @@ public class SamplingIndex implements AnalysisIndexService {
      */
     static final String CATAGORY_LIST_POSTFIX = ".csv";
     /**
-     * destination of loaded occurances
+     * all points
      */
-    ArrayList<String[]> occurances;
+    double[][] points = null;
+    String index_path;
 
-    /**
-     * default constructor
-     */
-    public SamplingIndex() {
-        TabulationSettings.load();
+    SamplingIndex(String directoryName, double[][] p) {
+        index_path = directoryName;
+        points = p;
     }
 
     /**
      * performs update of 'indexing' for new points data
      */
-    @Override
-    public void occurancesUpdate() {
-
-        //OccurrencesIndex.loadIndexes();
-
-        TabulationSettings.load();
-        OccurrencesIndex.getPointsPairs();
-
-        /*
-         * for grid files
-         */
-        //intersectGrid(null);
-
-        /*
-         * for shape files of catagorical layers,
-         * shape files instead of grids
-         */
-        //intersectCatagories(null);
-
+    public void occurrencesUpdate(boolean forceUpdate) {
         /* threaded building, needs more ram than one at a time */
         int threadcount = TabulationSettings.analysis_threads;
         ArrayList<String> layers = new ArrayList();
         int i;
         for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
-            layers.add(TabulationSettings.geo_tables[i].name);
+            if (forceUpdate || !isUpToDateCatagorical(TabulationSettings.geo_tables[i].name)) {
+                layers.add(TabulationSettings.geo_tables[i].name);
+            }
         }
         for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
-            layers.add(TabulationSettings.environmental_data_files[i].name);
+            if (forceUpdate || !isUpToDateContinous(TabulationSettings.environmental_data_files[i].name)) {
+                layers.add(TabulationSettings.environmental_data_files[i].name);
+            }
+        }
+
+        if (layers.size() == 0) {
+            return;
         }
 
         LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue(layers);
@@ -99,7 +88,7 @@ public class SamplingIndex implements AnalysisIndexService {
         SamplingIndexThread[] it = new SamplingIndexThread[threadcount];
 
         for (i = 0; i < threadcount; i++) {
-            it[i] = new SamplingIndexThread(lbq);
+            it[i] = new SamplingIndexThread(lbq, index_path, points);
         }
 
         System.out.println("Start SamplingIndex.build_all (" + threadcount + " threads): " + System.currentTimeMillis());
@@ -130,7 +119,6 @@ public class SamplingIndex implements AnalysisIndexService {
      * @param layername name of the layer to update as String.  To update
      * all layers use null.
      */
-    @Override
     public void layersUpdate(String layername) {
         System.out.println("layersUpdate:" + layername);
 
@@ -147,24 +135,11 @@ public class SamplingIndex implements AnalysisIndexService {
     }
 
     /**
-     * method to determine if the index is up to date
-     *
-     * @return true if index is up to date
-     */
-    @Override
-    public boolean isUpdated() {
-        return true;
-    }
-
-    /**
      * joins sorted points to GridFiles
      *
      * TODO: load groups of whole rasters at a time
      */
     void intersectGrid(String layername) {
-        /* load points, sorted */
-        double[][] points = null;
-
         int i;
 
         /* for each grid file intersect and export in points order */
@@ -174,9 +149,6 @@ public class SamplingIndex implements AnalysisIndexService {
             if (layername != null
                     && !layername.equalsIgnoreCase(TabulationSettings.environmental_data_files[i].name)) {
                 continue;
-            }
-            if (points == null) {
-                points = OccurrencesIndex.getPointsPairs();
             }
 
             layer = TabulationSettings.environmental_data_files[i];
@@ -189,7 +161,7 @@ public class SamplingIndex implements AnalysisIndexService {
 
                 /* export values - RAF for writeDouble() */
                 RandomAccessFile raf = new RandomAccessFile(
-                        TabulationSettings.index_path
+                        index_path
                         + "SAM_D_" + layer.name + ".dat", "rw");
 
                 byte[] b = new byte[values.length * 4];
@@ -218,8 +190,6 @@ public class SamplingIndex implements AnalysisIndexService {
         String tablename;
         String fieldname;
 
-        /* load points in correct order */
-        double[][] points = null;
         int i = 0;
 
         /*
@@ -232,12 +202,6 @@ public class SamplingIndex implements AnalysisIndexService {
                 continue;
             }
 
-            if (points == null) {
-                points = OccurrencesIndex.getPointsPairs();
-
-                SpatialLogger.log("intersectCatagories, points> " + points.length);
-            }
-
             String query = "";
             String longitude = "";
             String latitude = "";
@@ -245,9 +209,15 @@ public class SamplingIndex implements AnalysisIndexService {
             try {
                 tablename = l.name;
 
-                SimpleShapeFile ssf = new SimpleShapeFile(
-                        TabulationSettings.environmental_data_path
-                        + l.name);
+                SimpleShapeFile ssf;
+                //attempt to load pre-indexed shape file
+                File preBuiltShapeFile = new File(TabulationSettings.index_path + l.name);
+                if (preBuiltShapeFile.exists()) {
+                    ssf = new SimpleShapeFile(TabulationSettings.index_path + l.name);
+                } else {
+                    ssf = new SimpleShapeFile(TabulationSettings.environmental_data_path + l.name);
+                }
+
                 SpatialLogger.log("shapefile open: " + l.name);
 
                 /* export catagories
@@ -259,15 +229,22 @@ public class SamplingIndex implements AnalysisIndexService {
                         + CATAGORY_LIST_PREFIX + l.name + "_" + fieldname
                         + CATAGORY_LIST_POSTFIX;
 
-                FileWriter fw = new FileWriter(filename_catagories);
-                int column_idx = ssf.getColumnIdx(fieldname);
+                String[] catagories;
+                int column_idx = 0;
+                if (!preBuiltShapeFile.exists()) {
+                    column_idx = ssf.getColumnIdx(fieldname);
 
-                /* column not found, log and substitute first column */
-                if (column_idx < 0) {
-                    SpatialLogger.log("intersectCatagories, missing col:" + fieldname + " in " + l.name);
+                    /* column not found, log and substitute first column */
+                    if (column_idx < 0) {
+                        SpatialLogger.log("intersectCatagories, missing col:" + fieldname + " in " + l.name);
+                    }
+
+                    catagories = ssf.getColumnLookup(column_idx);
+                } else {
+                    catagories = ssf.getColumnLookup();
                 }
 
-                String[] catagories = ssf.getColumnLookup(column_idx);
+                FileWriter fw = new FileWriter(filename_catagories);
                 for (i = 0; i < catagories.length; i++) {
                     fw.append(catagories[i]);
                     fw.append("\n");
@@ -276,17 +253,26 @@ public class SamplingIndex implements AnalysisIndexService {
 
                 /* export file */
                 RandomAccessFile raf = new RandomAccessFile(
-                        TabulationSettings.index_path
+                        index_path
                         + CATAGORICAL_PREFIX + tablename + VALUE_POSTFIX, "rw");
 
                 //repeat for each point
                 SpatialLogger.log("intersectCatagories, begin intersect: " + points.length);
 
-                int[] values = ssf.intersect(points, catagories, column_idx);
+                int[] values;
+                if (!preBuiltShapeFile.exists()) {
+                    values = ssf.intersect(points, catagories, column_idx);
+                } else {
+                    values = ssf.intersect(points, TabulationSettings.analysis_threads);
+                }
 
                 //save ssf
-                ssf.saveRegion(TabulationSettings.index_path + l.name, column_idx);
-                ssf.saveEachRegion(TabulationSettings.index_path + l.name, column_idx);
+                if (!preBuiltShapeFile.exists()) {
+                    ssf.saveRegion(TabulationSettings.index_path + l.name, column_idx);
+
+                    //TODO: check for region attributes containing intersections
+                    ssf.saveEachRegion(TabulationSettings.index_path + l.name, column_idx);
+                }
 
                 byte[] b = new byte[values.length * 2];
                 ByteBuffer bb = ByteBuffer.wrap(b);
@@ -318,7 +304,7 @@ public class SamplingIndex implements AnalysisIndexService {
      * @param record_end last record to read
      * @return crecords as String []
      */
-    public static String[] getRecords(String layer_name, int record_start, int record_end) {
+    public String[] getRecords(String layer_name, int record_start, int record_end) {
         /*
          * gridded data is 4byte double
          * catagorical data is 4byte int
@@ -327,20 +313,18 @@ public class SamplingIndex implements AnalysisIndexService {
             int i;
 
             /* make filenames */
-            String filenameD = TabulationSettings.index_path
+            String filenameD = index_path
                     + "SAM_D_" + layer_name + ".dat";
-            String filenameI = TabulationSettings.index_path
+            String filenameI = index_path
                     + CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
 
             String[] output = new String[record_end - record_start + 1];
             int p = 0;
 
-            String[] lookup_values = SamplingIndex.getLayerCatagories(
+            String[] lookup_values = getLayerCatagories(
                     Layers.getLayer(layer_name));
-            //System.out.println("lookupvalues=" + lookup_values);
 
             if ((new File(filenameD)).exists()) {
-                //System.out.println("D file found");
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameD, "r");
                 raf.seek(record_start * 4);
@@ -355,7 +339,6 @@ public class SamplingIndex implements AnalysisIndexService {
                 }
                 raf.close();
             } else if ((new File(filenameI)).exists()) {
-                //System.out.println("I file found");
                 /* if continous file name sampling file exists, get values from it */
                 RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
                 raf.seek(record_start * 2);
@@ -363,7 +346,11 @@ public class SamplingIndex implements AnalysisIndexService {
                 for (i = record_start; i <= record_end; i++) {
                     v = raf.readShort();
                     if (v >= 0 && v < lookup_values.length) {
-                        output[p++] = lookup_values[v];
+                        output[p] = lookup_values[v];
+                        if(output[p] != null) {
+                            output[p] = output[p].replace(",",".");
+                        }
+                        p++;
                     } else {
                         output[p++] = "";
                     }
@@ -390,19 +377,19 @@ public class SamplingIndex implements AnalysisIndexService {
      * @param records array of records as int [] to read
      * @return records as String []
      */
-    public static String[] getRecords(String layer_name, int[] records) {
+    public String[] getRecords(String layer_name, int[] records) {
         /*
          * gridded data is 4byte float
          * catagorical data is 4byte int
          */
         try {
 
-            String filenameD = TabulationSettings.index_path
+            String filenameD = index_path
                     + "SAM_D_" + layer_name + ".dat";
-            String filenameI = TabulationSettings.index_path
+            String filenameI = index_path
                     + CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
 
-            ArrayList<String> output = new ArrayList<String>(records.length);
+            String [] output = new String[records.length];
 
             if ((new File(filenameD)).exists()) {
                 /* if continous file name sampling file exists, get values from it */
@@ -413,14 +400,14 @@ public class SamplingIndex implements AnalysisIndexService {
 
                     f = raf.readFloat();
                     if (Float.isNaN(f)) {
-                        output.add("");
+                        output[k] = "";
                     } else {
-                        output.add(String.valueOf(f));
+                        output[k] = String.valueOf(f);
                     }
                 }
                 raf.close();
             } else if ((new File(filenameI)).exists()) {
-                String[] lookup_values = SamplingIndex.getLayerCatagories(
+                String[] lookup_values = getLayerCatagories(
                         Layers.getLayer(layer_name));
 
                 /* if continous file name sampling file exists, get values from it */
@@ -429,21 +416,81 @@ public class SamplingIndex implements AnalysisIndexService {
                     raf.seek(records[k] * 2);
                     short v = raf.readShort();
                     if (v >= 0 && v < lookup_values.length) {
-                        output.add(lookup_values[v]);
+                        output[k] = lookup_values[v];
                     } else {
-                        output.add("");
+                        output[k] = "";
+                    }
+                }
+                raf.close();
+            }
+            return output;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * gets sampling intersection records for a layer from a list
+     * of records
+     *
+     * TODO: read properly - needs a change to the write functions as well
+     *
+     * @param layer layer name as String
+     * @param records array of records as int [] to read
+     * @return records as String []
+     */
+    public int[] getRecordsInt(String layer_name, int[] records) {
+        /*
+         * gridded data is 4byte float
+         * catagorical data is 4byte int
+         */
+        try {
+
+            String filenameD = index_path
+                    + "SAM_D_" + layer_name + ".dat";
+            String filenameI = index_path
+                    + CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
+
+            int [] output = new int[records.length];
+
+            if ((new File(filenameD)).exists()) {
+                /* if continous file name sampling file exists, get values from it */
+                RandomAccessFile raf = new RandomAccessFile(filenameD, "r");
+                for (int k = 0; k < records.length; k++) {
+                    raf.seek(records[k] * 4);
+                    float f;
+
+                    f = raf.readFloat();
+                    if (Float.isNaN(f)) {
+                        output[k] = Integer.MIN_VALUE;
+                    } else {
+                        output[k] = (int) f;
+                    }
+                }
+                raf.close();
+            } else if ((new File(filenameI)).exists()) {
+                String[] lookup_values = getLayerCatagories(
+                        Layers.getLayer(layer_name));
+
+                /* if continous file name sampling file exists, get values from it */
+                RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
+                for (int k = 0; k < records.length; k++) {
+                    raf.seek(records[k] * 2);
+                    short v = raf.readShort();
+                    if (v >= 0 && v < lookup_values.length) {
+                        output[k] = v;
+                    } else {
+                        output[k] = -1;
                     }
                 }
                 raf.close();
             }
 
-            if (output.size() > 0) {
-                String str[] = new String[output.size()];
-                output.toArray(str);
-                return str;
-            }
+            return output;
         } catch (Exception e) {
-            SpatialLogger.log("getRecords", e.toString());
+            e.printStackTrace();
         }
 
         return null;
@@ -455,7 +502,7 @@ public class SamplingIndex implements AnalysisIndexService {
      * @param layer
      * @return
      */
-    static public String[] getLayerCatagories(Layer layer) {
+    public static String[] getLayerCatagories(Layer layer) {
         /* test for valid layer input */
         if (layer == null || layer.fields == null || layer.fields.length < 1) {
             return null;
@@ -480,6 +527,11 @@ public class SamplingIndex implements AnalysisIndexService {
 
                 /* split by new line */
                 String[] lines = str.split("\n");
+                for(int i=0;i<lines.length;i++) {
+                    if(lines[i] != null) {
+                        lines[i] = lines[i].replace(",",".");
+                    }
+                }
                 return lines;
             } catch (Exception e) {
                 SpatialLogger.log("getLayerExtents(" + layer.name + "), catagorical",
@@ -488,63 +540,142 @@ public class SamplingIndex implements AnalysisIndexService {
         }
         return null;
     }
-}
 
-class SamplingIndexThread implements Runnable {
+    /**
+     * determine if a GRD/GRI layer's sampling index is up to date.
+     * 
+     * Compares date of OCC_POINTS.dat and fileName (gri/grd)
+     * with indexed file (CONTINOUS_PREFIX).
+     * 
+     * @param fileName
+     * @return true if up to date
+     */
+    private boolean isUpToDateContinous(String fileName) {
+        //is it continous (grd/gri)
+        File points = new File(index_path + OccurrencesIndex.POINTS_FILENAME);
 
-    Thread t;
-    LinkedBlockingQueue<String> lbq;
-    int step;
-    int[] target;
+        File gri = new File(TabulationSettings.environmental_data_path
+                + fileName + ".gri");
+        File grd = new File(TabulationSettings.environmental_data_path
+                + fileName + ".grd");
 
-    public SamplingIndexThread(LinkedBlockingQueue<String> lbq_) {
-        t = new Thread(this);
-        lbq = lbq_;
-        t.start();
+        //extension case alternative
+        if (!gri.exists()) {
+            gri = new File(TabulationSettings.environmental_data_path
+                    + fileName + ".GRI");
+        }
+        if (!grd.exists()) {
+            grd = new File(TabulationSettings.environmental_data_path
+                    + fileName + ".GRD");
+        }
+
+        File indexed = new File(index_path + CONTINOUS_PREFIX + fileName + VALUE_POSTFIX);
+
+        if (points.exists() && gri.exists() && grd.exists() && indexed.exists()) {
+            return indexed.lastModified() > points.lastModified()
+                    && indexed.lastModified() > gri.lastModified()
+                    && indexed.lastModified() > grd.lastModified();
+        }
+
+        return false;
     }
 
-    public void run() {
+    /**
+     * determine if a SHP/DBF layer's sampling index is up to date.
+     *
+     * Compares date of OCC_POINTS.dat and fileName (shp/dbf)
+     * with indexed file (CATAGORICAL_PREFIX and CATAGORY_LIST_PREFIX).
+     *
+     * @param fileName
+     * @return true if up to date
+     */
+    private boolean isUpToDateCatagorical(String fileName) {
+        //is it continous (grd/gri)
+        File points = new File(index_path + OccurrencesIndex.POINTS_FILENAME);
 
-        int i, idx;
-        int hits = 0;
+        File shp = new File(TabulationSettings.environmental_data_path
+                + fileName + ".shp");
+        File dbf = new File(TabulationSettings.environmental_data_path
+                + fileName + ".dbf");
 
-        /* get next batch */
-        String next;
+        //extension case alternative
+        if (!shp.exists()) {
+            shp = new File(TabulationSettings.environmental_data_path
+                    + fileName + ".SHP");
+        }
+        if (!dbf.exists()) {
+            dbf = new File(TabulationSettings.environmental_data_path
+                    + fileName + ".DBF");
+        }
+
+        File indexedA = new File(index_path + CATAGORICAL_PREFIX + fileName + VALUE_POSTFIX);
+
+        if (points.exists() && shp.exists() && dbf.exists() && indexedA.exists()) {
+            return indexedA.lastModified() > points.lastModified()
+                    && indexedA.lastModified() > shp.lastModified()
+                    && indexedA.lastModified() > dbf.lastModified();
+        }
+
+        return false;
+    }
+
+    /**
+     * gets sampling intersection records for a layer from a list
+     * of records
+     *
+     * TODO: read properly - needs a change to the write functions as well
+     *
+     * @param layer layer name as String
+     * @param records array of records as int [] to read
+     * @return records as float []
+     */
+    public float[] getRecordsFloat(String layer_name, int[] records) {
+        /*
+         * gridded data is 4byte float
+         * catagorical data is 4byte int
+         */
         try {
-            synchronized (lbq) {
-                if (lbq.size() > 0) {
-                    next = lbq.take();
-                } else {
-                    next = null;
+
+            float[] data = new float[records.length];
+            int pos = 0;
+
+            String filenameD = index_path
+                    + "SAM_D_" + layer_name + ".dat";
+            String filenameI = index_path
+                    + CATAGORICAL_PREFIX + layer_name + VALUE_POSTFIX;
+
+            ArrayList<String> output = new ArrayList<String>(records.length);
+
+            if ((new File(filenameD)).exists()) {
+                /* if continous file name sampling file exists, get values from it */
+                RandomAccessFile raf = new RandomAccessFile(filenameD, "r");
+                for (int k = 0; k < records.length; k++) {
+                    raf.seek(records[k] * 4);
+                    float f;
+
+                    f = raf.readFloat();
+                    data[k] = f;
                 }
+                raf.close();
+            } else if ((new File(filenameI)).exists()) {
+//                String[] lookup_values = getLayerCatagories(
+//                        Layers.getLayer(layer_name));
+
+                /* if continous file name sampling file exists, get values from it */
+                RandomAccessFile raf = new RandomAccessFile(filenameI, "r");
+                for (int k = 0; k < records.length; k++) {
+                    raf.seek(records[k] * 2);
+                    short v = raf.readShort();
+                    data[k] = v;
+                }
+                raf.close();
             }
 
-            System.out.println("A*: " + next);
-
-            SamplingIndex si = new SamplingIndex();
-
-            while (next != null) {
-                /* update for this layer */
-                si.layersUpdate(next);
-
-                /* report */
-                System.out.println("D*: " + next);
-
-                /* get next available */
-                synchronized (lbq) {
-                    if (lbq.size() > 0) {
-                        next = lbq.take();
-                    } else {
-                        next = null;
-                    }
-                }
-            }
+            return data;
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
 
-    public boolean isAlive() {
-        return t.isAlive();
+        return null;
     }
 }

@@ -4,15 +4,12 @@
  */
 package org.ala.spatial.analysis.cluster;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -73,11 +70,7 @@ public class SpatialCluster3 {
         int x2 = convertLngToPixel(lng2);
         int y2 = convertLatToPixel(lat2);
 
-        //int distance = (int) (Math.sqrt(Math.pow((x1 - x2), 2)) + Math.sqrt(Math.pow((y1 - y2), 2)));
         int distance = (int) Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
-
-        //System.out.println(x1 + ", " + y1 + " -> " + x2 + ", " + y2);
-        //System.out.println("distance: " + distance + " >> " + (distance >> (map_zoom - zoom)));
 
         return distance >> (map_zoom - zoom);
 
@@ -117,7 +110,6 @@ public class SpatialCluster3 {
                 if (pixel_distance < cluster_distance) {
                     cluster.add(r2);
                     removed[j] = true;
-                } else {
                 }
             }
 
@@ -266,16 +258,11 @@ public class SpatialCluster3 {
                     ilat[k] = convertLatToPixel(qlat[k]);
                 }
                 int a = large[0], b = large[1], c = rlarge;
-                //long d = 2*(ilong[a]*(ilat[b]-ilat[c]) + ilong[b]*(ilat[c] - ilat[a]) + ilong[c]*(ilat[a] - ilat[b]));
-                //long x = ((ilat[a]*ilat[a] + ilong[a]*ilong[a])*(ilat[b]-ilat[c]) + (ilat[b]*ilat[b] + ilong[b]*ilong[b])*(ilat[c] - ilat[a]) + (ilat[c]*ilat[c] + ilong[c]*ilong[c])*(ilat[a]-ilat[b])) / d;
-                //long y = ((ilat[a]*ilat[a] + ilong[a]*ilong[a])*(ilong[c]-ilong[b]) + (ilat[b]*ilat[b] + ilong[b]*ilong[b])*(ilong[a] - ilong[c]) + (ilat[c]*ilat[c] + ilong[c]*ilong[c])*(ilong[b] - ilong[a])) / d;
-                //global_centroids[i][0] = convertPixelToLng((int)x);
-                //global_centroids[i][1] = convertPixelToLat((int)y);
 
                 try {
                     //line ab and tangent at midpoint
                     double m1 = (ilat[a] - ilat[b]) / (double) (ilong[a] - ilong[b]);
-                    double b1 = ilat[a] - m1 * ilong[a];
+                    //double b1 = ilat[a] - m1 * ilong[a];
                     double t1x = (ilong[a] + ilong[b]) / 2.0;
                     double t1y = (ilat[a] + ilat[b]) / 2.0;
                     double m2 = -1 / m1;
@@ -283,7 +270,7 @@ public class SpatialCluster3 {
 
                     //line ac and tangent at midpoint
                     double m3 = (ilat[a] - ilat[c]) / (double) (ilong[a] - ilong[c]);
-                    double b3 = ilat[a] - m3 * ilong[a];
+                    //double b3 = ilat[a] - m3 * ilong[a];
                     double t2x = (ilong[a] + ilong[c]) / 2.0;
                     double t2y = (ilat[a] + ilat[c]) / 2.0;
                     double m4 = -1 / m3;
@@ -324,7 +311,10 @@ public class SpatialCluster3 {
                     radius = dist;
                 }
                 try {
-                    u = Integer.parseInt(((Record) o).getUncertainity());
+                    u = (((Record) o).getUncertainity());
+                    if (u == Integer.MIN_VALUE) {
+                        u = 10000;
+                    }
                 } catch (Exception e) {
                     u = 10000;
                 }
@@ -339,48 +329,17 @@ public class SpatialCluster3 {
             if (radius < current_min_distance) {
                 radius = current_min_distance;
             }
-            if(uncertainty < radius){
+            if (uncertainty < radius) {
                 uncertainty = radius;
             }
-            
-            //adjustment for top lat
-            /*
-            int px = convertLatToPixel(global_centroids[i][1]);
-            double r = radius;
-            px -= ((int)r) << (map_zoom - current_zoom);
-            double lat = convertPixelToLat(px);
-            int dist = planeDistance(global_centroids[i][1], 0, lat, 0, current_zoom);
-            while(dist <= radius){
-                px -= 1 << (map_zoom - current_zoom);
-                r++;
-                lat = convertPixelToLat(px);
-                dist = planeDistance(global_centroids[i][1], 0, lat, 0, current_zoom);
-            }
 
-            px = convertLngToPixel(global_centroids[i][0]);
-            px -= ((int)r) << (map_zoom - current_zoom);
-            double lng = convertPixelToLng(px);
-            dist = planeDistance(lat, global_centroids[i][0], lat, lng, current_zoom);
-            while(dist <= radius){
-                px -= 1 << (map_zoom - current_zoom);
-                r++;
-                lng = convertPixelToLng(px);
-                dist = planeDistance(lat, global_centroids[i][0], lat, lng, current_zoom);
-            }
-            if(uncertainty < dist){
-                uncertainty = dist;
-            }
-
-            double m1 = convertPixelsToMeters((int) Math.ceil(uncertainty+1), lat, current_zoom);
-            double m2 = convertPixelsToMeters((int) Math.ceil(r+1), lat, current_zoom);
-*/
             global_radius[i] = radius;
-            global_uncertainty[i] = convertPixelsToMeters((int) Math.ceil(uncertainty+1), global_centroids[i][1], current_zoom);//Math.max(m1,m2);;
+            global_uncertainty[i] = convertPixelsToMeters((int) Math.ceil(uncertainty + 1), global_centroids[i][1], current_zoom);//Math.max(m1,m2);;
         }
     }
 
     void makeDensity() {
-        double max_density = Double.MAX_VALUE*-1;
+        double max_density = Double.MAX_VALUE * -1;
         double min_density = Double.MAX_VALUE;
         global_density = new double[global_clusters.size()];
         for (int i = 0; i < global_clusters.size(); i++) {
@@ -421,41 +380,41 @@ public class SpatialCluster3 {
 //            dataPoints.add(new Record("6", "6", 24.756681, 59.434776));
             //dataPoints.add(new Record("", "", ));
 
-            dataPoints.add(new Record("192091618", "Acacia abrupta", 129.251, -24.8819, "10"));
-            dataPoints.add(new Record("192091619", "Acacia abrupta", 129.235, -24.8819, "10"));
-            dataPoints.add(new Record("192091620", "Acacia abrupta", 129.318, -22.5819, "10"));
-            dataPoints.add(new Record("192091621", "Acacia abrupta", 131.641, -24.2806, "10"));
-            dataPoints.add(new Record("192091622", "Acacia abrupta", 129.798, -22.9586, "10"));
-            dataPoints.add(new Record("192091623", "Acacia abrupta", 132.317, -24.5333, "10"));
-            dataPoints.add(new Record("192091624", "Acacia abrupta", 131.585, -24.2819, "10"));
-            dataPoints.add(new Record("192091625", "Acacia abrupta", 129.051, -24.8486, "10"));
-            dataPoints.add(new Record("192091626", "Acacia abrupta", 129.285, -24.7153, "10"));
-            dataPoints.add(new Record("192091627", "Acacia abrupta", 131.353, -25.2163, "10"));
-            dataPoints.add(new Record("192091628", "Acacia abrupta", 130.151, -23.7908, "10"));
-            dataPoints.add(new Record("192091629", "Acacia abrupta", 129.018, -24.6486, "10"));
-            dataPoints.add(new Record("192091630", "Acacia abrupta", 129.585, -24.6986, "10"));
-            dataPoints.add(new Record("192091631", "Acacia abrupta", 127.918, -25.4986, "10"));
-            dataPoints.add(new Record("192091632", "Acacia abrupta", 130.951, -23.7319, "10"));
-            dataPoints.add(new Record("192091633", "Acacia abrupta", 129.268, -24.9153, "10"));
-            dataPoints.add(new Record("192091634", "Acacia abrupta", 131.185, -25.3486, "10"));
-            dataPoints.add(new Record("192091635", "Acacia abrupta", 131.635, -24.2819, "10"));
-            dataPoints.add(new Record("192091636", "Acacia abrupta", 129.249, -24.8844, "10"));
-            dataPoints.add(new Record("192091637", "Acacia abrupta", 119.353, -26.6, "10"));
-            dataPoints.add(new Record("192091638", "Acacia abrupta", 130.551, -25.0986, "10"));
-            dataPoints.add(new Record("192091639", "Acacia abrupta", 130.135, -25.0819, "10"));
-            dataPoints.add(new Record("192091640", "Acacia abrupta", 131.318, -23.8319, "10"));
-            dataPoints.add(new Record("192091641", "Acacia abrupta", 129.268, -24.8819, "10"));
-            dataPoints.add(new Record("192091642", "Acacia abrupta", 130.101, -25.0819, "10"));
-            dataPoints.add(new Record("192091643", "Acacia abrupta", 130.168, -24.5986, "10"));
-            dataPoints.add(new Record("192091644", "Acacia abrupta", 130.101, -25.0653, "10"));
-            dataPoints.add(new Record("192091645", "Acacia abrupta", 125.635, -26.4487, "10"));
-            dataPoints.add(new Record("192091646", "Acacia abrupta", 129.251, -24.8986, "10"));
-            dataPoints.add(new Record("192091647", "Acacia abrupta", 128.201, -24.9319, "10"));
-            dataPoints.add(new Record("192091648", "Acacia abrupta", 130.803, -24.1192, "10"));
-            dataPoints.add(new Record("192091649", "Acacia abrupta", 128.911, -23.8942, "10"));
-            dataPoints.add(new Record("192091650", "Acacia abrupta", 131.626, -24.3015, "10"));
-            dataPoints.add(new Record("192091651", "Acacia abrupta", 129.289, -24.4514, "10"));
-            dataPoints.add(new Record("192091652", "Acacia abrupta", 127.583, -24.7667, "10"));
+            dataPoints.add(new Record(192091618, "Acacia abrupta", 129.251, -24.8819, 10));
+            dataPoints.add(new Record(192091619, "Acacia abrupta", 129.235, -24.8819, 10));
+            dataPoints.add(new Record(192091620, "Acacia abrupta", 129.318, -22.5819, 10));
+            dataPoints.add(new Record(192091621, "Acacia abrupta", 131.641, -24.2806, 10));
+            dataPoints.add(new Record(192091622, "Acacia abrupta", 129.798, -22.9586, 10));
+            dataPoints.add(new Record(192091623, "Acacia abrupta", 132.317, -24.5333, 10));
+            dataPoints.add(new Record(192091624, "Acacia abrupta", 131.585, -24.2819, 10));
+            dataPoints.add(new Record(192091625, "Acacia abrupta", 129.051, -24.8486, 10));
+            dataPoints.add(new Record(192091626, "Acacia abrupta", 129.285, -24.7153, 10));
+            dataPoints.add(new Record(192091627, "Acacia abrupta", 131.353, -25.2163, 10));
+            dataPoints.add(new Record(192091628, "Acacia abrupta", 130.151, -23.7908, 10));
+            dataPoints.add(new Record(192091629, "Acacia abrupta", 129.018, -24.6486, 10));
+            dataPoints.add(new Record(192091630, "Acacia abrupta", 129.585, -24.6986, 10));
+            dataPoints.add(new Record(192091631, "Acacia abrupta", 127.918, -25.4986, 10));
+            dataPoints.add(new Record(192091632, "Acacia abrupta", 130.951, -23.7319, 10));
+            dataPoints.add(new Record(192091633, "Acacia abrupta", 129.268, -24.9153, 10));
+            dataPoints.add(new Record(192091634, "Acacia abrupta", 131.185, -25.3486, 10));
+            dataPoints.add(new Record(192091635, "Acacia abrupta", 131.635, -24.2819, 10));
+            dataPoints.add(new Record(192091636, "Acacia abrupta", 129.249, -24.8844, 10));
+            dataPoints.add(new Record(192091637, "Acacia abrupta", 119.353, -26.6, 10));
+            dataPoints.add(new Record(192091638, "Acacia abrupta", 130.551, -25.0986, 10));
+            dataPoints.add(new Record(192091639, "Acacia abrupta", 130.135, -25.0819, 10));
+            dataPoints.add(new Record(192091640, "Acacia abrupta", 131.318, -23.8319, 10));
+            dataPoints.add(new Record(192091641, "Acacia abrupta", 129.268, -24.8819, 10));
+            dataPoints.add(new Record(192091642, "Acacia abrupta", 130.101, -25.0819, 10));
+            dataPoints.add(new Record(192091643, "Acacia abrupta", 130.168, -24.5986, 10));
+            dataPoints.add(new Record(192091644, "Acacia abrupta", 130.101, -25.0653, 10));
+            dataPoints.add(new Record(192091645, "Acacia abrupta", 125.635, -26.4487, 10));
+            dataPoints.add(new Record(192091646, "Acacia abrupta", 129.251, -24.8986, 10));
+            dataPoints.add(new Record(192091647, "Acacia abrupta", 128.201, -24.9319, 10));
+            dataPoints.add(new Record(192091648, "Acacia abrupta", 130.803, -24.1192, 10));
+            dataPoints.add(new Record(192091649, "Acacia abrupta", 128.911, -23.8942, 10));
+            dataPoints.add(new Record(192091650, "Acacia abrupta", 131.626, -24.3015, 10));
+            dataPoints.add(new Record(192091651, "Acacia abrupta", 129.289, -24.4514, 10));
+            dataPoints.add(new Record(192091652, "Acacia abrupta", 127.583, -24.7667, 10));
 
 
 

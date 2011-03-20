@@ -4,16 +4,13 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,15 +21,20 @@ import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
 import org.ala.spatial.analysis.heatmap.HeatMap;
 import org.ala.spatial.analysis.index.IndexedRecord;
-import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
+import org.ala.spatial.analysis.index.OccurrencesFilter;
+import org.ala.spatial.analysis.index.SpeciesColourOption;
+import org.ala.spatial.analysis.legend.Legend;
+import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.Species;
+import org.ala.spatial.util.AndRegion;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialLogger;
@@ -56,11 +58,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
  *  - data provider id
  *  - dataset id
  *
- * eg: 
+ * eg:
  *  http://localhost:8080/alaspatial/ws/density/map?species_lsid=urn:lsid:biodiversity.org.au:apni.taxon:295866
  *  http://localhost:8080/alaspatial/ws/density/map?institution_code=WAM&collection_code=MAMM&collection_code=ARACH
  *
- * 
+ *
  * @author ajay
  */
 @Controller
@@ -96,16 +98,12 @@ public class WMSController {
         Map output = new HashMap();
         boolean isHeatmap = true;
 
-        HttpSession session = request.getSession();
-
-        TabulationSettings.load();
-
         String area = "";
         area += "POLYGON((";
         area += "110.911 -44.778,";
         area += "110.911 -9.221,";
         area += "156.113 -9.221,";
-        area += "156.113  -44.778,";
+        area += "156.113 -44.778,";
         area += "110.911 -44.778";
         area += "))";
         SimpleRegion region = SimpleShapeFile.parseWKT(area);
@@ -155,39 +153,41 @@ public class WMSController {
                     SpatialLogger.log("Starting out search for: " + lsid);
 
                     //     IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(vtn.getScientificname());
-                    IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
-                    if (ir != null) {
-                        if (ir != null) {
-                            double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
-
-                            System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
-                            //HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());
-                            HeatMap hm = new HeatMap(baseDir, lsid.replace(":", "_"));
-                            if ((points.length / 2) < 500) {
-                                hm.generatePoints(points);
-                                hm.drawOuput(outputfile, false);
-                                isHeatmap=false;
-                            } else {
-                                hm.generateClasses(points);
-                                hm.drawOuput(outputfile, true);
-                                isHeatmap=true;
-                            }
-
-                            //msg = baseOutUrl + lsid.replace(":", "_") + ".png";
-                            //output = generateOutput(baseOutUrl + lsid.replace(":", "_") + ".png", baseOutUrl + "legend_" + lsid.replace(":", "_") + ".png", isHeatmap);
-                            output = generateOutput(lsid.replace(":", "_") + ".png", "legend_" + lsid.replace(":", "_") + ".png", ((isHeatmap) ? "heatmap" : "points")); 
-                            System.out.println("Sending out: " + msg);
-
+                    //IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
+                    //if (ir != null) {
+                    //    if (ir != null) {
+                    //        double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
+                    SamplingService ss = SamplingService.newForLSID(lsid);
+                    double[] points = ss.sampleSpeciesPoints(lsid, region, null);
+                    if (points != null && points.length > 0) {
+                        System.out.println("HeatMap.baseDir: " + baseDir.getAbsolutePath());
+                        //HeatMap hm = new HeatMap(baseDir, vtn.getScientificname());
+                        HeatMap hm = new HeatMap(baseDir, lsid.replace(":", "_"));
+                        if ((points.length / 2) < 500) {
+                            hm.generatePoints(points);
+                            hm.drawOuput(outputfile, false);
+                            isHeatmap = false;
                         } else {
-                            //msg = "No species";
-                            //msg = baseOutUrl + "base/mapaus1_white.png";
-                            output = generateOutput("base/mapaus1_white.png", "", "blank");
-                            System.out.println("Empty filter species");
+                            hm.generateClasses(points);
+                            hm.drawOuput(outputfile, true);
+                            isHeatmap = true;
                         }
+
+                        //msg = baseOutUrl + lsid.replace(":", "_") + ".png";
+                        //output = generateOutput(baseOutUrl + lsid.replace(":", "_") + ".png", baseOutUrl + "legend_" + lsid.replace(":", "_") + ".png", isHeatmap);
+                        output = generateOutput(lsid.replace(":", "_") + ".png", "legend_" + lsid.replace(":", "_") + ".png", ((isHeatmap) ? "heatmap" : "points"));
+                        System.out.println("Sending out: " + msg);
+
                     } else {
+                        //msg = "No species";
                         //msg = baseOutUrl + "base/mapaus1_white.png";
                         output = generateOutput("base/mapaus1_white.png", "", "blank");
+                        System.out.println("Empty filter species");
                     }
+                    //} else {
+                    //msg = baseOutUrl + "base/mapaus1_white.png";
+                    //    output = generateOutput("base/mapaus1_white.png", "", "blank");
+                    // }
 
 //                    SpatialLogger.log("Looking for " + lsid + " within region: " + area);
 //                    SamplingService ss = SamplingService.newForLSID(lsid);
@@ -235,7 +235,7 @@ public class WMSController {
                 //IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(spname);
                 IndexedRecord[] ir = null;
                 if (ir != null) {
-                    double[] points = OccurrencesIndex.getPoints(ir[0].record_start, ir[0].record_end);
+                    double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(spname, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
 
                     SpatialLogger.log("HeatMap.baseDir: " + baseDir.getAbsolutePath());
                     HeatMap hm = new HeatMap(baseDir, spname);
@@ -301,72 +301,14 @@ public class WMSController {
         } catch (Exception ex) {
             Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
         }
-//        try {
-//            response.sendRedirect(msg);
-//        } catch (IOException ex) {
-//            Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
-//        }
 
         return output;
-    }
-
-    private int[] joinIntArrays(int[] a, int[] b) {
-        try {
-
-            int[] finalArray = Arrays.copyOf(a, a.length + b.length);
-            System.arraycopy(b, 0, finalArray, a.length, b.length);
-            return finalArray;
-        } catch (Exception e) {
-            System.out.println("Error joining arrays: ");
-            e.printStackTrace(System.out);
-        }
-
-        return null;
-    }
-
-    private void writeToFile(String filename, int[] data) {
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(filename));
-            for (int i = 0; i < data.length; i++) {
-                out.write(data[i] + "\n");
-            }
-
-            out.close();
-        } catch (IOException e) {
-        }
-    }
-
-    private int[] getMatchingRecs(int[] source, int[] subset) {
-        try {
-            int[] tmpArray = new int[source.length];
-            int count = 0;
-
-            for (int i = 0; i < subset.length; i++) {
-                if (Arrays.binarySearch(source, subset[i]) > 0) {
-                    tmpArray[count] = subset[i];
-                    count++;
-                }
-            }
-
-            SpatialLogger.log("final count: " + count);
-
-            int[] finalArray = new int[count];
-            System.arraycopy(tmpArray, 0, finalArray, 0, finalArray.length);
-            return finalArray;
-
-        } catch (Exception e) {
-            System.out.println("Error getting matching records:");
-            e.printStackTrace(System.out);
-        }
-
-        return null;
     }
 
     private Map process(File baseDir, String key, String value) {
         String msg = "";
         Map output = new HashMap();
         boolean isHeatmap = true;
-        //String baseOutUrl = TabulationSettings.base_output_url + "/output/sampling/";
 
         String outputfile = baseDir + File.separator + value + ".png";
         SpatialLogger.log("Checking if already present: " + outputfile);
@@ -379,17 +321,12 @@ public class WMSController {
         } else {
             SpatialLogger.log("Starting out search for: " + value);
             //msg = "generating density data_provider_id map for: " + value;
-            int[] recs = OccurrencesIndex.lookup(key, value);
+            ArrayList<OccurrenceRecordNumbers> recs = OccurrencesCollection.lookup(key, value);
             if (recs != null) {
-                int[] finalRecs = recs;
+                ArrayList<OccurrenceRecordNumbers> finalRecs = recs;
 
-                double[][] pts = OccurrencesIndex.getPointsPairs();
+                double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(recs, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
 
-                double[] points = new double[finalRecs.length * 2];
-                for (int i = 0; i < finalRecs.length * 2; i += 2) {
-                    points[i] = pts[finalRecs[i / 2]][0];
-                    points[i + 1] = pts[finalRecs[i / 2]][1];
-                }
                 SpatialLogger.log("HeatMap.baseDir: " + baseDir.getAbsolutePath());
                 HeatMap hm = new HeatMap(baseDir, value);
                 if ((points.length / 2) < 500) {
@@ -435,7 +372,7 @@ public class WMSController {
         // check if the legend file exists,
         // if so, then its a heatmap
         // else it's a point map
-        if (legUrl.equalsIgnoreCase("check")) {
+        if (type.equalsIgnoreCase("check")) {
             String legfile = baseDir + File.separator + "legend_" + mapUrl;
             File legFile = new File(legfile);
             if (legFile.exists()) {
@@ -547,7 +484,7 @@ public class WMSController {
     System.out.print("generating density map for: " + family_lsid);
     return "generating density map for: " + family_lsid;
     }
-     * 
+     *
      */
     public static void main(String[] args) {
     }
@@ -575,15 +512,20 @@ public class WMSController {
             @RequestParam(value = "HEIGHT", required = false, defaultValue = "") String heightString,
             HttpServletRequest request, HttpServletResponse response) {
 
-        response.setHeader("Cache-Control", "max-age=86400");   //age == 1 day
-        response.setContentType("image/png");    //only png images generated
+        //grid redirect
+        if(env.contains("grid")) {
+            getGridMap(cql_filter, env, bboxString, widthString, heightString,request, response);
+            return;
+        }
+
+        response.setHeader("Cache-Control", "max-age=86400"); //age == 1 day
+        response.setContentType("image/png"); //only png images generated
 
         int width = 256, height = 256;
         try {
             width = Integer.parseInt(widthString);
             height = Integer.parseInt(heightString);
         } catch (Exception e) {
-            System.out.println(request.getRequestURI());
             e.printStackTrace();
         }
 
@@ -596,10 +538,12 @@ public class WMSController {
         String name = "circle";
         int size = 4;
         boolean uncertainty = false;
+        String highlight = null;
+        String colourMode = null;
         for (String s : env.split(";")) {
             String[] pair = s.split(":");
             if (pair[0].equals("color")) {
-                while(pair[1].length() < 6){
+                while (pair[1].length() < 6) {
                     pair[1] = "0" + pair[1];
                 }
                 red = Integer.parseInt(pair[1].substring(0, 2), 16);
@@ -613,6 +557,10 @@ public class WMSController {
                 alpha = (int) (255 * Double.parseDouble(pair[1]));
             } else if (pair[0].equals("uncertainty")) {
                 uncertainty = true;
+            } else if (pair[0].equals("sel")) {
+                highlight = pair[1];
+            } else if (pair[0].equals("colormode")) {
+                colourMode = pair[1];
             }
         }
 
@@ -624,24 +572,23 @@ public class WMSController {
                 bbox[i] = Double.parseDouble(s);
                 i++;
             } catch (Exception e) {
-                System.out.println(request.getRequestURI());
                 e.printStackTrace();
             }
         }
 
-        //adjust bbox extents with half pixel width/height
+//adjust bbox extents with half pixel width/height
         double pixelWidth = (bbox[2] - bbox[0]) / width;
         double pixelHeight = (bbox[3] - bbox[1]) / height;
-        bbox[0] += pixelWidth/2;
-        bbox[2] -= pixelWidth/2;
-        bbox[1] += pixelHeight/2;
-        bbox[3] -= pixelHeight/2;
+        bbox[0] += pixelWidth / 2;
+        bbox[2] -= pixelWidth / 2;
+        bbox[1] += pixelHeight / 2;
+        bbox[3] -= pixelHeight / 2;
 
-        //offset for points bounding box by size
+//offset for points bounding box by size
         double xoffset = (bbox[2] - bbox[0]) / (double) width * size;
         double yoffset = (bbox[3] - bbox[1]) / (double) height * size;
 
-        //check offset for points bb by maximum uncertainty (?? 30k ??)
+//check offset for points bb by maximum uncertainty (?? 30k ??)
         if (uncertainty) {
             double xuoffset = 30000;
             double yuoffset = 30000;
@@ -653,7 +600,7 @@ public class WMSController {
             }
         }
 
-        //adjust offset for pixel height/width
+//adjust offset for pixel height/width
         xoffset += pixelWidth;
         yoffset += pixelHeight;
 
@@ -661,7 +608,7 @@ public class WMSController {
         SimpleRegion region = new SimpleRegion();
         region.setBox(sc.convertMetersToLng(bbox[0] - xoffset), sc.convertMetersToLat(bbox[1] - yoffset), sc.convertMetersToLng(bbox[2] + xoffset), sc.convertMetersToLat(bbox[3] + yoffset));
 
-        double [] pbbox = new double[4]; //pixel bounding box
+        double[] pbbox = new double[4]; //pixel bounding box
         pbbox[0] = sc.convertLngToPixel(sc.convertMetersToLng(bbox[0]));
         pbbox[1] = sc.convertLatToPixel(sc.convertMetersToLat(bbox[1]));
         pbbox[2] = sc.convertLngToPixel(sc.convertMetersToLng(bbox[2]));
@@ -669,89 +616,129 @@ public class WMSController {
 
         String lsid = null;
         SimpleRegion r = null;
+        ArrayList<OccurrenceRecordNumbers> records = null;
         int p1 = cql_filter.indexOf("id='") + 4;
-        if(p1 > 4) {
+        if (p1 > 4) {
             int p2 = cql_filter.indexOf('\'', p1 + 1);
             lsid = cql_filter.substring(p1, p2);
         } else { //expect area=' for SimpleRegion construction
             p1 = cql_filter.indexOf("area='") + 6;
             int p2 = cql_filter.indexOf('\'', p1 + 1);
-            r = SimpleShapeFile.parseWKT(cql_filter.substring(p1, p2));
+            String a = cql_filter.substring(p1, p2);
+            if (a != null && a.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(a);
+            } else {
+                r = SimpleShapeFile.parseWKT(a);
+            }
+            if (r != null) {
+                AndRegion ar = new AndRegion();
+                ArrayList<SimpleRegion> sr = new ArrayList<SimpleRegion>(2);
+                sr.add(region);
+                sr.add(r);
+                ar.setSimpleRegions(sr);
+
+                region = ar;
+            }
         }
 
         /* TODO: buffering for sampleSpeciesPoints */
-        double [] points = null;
-        double[] uncertainties = null;
-        short [] uncertaintiesType = null;
-        if(lsid != null) {
+        double[] points = null;
+
+        int[] uncertainties = null;
+        short[] uncertaintiesType = null;
+
+        boolean[] listHighlight = null;
+
+        int[] colours = null;
+
+        if (lsid != null) {
             SamplingService ss = SamplingService.newForLSID(lsid);
-            ArrayList<Object> other = new ArrayList<Object>();
+            ArrayList<SpeciesColourOption> other = new ArrayList<SpeciesColourOption>();
             if (uncertainty) {
-                other.add("u"); //matches <geojson_property_names> for column 'uncertainty'
-                other.add(null);    //placeholder for data
+                other.add(SpeciesColourOption.fromName("u", false));
             }
-            points = ss.sampleSpeciesPoints(lsid, region, null, other);
-            if (uncertainty) {
-                uncertainties = (double[]) other.get(1);
+            if (highlight != null) {
+                other.add(SpeciesColourOption.fromHighlight(highlight, true));
             }
-        } else { //points in 'r'
-            //TODO: create new function for sampling, allowing for 'other' fields
-            Vector<Record> v = OccurrencesIndex.sampleSpeciesForClustering(lsid, r, region, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
-            if(v == null){
+            if (colourMode != null) {
+                other.add(SpeciesColourOption.fromName(colourMode, true));
+            }
+            points = ss.sampleSpeciesPoints(lsid, region, records, other);
+            if (points != null && points.length > 0) {
+                for (int j = 0; j < other.size(); j++) {
+                    if (!other.get(j).isColourMode() && other.get(j).getName().equals("u")) {
+                        uncertainties = other.get(j).getIntArray();
+                    } else if (other.get(j).isHighlight()) {
+                        listHighlight = other.get(j).getBoolArray();
+                    } else {
+                        //colour mode!
+                        colours = other.get(j).getColours(lsid);
+                    }
+                }
+            }
+        } else {
+            //lsid mandatory.
+            //use species/{type}/register service to create 'dummy'
+
+
+//TODO: create new function for sampling, allowing for 'other' fields
+            Vector<Record> v = null;
+            try {
+                v = OccurrencesCollection.getRecords(new OccurrencesFilter(null /*lsid == null*/, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (v == null || v.size() == 0) {
                 points = null;
             } else {
-                if(uncertainty) {
-                    points = new double[v.size()*2];
-                    uncertainties = new double[v.size()];
+                if (uncertainty) {
+                    points = new double[v.size() * 2];
+                    uncertainties = new int[v.size()];
                     uncertaintiesType = new short[v.size()];
-                    for(int j=0;j<v.size();j++){
-                        points[j*2] = v.get(j).getLongitude();
-                        points[j*2+1] = v.get(j).getLatitude();
-                        try {
-                            //cap maximum uncertainty
-                            uncertainties[j] = Double.parseDouble(v.get(j).getUncertainity());
-                        } catch(Exception e){
-                            uncertainties[j] = Double.NaN;
-                        }
+                    for (int j = 0; j < v.size(); j++) {
+                        points[j * 2] = v.get(j).getLongitude();
+                        points[j * 2 + 1] = v.get(j).getLatitude();
+
+                        uncertainties[j] = v.get(j).getUncertainity();
                     }
                 } else {
-                    points = new double[v.size()*2];
-                    for(int j=0;j<v.size();j++){
-                        points[j*2] = v.get(j).getLongitude();
-                        points[j*2+1] = v.get(j).getLatitude();
+                    points = new double[v.size() * 2];
+                    for (int j = 0; j < v.size(); j++) {
+                        points[j * 2] = v.get(j).getLongitude();
+                        points[j * 2 + 1] = v.get(j).getLatitude();
                     }
                 }
             }
         }
 
-        if (points == null) {
-            //TODO: make dynamic instead of fixed 256x256
+        if (points == null || points.length == 0) {
+//TODO: make dynamic instead of fixed 256x256
             setImageBlank(response);
             //System.out.print("[wms blank: " + (System.currentTimeMillis() - start) + "ms]");
             return;
         }
 
 
-        //fix uncertanties to max 30000 and alter colours
-        if(uncertainty) {
+//fix uncertanties to max 30000 and alter colours
+        if (uncertainty) {
             uncertaintiesType = new short[uncertainties.length];
-            for(int j=0;j<uncertainties.length;j++){
-                if(Double.isNaN(uncertainties[j])){
+            for (int j = 0; j < uncertainties.length; j++) {
+                if (Integer.MIN_VALUE == uncertainties[j]) {
                     uncertaintiesType[j] = 1;
                     uncertainties[j] = 30000;
-                } else if(uncertainties[j] > 30000) {
+                } else if (uncertainties[j] > 30000) {
                     uncertaintiesType[j] = 2;
                     uncertainties[j] = 30000;
                 }/* else {
-                    uncertaintiesType[j] = 0;
+                uncertaintiesType[j] = 0;
                 }*/
             }
         }
-        
+
         /* TODO: make this a copy instead of create */
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) img.getGraphics();
-        //g.setClip(-width,-height,width*3,height*3);
+//g.setClip(-width,-height,width*3,height*3);
         g.setColor(new Color(0, 0, 0, 0));
         g.fillRect(0, 0, width, height);
 
@@ -762,50 +749,75 @@ public class WMSController {
         double width_mult = (width / (pbbox[2] - pbbox[0]));
         double height_mult = (height / (pbbox[1] - pbbox[3]));
 
-        //circle type
+//circle type
         if (name.equals("circle")) {
-            for (i = 0; i < points.length; i += 2) {
-                x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-                g.fillOval(x - size, y - size, pointWidth, pointWidth);
+            if (colours == null) {
+                for (i = 0; i < points.length; i += 2) {
+                    x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                    g.fillOval(x - size, y - size, pointWidth, pointWidth);
+                }
+            } else {
+                int prevColour = colours[0] + 1;    //!= colours[0]
+                for (i = 0; i < points.length; i += 2) {
+                    if (colours[i / 2] != prevColour) {
+                        g.setColor(new Color(colours[i / 2]));
+                    }
+                    x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                    g.fillOval(x - size, y - size, pointWidth, pointWidth);
+                }
             }
         }
 
-        //uncertainty
+        if (highlight != null) {
+            g.setColor(new Color(255, 0, 0, alpha));
+            int sz = size + 3;
+            int w = sz * 2;
+            for (i = 0; i < points.length; i += 2) {
+                if (listHighlight[i / 2]) {
+                    x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                    g.drawOval(x - sz, y - sz, w, w);
+                }
+            }
+        }
+
+//uncertainty
         if (uncertainty) {
             int uncertaintyRadius;
 
-            //white, uncertainty value
+//white, uncertainty value
             g.setColor(new Color(255, 255, 255, alpha));
             double hmult = (height / (bbox[3] - bbox[1]));
             for (i = 0; i < points.length; i += 2) {
-                if(uncertaintiesType[i/2] == 0) {
+                if (uncertaintiesType[i / 2] == 0) {
                     x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
                     y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
                     uncertaintyRadius = (int) Math.ceil(uncertainties[i / 2] * hmult);
-                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius*2, uncertaintyRadius*2);
+                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius * 2, uncertaintyRadius * 2);
                 }
             }
 
-            //yellow, undefined uncertainty value
+//yellow, undefined uncertainty value
             g.setColor(new Color(255, 255, 100, alpha));
             uncertaintyRadius = (int) Math.ceil(30000 * hmult);
             for (i = 0; i < points.length; i += 2) {
-                if(uncertaintiesType[i/2] == 1) {
+                if (uncertaintiesType[i / 2] == 1) {
                     x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);                    
-                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius*2, uncertaintyRadius*2);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius * 2, uncertaintyRadius * 2);
                 }
             }
 
-            //green, capped uncertainty value
+//green, capped uncertainty value
             g.setColor(new Color(100, 255, 100, alpha));
             uncertaintyRadius = (int) Math.ceil(30000 * hmult);
             for (i = 0; i < points.length; i += 2) {
-                if(uncertaintiesType[i/2] == 2) {
+                if (uncertaintiesType[i / 2] == 2) {
                     x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);                    
-                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius*2, uncertaintyRadius*2);
+                    y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                    g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius * 2, uncertaintyRadius * 2);
                 }
             }
         }
@@ -820,13 +832,11 @@ public class WMSController {
             outStream.flush();
             outStream.close();
         } catch (IOException ex) {
-            System.out.println(request.getRequestURI());
             Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        //System.out.println("[wms tile: " + (System.currentTimeMillis() - start) + "ms]");
+//System.out.println("[wms tile: " + (System.currentTimeMillis() - start) + "ms]");
     }
-
     //256x256 transparent image
     static Object blankImageObject = new Object();
     static byte[] blankImageBytes = null;
@@ -859,4 +869,185 @@ public class WMSController {
         }
     }
 
+    @RequestMapping(value = "/wms/reflect2", method = RequestMethod.GET)
+    public void getGridMap(
+            @RequestParam(value = "CQL_FILTER", required = false, defaultValue = "") String cql_filter,
+            @RequestParam(value = "ENV", required = false, defaultValue = "") String env,
+            @RequestParam(value = "BBOX", required = false, defaultValue = "") String bboxString,
+            @RequestParam(value = "WIDTH", required = false, defaultValue = "") String widthString,
+            @RequestParam(value = "HEIGHT", required = false, defaultValue = "") String heightString,
+            HttpServletRequest request, HttpServletResponse response) {
+
+        int divs = 8; //number of x & y divisions in the WIDTH/HEIGHT
+
+        response.setHeader("Cache-Control", "max-age=86400"); //age == 1 day
+        response.setContentType("image/png"); //only png images generated
+
+        int width = 256, height = 256;
+        try {
+            width = Integer.parseInt(widthString);
+            height = Integer.parseInt(heightString);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            env = URLDecoder.decode(env, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int red = 0, green = 0, blue = 0, alpha = 0;
+        for (String s : env.split(";")) {
+            String[] pair = s.split(":");
+            if (pair[0].equals("color")) {
+                while (pair[1].length() < 6) {
+                    pair[1] = "0" + pair[1];
+                }
+                red = Integer.parseInt(pair[1].substring(0, 2), 16);
+                green = Integer.parseInt(pair[1].substring(2, 4), 16);
+                blue = Integer.parseInt(pair[1].substring(4), 16);
+            }
+        }
+
+        double[] bbox = new double[4];
+        int i;
+        i = 0;
+        for (String s : bboxString.split(",")) {
+            try {
+                bbox[i] = Double.parseDouble(s);
+                i++;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+//adjust bbox extents with half pixel width/height
+        double pixelWidth = (bbox[2] - bbox[0]) / width;
+        double pixelHeight = (bbox[3] - bbox[1]) / height;
+        bbox[0] += pixelWidth / 2;
+        bbox[2] -= pixelWidth / 2;
+        bbox[1] += pixelHeight / 2;
+        bbox[3] -= pixelHeight / 2;
+
+        SpatialCluster3 sc = new SpatialCluster3();
+        SimpleRegion region = new SimpleRegion();
+        region.setBox(sc.convertMetersToLng(bbox[0]), sc.convertMetersToLat(bbox[1]), sc.convertMetersToLng(bbox[2]), sc.convertMetersToLat(bbox[3]));
+
+        double[] pbbox = new double[4]; //pixel bounding box
+        pbbox[0] = sc.convertLngToPixel(sc.convertMetersToLng(bbox[0]));
+        pbbox[1] = sc.convertLatToPixel(sc.convertMetersToLat(bbox[1]));
+        pbbox[2] = sc.convertLngToPixel(sc.convertMetersToLng(bbox[2]));
+        pbbox[3] = sc.convertLatToPixel(sc.convertMetersToLat(bbox[3]));
+
+        String lsid = null;
+        SimpleRegion r = null;
+        ArrayList<OccurrenceRecordNumbers> records = null;
+        int p1 = cql_filter.indexOf("id='") + 4;
+        if (p1 > 4) {
+            int p2 = cql_filter.indexOf('\'', p1 + 1);
+            lsid = cql_filter.substring(p1, p2);
+        } else { //expect area=' for SimpleRegion construction
+            p1 = cql_filter.indexOf("area='") + 6;
+            int p2 = cql_filter.indexOf('\'', p1 + 1);
+            String a = cql_filter.substring(p1, p2);
+            if (a != null && a.startsWith("ENVELOPE")) {
+                records = FilteringService.getRecords(a);
+            } else {
+                r = SimpleShapeFile.parseWKT(a);
+            }
+            if (r != null) {
+                AndRegion ar = new AndRegion();
+                ArrayList<SimpleRegion> sr = new ArrayList<SimpleRegion>(2);
+                sr.add(region);
+                sr.add(r);
+                ar.setSimpleRegions(sr);
+
+                region = ar;
+            }
+        }
+
+        /* TODO: buffering for sampleSpeciesPoints */
+        double[] points = null;
+
+        if (lsid != null) {
+            SamplingService ss = SamplingService.newForLSID(lsid);
+            points = ss.sampleSpeciesPoints(lsid, region, records, null);
+        } else {
+            //lsid mandatory.
+            //use species/{type}/register service to create 'dummy'
+
+//TODO: create new function for sampling, allowing for 'other' fields
+            Vector<Record> v = null;
+            try {
+                v = OccurrencesCollection.getRecords(new OccurrencesFilter(null /*lsid == null*/, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (v == null || v.size() == 0) {
+                points = null;
+            } else {
+                points = new double[v.size() * 2];
+                for (int j = 0; j < v.size(); j++) {
+                    points[j * 2] = v.get(j).getLongitude();
+                    points[j * 2 + 1] = v.get(j).getLatitude();
+                }
+            }
+        }
+
+        if (points == null || points.length == 0) {
+//TODO: make dynamic instead of fixed 256x256
+            setImageBlank(response);
+            return;
+        }
+
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) img.getGraphics();
+        g.setColor(new Color(0, 0, 0, 0));
+        g.fillRect(0, 0, width, height);
+
+        g.setColor(new Color(red, green, blue, alpha));
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        int x, y;
+        double width_mult = (width / (pbbox[2] - pbbox[0])) / (256/divs);
+        double height_mult = (height / (pbbox[1] - pbbox[3])) / (256/divs);
+
+        //count
+        int [][] gridCounts = new int[divs][divs];
+
+        for (i = 0; i < points.length; i += 2) {
+            x = (int) ((sc.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+            y = (int) ((sc.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+            if(x >= 0 && x < divs && y >= 0 && y < divs) {
+                gridCounts[x][y]++;
+            }
+        }
+        int xstep = 256 / divs;
+        int ystep = 256 / divs;
+        for(x=0;x<divs;x++) {
+            for(y=0;y<divs;y++) {
+                int v = gridCounts[x][y];
+                if(v > 0) {
+                    if(v > 500) v = 500;
+                    int colour = Legend.getLinearColour(v, 0, 500, 0xFFFFFF00, 0xFFFF0000);
+                    g.setColor(new Color(colour));
+                    g.fillRect(x*xstep, y*ystep, xstep, ystep);
+                }
+            }
+        }
+
+        g.dispose();
+
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(img, "png", outputStream);
+            ServletOutputStream outStream = response.getOutputStream();
+            outStream.write(outputStream.toByteArray());
+            outStream.flush();
+            outStream.close();
+        } catch (IOException ex) {
+            Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+//System.out.println("[wms tile: " + (System.currentTimeMillis() - start) + "ms]");
+    }
 }

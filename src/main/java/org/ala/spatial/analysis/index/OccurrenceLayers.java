@@ -8,7 +8,9 @@ import java.io.FileWriter;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.BitSet;
+import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.TabulationSettings;
 
 /**
@@ -31,12 +33,16 @@ public class OccurrenceLayers {
         TabulationSettings.load();
         int[][] actual_grid = new int[TabulationSettings.grd_ncols][TabulationSettings.grd_nrows];
 
-        double[][] points = OccurrencesIndex.getPointsPairs();
+        //region
+        SimpleRegion region = new SimpleRegion();
+        region.setBox(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
+
+        double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(region, Integer.MAX_VALUE));
 
         int x, y;
-        for (int i = 0; i < points.length; i++) {
-            x = (int) Math.floor((points[i][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-            y = (int) Math.floor((points[i][1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
+        for (int i = 0; i < points.length; i += 2) {
+            x = (int) Math.floor((points[i] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
+            y = (int) Math.floor((points[i + 1] - TabulationSettings.grd_ymin) / TabulationSettings.grd_ydiv);
 
             if (x >= 0 && x < TabulationSettings.grd_ncols
                     && y >= 0 && y < TabulationSettings.grd_nrows) {
@@ -59,8 +65,8 @@ public class OccurrenceLayers {
             float max = Float.MAX_VALUE * -1;
             float min = Float.MAX_VALUE;
             float value;
-            for (int j = TabulationSettings.grd_nrows-1; j >= 0; j--) {
-                for (int i = 0; i < TabulationSettings.grd_ncols; i++) { 
+            for (int j = TabulationSettings.grd_nrows - 1; j >= 0; j--) {
+                for (int i = 0; i < TabulationSettings.grd_ncols; i++) {
                     count = 0;
                     sum = 0;
                     xend = Math.min(TabulationSettings.grd_ncols, i + cell_offset + 1);
@@ -73,14 +79,18 @@ public class OccurrenceLayers {
                             count++;
                         }
                     }
-                    value = sum / (float) count;
-                    if (max < value) {
-                        max = value;
+                    if(count == 0) {
+                        bb.putFloat(0);
+                    } else {
+                        value = sum / (float) count;
+                        if (max < value) {
+                            max = value;
+                        }
+                        if (min > value) {
+                            min = value;
+                        }
+                        bb.putFloat(value);
                     }
-                    if (min > value) {
-                        min = value;
-                    }
-                    bb.putFloat(value);
                 }
             }
             raf.write(b);
@@ -103,9 +113,9 @@ public class OccurrenceLayers {
             fw.append("\n\n[Data]\nDataType=FLT4BYTES");
             fw.append("\nMinValue=").append(String.valueOf((int) Math.floor(min)));
             fw.append("\nMaxValue=").append(String.valueOf((int) Math.ceil(max)));
-            fw.append("\nNoDataValue=0");
-            fw.append("\nTransparent=0");
-            fw.append("\nUnits=");
+            fw.append("\nNoDataValue=-9999");
+            //fw.append("\nTransparent=0");
+            //fw.append("\nUnits=");
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,51 +123,54 @@ public class OccurrenceLayers {
     }
 
     public static void makeSpeciesCountLayer(int cell_offset) {
-        TabulationSettings.load();
-        OccurrencesIndex.loadIndexedRecords();
-        OccurrencesIndex.loadSpeciesNumberInRecordsOrderOnly();
-
         int pieces = 10;
         int height = TabulationSettings.grd_nrows / pieces;
 
         float max = Float.MAX_VALUE * -1;
         float min = Float.MAX_VALUE;
-        
-        try {
+
+        try {            
+            ArrayList<SpeciesColourOption> extra = new ArrayList<SpeciesColourOption>();
+            extra.add(SpeciesColourOption.fromName("taxon_name", false)); //request for SpeciesIndex lookup number
+            //region
+            SimpleRegion region = new SimpleRegion();
+            region.setBox(TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax);
+            double[] points = OccurrencesCollection.getPoints(new OccurrencesFilter(region, Integer.MAX_VALUE), extra);
+            int[] speciesLookupNumber = extra.get(0).getIntArray();
+
             RandomAccessFile raf = new RandomAccessFile(
                     TabulationSettings.index_path + "layer_species_av_" + cell_offset + ".gri", "rw");
             int top_height = 0;
-            for(int current_height = 0;current_height < TabulationSettings.grd_nrows; current_height += height){
+            for (int current_height = 0; current_height < TabulationSettings.grd_nrows; current_height += height) {
                 top_height = current_height;
             }
 
-            for(int current_height = top_height;current_height >= 0; current_height -= height){
+            for (int current_height = top_height; current_height >= 0; current_height -= height) {
                 System.out.println("ch:" + current_height);
-                
-                double grd_ymin = Math.max((current_height-cell_offset)*TabulationSettings.grd_ydiv + TabulationSettings.grd_ymin,TabulationSettings.grd_ymin);
+
+                double grd_ymin = Math.max((current_height - cell_offset) * TabulationSettings.grd_ydiv + TabulationSettings.grd_ymin, TabulationSettings.grd_ymin);
                 int grd_nrows = cell_offset * 2 + height;
-                if(grd_nrows > TabulationSettings.grd_nrows){
+                if (grd_nrows > TabulationSettings.grd_nrows) {
                     grd_nrows = TabulationSettings.grd_nrows;
                 }
-                int row_start = (current_height > 0)?cell_offset:0;
-                int row_end = (current_height > 0)?cell_offset+height:height;
+                int row_start = (current_height > 0) ? cell_offset : 0;
+                int row_end = (current_height > 0) ? cell_offset + height : height;
 
                 BitSet[][] actual_grid = new BitSet[TabulationSettings.grd_ncols][grd_nrows];
 
-                double[][] points = OccurrencesIndex.getPointsPairs();
-
                 int x, y;
-                for (int i = 0; i < points.length; i++) {
-                    x = (int) Math.floor((points[i][0] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
-                    y = (int) Math.floor((points[i][1] - grd_ymin) / TabulationSettings.grd_ydiv);
+                for (int i = 0; i < points.length; i += 2) {
+                    x = (int) Math.floor((points[i] - TabulationSettings.grd_xmin) / TabulationSettings.grd_xdiv);
+                    y = (int) Math.floor((points[i + 1] - grd_ymin) / TabulationSettings.grd_ydiv);
 
                     if (x >= 0 && x < TabulationSettings.grd_ncols
                             && y >= 0 && y < grd_nrows) {
                         if (actual_grid[x][y] == null) {
                             actual_grid[x][y] = new BitSet();
                         }
-                        if(OccurrencesIndex.speciesNumberInRecordsOrder[i] >= 0) {
-                            actual_grid[x][y].set(OccurrencesIndex.speciesNumberInRecordsOrder[i]);
+
+                        if (speciesLookupNumber[i / 2] >= 0) {
+                            actual_grid[x][y].set(speciesLookupNumber[i / 2]);
                         }
                     }
                 }
@@ -171,7 +184,7 @@ public class OccurrenceLayers {
                 int count;
                 BitSet sum = new BitSet();
                 float value;
-                for (int j = row_end-1; j >= row_start; j--) {
+                for (int j = row_end - 1; j >= row_start; j--) {
                     for (int i = 0; i < TabulationSettings.grd_ncols; i++) {
                         count = 0;
                         sum.clear();
@@ -181,31 +194,35 @@ public class OccurrenceLayers {
                         ystart = Math.max(j - cell_offset, 0);
                         for (x = xstart; x < xend; x++) {
                             for (y = ystart; y < yend; y++) {
-                                if(actual_grid[x][y] != null){
+                                if (actual_grid[x][y] != null) {
                                     sum.or(actual_grid[x][y]);
-                                    count++;
                                 }
+                                count++;
                             }
                         }
-                        value = countSet(sum) / (float) count;
-                        if (max < value) {
-                            max = value;
+                        if(count == 0) {
+                            bb.putFloat(0);
+                        } else {
+                            value = countSet(sum) / (float) count;
+                            if (max < value) {
+                                max = value;
+                            }
+                            if (min > value) {
+                                min = value;
+                            }
+                            bb.putFloat(value);
                         }
-                        if (min > value) {
-                            min = value;
-                        }
-                        bb.putFloat(value);
                     }
                 }
                 raf.write(b);
-            }            
-            
+            }
+
             raf.close();
-         } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        try{
+        try {
             //header
             FileWriter fw = new FileWriter(
                     TabulationSettings.index_path + "layer_species_av_" + cell_offset + ".grd");
@@ -223,9 +240,9 @@ public class OccurrenceLayers {
             fw.append("\n\n[Data]\nDataType=FLT4BYTES");
             fw.append("\nMinValue=").append(String.valueOf((int) Math.floor(min)));
             fw.append("\nMaxValue=").append(String.valueOf((int) Math.ceil(max)));
-            fw.append("\nNoDataValue=0");
-            fw.append("\nTransparent=0");
-            fw.append("\nUnits=");
+            fw.append("\nNoDataValue=-9999");
+            //fw.append("\nTransparent=0");
+            //fw.append("\nUnits=");
             fw.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -233,7 +250,7 @@ public class OccurrenceLayers {
     }
 
     static int countSet(BitSet bs) {
-        if(bs == null){
+        if (bs == null) {
             return 0;
         }
         int count = 0;
@@ -246,7 +263,21 @@ public class OccurrenceLayers {
     }
 
     static public void main(String[] args) {
-        OccurrenceLayers.makeOccurrenceCountLayer(4);
-        makeSpeciesCountLayer(4);
+        TabulationSettings.load();
+        OccurrencesCollection.init();
+        DatasetMonitor dm = new DatasetMonitor();
+        dm.initDatasetFiles();
+
+        int size = 4; //spacing is 4 + 1 + 4 = 9x9
+        if (args.length > 0) {
+            try {
+                size = (int) (Integer.parseInt(args[0]) - 1) / 2;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        makeOccurrenceCountLayer(size);
+        //makeSpeciesCountLayer(size);
     }
 }

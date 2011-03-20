@@ -2,9 +2,7 @@ package org.ala.spatial.web;
 
 import java.net.URLEncoder;
 import java.util.Iterator;
-
-import org.ala.spatial.analysis.service.OccurrencesService;
-import org.ala.spatial.analysis.service.SamplingService;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.codehaus.jackson.JsonFactory;
@@ -13,7 +11,6 @@ import org.codehaus.jackson.JsonToken;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
-import org.zkoss.zul.SimpleListModel;
 
 /**
  *
@@ -141,7 +138,7 @@ public class SpeciesAutoComplete extends Combobox {
                 setDroppable("true");
             }
 
-            String[] aslist = OccurrencesService.filterSpecies(val, 40);
+            String[] aslist = OccurrencesCollection.findSpecies(val, 40);
             if (aslist == null) {
                 aslist = new String[1];
                 aslist[0] = "";

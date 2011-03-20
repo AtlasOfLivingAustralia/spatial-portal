@@ -15,9 +15,8 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.analysis.index.LayerFilter;
-import org.ala.spatial.analysis.index.SamplingIndex;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.util.ComplexRegion;
-import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.TabulationSettings;
@@ -49,8 +48,6 @@ public class ShapeLookup {
         if (shapes.size() > 80){//TabulationSettings.cluster_lookup_size) {
             Long time_min = new Long(0);
             Long time_max = new Long(0);
-            String key = null;
-            Object o = null;
             for (Entry<String, Object[]> e : shapes.entrySet()) {
                 if (time_min == 0 || (Long) e.getValue()[0] < time_min) {
                     time_min = (Long) e.getValue()[0];
@@ -124,6 +121,9 @@ public class ShapeLookup {
 
     public static boolean addShape(String id, String table, String value) {
         LayerFilter lf = FilteringIndex.getLayerFilter(table);
+        if(lf == null) {
+            return false;
+        }
         int pos = java.util.Arrays.binarySearch(lf.catagory_names, value);
 
         //does it exist?
@@ -135,7 +135,7 @@ public class ShapeLookup {
             lf.catagories = new int[1];
             lf.catagories[0] = pos;
             if(cr.getAttribute("species_records") == null){
-                cr.setAttribute("species_records",FilteringIndex.getCatagorySampleSet(lf));
+                cr.setAttribute("species_records",OccurrencesCollection.getCatagorySampleSet(lf));
             }
             /*if(cr.getAttribute("cells") == null){
                 cr.setAttribute("cells",cr.getOverlapGridCells(

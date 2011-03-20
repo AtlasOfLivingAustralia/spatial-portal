@@ -92,6 +92,9 @@ class LoadedPointsSamplingThread extends Thread {
         for (int i = 0; i < intersection.length; i++) {
             if(intersection[i] >= 0) {
                 output[i] = ssf.getValueString(intersection[i]);
+                if(output[i] != null) {
+                    output[i] = output[i].replace(",",".");
+                }
             } else {
                 output[i] = "";
             }

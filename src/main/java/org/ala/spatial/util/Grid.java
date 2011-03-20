@@ -6,18 +6,19 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Grid.java
  * Created on June 24, 2005, 4:12 PM
- * 
+ *
  * @author Robert Hijmans, rhijmans@berkeley.edu
- * 
+ *
  * Updated 15/2/2010, Adam
- * 
+ *
  * Interface for .gri/.grd files for now
  */
-public class Grid { //  implements Serializable    
+public class Grid { //  implements Serializable
 
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
     final double noDataValueDefault = -3.4E38;
@@ -206,7 +207,7 @@ public class Grid { //  implements Serializable
         } // shorthand for same
         else if (s.equals("INT1B") || s.equals("BYTE")) {
             datatype = "BYTE";
-        } else if (s.equals("INT1U")) {
+        } else if (s.equals("INT1U") || s.equals("UBYTE")) {
             datatype = "UBYTE";
         } else if (s.equals("INT2B") || s.equals("INT16") || s.equals("INT2S")) {
             datatype = "SHORT";
@@ -271,7 +272,6 @@ public class Grid { //  implements Serializable
         }
 
         setdatatype(ir.getStringValue("Data", "DataType"));
-        //System.out.println("grd datatype=" + datatype);
         maxval = (float) ir.getDoubleValue("Data", "MaxValue");
         minval = (float) ir.getDoubleValue("Data", "MinValue");
         ncols = ir.getIntegerValue("GeoReference", "Columns");
@@ -307,7 +307,7 @@ public class Grid { //  implements Serializable
 
         float[] ret = new float[length];
 
-        int i, j;
+        int i;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");
 
@@ -372,7 +372,6 @@ public class Grid { //  implements Serializable
             }
         } catch (Exception e) {
             //log error - probably a file error
-            System.out.println("GRID: " + e.toString());
             e.printStackTrace();
         }
         grid_data = ret;
@@ -391,7 +390,7 @@ public class Grid { //  implements Serializable
      * @param dfiltered
      */
     void writeGrid(String newfilename, double[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
-        int size, i, length = dfiltered.length, pos;
+        int size, i, length = dfiltered.length;
         double maxvalue = Double.MAX_VALUE * -1;
         double minvalue = Double.MAX_VALUE;
 
@@ -409,7 +408,6 @@ public class Grid { //  implements Serializable
             } else {
                 bb.order(ByteOrder.BIG_ENDIAN);
             }
-            System.out.println("WRITING FLOAT: " + length + " records to " + newfilename);
             for (i = 0; i < length; i++) {
                 if (Double.isNaN(dfiltered[i])) {
                     bb.putFloat((float) noDataValueDefault);
@@ -437,7 +435,7 @@ public class Grid { //  implements Serializable
     }
 
     void writeGrid(String newfilename, float[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
-        int size, i, length = dfiltered.length, pos;
+        int size, i, length = dfiltered.length;
         double maxvalue = Double.MAX_VALUE * -1;
         double minvalue = Double.MAX_VALUE;
 
@@ -455,7 +453,6 @@ public class Grid { //  implements Serializable
             } else {
                 bb.order(ByteOrder.BIG_ENDIAN);
             }
-            System.out.println("WRITING FLOAT: " + length + " records to " + newfilename);
             for (i = 0; i < length; i++) {
                 if (Double.isNaN(dfiltered[i])) {
                     bb.putFloat((float) noDataValueDefault);
@@ -482,6 +479,10 @@ public class Grid { //  implements Serializable
     }
 
     void writeHeader(String newfilename, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols, double minvalue, double maxvalue) {
+        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
+    }
+
+    void writeHeader(String newfilename, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols, double minvalue, double maxvalue, String datatype, String nodata) {
         try {
             FileWriter fw = new FileWriter(newfilename + ".grd");
 
@@ -500,10 +501,10 @@ public class Grid { //  implements Serializable
             fw.append("\r\n").append("ResolutionX=").append(String.valueOf(xres));
             fw.append("\r\n").append("ResolutionY=").append(String.valueOf(yres));
             fw.append("\r\n").append("[Data]");
-            fw.append("\r\n").append("DataType=FLT4BYTES");
+            fw.append("\r\n").append("DataType=" + datatype);
             fw.append("\r\n").append("MinValue=").append(String.valueOf(minvalue));
             fw.append("\r\n").append("MaxValue=").append(String.valueOf(maxvalue));
-            fw.append("\r\n").append("NoDataValue=").append(String.valueOf(noDataValueDefault));
+            fw.append("\r\n").append("NoDataValue=").append(nodata);
             fw.append("\r\n").append("Transparent=0");
             fw.close();
         } catch (Exception e) {
@@ -513,15 +514,14 @@ public class Grid { //  implements Serializable
 
     /**
      * do get values of grid for provided points.
-     * 
-     * loads whole grid file as double[] in process 
-     * 
+     *
+     * loads whole grid file as double[] in process
+     *
      * @param points
      * @return
      */
     public float[] getValues2(double[][] points) {
         if (points == null || points.length == 0) {
-            System.out.println("exit getValues2:" + points);
             return null;
         }
 
@@ -530,16 +530,14 @@ public class Grid { //  implements Serializable
 
         //load whole grid
         float[] grid = getGrid();
-
+        int glen = grid.length;
         int length = points.length;
         int i, pos;
-
-        System.out.println(filename + ", " + datatype + ":" + points.length);
 
         //points loop
         for (i = 0; i < length; i++) {
             pos = getcellnumber(points[i][0], points[i][1]);
-            if (pos >= 0) {
+            if (pos >= 0 && pos < glen) {
                 ret[i] = grid[pos];
             } else {
                 ret[i] = Float.NaN;
@@ -558,14 +556,14 @@ public class Grid { //  implements Serializable
         int startx = (int) ((xmin - this.xmin) / xres);
         int endx = startx + width;
         int starty = (int) ((ymin - this.ymin) / yres);
-        int endy = starty + height;
+        //int endy = starty + height;
 
         int length = width * height;
 
         float[] ret = new float[length];
         int pos = 0;
 
-        int i, j;
+        int i;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");
 
@@ -724,8 +722,6 @@ public class Grid { //  implements Serializable
 
         //confirm inputs since they come from somewhere else
         if (points == null || points.length == 0) {
-            //System.out.println("err with points");
-            //log error
             return null;
         }
 
@@ -737,15 +733,11 @@ public class Grid { //  implements Serializable
 
         float[] ret = new float[points.length];
 
-        //System.out.println("expecting " + points.length + " env values with datatype " + datatype);
-
         int length = points.length;
-        int size, i, j, pos;
+        int size, i, pos;
         byte[] b;
         RandomAccessFile afile;
         File f2 = new File(filename + ".GRI");
-
-        System.out.println(filename + ", " + datatype + ":" + points.length);
 
         try { //read of random access file can throw an exception
             if (!f2.exists()) {
@@ -766,6 +758,21 @@ public class Grid { //  implements Serializable
                         ret[i] = Float.NaN;
                     }
                 }
+            } else if (datatype.equalsIgnoreCase("UBYTE")) {
+                size = 1;
+                b = new byte[size];
+                for (i = 0; i < length; i++) {
+                    pos = getcellnumber(points[i][0], points[i][1]);
+                    if (pos >= 0) {
+                        afile.seek(pos * size);
+                        ret[i] = afile.readByte();
+                        if(ret[i] < 0) {
+                            ret[i] += 256;
+                        }
+                    } else {
+                        ret[i] = Float.NaN;
+                    }
+                }
             } else if (datatype.equalsIgnoreCase("SHORT")) {
                 size = 2;
                 b = new byte[size];
@@ -775,9 +782,9 @@ public class Grid { //  implements Serializable
                         afile.seek(pos * size);
                         afile.read(b);
                         if (byteorderLSB) {
-                            ret[i] = (b[1] << 8) | b[0];
+                            ret[i] = (short) (((0xFF & b[1]) << 8) | (b[0] & 0xFF));
                         } else {
-                            ret[i] = (b[0] << 8) | b[1];
+                            ret[i] = (short) (((0xFF & b[0]) << 8) | (b[1] & 0xFF));
                         }
                         //ret[i] = afile.readShort();
                     } else {
@@ -793,9 +800,9 @@ public class Grid { //  implements Serializable
                         afile.seek(pos * size);
                         afile.read(b);
                         if (byteorderLSB) {
-                            ret[i] = (b[3] << 24) | (b[2] << 16) + (b[1] << 8) + b[0];
+                            ret[i] = ((0xFF & b[3]) << 24) | ((0xFF & b[2]) << 16) + ((0xFF & b[1]) << 8) + (b[0] & 0xFF);
                         } else {
-                            ret[i] = (b[0] << 24) | (b[1] << 16) + (b[2] << 8) + b[3];
+                            ret[i] = ((0xFF & b[0]) << 24) | ((0xFF & b[1]) << 16) + ((0xFF & b[2]) << 8) + ((0xFF & b[3]) & 0xFF);
                         }
                         //ret[i] = afile.readInt();
                     } else {
@@ -811,15 +818,15 @@ public class Grid { //  implements Serializable
                         afile.seek(pos * size);
                         afile.read(b);
                         if (byteorderLSB) {
-                            ret[i] = ((long) b[7] << 56) + ((long) b[6] << 48)
-                                    + ((long) b[5] << 40) + ((long) b[4] << 32)
-                                    + ((long) b[3] << 24) + ((long) b[2] << 16)
-                                    + ((long) b[1] << 8) + b[0];
+                            ret[i] = ((long) (0xFF & b[7]) << 56) + ((long) (0xFF & b[6]) << 48)
+                                    + ((long) (0xFF & b[5]) << 40) + ((long) (0xFF & b[4]) << 32)
+                                    + ((long) (0xFF & b[3]) << 24) + ((long) (0xFF & b[2]) << 16)
+                                    + ((long) (0xFF & b[1]) << 8) + (0xFF & b[0]);
                         } else {
-                            ret[i] = ((long) b[0] << 56) + ((long) b[1] << 48)
-                                    + ((long) b[2] << 40) + ((long) b[3] << 32)
-                                    + ((long) b[4] << 24) + ((long) b[5] << 16)
-                                    + ((long) b[6] << 8) + b[7];
+                            ret[i] = ((long) (0xFF & b[0]) << 56) + ((long) (0xFF & b[1]) << 48)
+                                    + ((long) (0xFF & b[2]) << 40) + ((long) (0xFF & b[3]) << 32)
+                                    + ((long) (0xFF & b[4]) << 24) + ((long) (0xFF & b[5]) << 16)
+                                    + ((long) (0xFF & b[6]) << 8) + (0xFF & b[7]);
                         }
                         //ret[i] = afile.readLong();
                     } else {
@@ -829,23 +836,16 @@ public class Grid { //  implements Serializable
             } else if (datatype.equalsIgnoreCase("FLOAT")) {
                 size = 4;
                 b = new byte[size];
-                System.out.println("FLOAT: " + length);
                 for (i = 0; i < length; i++) {
                     pos = getcellnumber(points[i][0], points[i][1]);
                     if (pos >= 0) {
                         afile.seek(pos * size);
                         afile.read(b);
-                        /*if (byteorderLSB) {
-                        ret[i] = Float.intBitsToFloat((b[3] << 24) | (b[2] << 16) + (b[1] << 8) + b[0]);
-                        } else {
-                        ret[i] = Float.intBitsToFloat((b[0] << 24) | (b[1] << 16) + (b[2] << 8) + b[3]);
-                        }*/
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
                         }
                         ret[i] = bb.getFloat();
-                        //ret[i] = afile.readFloat();
                     } else {
                         //System.out.println("missing env: lng=" + points[i][0] + " lat=" + points[i][0] + " pos=" + pos);
                         ret[i] = Float.NaN;
@@ -860,17 +860,6 @@ public class Grid { //  implements Serializable
                     if (pos >= 0) {
                         afile.seek(pos * size);
                         afile.read(b);
-                        /*if (byteorderLSB) {                            
-                        ret[i] = (float) Double.longBitsToDouble(((long) b[7] << 56) + ((long) b[6] << 48)
-                        + ((long) b[5] << 40) + ((long) b[4] << 32)
-                        + ((long) b[3] << 24) + ((long) b[2] << 16)
-                        + ((long) b[1] << 8) + b[0]);
-                        } else {                            
-                        ret[i] = (float) Double.longBitsToDouble(((long) b[0] << 56) + ((long) b[1] << 48)
-                        + ((long) b[2] << 40) + ((long) b[3] << 32)
-                        + ((long) b[4] << 24) + ((long) b[5] << 16)
-                        + ((long) b[6] << 8) + b[7]);
-                        }*/
                         ByteBuffer bb = ByteBuffer.wrap(b);
                         if (byteorderLSB) {
                             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -883,6 +872,7 @@ public class Grid { //  implements Serializable
                     }
                 }
             } else {
+                System.out.println("datatype not supported in Grid.getValues: " + datatype);
                 // / should not happen; catch anyway...
                 for (i = 0; i < length; i++) {
                     ret[i] = Float.NaN;
@@ -891,16 +881,374 @@ public class Grid { //  implements Serializable
             //replace not a number
             for (i = 0; i < length; i++) {
                 if ((float) ret[i] == (float) nodatavalue) {
-                    //System.out.println("replacing missing value: " + ret[i]);
                     ret[i] = Float.NaN;
                 }
             }
 
             afile.close();
         } catch (Exception e) {
-            //log error - probably a file error
-            //System.out.println("GRID: " + e.toString());
+            e.printStackTrace();
         }
         return ret;
+    }
+
+
+    /*
+     * Cut a one grid against the missing values of another.
+     *
+     * They must be aligned.
+     */
+    public void mergeMissingValues(Grid sourceOfMissingValues, boolean hideMissing) {
+        float[] cells = sourceOfMissingValues.getGrid();
+
+        float[] actual = getGrid();
+
+        int length = actual.length;
+
+        int i;
+        RandomAccessFile afile;
+        File f2 = new File(filename + ".GRI");
+
+        try { //read of random access file can throw an exception
+            if (!f2.exists()) {
+                afile = new RandomAccessFile(filename + ".gri", "rw");
+            } else {
+                afile = new RandomAccessFile(filename + ".GRI", "rw");
+            }
+
+            byte[] b = new byte[(int) afile.length()];
+
+            ByteBuffer bb = ByteBuffer.wrap(b);
+
+            if (byteorderLSB) {
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+            }
+
+            afile.seek(0);
+
+            if (datatype.equalsIgnoreCase("UBYTE")) {
+                for (i = 0; i < length; i++) {
+                    if (hideMissing == Float.isNaN(cells[i])) {
+                        if (nodatavalue >= 128) {
+                            bb.put((byte) (nodatavalue - 256));
+                        } else {
+                            bb.put((byte) nodatavalue);
+                        }
+                    } else {
+                        if (actual[i] >= 128) {
+                            bb.put((byte) (actual[i] - 256));
+                        } else {
+                            bb.put((byte) actual[i]);
+                        }
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("BYTE")) {
+                for (i = 0; i < length; i++) {
+                    bb.put((byte) actual[i]);
+                }
+            } else if (datatype.equalsIgnoreCase("SHORT")) {
+                for (i = 0; i < length; i++) {
+                    if (hideMissing == Float.isNaN(cells[i])) {
+                        bb.putShort((short) nodatavalue);
+                    } else {
+                        bb.putShort((short) actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("INT")) {
+                for (i = 0; i < length; i++) {
+                    if (hideMissing == Float.isNaN(cells[i])) {
+                        bb.putInt((int) nodatavalue);
+                    } else {
+                        bb.putInt((int) actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("LONG")) {
+                for (i = 0; i < length; i++) {
+                    if (hideMissing == Float.isNaN(cells[i])) {
+                        bb.putLong((long) nodatavalue);
+                    } else {
+                        bb.putLong((long) actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("FLOAT")) {
+                for (i = 0; i < length; i++) {
+                    if (hideMissing == Float.isNaN(cells[i])) {
+                        bb.putFloat((float) nodatavalue);
+                    } else {
+                        bb.putFloat(actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("DOUBLE")) {
+                for (i = 0; i < length; i++) {
+                    if (hideMissing == Float.isNaN(cells[i])) {
+                        bb.putDouble((double) nodatavalue);
+                    } else {
+                        bb.putDouble((double) actual[i]);
+                    }
+                }
+            } else {
+                // / should not happen
+                System.out.println("unsupported grid data type: " + datatype);
+            }
+
+            afile.write(bb.array());
+            afile.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * Cut a one grid against the missing values of another.
+     *
+     * They must be aligned.
+     */
+    public void writeCommonGrid(String dirname) {
+
+        double[][] points = new double[TabulationSettings.grd_ncols * TabulationSettings.grd_nrows][2];
+        for (int i = 0; i < TabulationSettings.grd_nrows; i++) {
+            for (int j = 0; j < TabulationSettings.grd_ncols; j++) {
+                points[(TabulationSettings.grd_nrows - 1 - i) * TabulationSettings.grd_ncols + j][0] = TabulationSettings.grd_xmin + j * TabulationSettings.grd_xdiv + TabulationSettings.grd_xdiv/2.0;
+                points[(TabulationSettings.grd_nrows - 1 - i) * TabulationSettings.grd_ncols + j][1] = TabulationSettings.grd_ymin + i * TabulationSettings.grd_ydiv + TabulationSettings.grd_ydiv/2.0;
+            }
+        }
+
+        float[] actual = getValues2(points);
+        int length = actual.length;
+
+        float minvalue = Float.NaN, maxvalue = Float.NaN;
+        for (int i = 0; i < length; i++) {
+            if (Float.isNaN(minvalue) || actual[i] < minvalue) {
+                minvalue = actual[i];
+            }
+            if (Float.isNaN(maxvalue) || actual[i] > maxvalue) {
+                maxvalue = actual[i];
+            }
+        }
+
+        int i;
+        RandomAccessFile afile;
+        File f2 = new File(filename + ".GRI");
+
+        String newfilename = filename.substring(0, filename.lastIndexOf(File.separator) + 1) + dirname + filename.substring(filename.lastIndexOf(File.separator));
+
+        try { //read of random access file can throw an exception
+
+            String nodata = String.valueOf(noDataValueDefault);
+            int size = 4;
+            if (datatype.equals("BYTE")) {
+                size = 1;
+                nodata = String.valueOf((byte)nodatavalue);
+            } else if(datatype.equals("UBYTE")) {
+                size = 1;
+                nodata = String.valueOf((int)nodatavalue);
+            } else if (datatype.equals("SHORT")) {
+                size = 2;
+                nodata = String.valueOf((short)nodatavalue);
+            } else if (datatype.equals("INT")) {
+                size = 4;
+                nodata = String.valueOf((int)nodatavalue);
+            } else if (datatype.equals("LONG")) {
+                size = 8;
+                nodata = String.valueOf((long)nodatavalue);
+            } else if (datatype.equals("FLOAT")) {
+                size = 4;
+                nodata = String.valueOf((float)nodatavalue);
+            } else if (datatype.equals("DOUBLE")) {
+                size = 8;
+                nodata = String.valueOf((double)nodatavalue);
+            }
+
+            writeHeader(newfilename, TabulationSettings.grd_xmin, TabulationSettings.grd_ymin, TabulationSettings.grd_xmax, TabulationSettings.grd_ymax, TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv, TabulationSettings.grd_nrows, TabulationSettings.grd_ncols, minvalue, maxvalue, datatype, nodata);
+
+            byte[] b = new byte[length * size];
+            ByteBuffer bb = ByteBuffer.wrap(b);
+
+            if (byteorderLSB) {
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+            }
+
+            if (datatype.equalsIgnoreCase("UBYTE")) {
+                for (i = 0; i < length; i++) {
+                    if (Float.isNaN(actual[i])) {
+                        if (nodatavalue >= 128) {
+                            bb.put((byte) (nodatavalue - 256));
+                        } else {
+                            bb.put((byte) nodatavalue);
+                        }
+                    } else {
+                        if (actual[i] >= 128) {
+                            bb.put((byte) (actual[i] - 256));
+                        } else {
+                            bb.put((byte) actual[i]);
+                        }
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("BYTE")) {
+                for (i = 0; i < length; i++) {
+                    bb.put((byte) actual[i]);
+                }
+            } else if (datatype.equalsIgnoreCase("SHORT")) {
+                for (i = 0; i < length; i++) {
+                    if (Float.isNaN(actual[i])) {
+                        bb.putShort((short) nodatavalue);
+                    } else {
+                        bb.putShort((short) actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("INT")) {
+                for (i = 0; i < length; i++) {
+                    if (Float.isNaN(actual[i])) {
+                        bb.putInt((int) nodatavalue);
+                    } else {
+                        bb.putInt((int) actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("LONG")) {
+                for (i = 0; i < length; i++) {
+                    if (Float.isNaN(actual[i])) {
+                        bb.putLong((long) nodatavalue);
+                    } else {
+                        bb.putLong((long) actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("FLOAT")) {
+                for (i = 0; i < length; i++) {
+                    if (Float.isNaN(actual[i])) {
+                        bb.putFloat((float) nodatavalue);
+                    } else {
+                        bb.putFloat(actual[i]);
+                    }
+                }
+            } else if (datatype.equalsIgnoreCase("DOUBLE")) {
+                for (i = 0; i < length; i++) {
+                    if (Float.isNaN(actual[i])) {
+                        bb.putDouble((double) nodatavalue);
+                    } else {
+                        bb.putDouble((double) actual[i]);
+                    }
+                }
+            } else {
+                // / should not happen
+                System.out.println("unsupported grid data type: " + datatype);
+            }
+
+            if (!f2.exists()) {
+                (new File(filename + ".gri")).delete();
+                afile = new RandomAccessFile(filename + ".gri", "rw");
+            } else {
+                (new File(filename + ".GRI")).delete();
+                afile = new RandomAccessFile(filename + ".GRI", "rw");
+            }
+            afile.write(bb.array());
+            afile.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        if (args.length > 2 && args[0].equals("overlay_mv")) {
+            TabulationSettings.load();
+
+            //to common grid
+            Grid grid = new Grid(TabulationSettings.environmental_data_path + args[2]);//args[2]);
+            if(grid.xmin != TabulationSettings.grd_xmin
+                    || grid.xmax != TabulationSettings.grd_xmax
+                    || grid.ymin != TabulationSettings.grd_ymin
+                    || grid.ymax != TabulationSettings.grd_ymax
+                    || grid.xres != TabulationSettings.grd_xdiv
+                    || grid.yres != TabulationSettings.grd_ydiv ) {
+                grid.writeCommonGrid("");
+            }
+
+            //mask
+            Grid sourceOfMissingValues = new Grid(TabulationSettings.environmental_data_path + args[1]);
+            Grid fileToOverwrite = new Grid(TabulationSettings.environmental_data_path + args[2]);
+            fileToOverwrite.mergeMissingValues(sourceOfMissingValues, true);
+
+            //fix up min/max
+            grid = new Grid(TabulationSettings.environmental_data_path + args[2]);//args[2]);
+            grid.writeCommonGrid("");
+        } else if (args.length > 2 && args[0].equals("overlay_nmv")) {
+            TabulationSettings.load();
+
+            //to common grid
+            Grid grid = new Grid(TabulationSettings.environmental_data_path + args[2]);//args[2]);
+            if(grid.xmin != TabulationSettings.grd_xmin
+                    || grid.xmax != TabulationSettings.grd_xmax
+                    || grid.ymin != TabulationSettings.grd_ymin
+                    || grid.ymax != TabulationSettings.grd_ymax
+                    || grid.xres != TabulationSettings.grd_xdiv
+                    || grid.yres != TabulationSettings.grd_ydiv ) {
+                grid.writeCommonGrid("");
+            }
+
+            //mask
+            Grid sourceOfMissingValues = new Grid(TabulationSettings.environmental_data_path + args[1]);
+            Grid fileToOverwrite = new Grid(TabulationSettings.environmental_data_path + args[2]);
+            fileToOverwrite.mergeMissingValues(sourceOfMissingValues, false);
+
+            //fix up min/max
+            grid = new Grid(TabulationSettings.environmental_data_path + args[2]);//args[2]);
+            grid.writeCommonGrid("");
+        } else if (args.length > 0 && args[0].equals("common_grid")) {
+            TabulationSettings.load();
+
+            for(int i=0;i<TabulationSettings.environmental_data_files.length;i++) {
+                Grid grid = new Grid(TabulationSettings.environmental_data_path + TabulationSettings.environmental_data_files[i].name );//args[2]);
+                if(grid.xmin != TabulationSettings.grd_xmin
+                        || grid.xmax != TabulationSettings.grd_xmax
+                        || grid.ymin != TabulationSettings.grd_ymin
+                        || grid.ymax != TabulationSettings.grd_ymax
+                        || grid.xres != TabulationSettings.grd_xdiv
+                        || grid.yres != TabulationSettings.grd_ydiv ) {
+                    grid.writeCommonGrid("");
+                }
+            }
+        } else if (args.length > 1 && args[0].equals("redo_min_max")) {
+            TabulationSettings.load();
+            Grid grid = new Grid(TabulationSettings.environmental_data_path + args[1] );//args[2]);
+            grid.writeCommonGrid("");
+
+        } else {
+            System.out.println("apply missing values from one aligned grid file to another");
+            System.out.println("params: overlay_mv layerName_source_of_mv layerName_to_merge");
+            System.out.println("");
+            System.out.println("inverse of overlay_mv");
+            System.out.println("params: overlay_nmv layerName_source_of_mv layerName_to_merge");
+            System.out.println("");
+            System.out.println("recalculate layer min & max");
+            System.out.println("params: redo_min_max layerName");
+            System.out.println("");
+            System.out.println("create common grids, if required and put new files to subdir common_grid");
+            System.out.println("params: common_grid");
+        }
+//
+//        TabulationSettings.load();
+//        Grid sourceOfMissingValues = new Grid(TabulationSettings.environmental_data_path + "adefm");
+//        //String [] layer = {"srain2","soilm_mean","soilm_cv","ndvi_mean","elevation"};
+//        //String [] layer = {"soilm_mean","soilm_cv"};
+//        String [] layer = {"bath_topo_ausbath_09_v4"};
+//        for(int i=0;i<layer.length;i++) {
+//            //to common grid
+//            Grid grid = new Grid(TabulationSettings.environmental_data_path + layer[i]);//args[2]);
+//            if(grid.xmin != TabulationSettings.grd_xmin
+//                    || grid.xmax != TabulationSettings.grd_xmax
+//                    || grid.ymin != TabulationSettings.grd_ymin
+//                    || grid.ymax != TabulationSettings.grd_ymax
+//                    || grid.xres != TabulationSettings.grd_xdiv
+//                    || grid.yres != TabulationSettings.grd_ydiv ) {
+//                grid.writeCommonGrid("");
+//            }
+//
+//            //mask
+//            Grid fileToOverwrite = new Grid(TabulationSettings.environmental_data_path + layer[i]);
+//            fileToOverwrite.mergeMissingValues(sourceOfMissingValues, false);
+//
+//            //fix up min/max
+//            grid = new Grid(TabulationSettings.environmental_data_path + layer[i] );
+//            grid.writeCommonGrid("");
+//        }
     }
 }

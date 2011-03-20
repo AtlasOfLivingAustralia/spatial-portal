@@ -77,7 +77,7 @@
                 </p>
 
                 <p>
-                    <span class="title">Notes:</span> <br />
+                    <span class="title">Notes (used for search index) :</span> <br />
                     ${layer.notes}
                 </p>
 

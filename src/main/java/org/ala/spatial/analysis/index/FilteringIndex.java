@@ -11,7 +11,6 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -45,7 +44,7 @@ import org.opengis.referencing.operation.MathTransform;
  * @author adam
  *
  */
-public class FilteringIndex extends Object implements AnalysisIndexService {
+public class FilteringIndex extends Object {
 
     /**
      * length of a grid record in bytes
@@ -60,81 +59,27 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      */
     static Map<String, LayerFilter> map_layerfilters = new HashMap<String, LayerFilter>();
     /**
-     * destination of loaded occurances
+     * destination of loaded occurrences
      */
-    ArrayList<String[]> occurances;
+    ArrayList<String[]> occurrences;
+    String index_path;
 
     /**
      * default constructor
      */
-    public FilteringIndex() {
+    public FilteringIndex(String directoryPath) {
+        index_path = directoryPath;
+
         /* load settings file */
         TabulationSettings.load();
     }
-
-    /**
-     * performs update of 'indexing' for all points data
-     */
-    @Override
-    public void occurancesUpdate() {
-        // makeSPL_GRID(null);
-
-        //  makeSPL_CATAGORIES(null);
-
-        /* for onscreen filtering server or client side */
-        //   makeAllScaledShortImages(null);
-
-        /* threaded building, needs more ram than one at a time */
-        int threadcount = TabulationSettings.analysis_threads;
-        ArrayList<String> layers = new ArrayList();
-        int i;
-        for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
-            layers.add(TabulationSettings.geo_tables[i].name);
-        }
-        for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
-            layers.add(TabulationSettings.environmental_data_files[i].name);
-        }
-
-        LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue(layers);
-
-        FilteringIndexThread[] it = new FilteringIndexThread[threadcount];
-
-        for (i = 0; i < threadcount; i++) {
-            it[i] = new FilteringIndexThread(lbq);
-        }
-
-        System.out.println("Start FilteringIndex.build_all (" + threadcount + " threads): " + System.currentTimeMillis());
-
-        //height mapping here while it is running
-        startBuildAreaSize();
-
-        //wait until all done
-        try {
-            boolean alive = true;
-            while (alive) {
-                Thread.sleep(2000);
-                alive = false;
-                for (i = 0; i < threadcount; i++) {
-                    if (it[i].isAlive()) {
-                        alive = true;
-                        break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("End FilteringIndex.build_all: " + System.currentTimeMillis());
-    }
-
+    
     /**
      * performs update of 'indexing' for a new layer (grid or shapefile)
      *
      * @param layername name of the layer to update as String.  To update
      * all layers use null.
      */
-    @Override
     public void layersUpdate(String layername) {
         /* placeholder for patial update mechanism */
         makeSPL_GRID(layername);
@@ -150,8 +95,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      *
      * @return true if index is up to date
      */
-    @Override
-    public boolean isUpdated() {
+    public boolean isUpToDate() {
         /* placeholder for patial update mechanism */
         return true;
     }
@@ -182,8 +126,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 /* open input file for this layer's values in order of records*/
                 RandomAccessFile sam_d_gridfile = new RandomAccessFile(
-                        TabulationSettings.index_path
-                        + "SAM_D_" + layer.name + ".dat", "r");
+                        index_path + "SAM_D_" + layer.name + ".dat", "r");
 
                 int number_of_records = (int) (sam_d_gridfile.length() / 4); //4 bytes in float
                 byte[] b = new byte[(number_of_records) * 4];
@@ -238,12 +181,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 /* open output file and write */
                 RandomAccessFile outputvalues = new RandomAccessFile(
-                        TabulationSettings.index_path
-                        + "SPL_V_" + layer.name + ".dat", "rw");
+                        index_path + "SPL_V_" + layer.name + ".dat", "rw");
 
                 RandomAccessFile outputrecords = new RandomAccessFile(
-                        TabulationSettings.index_path
-                        + "SPL_R_" + layer.name + ".dat", "rw");
+                        index_path + "SPL_R_" + layer.name + ".dat", "rw");
 
                 byte[] b1 = new byte[records.size() * 4]; //for float
                 ByteBuffer bb1 = ByteBuffer.wrap(b1);
@@ -290,7 +231,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
             try {
                 /* open catagorical value file */
                 RandomAccessFile sam_i_layerfile = new RandomAccessFile(
-                        TabulationSettings.index_path
+                        index_path
                         + SamplingIndex.CATAGORICAL_PREFIX + layer.name
                         + SamplingIndex.VALUE_POSTFIX, "r");
 
@@ -311,7 +252,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
                 /* load all valid values and add to records with species number and
                  * original record index*/
-                for (i = 0; i < number_of_records; i++) {
+                for (int j = 0; j < number_of_records; j++) {
 
                     /* split up record line for extraction of:
                      *  species name (2 before last value)
@@ -358,7 +299,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                         //output the previous group of records into a new file
 
                         String filename =
-                                TabulationSettings.index_path
+                                index_path
                                 + "SPL_" + layer.name + "_"
                                 + records.get(idxpos).value + ".dat";
 
@@ -369,13 +310,13 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                         ObjectOutputStream oos = new ObjectOutputStream(bos);
 
                         /* build set */
-                        ArrayList<Integer> set = new ArrayList<Integer>(idxpos - startpos + 1);
+                        int[] set = new int[idxpos - startpos + 1];
                         for (p = startpos; p <= idxpos; p++) {
-                            set.add(new Integer(records.get(p).record_number));
+                            set[p - startpos] = records.get(p).record_number;
                         }
 
                         /* sort by record_number (key) */
-                        java.util.Collections.sort(set);
+                        java.util.Arrays.sort(set);
 
                         /* write */
                         oos.writeObject(set);
@@ -426,7 +367,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      * @param layer as Layer
      * @return new default LayerFilter
      */
-    private static LayerFilter getLayerFilter(Layer layer) {
+    static private LayerFilter getLayerFilter(Layer layer) {
         if (layer == null) {
             return null;
         }
@@ -514,30 +455,8 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      * - min and max for grid
      * - list of values for shape
      */
-    public static String getLayerExtents(String layer_name) {
+    static public String getLayerExtents(String layer_name) {
         /* is it continous (grid file) */
-        File continous_file = new File(
-                TabulationSettings.index_path
-                + "SPL_" + layer_name + ".dat");
-        if (continous_file.exists()) {
-            /* load grid file and get min/max */
-            try {
-                Grid grid = new Grid(TabulationSettings.environmental_data_path
-                        + layer_name);
-
-                double minimum = grid.minval;
-                double maximum = grid.maxval;
-
-                return ((float) minimum) + " to " + ((float) maximum);
-            } catch (Exception e) {
-                /* log error */
-                //return nothing
-                return "";
-            }
-        }
-
-        /* otherwise, catagorical */
-
         /*
          * TODO: handle multiple fieldnames
          */
@@ -555,6 +474,25 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                 + SamplingIndex.CATAGORY_LIST_PREFIX
                 + layer_name + "_" + fieldname
                 + SamplingIndex.CATAGORY_LIST_POSTFIX);
+
+        if (!catagories_file.exists()) {
+            /* load grid file and get min/max */
+            try {
+                Grid grid = new Grid(TabulationSettings.environmental_data_path
+                        + layer_name);
+
+                double minimum = grid.minval;
+                double maximum = grid.maxval;
+
+                return ((float) minimum) + " to " + ((float) maximum);
+            } catch (Exception e) {
+                /* log error */
+                //return nothing
+                return "";
+            }
+        }
+
+        /* otherwise, catagorical */
         if (catagories_file.exists()) {
             /* load catagories values file and format */
             byte[] data = new byte[(int) catagories_file.length()];
@@ -599,18 +537,17 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      * @param filter layer filter as LayerFilter
      * @return records within the filtered region defined as ArrayList<RecordKey>
      */
-    static public ArrayList<Integer> getGridSampleSet(LayerFilter filter) {
+    public int[] getGridSampleSet(LayerFilter filter) {
         /* grid/env filter, binary searching by seeking */
 
         double dblvalue;
 
-        ArrayList<Integer> set = new ArrayList<Integer>(10000000); //TODO: don't use arraylist
+        int[] set = null;
 
         try {
             /* open VALUES file to determine records positions */
             RandomAccessFile raf = new RandomAccessFile(
-                    TabulationSettings.index_path
-                    + "SPL_V_" + filter.layername + ".dat", "r");
+                    index_path + "SPL_V_" + filter.layername + ".dat", "r");
 
             /* seek to first position */
             int length = (int) raf.length() / 4;                       //4 = sizeof float
@@ -686,8 +623,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
 
             /* open RECORDS file to get records numbers */
             raf = new RandomAccessFile(
-                    TabulationSettings.index_path
-                    + "SPL_R_" + filter.layername + ".dat", "r");
+                    index_path + "SPL_R_" + filter.layername + ".dat", "r");
 
             /* read between start_recordpos and end_recordpos */
             raf.seek(start_recordpos * 4);				//4 = sizeof int
@@ -703,14 +639,13 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
             //float longitude, latitude;
             int record;
             int j;
+            set = new int[(int) len];
             for (j = 0; j < len; j++) {
-                record = bb.getInt();
-                set.add(new Integer(record));
+                set[j] = bb.getInt();
             }
 
             /* sort by key (record number) */
-            java.util.Collections.sort(set);
-            set.trimToSize();
+            java.util.Arrays.sort(set);
 
             raf.close();
 
@@ -730,9 +665,9 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
      * @param filter layer filter as LayerFilter
      * @return records within the filtered region defined as ArrayList<SpeciesRecord>
      */
-    static public ArrayList<Integer> getCatagorySampleSet(LayerFilter filter) {
+    public int[] getCatagorySampleSet(LayerFilter filter) {
 
-        ArrayList<Integer> set = new ArrayList<Integer>();
+        int[] set = null;
 
         /* catagory filter, iterate the whole file for each catagory */
         int value;
@@ -742,20 +677,21 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
             value = filter.catagories[j];
             try {
                 String filename =
-                        TabulationSettings.index_path
-                        + "SPL_" + filter.layername + "_"
+                        index_path + "SPL_" + filter.layername + "_"
                         + ((double) value) + ".dat";
 
                 FileInputStream fos = new FileInputStream(filename);
                 BufferedInputStream bos = new BufferedInputStream(fos);
                 ObjectInputStream oos = new ObjectInputStream(bos);
 
-                ArrayList<Integer> newset;
-                newset = (ArrayList<Integer>) oos.readObject();
+                int[] newset;
+                newset = (int[]) oos.readObject();
                 oos.close();
 
-                if (set.size() > 0) {
-                    set.addAll(newset);
+                if (set != null) {
+                    int[] joined = new int[set.length + newset.length];
+                    System.arraycopy(set, 0, joined, 0, set.length);
+                    System.arraycopy(newset, 0, joined, set.length, newset.length);
                 } else {
                     set = newset;
                 }
@@ -767,7 +703,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
             }
         }
         if (filter.catagories.length > 1) {
-            java.util.Collections.sort(set);
+            java.util.Arrays.sort(set);
         }
         return set;
     }
@@ -883,8 +819,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         /* write as object*/
         try {
             FileOutputStream fos = new FileOutputStream(
-                    TabulationSettings.index_path
-                    + "SPL_IMG_T_" + l.name + ".dat");
+                    TabulationSettings.index_path + "SPL_IMG_T_" + l.name + ".dat");
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(data);
@@ -967,8 +902,7 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         /* write as object*/
         try {
             FileOutputStream fos = new FileOutputStream(
-                    TabulationSettings.index_path
-                    + "SPL_IMG_T_" + l.name + ".dat");
+                    TabulationSettings.index_path + "SPL_IMG_T_" + l.name + ".dat");
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(data);
@@ -1134,6 +1068,85 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         return null;
     }
 
+    /**
+     * get Tiles from shape file layer
+     *
+     * @param l layer as Layer
+     * @param longitude_start
+     * @param longitude_end
+     * @param latitude_start
+     * @param latitude_end
+     * @param longitude_steps
+     * @param latitude_steps
+     * @return Tile []
+     */
+    public Tile[] getTileFromShape(Layer l,
+            double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end,
+            int longitude_steps, int latitude_steps) {
+
+        SimpleShapeFile ssf = new SimpleShapeFile(
+                TabulationSettings.environmental_data_path
+                + l.name);
+
+        int column_idx = ssf.getColumnIdx(l.fields[0].name);
+
+        Tile[] data = ssf.getTileList(column_idx, longitude_start, latitude_start, longitude_end, latitude_end, longitude_steps, latitude_steps);
+
+        return data;
+    }
+
+    void occurrencesUpdate(boolean forceUpdate) {
+        /* threaded building, needs more ram than one at a time */
+        int threadcount = TabulationSettings.analysis_threads;
+        ArrayList<String> layers = new ArrayList();
+        int i;
+        for (i = 0; i < TabulationSettings.geo_tables.length; i++) {
+            if (forceUpdate || !isUpToDateCatagorical(TabulationSettings.geo_tables[i].name)) {
+            //    layers.add(TabulationSettings.geo_tables[i].name);
+            }
+        }
+        for (i = 0; i < TabulationSettings.environmental_data_files.length; i++) {
+            if (forceUpdate || !isUpToDateContinous(TabulationSettings.environmental_data_files[i].name)) {
+                layers.add(TabulationSettings.environmental_data_files[i].name);
+            }
+        }
+
+        if(layers.size() == 0) {
+            return;
+        }
+
+        LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue(layers);
+
+        FilteringIndexThread[] it = new FilteringIndexThread[threadcount];
+
+        for (i = 0; i < threadcount; i++) {
+            it[i] = new FilteringIndexThread(lbq, index_path);
+        }
+
+        System.out.println("Start FilteringIndex.build_all (" + threadcount + " threads): " + System.currentTimeMillis());
+
+        //height mapping here while it is running
+        startBuildAreaSize();
+
+        //wait until all done
+        try {
+            boolean alive = true;
+            while (alive) {
+                Thread.sleep(2000);
+                alive = false;
+                for (i = 0; i < threadcount; i++) {
+                    if (it[i].isAlive()) {
+                        alive = true;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     //build vertical area file
     static void buildAreaSize(double longitude_start, double longitude_end,
             double latitude_start, double latitude_end,
@@ -1188,10 +1201,10 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
                     + "    PROJECTION[\"Albers_Conic_Equal_Area\"],"
                     + "    PARAMETER[\"standard_parallel_1\",-18],"
                     + "    PARAMETER[\"standard_parallel_2\",-36],"
+                    + "    PARAMETER[\"false_northing\",0],"
                     + "    PARAMETER[\"latitude_of_center\",0],"
                     + "    PARAMETER[\"longitude_of_center\",132],"
                     + "    PARAMETER[\"false_easting\",0],"
-                    + "    PARAMETER[\"false_northing\",0],"
                     + "    AUTHORITY[\"EPSG\",\"3577\"],"
                     + "    AXIS[\"Easting\",EAST],"
                     + "    AXIS[\"Northing\",NORTH]]";
@@ -1280,158 +1293,79 @@ public class FilteringIndex extends Object implements AnalysisIndexService {
         buildAreaSize(longitude_start, longitude_end, latitude_start, latitude_end, width, height);
     }
 
-    static public void main(String[] args) {
-        TabulationSettings.load();
-
-        //FilteringIndex speciesListIndex = new FilteringIndex();
-        //speciesListIndex.occurancesUpdate();
-
-        startBuildAreaSize();
-    }
-
     /**
-     * get Tiles from shape file layer
+     * determine if a GRD/GRI layer's filtering index is up to date.
      *
-     * @param l layer as Layer
-     * @param longitude_start
-     * @param longitude_end
-     * @param latitude_start
-     * @param latitude_end
-     * @param longitude_steps
-     * @param latitude_steps
-     * @return Tile []
-     */
-    public Tile[] getTileFromShape(Layer l,
-            double longitude_start, double longitude_end,
-            double latitude_start, double latitude_end,
-            int longitude_steps, int latitude_steps) {
-
-        SimpleShapeFile ssf = new SimpleShapeFile(
-                TabulationSettings.environmental_data_path
-                + l.name);
-
-        int column_idx = ssf.getColumnIdx(l.fields[0].name);
-
-        Tile[] data = ssf.getTileList(column_idx, longitude_start, latitude_start, longitude_end, latitude_end, longitude_steps, latitude_steps);
-
-        return data;
-    }
-};
-
-/**
- * grid data object; value, record number
- *
- * @author adam
- *
- */
-class SPLGridRecord extends Object {
-
-    /**
-     * record value
-     */
-    public double value;
-    /**
-     * record number
-     */
-    public int record_number;
-
-    /**
-     * constructor for SPLGridRecord
+     * index_path + "SAM_D_" + layer.name + ".dat"
+     * grid file
      *
-     * @param _value as double
-     * @param _species_number as int
-     * @param _record_number as int
+     * both dated earlier than
+     *
+     * index_path + "SPL_V_" + layer.name + ".dat"
+     * index_path + "SPL_R_" + layer.name + ".dat"
+     *
+     * @param fileName
+     * @return true if up to date
      */
-    public SPLGridRecord(double _value, int _record_number) {
-        value = _value;
-        record_number = _record_number;
-    }
-};
+    private boolean isUpToDateContinous(String fileName) {
+        //is it continous (grd/gri)
+        File gri = new File(TabulationSettings.environmental_data_path
+                + fileName + ".gri");
+        File grd = new File(TabulationSettings.environmental_data_path
+                + fileName + ".grd");
 
-/**
- * species record, name and ranking number
- *
- * @author adam
- *
- */
-class SPLSpeciesRecord implements Serializable {
-
-    static final long serialVersionUID = -6084623663963314054L;
-    /**
-     * species name
-     */
-    public String name;
-    /**
-     * species ranking number
-     */
-    public int rank;
-
-    /**
-     * constructor
-     * @param _name as String
-     * @param _rank as int
-     */
-    public SPLSpeciesRecord(String _name, int _rank) {
-        name = _name;
-        rank = _rank;
-    }
-}
-
-class FilteringIndexThread implements Runnable {
-
-    Thread t;
-    LinkedBlockingQueue<String> lbq;
-    int step;
-    int[] target;
-
-    public FilteringIndexThread(LinkedBlockingQueue<String> lbq_) {
-        t = new Thread(this);
-        lbq = lbq_;
-        t.start();
-    }
-
-    public void run() {
-
-        int i, idx;
-        int hits = 0;
-
-        /* get next batch */
-        String next;
-        try {
-            synchronized (lbq) {
-                if (lbq.size() > 0) {
-                    next = lbq.take();
-                } else {
-                    next = null;
-                }
-            }
-
-            System.out.println("A*: " + next);
-
-            FilteringIndex fi = new FilteringIndex();
-
-            while (next != null) {
-                /* update for this layer */
-                fi.layersUpdate(next);
-
-                /* report */
-                System.out.println("D*: " + next);
-
-                /* get next available */
-                synchronized (lbq) {
-                    if (lbq.size() > 0) {
-                        next = lbq.take();
-                    } else {
-                        next = null;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        //extension case alternative
+        if (!gri.exists()) {
+            gri = new File(TabulationSettings.environmental_data_path
+                    + fileName + ".GRI");
         }
+        if (!grd.exists()) {
+            grd = new File(TabulationSettings.environmental_data_path
+                    + fileName + ".GRD");
+        }
+
+        File samD = new File(index_path + "SAM_D_" + fileName + ".dat");
+
+        File splV = new File(index_path + "SPL_V_" + fileName + ".dat");
+        File splR = new File(index_path + "SPL_R_" + fileName + ".dat");
+
+        if (gri.exists() && grd.exists() && samD.exists()
+                && splV.exists() && splR.exists()) {
+            long latestData = Math.max(Math.max(grd.lastModified(), gri.lastModified()), samD.lastModified());
+
+            return splV.lastModified() > latestData
+                    && splR.lastModified() > latestData;
+        }
+
+        return false;
     }
 
-    public boolean isAlive() {
-        return t.isAlive();
+    /**
+     * determine if a SHP/DBF layer's sampling index is up to date.
+     *
+     * index_path + "SAM_D_" + layer.name + ".dat"
+     * index_path + SamplingIndex.CATAGORICAL_PREFIX + layer.name + SamplingIndex.VALUE_POSTFIX
+     *
+     * both dated earlier than
+     *
+     * index_path + "SPL_V_" + layer.name + ".dat"
+     * index_path + "SPL_R_" + layer.name + ".dat"
+     *
+     * @param fileName
+     * @return true if up to date
+     */
+    private boolean isUpToDateCatagorical(String fileName) {
+        //is it continous (grd/gri)
+        File sam = new File(index_path + SamplingIndex.CATAGORICAL_PREFIX + fileName + SamplingIndex.VALUE_POSTFIX);
+
+        File spl0 = new File(index_path
+                + "SPL_" + fileName + "_"
+                + "0.0" + ".dat");
+
+        if (spl0.exists() && sam.exists()) {
+            return spl0.lastModified() > sam.lastModified();
+        }
+
+        return false;
     }
-}
+};

@@ -22,10 +22,10 @@
 		<from>/styles/**</from>
 		<to>/styles/$1</to>
 	</rule>
-	<rule>
-		<from>/mobile/**</from>
-		<to>/mobile/$1</to>
-	</rule>
+        <rule>
+            <from>/mobile/**</from>
+            <to>/mobile/$1</to>
+        </rule>
 	<rule>
 		<from>/output/maxent/**</from>
 		<to>/output/maxent/$1</to>
@@ -98,10 +98,10 @@
 		<from>/logs.zul</from>
 		<to>/logs.zul</to>
 	</rule>
-	<rule>
-		<from>/files.zul</from>
-		<to>/files.zul</to>
-	</rule>
+        <rule>
+            <from>/files.zul</from>
+            <to>/files.zul</to>
+        </rule>
 	<rule>
 		<from>/filtering_cl.html</from>
 		<to>/filtering_cl.html</to>
@@ -109,6 +109,10 @@
 	<rule>
 		<from>/tabulation.zul</from>
 		<to>/tabulation.zul</to>
+	</rule>
+        <rule>
+		<from>/scatterplot.html</from>
+		<to>/scatterplot.html</to>
 	</rule>
 	<rule>
 		<from>/images/**</from>

@@ -16,14 +16,14 @@ import java.util.zip.ZipOutputStream;
 /**
  * Zipper helper class to zip up files.
  * Quick zipper helper class
- * 
+ *
  * @author ajay
  */
 public class Zipper {
 
     /**
-     * zipFile method for zipping a single file. Provide an zip filename. 
-     * 
+     * zipFile method for zipping a single file. Provide an zip filename.
+     *
      * @param infile Input file to be zipped
      * @param outfile Output zipped filename
      */
@@ -35,7 +35,7 @@ public class Zipper {
     /**
      * zipFile method for zipping a single file. Output filename generated
      * based on the input file
-     * 
+     *
      * @param infile Input file to be zipped
      * @return Output zipped filename
      */
@@ -52,7 +52,7 @@ public class Zipper {
      * zipFiles method to zip a bunch of files. Output filename to be provided.
      *
      * @param infiles Input files to be zipped
-     * @param filenames Human-readable filenames 
+     * @param filenames Human-readable filenames
      * @param outfile Output zipped filename
      */
     public static void zipFiles(String[] infiles, String[] filenames, String outfile) {
@@ -93,7 +93,7 @@ public class Zipper {
 
     /**
      * zipFiles method to zip a bunch of files. Output filename to be provided.
-     * 
+     *
      * @param infiles Input files to be zipped
      * @param outfile Output zipped filename
      */
@@ -164,8 +164,8 @@ public class Zipper {
 
     /**
      * Run as a separate class
-     * 
-     * @param args command line or method inputs 
+     *
+     * @param args command line or method inputs
      */
     public static void main(String[] args) {
         /*
@@ -174,7 +174,7 @@ public class Zipper {
 
         outfile = zipFile(infile);
         System.out.println("outfile: " + outfile);
-         * 
+         *
          */
 
 

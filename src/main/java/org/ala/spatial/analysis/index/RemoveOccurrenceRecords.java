@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.analysis.index;
 
 import java.io.BufferedReader;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
  * @author Adam
  */
 public class RemoveOccurrenceRecords {
+
     static String match = null;
 
     /**
@@ -30,8 +30,8 @@ public class RemoveOccurrenceRecords {
      * 
      * @param args
      */
-    static void main(String [] args) {
-        if(args.length > 3) {
+    static void main(String[] args) {
+        if (args.length > 3) {
             match = args[3];
         }
 
@@ -66,10 +66,10 @@ public class RemoveOccurrenceRecords {
                 sa = s.split(",");
 
                 try {
-                    long l = Long.parseLong(sa[0].replace("\"",""));
+                    long l = Long.parseLong(sa[0].replace("\"", ""));
 
                     ids.add(l);
-                } catch (Exception e){
+                } catch (Exception e) {
                 }
             }
             br.close();
@@ -108,20 +108,20 @@ public class RemoveOccurrenceRecords {
 
                 boolean export = true;
                 try {
-                    long l = Long.parseLong(sa[0].replace("\"",""));
+                    long l = Long.parseLong(sa[0].replace("\"", ""));
 
-                    if(java.util.Collections.binarySearch(ids, l) >= 0) {
+                    if (java.util.Collections.binarySearch(ids, l) >= 0) {
                         //don't export
                         export = false;
                         idsRemoved++;
-                    } else if(stringMatch(s)) {
+                    } else if (stringMatch(s)) {
                         export = false;
                         stringMatchesRemoved++;
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                 }
 
-                if(export) {
+                if (export) {
                     fw.append(s).append("\n");
                 }
             }

@@ -465,7 +465,7 @@ public class LayerInfo {
         lyr += "\"" + notes.replaceAll("\n", " ").replaceAll("\"", "\\\"") + "\", "; //
         lyr += "\"" + metadatapath + "\"";
 
-        return lyr; 
+        return lyr;
     }
 
 }

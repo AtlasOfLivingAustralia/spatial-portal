@@ -5,13 +5,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletResponse;
 import org.ala.spatial.analysis.service.FilteringImage;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -50,20 +50,17 @@ public class FilteringWSController {
             long currTime = System.currentTimeMillis();
             pid = "" + currTime;
 
-            HttpSession session = req.getSession(true);
-
-            //File workingDir = new File(session.getServletContext().getRealPath(outputpath + currTime + File.separator));
             File workingDir = new File(TabulationSettings.base_output_dir + outputpath + currTime + File.separator);
             workingDir.mkdirs();
 
             //remove dirs older than 5 days
-            long yesterday = currTime - 1000*60*60*24*5;
+            long yesterday = currTime - 1000 * 60 * 60 * 24 * 5;
             File dirs = new File(TabulationSettings.base_output_dir + outputpath);
-            for(File f : dirs.listFiles()) {
-                if(f.isDirectory() && f.lastModified() < yesterday) {
+            for (File f : dirs.listFiles()) {
+                if (f.isDirectory() && f.lastModified() < yesterday) {
                     try {
                         //delete dir contents
-                        for(File fc : f.listFiles()) {
+                        for (File fc : f.listFiles()) {
                             try {
                                 fc.delete();
                             } catch (Exception e) {
@@ -149,13 +146,9 @@ public class FilteringWSController {
 
                 if (!cType.equalsIgnoreCase("none")) {
 
-                    HttpSession session = req.getSession(true);
-
-                    //File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
                     File workingDir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "filtering" + File.separator + pid + File.separator);
 
                     File file = File.createTempFile("spl", ".png", workingDir);
-                    //File file = new File(workingDir + "/filtering.png");
 
                     filteringImage2 = new FilteringImage(file.getPath(), colours[layer_depth % colours.length]);
 
@@ -206,9 +199,6 @@ public class FilteringWSController {
             HttpServletRequest req) {
         FilteringImage filteringImage2;
         try {
-            HttpSession session = req.getSession(true);
-
-            //File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
             File workingDir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "filtering" + File.separator + pid + File.separator);
 
             File file = File.createTempFile("spl", ".png", workingDir);
@@ -217,8 +207,8 @@ public class FilteringWSController {
             filteringImage2 = new FilteringImage(file.getPath(), 0x00000000);
 
             // apply the filters by iterating thru' the layers from client, make spl, should be one layer
-            LayerFilter [] lf = FilteringService.getFilters(pid);
-            for (int i = 0; i < lf.length; i++) {  
+            LayerFilter[] lf = FilteringService.getFilters(pid);
+            for (int i = 0; i < lf.length; i++) {
                 if (lf[i].getLayer().type.equalsIgnoreCase("environmental")) {
                     filteringImage2.applyFilterAccumulative(lf[i].getLayer().name, lf[i].getMinimum_value(), lf[i].getMaximum_value());
                 } else {
@@ -305,13 +295,9 @@ public class FilteringWSController {
 
                 if (!cType.equalsIgnoreCase("none")) {
 
-                    HttpSession session = req.getSession(true);
-
-                    //File workingDir = new File(session.getServletContext().getRealPath(File.separator + "output" + File.separator + "filtering" + File.separator + pid + File.separator));
                     File workingDir = new File(TabulationSettings.base_output_dir + "output" + File.separator + "filtering" + File.separator + pid + File.separator);
 
                     File file = File.createTempFile("spl", ".png", workingDir);
-                    //File file = new File(workingDir + "/filtering.png");
 
                     filteringImage2 = new FilteringImage(file.getPath(), colours[layer_depth % colours.length]);
 
@@ -399,9 +385,8 @@ public class FilteringWSController {
      * @return
      */
     @RequestMapping(value = "/apply/pid/{pid}/species/list", method = RequestMethod.POST)
-    public
-    @ResponseBody
-    String getSpeciesList(@PathVariable String pid, HttpServletRequest req) {
+    public //@ResponseBody
+            void getSpeciesList(@PathVariable String pid, HttpServletRequest req, HttpServletResponse response) {
         TabulationSettings.load();
 
         long starttime = System.currentTimeMillis();
@@ -413,22 +398,28 @@ public class FilteringWSController {
                 shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
-                return "";  //error
+                return;// "";  //error
             }
 
-            System.out.println("[[[]]] getlist: " + pid + " " + shape);
+            //System.out.println("[[[]]] getlist: " + pid + " " + shape);
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             String list = FilteringService.getSpeciesList(pid, region);
             long endtime = System.currentTimeMillis();
-            System.out.println("getSpeciesCount().length=" + list.length() + " in " + (endtime - starttime) + "ms");
+            //System.out.println("getSpeciesCount().length=" + list.length() + " in " + (endtime - starttime) + "ms");
 
-            return list;
+            response.setContentType("text/plain;charset=UTF-8");
+            ServletOutputStream outStream = response.getOutputStream();
+            outStream.write(list.getBytes("UTF-8"));
+            outStream.flush();
+            outStream.close();
+            //return list;
+            return;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
-        return "";
+        return;//"";
     }
 
     /**
@@ -546,59 +537,6 @@ public class FilteringWSController {
 
             return sbResults.toString();
 
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-        return "";
-    }
-
-    /**
-     * Returns a relative path to a zip file of the filtered georeferenced data
-     *
-     * @param pid
-     * @param shape
-     * @param req
-     * @return
-     */
-    @RequestMapping(value = "/apply/pid/{pid}/samples/geojson", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String getSamplesListAsGeoJSON(@PathVariable String pid, HttpServletRequest req) {
-        TabulationSettings.load();
-
-        try {
-            String shape = req.getParameter("area");
-            if (shape == null) {
-                shape = "none";
-            } else {
-                shape = URLDecoder.decode(shape, "UTF-8");
-            }
-            if (shape.equals("none") && pid.equals("none")) {
-                return "";  //error
-            }
-
-            System.out.println("[[[]]] getsampleslist: " + pid + " " + shape);
-
-            SimpleRegion region = null;
-            ArrayList<Integer> records = null;
-            shape = URLDecoder.decode(shape, "UTF-8");
-            if (shape != null && shape.startsWith("ENVELOPE")) {
-                records = FilteringService.getRecords(shape);
-            } else {
-                region = SimpleShapeFile.parseWKT(shape);
-            }
-
-
-            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
-            String currentPath = TabulationSettings.base_output_dir;
-            String outputpath = currentPath + File.separator + "output" + File.separator + "filtering" + File.separator;
-            File fDir = new File(outputpath);
-            fDir.mkdir();
-
-            String gjsonFile = FilteringService.getSamplesListAsGeoJSON("none" /*TODO: allow pid here*/, region, records, fDir);
-
-            System.out.println("getSamplesListAsGeoJSON:" + gjsonFile);
-            return "output/filtering/" + gjsonFile;
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

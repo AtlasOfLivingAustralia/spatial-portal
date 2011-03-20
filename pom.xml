@@ -6,7 +6,7 @@
     <artifactId>ala-spatial</artifactId>
     <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>Atlas of Living Australia Spatial Portal</name>
+    <name>alaspatial-index2</name>
     <description>This is the ALA Spatial Portal providing access to the core ALA Portal mapping and analyses of occurrence and specimen records from collections in Australia.</description>
     <url>http://www.ala.org.au</url>
     <properties>
@@ -15,6 +15,11 @@
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.13</version>
+        </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-main</artifactId>

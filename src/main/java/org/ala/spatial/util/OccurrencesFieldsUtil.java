@@ -32,8 +32,8 @@ public class OccurrencesFieldsUtil {
     public OccurrencesFieldsUtil(){
         TabulationSettings.load();
         
-        String[] columns = TabulationSettings.occurances_csv_fields;
-        String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
+        String[] columns = TabulationSettings.occurrences_csv_fields;
+        String[] columnsSettings = TabulationSettings.occurrences_csv_field_settings;
 
         /* longitude, latitude and species columns defaults */
         longitudeColumn = 0;
@@ -82,8 +82,8 @@ public class OccurrencesFieldsUtil {
     }
 
     public String[] getOutputColumnNames(){
-        String[] columns = TabulationSettings.occurances_csv_fields;
-        String[] columnsSettings = TabulationSettings.occurances_csv_field_settings;
+        String[] columns = TabulationSettings.occurrences_csv_fields;
+        String[] columnsSettings = TabulationSettings.occurrences_csv_field_settings;
 
         String [] output = new String[columns.length];
 
@@ -117,7 +117,7 @@ public class OccurrencesFieldsUtil {
 
     public int[] getExtraIndexesPos(){
         String[] columns = getOutputColumnNames();
-        String[] lookups = TabulationSettings.occurances_csv_fields_lookups;
+        String[] lookups = TabulationSettings.occurrences_csv_fields_lookups;
 
         int [] output = new int[lookups.length];
 
@@ -131,6 +131,84 @@ public class OccurrencesFieldsUtil {
             }
         }
         return output;
+    }
+
+    /**
+     * return column_positions array with actual column positions
+     * of named columns in the header.
+     *
+     * @param line header of occurrences.csv as String []
+     */
+    public static int [] getColumnPositions(String[] line) throws Exception {
+        String[] columns = TabulationSettings.occurrences_csv_fields;
+        int [] column_positions = new int[columns.length];
+        int i;
+        int j;
+
+        for (i = 0; i < column_positions.length; i++) {
+            column_positions[i] = -1;
+        }
+
+        for (i = 0; i < columns.length; i++) {
+            for (j = 0; j < line.length; j++) {
+                if (columns[i].equalsIgnoreCase(line[j])) {
+                    column_positions[i] = j;
+                    break;
+                }
+            }
+        }
+
+        StringBuffer msg = new StringBuffer();
+        boolean error = false;
+        for (i = 0; i < column_positions.length; i++) {
+            if (column_positions[i] == -1) {
+                msg.append("\r\n").append(columns[i]);
+                error = true;
+            }
+        }
+        if (error) {
+            System.out.println("FILE HEADER:");
+            for (String s : line) {
+                System.out.print(s + ",");
+            }
+            throw new Error("occurrences file has no column: " + msg.toString());
+        }
+
+        return column_positions;
+    }
+
+    /**
+     * returns column_positions array with actual column positions
+     * of sensitive coordinate columns in the header.
+     *
+     * @param line header of occurrences.csv as String []
+     */
+    public static int[] getSensitiveColumnPositions(String[] line) {
+        int[] sensitive_column_positions = new int[3];
+        int j;
+
+        for (j = 0; j < line.length; j++) {
+            if (TabulationSettings.occurrences_id_field.equalsIgnoreCase(line[j])) {
+                sensitive_column_positions[0] = j;
+            } else if (TabulationSettings.occurrences_sen_lat_field.equalsIgnoreCase(line[j])) {
+                sensitive_column_positions[2] = j;
+            } else if (TabulationSettings.occurrences_sen_long_field.equalsIgnoreCase(line[j])) {
+                sensitive_column_positions[1] = j;
+            }
+        }
+
+        if (sensitive_column_positions[0] == -1
+                || sensitive_column_positions[1] == -1
+                || sensitive_column_positions[2] == -1) {
+            System.out.println("cannot find column for one of: "
+                    + TabulationSettings.occurrences_id_field
+                    + ", " + TabulationSettings.occurrences_sen_long_field
+                    + ", " + TabulationSettings.occurrences_sen_lat_field);
+
+            return null;
+        }
+
+        return sensitive_column_positions;
     }
 
 }

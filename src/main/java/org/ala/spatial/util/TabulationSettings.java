@@ -1,6 +1,7 @@
 package org.ala.spatial.util;
 
 import java.io.File;
+import java.io.RandomAccessFile;
 
 /**
  * home of all relevant tabulation settings as loaded from
@@ -20,11 +21,11 @@ public class TabulationSettings {
     public static String db_username;
     public static String db_password;
     /**
-     * table housing species occurances
+     * table housing species occurrences
      */
     public static String source_table_name;
     /**
-     * true if species occurances table has location in field the_geom
+     * true if species occurrences table has location in field the_geom
      */
     public static boolean point_type;
     /**
@@ -36,7 +37,7 @@ public class TabulationSettings {
      */
     public static String latitude_field;
     /**
-     * field in occurances to filter by, likely called <code>species</code>
+     * field in occurrences to filter by, likely called <code>species</code>
      */
     public static String key_field;
     /**
@@ -52,7 +53,7 @@ public class TabulationSettings {
      */
     public static String key_value_postfix;
     /**
-     * array of additional fields available in the occurances table
+     * array of additional fields available in the occurrences table
      * that may be useful, such as <code>family</code> and <code>sample date</code>
      */
     public static Field[] additional_fields;
@@ -83,16 +84,11 @@ public class TabulationSettings {
      */
     public static boolean loaded = false;
     /**
-     * occurances csv file full path
-     *
+     * occurrences csv fields for use
      */
-    public static String occurances_csv;
+    public static String[] occurrences_csv_fields;
     /**
-     * occurances csv fields for use
-     */
-    public static String[] occurances_csv_fields;
-    /**
-     * in the same order as occurances_csv_fields_to_index,
+     * in the same order as occurrences_csv_fields_to_index,
      * "0" to output
      * "1" to sort
      * "2" to sort and index
@@ -101,7 +97,7 @@ public class TabulationSettings {
      * index field.
      *
      */
-    public static String[] occurances_csv_field_settings;
+    public static String[] occurrences_csv_field_settings;
     /**
      * path for common names file;
      * - CSV format
@@ -118,7 +114,7 @@ public class TabulationSettings {
      * alaspatial url for services call
      */
     public static String alaspatial_path;
-    public static String[] occurances_csv_fields_lookups;
+    public static String[] occurrences_csv_fields_lookups;
     /**
      * gdal apps path
      */
@@ -129,8 +125,8 @@ public class TabulationSettings {
     public static String base_output_dir;
     public static String base_output_url;
     /**
-     * base files directory where all the general files for links to users go
-     */
+    * base files directory where all the general files for links to users go
+    */
     public static String base_files_dir;
     /**
      * maxent path
@@ -190,7 +186,7 @@ public class TabulationSettings {
     public static int process_estimate_smoothing;
     /**
      * species list includes one additional (e.g. Family) column in the export,
-     * this is the column order or 2's in occurances_csv_field_settings.
+     * this is the column order or 2's in occurrences_csv_field_settings.
      */
     public static int species_list_first_column_index;
     /**
@@ -198,40 +194,49 @@ public class TabulationSettings {
      *
      * -1 for all (prod)
      */
-    public static int occurances_csv_max_records;
+    public static int occurrences_csv_max_records;
     /**
      * pairs of conceptId's and search field names
      */
-    public static String[] occurances_csv_field_pairs;
+    public static String[] occurrences_csv_field_pairs;
     /**
      * screen friendly names for 2's (hierarchy indexed columns in
      * occurrences file
      */
-    public static String[] occurances_csv_twos_names;
-
+    public static String[] occurrences_csv_twos_names;
     /**
      * fields for geojson calls
      */
     public static int geojson_id;
     public static int geojson_longitude;
     public static int geojson_latitude;
-    public static String [] geojson_property_names;
-    public static int [] geojson_property_fields;
-
+    public static String[] geojson_property_names;
+    public static String[] geojson_property_display_names;
+    public static int[] geojson_property_fields;
+    public static int[] geojson_property_types;
+    public static String[] geojson_property_catagory;
+    public static String[] geojson_property_units;
     /**
      * for sensitive coordinate handling
      */
     public static String occurrences_id_field;
     public static String occurrences_sen_long_field;
     public static String occurrences_sen_lat_field;
-
     public static int cluster_lookup_size;
-
     public static String occurrences_dr_uid;
     public static String citation_url_data_provider;
     public static String citation_url_layer_provider;
     public static String ala_logger_url;
     public static String spatial_logger_url;
+    /**
+     * occurrences_config_path for datasets/versions of occurrences_csv
+     */
+    public static String occurrences_config_path;
+    /**
+     * path to csv file containing:
+     * shape_file_path, scientific name, [optional data, e.g. depth]
+     */
+    public static String shape_intersection_files;
 
     /**
      * loads settings form name of the appropriate xml resource file
@@ -252,8 +257,19 @@ public class TabulationSettings {
             filename = TabulationSettings.class.getResource("/tabulation_settings.xml").getFile();
         } catch (Exception e) {
             SpatialLogger.log("Tabulation Settings", e.toString());
-
         }
+
+        System.out.println("tabulation_settings.xml: " + filename);
+        try {
+            RandomAccessFile raf = new RandomAccessFile(filename, "r");
+            byte[] b = new byte[(int) raf.length()];
+            String s = new String(b, "UTF-8");
+            System.out.println(s);
+            raf.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
 
         java.util.List<Field> fieldlist = new java.util.ArrayList<Field>();
@@ -374,19 +390,17 @@ public class TabulationSettings {
         environmental_data_files = (Layer[]) layerlist.toArray(new Layer[layerlist.size()]);
 
         //additions for indexing
-        occurances_csv = xr.getValue("occurances_csv");
-        System.out.println(occurances_csv);
-        occurances_csv_fields = xr.getValue("occurances_csv_fields").split(",");
-        for (String ocf : occurances_csv_fields) {
+        occurrences_csv_fields = xr.getValue("occurrences_csv_fields").split(",");
+        for (String ocf : occurrences_csv_fields) {
             System.out.println(ocf);
         }
-        occurances_csv_field_settings = xr.getValue("occurances_csv_field_settings").split(",");
-        for (String ocf : occurances_csv_field_settings) {
+        occurrences_csv_field_settings = xr.getValue("occurrences_csv_field_settings").split(",");
+        for (String ocf : occurrences_csv_field_settings) {
             System.out.println(ocf);
         }
 
-        occurances_csv_fields_lookups = xr.getValue("occurances_csv_fields_lookups").split(",");
-        for (String ocf : occurances_csv_fields_lookups) {
+        occurrences_csv_fields_lookups = xr.getValue("occurrences_csv_fields_lookups").split(",");
+        for (String ocf : occurrences_csv_fields_lookups) {
             System.out.println(ocf);
         }
 
@@ -409,7 +423,7 @@ public class TabulationSettings {
 
         base_files_dir = xr.getValue("base_files_dir");
         System.out.println("base_files_dir: " + base_files_dir);
-
+        
         try {
             MAX_RECORD_COUNT_DOWNLOAD = Integer.parseInt(xr.getValue("max_record_count_download"));
         } catch (NumberFormatException nfe) {
@@ -462,22 +476,44 @@ public class TabulationSettings {
         System.out.println("species_list_first_column_index=" + xr.getValue("species_list_first_column_index"));
         species_list_first_column_index = Integer.parseInt(xr.getValue("species_list_first_column_index"));
 
-        occurances_csv_max_records = Integer.parseInt(xr.getValue("occurances_csv_max_records"));
+        occurrences_csv_max_records = Integer.parseInt(xr.getValue("occurrences_csv_max_records"));
 
-        occurances_csv_field_pairs = xr.getValue("occurances_csv_field_pairs").split(",");
+        occurrences_csv_field_pairs = xr.getValue("occurrences_csv_field_pairs").split(",");
 
-        occurances_csv_twos_names = xr.getValue("occurances_csv_twos_names").split(",");
+        occurrences_csv_twos_names = xr.getValue("occurrences_csv_twos_names").split(",");
 
         geojson_id = Integer.parseInt(xr.getValue("geojson_id"));
         geojson_longitude = Integer.parseInt(xr.getValue("geojson_longitude"));
         geojson_latitude = Integer.parseInt(xr.getValue("geojson_latitude"));
         geojson_property_names = xr.getValue("geojson_property_names").split(",");
-        String [] pf = xr.getValue("geojson_property_fields").split(",");
+        geojson_property_display_names = xr.getValue("geojson_property_display_names").split(",");
+        String[] pf = xr.getValue("geojson_property_fields").split(",");
         geojson_property_fields = new int[pf.length];
-        for(int i=0;i<pf.length;i++){
+        for (int i = 0; i < pf.length; i++) {
             geojson_property_fields[i] = Integer.parseInt(pf[i]);
         }
-        
+
+        //double = 0, int = 1, boolean = 2, string = 3
+        String[] pt = xr.getValue("geojson_property_types").split(",");
+        geojson_property_types = new int[pt.length];
+        for (int i = 0; i < pt.length; i++) {
+            if (pt[i].equalsIgnoreCase("double")) {
+                geojson_property_types[i] = 0;
+            } else if (pt[i].equalsIgnoreCase("int")) {
+                geojson_property_types[i] = 1;
+            } else if (pt[i].equalsIgnoreCase("boolean")) {
+                geojson_property_types[i] = 2;
+            } else if (pt[i].equalsIgnoreCase("string")) {
+                geojson_property_types[i] = 3;
+            } else {
+                //error
+                System.out.println("unsupported <geojson_property_types>: " + pt[i]);
+            }
+        }
+
+        geojson_property_catagory = xr.getValue("geojson_property_catagory").split(",");
+        geojson_property_units = xr.getValue("geojson_property_units").split(",");
+
         process_estimate_smoothing = Integer.parseInt(xr.getValue("process_estimate_smoothing"));
 
         occurrences_id_field = xr.getValue("occurrences_id_field");
@@ -491,6 +527,9 @@ public class TabulationSettings {
         citation_url_layer_provider = xr.getValue("citation_url_layer_provider");
         ala_logger_url = xr.getValue("ala_logger_url");
         spatial_logger_url = xr.getValue("spatial_logger_url");
+
+        occurrences_config_path = xr.getValue("occurrences_config_path");
+        shape_intersection_files = xr.getValue("shape_intersection_files");
     }
 
     static public String getPath(String layerName) {

@@ -42,7 +42,6 @@ public class PointsWSController {
                     points[count][1] = Double.parseDouble(line[1]);
                     count++;
                 } catch (Exception e) {
-                    count = count;
                 }
             }
 

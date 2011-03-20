@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import org.ala.spatial.analysis.index.BoundingBoxes;
-import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.TabulationSettings;
@@ -53,8 +53,6 @@ public class LoadedPointsService {
         if (clusters.size() > TabulationSettings.cluster_lookup_size) { //TODO: unique setting
             Long time_min = new Long(0);
             Long time_max = new Long(0);
-            String key = null;
-            Object o = null;
             for (Entry<String, Object[]> e : clusters.entrySet()) {
                 if (time_min == 0 || (Long) e.getValue()[0] < time_min) {
                     time_min = (Long) e.getValue()[0];
@@ -118,7 +116,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    static public double[][] getPoints(String id, SimpleRegion region, ArrayList<Integer> records) {
+    static public double[][] getPoints(String id, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             return lp.getPoints(region, records);
@@ -126,7 +124,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    static public double[] getPointsFlat(String id, SimpleRegion region, ArrayList<Integer> records) {
+    static public double[] getPointsFlat(String id, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             return lp.getPointsFlat(region, records);
@@ -134,7 +132,7 @@ public class LoadedPointsService {
         return null;
     }
 
-    static String getSampling(String id, Layer[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows) {
+    static public String getSampling(String id, Layer[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
         LoadedPoints lp = getLoadedPoints(id);
         if (lp != null) {
             return lp.getSampling(layers, region, records, max_rows);

@@ -29,7 +29,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Controller class to serve available layer info
- * 
+ *
  * @author ajay
  */
 @Controller
@@ -85,12 +85,12 @@ public class LayersController {
             header += "Scope, ";
             header += "Notes, ";
             header += "More information";
-            
-            res.setContentType("application/spc; charset=UTF-8");
+
+            res.setContentType("text/csv; charset=UTF-8");
             res.setHeader("Content-Disposition", "inline;filename=ALA_Spatial_Layers.csv");
             CSVWriter cw = new CSVWriter(res.getWriter());
             cw.writeNext(header.split(","));
-            
+
             Iterator<LayerInfo> it = layers.iterator();
             List<String[]> mylist = new Vector<String[]>();
             while(it.hasNext()) {
@@ -176,7 +176,7 @@ public class LayersController {
 
     /**
      * Action call to get a list of all layers
-     * 
+     *
      * @return List layers
      */
     @RequestMapping(value = LAYERS_LIST, method = RequestMethod.GET)
@@ -202,7 +202,7 @@ public class LayersController {
 
     /**
      * Action call to get a layer info based on it's UID
-     * 
+     *
      * @param uid
      * @return ModelAndView view
      */
@@ -322,7 +322,7 @@ public class LayersController {
     }
 
     /**
-     * 
+     *
      * @param keywords
      * @return
      */

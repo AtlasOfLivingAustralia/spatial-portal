@@ -9,10 +9,9 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
-import org.ala.spatial.util.SimpleShapeFile;
-import org.ala.spatial.util.TabulationSettings;
 
 /**
  *
@@ -64,7 +63,7 @@ public class LoadedPoints {
         attributes.put(name, value);
     }
 
-    public double[][] getPoints(SimpleRegion region, ArrayList<Integer> records) {
+    public double[][] getPoints(SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         if (region == null) {
             return points;
         } else {
@@ -86,7 +85,7 @@ public class LoadedPoints {
         }
     }
 
-    public double[] getPointsFlat(SimpleRegion region, ArrayList<Integer> records) {
+    public double[] getPointsFlat(SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records) {
         if (region == null) {
             double[] output = new double[points.length * 2];
             for (int i = 0; i < points.length; i++) {
@@ -152,7 +151,7 @@ public class LoadedPoints {
         }
     }
 
-    public String getSampling(Layer[] layers, SimpleRegion region, ArrayList<Integer> records, int max_rows) {
+    public String getSampling(Layer[] layers, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, int max_rows) {
         buildSampling(layers);
         ConcurrentHashMap<String, String[]> sampling = (ConcurrentHashMap<String, String[]>) getAttribute("sampling");
         String[] ids = (String[]) getAttribute("id");

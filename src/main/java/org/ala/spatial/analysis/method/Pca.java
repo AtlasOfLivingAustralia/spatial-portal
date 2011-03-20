@@ -300,9 +300,7 @@ public class Pca {
 		double one = 1;
 		double two = 2;
 		
-		int m;
-	    int nm1 = n-1;
-	   
+		int m;	   
 	   int i;
 	   
 	   for(i=1;i<n;i++){
@@ -312,7 +310,7 @@ public class Pca {
 	   
 	   double b = 0;
 	   double f = 0;
-	   double p,r,q,g,c,s;
+	   double p,r,g,c,s;
 	   int ip1,j,k;
 	   
 	   int l;
@@ -425,7 +423,6 @@ public class Pca {
 	static boolean tdiag(int n, double tol, double [] eigval, double [] work, double [][] asevec){
 		double zero = 0;
 		double one = 1;
-		double two = 2;
 		
 		int i,j,l,k;
 		double f,g,h,hh;

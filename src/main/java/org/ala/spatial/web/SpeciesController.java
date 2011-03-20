@@ -1,6 +1,7 @@
 package org.ala.spatial.web;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -11,19 +12,24 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.ala.spatial.analysis.cluster.ClusterLookup;
 import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.analysis.cluster.SpatialCluster3;
-import org.ala.spatial.analysis.index.IndexedRecord;
-import org.ala.spatial.analysis.index.OccurrencesIndex;
+import org.ala.spatial.analysis.index.BoundingBoxes;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
+import org.ala.spatial.analysis.index.OccurrencesFilter;
+import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.service.FilteringService;
-import org.ala.spatial.analysis.service.OccurrencesService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.ShapeLookup;
 import org.ala.spatial.dao.SpeciesDAO;
 import org.ala.spatial.model.ValidTaxonName;
+import org.ala.spatial.util.AndRegion;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
@@ -109,19 +115,16 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/taxon/{name}", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String getTaxonNames(@PathVariable("name") String name) {
+    public //@ResponseBody
+            void getTaxonNames(@PathVariable("name") String name, HttpServletRequest req, HttpServletResponse response) {
         StringBuffer slist = new StringBuffer();
         try {
 
             System.out.println("Looking up names for: " + name);
 
-            TabulationSettings.load();
-
             name = URLDecoder.decode(name, "UTF-8");
 
-            String[] aslist = OccurrencesService.filterSpecies(name, 40);
+            String[] aslist = OccurrencesCollection.findSpecies(name, 40);
             if (aslist == null) {
                 aslist = new String[1];
                 aslist[0] = "";
@@ -131,14 +134,25 @@ public class SpeciesController {
                 slist.append(s).append("\n");
             }
 
-            String s = OccurrencesIndex.getCommonNames(name, aslist);
+            String s = OccurrencesCollection.getCommonNames(name, aslist, 40 - ((aslist==null)?0:aslist.length));
             slist.append(s);
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
 
-        return slist.toString();
+        response.setContentType("text/plain;charset=UTF-8");
+        ServletOutputStream o;
+        try {
+            o = response.getOutputStream();
+            o.write(slist.toString().getBytes("UTF-8"));
+            o.flush();
+            o.close();
+        } catch (IOException ex) {
+            Logger.getLogger(SpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //return slist.toString();
 
     }
 
@@ -206,7 +220,7 @@ public class SpeciesController {
     @ResponseBody
     Hashtable getClusteredRecords(@PathVariable("species") String species, HttpServletRequest req) {
         try {
-            SpatialSettings ssets = new SpatialSettings();
+            //SpatialSettings ssets = new SpatialSettings();
 
             long start = System.currentTimeMillis();
 
@@ -235,7 +249,7 @@ public class SpeciesController {
             System.out.println("req.z: " + zoom);
             System.out.println("req.d: " + pdist);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, null, null, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+            Vector dataPoints = OccurrencesCollection.getRecords(new OccurrencesFilter(species, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
 
             long timePoints = System.currentTimeMillis();
 
@@ -298,9 +312,7 @@ public class SpeciesController {
     @ResponseBody
     Hashtable getClusteredRecords(@PathVariable("species") String species, @PathVariable("area") String area, @PathVariable("id") String id, HttpServletRequest req) {
         try {
-            SpatialSettings ssets = new SpatialSettings();
-
-            long start = System.currentTimeMillis();
+            //SpatialSettings ssets = new SpatialSettings();
 
             int zoom = DEFAULT_MAP_ZOOM;
             int pdist = DEFAULT_PIXEL_DISTANCE;
@@ -338,7 +350,7 @@ public class SpeciesController {
             System.out.println("req.z: " + zoom);
             System.out.println("req.d: " + pdist);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(species, region, null, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+            Vector dataPoints = OccurrencesCollection.getRecords(new OccurrencesFilter(species, region, null, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
 
             long timePoints = System.currentTimeMillis();
 
@@ -386,10 +398,6 @@ public class SpeciesController {
 
             long end = System.currentTimeMillis();
 
-            if (clustered != null) {
-                System.out.println("cluster/species/area: clusters=" + clustered.size() + " datapoints=" + (timePoints - start) + "ms total=" + (end - start) + "ms");
-            }
-
             ClusterLookup.addCluster(id, clustered);
 
             return data;
@@ -409,7 +417,7 @@ public class SpeciesController {
         try {
             SpatialSettings ssets = new SpatialSettings();
 
-            return ClusterLookup.getClusterId(id, cluster, idx);
+            return String.valueOf(ClusterLookup.getClusterId(id, cluster, idx));
 
         } catch (Exception e) {
             System.out.println("getOccurrenceId.error: ");
@@ -424,18 +432,12 @@ public class SpeciesController {
     @ResponseBody
     String getBoundingBox(@PathVariable("lsid") String lsid, HttpServletRequest req) {
         try {
-            SpatialSettings ssets = new SpatialSettings();
+            //SpatialSettings ssets = new SpatialSettings();
 
             lsid = URLDecoder.decode(lsid, "UTF-8");
             lsid = lsid.replaceAll("__", ".");
 
-            
-            double [] bb = OccurrencesIndex.getLsidBoundingBox(lsid);
-
-            StringBuffer sb = new StringBuffer();
-            sb.append(bb[0]).append(",").append(bb[1]).append(",").append(bb[2]).append(",").append(bb[3]);
-
-            return sb.toString();
+            return BoundingBoxes.getLsidBoundingBox(lsid);
         } catch (Exception e) {
             System.out.println("getOccurrenceId.error: ");
             e.printStackTrace(System.out);
@@ -449,15 +451,17 @@ public class SpeciesController {
     @ResponseBody
     String getLsidCount(@PathVariable("lsid") String lsid, HttpServletRequest req) {
         try {
-            SpatialSettings ssets = new SpatialSettings();
+            //SpatialSettings ssets = new SpatialSettings();
 
             lsid = URLDecoder.decode(lsid, "UTF-8");
             lsid = lsid.replaceAll("__", ".");
 
-            IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
+            ArrayList<OccurrenceRecordNumbers> orn = OccurrencesCollection.getRecordNumbers(new OccurrencesFilter(lsid, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
             int count = 0;
-            if (ir != null && ir.length > 0) {
-                count = ir[0].record_end - ir[0].record_start + 1;
+            if (orn != null) {
+                for (OccurrenceRecordNumbers o : orn) {
+                    count += o.getRecords().length;
+                }
             }
             return String.valueOf(count);
         } catch (Exception e) {
@@ -502,16 +506,14 @@ public class SpeciesController {
     @ResponseBody
     Hashtable getClusteredRecordsInArea(@PathVariable("area") String area, @PathVariable("id") String id, HttpServletRequest req) {
         try {
-            SpatialSettings ssets = new SpatialSettings();
-
-            long start = System.currentTimeMillis();
+            //SpatialSettings ssets = new SpatialSettings();
 
             int zoom = DEFAULT_MAP_ZOOM;
             int pdist = DEFAULT_PIXEL_DISTANCE;
             int min_radius = DEFAULT_MIN_RADIUS;
 
             SimpleRegion region = null;
-            ArrayList<Integer> records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             area = URLDecoder.decode(area, "UTF-8");
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(area);
@@ -556,7 +558,16 @@ public class SpeciesController {
 
             System.out.println("area: " + area);
 
-            Vector dataPoints = OccurrencesIndex.sampleSpeciesForClustering(null, region, regionViewport, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+            if (regionViewport != null) {
+                AndRegion ar = new AndRegion();
+                ArrayList<SimpleRegion> asr = new ArrayList<SimpleRegion>(2);
+                asr.add(region);
+                asr.add(regionViewport);
+                ar.setSimpleRegions(asr);
+
+                region = ar;
+            }
+            Vector dataPoints = OccurrencesCollection.getRecords(new OccurrencesFilter(null, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
 
             long timePoints = System.currentTimeMillis();
 
@@ -564,6 +575,9 @@ public class SpeciesController {
             // SpatialCluster3 stuff start
             SpatialCluster3 scluster = new SpatialCluster3();
             Vector<Vector<Record>> clustered = scluster.cluster(dataPoints, pdist, zoom, min_radius);
+
+            long timeClustering = System.currentTimeMillis();
+
             for (int i = 0; clustered != null && i < clustered.size(); i++) {
                 Vector<Record> cluster = clustered.get(i);
 
@@ -600,22 +614,7 @@ public class SpeciesController {
             data.put("type", "FeatureCollection");
             data.put("features", allFeatures);
 
-            /*
-            System.out.println("returning allFeatures:" + allFeatures.toArray());
-            System.out.println("===========================");
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(System.out, data);
-            System.out.println("===========================");
-             *
-             */
-
             ClusterLookup.addCluster(id, clustered);
-
-            long end = System.currentTimeMillis();
-
-            if (clustered != null) {
-                System.out.println("cluster/species/area: clusters=" + clustered.size() + " datapoints=" + (timePoints - start) + "ms total=" + (end - start) + "ms");
-            }
 
             return data;
 
@@ -708,10 +707,14 @@ public class SpeciesController {
 
             String[] lsids = req.getParameterValues("lsid");
 
+            if (lsids == null) {
+                return "";
+            }
+
             System.out.println("[[[]]] getSpeciesInfoInArea: " + area + "\nlsids:" + lsids + "\nactivearea:" + activearea);
 
             SimpleRegion region = null;
-            ArrayList<Integer> records = null;
+            ArrayList<OccurrenceRecordNumbers> records = null;
             area = URLDecoder.decode(area, "UTF-8");
             if (area != null && area.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(area);
@@ -721,7 +724,44 @@ public class SpeciesController {
 
             SimpleRegion aaregion = null;
             if (activearea != null) {
-                aaregion = SimpleShapeFile.parseWKT(activearea);
+                if (activearea.startsWith("ENVELOPE")) {
+                    ArrayList<OccurrenceRecordNumbers> rec = FilteringService.getRecords(activearea);
+                    if (records == null || records.size() == 0) {
+                        records = rec;
+                    } else if (rec != null && rec.size() > 0) {
+                        //join
+                        for (int i = 0; i < records.size(); i++) {
+                            for (int j = 0; j < rec.size(); j++) {
+                                if (records.get(i).getName().equals(rec.get(j).getName())) {
+                                    int[] recA = rec.get(j).getRecords();
+                                    int[] recordsA = records.get(i).getRecords();
+
+                                    int[] newrec = new int[recA.length + recordsA.length];
+                                    System.arraycopy(recordsA, 0, newrec, 0, recordsA.length);
+                                    System.arraycopy(recA, 0, newrec, recordsA.length, recA.length);
+
+                                    //write back
+                                    records.get(i).setRecords(newrec);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    aaregion = SimpleShapeFile.parseWKT(activearea);
+                }
+            }
+            if (aaregion != null) {
+                if (region == null) {
+                    region = aaregion;
+                } else {
+                    AndRegion ar = new AndRegion();
+                    ArrayList<SimpleRegion> asr = new ArrayList<SimpleRegion>(2);
+                    asr.add(region);
+                    asr.add(aaregion);
+                    ar.setSimpleRegions(asr);
+
+                    region = ar;
+                }
             }
 
             String spcount = "";
@@ -730,17 +770,12 @@ public class SpeciesController {
                 String lsid = lsids[i];
                 System.out.println("Looking for species info: " + lsid);
                 if (lsid.equalsIgnoreCase("aa")) {
-                    Vector dp = OccurrencesIndex.sampleSpeciesForClustering(null, region, aaregion, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER);
+                    Vector dp = OccurrencesCollection.getRecords(new OccurrencesFilter(null, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
                     if (dp.size() > 0) {
-                        dataPoints.addAll(dp); 
+                        dataPoints.addAll(dp);
                     }
                 } else {
-
-                    IndexedRecord[] ir = OccurrencesIndex.filterSpeciesRecords(lsid);
-                    if (ir != null && ir.length > 0) {
-                        System.out.println("ir.length: " + ir.length);
-                        dataPoints.addAll(OccurrencesIndex.sampleSpeciesForClustering(lsid, region, null, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
-                    }
+                    dataPoints.addAll(OccurrencesCollection.getRecords(new OccurrencesFilter(lsid, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER)));
                 }
             }
 
@@ -757,8 +792,126 @@ public class SpeciesController {
             return sbInfo.toString();
         } catch (Exception e) {
             System.out.println("error getting species info");
+            e.printStackTrace();
         }
 
         return "";
+    }
+
+    @RequestMapping(value = "/lsid/register", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String lsidRecords(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String[] lsids = req.getParameter("lsids").split(",");
+
+            for (int i = 0; i < lsids.length; i++) {
+                lsids[i] = lsids[i].replaceAll("__", ".");
+            }
+
+            int count = OccurrencesCollection.registerLSID(id, lsids);
+
+            System.out.println("successfully registered records in lsids: " + count);
+
+            return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/area/register", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String areaRecords(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String areaParam = req.getParameter("area");
+
+            SimpleRegion region = null;
+            ;
+            areaParam = URLDecoder.decode(areaParam, "UTF-8");
+
+            int count = 0;
+            if (areaParam != null && areaParam.startsWith("ENVELOPE")) {
+                ArrayList<OccurrenceRecordNumbers> records = FilteringService.getRecords(areaParam);
+                count = OccurrencesCollection.registerRecords(id, records);
+            } else {
+                region = SimpleShapeFile.parseWKT(areaParam);
+                count = OccurrencesCollection.registerArea(id, region);
+            }
+
+            System.out.println("successfully registered records in area: " + count);
+
+            return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/highlight/register", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String highlightRecords(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String lsid = req.getParameter("lsid").replaceAll("__", ".");
+            String pid = req.getParameter("pid");
+            String include = req.getParameter("include");
+
+            pid = URLDecoder.decode(pid, "UTF-8");
+
+            int count = 0;
+            if (pid != null) {
+                count = OccurrencesCollection.registerHighlight(lsid, id, pid, (include != null));
+            }
+
+            System.out.println("successfully registered records in highlight: " + count);
+
+            return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/colouroptions", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String speciesColourOptions(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String lsid = req.getParameter("lsid").replaceAll("__", ".");
+
+            String list = SpeciesColourOption.getColourOptions(lsid);
+
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/colourlegend", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String speciesColourLegend(HttpServletRequest req) {
+        try {
+            String lsid = URLDecoder.decode(req.getParameter("lsid"), "UTF-8").replaceAll("__", ".");
+            String colourMode = URLDecoder.decode(req.getParameter("colourmode"), "UTF-8");
+
+            String pid = SpeciesColourOption.getColourLegend(lsid, colourMode);
+
+            return pid;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

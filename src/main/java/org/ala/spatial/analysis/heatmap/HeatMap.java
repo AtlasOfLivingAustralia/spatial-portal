@@ -428,6 +428,23 @@ public class HeatMap {
         return null;
     }
 
+    private void generateWMSRequest(String baseUrl, String lsid) {
+        try {
+
+            Color c = new Color(0, 0, 255);
+            String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
+            baseUrl = "http://spatial.ala.org.au/geoserver/wms?";
+            baseUrl += "service=WMS&version=1.1.0&request=GetMap&styles=&format=image/png";
+            baseUrl += "&layers=ALA:occurrences";
+            baseUrl += "&transparent=true"; //
+            baseUrl += "&env=color:" + hexColour + ";name:circle;size:8;opacity:1";
+            baseUrl += "&CQL_FILTER=";
+
+
+        } catch (Exception e) {
+        }
+    }
+
     private void generateLogScaleCircle(int dPoints[][]) {
         try {
 

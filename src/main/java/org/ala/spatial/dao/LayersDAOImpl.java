@@ -146,7 +146,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
         //sql += " or lower(type) like ? ";
         sql += " or lower(name) like ? ";
         sql += "  AND enabled=true ";
-        sql += " order by classification1, classification2, displayname ";
+        sql += " order by displayname ";
 
         keywords = "%" + keywords.toLowerCase() + "%";
 

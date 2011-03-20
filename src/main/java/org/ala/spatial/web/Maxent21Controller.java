@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import org.ala.spatial.analysis.index.DatasetMonitor;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
@@ -27,7 +28,6 @@ import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.UploadSpatialResource;
 import org.ala.spatial.util.Zipper;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -47,7 +47,6 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.ListitemRenderer;
-import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Tabbox;
 import org.zkoss.zul.Textbox;
@@ -96,6 +95,9 @@ public class Maxent21Controller extends GenericForwardComposer {
     @Override
     public void doAfterCompose(Component comp) throws Exception {
         super.doAfterCompose(comp);
+
+        //DatasetMonitor dm = new DatasetMonitor();
+        //dm.start();
 
         // load layer list
         _layers = new ArrayList();
@@ -249,7 +251,7 @@ public class Maxent21Controller extends GenericForwardComposer {
 
         // dump the species data to a file
         SamplingService ss = SamplingService.newForLSID(sac.getValue());
-        double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null, (ArrayList<Integer>) null);
+        double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null, null);
         StringBuffer sbSpecies = new StringBuffer();
         for (int i = 0; i < points.length; i+=2) {
             sbSpecies.append("species, " + points[i] + ", " + points[i+1]);
@@ -347,7 +349,7 @@ public class Maxent21Controller extends GenericForwardComposer {
 
         // dump the species data to a file
         SamplingService ss = SamplingService.newForLSID(sac.getValue());
-        double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null, (ArrayList<Integer>) null);
+        double [] points =  ss.sampleSpeciesPoints(sac.getValue(), (SimpleRegion) null,  null);
         StringBuffer sbSpecies = new StringBuffer();
         for (int i = 0; i < points.length; i+=2) {
             sbSpecies.append("species, " + points[i] + ", " + points[i+1] + "\n");
@@ -534,8 +536,6 @@ public class Maxent21Controller extends GenericForwardComposer {
         Layer[] sellayers = new Layer[nameslist.length];
 
         Layer[] _layerlist = ssets.getEnvironmentalLayers();
-        String _layerPath = ssets.getEnvDataPath();
-
 
         for (int j = 0; j < nameslist.length; j++) {
             for (int i = 0; i < _layerlist.length; i++) {

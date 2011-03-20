@@ -41,14 +41,14 @@ public class FilesZK extends GenericForwardComposer {
         super.doAfterCompose(comp);
 
         TabulationSettings.load();
-        UPLOAD_PATH = TabulationSettings.base_files_dir; 
+        UPLOAD_PATH = TabulationSettings.base_files_dir;
     }
 
     /**
      * Upload file. All files uploaded are treated as binary
      * so don't have to check for file type.
      * This is set in the zul via native="true" attribute
-     * 
+     *
      * @param ue
      */
     public void onUpload$btnFileUpload(UploadEvent ue) {
@@ -106,7 +106,7 @@ public class FilesZK extends GenericForwardComposer {
                             //System.out.println("data: " + event.getData() + " ( " + Messagebox.YES + " | " + Messagebox.NO + " )");
                             try {
                                 int response = ((Integer)event.getData()).intValue();
-                                if (response == Messagebox.YES) {                                    
+                                if (response == Messagebox.YES) {
                                     System.out.println("unzipping file to: " + UPLOAD_PATH);
                                     boolean success = Zipper.unzipFile(filename, new FileInputStream(file), UPLOAD_PATH, false);
                                     if (success) {
@@ -115,7 +115,7 @@ public class FilesZK extends GenericForwardComposer {
                                         Messagebox.show("Unable to unzip '" + filename + "' ");
                                     }
                                 } else {
-                                    System.out.println("leaving archive file alone"); 
+                                    System.out.println("leaving archive file alone");
                                 }
                             } catch (NumberFormatException nfe) {
                                 System.out.println("Not a valid response");
@@ -155,5 +155,5 @@ public class FilesZK extends GenericForwardComposer {
         }
     }
 
-    
+
 }
