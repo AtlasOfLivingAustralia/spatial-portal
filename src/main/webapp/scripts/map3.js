@@ -336,17 +336,16 @@ function buildMapReal() {
     loadBaseMap();
 
     // create a new event handler for single click query
-    //    clickEventHandler = new OpenLayers.Handler.Click({
-    //        'map': map
-    //    }, {
-    //        'click': function(e) {
-    //            getpointInfo(e);
-    //            mkpopup(e);
-    //        }
-    //    });
-    //    clickEventHandler.activate();
-    //    clickEventHandler.fallThrough = false;
-
+        clickEventHandler = new OpenLayers.Handler.Click({
+            'map': map
+        }, {
+            'click': function(e) {
+                envLayerInspection(e);
+            }
+        });
+        clickEventHandler.activate();
+        clickEventHandler.fallThrough = true;
+        
     // cursor mods
     map.div.style.cursor="pointer";
     jQuery("#navtoolbar div.olControlZoomBoxItemInactive ").click(function(){
@@ -555,8 +554,10 @@ function addFeatureSelectionTool() {
         }
     });
     mapClickControl = new OpenLayers.Control.Click();
+    mapClickControl.fallThrough = true;
     map.addControl(mapClickControl);
     mapClickControl.activate();
+
 ///////////////////
 //    //  setVectorLayersSelectable();
 //    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
@@ -576,7 +577,6 @@ function addFeatureSelectionTool() {
 function pointSearch(e) {
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
     parent.setSearchPoint(lonlat);
-
 }
 
 function removePointSearch() {
@@ -644,6 +644,7 @@ function registerSpeciesClick() {
         }
     });
     mapClickControl = new OpenLayers.Control.Click();
+    mapClickControl.fallThrough = true;
     map.addControl(mapClickControl);
     mapClickControl.activate();
     ///////////////////
@@ -2853,4 +2854,171 @@ function displayBiostorRecords() {
         parent.displayHTMLInformation('biostorlist',html);
     });
 
+}
+
+var prevHoverData = null;
+var prevHoverRequest = null;
+function getEnvLayerValue(layername, latitude, longitude) {
+    var hoverRequest = layername + latitude + longitude;
+    console.log(hoverRequest);
+    if(hoverRequest == prevHoverRequest){
+        return prevHoverData;
+    }
+    
+    var url = parent.jq('$sat_url')[0].innerHTML + "/alaspatial/ws/intersect/layer?";
+    url += "layers=" + encodeURI(layername) + "&latlong=" + latitude + "," + longitude;
+    var ret = "";
+    $.ajax({
+        url: proxy_script + URLEncode(url),
+        success: function(data){
+            ret = data;
+        },
+        async: false
+    });
+
+    prevHoverData = ret;
+    prevHoverRequest = hoverRequest;
+    return ret;
+}
+
+//test code for env layer intersection
+var last_env_name = null;
+var last_env_valid = false;
+function envLayerInspection(e) {
+    try {
+        var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
+        //find first valid layer, if any
+        for(var i=layers.length-1;i>=0;i--) {
+            var layer = layers[i];
+            var p0 = layer.url.indexOf("geoserver");
+            var p1 = layer.url.indexOf("ALA:");
+            var p2 = layer.url.indexOf("&",p1+1);
+            if(p0 == 0 || p1 == 0) {
+                continue;
+            }
+            if(p2 < 0) p2 = layer.url.length;
+            var name = layer.url.substring(p1+4,p2);
+            console.log("A:" + name);
+            console.log("B:" + layer.url);
+            if(last_env_name != name) {
+                last_env_valid = isEnvLayer(name);
+                last_env_name = name;
+            }
+            if(last_env_valid) {
+                var pt = map.getLonLatFromViewPortPx(new
+                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
+
+                popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                    pt,
+                    new OpenLayers.Size(20,20),
+                    "<div id='sppopup' style='width: 250px; height: 50px;'>" + "Loading..." + "</div>"
+                    ,
+                    null, true, onPopupClose);
+
+                var feature = popup;
+                feature.popup = popup;
+                popup.feature = feature;
+                map.addPopup(popup, true);
+
+                pt = pt.transform(map.projection, map.displayProjection);
+
+                var data = getEnvLayerValue(name, pt.lat, pt.lon);
+                if(data != null && data != "") {
+                    var d = data.split("\t");
+                    //alert("Layer: " + d[0] + "\n\nPoint: " + pt.lon.toPrecision(5) + "," + pt.lat.toPrecision(5) + "\n\nValue: " + d[1]);
+
+                    var infohtml = "<div id='sppopup'> <h2>" + d[0] + "</h2>" +
+                    " Longitude: <b>"+pt.lon.toPrecision(5) + "</b> , Latitude: <b>" + pt.lat.toPrecision(5)  + "</b><br/>" +
+                    " Layer value: <b>" + d[1] + "</b> <br />";
+
+                    if (document.getElementById("sppopup") != null) {
+                        document.getElementById("sppopup").innerHTML = infohtml;
+                    } else {
+                        onPopupClose();
+                    }
+                } else {
+                    onPopupClose();
+                }
+            }
+        }
+    }catch(err){
+        alert(err);
+    }
+}
+function isEnvLayer(name) {
+    var data = getEnvLayerValue(name, -23, 133);
+    return data != null && data != "" && data.indexOf("no data") < 0;
+}
+
+function envLayerHover(e) {
+    try {
+        var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
+        //find first valid layer, if any
+        for(var i=layers.length-1;i>=0;i--) {
+            var layer = layers[i];
+            var p0 = layer.url.indexOf("geoserver");
+            var p1 = layer.url.indexOf("ALA:");
+            var p2 = layer.url.indexOf("&",p1+1);
+            if(p0 < 0 || p1 < 0) {
+                continue;
+            }
+            if(p2 < 0) p2 = layer.url.length;
+            var name = layer.url.substring(p1+4,p2);
+            if(last_env_name != name) {
+                last_env_valid = isEnvLayer(name);
+                last_env_name = name;
+            }
+            if(last_env_valid) {
+                var pt = map.getLonLatFromViewPortPx(new
+                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
+
+                pt = pt.transform(map.projection, map.displayProjection);
+
+                var data = getEnvLayerValue(name, pt.lat, pt.lon);
+                if(data != null && data != "") {
+                    return data;
+                }
+            }
+        }
+    }catch(err){
+    }
+    return null;
+}
+var hovercontrol = null;
+function initHover() {
+    hovercontrol = new OpenLayers.Handler.Hover({
+        'map': map
+    }, {
+        'pause': function(e) {
+            var pt = map.getLonLatFromViewPortPx(new
+                OpenLayers.Pixel(e.xy.x, e.xy.y) );
+
+            pt = pt.transform(map.projection, map.displayProjection);
+    
+            var output = document.getElementById('hoverOutput');
+            var data = envLayerHover(e);
+            if(data != null && data != "") {
+                var d = data.split("\t");
+                output.value = "Layer: " + d[0] + "\nPoint: " + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "\nValue: " + d[1];
+            } else {
+                output.value = "No environmental layer found";
+            }
+        },
+        'delay': 200
+    });    
+    hovercontrol.fallThrough = true;
+    hovercontrol.activate();
+}
+function toggleActiveHover() {
+    if(hovercontrol != null) {
+        hovercontrol.deactivate();
+        hovercontrol = null;
+        document.getElementById("hoverOutput").style.display="none"
+        document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement_off.gif')";
+    } else {
+        initHover();
+        document.getElementById('hoverOutput').value = "hover cursor over environmental layer";
+        document.getElementById("hoverOutput").style.display=""
+        document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement.gif')";
+    }
 }
