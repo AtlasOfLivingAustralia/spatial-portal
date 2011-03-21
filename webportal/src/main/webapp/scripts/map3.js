@@ -2860,7 +2860,7 @@ var prevHoverData = null;
 var prevHoverRequest = null;
 function getEnvLayerValue(layername, latitude, longitude) {
     var hoverRequest = layername + latitude + longitude;
-    console.log(hoverRequest);
+    //console.log(hoverRequest);
     if(hoverRequest == prevHoverRequest){
         return prevHoverData;
     }
@@ -2898,8 +2898,8 @@ function envLayerInspection(e) {
             }
             if(p2 < 0) p2 = layer.url.length;
             var name = layer.url.substring(p1+4,p2);
-            console.log("A:" + name);
-            console.log("B:" + layer.url);
+            //console.log("A:" + name);
+            //console.log("B:" + layer.url);
             if(last_env_name != name) {
                 last_env_valid = isEnvLayer(name);
                 last_env_name = name;
