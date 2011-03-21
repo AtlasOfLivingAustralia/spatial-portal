@@ -12,4 +12,4 @@ then
 fi
 
 # run layers create/update script
-$PSQL_CMD -U postgres spatialdb -f ./layers.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod.sql
