@@ -52,7 +52,7 @@
                 </combobox></hbox>
             </vbox>
         </div>
-        <vbox height="150px">
+        <vbox height="160px">
             <separator />
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
@@ -60,8 +60,7 @@
                     <button sclass="goButton" label="View data" id="scatterplotDataDownload" />
                 </hbox>
             </div>
-            <separator />
-            <label id="tbxMissingCount" />
+            <separator />            
             <hbox>
                 <label id="tbxSelectionCount" />
                 <div id="scatterplotButtons" visible="false">
@@ -70,6 +69,10 @@
             </hbox>
             <label id="tbxRange" />
             <label id="tbxDomain" />
+            <separator />
+            <hbox>
+                <checkbox id="chkSelectMissingRecords" label="select records with missing values " visible="false" /><label id="tbxMissingCount" />
+            </hbox>
         </vbox>
         
         <div id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
@@ -81,7 +84,7 @@
         </html>
 
         <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
-        <textbox id="tbxChartSelection" visible="false" height="315px" />
+        <textbox id="tbxChartSelection" visible="false" height="325px" />
         <script type="text/JavaScript"><![CDATA[
 var startx = 0;
 var starty = 0;

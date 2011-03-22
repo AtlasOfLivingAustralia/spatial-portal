@@ -215,6 +215,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                         <comboitem label="Institution" value="in" />
                                                         <comboitem label="Year" value="y" />
                                                         <comboitem label="Collection" value="c" />
+                                                        <comboitem label="Basis of Record" value="b" />
                                                         <comboitem label="Altitude" value="a" />
                                                         <comboitem label="Depth" value="d" />
                                                     </combobox>
