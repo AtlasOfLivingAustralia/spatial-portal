@@ -50,6 +50,7 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
@@ -87,6 +88,8 @@ public class ScatterplotWCController extends UtilityComposer {
     String imagePath;
     String results;
     int missingCount;
+    Checkbox chkSelectMissingRecords;
+    double [] prevSelection = null;
 
     @Override
     public void afterCompose() {
@@ -248,34 +251,6 @@ public class ScatterplotWCController extends UtilityComposer {
                 coordsDbl[i] = Double.parseDouble(coordsStr[i]);
             }
 
-            /*
-            //allow offset fix from onChange msg
-            int x1off = 56;            
-            int y1off = 30;
-            int x2off = 500 - 56 - 4;
-            int y2off = 300 - 30 - 56;
-            if(coordsDbl.length > 7) {
-            x1off = (int) coordsDbl[4];
-            y1off = (int) coordsDbl[5];
-            x2off = (int) coordsDbl[6];
-            y2off = (int) coordsDbl[7];
-            }
-
-            //common values
-            double domainRange = plot.getDomainAxis().getUpperBound() - plot.getDomainAxis().getLowerBound();
-            double domainMax = plot.getDomainAxis().getUpperBound();
-            double rangeRange = plot.getRangeAxis().getUpperBound() - plot.getRangeAxis().getLowerBound();
-            double rangeMin = plot.getRangeAxis().getLowerBound();
-
-            //scale coords into axis values
-            double x1 = (coordsDbl[0] - x1off) / (double) (x2off - x1off) * rangeRange + rangeMin;
-            double x2 = (coordsDbl[2] + coordsDbl[0] - x1off) / (double) (x2off - x1off) * rangeRange + rangeMin;
-            //y is desc order scale
-            double y1 = domainMax - (coordsDbl[1] - y1off) / (double) (y2off - y1off) * domainRange;
-            double y2 = domainMax - (coordsDbl[3] + coordsDbl[3] - y1off) / (double) (y2off - y1off) * domainRange;
-             *
-             */
-
             //chart area is wrong, but better than the above
             double tx1 = plot.getRangeAxis().java2DToValue(coordsDbl[0], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.BOTTOM);
             double tx2 = plot.getRangeAxis().java2DToValue(coordsDbl[2], chartRenderingInfo.getPlotInfo().getDataArea(), RectangleEdge.BOTTOM);
@@ -286,8 +261,13 @@ public class ScatterplotWCController extends UtilityComposer {
             double y1 = Math.min(ty1, ty2);
             double y2 = Math.max(ty1, ty2);
 
+            prevSelection = new double[4];
+            prevSelection[0] = x1;
+            prevSelection[1] = x2;
+            prevSelection[2] = y1;
+            prevSelection[3] = y2;
 
-            registerScatterPlotSelection(x1, x2, y1, y2);
+            registerScatterPlotSelection();
 
             ScatterplotData d = getScatterplotData();
             d.setSelection(new Rectangle2D.Double(x1, y1, x2, y2));
@@ -433,9 +413,11 @@ public class ScatterplotWCController extends UtilityComposer {
                 scatterplotDownloads.setVisible(true);
 
                 if(missingCount > 0) {
-                    tbxMissingCount.setValue("Records with missing values: " + missingCount);
+                    tbxMissingCount.setValue("(" + missingCount + ")");
+                    chkSelectMissingRecords.setVisible(true);
                 } else {
                     tbxMissingCount.setValue("");
+                    chkSelectMissingRecords.setVisible(false);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -447,22 +429,40 @@ public class ScatterplotWCController extends UtilityComposer {
         }
     }
 
-    private void registerScatterPlotSelection(double x1, double x2, double y1, double y2) {
+    private void registerScatterPlotSelection() {
         try {
+            double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+            if(prevSelection != null) {
+                x1 = prevSelection[0];
+                x2 = prevSelection[1];
+                y1 = prevSelection[2];
+                y2 = prevSelection[3];
+                annotation = new XYBoxAnnotation(y1, x1, y2, x2);
+            } else {
+                annotation = null;
+            }
+
             if (data.getLsid() != null && data.getLsid().length() > 0
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
                 StringBuffer sbProcessUrl = new StringBuffer();
                 sbProcessUrl.append(satServer).append("/alaspatial/ws/sampling/scatterplot/register?");
                 sbProcessUrl.append("lsid=").append(URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
-                //String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
-                sbProcessUrl.append("&param1=double,").append(URLEncoder.encode(data.getLayer1(), "UTF-8")).append(",").append(y1).append(",").append(y2);
-                sbProcessUrl.append("&param2=double,").append(URLEncoder.encode(data.getLayer2(), "UTF-8")).append(",").append(x1).append(",").append(x2);
-                /*
-                if (data.getPid() != null && data.getPid().length() > 0) {
-                sbProcessUrl.append("&pid=").append(URLEncoder.encode(data.getPid(), "UTF-8"));
+
+                int pos = 0;
+                if(prevSelection != null) {
+                    sbProcessUrl.append("&param").append(pos).append("=and,double,").append(URLEncoder.encode(data.getLayer1(), "UTF-8")).append(",").append(y1).append(",").append(y2);
+                    pos++;
+                    sbProcessUrl.append("&param").append(pos).append("=and,double,").append(URLEncoder.encode(data.getLayer2(), "UTF-8")).append(",").append(x1).append(",").append(x2);
+                    pos++;
                 }
-                sbProcessUrl.append("&bounds=").append(y1).append(",").append(y2).append(",").append(x1).append(",").append(x2);*/
+
+                if(chkSelectMissingRecords.isChecked()) {
+                    sbProcessUrl.append("&param").append(pos).append("=or,double,").append(URLEncoder.encode(data.getLayer1(), "UTF-8")).append(",").append("NaN").append(",").append("NaN");
+                    pos++;
+                    sbProcessUrl.append("&param").append(pos).append("=or,double,").append(URLEncoder.encode(data.getLayer2(), "UTF-8")).append(",").append("NaN").append(",").append("NaN");
+                    pos++;
+                }
 
                 System.out.println(sbProcessUrl.toString());
 
@@ -500,6 +500,10 @@ public class ScatterplotWCController extends UtilityComposer {
         tbxSelectionCount.setValue("");
         tbxRange.setValue("");
         tbxDomain.setValue("");
+
+        prevSelection = null;
+
+        chkSelectMissingRecords.setChecked(false);
 
         getScatterplotData().setEnabled(false);
 
@@ -667,5 +671,29 @@ public class ScatterplotWCController extends UtilityComposer {
 
     void refreshMapLayer() {
         mapLayer = getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
+    }
+
+    public void onCheck$chkSelectMissingRecords(Event event) {
+        try {
+            registerScatterPlotSelection();
+
+            ScatterplotData d = getScatterplotData();
+            d.setEnabled(true);
+
+            //refresh mapLayer
+            refreshMapLayer();
+
+            mapLayer.setHighlight(data.getPid());
+
+            getMapComposer().applyChange(mapLayer);
+
+            tbxChartSelection.setText("");
+
+            redraw();
+        } catch (Exception e) {
+            e.printStackTrace();
+            clearSelection();
+            getMapComposer().applyChange();
+        }
     }
 }
