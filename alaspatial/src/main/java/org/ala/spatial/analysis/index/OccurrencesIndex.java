@@ -2075,9 +2075,9 @@ public class OccurrencesIndex {
                 for (int i = 0; i < len; i++) {
                     if(d[i] <= max && d[i] >= min) {
                         highlightCount[i]++;
-                    } else if(Float.isNaN(d[i]) && max >= 0 && min <=0) {
-                        highlightCount[i]++;
-                    }
+                    } //else if(Float.isNaN(d[i]) && max >= 0 && min <=0) {
+                      //  highlightCount[i]++;
+                    //}
                 }
             }
         }
