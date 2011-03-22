@@ -814,9 +814,15 @@ public class SpeciesColourOption {
                     highlight = new boolean[dArray.length];
                     dmin = (Double) object[0];
                     dmax = (Double) object[1];
-                    for (i = 0; i < dArray.length; i++) {
-                        highlight[i] = (dArray[i] <= dmax && dArray[i] >= dmin);
-                                //|| (Double.isNaN(dArray[i]) && dmax >= 0 && dmin <= 0);
+                    if(Double.isNaN(dmax) || Double.isNaN(dmin)) {
+                        for (i = 0; i < dArray.length; i++) {
+                            highlight[i] = Double.isNaN(dArray[i]);
+                        }
+                    } else {
+                        for (i = 0; i < dArray.length; i++) {
+                            highlight[i] = (dArray[i] <= dmax && dArray[i] >= dmin);
+                                    //|| (Double.isNaN(dArray[i]) && dmax >= 0 && dmin <= 0);
+                        }
                     }
                 }
                 break;
@@ -825,9 +831,15 @@ public class SpeciesColourOption {
                     highlight = new boolean[iArray.length];
                     imin = (Integer) object[0];
                     imax = (Integer) object[1];
-                    for (i = 0; i < iArray.length; i++) {
-                        highlight[i] = (iArray[i] <= imax && iArray[i] >= imin);
-                               // || (iArray[i] == Integer.MIN_VALUE && imax >= 0 && imin <= 0);
+                    if(Integer.MIN_VALUE == imin) {
+                        for (i = 0; i < dArray.length; i++) {
+                            highlight[i] = Double.isNaN(dArray[i]);
+                        }
+                    } else {
+                        for (i = 0;i < iArray.length; i++) {
+                            highlight[i] = (iArray[i] <= imax && iArray[i] >= imin);
+                                   // || (iArray[i] == Integer.MIN_VALUE && imax >= 0 && imin <= 0);
+                        }
                     }
                 }
                 break;

@@ -1,6 +1,13 @@
 package org.ala.spatial.web.services;
 
+import java.awt.Color;
+import java.awt.PaintContext;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.io.File;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -15,15 +22,20 @@ import java.util.Vector;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.index.SpeciesIndex;
+import org.ala.spatial.analysis.legend.Legend;
+import org.ala.spatial.analysis.legend.LegendEvenInterval;
+import org.ala.spatial.analysis.legend.LegendEvenIntervalLog10;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.AnalysisQueue;
 import org.ala.spatial.util.CitationService;
+import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.OccurrencesFieldsUtil;
@@ -32,6 +44,9 @@ import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Zipper;
+import org.jfree.data.DomainOrder;
+import org.jfree.data.general.DatasetChangeListener;
+import org.jfree.data.general.DatasetGroup;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,11 +54,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.encoders.EncoderUtil;
 import org.jfree.chart.encoders.ImageFormat;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.GrayPaintScale;
+import org.jfree.chart.renderer.LookupPaintScale;
+import org.jfree.chart.renderer.PaintScale;
+import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.xy.DefaultXYZDataset;
+import org.jfree.data.xy.XYZDataset;
+import org.jfree.ui.RectangleAnchor;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -528,7 +552,7 @@ public class SamplingWSController {
 
             //count parameters
             int paramCount = 0;
-            while(req.getParameter("param" + (paramCount+1)) != null) {
+            while(req.getParameter("param" + (paramCount)) != null) {
                 paramCount++;
             }
             Object [] filters = new Object[paramCount];
@@ -537,33 +561,53 @@ public class SamplingWSController {
                 String [] parts = param.split(",");
                 Object [] o = null;
                 //type is first, then name, then any values
-                if(parts[0].equalsIgnoreCase("string")) {
-                    o = new Object[2];
-                    o[0] = parts[1];
-                    o[1] = java.util.Arrays.copyOfRange(parts, 2, parts.length);
-                } else if(parts[0].equalsIgnoreCase("integer")) {
+                if(parts[1].equalsIgnoreCase("string")) {
                     o = new Object[3];
-                    o[0] = parts[1];
+                    o[0] = parts[0];
+                    o[1] = parts[1];
+                    o[2] = java.util.Arrays.copyOfRange(parts, 2, parts.length);
+                } else if(parts[1].equalsIgnoreCase("integer")) {
+                    o = new Object[4];
+                    o[0] = parts[0];
+                    o[1] = parts[2];
                     try {
-                        o[1] = Integer.parseInt(parts[2]);
-                        o[2] = Integer.parseInt(parts[3]);
+                        if(parts[3].equalsIgnoreCase("NaN")) {
+                            o[2] = Integer.MIN_VALUE;
+                        } else {
+                            o[2] = Integer.parseInt(parts[3]);
+                        }
+                        if(parts[4].equalsIgnoreCase("NaN")) {
+                            o[3] = Integer.MIN_VALUE;
+                        } else {
+                            o[3] = Integer.parseInt(parts[4]);
+                        }
                     } catch (Exception e) {
                         o = null;
                     }
-                } else if(parts[0].equalsIgnoreCase("double")) {
-                    o = new Object[3];
-                    o[0] = parts[1];
+                } else if(parts[1].equalsIgnoreCase("double")) {
+                    o = new Object[4];
+                    o[0] = parts[0];
+                    o[1] = parts[2];
                     try {
-                        o[1] = Double.parseDouble(parts[2]);
-                        o[2] = Double.parseDouble(parts[3]);
+                        if(parts[3].equalsIgnoreCase("NaN")) {
+                            o[2] = Double.NaN;
+                        } else {
+                            o[2] = Double.parseDouble(parts[3]);
+                        }
+                        if(parts[4].equalsIgnoreCase("NaN")) {
+                            o[3] = Double.NaN;
+                        } else {
+                            o[3] = Double.parseDouble(parts[4]);
+                        }
                     } catch (Exception e) {
                         o = null;
                     }
-                } else if(parts[0].equalsIgnoreCase("boolean")) {
-                    o = new Object[2];
-                    o[0] = parts[1];                    
+                } else if(parts[1].equalsIgnoreCase("boolean")) {
+                    o = new Object[3];
+                    o[1] = parts[0];
+                    o[2] = parts[2];
                     try {
-                        o[1] = Boolean.parseBoolean(parts[2]);
+                        o[3] = Boolean.parseBoolean(parts[3]);
                     } catch (Exception e) {
                         o = null;
                     }
@@ -592,7 +636,11 @@ public class SamplingWSController {
      * filter: [lsid] + [area]
      * series: [taxon level] or [string attribute] or [boolean attribute] or [shape file layer]
      * xaxis: [taxon level] or [attribute] or [layer]
+     *        Optional ',' + min + ' ' max
+     *        Optional ',' + categories delimited by '\t'
      * yaxis: [taxon level] or [attribute] or [layer] or [count type=countspecies, countoccurrence, size of area]
+     *        Optional ',' + min + ' ' max
+     *        Optional ',' + categories delimited by '\t'
      * zaxis: [count type=species, occurrence, size of area]
      *
      * Types of chart basis:
@@ -721,7 +769,7 @@ public class SamplingWSController {
                     return null;
                 }
 
-                 //identify columns to keep
+                //identify columns to keep
                 int [] fetchColumns = new int[fetch.length];
                 int fetchColumnsCount = 0;
                 for(int i=0;i<results[0].length;i++) {
@@ -875,12 +923,141 @@ public class SamplingWSController {
             } else {
                 //bB
 
+                //TODO: more than env layers
+                Layer [] layers = new Layer[2];
+                double [][] extents = new double[2][];
+                for(int i=1;i<3;i++) {
+                    String [] s = fetch[i].split(",");
+                    layers[i-1] = Layers.getLayer(s[0]);
+                    if(s.length > 2) {
+                        double [] e = new double[2];
+                        e[0] = Double.parseDouble(s[1]);
+                        e[1] = Double.parseDouble(s[2]);
+                        extents[i-1] = e;
+                    }
+                }
+                
+                Legend [] legends = new Legend[2];
+
+                float [][] data = new float[2][];
+                float [][] cutoffs = new float[2][];
+               
+                //determine scales
+                Grid g = null;
+
+                for(int i=0;i<layers.length;i++) {
+                    g = Grid.getGrid(TabulationSettings.environmental_data_path + layers[i].name);
+
+                    float [] f = g.getGrid().clone();   //Aligned grid
+
+                    //are extents present?
+                    if(extents[i] != null) {
+                        for(int j=0;j<f.length;j++) {
+                            if(Float.isNaN(f[j]) || f[j] < extents[i][0] || f[j] > extents[i][1]) {
+                                f[j] = Float.NaN;
+                            }
+                        }
+                    }
+                    data[i] = f.clone();
+                    java.util.Arrays.sort(f);
+
+                    Legend lei = new LegendEvenInterval();
+                    lei.generate(f);
+
+                    //Legend leil10 = new LegendEvenIntervalLog10();
+                    //leil10.generate(f);
+                    //if(lei.evaluateStdDevArea(data[i]) < leil10.evaluateStdDevArea(f)) {
+                    //    legends[i] = lei;
+                    //} else {
+                    //    legends[i] = leil10;
+                    //}
+                    legends[i] = lei;
+
+                    cutoffs[i] = legends[i].getCutoffFloats();
+                }
+
+                //build
+                int len = data[0].length;
+                int divs = 10;  //same as number of cutpoints in Legend
+                double [][] area = new double[divs][divs];
+
+                for(int i=0;i<cutoffs[0].length;i++) {
+                    System.out.println(cutoffs[0][i] + "," + cutoffs[1][i]);
+                }
+
+                for(int i=0;i<len;i++) {
+                    if(Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
+                        continue;
+                    }
+                    int x = getPos(data[0][i], cutoffs[0]);
+                    int y = getPos(data[1][i], cutoffs[1]);
+
+                    area[x][y] += cellArea(g.nrows - 1 - (i / g.ncols));
+                }
+
+                //normalize
+                double min, max;
+                min = max = area[0][0];
+                for(int i=0;i<divs;i++) {
+                    for(int j=0;j<divs;j++) {
+                        if(min > area[i][j]) {
+                            min = area[i][j];
+                        }
+                        if(max < area[i][j]) {
+                            max = area[i][j];
+                        }
+                    }
+                }
+                for(int i=0;i<divs;i++) {
+                    for(int j=0;j<divs;j++) {
+                        if(max != min) {
+                            area[i][j] /= (max - min);
+                        } else {
+                            area[i][j] = 1;
+                        }
+                    }
+                }
+
+                //to csv
+                StringBuilder sb = new StringBuilder();
+                sb.append(",").append(layers[1].display_name).append("\n").append(layers[0].display_name);
+                for(int j=0;j<divs;j++) {
+                    sb.append(",").append(cutoffs[1][j]);
+                }
+                for(int i=0;i<divs;i++) {
+                    sb.append("\n").append(cutoffs[0][i]);
+                    for(int j=0;j<divs;j++) {
+                        sb.append(",").append(area[i][j]);
+                    }
+                }
+
+                return sb.toString();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    int getPos(float d, float[] cutoffs) {
+        int pos = java.util.Arrays.binarySearch(cutoffs, d);
+        if(pos < 0) {
+            pos = (pos * -1) - 1;
+        }
+
+        return pos;
+    }
+
+    static double [] commonGridLatitudeArea = null;
+    double cellArea(int commonGridY) {
+        if(commonGridLatitudeArea == null) {
+            commonGridLatitudeArea = FilteringIndex.getCommonGridLatitudeArea();
+        }
+        if(commonGridY == commonGridLatitudeArea.length) {
+            commonGridY--;
+        }
+        return commonGridLatitudeArea[commonGridY];
     }
 
     /**
@@ -998,21 +1175,182 @@ public class SamplingWSController {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
-//
-//        try {
-//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//            ImageIO.write(img, "png", outputStream);
-//            ServletOutputStream outStream = response.getOutputStream();
-//            outStream.write(outputStream.toByteArray());
-//            outStream.flush();
-//            outStream.close();
-//        } catch (IOException ex) {
-//            Logger.getLogger(WMSController.class.getName()).log(Level.SEVERE, null, ex);
-//        }
+        }     
+    }
 
-     
+    @RequestMapping(value = "/wms/block", method = RequestMethod.GET)
+    public void getBlockImage(
+            @RequestParam(value = "ENVLIST", required = true, defaultValue = "") String envlist,
+            @RequestParam(value = "WIDTH", required = false, defaultValue = "640") String widthString,
+            @RequestParam(value = "HEIGHT", required = false, defaultValue = "480") String heightString,
+            @RequestParam(value = "DIVS", required = false, defaultValue = "10") String divsString,
+            HttpServletRequest request, HttpServletResponse response) {
+
+        long start = System.currentTimeMillis();
+
+        response.setHeader("Cache-Control", "max-age=86400"); //age == 1 day
+        response.setContentType("image/png"); //only png images generated
+
+        try {
+            int divs = Integer.parseInt(divsString);
+            int width = Integer.parseInt(widthString);
+            int height = Integer.parseInt(heightString);
+
+            //get data
+            String[] fetch = envlist.split(":");
+
+                Layer [] layers = new Layer[2];
+                double [][] extents = new double[2][];
+                for(int i=0;i<2;i++) {
+                    String [] s = fetch[i].split(",");
+                    layers[i] = Layers.getLayer(s[0]);
+                    if(s.length > 2) {
+                        double [] e = new double[2];
+                        e[0] = Double.parseDouble(s[1]);
+                        e[1] = Double.parseDouble(s[2]);
+                        extents[i] = e;
+                    }
+                }
+
+                Legend [] legends = new Legend[2];
+
+                float [][] data = new float[2][];
+                float [][] cutoffs = new float[2][];
+
+                //determine scales
+                Grid g = null;
+
+                for(int i=0;i<layers.length;i++) {
+                    g = Grid.getGrid(TabulationSettings.environmental_data_path + layers[i].name);
+
+                    float [] f = g.getGrid().clone();   //Aligned grid
+
+                    //are extents present?
+                    if(extents[i] != null) {
+                        for(int j=0;j<f.length;j++) {
+                            if(Float.isNaN(f[j]) || f[j] < extents[i][0] || f[j] > extents[i][1]) {
+                                f[j] = Float.NaN;
+                            }
+                        }
+                    }
+                    data[i] = f.clone();
+                    java.util.Arrays.sort(f);
+
+                    Legend lei = new LegendEvenInterval();
+                    lei.generate(f);
+
+                    legends[i] = lei;
+
+                    //cutoffs[i] = legends[i].getCutoffFloats();
+                    float min = legends[i].getMinMax()[0];
+                    float max = legends[i].getMinMax()[1];
+                    cutoffs[i] = new float[divs];
+                    for(int j=1;j<=divs;j++) {
+                        if(j == divs) {
+                            cutoffs[i][j-1] = max;
+                        } else {
+                            cutoffs[i][j-1] = (float) ((j/(float)divs * (max-min)) + min);
+                        }
+                    }
+                }
+
+                //build
+                int len = data[0].length;
+                double [][] area = new double[divs][divs];
+
+                for(int i=0;i<len;i++) {
+                    if(Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
+                        continue;
+                    }
+                    int x = getPos(data[0][i], cutoffs[0]);
+                    int y = getPos(data[1][i], cutoffs[1]);
+
+                    area[x][y] += cellArea(g.nrows - 1 - (i / g.ncols));
+                }
+
+                //normalize
+                double min, max;
+                min = max = area[0][0];
+                for(int i=0;i<divs;i++) {
+                    for(int j=0;j<divs;j++) {
+                        if(min > area[i][j]) {
+                            min = area[i][j];
+                        }
+                        if(max < area[i][j]) {
+                            max = area[i][j];
+                        }
+                    }
+                }
+                for(int i=0;i<divs;i++) {
+                    for(int j=0;j<divs;j++) {
+                        if(max != min) {
+                            area[i][j] /= (max - min);
+                        } else {
+                            area[i][j] = 1;
+                        }
+                    }
+                }
+
+            double xdiv = (cutoffs[0][1] - cutoffs[0][0]);
+            double ydiv = (cutoffs[1][1] - cutoffs[1][0]);
+
+            NumberAxis x = new NumberAxis(layers[0].display_name);
+            //x.setUpperMargin(0);
+           //x.setLowerMargin(0);
+            x.setUpperBound(legends[0].getMinMax()[1]);
+            x.setLowerBound(legends[0].getMinMax()[0]);
+            x.setTickUnit(new NumberTickUnit(xdiv*20));
+            NumberAxis y = new NumberAxis(layers[1].display_name);
+            y.setUpperMargin(0);
+            y.setLowerMargin(0);
+            y.setUpperBound(legends[1].getMinMax()[1]);
+            y.setLowerBound(legends[1].getMinMax()[0]);
+            y.setTickUnit(new NumberTickUnit(ydiv*20));
+            DefaultXYZDataset defaultXYZDataset = new DefaultXYZDataset();
+
+            double [][] dat = new double[3][area.length * area.length];
+            int pos = 0;
+            
+            for(int i=0;i<area.length;i++) {
+                for(int j=0;j<area.length;j++) {
+                    if(area[i][j] > 0) {
+                        dat[0][pos] = cutoffs[0][i] - xdiv;
+                        dat[1][pos] = cutoffs[1][j] - ydiv;
+                        dat[2][pos] = area[i][j];
+                        pos++;
+                    }
+                }
+            }
+            defaultXYZDataset.addSeries("",dat);
+            XYBlockRenderer xyBlockRenderer = new XYBlockRenderer();
+            LookupPaintScale ramp = new LookupPaintScale();
+            for(int i=0;i<=10;i++) {
+                ramp.add(i/10.0,new Color(Legend.colours[i]));
+            }
+            xyBlockRenderer.setPaintScale(ramp);
+            xyBlockRenderer.setBlockHeight(ydiv);
+            xyBlockRenderer.setBlockWidth(xdiv);
+            xyBlockRenderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
+            XYPlot plot = new XYPlot(defaultXYZDataset,x,y, xyBlockRenderer);
+            JFreeChart jChart = new JFreeChart("Intersecting Area", plot);
+
+            plot = (XYPlot) jChart.getPlot();
+            ChartRenderingInfo chartRenderingInfo = new ChartRenderingInfo();
+            jChart.removeLegend();
+            jChart.setBackgroundPaint(Color.white);
+
+            BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
+            byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
+
+            ServletOutputStream outStream = response.getOutputStream();
+            outStream.write(bytes);
+            outStream.flush();
+            outStream.close();
+
+            System.out.println("[block " + height + "," + width + "," + envlist + ": " + (System.currentTimeMillis() - start) + "ms]");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
-
-

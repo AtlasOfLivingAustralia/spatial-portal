@@ -20,7 +20,7 @@ public abstract class Legend {
      *
      * There are groups+1 colours
      */
-    final static int[] colours = {0x00002DD0,0x00005BA2,0x00008C73,0x0000B944,0x0000E716,0x00A0FF00,0x00FFFF00,0x00FFC814,0x00FFA000,0x00FF5B00,0x00FF0000};
+    final public static int[] colours = {0x00002DD0,0x00005BA2,0x00008C73,0x0000B944,0x0000E716,0x00A0FF00,0x00FFFF00,0x00FFC814,0x00FFA000,0x00FF5B00,0x00FF0000};
 
     /*
      * for determining the records that are equal to the maximum value
@@ -142,7 +142,7 @@ public abstract class Legend {
      * @param d
      * @return
      */
-    double evaluateStdDev(float[] d) {
+    public double evaluateStdDev(float[] d) {
         if(Float.isNaN(max)) {
             return Double.NaN;
         }
@@ -203,7 +203,7 @@ public abstract class Legend {
      * @param d
      * @return
      */
-    double evaluateStdDevArea(float[] d) {
+    public double evaluateStdDevArea(float[] d) {
         if(Float.isNaN(max)) {
             return Double.NaN;
         }

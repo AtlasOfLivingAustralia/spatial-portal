@@ -2031,74 +2031,94 @@ public class OccurrencesIndex {
 
         byte[] highlightCount = new byte[len];
 
-        for(int j=0;j<numFilters;j++) {
-            Object [] f = (Object[]) filters[j];
-            if(f.length == 2) { //sco or contextual
-                SpeciesColourOption sco = SpeciesColourOption.fromName((String) f[0], false);
-                if(sco != null) {
-                    sco.assignData(r, attributesMap.get(sco.getName()));
-                    boolean [] h = sco.getFiltered((Object[]) f[1]);
-                    for (int i = 0; i < len; i++) {
-                        if(h[i]){
-                            highlightCount[i]++;
-                        }
-                    }
-                } else { //contextual
-                    Layer layer = Layers.getLayer((String) f[0]);
-                    String [] filteredCategories = (String []) f[1];
-                    String[] lookup_values = SamplingIndex.getLayerCatagories(
-                        layer);
 
-                    int [] selection = new int[filteredCategories.length];
-                    for(int i=0;i<selection.length;i++) {
-                        selection[i] = java.util.Arrays.binarySearch(lookup_values, filteredCategories[i]);
-                        if(selection[i] < 0) {
-                            selection[i] = -1;
-                        }
-                    }
+        //do and's first
+        boolean[] highlight = new boolean[len];
+        int numAndFilters = 0;
+        for(int andOr = 0; andOr < 2; andOr ++) {
+            for(int j=0;j<numFilters;j++) {
+                Object [] f = (Object[]) filters[j];
 
-                    //get data
-                    int [] cat = ss.getRecordsInt(layer.name, r);
-                    for (int i = 0; i < len; i++) {
-                        for(int k=0;k<selection.length;k++) {
-                            if(selection[k] == cat[i]) {
-                                highlightCount[i]++;
+                if(((String)f[0]).equalsIgnoreCase("and") == (andOr == 0)) {
+                    numAndFilters++;
+                    if(f.length == 3) { //sco or contextual
+                        SpeciesColourOption sco = SpeciesColourOption.fromName((String) f[1], false);
+                        if(sco != null) {
+                            sco.assignData(r, attributesMap.get(sco.getName()));
+                            boolean [] h = sco.getFiltered((Object[]) f[2]);
+                            for (int i = 0; i < len; i++) {
+                                if(h[i]){
+                                    highlightCount[i]++;
+                                }
+                            }
+                        } else { //contextual
+                            Layer layer = Layers.getLayer((String) f[1]);
+                            String [] filteredCategories = (String []) f[2];
+                            String[] lookup_values = SamplingIndex.getLayerCatagories(
+                                layer);
+
+                            int [] selection = new int[filteredCategories.length];
+                            for(int i=0;i<selection.length;i++) {
+                                selection[i] = java.util.Arrays.binarySearch(lookup_values, filteredCategories[i]);
+                                if(selection[i] < 0) {
+                                    selection[i] = -1;
+                                }
+                            }
+
+                            //get data
+                            int [] cat = ss.getRecordsInt(layer.name, r);
+                            for (int i = 0; i < len; i++) {
+                                for(int k=0;k<selection.length;k++) {
+                                    if(selection[k] == cat[i]) {
+                                        highlightCount[i]++;
+                                    }
+                                }
+                            }
+                        }
+                    } else if(f.length == 4) { //environmental
+                        float[] d = ss.getRecordsFloat(Layers.getLayer((String) f[1]).name, r);
+                        double min = Math.min((Double)f[2], (Double)f[3]);
+                        double max = Math.max((Double)f[2], (Double)f[3]);
+
+                        if(Double.isNaN(max) || Double.isNaN(min)) {
+                            for (int i = 0; i < len; i++) {
+                                if(Float.isNaN(d[i])) {
+                                    highlightCount[i]++;
+                                }
+                            }
+                        } else {
+                            for (int i = 0; i < len; i++) {
+                                if(d[i] <= max && d[i] >= min) {
+                                    highlightCount[i]++;
+                                } //else if(Float.isNaN(d[i]) && max >= 0 && min <=0) {
+                                  //  highlightCount[i]++;
+                                //}
                             }
                         }
                     }
+                }                
+            }
+            if(andOr == 0) {
+                //AND update
+                if(numAndFilters > 0) {
+                    for(int i=0;i<len;i++) {
+                        if(highlightCount[i] == numAndFilters) {
+                            highlight[i] = true;
+                        } else {
+                            highlightCount[i] = 0; //reset for OR test
+                        }
+                    }
                 }
-            } else if(f.length == 3) { //environmental
-                float[] d = ss.getRecordsFloat(Layers.getLayer((String) f[0]).name, r);
-                double min = Math.min((Double)f[1], (Double)f[2]);
-                double max = Math.max((Double)f[1], (Double)f[2]);
-
-                for (int i = 0; i < len; i++) {
-                    if(d[i] <= max && d[i] >= min) {
-                        highlightCount[i]++;
-                    } //else if(Float.isNaN(d[i]) && max >= 0 && min <=0) {
-                      //  highlightCount[i]++;
-                    //}
+            } else {
+                //OR update
+                 for(int i=0;i<highlight.length;i++) {
+                   if(highlightCount[i] > 0) {
+                        highlight[i] = true;
+                        count++;
+                    }
                 }
             }
         }
-
-        boolean[] highlight = new boolean[len];
-
-        //AND
-        for(int i=0;i<len;i++) {
-            if(highlightCount[i] == numFilters) {
-                highlight[i] = true;
-                count++;
-            }
-        }
-
-//        //OR
-//        for(int i=0;i<highlight.length;i++) {
-//            if(count[i] > 0) {
-//                highlight[i] = true;
-//                count++;
-//            }
-//        }
         
         RecordSelectionLookup.addSelection(getHash() + keyEnd, highlight);
 
