@@ -72,6 +72,7 @@ public class ScatterplotWCController extends UtilityComposer {
     Label tbxSelectionCount;
     Label tbxRange;
     Label tbxDomain;
+    Label tbxMissingCount;
     ScatterplotData data;
     JFreeChart jChart;
     XYPlot plot;
@@ -85,6 +86,7 @@ public class ScatterplotWCController extends UtilityComposer {
     int selectionCount;
     String imagePath;
     String results;
+    int missingCount;
 
     @Override
     public void afterCompose() {
@@ -338,25 +340,30 @@ public class ScatterplotWCController extends UtilityComposer {
                 String[] lines = slist.split("\n");
 
                 xyDataset = new DefaultXYDataset();
-                //XYModel xymodel = new SimpleXYModel();
-                double[][] dbl = new double[2][lines.length - 1];
+                double[][] dblTmp = new double[2][lines.length - 1];
+                int pos = 0;
                 for (int i = 1; i < lines.length; i++) {   //skip header
                     String[] words = lines[i].split(",");
 
                     try {
-                        if(words.length > 1) {
-                            dbl[1][i - 1] = Double.parseDouble(words[words.length-1]);
-                        }
-                    } catch (Exception e) {
-                    }
-                    try {
                         if(words.length > 2) {
-                            dbl[0][i - 1] = Double.parseDouble(words[words.length-2]);
+                            dblTmp[1][pos] = Double.parseDouble(words[words.length-1]);
+                            dblTmp[0][pos] = Double.parseDouble(words[words.length-2]);
+                            pos++;
                         }
                     } catch (Exception e) {
-                    }
-                   
+                    }                   
                 }
+                missingCount = lines.length - 1 - pos;
+                double[][] dbl = {{0.0},{0.0}};
+                if(pos > 0) {
+                    dbl = new double[2][pos];
+                    for(int i=0;i<pos;i++) {
+                        dbl[0][i] = dblTmp[0][i];
+                        dbl[1][i] = dblTmp[1][i];
+                    }
+                    xyDataset.addSeries("lsid", dbl);
+                } 
                 xyDataset.addSeries("lsid", dbl);
                 annotation = null;
 
@@ -383,7 +390,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     plot.addAnnotation(annotation);
                 }
                 plot.setForegroundAlpha(0.5f);
-                Font axisfont = new Font("Arial", Font.PLAIN, 9);
+                Font axisfont = new Font("Arial", Font.PLAIN, 10);
                 Font titlefont = new Font("Arial", Font.BOLD, 11);
                 plot.getDomainAxis().setLabelFont(axisfont);
                 plot.getDomainAxis().setTickLabelFont(axisfont);
@@ -418,31 +425,25 @@ public class ScatterplotWCController extends UtilityComposer {
                     e.printStackTrace();
                 }
 
-                //chartImg.setStyle("background-image: url(" + htmlurl + uid + ".png)");
                 chartImg.setWidth(width + "px");
                 chartImg.setHeight(height + "px");
-                String script = "var cd = document.getElementById('chartDiv');"
-                        + "var ci = document.getElementById('chartDivBack');"
-                        //+ "ci.style.backgroundImage=cd.style.backgroundImage;"
-                        + "cd.style.backgroundImage='url("
-                        + htmlurl + uid + ".png)'"
-                        + ";cd.style.width='"
-                        + width + "px';cd.style.height='" + height + "px';"                       
-                        + "ci.style.width=cd.style.width;"
-                        + "ci.style.height=cd.style.height;";
+                String script = "updateScatterplot(" + width + "," + height + ",'url(" + htmlurl + uid + ".png)')";
                 Clients.evalJavaScript(script);
-
-                /*AImage image = new AImage("scatterplot", bytes);
-                chartImg.setContent(image);*/
                 chartImg.setVisible(true);
                 scatterplotDownloads.setVisible(true);
 
-                //chart.setModel((ChartModel) xymodel);
+                if(missingCount > 0) {
+                    tbxMissingCount.setValue("Records with missing values: " + missingCount);
+                } else {
+                    tbxMissingCount.setValue("");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 clearSelection();
                 getMapComposer().applyChange();
             }
+        } else {
+            tbxMissingCount.setValue("");
         }
     }
 

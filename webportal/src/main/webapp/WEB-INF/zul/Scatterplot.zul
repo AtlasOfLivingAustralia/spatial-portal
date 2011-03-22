@@ -12,24 +12,26 @@
             btnScatEmbedded.setVisible(true);
             scatterplotwindow.getFellow("btnEmbedded").setVisible(true);
             scatterplotwindow.getFellow("btnOverlapped").setVisible(false);
+            Clients.evalJavaScript("setupRband();");
             '
             visible="false" />
         <button sclass="goButton" id="btnScatEmbedded" label="Docked" onClick='
             scatterplotwindow.setWidth("340px");
-            scatterplotwindow.setHeight("650px");
+            scatterplotwindow.setHeight("670px");
             scatterplotwindow.setParent(btnScatEmbedded.getParent().getParent());
             scatterplotwindow.setSizable(false);scatterplotwindow.doEmbedded();
             scatterplotwindow.setBorder("none");
             btnScatEmbedded.setVisible(false);
             scatterplotwindow.getFellow("btnEmbedded").setVisible(false);
             scatterplotwindow.getFellow("btnOverlapped").setVisible(true);
+            Clients.evalJavaScript("setupRband();");
             '
             visible="false"/>
     </hbox>
     <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
             apply="org.ala.spatial.analysis.web.ScatterplotWCController"
             width="340px"
-            height="650px"
+            height="670px"
             title="Scatterplot"
             >
         <caption id="scatCaption" visible="true" >
@@ -44,13 +46,13 @@
                 </combobox>
                 <separator />
                 <label value="Select two environmental layers" />
-                <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
-                </combobox>
-                <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
-                </combobox>
+                <hbox>X<combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
+                </combobox></hbox>
+                <hbox>Y<combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
+                </combobox></hbox>
             </vbox>
         </div>
-        <vbox height="130px">
+        <vbox height="150px">
             <separator />
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
@@ -59,6 +61,7 @@
                 </hbox>
             </div>
             <separator />
+            <label id="tbxMissingCount" />
             <hbox>
                 <label id="tbxSelectionCount" />
                 <div id="scatterplotButtons" visible="false">
@@ -78,7 +81,7 @@
         </html>
 
         <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
-        <textbox id="tbxChartSelection" visible="false" height="285px" />
+        <textbox id="tbxChartSelection" visible="false" height="315px" />
         <script type="text/JavaScript"><![CDATA[
 var startx = 0;
 var starty = 0;
@@ -87,8 +90,10 @@ var endy = 0;
 var resizing = false;
 
 $(document).ready(function() {
+    setupRband();
+});
 
-    $('#rband').offset($('#chartDiv').offset());
+function setupRband() {   
     $('#chartDiv').mousedown(function(event){
         event.preventDefault();
         doMouseDown(event);
@@ -109,9 +114,10 @@ $(document).ready(function() {
         //    $('#rband').unbind('mouseup');
         //});
     });
-});
+}
 
 function doMouseDown(event) {
+ $('#rband').offset($('#chartDiv').offset());
         startx = event.pageX;
         starty = event.pageY;
         resizing = true;
@@ -181,12 +187,22 @@ function chartSelection(x1, y1, x2, y2) {
     var d2 = document.getElementById("chartDivBack");
     d2.style.backgroundImage = d1.style.backgroundImage;
     zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
+}
+
+function updateScatterplot(width, height, background) {
+    var cd = document.getElementById('chartDiv');
+    var ci = document.getElementById('chartDivBack');
+    ci.style.backgroundImage=cd.style.backgroundImage;
+    cd.style.backgroundImage=background;
+    cd.style.width=width + 'px';
+    cd.style.height=height + 'px';
+    ci.style.width=cd.style.width;
+    ci.style.height=cd.style.height;
 
     $("#rband").css({
         'width'  : 0,
         'height' : 0
     }).hide();
-
 }
  ]]>
         </script>
