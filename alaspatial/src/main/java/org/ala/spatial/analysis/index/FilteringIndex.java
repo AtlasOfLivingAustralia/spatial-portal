@@ -1150,7 +1150,8 @@ public class FilteringIndex extends Object {
     //build vertical area file
     static void buildAreaSize(double longitude_start, double longitude_end,
             double latitude_start, double latitude_end,
-            int longitude_steps, int latitude_steps) {
+            int longitude_steps, int latitude_steps,
+            String filename) {
 
         //get latproj between display projection and data projection
         SpatialCluster3 sc = new SpatialCluster3();
@@ -1239,9 +1240,9 @@ public class FilteringIndex extends Object {
 
         //export
         try {
-            String filename = TabulationSettings.index_path + "IMAGE_LATITUDE_AREA";
+            String fname = TabulationSettings.index_path + filename;
 
-            FileOutputStream fos = new FileOutputStream(filename);
+            FileOutputStream fos = new FileOutputStream(fname);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
 
@@ -1290,7 +1291,40 @@ public class FilteringIndex extends Object {
         int height = 840; //210 42/210
         int width = 1008; //252
 
-        buildAreaSize(longitude_start, longitude_end, latitude_start, latitude_end, width, height);
+        buildAreaSize(longitude_start, longitude_end, latitude_start, latitude_end, width, height, "IMAGE_LATITUDE_AREA");
+    }
+
+    static public double[] getCommonGridLatitudeArea() {
+        String filename = TabulationSettings.index_path + "IMAGE_LATITUDE_AREA_COMMON_GRID";
+
+        //TODO: remove this temporary code
+        //create it if it does not exist
+        File file = new File(filename);
+        if (!file.exists()) {
+            buildAreaSize(TabulationSettings.grd_xmin,
+                    TabulationSettings.grd_xmax,
+                    TabulationSettings.grd_ymin,
+                    TabulationSettings.grd_ymax,
+                    TabulationSettings.grd_ncols,
+                    TabulationSettings.grd_nrows,
+                    "IMAGE_LATITUDE_AREA_COMMON_GRID");
+        }
+
+        //import
+        double[] areaSize = null;
+        try {
+            FileInputStream fis = new FileInputStream(filename);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+
+            areaSize = (double[]) ois.readObject();
+
+            ois.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return areaSize;
     }
 
     /**
