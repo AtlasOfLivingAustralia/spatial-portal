@@ -557,7 +557,7 @@ public class SamplingWSController {
             }
             Object [] filters = new Object[paramCount];
             for(int i=0;i<paramCount;i++) {
-                String param = req.getParameter("param" + (i+1));
+                String param = req.getParameter("param" + i);
                 String [] parts = param.split(",");
                 Object [] o = null;
                 //type is first, then name, then any values
