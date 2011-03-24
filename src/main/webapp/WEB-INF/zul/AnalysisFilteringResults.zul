@@ -19,6 +19,14 @@
                 </n:td>
             </n:tr>
             <n:tr height="18px" >
+                <n:td width="130px">
+                    <label id="lblArea2" value="Area2" visible="true" />
+                </n:td>
+                <n:td width="80px">
+                    <label id="lblArea2val" value="" visible="true" />
+                </n:td>
+            </n:tr>
+            <n:tr height="18px" >
                 <n:td>
                     <label value="Species" />
                 </n:td>
