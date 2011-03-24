@@ -11,6 +11,7 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -45,6 +46,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     int results_count_occurrences = 0;
     boolean addedListener = false;
     Label lblArea;
+    Label lblArea2val;
 
     @Override
     public void afterCompose() {
@@ -78,10 +80,14 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     void setUpdatingCount(boolean set) {
-        if(set) {
+        if (set) {
             results_label2_occurrences.setValue("updating...");
             results_label2_species.setValue("updating...");
             sdLabel.setValue("updating...");
+
+
+            calculateArea();
+
         }
     }
 
@@ -126,9 +132,9 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         Events.echoEvent("onRefreshCount", this, null);
         /*try {
-            onRefreshCount(null);
+        onRefreshCount(null);
         } catch (Exception e) {
-            e.printStackTrace();
+        e.printStackTrace();
         }*/
     }
 
@@ -217,12 +223,12 @@ public class FilteringResultsWCController extends UtilityComposer {
         /*SamplingWCController window = (SamplingWCController) Executions.createComponents("WEB-INF/zul/AnalysisSampling.zul", getMapComposer().getParent(), null);
         window.callPullFromActiveLayers();
         try {
-            window.doModal();
+        window.doModal();
         } catch (Exception e) {
-            e.printStackTrace();
+        e.printStackTrace();
         }*/
 
-        
+
         if (settingsSupplementary != null) {
             satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
         }
@@ -540,5 +546,44 @@ public class FilteringResultsWCController extends UtilityComposer {
             sb.append(s);
         }
         Filedownload.save(sb.toString(), "text/plain", "Species_distributions_" + sdate + "_" + spid + ".csv");
+    }
+
+    private void calculateArea() {
+        try {
+
+            String area = getMapComposer().getSelectionArea();
+            area = StringUtils.replace(area, "POLYGON((", "");
+            area = StringUtils.replace(area, "))", "");
+
+            String[] areaarr = area.split(",");
+
+            double totalarea = 0.0;
+            for (int i = 0; i < areaarr.length-1; i++) {
+                //int j = (i + 1) % areaarr.length;
+
+                String[] coords1 = areaarr[i].split(" ");
+                double lng1 = Double.parseDouble(coords1[0]);
+                double lat1 = Double.parseDouble(coords1[1]);
+
+                String[] coords2 = areaarr[i+1].split(" ");
+                double lng2 = Double.parseDouble(coords2[0]);
+                double lat2 = Double.parseDouble(coords2[1]);
+
+                double x1 = lng1 * (2.0 * Math.PI * 6367460 / 360.0) * Math.cos(lat1 * (Math.PI / 180.0));
+                double y1 = lat1 * (2.0 * Math.PI * 6367460 / 360.0);
+                double x2 = lng2 * (2.0 * Math.PI * 6367460 / 360.0) * Math.cos(lat2 * (Math.PI / 180.0));
+                double y2 = lat2 * (2.0 * Math.PI * 6367460 / 360.0);
+
+                totalarea += x1 * y2 - x2 * y1;
+
+            }
+
+            lblArea2val.setValue(((Math.abs(totalarea / 2.0)) / 1000 / 1000) + " sq km");
+
+        } catch (Exception e) {
+            System.out.println("Error in calculateArea");
+            e.printStackTrace(System.out);
+        }
+
     }
 }
