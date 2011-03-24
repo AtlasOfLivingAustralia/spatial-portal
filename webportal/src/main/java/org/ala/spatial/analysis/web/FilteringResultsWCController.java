@@ -11,6 +11,7 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zhtml.Filedownload;
 import org.zkoss.zk.ui.Executions;
@@ -558,32 +559,79 @@ public class FilteringResultsWCController extends UtilityComposer {
             String[] areaarr = area.split(",");
 
             double totalarea = 0.0;
-            for (int i = 0; i < areaarr.length-1; i++) {
-                //int j = (i + 1) % areaarr.length;
-
-                String[] coords1 = areaarr[i].split(" ");
-                double lng1 = Double.parseDouble(coords1[0]);
-                double lat1 = Double.parseDouble(coords1[1]);
-
-                String[] coords2 = areaarr[i+1].split(" ");
-                double lng2 = Double.parseDouble(coords2[0]);
-                double lat2 = Double.parseDouble(coords2[1]);
-
-                double x1 = lng1 * (2.0 * Math.PI * 6367460 / 360.0) * Math.cos(lat1 * (Math.PI / 180.0));
-                double y1 = lat1 * (2.0 * Math.PI * 6367460 / 360.0);
-                double x2 = lng2 * (2.0 * Math.PI * 6367460 / 360.0) * Math.cos(lat2 * (Math.PI / 180.0));
-                double y2 = lat2 * (2.0 * Math.PI * 6367460 / 360.0);
-
-                totalarea += x1 * y2 - x2 * y1;
-
+            String d = areaarr[0];
+            for (int f = 1; f < areaarr.length-2; ++f) {
+                totalarea += Mh(d, areaarr[f], areaarr[f + 1]);
             }
 
-            lblArea2val.setValue(((Math.abs(totalarea / 2.0)) / 1000 / 1000) + " sq km");
+            totalarea = Math.abs(totalarea*6378137*6378137);
+
+            lblArea2val.setValue((totalarea / 1000 / 1000) + " sq km");
 
         } catch (Exception e) {
             System.out.println("Error in calculateArea");
             e.printStackTrace(System.out);
         }
+    }
 
+    private double Mh(String a, String b, String c) {
+        return Nh(a, b, c) * hi(a, b, c);
+    }
+
+    private double Nh(String a, String b, String c) {
+        String[] poly = {a, b, c, a};
+        double[] area = new double[3];
+        int i = 0;
+        double j = 0.0;
+        for (i=0; i < 3; ++i) {
+            area[i] = vd(poly[i], poly[i + 1]);
+            j += area[i];
+        }
+        j /= 2;
+        double f = Math.tan(j / 2);
+        for (i = 0; i < 3; ++i) {
+            f *= Math.tan((j - area[i]) / 2);
+        }
+        return 4 * Math.atan(Math.sqrt(Math.abs(f)));
+    }
+
+    private double hi(String a, String b, String c) {
+        String[] d = {a, b, c};
+
+        int i = 0;
+        double[][] bb = new double[3][3];
+        for (i = 0; i < 3; ++i) {
+            String[] coords = d[i].split(" ");
+            double lng = Double.parseDouble(coords[0]);
+            double lat = Double.parseDouble(coords[1]);
+
+            double y = Uc(lat);
+            double x = Uc(lng);
+
+            bb[i][0] = Math.cos(y) * Math.cos(x);
+            bb[i][1] = Math.cos(y) * Math.sin(x);
+            bb[i][2] = Math.sin(y);
+        }
+
+        return (bb[0][0] * bb[1][1] * bb[2][2] + bb[1][0] * bb[2][1] * bb[0][2] + bb[2][0] * bb[0][1] * bb[1][2] - bb[0][0] * bb[2][1] * bb[1][2] - bb[1][0] * bb[0][1] * bb[2][2] - bb[2][0] * bb[1][1] * bb[0][2] > 0) ? 1 : -1;
+    }
+
+    private double vd(String a, String b) {
+        String[] coords1 = a.split(" ");
+        double lng1 = Double.parseDouble(coords1[0]);
+        double lat1 = Double.parseDouble(coords1[1]);
+
+        String[] coords2 = b.split(" ");
+        double lng2 = Double.parseDouble(coords2[0]);
+        double lat2 = Double.parseDouble(coords2[1]);
+
+        double c = Uc(lat1);
+        double d = Uc(lat2);
+
+        return 2 * Math.asin(Math.sqrt(Math.pow(Math.sin((c - d) / 2), 2) + Math.cos(c) * Math.cos(d) * Math.pow(Math.sin((Uc(lng1) - Uc(lng2)) / 2), 2)));
+    }
+
+    private double Uc(double a) {
+        return a * (Math.PI / 180);
     }
 }
