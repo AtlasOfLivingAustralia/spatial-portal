@@ -26,6 +26,12 @@ public abstract class Legend {
      * for determining the records that are equal to the maximum value
      */
     float[] cutoffs;
+
+    /*
+     * cutoffs.length may not match colours.length, this a translation
+     */
+    float [] cutoffsColours;
+
     /**
      * number of group members by Unique Value
      */
@@ -55,12 +61,29 @@ public abstract class Legend {
      */
     int lastValue;
 
+    /*
+     * number of cut points
+     */
+    int divisions;
+
+    /**
+     * generate the legend cutoff points.
+     *
+     * default number of cutoffs = 10
+     *
+     * @param d asc sorted float []
+     */
+    public void generate(float[] d) {
+        generate(d, 10);
+    }
+
     /**
      * generate the legend cutoff points.
      *
      * @param d asc sorted float []
+     * @param divisions number of cut points
      */
-    abstract public void generate(float[] d);
+    abstract public void generate(float[] d, int divisions);
 
     /**
      * return nice name for the method that this class uses to generate the
@@ -74,8 +97,11 @@ public abstract class Legend {
      * some common values
      *
      * @param d as sorted float []
+     * @param divisions number of cutpoints
      */
-    void init(float[] d) {
+    void init(float[] d, int divisions) {
+        this.divisions = divisions;
+
         //NaN sorted last.
         min = d[0];
 
@@ -95,6 +121,8 @@ public abstract class Legend {
         } else {
             max = d[numberOfRecords - 1];
         }
+
+        cutoffsColours = null;
     }
 
     /**
@@ -271,17 +299,21 @@ public abstract class Legend {
     }
 
     /**
+     * Only correct when Legend is created with 10 divisions.
      *
      * @param d asc sorted float []
      * @return colour of d after applying cutoff's.
      */
     public int getColour(float d) {
         if (Float.isNaN(d)) {
-            return 0xFFFFFFFF; //black
+            return 0xFFFFFFFF; //white
         }
         int pos = java.util.Arrays.binarySearch(cutoffs, d);
         if (pos < 0) {
             pos = (pos * -1) - 1;
+        }
+        if (divisions != 10) {
+            //TODO: fix for mismatch with colours.length
         }
         if (pos >= cutoffs.length) {
             return 0xFFFFFFFF;

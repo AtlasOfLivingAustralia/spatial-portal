@@ -13,12 +13,11 @@ package org.ala.spatial.analysis.legend;
 public class LegendEvenIntervalLog10 extends Legend {
 
     @Override
-    public void generate(float[] d) {
-        init(d);
+    public void generate(float[] d, int divisions) {
+        init(d, divisions);
         if(Float.isNaN(max)) {
             return;
         }
-        int divisions = 10;
 
         //prevent negative number assignment
         float offset = (min<1)?1 - min:0;
