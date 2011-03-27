@@ -1147,7 +1147,7 @@ public class FilteringIndex extends Object {
         }
     }
 
-    //build vertical area file
+    //build vertical area file, for image in epsg900913
     static void buildAreaSize(double longitude_start, double longitude_end,
             double latitude_start, double latitude_end,
             int longitude_steps, int latitude_steps,
@@ -1254,10 +1254,98 @@ public class FilteringIndex extends Object {
         }
     }
 
+    static void buildAreaSizeG(double longitude_start, double longitude_end,
+            double latitude_start, double latitude_end,
+            int longitude_steps, int latitude_steps,
+            String filename, boolean imageSpacing) {
+
+        //get area's
+        double[] areaSize = new double[latitude_steps];
+
+        double [][] points = new double[4][2];
+        
+        if(imageSpacing) {
+            //get latproj between display projection and data projection
+            SpatialCluster3 sc = new SpatialCluster3();
+            int[] px_boundary = new int[4];
+            px_boundary[0] = sc.convertLngToPixel(longitude_start);
+            px_boundary[2] = sc.convertLngToPixel(longitude_end);
+            px_boundary[1] = sc.convertLatToPixel(latitude_start);
+            px_boundary[3] = sc.convertLatToPixel(latitude_end);
+
+            double[] latproj = new double[latitude_steps + 1];
+            double[] longproj = new double[longitude_steps];
+            for (int i = 0; i < latproj.length; i++) {
+                latproj[i] = sc.convertPixelToLat((int) (px_boundary[1] + (px_boundary[3] - px_boundary[1]) * (i / (double) (latproj.length))));
+            }
+            for (int i = 0; i < longproj.length; i++) {
+                longproj[i] = sc.convertPixelToLng((int) (px_boundary[0] + (px_boundary[2] - px_boundary[0]) * (i / (double) (longproj.length))));
+            }
+
+            double east = longproj[longproj.length - 2];
+            double west = longproj[longproj.length - 1];
+            points[0][0] = east;
+            points[1][0] = west;
+            points[2][0] = west;
+            points[3][0] = east;
+
+            for (int i = 0; i < latitude_steps; i++) {
+                double south = latproj[i];
+                double north = latproj[i + 1];     //latproj is len latitude_steps+1
+
+                points[0][1] = north;
+                points[1][1] = north;
+                points[2][1] = south;
+                points[3][1] = south;
+
+                //images are top down, this is south to north.
+                areaSize[latitude_steps - 1 - i] = calculateArea(points);
+            }
+        } else {
+            double east = longitude_start;
+            double west = east + (longitude_end - longitude_start) / (double) longitude_steps;
+            double yrange = latitude_end - latitude_start;
+            points[0][0] = east;
+            points[1][0] = west;
+            points[2][0] = west;
+            points[3][0] = east;
+
+            for (int i = 0; i < latitude_steps; i++) {
+                double south = latitude_start + i / (double) latitude_steps * yrange;
+                double north = latitude_start + (i+1) / (double) latitude_steps * yrange;
+                if(i == latitude_steps - 1) {
+                    north = latitude_end;
+                }
+
+                points[0][1] = north;
+                points[1][1] = north;
+                points[2][1] = south;
+                points[3][1] = south;
+
+                //images are top down, this is south to north.
+                areaSize[latitude_steps - 1 - i] = calculateArea(points);
+            }
+        }
+
+        //export
+        try {
+            String fname = TabulationSettings.index_path + filename;
+
+            FileOutputStream fos = new FileOutputStream(fname);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            oos.writeObject(areaSize);
+
+            oos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     static public double[] getImageLatitudeArea() {
         String filename = TabulationSettings.index_path + "IMAGE_LATITUDE_AREA";
 
-        //TODO: remove this temporary code
         //create it if it does not exist
         File file = new File(filename);
         if (!file.exists()) {
@@ -1267,8 +1355,6 @@ public class FilteringIndex extends Object {
         //import
         double[] areaSize = null;
         try {
-
-
             FileInputStream fis = new FileInputStream(filename);
             BufferedInputStream bis = new BufferedInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(bis);
@@ -1291,23 +1377,22 @@ public class FilteringIndex extends Object {
         int height = 840; //210 42/210
         int width = 1008; //252
 
-        buildAreaSize(longitude_start, longitude_end, latitude_start, latitude_end, width, height, "IMAGE_LATITUDE_AREA");
+        buildAreaSizeG(longitude_start, longitude_end, latitude_start, latitude_end, width, height, "IMAGE_LATITUDE_AREA", true);
     }
 
     static public double[] getCommonGridLatitudeArea() {
         String filename = TabulationSettings.index_path + "IMAGE_LATITUDE_AREA_COMMON_GRID";
 
-        //TODO: remove this temporary code
         //create it if it does not exist
         File file = new File(filename);
         if (!file.exists()) {
-            buildAreaSize(TabulationSettings.grd_xmin,
+            buildAreaSizeG(TabulationSettings.grd_xmin,
                     TabulationSettings.grd_xmax,
                     TabulationSettings.grd_ymin,
                     TabulationSettings.grd_ymax,
                     TabulationSettings.grd_ncols,
                     TabulationSettings.grd_nrows,
-                    "IMAGE_LATITUDE_AREA_COMMON_GRID");
+                    "IMAGE_LATITUDE_AREA_COMMON_GRID", false);
         }
 
         //import
@@ -1401,5 +1486,85 @@ public class FilteringIndex extends Object {
         }
 
         return false;
+    }
+
+    //calculateArea from FilteringResultsWCController
+    static private double calculateArea(double [][] areaarr) {
+        try {
+            double totalarea = 0.0;
+            double [] d = areaarr[0];
+            for (int f = 1; f < areaarr.length-2; ++f) {
+                totalarea += Mh(d, areaarr[f], areaarr[f + 1]);
+            }
+
+            totalarea = Math.abs(totalarea*6378137*6378137);
+
+            //return as sq km
+            return totalarea / 1000.0 / 1000.0;
+
+        } catch (Exception e) {
+            System.out.println("Error in calculateArea");
+            e.printStackTrace(System.out);
+        }
+
+        return 0;
+    }
+
+    static private double Mh(double [] a, double [] b, double [] c) {
+        return Nh(a, b, c) * hi(a, b, c);
+    }
+
+    static private double Nh(double [] a, double [] b, double [] c) {
+        double [][] poly = {a, b, c, a};
+        double[] area = new double[3];
+        int i = 0;
+        double j = 0.0;
+        for (i=0; i < 3; ++i) {
+            area[i] = vd(poly[i], poly[i + 1]);
+            j += area[i];
+        }
+        j /= 2;
+        double f = Math.tan(j / 2);
+        for (i = 0; i < 3; ++i) {
+            f *= Math.tan((j - area[i]) / 2);
+        }
+        return 4 * Math.atan(Math.sqrt(Math.abs(f)));
+    }
+
+    static private double hi(double [] a, double [] b, double [] c) {
+        double [][] d = {a, b, c};
+
+        int i = 0;
+        double[][] bb = new double[3][3];
+        for (i = 0; i < 3; ++i) {
+            double lng = d[i][0];
+            double lat = d[i][1];
+
+            double y = Uc(lat);
+            double x = Uc(lng);
+
+            bb[i][0] = Math.cos(y) * Math.cos(x);
+            bb[i][1] = Math.cos(y) * Math.sin(x);
+            bb[i][2] = Math.sin(y);
+        }
+
+        return (bb[0][0] * bb[1][1] * bb[2][2] + bb[1][0] * bb[2][1] * bb[0][2] + bb[2][0] * bb[0][1] * bb[1][2] - bb[0][0] * bb[2][1] * bb[1][2] - bb[1][0] * bb[0][1] * bb[2][2] - bb[2][0] * bb[1][1] * bb[0][2] > 0) ? 1 : -1;
+    }
+
+    static private double vd(double [] a, double [] b) {
+        double lng1 = a[0];
+        double lat1 = a[1];
+
+        double lng2 = b[0];
+        double lat2 = b[1];
+
+        double c = Uc(lat1);
+        double d = Uc(lat2);
+
+        return 2 * Math.asin(Math.sqrt(Math.pow(Math.sin((c - d) / 2), 2) + Math.cos(c) * Math.cos(d) * Math.pow(Math.sin((Uc(lng1) - Uc(lng2)) / 2), 2)));
+    }
+
+    static private double Uc(double a) {
+        return a * (Math.PI / 180);
     }
 };

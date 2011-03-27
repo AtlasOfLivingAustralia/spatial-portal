@@ -22,9 +22,11 @@ import java.util.Vector;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.ala.spatial.analysis.cluster.Record;
 import org.ala.spatial.analysis.index.FilteringIndex;
 import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
+import org.ala.spatial.analysis.index.OccurrencesFilter;
 import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.index.SpeciesIndex;
 import org.ala.spatial.analysis.legend.Legend;
@@ -509,25 +511,108 @@ public class SamplingWSController {
             String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
             String[] layers = getLayerFiles(req.getParameter("envlist"));
 
+            String colourMode = req.getParameter("colourmode");
+
+            String areaRestrict = req.getParameter("arearestrict");
+            ArrayList<OccurrenceRecordNumbers> recordsR = null;
+            SimpleRegion regionR = null;
+            if(areaRestrict != null) {
+                if (areaRestrict != null && areaRestrict.startsWith("ENVELOPE")) {
+                    recordsR = FilteringService.getRecords(areaRestrict);
+                } else {
+                    regionR= SimpleShapeFile.parseWKT(areaRestrict);
+                }
+            }
+
+            String areaHighlight = req.getParameter("areahighlight");
+            ArrayList<OccurrenceRecordNumbers> recordsH = null;
+            SimpleRegion regionH = null;
+            if(areaHighlight != null) {
+                if (areaHighlight != null && areaHighlight.startsWith("ENVELOPE")) {
+                    recordsH = FilteringService.getRecords(areaHighlight);
+                } else {
+                    regionH = SimpleShapeFile.parseWKT(areaHighlight);
+                }
+            }
+
             SamplingService ss = SamplingService.newForLSID(species);
-            String[][] results = ss.sampleSpecies(species, layers, null, null, 10000000);
+            String[][] results = ss.sampleSpecies(species, layers, regionR, recordsR, 10000000);
+
+            long [] recordsHids = null;
+            if(recordsH != null) {
+                //get occurrenceID
+                Vector v = OccurrencesCollection.getRecords(new OccurrencesFilter(species, regionR, recordsH, 10000000));
+                recordsHids = new long[v.size()];
+                for(int i=0;i<v.size();i++) {
+                    recordsHids[i] = ((Record) v.get(i)).getId();
+                }
+                java.util.Arrays.sort(recordsHids);
+            }
 
             StringBuilder sbResults = new StringBuilder();
+            StringBuilder sbResultsHighlight = new StringBuilder();
+
+            SpeciesColourOption sco = null;
+            if(colourMode != null) {
+                sco = SpeciesColourOption.fromName(colourMode, false);
+            }
+
+            String speciesName = "";
+            if(species != null) {
+                speciesName = SpeciesIndex.getScientificName(SpeciesIndex.findLSID(species));
+            }
 
             //last 2 columns; layer1, layer2
             for (int i = 0; i < results.length; i++) {
                 //include occurrenceID
                 sbResults.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",");
+
+                //is there a series (colourMode) ?
+                if(sco != null) {
+                    sbResults.append(results[i][sco.getPos()]).append(",");
+                } else {
+                    sbResults.append(speciesName).append(",");
+                }
+
+                //is there an area highlight?
+                boolean highlightRecord = false;
+                if(i > 0) {
+                    if(regionH != null) {
+                        double longitude = Double.parseDouble(results[i][results[i].length - 4]);
+                        double latitude = Double.parseDouble(results[i][results[i].length - 3]);
+                        if(regionH.isWithin(longitude, latitude)) {
+                            sbResultsHighlight.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",In Active Area,");
+                            highlightRecord = true;
+                        }
+                    } else if(recordsH != null) {
+                        if(java.util.Arrays.binarySearch(recordsHids, Long.parseLong((results[i][TabulationSettings.occurrences_csv_twos_names.length]))) >= 0) {
+                            sbResultsHighlight.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",In Active Area,");
+                            highlightRecord = true;
+                        }
+                    }
+                }
+
                 for (int j = results[i].length - 2; j < results[i].length; j++) {
                     if (results[i][j] != null) {
                         sbResults.append(results[i][j]);
+                        if(highlightRecord) {
+                            sbResultsHighlight.append(results[i][j]);
+                        }
                     }
                     if (j < results[i].length - 1) {
                         sbResults.append(",");
+                        if(highlightRecord) {
+                            sbResultsHighlight.append(",");
+                        }
                     }
                 }
                 sbResults.append("\n");
+                if(highlightRecord) {
+                    sbResultsHighlight.append("\n");
+                }
             }
+
+            sbResults.append(sbResultsHighlight.toString());
 
             return sbResults.toString();
 
@@ -717,17 +802,26 @@ public class SamplingWSController {
                 fetch[3] = URLDecoder.decode(req.getParameter("zaxis"), "UTF-8");
             } catch (Exception e) {
                 fetch[3] = "";
-            }
-            
+            }            
 
             String filterLsid = getParam("lsid", filter).replace("__", ".");
             String filterArea = getParam("area", filter);
+            String filterArea2 = getParam("area2", filter);
+            
             ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
             if (filterArea != null && filterArea.startsWith("ENVELOPE")) {
                 records = FilteringService.getRecords(filterArea);
             } else {
                 region = SimpleShapeFile.parseWKT(filterArea);
+            }
+
+            SimpleRegion region2 = null;
+            ArrayList<OccurrenceRecordNumbers> records2 = null;
+            if (filterArea2 != null && filterArea2.startsWith("ENVELOPE")) {
+                records2 = FilteringService.getRecords(filterArea2);
+            } else {
+                region2 = SimpleShapeFile.parseWKT(filterArea2);
             }
 
             //if one axis has count type speces, make sure to evaluate a
@@ -962,7 +1056,7 @@ public class SamplingWSController {
                     java.util.Arrays.sort(f);
 
                     Legend lei = new LegendEvenInterval();
-                    lei.generate(f);
+                    lei.generate(f, 20);
 
                     //Legend leil10 = new LegendEvenIntervalLog10();
                     //leil10.generate(f);
@@ -978,7 +1072,7 @@ public class SamplingWSController {
 
                 //build
                 int len = data[0].length;
-                int divs = 10;  //same as number of cutpoints in Legend
+                int divs = 20;  //same as number of cutpoints in Legend
                 double [][] area = new double[divs][divs];
 
                 for(int i=0;i<cutoffs[0].length;i++) {
@@ -994,30 +1088,7 @@ public class SamplingWSController {
 
                     area[x][y] += cellArea(g.nrows - 1 - (i / g.ncols));
                 }
-
-                //normalize
-                double min, max;
-                min = max = area[0][0];
-                for(int i=0;i<divs;i++) {
-                    for(int j=0;j<divs;j++) {
-                        if(min > area[i][j]) {
-                            min = area[i][j];
-                        }
-                        if(max < area[i][j]) {
-                            max = area[i][j];
-                        }
-                    }
-                }
-                for(int i=0;i<divs;i++) {
-                    for(int j=0;j<divs;j++) {
-                        if(max != min) {
-                            area[i][j] /= (max - min);
-                        } else {
-                            area[i][j] = 1;
-                        }
-                    }
-                }
-
+                
                 //to csv
                 StringBuilder sb = new StringBuilder();
                 sb.append(",").append(layers[1].display_name).append("\n").append(layers[0].display_name);
@@ -1295,14 +1366,10 @@ public class SamplingWSController {
             double ydiv = (cutoffs[1][1] - cutoffs[1][0]);
 
             NumberAxis x = new NumberAxis(layers[0].display_name);
-            //x.setUpperMargin(0);
-           //x.setLowerMargin(0);
             x.setUpperBound(legends[0].getMinMax()[1]);
             x.setLowerBound(legends[0].getMinMax()[0]);
             x.setTickUnit(new NumberTickUnit(xdiv*20));
             NumberAxis y = new NumberAxis(layers[1].display_name);
-            y.setUpperMargin(0);
-            y.setLowerMargin(0);
             y.setUpperBound(legends[1].getMinMax()[1]);
             y.setLowerBound(legends[1].getMinMax()[0]);
             y.setTickUnit(new NumberTickUnit(ydiv*20));

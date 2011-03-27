@@ -14,13 +14,11 @@ package org.ala.spatial.analysis.legend;
 public class LegendEqualSize extends Legend {
 
     @Override
-    public void generate(float[] d) {
-        init(d);
+    public void generate(float[] d, int divisions) {
+        init(d, divisions);
         if(Float.isNaN(max)) {
             return;
         }
-        int divisions = 10;
-
         cutoffs = new float[divisions];
 
         //calculate step based on remaining info

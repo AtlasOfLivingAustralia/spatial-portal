@@ -49,6 +49,7 @@ public class SpeciesColourOption {
     double dMin, dMax;
     int iMin, iMax;
     Legend legend;
+    int pos; //column in OCC_SORTED
 
     void makeSArrayHash() {
         sArrayHash = new int[sArray.length];
@@ -57,7 +58,7 @@ public class SpeciesColourOption {
         }
     }
 
-    SpeciesColourOption(String name, String displayName, int type, String key, boolean highlight, int taxon, boolean colourMode) {
+    SpeciesColourOption(String name, String displayName, int type, String key, boolean highlight, int taxon, boolean colourMode, int pos) {
         this.name = name;
         this.displayName = displayName;
         this.type = type;
@@ -65,6 +66,7 @@ public class SpeciesColourOption {
         this.highlight = highlight;
         this.taxon = taxon;
         this.colourMode = colourMode;
+        this.pos = pos;
     }
 
     SpeciesColourOption(int idx, boolean colourMode) {
@@ -75,6 +77,7 @@ public class SpeciesColourOption {
         this.highlight = false;
         this.taxon = -1;
         this.colourMode = colourMode;
+        this.pos = TabulationSettings.geojson_property_fields[idx];
     }
 
     public static String getColourLegend(String lsid, String colourMode) {
@@ -277,7 +280,7 @@ public class SpeciesColourOption {
     }
 
     static SpeciesColourOption fromSpeciesColourOption(SpeciesColourOption sco) {
-        return new SpeciesColourOption(sco.name, sco.displayName, sco.type, sco.key, sco.highlight, sco.taxon, sco.colourMode);
+        return new SpeciesColourOption(sco.name, sco.displayName, sco.type, sco.key, sco.highlight, sco.taxon, sco.colourMode, sco.pos);
     }
 
     public static SpeciesColourOption fromMode(String mode, boolean colourMode) {
@@ -289,12 +292,12 @@ public class SpeciesColourOption {
 
         for (int i = 1; i < TabulationSettings.occurrences_csv_field_pairs.length; i += 2) {
             if (mode.equalsIgnoreCase(TabulationSettings.occurrences_csv_field_pairs[i])) {
-                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode);
+                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode, 9 + (i-1)/2);
             }
         }
 
         if (mode.equalsIgnoreCase("10")) {   //general case for level 10
-            return new SpeciesColourOption(mode, "General categories", 3, null, false, 10, colourMode);
+            return new SpeciesColourOption(mode, "General categories", 3, null, false, 10, colourMode, -1);
         }
 
         return null;
@@ -310,12 +313,12 @@ public class SpeciesColourOption {
         for (int i = 1; i < TabulationSettings.occurrences_csv_field_pairs.length; i += 2) {
             if (name.equalsIgnoreCase(TabulationSettings.occurrences_csv_field_pairs[i])) {
                 String mode = TabulationSettings.occurrences_csv_field_pairs[i];
-                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode);
+                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode, 9 + (i-1)/2);
             }
         }
 
         if (name.equalsIgnoreCase("10")) {   //general case for level 10
-            return new SpeciesColourOption(name, "General categories", 3, null, false, 10, colourMode);
+            return new SpeciesColourOption(name, "General categories", 3, null, false, 10, colourMode, -1);
         }
 
         return null;
@@ -472,7 +475,7 @@ public class SpeciesColourOption {
     }
 
     static public SpeciesColourOption fromHighlight(String key, boolean colourMode) {
-        return new SpeciesColourOption("h", "Selection", 2, key, true, -1, colourMode);
+        return new SpeciesColourOption("h", "Selection", 2, key, true, -1, colourMode,-1);
     }
 
     boolean isTaxon() {
@@ -737,7 +740,7 @@ public class SpeciesColourOption {
         int[] counts = (int[]) o[1];
 
         for (int i = 0; i < iList.length; i++) {
-            if (i == 0 || iList[i - 1] != iList[i]) {
+            if (i == iList.length - 1 || iList[i + 1] != iList[i]) {
                 String label;
                 int hash;
                 hash = SpeciesIndex.getHash(taxon, iList[i]);
@@ -949,5 +952,9 @@ public class SpeciesColourOption {
 
         Object[] o = {labels, counts};
         return o;
+    }
+
+    public int getPos() {
+        return pos;
     }
 }
