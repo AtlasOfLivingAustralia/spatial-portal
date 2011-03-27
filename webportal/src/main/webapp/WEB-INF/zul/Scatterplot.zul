@@ -1,6 +1,6 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="ScatterplotPage"?>
-<zk xmlns:w="http://www.zkoss.org/2005/zk/client">
+<zk xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
     <hbox>
         <button sclass="goButton" id="btnScatOverlapped" label="+" onClick='
             scatterplotwindow.setWidth("500px");
@@ -17,7 +17,7 @@
             visible="false" />
         <button sclass="goButton" id="btnScatEmbedded" label="Docked" onClick='
             scatterplotwindow.setWidth("340px");
-            scatterplotwindow.setHeight("670px");
+            scatterplotwindow.setHeight("850px");
             scatterplotwindow.setParent(btnScatEmbedded.getParent().getParent());
             scatterplotwindow.setSizable(false);scatterplotwindow.doEmbedded();
             scatterplotwindow.setBorder("none");
@@ -31,7 +31,7 @@
     <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
             apply="org.ala.spatial.analysis.web.ScatterplotWCController"
             width="340px"
-            height="670px"
+            height="850px"
             title="Scatterplot"
             >
         <caption id="scatCaption" visible="true" >
@@ -40,27 +40,71 @@
         </caption>
         <div id="scatControls" visible="true" width="325px">
             <vbox >
-                <label>Enter a scientific or common name</label>
-                <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
-                    <comboitem label=""/>
-                </combobox>
                 <separator />
-                <label value="Select two environmental layers" />
-                <hbox>X<combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
-                </combobox></hbox>
-                <hbox>Y<combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="320px" >
-                </combobox></hbox>
+                <checkbox id="chkRestrictOccurrencesToActiveArea" label="Only use occurrences in Active Area" />
+                <groupbox >
+                    <caption label="Enter a scientific or common name" />
+                    <hbox>
+                        <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="240px" >
+                            <comboitem label=""/>
+                        </combobox>
+                        <button id="btnEditAppearance1" label="settings" sclass="goButton" />
+                    </hbox>
+
+                    <checkbox id="chkHighlightActiveAreaOccurrences" label="Highlight Active Area occurrences" />
+                    <separator />
+                    <separator />
+                    <label>Background</label>
+                    <hbox>
+                        <combobox id="sacBackground" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="240px" >
+                            <comboitem label=""/>
+                        </combobox>
+                        <button label="clear" id="btnClear" sclass="goButton" />
+                    </hbox>
+                </groupbox>
+                <groupbox >
+                    <caption label="Select two environmental layers" />
+                    <hbox>X
+                        <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="300px" >
+                        </combobox>
+                    </hbox>
+                    <hbox>Y
+                        <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="300px" >
+                        </combobox>
+                    </hbox>
+                    <checkbox id="chkShowEnvIntersection" label="Show environmental layer intersection" />
+                    <hbox>
+                        <div width="30px" />
+                        <div id="envLegend" visible="true">
+                            <n:table style="border:1px solid black">
+                                <n:tr>
+                                    <n:td>
+                                        high relative sq km
+                                    </n:td>
+                                    <n:td style="background-color:#ffffff;width:20px;border:1px solid black">
+                                    </n:td>
+                                </n:tr>
+                                <n:tr>
+                                    <n:td>
+                                        low relative sq km
+                                    </n:td>
+                                    <n:td style="background-color:#000000;width:20px;border:1px solid black">
+                                    </n:td>
+                                </n:tr>
+                            </n:table>
+                        </div>
+                    </hbox>
+                </groupbox>
             </vbox>
         </div>
         <vbox height="160px">
-            <separator />
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
                     <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />
                     <button sclass="goButton" label="View data" id="scatterplotDataDownload" />
                 </hbox>
             </div>
-            <separator />            
+            <separator />
             <hbox>
                 <label id="tbxSelectionCount" />
                 <div id="scatterplotButtons" visible="false">
@@ -69,9 +113,9 @@
             </hbox>
             <label id="tbxRange" />
             <label id="tbxDomain" />
-            <separator />
             <hbox>
-                <checkbox id="chkSelectMissingRecords" label="select records with missing values " visible="false" /><label id="tbxMissingCount" />
+                <checkbox id="chkSelectMissingRecords" label="select records with missing values " visible="false" />
+                <label id="tbxMissingCount" />
             </hbox>
         </vbox>
         
@@ -84,7 +128,7 @@
         </html>
 
         <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
-        <textbox id="tbxChartSelection" visible="false" height="325px" />
+        <textbox id="tbxChartSelection" visible="false" height="465px" />
         <script type="text/JavaScript"><![CDATA[
 var startx = 0;
 var starty = 0;

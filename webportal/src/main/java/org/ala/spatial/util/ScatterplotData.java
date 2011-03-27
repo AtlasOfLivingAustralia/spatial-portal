@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.util;
 
 import java.awt.geom.Rectangle2D;
@@ -12,6 +11,7 @@ import java.awt.geom.Rectangle2D;
  * @author Adam
  */
 public class ScatterplotData {
+
     String layer1;
     String layer1name;
     String layer2;
@@ -21,12 +21,19 @@ public class ScatterplotData {
     boolean enabled;
     String lsid;
     String name;
+    //appearance
+    public String colourMode = "-1";
+    public int red = 0;
+    public int green = 0;
+    public int blue = 255;
+    public int opacity = 100;
+    public int size = 4;
 
     public ScatterplotData() {
         enabled = false;
     }
-    
-    public ScatterplotData(String lsid, String name, String layer1, String layer1name, String layer2, String layer2name, String pid,Rectangle2D.Double selection,boolean enabled) {
+
+    public ScatterplotData(String lsid, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled) {
         this.lsid = lsid;
         this.name = name;
         this.layer1 = layer1;
@@ -61,7 +68,7 @@ public class ScatterplotData {
     public void setLayer2Name(String name) {
         layer2name = name;
     }
-    
+
     public String getPid() {
         return pid;
     }
