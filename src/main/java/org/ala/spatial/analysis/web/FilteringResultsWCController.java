@@ -87,7 +87,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             sdLabel.setValue("updating...");
 
 
-            calculateArea();
+            //calculateArea();
 
         }
     }

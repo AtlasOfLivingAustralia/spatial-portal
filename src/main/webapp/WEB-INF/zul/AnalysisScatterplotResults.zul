@@ -15,6 +15,7 @@
                                 <listheader id="header2" label="" ></listheader>
                                 <listheader id="header1" label="" ></listheader>
                                 <listheader label="" ></listheader>
+                                <listheader label="" ></listheader>
                             </listhead>
                         </listbox>
 

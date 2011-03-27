@@ -18,7 +18,7 @@
                     ]]></html>
                 </n:td>
             </n:tr>
-            <n:tr height="18px" >
+            <n:tr height="18px" style="display:none;">
                 <n:td width="130px">
                     <label id="lblArea2" value="Area2" visible="true" />
                 </n:td>
