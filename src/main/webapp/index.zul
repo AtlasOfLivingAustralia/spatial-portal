@@ -518,14 +518,14 @@ border-bottom: none;
                                     <n:span style="float:right">&#8711;</n:span>
                                 </n:span>
                                 <n:ul>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</n:a>
+                                    <n:li id="min_mapoption" class="bmapoption">
+                                        <n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;">Minimal</n:a>
                                     </n:li>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</n:a>
+                                    <n:li id="nor_mapoption" class="bmapoption">
+                                        <n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;">Normal</n:a>
                                     </n:li>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</n:a>
+                                    <n:li id="sat_mapoption" class="bmapoption">
+                                        <n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;">Satellite</n:a>
                                     </n:li>
                                     <n:li class="mapoption">
                                         <button label="Download map" w:onClick="printHack('')" />
@@ -749,12 +749,18 @@ function printHack(o) {
 }
 function changeBaseLayer(type) {
     currentbaselayertxt = type;
+
+    $('li.bmapoption').removeClass('mapoptsel');
+
     if (type == 'normal') {
         map.setBaseLayer(bLayer2);
+        $('#nor_mapoption').addClass('mapoptsel');
     } else if (type == 'hybrid') {
         map.setBaseLayer(bLayer);
+        $('#sat_mapoption').addClass('mapoptsel');
     } else if (type == 'minimal') {
         map.setBaseLayer(bLayer3);
+        $('#min_mapoption').addClass('mapoptsel');
     }
 }
 
