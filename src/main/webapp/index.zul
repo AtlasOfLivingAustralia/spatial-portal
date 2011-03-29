@@ -514,7 +514,7 @@ border-bottom: none;
                         <n:ul id="cssdropdown" >
                             <n:li id="mapopt" class="headlink goButton">
                                 <n:span>
-                                    <n:span id="selmap">Normal</n:span>
+                                    <n:span id="selmap">Map</n:span>
                                     <n:span style="float:right">&#8711;</n:span>
                                 </n:span>
                                 <n:ul>

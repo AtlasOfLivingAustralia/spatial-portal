@@ -759,7 +759,7 @@ closebox a.helpButtonMain:hover {
 #cssdropdown, #cssdropdown * { padding: 0; margin: 0; }
 
 /* Head links */
-#cssdropdown li.headlink { width: 110px; float: left; padding: 5px; text-align: center; } /*border: 1px black solid; background-color: #e9e9e9; */
+#cssdropdown li.headlink { width: 110px; float: left; padding: 5px; text-align: left; } /*border: 1px black solid; background-color: #e9e9e9; */
 #cssdropdown li.headlink a { display: block; padding: 15px; }
 
 /* Child lists and links */
@@ -769,7 +769,7 @@ closebox a.helpButtonMain:hover {
 #cssdropdown li.headlink ul li a:visited { color: black;}
 #cssdropdown li.headlink ul li a:hover, .mapoption:hover, .mapoption button:hover { background-color: #bbb; }
 
-#cssdropdown li.headlink {background: #eee url(../img/world.png) no-repeat 8px 6px; padding:10px;}
+#cssdropdown li.headlink {/*background: #eee url(../img/world.png) no-repeat 8px 6px;*/background-color: #eee; padding:10px;}
 
 
 .mapoption {
