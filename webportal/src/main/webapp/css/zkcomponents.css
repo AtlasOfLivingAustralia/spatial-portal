@@ -765,11 +765,12 @@ closebox a.helpButtonMain:hover {
 /* Child lists and links */
 #cssdropdown li.headlink ul { display: none; border-top: 1px black solid; text-align: left; margin-top: 10px;}
 #cssdropdown li.headlink:hover ul { display: block; }
-#cssdropdown li.headlink ul li a, .mapoption { padding: 5px; height: 17px; text-decoration: none}
+#cssdropdown li.headlink ul li a, .mapoption { padding: 5px 5px 5px 20px; height: 17px; text-decoration: none; line-height: 1.7em}
 #cssdropdown li.headlink ul li a:visited { color: black;}
 #cssdropdown li.headlink ul li a:hover, .mapoption:hover, .mapoption button:hover { background-color: #bbb; }
 
 #cssdropdown li.headlink {/*background: #eee url(../img/world.png) no-repeat 8px 6px;*/background-color: #eee; padding:10px;}
+.mapoptsel {background: #eee url(../img/arrow_right.png) no-repeat 1px 6px;}
 
 
 .mapoption {
