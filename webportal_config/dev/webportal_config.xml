@@ -212,6 +212,7 @@
     <!-- url to species metadata.  _lsid_ is replaced with actual lsid -->
      <species_metadata_url>http://bie.ala.org.au/species/_lsid_</species_metadata_url>
      <help_url>http://test.ala.org.au</help_url>
+     <geonetwork_url>http://spatial-dev.ala.org.au/geonetwork</geonetwork_url>
     </tns:supplementary>
   </tns:settings>
   <!--Menu
