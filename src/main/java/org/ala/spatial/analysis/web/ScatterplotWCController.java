@@ -5,12 +5,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.LayerLegendComposer;
-import java.awt.PaintContext;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.image.ColorModel;
 import org.apache.commons.lang.StringUtils;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
@@ -34,7 +29,6 @@ import org.jfree.chart.encoders.EncoderUtil;
 import org.jfree.chart.encoders.ImageFormat;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.DefaultXYDataset;
 import org.zkoss.zul.Textbox;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -42,9 +36,6 @@ import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.UserData;
@@ -81,7 +72,7 @@ public class ScatterplotWCController extends UtilityComposer {
     private SettingsSupplementary settingsSupplementary = null;
     String satServer;
     Chart chart;
-    Div chartImg;
+    //Div chartImg;
     SpeciesAutoComplete sac;
     SpeciesAutoComplete sacBackground;
     EnvLayersCombobox cbLayer1;
@@ -382,9 +373,9 @@ public class ScatterplotWCController extends UtilityComposer {
                 && xyzDataset != null) {
             try {
                 //active area must be drawn first
-                if(chkHighlightActiveAreaOccurrences.isChecked() && aaDataset != null) {
+                if (chkHighlightActiveAreaOccurrences.isChecked() && aaDataset != null) {
                     jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
-                }else {
+                } else {
                     jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
                 }
                 jChart.setBackgroundPaint(Color.white);
@@ -406,7 +397,7 @@ public class ScatterplotWCController extends UtilityComposer {
                 jChart.getTitle().setFont(titlefont);
 
                 //active area must be drawn first
-                if(chkHighlightActiveAreaOccurrences.isChecked() && aaDataset != null) {
+                if (chkHighlightActiveAreaOccurrences.isChecked() && aaDataset != null) {
                     plot.setRenderer(getActiveAreaRenderer());
 
                     int datasetCount = plot.getDatasetCount();
@@ -417,10 +408,10 @@ public class ScatterplotWCController extends UtilityComposer {
                 }
 
                 //add points background
-                if(backgroundLSID != null) {
+                if (backgroundLSID != null) {
                     resampleBackground();
 
-                    if(backgroundXyzDataset != null) {
+                    if (backgroundXyzDataset != null) {
                         int datasetCount = plot.getDatasetCount();
                         plot.setDataset(datasetCount, backgroundXyzDataset);
                         plot.setRenderer(datasetCount, getBackgroundRenderer());
@@ -469,11 +460,11 @@ public class ScatterplotWCController extends UtilityComposer {
                     e.printStackTrace();
                 }
 
-                chartImg.setWidth(width + "px");
-                chartImg.setHeight(height + "px");
+                //chartImg.setWidth(width + "px");
+                //chartImg.setHeight(height + "px");
                 String script = "updateScatterplot(" + width + "," + height + ",'url(" + htmlurl + uid + ".png)')";
                 Clients.evalJavaScript(script);
-                chartImg.setVisible(true);
+                //chartImg.setVisible(true);
                 scatterplotDownloads.setVisible(true);
 
                 if (missingCount > 0) {
@@ -571,7 +562,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
         getScatterplotData().setEnabled(false);
 
-        chartImg.setVisible(false);
+        //chartImg.setVisible(false);
         scatterplotDownloads.setVisible(false);
 
         mapLayer = null;
@@ -737,12 +728,12 @@ public class ScatterplotWCController extends UtilityComposer {
         mapLayer = getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
     }
 
-    public void onCheck$chkHighlightActiveAreaOccurrences(Event event) {        
+    public void onCheck$chkHighlightActiveAreaOccurrences(Event event) {
         redraw();
     }
 
     public void onCheck$chkRestrictOccurrencesToActiveArea(Event event) {
-        if(chkRestrictOccurrencesToActiveArea.isChecked()) {
+        if (chkRestrictOccurrencesToActiveArea.isChecked()) {
             chkHighlightActiveAreaOccurrences.setChecked(false);
             chkHighlightActiveAreaOccurrences.setDisabled(true);
         } else {
@@ -754,7 +745,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
     public void onCheck$chkShowEnvIntersection(Event event) {
         //envLegend.setVisible(chkShowEnvIntersection.isChecked());
-        
+
         redraw();
     }
 
@@ -781,13 +772,13 @@ public class ScatterplotWCController extends UtilityComposer {
             getMapComposer().applyChange();
         }
     }
-
     String prevBlockPlot = null;
     DefaultXYZDataset blockXYZDataset = null;
     XYBlockRenderer xyBlockRenderer = null;
+
     void addBlockPlot(XYPlot scatterplot, String env1, String displayName1, double min1, double max1, String env2, String displayName2, double min2, double max2) {
         String thisBlockPlot = env1 + "*" + min1 + "*" + max1 + "*" + env2 + "*" + min2 + "*" + max2;
-        if(prevBlockPlot == null || !prevBlockPlot.equals(thisBlockPlot)) {
+        if (prevBlockPlot == null || !prevBlockPlot.equals(thisBlockPlot)) {
             prevBlockPlot = thisBlockPlot;
             //get data
             double[][] data = null;
@@ -857,12 +848,12 @@ public class ScatterplotWCController extends UtilityComposer {
 
 
             xyBlockRenderer = new XYBlockRenderer();
-    //        LookupPaintScale ramp = new LookupPaintScale();
-    //        for(int i=0;i<=10;i++) {
-    //            //yellow - red
-    //            int colour = 0xFFFFFF00 - (0x0000FF00 & (i * 0x0000FF00 / 25));
-    //            ramp.add(i/10.0,new Color(colour));
-    //        }
+            //        LookupPaintScale ramp = new LookupPaintScale();
+            //        for(int i=0;i<=10;i++) {
+            //            //yellow - red
+            //            int colour = 0xFFFFFF00 - (0x0000FF00 & (i * 0x0000FF00 / 25));
+            //            ramp.add(i/10.0,new Color(colour));
+            //        }
             GrayPaintScale ramp = new GrayPaintScale(Math.log10(min + 1), Math.log10(max + 1));
             xyBlockRenderer.setPaintScale(ramp);
             xyBlockRenderer.setBlockHeight(ydiv);   //backwards
@@ -937,21 +928,21 @@ public class ScatterplotWCController extends UtilityComposer {
         return seriesDbl;
     }
 
-    private DefaultXYZDataset createDataset(int pos, double[][] dblTmp, HashMap<String, Integer> ts, String[] series, double[] seriesDbl, String [] seriesNames) {
+    private DefaultXYZDataset createDataset(int pos, double[][] dblTmp, HashMap<String, Integer> ts, String[] series, double[] seriesDbl, String[] seriesNames) {
         DefaultXYZDataset xyzDataset = new DefaultXYZDataset();
         double[][] dbl = {{0.0}, {0.0}, {0.0}};
         if (dblTmp != null && dblTmp.length > 0 && dblTmp[0].length > 0) {
             //add series
             if (ts.size() > 1) {
-                if(seriesNames == null) {
+                if (seriesNames == null) {
                     seriesNames = new String[ts.size()];
                     ts.keySet().toArray(seriesNames);
                 }
-                for (int j=0;j<=seriesNames.length;j++) {
+                for (int j = 0; j <= seriesNames.length; j++) {
                     String key;
-                    if(j < seriesNames.length) {
+                    if (j < seriesNames.length) {
                         key = seriesNames[j];
-                    } else if(ts.containsKey(ACTIVE_AREA_SERIES) && ts.size() > seriesNames.length) {
+                    } else if (ts.containsKey(ACTIVE_AREA_SERIES) && ts.size() > seriesNames.length) {
                         key = ACTIVE_AREA_SERIES;
                     } else {
                         continue;
@@ -967,9 +958,9 @@ public class ScatterplotWCController extends UtilityComposer {
                             p++;
                         }
                     }
-                    if(key.length() == 0) {
+                    if (key.length() == 0) {
                         xyzDataset.addSeries("unknown", dbl);
-                    }  else if(seriesNames[j].equalsIgnoreCase(ACTIVE_AREA_SERIES)) {
+                    } else if (seriesNames[j].equalsIgnoreCase(ACTIVE_AREA_SERIES)) {
                         aaDataset = new DefaultXYZDataset();
                         aaDataset.addSeries(key, dbl);
                     } else {
@@ -991,11 +982,11 @@ public class ScatterplotWCController extends UtilityComposer {
         return xyzDataset;
     }
 
-    private XYShapeRenderer getRenderer(double min, double max, int[] datasetColours, String [] seriesNames) {
+    private XYShapeRenderer getRenderer(double min, double max, int[] datasetColours, String[] seriesNames) {
         class MyXYShapeRenderer extends XYShapeRenderer {
 
             public int alpha = 255;
-            public Paint [] datasetColours;
+            public Paint[] datasetColours;
             public int shapeSize = 8;
             Shape shape = null;
 
@@ -1025,11 +1016,11 @@ public class ScatterplotWCController extends UtilityComposer {
 
         MyXYShapeRenderer renderer = new MyXYShapeRenderer();
         renderer.shapeSize = data.size;
-        if(datasetColours != null) {
+        if (datasetColours != null) {
             renderer.datasetColours = new Color[datasetColours.length];
-            for(int i=0;i<datasetColours.length;i++) {
+            for (int i = 0; i < datasetColours.length; i++) {
                 int c = datasetColours[i];
-                if(seriesNames.equals(NUMBER_SERIES)) {
+                if (seriesNames.equals(NUMBER_SERIES)) {
                     renderer.datasetColours[i] = null;
                 } else {
                     int r = (c >> 16) & 0x000000FF;
@@ -1123,7 +1114,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
             int result = client.executeMethod(get);
 
-            if(result == 200) {
+            if (result == 200) {
                 String slist = get.getResponseBodyAsString();
                 return slist;
             }
@@ -1133,12 +1124,12 @@ public class ScatterplotWCController extends UtilityComposer {
 
         return null;
     }
-
     String prevLegendColours = null;
+
     void buildSeriesColours(HashMap<String, Integer> ts, String lsid, String colourMode) {
         try {
             String thisLegendColours = lsid + "*" + colourMode;
-            if(prevLegendColours == null || !prevLegendColours.equals(thisLegendColours)) {
+            if (prevLegendColours == null || !prevLegendColours.equals(thisLegendColours)) {
                 prevLegendColours = thisLegendColours;
 
                 //reset
@@ -1147,7 +1138,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
                 String pid = registerPointsColourModeLegend(lsid, colourMode);
 
-                if(pid == null) {
+                if (pid == null) {
                     return;
                 }
 
@@ -1179,12 +1170,12 @@ public class ScatterplotWCController extends UtilityComposer {
                 }
 
                 ts = (HashMap<String, Integer>) ts.clone();
-                if(ts.containsKey(ACTIVE_AREA_SERIES)) {
+                if (ts.containsKey(ACTIVE_AREA_SERIES)) {
                     ts.remove(ACTIVE_AREA_SERIES);
                 }
 
                 int[] colours = new int[ts.size()];
-                String [] keys = new String[ts.size()];
+                String[] keys = new String[ts.size()];
                 ts.keySet().toArray(keys);
 
                 int i = 0;
@@ -1195,8 +1186,8 @@ public class ScatterplotWCController extends UtilityComposer {
                         int green = Integer.parseInt(ss[2]);
                         int blue = Integer.parseInt(ss[3]);
 
-                        for(int j=0;j<keys.length;j++) {
-                            if(keys[j].equalsIgnoreCase(ss[0])) {
+                        for (int j = 0; j < keys.length; j++) {
+                            if (keys[j].equalsIgnoreCase(ss[0])) {
                                 colours[j] = (red << 16) | (green << 8) | (blue);
                                 break;
                             }
@@ -1209,10 +1200,10 @@ public class ScatterplotWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
             seriesColours = null;
-        }        
+        }
     }
-
     String prevResample = null;
+
     private void resample() {
         try {
             if (data.getLsid() != null && data.getLsid().length() > 0
@@ -1220,10 +1211,10 @@ public class ScatterplotWCController extends UtilityComposer {
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
 
                 String thisResample = data.getLsid() + "*" + data.getLayer1() + "*" + data.getLayer2() + "*" + data.colourMode
-                        + "*" + ((chkHighlightActiveAreaOccurrences.isChecked())?"Y":"N")
-                        + "*" + ((chkRestrictOccurrencesToActiveArea.isChecked())?"Y":"N");
+                        + "*" + ((chkHighlightActiveAreaOccurrences.isChecked()) ? "Y" : "N")
+                        + "*" + ((chkRestrictOccurrencesToActiveArea.isChecked()) ? "Y" : "N");
 
-                if(prevResample == null || !prevResample.equals(thisResample)) {
+                if (prevResample == null || !prevResample.equals(thisResample)) {
                     prevResample = thisResample;
 
                     StringBuffer sbProcessUrl = new StringBuffer();
@@ -1289,12 +1280,12 @@ public class ScatterplotWCController extends UtilityComposer {
                 annotation = null;
                 missingCount = 0;
             }
-        } catch  (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
     String prevResampleBackground = null;
+
     private void resampleBackground() {
         try {
             if (backgroundLSID != null && backgroundLSID.length() > 0
@@ -1302,16 +1293,16 @@ public class ScatterplotWCController extends UtilityComposer {
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
 
                 String thisResampleBackground = backgroundLSID + "*" + data.getLayer1() + "*" + data.getLayer2();
-                if(prevResampleBackground == null || !prevResampleBackground.equals(thisResampleBackground)) {
+                if (prevResampleBackground == null || !prevResampleBackground.equals(thisResampleBackground)) {
                     StringBuffer sbProcessUrl = new StringBuffer();
                     sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/scatterplot?");
                     sbProcessUrl.append("taxonid=" + URLEncoder.encode(backgroundLSID.replace(".", "__"), "UTF-8"));
                     String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
 
-    //                if (chkHighlightActiveAreaOccurrences.isChecked()) {
-    //                    sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
-    //                }
+                    //                if (chkHighlightActiveAreaOccurrences.isChecked()) {
+                    //                    sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
+                    //                }
                     if (chkRestrictOccurrencesToActiveArea.isChecked()) {
                         sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
                     }
@@ -1357,7 +1348,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     //buildSeriesColours(ts, backgroundLSID, data.colourMode);
 
                     //missingCount = lines.length - 1 - pos;
-                    String [] snames = new String[ts.size()];
+                    String[] snames = new String[ts.size()];
                     ts.keySet().toArray(snames);
                     backgroundXyzDataset = createDataset(pos, dblTmp, ts, series, seriesDbl, snames);
 
@@ -1367,7 +1358,7 @@ public class ScatterplotWCController extends UtilityComposer {
                 //invalid background
                 backgroundXyzDataset = null;
             }
-        } catch  (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

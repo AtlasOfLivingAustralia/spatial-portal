@@ -65,11 +65,11 @@
                 <groupbox >
                     <caption label="Select two environmental layers" />
                     <hbox>X
-                        <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="300px" >
+                        <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
                         </combobox>
                     </hbox>
                     <hbox>Y
-                        <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="300px" >
+                        <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
                         </combobox>
                     </hbox>
                     <checkbox id="chkShowEnvIntersection" label="Show environmental layer intersection" />
@@ -119,13 +119,14 @@
             </hbox>
         </vbox>
         
-        <div id="chartImg" width="300px" height="300px" style="position:absolute;float:left;" />
-        <html><![CDATA[
-        <div id="chartDivBack" class="chartDiv"></div>
-        <div id="chartDiv" class="chartDiv"></div>
+        
+        <html><![CDATA[       
+        <div id="chartDivBack" class="chartDiv"><div id="chartDiv" class="chartDiv" style="position:absolute;"></div></div>
         <div id="rband"></div>
         ]]>
         </html>
+
+        <div id="chartImg" width="300px" height="300px" style="float:left;" />
 
         <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
         <textbox id="tbxChartSelection" visible="false" height="465px" />
@@ -141,18 +142,18 @@ $(document).ready(function() {
 });
 
 function setupRband() {   
-    $('#chartDiv').mousedown(function(event){
+    $('#chartDivBack').mousedown(function(event){
         event.preventDefault();
         doMouseDown(event);
 
-        $('#chartDiv, #rband').bind('mousemove',function(event){
+        $('#chartDivBack, #rband').bind('mousemove',function(event){
             doMouseDrag(event);
         });
 
-        $('#chartDiv, #rband').bind('mouseup',function(event){
+        $('#chartDivBack, #rband').bind('mouseup',function(event){
             doMouseUp(event);
-            $('#chartDiv, #rband').unbind('mousemove');
-            $('#chartDiv, #rband').unbind('mouseup');
+            $('#chartDivBack, #rband').unbind('mousemove');
+            $('#chartDivBack, #rband').unbind('mouseup');
         });
 
         //$('#rband').bind('mouseup',function(event){
@@ -164,12 +165,14 @@ function setupRband() {
 }
 
 function doMouseDown(event) {
- $('#rband').offset($('#chartDiv').offset());
+ $('#rband').offset($('#chartDivBack').offset());
         startx = event.pageX;
         starty = event.pageY;
         resizing = true;
 
         $('#rband').offset({ top: starty, left: startx }).show();
+
+        document.getElementById("chartDivBack").style.backgroundImage = "";
 
         // prevent default behavior of text selection
         return false;
@@ -225,10 +228,10 @@ function chartSelection(x1, y1, x2, y2) {
     x2 = x2 + "";
     y1 = y1 + "";
     y2 = y2 + "";
-    var value = (x1.replace("px","")-$(jq('$chartImg')[0]).offset().left)
-        + "," + (y1.replace("px","")-$(jq('$chartImg')[0]).offset().top)
-        + "," + (x2.replace("px","")-$(jq('$chartImg')[0]).offset().left)
-        + "," + (y2.replace("px","")-$(jq('$chartImg')[0]).offset().top);
+    var value = (x1.replace("px","")-$(jq('#chartDivBack')[0]).offset().left)
+        + "," + (y1.replace("px","")-$(jq('#chartDivBack')[0]).offset().top)
+        + "," + (x2.replace("px","")-$(jq('#chartDivBack')[0]).offset().left)
+        + "," + (y2.replace("px","")-$(jq('#chartDivBack')[0]).offset().top);
     //for delay in new background being returned
     var d1 = document.getElementById("chartDiv");
     var d2 = document.getElementById("chartDivBack");

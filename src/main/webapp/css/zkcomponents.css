@@ -793,7 +793,6 @@ closebox a.helpButtonMain:hover {
 /* scatterplot start           */
 /*******************************/
 .chartDiv {
-    position:absolute;
     float:left;
     width: 320px;
     height: 320px;
@@ -801,7 +800,9 @@ closebox a.helpButtonMain:hover {
     -webkit-user-select: none;
     -webkit-user-drag: none;
     -moz-user-select: none;
-    cursor: crosshair; 
+    cursor: crosshair;
+    border: 0;
+    margin: 0;
 }
 #rband {
     position:absolute;

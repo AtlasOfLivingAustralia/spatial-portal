@@ -116,6 +116,8 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
 import org.zkoss.zul.Messagebox;
+import org.zkoss.zul.Radio;
+import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Separator;
 import org.zkoss.zul.SimpleListModel;
 import org.zkoss.zul.Slider;
@@ -163,7 +165,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private Slider blueSlider;
     private Slider sizeSlider;
     private Checkbox chkUncertaintySize;
-    public Button btnPointsCluster;
+    //public Button btnPointsCluster;
+    public Radiogroup pointtype;
+    public Radio rPoint, rCluster, rGrid;
+    private Div clusterpoints;
     private Label lblFupload;
     private Label redLabel;
     private Label greenLabel;
@@ -297,7 +302,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 selectedLayer.setSizeVal(sizeSlider.getCurpos());
                 selectedLayer.setSizeUncertain(chkUncertaintySize.isChecked());
 
-                selectedLayer.setColourMode((String) cbColour.getSelectedItem().getValue());
+                if (pointtype.getSelectedItem() == rGrid) {
+                    selectedLayer.setColourMode("grid");
+                } else {
+                    selectedLayer.setColourMode((String) cbColour.getSelectedItem().getValue());
+                }
 
                 Color c = new Color(redSlider.getCurpos(), greenSlider.getCurpos(), blueSlider.getCurpos());
                 String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
@@ -448,7 +457,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //add feature to the map as a new layer
         MapLayer mapLayer = addGeoJSON(label, geoServer + link);
 
-        if(mapLayer != null) {  //might be a duplicate layer making mapLayer == null
+        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
             JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
             String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
 
@@ -1437,7 +1446,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     uncertainty.setVisible(false);
                 } else {
                     legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
-                    sizeChooser.setVisible(true);
+                    sizeChooser.setVisible(pointtype.getSelectedItem() != rGrid);
                     if (m.getGeoJSON() != null && m.getGeoJSON().length() > 0) {
                         uncertainty.setVisible(false);
                     } else {
@@ -1448,9 +1457,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 legendLabel.setVisible(true);
                 legendImgUri.setVisible(false);
                 //legendHtml.setVisible(false);
-                colourChooser.setVisible(true);
+                colourChooser.setVisible(pointtype.getSelectedItem() != rGrid);
 
-                if (cbColour.getSelectedItem() != ciColourUser && m.getMapLayerMetadata() != null
+                if ((cbColour.getSelectedItem() != ciColourUser || pointtype.getSelectedItem() == rGrid)
+                        && m.getMapLayerMetadata() != null
                         && m.getMapLayerMetadata().getSpeciesLsid() != null
                         && !m.isClustered()) {
                     legendHtml.setVisible(true);
@@ -1460,6 +1470,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else {
                     legendImg.setVisible(true);
                     legendHtml.setVisible(false);
+                }
+
+                if (m.isClustered()) {
+                    pointtype.setSelectedItem(rCluster);
+                } else if (m.getColourMode().equals("grid")) {
+                    pointtype.setSelectedItem(rGrid);
+                } else {
+                    pointtype.setSelectedItem(rPoint);
                 }
             } else if (currentSelection.getSelectedStyle() != null) {
                 /* 1. classification legend has uri with ".zul" content
@@ -1526,10 +1544,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (m != null && m.getMapLayerMetadata() != null
                 && m.getMapLayerMetadata().getSpeciesLsid() != null) {
-            btnPointsCluster.setVisible(true);
+            clusterpoints.setVisible(true);
             cbColour.setDisabled(m.isClustered() || isUserUploadedCoordinates(m));
         } else {
-            btnPointsCluster.setVisible(false);
+            clusterpoints.setVisible(false);
             cbColour.setDisabled(true);
         }
     }
@@ -1676,7 +1694,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             uncertaintyLegend.setVisible(false);
         }
 
-        if (cbColour.getSelectedItem() != ciColourUser && selectedLayer.getMapLayerMetadata() != null
+        if ((cbColour.getSelectedItem() != ciColourUser || pointtype.getSelectedItem() == rGrid)
+                && selectedLayer.getMapLayerMetadata() != null
                 && selectedLayer.getMapLayerMetadata().getSpeciesLsid() != null
                 && !selectedLayer.isClustered()) {
             legendHtml.setVisible(true);
@@ -1706,11 +1725,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         applyChange();
     }
 
-    public void onClick$btnPointsCluster() {
-        togglePointsCluster();
+    public void onCheck$pointtype(Event event) {
+        updateToSelectedPointType();
     }
 
-    private void togglePointsCluster() {
+//    public void onClick$btnPointsCluster() {
+//        //togglePointsCluster();
+//        updateToSelectedPointType()
+//    }
+    private void updateToSelectedPointType() {
         MapLayer selectedLayer = this.getActiveLayersSelection(true);
         MapLayerMetadata md = selectedLayer.getMapLayerMetadata();
         if (md != null) {
@@ -1768,10 +1791,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             deactiveLayer(selectedLayer, true, false, true);
 
-            if (selectedLayer.isClustered()) {
+            //point type
+            if (pointtype.getSelectedItem() == rPoint) {
                 convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
-            } else {
+            } else if (pointtype.getSelectedItem() == rCluster) {
                 convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
+            } else { //if(pointtype.getSelecteditem() == rGrid) {
+                convLayer = mapSpeciesByLsidFilterGrid(lsid, species, rank);
             }
 
             // reopen the layer controls
@@ -2329,12 +2355,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             }
                         } else {
                             //points
-                            if (mapZoomChanged || ml.getMapLayerMetadata().isOutside(getViewArea())) {
-                                ml.getMapLayerMetadata().setLayerExtent(getViewArea(), 0.2);
+                            try {
+                                if (mapZoomChanged || ml.getMapLayerMetadata().isOutside(getViewArea())) {
+                                    ml.getMapLayerMetadata().setLayerExtent(getViewArea(), 0.2);
 
-                                reqUri = ml.getUri() + "?" + tbxReloadLayers
-                                        + "&a=" + URLEncoder.encode(ml.getMapLayerMetadata().getLayerExtentString(), "UTF-8")
-                                        + "&m=" + (ml.getSizeVal() * 2);
+                                    reqUri = ml.getUri() + "?" + tbxReloadLayers
+                                            + "&a=" + URLEncoder.encode(ml.getMapLayerMetadata().getLayerExtentString(), "UTF-8")
+                                            + "&m=" + (ml.getSizeVal() * 2);
+                                }
+                            } catch (Exception e) {
+                                //map layer metadata layer extents not always set?
                             }
                         }
                     } catch (Exception e) {
@@ -2461,7 +2491,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //use # of points cutoff; //        if(chkPointsCluster.isChecked()){
         MapLayer ml = null;
         if (countOfLsid(lsid) > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD) || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
-            ml = mapSpeciesByLsidCluster(lsid, species, rank);
+            //ml = mapSpeciesByLsidCluster(lsid, species, rank);
+            ml = mapSpeciesByLsidFilterGrid(lsid, species, rank);
         } else {
             //return mapSpeciesByLsidPoints(lsid,species);
             ml = mapSpeciesByLsidFilter(lsid, species, rank);
@@ -2550,7 +2581,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 ml.setClustered(true);
 
-                btnPointsCluster.setLabel("Display species as points");
+                //btnPointsCluster.setLabel("Display species as points");
+                pointtype.setSelectedItem(rCluster);
                 updateComboBoxesColour(ml);
             }
 
@@ -2647,7 +2679,47 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setSpeciesRank(rank);
 
             ml.setClustered(false);
-            btnPointsCluster.setLabel("Display species as clusters");
+            //btnPointsCluster.setLabel("Display species as clusters");
+            pointtype.setSelectedItem(rPoint);
+            updateComboBoxesColour(ml);
+
+            lsid = StringUtils.replace(lsid, ".", "__");
+            try {
+                lsid = URLEncoder.encode(lsid, "UTF-8");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            addLsidBoundingBoxToMetadata(md, lsid);
+        }
+
+        return ml;
+    }
+
+    public MapLayer mapSpeciesByLsidFilterGrid(String lsid, String species, String rank) {
+        String filter = rank + "conceptid='" + lsid + "';colormode:grid";
+
+        MapLayer ml = mapSpeciesWMSByFilter(species, filter);
+
+        if (ml != null) {
+            addToSession(species, filter);
+
+            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", lsid);
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(infoUrl + "\n" + species);
+            md.setSpeciesLsid(lsid);
+            md.setSpeciesDisplayName(species);
+            md.setSpeciesRank(rank);
+
+            ml.setColourMode("grid");
+
+            ml.setClustered(false);
+            //btnPointsCluster.setLabel("Display species as clusters");
+            pointtype.setSelectedItem(rGrid);
             updateComboBoxesColour(ml);
 
             lsid = StringUtils.replace(lsid, ".", "__");
@@ -2695,7 +2767,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
-        String envString = "color:" + hexColour + ";name:circle;size:" + size + ";opacity:" + opacity;
+        String envString = "";
+        if (filter.contains("colormode")) {
+            //colour mode is in 'filter' but need to move it to envString
+            envString += "colormode:grid";
+        } else {
+            envString = "color:" + hexColour;
+        }
+        envString += ";name:circle;size:" + size + ";opacity:" + opacity;
         if (uncertaintyCheck > 0) {
             envString += ";uncertainty:1";
         }
@@ -2731,7 +2810,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         ml.setOpacity(opacity);
 
                         ml.setClustered(false);
-                        btnPointsCluster.setLabel("Display species as clusters");
+                        //btnPointsCluster.setLabel("Display species as clusters");
+                        //pointtype.setSelectedItem(rPoint);
                         updateComboBoxesColour(ml);
 
                         MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -3230,7 +3310,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 String wkt = coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
                 return wkt;
             } else {
-                String wkt = coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))").replace("],[","),(");
+                String wkt = coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))").replace("],[", "),(");
                 return wkt;
             }
         } catch (Exception e) {
@@ -3326,7 +3406,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             String name = ud.getName();
 
-            System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'"); 
+            System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
 
             // check the content-type
             // TODO: check why LB is sending 'application/spc' mime-type. remove from future use. 
@@ -3492,10 +3572,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             int counter = 1;
             for (int i = 0; i < userPoints.size(); i++) {
                 String[] up = (String[]) userPoints.get(i);
-                if(up.length > 2) {
+                if (up.length > 2) {
                     sbUIds.append(up[0] + "\n");
                     sbUPoints.append(up[1] + "," + up[2] + "\n");
-                } else if(up.length > 1) {
+                } else if (up.length > 1) {
                     sbUIds.append(counter + "\n");
                     sbUPoints.append(up[0] + "," + up[1] + "\n");
                     counter++;
@@ -3532,7 +3612,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             MapLayer ml = null;
             if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD)) {
-                ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+                //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+                ml = mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user");
             } else {
                 ml = mapSpeciesByLsidFilter(slist, ud.getName(), "user");
             }
@@ -3958,7 +4039,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         //1. register legend
-        String pid = registerPointsColourModeLegend(m.getMapLayerMetadata().getSpeciesLsid(), (String) cbColour.getSelectedItem().getValue());
+        String colourMode = (String) cbColour.getSelectedItem().getValue();
+        if (pointtype.getSelectedItem() == rGrid) {
+            colourMode = "grid";
+        }
+        String pid = registerPointsColourModeLegend(m.getMapLayerMetadata().getSpeciesLsid(), colourMode);
 
         //put any parameters into map
         Map map = new HashMap();
@@ -3985,15 +4070,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
             String lsid = currentSelection.getMapLayerMetadata().getSpeciesLsid();
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".","__"),"UTF-8"));
+            GetMethod get = new GetMethod(satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
-            if(slist != null && slist.length() == 0) {
+            if (slist != null && slist.length() == 0) {
                 isUserUploadedCoordinates = true;
             }
-        }catch(Exception e) {
-
+        } catch (Exception e) {
         }
         return isUserUploadedCoordinates;
     }

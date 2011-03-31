@@ -15,9 +15,9 @@
         <label id="lblEdit" value="Click colour to edit" />
         <listbox sclass="legendlist" id="legend" multiple="false" checkmark="false" width="100%" height="320px" fixedLayout="true" >
             <listhead>
-                <listheader label="group"></listheader>
+                <listheader label="group" width="210px"></listheader>
                 <listheader label="colour" width="50px"></listheader>
-                <listheader id="countheader" label="count" width="40px"></listheader>
+                <listheader id="countheader" label="count" width="60px" align="right"></listheader>
             </listhead>
         </listbox>
         <div id="colourChooser" visible="false">

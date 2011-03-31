@@ -136,14 +136,14 @@ public class ClassificationLegend extends UtilityComposer {
                     int green = Integer.parseInt(ss[2]);
                     int blue = Integer.parseInt(ss[3]);
 
-                    lc = new Listcell(ss[0]);
+                    lc = new Listcell("   ");
                     lc.setStyle("background-color: rgb(" + red + "," + green
                             + "," + blue + "); color: rgb(" + red + "," + green
                             + "," + blue + ")");
                     lc.setParent(li);
 
                     //count
-                    if(ss.length > 4) {
+                    if (ss.length > 4) {
                         countheader.setVisible(true);
                         lc = new Listcell(ss[4]);
                         lc.setParent(li);

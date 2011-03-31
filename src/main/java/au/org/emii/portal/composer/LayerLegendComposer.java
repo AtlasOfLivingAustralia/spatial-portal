@@ -91,15 +91,13 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         sizeChooser.setVisible(true);
 
         if (cbColour.getSelectedItem() != ciColourUser) {
-            if (cbColour.getSelectedItem() != ciColourUser) {
-                legendHtml.setVisible(true);
-                legendImg.setVisible(false);
+            legendHtml.setVisible(true);
+            legendImg.setVisible(false);
 
-                showPointsColourModeLegend();
-            } else {
-                legendImg.setVisible(true);
-                legendHtml.setVisible(false);
-            }
+            showPointsColourModeLegend();
+        } else {
+            legendImg.setVisible(true);
+            legendHtml.setVisible(false);
         }
     }
 

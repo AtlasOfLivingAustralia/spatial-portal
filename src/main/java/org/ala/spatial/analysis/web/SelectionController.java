@@ -291,7 +291,7 @@ public class SelectionController extends UtilityComposer {
 
             (new Separator()).setParent(vbox);
 
-           
+
 
             fileUpload = new Fileupload();
             //fileUpload.setMaxsize(5000000);
@@ -328,7 +328,7 @@ public class SelectionController extends UtilityComposer {
             });
 
             wInstructions.setParent(getMapComposer().getFellow("mapIframe").getParent());
-            wInstructions.setClosable(true);            
+            wInstructions.setClosable(true);
             wInstructions.setPosition("top,center");
             try {
                 wInstructions.doModal();
@@ -630,7 +630,7 @@ public class SelectionController extends UtilityComposer {
                     }
 
                     JSONObject jo = layerlist.getJSONObject(j);
-                   // System.out.println("********" + jo.getString("name"));
+                    // System.out.println("********" + jo.getString("name"));
                     if (ml != null && jo.getString("type") != null
                             && jo.getString("type").length() > 0
                             && jo.getString("type").equalsIgnoreCase("contextual")
@@ -640,19 +640,19 @@ public class SelectionController extends UtilityComposer {
                         System.out.println(ml.getName());
                         String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, geoServer);
                         System.out.println(featureURI);
-                        if(featureURI == null) {
+                        if (featureURI == null) {
                             continue;
                         }
                         //if it is a filtered layer, expect the filter as part of the new uri.
                         boolean passedFilterCheck = true;
                         try {
-                            String filter = ml.getUri().replaceAll("^.*cql_filter=", "").replaceFirst("^.*='","").replaceAll("'.*","");
-                            if(filter != null && filter.length() > 0) {
-                                passedFilterCheck = featureURI.toLowerCase().contains(filter.toLowerCase().replace(" ","_"));
+                            String filter = ml.getUri().replaceAll("^.*cql_filter=", "").replaceFirst("^.*='", "").replaceAll("'.*", "");
+                            if (filter != null && filter.length() > 0) {
+                                passedFilterCheck = featureURI.toLowerCase().contains(filter.toLowerCase().replace(" ", "_"));
                             }
                         } catch (Exception e) {
                         }
-                        if(!passedFilterCheck) {
+                        if (!passedFilterCheck) {
                             continue;
                         }
 
@@ -715,6 +715,9 @@ public class SelectionController extends UtilityComposer {
                 String li = (String) speciesfilters.get(lt);
                 li = li.split("=")[1];
                 li = li.replaceAll("'", "");
+                if (li.indexOf(";color") > 0) {
+                    li = li.substring(0, li.indexOf(";color"));
+                }
 
                 lsidtypes += "type=" + lt;
                 if (li.equalsIgnoreCase("aa")) {
@@ -756,6 +759,7 @@ public class SelectionController extends UtilityComposer {
             List udl = getMapComposer().getPortalSession().getActiveLayers();
             Iterator iudl = udl.iterator();
             MapLayer mapLayer = null;
+            int gridSize = 256 / 8;   //size of grids in pixels
             while (iudl.hasNext()) {
                 MapLayer ml = (MapLayer) iudl.next();
                 MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -763,6 +767,9 @@ public class SelectionController extends UtilityComposer {
                         && !ml.isClustered() && ml.isDisplayed()) {
                     if (ml.getSizeVal() > maxSize) {
                         maxSize = ml.getSizeVal();
+                    }
+                    if (ml.getColourMode().equals("grid") && gridSize > maxSize) {
+                        maxSize = gridSize;
                     }
                 }
             }
