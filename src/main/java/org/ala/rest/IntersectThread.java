@@ -1,6 +1,11 @@
 package org.ala.rest;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedPolygon;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +25,7 @@ import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.data.DataStore;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
 import org.vfny.geoserver.util.DataStoreUtils;
 /**
  *
@@ -38,11 +43,12 @@ public class IntersectThread  extends Thread {
 	public String[] results;
 	private List<String> layers;
 	CountDownLatch latch;
+	HashMap name_geoms = new HashMap();
 
 	IntersectThread(List<Point> points, List<String> layers, String[] results, CountDownLatch latch)  {
 		this.points = points;
 		System.out.println("Constructor POINTS: " + points.size());
-	//	this.featureSources = featureSources;
+	
 		featureSources = new ArrayList();
 		this.results = results;
 		this.latch = latch;
@@ -79,63 +85,38 @@ public class IntersectThread  extends Thread {
 	}
 
 	private STRtree constructGeoTree(FeatureIterator fi, String layerName) {
-		
+		System.out.println("Constructing STRtree ...");
 		STRtree index = new STRtree();
+		
 		while(fi.hasNext()) {
-			Feature f = fi.next();
-		    	index.insert(ReferencedEnvelope.reference(f.getBounds()), f.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString());
+			SimpleFeature f = (SimpleFeature)fi.next();
+			Geometry g = (Geometry)f.getDefaultGeometry();
+			String name = f.getProperty(gc.getIdAttribute1Name(layerName)).getValue().toString();
+
+			//IndexedPointInAreaLocator locator = new IndexedPointInAreaLocator(g);
+			PreparedGeometry p = null;
+			if (g.getGeometryType().equalsIgnoreCase("Polygon")) {
+				p = new PreparedPolygon( (Polygon)g );
+			}
+			else {
+				p = new PreparedPolygon( (MultiPolygon)g );
+			}
+			index.insert(ReferencedEnvelope.reference(g.getEnvelopeInternal()), name);
+			if (name_geoms.containsKey(name)) {
+				((List)name_geoms.get(name)).add(p);
+			}
+			else {
+				List polygons = new ArrayList();
+				polygons.add(p);
+				name_geoms.put(name,polygons); 
+			}//
 		}
 		fi.close();
 		
 		return index;
 
 	}
-//	@Override
-//	public void run() {
-//		String cqlFilter = "CONTAINS(the_geom,WKT)";
-//		WKTWriter wkt = new WKTWriter();
-//		results = new String[points.size()];
-//		try {
-//			for (int i = 0; i < points.size(); i++) {
-//				Point point = points.get(i);
-//				//Geometry polygon = point.buffer(1);
-//
-//				String pointWKT = wkt.write(point);
-//				Filter filter = CQL.toFilter(cqlFilter.replace("WKT", pointWKT));
-//				StringBuilder sb = new StringBuilder();
-//
-//				for (FeatureSource layer : featureSources) {
-//
-//					String layerName = layer.getName().getLocalPart();
-//					//System.out.println("SEARCHING: " + layerName);
-//					FeatureIterator features = layer.getFeatures(filter).features();
-//
-//
-//					String name = "null";
-//					if (features.hasNext()) {
-//						Feature feature = features.next();
-//						//	System.out.println("Geom property;" + feature.getProperty(feature.getDefaultGeometryProperty().toString()));
-//						//Geometry geom = (Geometry)feature.getProperty("the_geom").getValue();
-//						//	if (geom.contains(point)) {
-//						name = feature.getProperty(gc.getNameAttributeName(layerName)).getValue().toString();
-//					}
-//					sb.append(name).append(",");
-//					features.close();
-//				}
-//				results[i] = sb.toString();
-//				//System.out.println(featureNames);
-//			}
-//		} catch (IOException e1) {
-//			logger.severe("IOException while intersecting: " + e1.getMessage());
-//		} catch (CQLException e2) {
-//			logger.severe("CQLException while intersecting: " + e2.getMessage());
-//		} catch (Exception e) {
-//		}
-//
-//		latch.countDown();
-//
-//	}
-
+	
 	@Override
 	public void run() {
 		results = new String[points.size()];
@@ -154,15 +135,27 @@ public class IntersectThread  extends Thread {
 
 					//System.out.println("SEARCHING: " + layerName);
 					String name = "null";
-					if (items.size() > 0) {
+					if (items.size() == 1) {
 						name = items.get(0);
 					}
+					if (items.size() > 1) {	
+						for (String n : items) {
+							//IndexedPointInAreaLocator l = (IndexedPointInAreaLocator)name_geoms.get(n);
+							for (PreparedGeometry p : (List<PreparedGeometry>)name_geoms.get(n)) {
+								if (p.containsProperly(point.getEnvelope())) {
+									name = n;
+								}
+							}
+						}
+						
+					}
 					sb.append(",").append(name);
-
+					//sb.append(",").append(String.valueOf(point.getX())).append(",").append(String.valueOf(point.getY()));
+					//sb.append(",").append(point.getEnvelopeInternal().toString());
 				}
-				//System.out.println(sb.toString());
+				
 				results[i] = sb.toString();
-				//System.out.println(featureNames);
+				
 			}
 		
 		} catch (Exception e) {
