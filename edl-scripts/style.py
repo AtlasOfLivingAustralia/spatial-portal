@@ -8,15 +8,21 @@ unitFile  = open("units.csv")
 #unitLines = unitFile.read().split("\n")
 unitDict = {}
 for line in unitFile.readlines():
-	print(line)
+#	print(line)
 	name,unit =  line.split(';')
 	unitDict[name.replace('"','')] = unit.replace('"','').replace('\n','')
 
+scaleFile = open("scale.csv")
+logLayers = []
+for line in scaleFile.readlines():
+	name,log10,step,best,margin = line.split(',')
+	logLayers.append(name)
+
 for root, dirs, files in os.walk(edlconfig.dataset):
 	for name in files:
-		if (".geotiff" in name) and (name not in ['landuse.tif','landcover.tif','vast.tif','tenure08.tif','present_veg.tif','aria.tif']):
-#			layername = edlconfig.source + "_" + name.replace(".tif","")
-			layername = name.replace(".tif","")
+		if ((".geotiff" in name) or (".tif" in name)):
+#			layername = edlconfig.source + "_" + name.replace(".tif","").replace(".geotiff","")
+			layername = name.replace(".tif","").replace(".geotiff","")
 			print(layername)	
 			p = os.popen(edlconfig.gdalapps+"/gdalinfo -mm " + os.path.join(root,name),"r")
 			sld = layername+".sld"
@@ -42,20 +48,34 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 					else:
 						min = float(min)
 						max = float(max)
-
+					if (min == float(-10000.0)):
+                                                min = float(0) #FIXME - hack for bad nodata/min
+						nodata = -10000
 					text = text.replace("MIN_QUANTITY",str(min))
 					text = text.replace("MIN_LABEL",str(min) + " " + unit)
 					text = text.replace("MAX_QUANTITY",str(max))
 					text = text.replace("MAX_LABEL",str(max) + " " + unit)
 
-					d = (float(max) - float(min))/10
-					print(d)
-					for i in range(1,10):
-						text = text.replace(str(i*10) + "_QUANTITY",str(min+i*d))
-						text = text.replace(str(i*10) + "_LABEL",str(min+i*d) + " " + unit)
+					if (layername.lower() in logLayers):
+						multiplier = 1
+						value_range = float(max) - float(min)
+						if value_range < 1:  #Log scale won't work properly without multipier
+							multiplier = 10
+						d = math.log(value_range*multiplier,10)/4
+						for i in range(1,4):
+							value = min + ((10**(i*d))/multiplier)
+							text = text.replace("Q" + str(i) + "_QUANTITY",str(value))
+							text = text.replace("Q" + str(i) + "_LABEL",str(value) + " " + unit)
+					else:
+						d = (float(max) - float(min))/4
+						print(d)
+						for i in range(1,4):
+							text = text.replace("Q" + str(i) + "_QUANTITY",str(min+i*d))
+							text = text.replace("Q" + str(i) + "_LABEL",str(min+i*d) + " " + unit)
 				if "NoData" in line:
 					print line
-					nodata = line.strip().split('Value=')[1]
+					if (nodata is None):
+						nodata = line.strip().split('Value=')[1]
 			if (nodata is None):
 				nodata=min
 			#Getting round an sld parsing bug in geoserver
@@ -71,13 +91,13 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 
 			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPOST -H 'Content-type: text/xml' -d '<style><name>"+layername+"_style</name><filename>"+layername+".sld</filename></style>' " + edlconfig.geoserver_url + "/geoserver/rest/styles/"
 			print(curlstring)
-#			os.system(curlstring)
+			os.system(curlstring)
 			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: application/vnd.ogc.sld+xml' -d @"+sld+" " + edlconfig.geoserver_url + "/geoserver/rest/styles/"+layername+"_style"
 			print(curlstring)
-#			os.system(curlstring)
+			os.system(curlstring)
 	
 			curlstring="curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: text/xml' -d '<layer><defaultStyle><name>"+layername+"_style</name></defaultStyle><enabled>true</enabled></layer>' " + edlconfig.geoserver_url + "/geoserver/rest/layers/ALA:"+layername
 			print(curlstring)
-#			os.system(curlstring)
+			os.system(curlstring)
 					
 						
