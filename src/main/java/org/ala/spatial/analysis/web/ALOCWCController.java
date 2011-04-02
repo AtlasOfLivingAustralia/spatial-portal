@@ -295,8 +295,9 @@ public class ALOCWCController extends UtilityComposer {
                 md = new MapLayerMetadata();
             }
 
-            String infoUrl = satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output";
+            String infoUrl = satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:"+pid;
             md.setMoreInfo(infoUrl);
+            md.setId(Long.valueOf(pid)); 
 
             Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
         }

@@ -78,6 +78,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                 height="80%" border="normal" sizable="true"
                 use="au.org.emii.portal.composer.ExternalContentComposer" >
             <caption id="caption">
+                <toolbarbutton id="download" label="Download output" target="_blank" />
                 <toolbarbutton id="reset" label="Reset Window" />
                 <toolbarbutton id="breakout" label="Open in new Window" target="_blank" />
                 <toolbarbutton id="hide" label="Close" />

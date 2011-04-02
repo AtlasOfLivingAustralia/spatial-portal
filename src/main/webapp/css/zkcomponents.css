@@ -687,6 +687,10 @@ tr.z-listitem-over{background:#dae7f6;}tr.z-listitem-over-seld{background:#6eadf
     font-size: 12px;*/
 }
 
+.fUploadButton {
+    padding: 3px !important;
+}
+
 .helpButton {
     color: #EEEEEE;
     /*background:transparent url('/img/help.png') no-repeat left top;*/

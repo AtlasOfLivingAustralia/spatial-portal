@@ -73,6 +73,7 @@ import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
 import org.geotools.data.FeatureSource;
@@ -579,6 +580,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void activateLink(String uri, String label, boolean isExternal) {
+        activateLink(uri, label, isExternal, "");
+    }
+
+    public void activateLink(String uri, String label, boolean isExternal, String downloadPid) {
         if (isExternal) {
             // change browsers current location
             Clients.evalJavaScript("window.location.href ='" + uri + "';");
@@ -617,6 +622,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //update linked button
                 ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setHref(uri);
                 ((Toolbarbutton) externalContentWindow.getFellow("breakout")).setVisible(true);
+            }
+
+            if (StringUtils.isNotBlank(downloadPid)) {
+                String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+                ((Toolbarbutton) externalContentWindow.getFellow("download")).setHref(satServer + "/alaspatial/ws/download/"+downloadPid);
+                ((Toolbarbutton) externalContentWindow.getFellow("download")).setVisible(true);
+            } else {
+                ((Toolbarbutton) externalContentWindow.getFellow("download")).setHref("");
+                ((Toolbarbutton) externalContentWindow.getFellow("download")).setVisible(false);
             }
 
             // use the link description as the popup caption
@@ -3143,10 +3157,47 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      */
     public void openUrl(Event event) {
         String s = (String) event.getData();
-        int separator = s.lastIndexOf("\n");
-        String url = (separator > 0) ? s.substring(0, separator).trim() : s;
-        String header = (separator > 0) ? s.substring(separator).trim() : "";
-        activateLink(url, header, false);
+//        int separator = s.lastIndexOf("\n");
+//        String url = (separator > 0) ? s.substring(0, separator).trim() : s;
+//        String header = (separator > 0) ? s.substring(separator).trim() : "";
+//        activateLink(url, header, false);
+
+        System.out.println("\n\n******\n\ns: " + s + "\n\n******\n\n");
+
+        String url = "";
+        String header = "";
+        String download = "";
+        String[] data = s.split("\n");
+        if (!ArrayUtils.isEmpty(data)) {
+
+            System.out.println("data.length: " + data.length);
+
+            if (data.length == 1) {
+                url = data[0];
+            }
+            if (data.length == 2) {
+                url = data[0];
+                header = data[1];
+
+                // now the 'header' might be a 'header' or 'download link'
+                if (header.startsWith("pid:")) {
+                    download = header;
+                    header = "";
+                }
+            }
+            if (data.length == 3) {
+                url = data[0];
+                header = data[1];
+                download = data[2];
+            }
+
+            if (download.length() > 0) {
+                download = download.substring(4); 
+            }
+
+            activateLink(url, header, false, download);
+        }
+
     }
 
     /*

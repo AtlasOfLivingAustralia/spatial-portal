@@ -270,7 +270,7 @@ public class LayerListComposer extends UtilityComposer {
                         public void onEvent(Event event) throws Exception {                            
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
                             String s = jo.getString("uid");
-                            String metadata = satServer + "/alaspatial/layers/" + s;
+                            String metadata = satServer + "/layers/" + s;
                             mc.activateLink(metadata, "Metadata", false);
                         }
                     });
@@ -385,7 +385,7 @@ public class LayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
 
-                            String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                            String metadata = satServer + "/layers/" + joLayer.getString("uid");
 
                             mc.activateLink(metadata, "Metadata", false);
 

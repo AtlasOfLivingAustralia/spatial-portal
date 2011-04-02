@@ -295,7 +295,8 @@ public class MaxentWCController extends UtilityComposer {
             md = new MapLayerMetadata();
             ml.setMapLayerMetadata(md);
         }
-        md.setMoreInfo(infoUrl + "\nMaxent Output");
+        md.setMoreInfo(infoUrl + "\nMaxent Output\npid:"+pid);
+        md.setId(Long.valueOf(pid));
 
         getMapComposer().showMessage("Reference number to retrieve results: " + pid);
 
@@ -308,7 +309,7 @@ public class MaxentWCController extends UtilityComposer {
 
     private void showInfoWindow(String url) {
         String infoUrl = satServer + "/alaspatial" + url;
-        Events.echoEvent("openUrl", this.getMapComposer(), infoUrl + "\nMaxent output");
+        Events.echoEvent("openUrl", this.getMapComposer(), infoUrl + "\nMaxent output\npid:"+pid);
     }
    
     private void loadSpeciesOnMap() {
