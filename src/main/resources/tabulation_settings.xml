@@ -1718,6 +1718,8 @@ if not csv, then tab delimited
         <!--cmdpath>java -mx900m -jar /Users/ajay/projects/modelling/maxent/maxent.jar </cmdpath-->
     </maxent>
 
+    <gdm_cmdpath>/data/ala/modelling/gdm/DoGdm </gdm_cmdpath>
+
     <geoserver>
         <url>http://localhost:8080/geoserver</url>
         <username>admin</username>
