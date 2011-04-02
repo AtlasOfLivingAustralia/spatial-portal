@@ -47,8 +47,8 @@
                 <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
                 <listbox sclass="envlist" id="lbListLayers" fixedLayout="false" use="org.ala.spatial.analysis.web.EnvironmentalList" width="340px" multiple="true" checkmark="true" height="400px">
                     <listhead>
-                        <listheader label="category"  />
                         <listheader label="name" />
+                        <listheader label="category"  />
                         <listheader label=" "  />
                         <listheader label=" " width="10px" />
                     </listhead>

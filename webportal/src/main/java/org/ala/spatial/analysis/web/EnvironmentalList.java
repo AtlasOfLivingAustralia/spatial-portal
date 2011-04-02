@@ -62,8 +62,8 @@ public class EnvironmentalList extends Listbox {
 
                     @Override
                     public void render(Listitem li, Object data) {
-                        new Listcell(((ListEntry) data).catagoryNames()).setParent(li);
                         new Listcell(((ListEntry) data).displayname).setParent(li);
+                        new Listcell(((ListEntry) data).catagoryNames()).setParent(li);
 
                         Listcell lc = new Listcell();
                         lc.setParent(li);
@@ -75,7 +75,7 @@ public class EnvironmentalList extends Listbox {
                             @Override
                             public void onEvent(Event event) throws Exception {
                                 String s = (String) ((Listcell) event.getTarget().getParent()).getValue();
-                                String metadata = satServer + "/alaspatial/layers/" + s;
+                                String metadata = satServer + "/layers/" + s;
                                 mapComposer.activateLink(metadata, "Metadata", false);
                             }
                         });

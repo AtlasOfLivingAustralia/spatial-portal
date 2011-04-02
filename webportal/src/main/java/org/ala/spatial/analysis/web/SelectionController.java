@@ -213,6 +213,7 @@ public class SelectionController extends UtilityComposer {
 
             Button btnFind = new Button("Find");
             btnFind.setParent(hbxAddress);
+            //btnFind.setSclass("goButton");
             btnFind.addEventListener("onClick", new EventListener() {
 
                 public void onEvent(Event event) throws Exception {
@@ -247,6 +248,7 @@ public class SelectionController extends UtilityComposer {
 
             Button btnCreate = new Button("Create radius area");
             btnCreate.setParent(hbox);
+            btnCreate.setSclass("goButton");
             btnCreate.addEventListener("onClick", new EventListener() {
 
                 public void onEvent(Event event) throws Exception {
@@ -257,6 +259,7 @@ public class SelectionController extends UtilityComposer {
 
             Button b = new Button("Cancel Map Tool");
             b.setParent(hbox);
+            b.setSclass("goButton");
             b.addEventListener("onClick", new EventListener() {
 
                 public void onEvent(Event event) throws Exception {
@@ -281,23 +284,26 @@ public class SelectionController extends UtilityComposer {
 
             Vbox vbox = new Vbox();
             vbox.setParent(wInstructions);
-            //  for (int i = 0; i < text.length; i++) {
-            Label l1 = new Label((1) + ". " + text[0]);
-            l1.setParent(vbox);
-            l1.setMultiline(true);
-            l1.setSclass("word-wrap");
-            l1.setStyle("white-space: normal; padding: 5px");
-            //  }
+            for (int i = 0; i < text.length; i++) {
+                //Label l1 = new Label((1) + ". " + text[0]);
+                Label l1 = new Label(text[i]);
+                l1.setParent(vbox);
+                l1.setMultiline(true);
+                l1.setSclass("word-wrap");
+                l1.setStyle("white-space: normal; padding: 5px");
+            }
 
             (new Separator()).setParent(vbox);
 
-
+            Hbox hbox = new Hbox();
+            hbox.setParent(vbox);
 
             fileUpload = new Fileupload();
             //fileUpload.setMaxsize(5000000);
             fileUpload.setLabel("Upload Shapefile");
             fileUpload.setUpload("true");
-            fileUpload.setParent(vbox);
+            fileUpload.setSclass("goButton fUploadButton");
+            fileUpload.setParent(hbox);
 
             fileUpload.addEventListener("onUpload", new EventListener() {
 
@@ -314,10 +320,10 @@ public class SelectionController extends UtilityComposer {
                 }
             });
 
-            (new Separator()).setParent(vbox);
-            (new Separator()).setParent(vbox);
+            (new Separator()).setParent(hbox);
+            (new Separator()).setParent(hbox);
             Button b = new Button("Cancel Map Tool");
-            b.setParent(vbox);
+            b.setParent(hbox);
             b.setSclass("goButton");
             b.addEventListener("onClick", new EventListener() {
 
@@ -359,6 +365,7 @@ public class SelectionController extends UtilityComposer {
 
             Button b = new Button("Cancel Map Tool");
             b.setParent(vbox);
+            b.setSclass("goButton");
             b.addEventListener("onClick", new EventListener() {
 
                 public void onEvent(Event event) throws Exception {
@@ -490,7 +497,8 @@ public class SelectionController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciUploadShapefile) {
             cbAreaSelection.setText("Upload shapefile...");
             String[] text = {
-                "Select a shapefile with a single polygon"
+                "Select a shapefile with a single polygon to upload.",
+                "Note: if a shapefile with multiple polygons is uploaded, only the first polygon detected will be used."
             };
             setInstructions("Active Map Tool: Upload shapefile (single polygon)...", text);
             showPolygonInfo();

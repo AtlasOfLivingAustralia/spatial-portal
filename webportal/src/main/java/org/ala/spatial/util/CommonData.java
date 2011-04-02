@@ -16,6 +16,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zul.SimpleTreeNode;
 
 /**
@@ -320,7 +321,7 @@ public class CommonData {
                 String c1 = jo.getString("classification1");
                 String c2 = jo.getString("classification2");
                 String name = jo.getString("name");
-                String displayname = jo.getString("displayname");
+                String displayname = StringUtils.capitalize(jo.getString("displayname"));
                 if (c1 == null || c1.equalsIgnoreCase("null")) {
                     c1 = "";
                 }
@@ -339,11 +340,11 @@ public class CommonData {
 
             public int compare(ListEntry e1, ListEntry e2) {
                 //catagory 1, then catagory 2, then display name
-                int c = e1.catagory1.compareTo(e2.catagory1);
+                int c = e1.displayname.compareTo(e2.displayname);
                 if (c == 0) {
-                    c = e1.catagory2.compareTo(e2.catagory2);
+                    c = e1.catagory1.compareTo(e2.catagory1);
                     if (c == 0) {
-                        c = e1.displayname.compareTo(e2.displayname);
+                        c = e1.catagory2.compareTo(e2.catagory2);
                     }
                 }
                 return c;
