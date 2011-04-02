@@ -4,28 +4,40 @@
     <window id="wingdm" apply="org.ala.spatial.web.zk.GdmZK" title="GDM"
         width="100%" border="normal">
 
-            <tabbox>
-                <tabs>
-                    <tab id="tab1" label="1*" />
-                    <tab id="tab2" label="2*" />
-                </tabs>
-                <tabpanels>
-                    <tabpanel id="tabp1">
-                        <label value="Select species" />
-                    </tabpanel>
-                    <tabpanel id="tabp2">
-                        <label value="Select species" />
-                    </tabpanel>
-                </tabpanels>
-            </tabbox>
+        <tabbox>
+            <tabs>
+                <tab id="tab1" label="1*" />
+                <tab id="tab2" label="2*" />
+            </tabs>
+            <tabpanels>
+                <tabpanel id="tabp1">
+                    <label value="Select species" />
+                </tabpanel>
+                <tabpanel id="tabp2">
+                    <label value="Select species" />
+                </tabpanel>
+            </tabpanels>
+        </tabbox>
         
-        <label value="Generate quantile from: " />
-        <combobox id="quantile" width="35px">
-            <comboitem label="data" />
-            <comboitem label="grid" />
-        </combobox>
+        <vbox>
+            <hbox>
+                <label value="Generate quantile from: " />
+                <combobox id="quantile">
+                    <comboitem label="Data" />
+                    <comboitem label="Grid" />
+                </combobox>
+            </hbox>
 
-        <checkbox label="Use geographic (Euclidean) distance" />
+            <checkbox id="useDistance" label="Use geographic (Euclidean) distance" />
+
+            <hbox>
+                <checkbox id="useSubSample" label="Use all site pairs" checked="true" />
+                <textbox id="sitePairsSize" disabled="true" />
+            </hbox>
+
+            <button id="runGdm" label="Start GDM" />
+
+        </vbox>
 
     </window>
 </zk>

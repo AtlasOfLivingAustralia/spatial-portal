@@ -19,6 +19,7 @@ import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.apache.commons.io.FileUtils;
+import org.springframework.util.StringUtils;
 
 /**
  *
@@ -61,7 +62,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         //cells = GridCutter.countCells(region, envelope);
 
-        SamplingService ss = SamplingService.newForLSID(taxon);        
+        SamplingService ss = SamplingService.newForLSID(taxon);
         double[] p = ss.sampleSpeciesPoints(taxon, region, null);
         if (p != null) {
             speciesCount = p.length / 2;
@@ -83,7 +84,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             SamplingService ss = SamplingService.newForLSID(taxon);
 
             StringBuffer removedSpecies = new StringBuffer();
-            double[] points = ss.sampleSpeciesPointsMinusSensitiveSpecies(taxon, region, null, removedSpecies);            
+            double[] points = ss.sampleSpeciesPointsMinusSensitiveSpecies(taxon, region, null, removedSpecies);
 
             StringBuffer sbSpecies = new StringBuffer();
             // get the header
@@ -148,17 +149,17 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 // rename the env filenames to their display names
                 String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
                 String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator;
-                for (int ei = 0; ei < envnameslist.length; ei++) {
-                    readReplace(pth + "species.html", envpathlist[ei], Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" );
-                    for (int j = 0; j < imgExtensions.length; j++) {
-                        try {
-                            FileUtils.moveFile(
-                                    new File(pth_plots + "species_" + envpathlist[ei] + imgExtensions[j]),
-                                    new File(pth_plots + "species_" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" + imgExtensions[j]));
-                        } catch (Exception ex) {
-                        }
-                    }
-                }
+//                for (int ei = 0; ei < envnameslist.length; ei++) {
+//                    readReplace(pth + "species.html", ".*?\\b"+envpathlist[ei]+"\\b.*?", Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" );
+//                    for (int j = 0; j < imgExtensions.length; j++) {
+//                        try {
+//                            FileUtils.moveFile(
+//                                    new File(pth_plots + "species_" + envpathlist[ei] + imgExtensions[j]),
+//                                    new File(pth_plots + "species_" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" + imgExtensions[j]));
+//                        } catch (Exception ex) {
+//                        }
+//                    }
+//                }
 
 //                //remove species image path in output species.html
 //                readReplaceBetween(pth + "species.html", "<HR><H2>Pictures of the model", "<HR>","<HR>");
@@ -166,19 +167,32 @@ public class AnalysisJobMaxent extends AnalysisJob {
 //                readReplace(pth + "species.html", "plots\\\\", "plots/");
 //
 //                readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
+                String input = getInputs();
+                String sciname = input.substring(input.indexOf("scientificName:") + 15, input.indexOf(";", input.indexOf("scientificName:") + 15));
+                String scirank = input.substring(input.indexOf("taxonRank:") + 10, input.indexOf(";", input.indexOf("taxonRank:") + 10));
+                readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + sciname);
+
+                String paramlist = "Session id for this process: " + getName()
+                        + "<br>Species: " + sciname + " (" + scirank + ")" + "<br>Layers: <ul>";
+                for (int ei = 0; ei < envnameslist.length; ei++) {
+                    paramlist += "<li>" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + " (" + envpathlist[ei] + ")</li>";
+                }
+                paramlist += "</ul>";
+
+                readReplace(pth + "species.html", "end of this page.<br>", "end of this page.<br><p>" + paramlist + "</p>");
                 readReplace(pth + "species.html", msets.getOutputPath(), "");
-                readReplaceBetween(pth + "species.html", "Command line","<br>","");
-                readReplaceBetween(pth + "species.html", "Command line","<br>","");
+                readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
+                readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
 
-                readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat","memory.<br>","");
-                readReplaceBetween(pth + "species.html", "(A link to the Explain","additive models.)","");
+                readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
+                readReplaceBetween(pth + "species.html", "(A link to the Explain", "additive models.)", "");
 
-                if(removedSpecies.length() > 0) {
+                if (removedSpecies.length() > 0) {
                     String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
                     writeToFile(header + removedSpecies.toString(),
                             currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
 
-                    String insertBefore= "<a href = \"species.asc\">The";
+                    String insertBefore = "<a href = \"species.asc\">The";
                     String insertText = "<b><a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
                     readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
                 }

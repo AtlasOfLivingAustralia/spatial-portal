@@ -133,6 +133,10 @@ public class TabulationSettings {
      */
     public static String maxent_cmdpth;
     /**
+     * gdm path
+     */
+    public static String gdm_cmdpth;
+    /**
      * Maximum number of records to dump
      */
     public static int MAX_RECORD_COUNT_CLUSTER;
@@ -442,6 +446,9 @@ public class TabulationSettings {
 
         maxent_cmdpth = xr.getValue("cmdpth");
         System.out.println("maxent_cmdpth:" + maxent_cmdpth);
+
+        gdm_cmdpth = xr.getValue("gdm_cmdpth");
+        System.out.println("gdm_cmdpth:" + gdm_cmdpth);
 
         convert_path = xr.getValue("convert_path");
         System.out.println("convert_path:" + convert_path);

@@ -379,6 +379,52 @@ public class Grid { //  implements Serializable
     }
 
     /**
+     * for DomainGenerator
+     *
+     * writes out a list of double (same as getGrid() returns) to a file
+     *
+     * byteorderlsb
+     * data type, FLOAT
+     *
+     * @param newfilename
+     * @param dfiltered
+     */
+    void writeGrid(String newfilename, int[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
+        int size, i, length = dfiltered.length;
+        double maxvalue = Integer.MAX_VALUE * -1;
+        double minvalue = Integer.MAX_VALUE;
+
+        //write data as whole file
+        RandomAccessFile afile;
+        try { //read of random access file can throw an exception
+            afile = new RandomAccessFile(newfilename + ".gri", "rw");
+
+            size = 4;
+            byte[] b = new byte[size * length];
+            ByteBuffer bb = ByteBuffer.wrap(b);
+
+            if (byteorderLSB) {
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+            } else {
+                bb.order(ByteOrder.BIG_ENDIAN);
+            }
+            for (i = 0; i < length; i++) {
+                bb.putInt(dfiltered[i]); 
+            }
+
+            afile.write(b);
+
+            afile.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "INT4BYTES", "-9999");
+
+    }
+
+    /**
      * for grid cutter
      *
      * writes out a list of double (same as getGrid() returns) to a file
