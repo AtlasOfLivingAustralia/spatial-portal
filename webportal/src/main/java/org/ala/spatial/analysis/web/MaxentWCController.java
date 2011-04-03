@@ -298,7 +298,7 @@ public class MaxentWCController extends UtilityComposer {
         md.setMoreInfo(infoUrl + "\nMaxent Output\npid:"+pid);
         md.setId(Long.valueOf(pid));
 
-        getMapComposer().showMessage("Reference number to retrieve results: " + pid);
+        //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
 
         showInfoWindow("/output/maxent/" + pid + "/species.html");
     }
