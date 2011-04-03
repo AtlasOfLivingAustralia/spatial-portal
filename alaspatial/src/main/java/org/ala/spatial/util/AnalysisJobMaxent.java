@@ -172,7 +172,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 String scirank = input.substring(input.indexOf("taxonRank:") + 10, input.indexOf(";", input.indexOf("taxonRank:") + 10));
                 readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + sciname);
 
-                String paramlist = "Session id for this process: " + getName()
+                String paramlist = "Model reference number: " + getName()
                         + "<br>Species: " + sciname + " (" + scirank + ")" + "<br>Layers: <ul>";
                 for (int ei = 0; ei < envnameslist.length; ei++) {
                     paramlist += "<li>" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + " (" + envpathlist[ei] + ")</li>";
