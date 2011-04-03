@@ -118,6 +118,6 @@ public class MaxentProgressWCController extends UtilityComposer {
     }
 
     void showReferenceNumber(){
-        getMapComposer().showMessage("Reference number to retrieve results: " + pid);
+        //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
     }
 }

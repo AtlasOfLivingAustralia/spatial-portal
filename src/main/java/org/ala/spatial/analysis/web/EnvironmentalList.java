@@ -62,8 +62,8 @@ public class EnvironmentalList extends Listbox {
 
                     @Override
                     public void render(Listitem li, Object data) {
-                        new Listcell(((ListEntry) data).displayname).setParent(li);
                         new Listcell(((ListEntry) data).catagoryNames()).setParent(li);
+                        new Listcell(((ListEntry) data).displayname).setParent(li);
 
                         Listcell lc = new Listcell();
                         lc.setParent(li);

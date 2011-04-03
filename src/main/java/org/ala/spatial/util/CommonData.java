@@ -133,7 +133,7 @@ public class CommonData {
         }
 
         //(4) for species wms distributions
-        if(copy_species_wms_layers != null) {
+        if (copy_species_wms_layers != null) {
             species_wms_layers = copy_species_wms_layers;
         }
     }
@@ -309,28 +309,29 @@ public class CommonData {
             JSONArray.fromObject(llist);
             for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
+                String uid = jo.getString("uid");
+                String type = jo.getString("type");
+                String c1 = jo.getString("classification1");
+                String c2 = jo.getString("classification2");
+                String name = jo.getString("name");
+                String displayname = StringUtils.capitalize(jo.getString("displayname"));
 
                 if (!jo.getBoolean("enabled")) {
                     continue;
                 }
 
-                if (environmentalOnly && jo.getString("type").equalsIgnoreCase("Contextual")) {
+                if (environmentalOnly && type.equalsIgnoreCase("Contextual")) {
                     continue;
                 }
 
-                String c1 = jo.getString("classification1");
-                String c2 = jo.getString("classification2");
-                String name = jo.getString("name");
-                String displayname = StringUtils.capitalize(jo.getString("displayname"));
                 if (c1 == null || c1.equalsIgnoreCase("null")) {
                     c1 = "";
                 }
                 if (c2 == null || c2.equalsIgnoreCase("null")) {
                     c2 = "";
                 }
-                String uid = jo.getString("uid");
 
-                listEntries.add(new ListEntry(name, displayname, c1, c2, 1, -1, -1, uid));
+                listEntries.add(new ListEntry(name, displayname, c1, c2, type, 1, -1, -1, uid));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -339,14 +340,18 @@ public class CommonData {
         java.util.Collections.sort(listEntries, new Comparator<ListEntry>() {
 
             public int compare(ListEntry e1, ListEntry e2) {
-                //catagory 1, then catagory 2, then display name
-                int c = e1.displayname.compareTo(e2.displayname);
+                //type, then catagory 1, then catagory 2, then display name
+                int c = -1 * e1.type.compareTo(e2.type);
                 if (c == 0) {
                     c = e1.catagory1.compareTo(e2.catagory1);
                     if (c == 0) {
                         c = e1.catagory2.compareTo(e2.catagory2);
+                        if (c == 0) {
+                            c = e1.displayname.compareTo(e2.displayname);
+                        }
                     }
                 }
+
                 return c;
             }
         });
@@ -521,10 +526,10 @@ public class CommonData {
             System.out.println("****** species wms distributions ******");
             System.out.println(slist);
 
-            if(slist != null && slist.length() > 0) {
-                String [] lines = slist.split("\n");
-                for(int i=0;i<lines.length;i++){
-                    String [] words = lines[i].split(",");
+            if (slist != null && slist.length() > 0) {
+                String[] lines = slist.split("\n");
+                for (int i = 0; i < lines.length; i++) {
+                    String[] words = lines[i].split(",");
                     copy_species_wms_layers.put(words[0], words[1].split("\t"));
                 }
             }
@@ -537,7 +542,7 @@ public class CommonData {
     /**
      * returns array of WMS species requests
      */
-    static public String [] getSpeciesDistributionWMS(String lsid) {
+    static public String[] getSpeciesDistributionWMS(String lsid) {
         return species_wms_layers.get(lsid);
     }
 }
