@@ -380,7 +380,7 @@ public class SamplingWCController extends UtilityComposer {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
         }
         System.out.println("mapping rank and species: " + rank + " - " + taxon);
-        getMapComposer().mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank);
+        getMapComposer().mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank, 0);
     }
 
     /**

@@ -13,7 +13,7 @@
         </style>
 
         <label id="lblEdit" value="Click colour to edit" />
-        <listbox sclass="legendlist" id="legend" multiple="false" checkmark="false" width="100%" height="320px" fixedLayout="true" >
+        <listbox sclass="legendlist" id="legend" multiple="false" checkmark="false" width="100%" vflex="true" fixedLayout="true" >
             <listhead>
                 <listheader label="group" width="210px"></listheader>
                 <listheader label="colour" width="50px"></listheader>

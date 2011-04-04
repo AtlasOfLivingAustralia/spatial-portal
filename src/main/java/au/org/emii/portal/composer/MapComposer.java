@@ -517,7 +517,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         //map species
-        mapSpeciesByLsid(lsid, taxon, rank);
+        mapSpeciesByLsid(lsid, taxon, rank, 0);
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
@@ -1807,11 +1807,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             //point type
             if (pointtype.getSelectedItem() == rPoint) {
-                convLayer = mapSpeciesByLsidFilter(lsid, species, rank);
+                convLayer = mapSpeciesByLsidFilter(lsid, species, rank, selectedLayer.getMapLayerMetadata().getOccurrencesCount());
             } else if (pointtype.getSelectedItem() == rCluster) {
-                convLayer = mapSpeciesByLsidCluster(lsid, species, rank);
+                convLayer = mapSpeciesByLsidCluster(lsid, species, rank, selectedLayer.getMapLayerMetadata().getOccurrencesCount());
             } else { //if(pointtype.getSelecteditem() == rGrid) {
-                convLayer = mapSpeciesByLsidFilterGrid(lsid, species, rank);
+                convLayer = mapSpeciesByLsidFilterGrid(lsid, species, rank, selectedLayer.getMapLayerMetadata().getOccurrencesCount());
             }
 
             // reopen the layer controls
@@ -2488,10 +2488,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public MapLayer mapSpeciesByLsid(String lsid, String species) {
-        return mapSpeciesByLsid(lsid, species, "species");
+        return mapSpeciesByLsid(lsid, species, "species", 0);
     }
 
-    public MapLayer mapSpeciesByLsid(String lsid, String species, String rank) {
+    public MapLayer mapSpeciesByLsid(String lsid, String species, String rank, int count) {
         if (species == null || (lsid != null && species.equalsIgnoreCase(lsid))) {
             String speciesrank = LayersUtil.getScientificNameRank(lsid);
             species = speciesrank.split(",")[0];
@@ -2506,10 +2506,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer ml = null;
         if (countOfLsid(lsid) > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD) || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
             //ml = mapSpeciesByLsidCluster(lsid, species, rank);
-            ml = mapSpeciesByLsidFilterGrid(lsid, species, rank);
+            ml = mapSpeciesByLsidFilterGrid(lsid, species, rank, count);
         } else {
             //return mapSpeciesByLsidPoints(lsid,species);
-            ml = mapSpeciesByLsidFilter(lsid, species, rank);
+            ml = mapSpeciesByLsidFilter(lsid, species, rank, count);
         }
 
         if (ml != null) {
@@ -2521,6 +2521,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setSpeciesLsid(lsid);
             md.setSpeciesDisplayName(species);
             md.setSpeciesRank(rank);
+            md.setOccurrencesCount(count);  //for Active Area mapping
 
             updateUserLogMapSpecies(lsid);
         }
@@ -2549,11 +2550,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return count;
     }
 
-    MapLayer mapSpeciesByLsidCluster(String lsid, String species) {
-        return mapSpeciesByLsidCluster(lsid, species, "species");
+    MapLayer mapSpeciesByLsidCluster(String lsid, String species, int count) {
+        return mapSpeciesByLsidCluster(lsid, species, "species", count);
     }
 
-    public MapLayer mapSpeciesByLsidCluster(String lsid, String species, String rank) {
+    public MapLayer mapSpeciesByLsidCluster(String lsid, String species, String rank, int count) {
         try {
             String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
 
@@ -2590,6 +2591,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 md.setSpeciesDisplayName(species);
                 md.setSpeciesRank(rank);
                 md.setLayerExtent(area, 0.2);
+                md.setOccurrencesCount(count);
 
                 addLsidBoundingBoxToMetadata(md, lsid);
 
@@ -2673,7 +2675,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
-    public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank) {
+    public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank, int count) {
         String filter = rank + "conceptid='" + lsid + "'";
 
         MapLayer ml = mapSpeciesWMSByFilter(species, filter);
@@ -2691,6 +2693,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setSpeciesLsid(lsid);
             md.setSpeciesDisplayName(species);
             md.setSpeciesRank(rank);
+            md.setOccurrencesCount(count);
 
             ml.setClustered(false);
             //btnPointsCluster.setLabel("Display species as clusters");
@@ -2710,7 +2713,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ml;
     }
 
-    public MapLayer mapSpeciesByLsidFilterGrid(String lsid, String species, String rank) {
+    public MapLayer mapSpeciesByLsidFilterGrid(String lsid, String species, String rank,int count) {
         String filter = rank + "conceptid='" + lsid + "';colormode:grid";
 
         MapLayer ml = mapSpeciesWMSByFilter(species, filter);
@@ -2728,6 +2731,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setSpeciesLsid(lsid);
             md.setSpeciesDisplayName(species);
             md.setSpeciesRank(rank);
+            md.setOccurrencesCount(count);
 
             ml.setColourMode("grid");
 
@@ -3664,9 +3668,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             MapLayer ml = null;
             if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD)) {
                 //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-                ml = mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user");
+                ml = mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount());
             } else {
-                ml = mapSpeciesByLsidFilter(slist, ud.getName(), "user");
+                ml = mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount());
             }
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
@@ -3750,7 +3754,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
-            MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user");
+            MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount());
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
@@ -3998,7 +4002,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (remapLayer) {
             //map as WMS points layer
-            mapLayer = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "");
+            mapLayer = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(),
+                    (mapLayer != null && mapLayer.getMapLayerMetadata() != null)?mapLayer.getMapLayerMetadata().getSpeciesRank():"species",
+                    (mapLayer != null && mapLayer.getMapLayerMetadata() != null)?mapLayer.getMapLayerMetadata().getOccurrencesCount():0);
             if (mapLayer != null) {
                 MapLayerMetadata md = mapLayer.getMapLayerMetadata();
                 if (md == null) {
@@ -4099,8 +4105,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         //put any parameters into map
         Map map = new HashMap();
         map.put("pid", pid);
+        map.put("lsid", m.getMapLayerMetadata().getSpeciesLsid());
         map.put("layer", "points layer");
         map.put("readonly", "true");
+        map.put("colourmode", colourMode);
 
         try {
             Executions.createComponents(
@@ -4131,5 +4139,30 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } catch (Exception e) {
         }
         return isUserUploadedCoordinates;
+    }
+
+    public String getNextActiveAreaLayerName() {
+        String layerPrefix = "Occurrences in Active area ";
+        int i = 1;
+        while(getMapLayer(layerPrefix + i) != null) {
+            i++;
+        }
+        return layerPrefix + i;
+    }
+
+    public Iterable<MapLayer> getActiveAreaLayers() {
+        String layerPrefix = "Occurrences in Active area ";
+        ArrayList<MapLayer> mls = new ArrayList<MapLayer>();
+
+        List udl = getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            if (ml.getName().contains(layerPrefix)) {
+                mls.add(ml);
+            }
+        }
+
+        return mls;
     }
 }
