@@ -855,7 +855,8 @@ description = 'Interim Biogeographic Regionalisation for Australia (IBRA), Versi
 , source_link = 'http://www.environment.gov.au/metadataexplorer/details.jsp?goTo=details&docId={58A10165-225B-4710-99AC-E975ACF490C9}&mode=ME&loggedIn=false'
 
 where name = 'ibra_sub_merged';
-INSERT INTO layers VALUES (915, 'ramsar', 'RAMSAR wetland regions', 'Contextual', 'RAMSAR wetlands', '/data/ala/shapefiles/ramsar', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'RAMSAR wetland regions', 'http://spatial.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ramsar&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Area Management', 'Biodiversity', '915', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
+
+--INSERT INTO layers VALUES (915, 'ramsar', 'RAMSAR wetland regions', 'Contextual', 'RAMSAR wetlands', '/data/ala/shapefiles/ramsar', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'RAMSAR wetland regions', 'http://spatial.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ramsar&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Area Management', 'Biodiversity', '915', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
 
 
 
