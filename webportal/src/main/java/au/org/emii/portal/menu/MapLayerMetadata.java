@@ -43,6 +43,7 @@ public class MapLayerMetadata implements Serializable {
     private String speciesDisplayName;
     private double[] layerExtent;
     private int partsCount;
+    private int occurrencesCount;
 
     public boolean isIsSpeciesLayer() {
         return isSpeciesLayer;
@@ -386,5 +387,13 @@ public class MapLayerMetadata implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public int getOccurrencesCount() {
+        return occurrencesCount;
+    }
+
+    public void setOccurrencesCount(int count) {
+        occurrencesCount = count;
     }
 }

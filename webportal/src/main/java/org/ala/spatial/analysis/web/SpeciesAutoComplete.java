@@ -1,6 +1,7 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -25,7 +26,7 @@ public class SpeciesAutoComplete extends Combobox {
     private static final String COMMON_NAME_URL = "common_name_url";
     private static final String SAT_URL = "sat_url";
     private String cnUrl = null;
-    private String satServer = null; 
+    private String satServer = null;
     private boolean bSearchCommon = false;
     private SettingsSupplementary settingsSupplementary = null;
 
@@ -37,7 +38,7 @@ public class SpeciesAutoComplete extends Combobox {
         this.bSearchCommon = searchCommon;
     }
 
-    public SpeciesAutoComplete() {  
+    public SpeciesAutoComplete() {
         refresh(""); //init the child comboitems
     }
 
@@ -68,12 +69,12 @@ public class SpeciesAutoComplete extends Combobox {
         }
 
         if (settingsSupplementary != null) {
-        } else if(this.getParent() != null){
+        } else if (this.getParent() != null) {
             settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
             System.out.println("SAC got SS: " + settingsSupplementary);
             satServer = settingsSupplementary.getValue(SAT_URL);
             cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
-        }else{
+        } else {
             return;
         }
 
@@ -109,7 +110,9 @@ public class SpeciesAutoComplete extends Combobox {
 
                 slist += loadUserPoints(val);
 
-	                System.out.println("SpeciesAutoComplete: \n" + slist);
+                slist += loadOccurrencesInActiveArea(val);
+
+                System.out.println("SpeciesAutoComplete: \n" + slist);
 
                 String[] aslist = slist.split("\n");
 
@@ -133,9 +136,9 @@ public class SpeciesAutoComplete extends Combobox {
                             myci.setParent(this);
                         }
 
-                        String [] wmsNames = CommonData.getSpeciesDistributionWMS(spVal[1].trim());
-                        if(wmsNames != null && wmsNames.length > 0) {
-                            if(wmsNames.length == 1) {
+                        String[] wmsNames = CommonData.getSpeciesDistributionWMS(spVal[1].trim());
+                        if (wmsNames != null && wmsNames.length > 0) {
+                            if (wmsNames.length == 1) {
                                 myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records + map");
                             } else {
                                 myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records + " + wmsNames.length + " maps");
@@ -143,9 +146,9 @@ public class SpeciesAutoComplete extends Combobox {
                         } else {
                             myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records");
                         }
-                        
+
                         myci.setDisabled(false);
-                        myci.addAnnotation(spVal[1].trim(),"LSID", null);
+                        myci.addAnnotation(spVal[1].trim(), "LSID", null);
 
                         if (spVal[2].trim().contains(":")) {
                             myci.setValue(spVal[2].trim().substring(spVal[2].trim().indexOf(":") + 1).trim());
@@ -177,41 +180,63 @@ public class SpeciesAutoComplete extends Combobox {
     }
 
     private String loadUserPoints(String val) {
-	        String userPoints = "";
-	        Hashtable<String, UserData> htUserSpecies = (Hashtable) getThisMapComposer().getSession().getAttribute("userpoints");
-                val = val.toLowerCase();
+        String userPoints = "";
+        Hashtable<String, UserData> htUserSpecies = (Hashtable) getThisMapComposer().getSession().getAttribute("userpoints");
+        val = val.toLowerCase();
 
-	        try {
-	            if (htUserSpecies != null) {
-	                if (htUserSpecies.size() > 0) {
-	                    Enumeration e = htUserSpecies.keys();
-	                    StringBuilder sbup = new StringBuilder();
-	                    while (e.hasMoreElements()) {
-	                        String k = (String) e.nextElement();
-	                        UserData ud = htUserSpecies.get(k);
+        try {
+            if (htUserSpecies != null) {
+                if (htUserSpecies.size() > 0) {
+                    Enumeration e = htUserSpecies.keys();
+                    StringBuilder sbup = new StringBuilder();
+                    while (e.hasMoreElements()) {
+                        String k = (String) e.nextElement();
+                        UserData ud = htUserSpecies.get(k);
 
-	                        if ("user".contains(val) ||
-	                                ud.getName().toLowerCase().contains(val) ||
-	                                ud.getDescription().toLowerCase().contains(val)) {
-	                            sbup.append(ud.getName());
-	                            sbup.append(" / ");
+                        if ("user".contains(val)
+                                || ud.getName().toLowerCase().contains(val)
+                                || ud.getDescription().toLowerCase().contains(val)) {
+                            sbup.append(ud.getName());
+                            sbup.append(" / ");
                             sbup.append(k);
-	                            sbup.append(" / ");
-	                            sbup.append("user");
-	                            sbup.append(" / ");
-	                            sbup.append(ud.getFeatureCount());
-	                            sbup.append("\n");
-	                        }
-	                    }
+                            sbup.append(" / ");
+                            sbup.append("user");
+                            sbup.append(" / ");
+                            sbup.append(ud.getFeatureCount());
+                            sbup.append("\n");
+                        }
+                    }
                     userPoints = sbup.toString();
-	                }
+                }
             }
-	        } catch (Exception e) {
-	            System.out.println("Unable to load user points into Species Auto Complete");
-	            e.printStackTrace(System.out);
-	        }
+        } catch (Exception e) {
+            System.out.println("Unable to load user points into Species Auto Complete");
+            e.printStackTrace(System.out);
+        }
 
-	        return userPoints;
-	    }
+        return userPoints;
+    }
 
+    private String loadOccurrencesInActiveArea(String val) {
+        String layerPrefix = "Occurrences in Active area ";
+        String userPoints = "";
+
+        for(MapLayer ml : getThisMapComposer().getActiveAreaLayers()) {
+            if(ml.getName().contains(layerPrefix) && ml.getName().toLowerCase().contains(val.toLowerCase())) {
+                try {
+                    userPoints = ml.getName()
+                            + " / "
+                            + ml.getMapLayerMetadata().getSpeciesLsid()
+                            + " / Active Area / "
+                            + ml.getMapLayerMetadata().getOccurrencesCount()
+                            + "\n";
+                } catch (Exception e) {
+                    System.out.println("Unable to load Active Area points into Species Auto Complete");
+                    e.printStackTrace(System.out);
+                }
+            }
+        }
+
+        return userPoints;
+    }
 }

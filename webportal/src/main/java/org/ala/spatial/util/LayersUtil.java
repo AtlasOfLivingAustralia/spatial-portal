@@ -90,7 +90,9 @@ public class LayersUtil {
     public String getFirstSpeciesLayer() {
         List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
         for (MapLayer ml : activeLayers) {
-            if (ml.isDisplayed() && isSpeciesName(ml.getName())) {
+            if (ml.isDisplayed() 
+                    && ((ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null)
+                        || isSpeciesName(ml.getName()))) {
                 return ml.getName();
             }
         }
@@ -106,7 +108,9 @@ public class LayersUtil {
         List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
         Entry<String, UserData> entry;
         for (MapLayer ml : activeLayers) {
-            if (ml.isDisplayed() && isSpeciesName(ml.getName())) {
+            if (ml.isDisplayed()
+                    && ((ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null)
+                        || isSpeciesName(ml.getName()))) {
                 return ml.getName() + "," + ml.getMapLayerMetadata().getSpeciesLsid();
             } else if (ml.isDisplayed() && ((entry = getUserData(ml.getName())) != null)) {
                 return entry.getValue().getName() + "," + entry.getKey();
@@ -241,7 +245,9 @@ public class LayersUtil {
      * @return
      */
     static public boolean isPestSpecies(String lsid) {
-
+        //TODO: do this function when pestStatuses is available
+        return false;
+    /*
         String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
 
         try {
@@ -263,7 +269,7 @@ public class LayersUtil {
         }
 
 
-        return false;
+        return false;*/
     }
 
     /**

@@ -211,8 +211,10 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         //put any parameters into map
         Map map = new HashMap();
         map.put("pid", pid);
+        map.put("lsid", lsid);
         map.put("layer", "points layer");
         map.put("readonly", "true");
+        map.put("colourmode", (String) cbColour.getSelectedItem().getValue());
 
         try {
             Executions.createComponents(

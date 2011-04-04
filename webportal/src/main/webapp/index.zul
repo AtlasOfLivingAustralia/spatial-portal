@@ -162,7 +162,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         <hbox width="100%">
                                             <label value="Display as:" sclass="h3" />
                                             <radiogroup id="pointtype">
-                                                <radio id="rGrid" label="Grid" />
+                                                <radio id="rGrid" label="Density grid" />
                                                 <radio id="rCluster" label="Clusters" visible="false"/>
                                                 <radio id="rPoint" label="Points" />
                                             </radiogroup>
@@ -466,8 +466,8 @@ border-bottom: none;
                                                     <div width="320px">
                                                         <label sclass="exampleText">e.g. Temperature</label>
                                                         <div style="float:right;margin-right:5px">
-                                                            <a href="${settingsSupplementary.values.sat_url}/alaspatial/layers" target="blank_">table</a>
-                                                            <a href="${settingsSupplementary.values.geonetwork_url}" target="blank_">metadata</a>
+                                                            <a href="${settingsSupplementary.values.sat_url}/alaspatial/layers" target="blank_">Layer table</a>
+                                                            <a href="${settingsSupplementary.values.geonetwork_url}" target="blank_">Metadata search</a>
                                                         </div>
                                                      </div>
                                                 </vbox>                                               

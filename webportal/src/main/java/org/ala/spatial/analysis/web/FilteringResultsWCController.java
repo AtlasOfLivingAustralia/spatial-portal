@@ -299,7 +299,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$mapspecies() {
-        getMapComposer().addToSession("Species in Active area", "lsid=aa");
+        //getMapComposer().addToSession("Occurrences in Active area", "lsid=aa");
         onMapSpecies(null);
     }
 
@@ -337,7 +337,8 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             //register points with a new id for mapping
             String lsid = registerPointsInArea(area);
-            getMapComposer().mapSpeciesByLsid(lsid, "Species in Active area");
+            String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName();
+            getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences);
 
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {

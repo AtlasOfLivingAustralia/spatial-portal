@@ -338,7 +338,7 @@ public class MaxentWCController extends UtilityComposer {
         String lsid = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
         if (!isSensitiveSpecies(lsid)) {
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
-            getMapComposer().mapSpeciesByLsid(lsid, taxon, rank);
+            getMapComposer().mapSpeciesByLsid(lsid, taxon, rank, 0);
         }
     }
 
