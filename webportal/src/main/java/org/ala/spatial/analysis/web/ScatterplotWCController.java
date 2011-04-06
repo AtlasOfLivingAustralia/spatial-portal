@@ -212,6 +212,8 @@ public class ScatterplotWCController extends UtilityComposer {
         backgroundName = taxon;
 
         //only add it to the map if this was signaled from an event
+        clearSelection();
+
         if (event != null) {
             Events.echoEvent("doSpeciesChange", this, null);
         } else {
@@ -241,7 +243,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
         clearSelection();
 
-        updateScatterplot(null);
+        Events.echoEvent("updateScatterplot", this, null);
     }
 
     public void onChange$cbLayer2(Event event) {
@@ -260,7 +262,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
         clearSelection();
 
-        updateScatterplot(null);
+        Events.echoEvent("updateScatterplot", this, null);
     }
 
     public ScatterplotData getScatterplotData() {
@@ -960,7 +962,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     }
                     if (key.length() == 0) {
                         xyzDataset.addSeries("unknown", dbl);
-                    } else if (seriesNames[j].equalsIgnoreCase(ACTIVE_AREA_SERIES)) {
+                    } else if (key.equalsIgnoreCase(ACTIVE_AREA_SERIES)) {
                         aaDataset = new DefaultXYZDataset();
                         aaDataset.addSeries(key, dbl);
                     } else {
@@ -1315,8 +1317,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     get.addRequestHeader("Accept", "text/plain");
 
                     int result = client.executeMethod(get);
-                    String slist = get.getResponseBodyAsString();
-                    results = slist;
+                    String slist = get.getResponseBodyAsString();                    
 
                     String[] lines = slist.split("\n");
 
@@ -1369,6 +1370,10 @@ public class ScatterplotWCController extends UtilityComposer {
         sacBackground.setValue("");
 
         redraw();
+    }
+
+    public void onClick$btnClearSelection(Event event) {
+        clearSelection();
     }
 
     XYShapeRenderer getBackgroundRenderer() {

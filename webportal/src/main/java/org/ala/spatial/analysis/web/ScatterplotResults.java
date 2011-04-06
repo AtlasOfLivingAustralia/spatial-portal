@@ -69,12 +69,38 @@ public class ScatterplotResults extends UtilityComposer {
 
                         public void render(Listitem li, Object data) {
                             String s = (String) data;
+                            if(s == null) {
+                                return;
+                            }
+
                             String[] ss = s.split(",");
+                            if(ss == null) {
+                                return;
+                            }
 
                             Listcell lc;
 
-                            for(int i=0;i<ss.length;i++) {
-                                lc = new Listcell(ss[i]);
+                            //occurrence id
+                            if(ss.length > 0) {
+                                lc = new Listcell(ss[0]);
+                                lc.setParent(li);
+                            }
+
+                            //series
+                            if(ss.length > 1) {
+                                lc = new Listcell(ss[1]);
+                                lc.setParent(li);
+                            }
+
+                            //X
+                            if(ss.length > 3) {
+                                lc = new Listcell(ss[3]);
+                                lc.setParent(li);
+                            }
+
+                            //Y
+                            if(ss.length > 2) {
+                                lc = new Listcell(ss[2]);
                                 lc.setParent(li);
                             }
                         }
