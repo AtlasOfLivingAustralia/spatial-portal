@@ -137,7 +137,7 @@ public abstract class Legend {
 
         //fix cutoffs
         for(int i=1;i<cutoffs.length;i++) {
-            if(cutoffs[i] <= cutoffs[i-1]) {
+            if(cutoffs[i] < cutoffs[i-1]) {
                 for(int j=i;j<cutoffs.length;j++) {
                     cutoffs[j] = cutoffs[i-1];
                 }
@@ -152,7 +152,9 @@ public abstract class Legend {
             if (Float.isNaN(d[i])) {
                 continue;
             } else if (d[i] > cutoffs[cutoffPos]) {
-                cutoffPos++;
+                while(d[i] > cutoffs[cutoffPos]) {
+                    cutoffPos++;
+                }
             }
             if (i == 0 || d[i - 1] != d[i]) {
                 groupSizes[cutoffPos]++;    //max cutoff == max value
@@ -197,16 +199,6 @@ public abstract class Legend {
             return null;
         }
 
-        //fix cutoffs
-        for(int i=1;i<cutoffs.length;i++) {
-            if(cutoffs[i] <= cutoffs[i-1]) {
-                for(int j=i;j<cutoffs.length;j++) {
-                    cutoffs[j] = cutoffs[i-1];
-                }
-                break;
-            }
-        }
-
         int [] grpSizes = new int[cutoffs.length];
 
         int cutoffPos = 0;
@@ -215,7 +207,9 @@ public abstract class Legend {
                 continue;
             }
             while (d[i] > cutoffs[cutoffPos]) {
-                cutoffPos++;
+                while(d[i] > cutoffs[cutoffPos]) {
+                    cutoffPos++;
+                }
             }
             grpSizes[cutoffPos]++;
         }
@@ -311,6 +305,11 @@ public abstract class Legend {
         int pos = java.util.Arrays.binarySearch(cutoffs, d);
         if (pos < 0) {
             pos = (pos * -1) - 1;
+        } else {
+            //get first instance of this cutoff value
+            while(pos > 0 && cutoffs[pos] == cutoffs[pos-1]) {
+                pos--;
+            }
         }
         if (divisions != 10) {
             //TODO: fix for mismatch with colours.length
@@ -319,11 +318,15 @@ public abstract class Legend {
             return 0xFFFFFFFF;
         } else {
             double upper = cutoffs[pos];
+            int upperPos = pos + 1;
             double lower;
+            int lowerPos;
             if (pos == 0) {
                 lower = min;
+                lowerPos = 0;
             } else {
                 lower = cutoffs[pos - 1];
+                lowerPos = pos;
             }
 
             //translate value to 0-1 position between the colours
@@ -336,10 +339,11 @@ public abstract class Legend {
             double v = (d - lower) / (upper - lower);
             double vt = 1 - v;
 
+
             //there are groups+1 colours
-            int red = (int) ((colours[pos] & 0x00FF0000) * vt + (colours[pos + 1] & 0x00FF0000) * v);
-            int green = (int) ((colours[pos] & 0x0000FF00) * vt + (colours[pos + 1] & 0x0000FF00) * v);
-            int blue = (int) ((colours[pos] & 0x00000FF) * vt + (colours[pos + 1] & 0x000000FF) * v);
+            int red = (int) ((colours[lowerPos] & 0x00FF0000) * vt + (colours[upperPos] & 0x00FF0000) * v);
+            int green = (int) ((colours[lowerPos] & 0x0000FF00) * vt + (colours[upperPos] & 0x0000FF00) * v);
+            int blue = (int) ((colours[lowerPos] & 0x00000FF) * vt + (colours[upperPos] & 0x000000FF) * v);
 
             return (red & 0x00FF0000) | (green & 0x0000FF00) | (blue & 0x000000FF) | 0xFF000000;
         }
@@ -404,8 +408,8 @@ public abstract class Legend {
         StringBuffer sb = new StringBuffer();
         //System.out.println(getTypeName());
         for (int i = 0; i < cutoffs.length; i++) {
-            if (groupSizes != null) {
-                sb.append(String.valueOf(cutoffs[i])).append("\t").append(String.valueOf(groupSizes[i])).append("\n");
+            if (groupSizes != null && groupSizesArea != null) {
+                sb.append(String.valueOf(cutoffs[i])).append("\t").append(String.valueOf(groupSizes[i])).append("\t").append(String.valueOf(groupSizesArea[i])).append("\n");
             } else {
                 sb.append(String.valueOf(cutoffs[i])).append("\n");
             }
