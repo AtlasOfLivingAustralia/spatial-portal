@@ -56,13 +56,9 @@
                             <comboitem label="Class" value="class" />
                             <comboitem label="Phylum" value="phylum" />
                             <comboitem label="Kingdom" value="kingdom" />
-                            <comboitem label="Uncertainty" value="u" />
                             <comboitem label="Data Provider" value="p" />
                             <comboitem label="Institution" value="in" />
-                            <comboitem label="Year" value="y" />
                             <comboitem label="Collection" value="c" />
-                            <comboitem label="Altitude" value="a" />
-                            <comboitem label="Depth" value="d" />
                         </combobox>
                     </hbox>
                     <div id="divUserColours" >
