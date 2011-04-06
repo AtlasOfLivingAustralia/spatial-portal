@@ -571,7 +571,13 @@ public class SamplingWSController {
                 if(sco != null) {
                     sbResults.append(results[i][sco.getPos()]).append(",");
                 } else {
-                    sbResults.append(speciesName).append(",");
+                    if(i == 0) {
+                        //header
+                        sbResults.append("scientific name").append(",");
+                    } else {
+                        //body
+                        sbResults.append(speciesName).append(",");
+                    }
                 }
 
                 //is there an area highlight?
@@ -642,9 +648,11 @@ public class SamplingWSController {
             }
             Object [] filters = new Object[paramCount];
             for(int i=0;i<paramCount;i++) {
-                String param = req.getParameter("param" + i);
+                String param = URLDecoder.decode(req.getParameter("param" + i),"UTF-8");
                 String [] parts = param.split(",");
                 Object [] o = null;
+                SpeciesColourOption sco = null;
+
                 //type is first, then name, then any values
                 if(parts[1].equalsIgnoreCase("string")) {
                     o = new Object[3];
@@ -689,13 +697,18 @@ public class SamplingWSController {
                     }
                 } else if(parts[1].equalsIgnoreCase("boolean")) {
                     o = new Object[3];
-                    o[1] = parts[0];
-                    o[2] = parts[2];
+                    o[0] = parts[0];
+                    o[1] = parts[2];
                     try {
-                        o[3] = Boolean.parseBoolean(parts[3]);
+                        o[2] = Boolean.parseBoolean(parts[3]);
                     } catch (Exception e) {
                         o = null;
                     }
+                } else if((sco = SpeciesColourOption.fromName(parts[1], false)) != null) {
+                    o = new Object[3];
+                    o[0] = parts[0];
+                    o[1] = parts[1];
+                    o[2] = sco.parseFilter(parts[2]);
                 }
 
                 if(o == null) {
