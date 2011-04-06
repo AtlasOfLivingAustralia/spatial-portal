@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+<?xml version="1.0" encoding="UTF-8"?><sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
   <sld:Name>raster</sld:Name>
   <sld:Title>A very simple color map</sld:Title>
   <sld:Abstract>A very basic color map</sld:Abstract>
@@ -18,16 +17,17 @@
         </sld:ChannelSelection>
         <sld:ColorMap>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-9999"/>
-          <sld:ColorMapEntry color="#009999" quantity="0.19"/>
-          <sld:ColorMapEntry color="#99FF66" quantity="0.28"/>
-          <sld:ColorMapEntry color="#FFFF66" quantity="0.37"/>
-          <sld:ColorMapEntry color="#FFFF00" quantity="0.46"/>
-          <sld:ColorMapEntry color="#FF9900" quantity="0.55"/>
-          <sld:ColorMapEntry color="#FF6600" quantity="0.64"/>
-          <sld:ColorMapEntry color="#FF6666" quantity="0.73"/>
-          <sld:ColorMapEntry color="#FF3300" quantity="0.82"/>
-          <sld:ColorMapEntry color="#CC33FF" quantity="0.91"/>
-          <sld:ColorMapEntry color="#FF33FF" quantity="1.000"/>
+          <sld:ColorMapEntry color="#002DD0" quantity="0.1" label="0.1 Dimensionless"/>
+          <sld:ColorMapEntry color="#005BA2" quantity="0.15"/>
+          <sld:ColorMapEntry color="#008C73" quantity="0.21"/>
+          <sld:ColorMapEntry color="#00B944" quantity="0.28"/>
+          <sld:ColorMapEntry color="#00E716" quantity="0.35"/>
+          <sld:ColorMapEntry color="#A0FF00" quantity="0.43"/>
+          <sld:ColorMapEntry color="#FFFF00" quantity="0.54"/>
+          <sld:ColorMapEntry color="#FFC814" quantity="0.71"/>
+          <sld:ColorMapEntry color="#FFA000" quantity="0.92"/>
+          <sld:ColorMapEntry color="#FF5B00" quantity="0.9996"/>
+          <sld:ColorMapEntry color="#FF0000" quantity="1.0" label="1.0 Dimensionless"/>
         </sld:ColorMap>
       </sld:RasterSymbolizer>
     </sld:Rule>

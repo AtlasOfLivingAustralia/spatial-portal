@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+<?xml version="1.0" encoding="UTF-8"?><sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
   <sld:Name>raster</sld:Name>
   <sld:Title>A very simple color map</sld:Title>
   <sld:Abstract>A very basic color map</sld:Abstract>
@@ -18,16 +17,17 @@
         </sld:ChannelSelection>
         <sld:ColorMap>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-999"/>
-          <sld:ColorMapEntry color="#009999" quantity="15.7366"/>
-          <sld:ColorMapEntry color="#99FF66" quantity="26.3182"/>
-          <sld:ColorMapEntry color="#FFFF66" quantity="36.8998"/>
-          <sld:ColorMapEntry color="#FFFF00" quantity="47.4814"/>
-          <sld:ColorMapEntry color="#FF9900" quantity="58.063"/>
-          <sld:ColorMapEntry color="#FF6600" quantity="68.6446"/>
-          <sld:ColorMapEntry color="#FF6666" quantity="79.2262"/>
-          <sld:ColorMapEntry color="#FF3300" quantity="89.8078"/>
-          <sld:ColorMapEntry color="#CC33FF" quantity="100.3894"/>
-          <sld:ColorMapEntry color="#FF33FF" quantity="110.971"/>
+          <sld:ColorMapEntry color="#002DD0" quantity="5.154636" label="5.154636 mgN kgH2O-1"/>
+          <sld:ColorMapEntry color="#005BA2" quantity="21.87967"/>
+          <sld:ColorMapEntry color="#008C73" quantity="24.89742"/>
+          <sld:ColorMapEntry color="#00B944" quantity="29.69009"/>
+          <sld:ColorMapEntry color="#00E716" quantity="34.2"/>
+          <sld:ColorMapEntry color="#A0FF00" quantity="38.4132"/>
+          <sld:ColorMapEntry color="#FFFF00" quantity="42.19785"/>
+          <sld:ColorMapEntry color="#FFC814" quantity="45.20908"/>
+          <sld:ColorMapEntry color="#FFA000" quantity="50.24459"/>
+          <sld:ColorMapEntry color="#FF5B00" quantity="57.87128"/>
+          <sld:ColorMapEntry color="#FF0000" quantity="110.9708" label="110.9708 mgN kgH2O-1"/>
         </sld:ColorMap>
       </sld:RasterSymbolizer>
     </sld:Rule>

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+<?xml version="1.0" encoding="UTF-8"?><sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
   <sld:Name>raster</sld:Name>
   <sld:Title>A very simple color map</sld:Title>
   <sld:Abstract>A very basic color map</sld:Abstract>
@@ -18,16 +17,17 @@
         </sld:ChannelSelection>
         <sld:ColorMap>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-9999"/>
-          <sld:ColorMapEntry color="#009999" quantity="19.64"/>
-          <sld:ColorMapEntry color="#99FF66" quantity="20.98"/>
-          <sld:ColorMapEntry color="#FFFF66" quantity="22.32"/>
-          <sld:ColorMapEntry color="#FFFF00" quantity="23.66"/>
-          <sld:ColorMapEntry color="#FF9900" quantity="25.0"/>
-          <sld:ColorMapEntry color="#FF6600" quantity="26.34"/>
-          <sld:ColorMapEntry color="#FF6666" quantity="27.68"/>
-          <sld:ColorMapEntry color="#FF3300" quantity="29.02"/>
-          <sld:ColorMapEntry color="#CC33FF" quantity="30.36"/>
-          <sld:ColorMapEntry color="#FF33FF" quantity="31.700"/>
+          <sld:ColorMapEntry color="#002DD0" quantity="18.3" label="18.3 MJ/m2/day"/>
+          <sld:ColorMapEntry color="#005BA2" quantity="25.8"/>
+          <sld:ColorMapEntry color="#008C73" quantity="26.6"/>
+          <sld:ColorMapEntry color="#00B944" quantity="27.4"/>
+          <sld:ColorMapEntry color="#00E716" quantity="27.9"/>
+          <sld:ColorMapEntry color="#A0FF00" quantity="28.4"/>
+          <sld:ColorMapEntry color="#FFFF00" quantity="28.9"/>
+          <sld:ColorMapEntry color="#FFC814" quantity="29.3"/>
+          <sld:ColorMapEntry color="#FFA000" quantity="29.5"/>
+          <sld:ColorMapEntry color="#FF5B00" quantity="29.9"/>
+          <sld:ColorMapEntry color="#FF0000" quantity="31.7" label="31.7 MJ/m2/day"/>
         </sld:ColorMap>
       </sld:RasterSymbolizer>
     </sld:Rule>

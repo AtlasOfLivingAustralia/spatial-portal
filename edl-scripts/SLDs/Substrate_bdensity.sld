@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+<?xml version="1.0" encoding="UTF-8"?><sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
   <sld:Name>raster</sld:Name>
   <sld:Title>A very simple color map</sld:Title>
   <sld:Abstract>A very basic color map</sld:Abstract>
@@ -18,16 +17,17 @@
         </sld:ChannelSelection>
         <sld:ColorMap>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-999"/>
-          <sld:ColorMapEntry color="#009999" quantity="0.6718"/>
-          <sld:ColorMapEntry color="#99FF66" quantity="0.7906"/>
-          <sld:ColorMapEntry color="#FFFF66" quantity="0.9094"/>
-          <sld:ColorMapEntry color="#FFFF00" quantity="1.0282"/>
-          <sld:ColorMapEntry color="#FF9900" quantity="1.147"/>
-          <sld:ColorMapEntry color="#FF6600" quantity="1.2658"/>
-          <sld:ColorMapEntry color="#FF6666" quantity="1.3846"/>
-          <sld:ColorMapEntry color="#FF3300" quantity="1.5034"/>
-          <sld:ColorMapEntry color="#CC33FF" quantity="1.6222"/>
-          <sld:ColorMapEntry color="#FF33FF" quantity="1.741"/>
+          <sld:ColorMapEntry color="#002DD0" quantity="0.55294114" label="0.55294114 "/>
+          <sld:ColorMapEntry color="#005BA2" quantity="1.0854263"/>
+          <sld:ColorMapEntry color="#008C73" quantity="1.149079"/>
+          <sld:ColorMapEntry color="#00B944" quantity="1.2531403"/>
+          <sld:ColorMapEntry color="#00E716" quantity="1.3209715"/>
+          <sld:ColorMapEntry color="#A0FF00" quantity="1.3713174"/>
+          <sld:ColorMapEntry color="#FFFF00" quantity="1.4060701"/>
+          <sld:ColorMapEntry color="#FFC814" quantity="1.4596988"/>
+          <sld:ColorMapEntry color="#FFA000" quantity="1.5095646"/>
+          <sld:ColorMapEntry color="#FF5B00" quantity="1.5725472"/>
+          <sld:ColorMapEntry color="#FF0000" quantity="1.7411765" label="1.7411765 "/>
         </sld:ColorMap>
       </sld:RasterSymbolizer>
     </sld:Rule>

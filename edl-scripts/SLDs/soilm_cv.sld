@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+<?xml version="1.0" encoding="UTF-8"?><sld:UserStyle xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
   <sld:Name>raster</sld:Name>
   <sld:Title>A very simple color map</sld:Title>
   <sld:Abstract>A very basic color map</sld:Abstract>
@@ -17,17 +16,17 @@
           </sld:GrayChannel>
         </sld:ChannelSelection>
         <sld:ColorMap>
-          <sld:ColorMapEntry color="#CCCCFF" quantity="1.000"/>
-          <sld:ColorMapEntry color="#009999" quantity="3.6"/>
-          <sld:ColorMapEntry color="#99FF66" quantity="6.2"/>
-          <sld:ColorMapEntry color="#FFFF66" quantity="8.8"/>
-          <sld:ColorMapEntry color="#FFFF00" quantity="11.4"/>
-          <sld:ColorMapEntry color="#FF9900" quantity="14.0"/>
-          <sld:ColorMapEntry color="#FF6600" quantity="16.6"/>
-          <sld:ColorMapEntry color="#FF6666" quantity="19.2"/>
-          <sld:ColorMapEntry color="#FF3300" quantity="21.8"/>
-          <sld:ColorMapEntry color="#CC33FF" quantity="24.4"/>
-          <sld:ColorMapEntry color="#FF33FF" quantity="27.000"/>
+          <sld:ColorMapEntry color="#002DD0" quantity="0.0" label="0.0 fraction / %"/>
+          <sld:ColorMapEntry color="#005BA2" quantity="8.0"/>
+          <sld:ColorMapEntry color="#008C73" quantity="10.0"/>
+          <sld:ColorMapEntry color="#00B944" quantity="12.0"/>
+          <sld:ColorMapEntry color="#00E716" quantity="13.0"/>
+          <sld:ColorMapEntry color="#A0FF00" quantity="14.0"/>
+          <sld:ColorMapEntry color="#FFFF00" quantity="15.0"/>
+          <sld:ColorMapEntry color="#FFC814" quantity="16.0"/>
+          <sld:ColorMapEntry color="#FFA000" quantity="17.0"/>
+          <sld:ColorMapEntry color="#FF5B00" quantity="18.0"/>
+          <sld:ColorMapEntry color="#FF0000" quantity="27.0" label="27.0 fraction / %"/>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="255"/>
         </sld:ColorMap>
       </sld:RasterSymbolizer>

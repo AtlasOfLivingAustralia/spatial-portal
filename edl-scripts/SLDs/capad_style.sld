@@ -13,26 +13,6 @@
           <ogc:Literal>IA</ogc:Literal>
         </ogc:PropertyIsEqualTo>
       </ogc:Filter>
-      <TextSymbolizer>
-		<Label>
-			<ogc:PropertyName>name</ogc:PropertyName>
-		</Label>
-	
-		<Font>
-			<CssParameter name="font-family">Times New Roman</CssParameter>
-			<CssParameter name="font-style">Normal</CssParameter>
-			<CssParameter name="font-size">16</CssParameter>
-			<CssParameter name="font-weight">bold</CssParameter>
-		</Font>
-		
-		<Stroke>
-			<CssParameter name="stroke">#FFFFFF</CssParameter>
-              		<CssParameter name="stroke-width">1</CssParameter>
-		</Stroke>
-		<Fill>
-			<CssParameter name="fill">#000000</CssParameter>
-		</Fill>
-	</TextSymbolizer>
       <sld:PolygonSymbolizer>
         <sld:Fill>
           <sld:CssParameter name="fill">#d20000</sld:CssParameter>
