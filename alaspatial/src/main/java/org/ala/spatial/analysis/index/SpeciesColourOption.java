@@ -84,7 +84,7 @@ public class SpeciesColourOption {
         String legend = null;
 
         //legend for 'grid' colourMode
-        if(colourMode.equalsIgnoreCase("grid")) {
+        if (colourMode.equalsIgnoreCase("grid")) {
             StringBuilder legendString = new StringBuilder();
             legendString.append(0).append(",").append(RGBcsv(Legend.getLinearColour(0, 0, 500, startColour, endColour))).append("\n");
             legendString.append("500+").append(",").append(RGBcsv(Legend.getLinearColour(500, 0, 500, startColour, endColour))).append("\n");
@@ -292,7 +292,7 @@ public class SpeciesColourOption {
 
         for (int i = 1; i < TabulationSettings.occurrences_csv_field_pairs.length; i += 2) {
             if (mode.equalsIgnoreCase(TabulationSettings.occurrences_csv_field_pairs[i])) {
-                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode, 9 + (i-1)/2);
+                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode, 9 + (i - 1) / 2);
             }
         }
 
@@ -313,7 +313,7 @@ public class SpeciesColourOption {
         for (int i = 1; i < TabulationSettings.occurrences_csv_field_pairs.length; i += 2) {
             if (name.equalsIgnoreCase(TabulationSettings.occurrences_csv_field_pairs[i])) {
                 String mode = TabulationSettings.occurrences_csv_field_pairs[i];
-                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode, 9 + (i-1)/2);
+                return new SpeciesColourOption(mode, mode, 3, null, false, (i - 1) / 2, colourMode, 9 + (i - 1) / 2);
             }
         }
 
@@ -475,7 +475,7 @@ public class SpeciesColourOption {
     }
 
     static public SpeciesColourOption fromHighlight(String key, boolean colourMode) {
-        return new SpeciesColourOption("h", "Selection", 2, key, true, -1, colourMode,-1);
+        return new SpeciesColourOption("h", "Selection", 2, key, true, -1, colourMode, -1);
     }
 
     boolean isTaxon() {
@@ -552,7 +552,7 @@ public class SpeciesColourOption {
         int[] c = new int[iArray.length];
         if (legend == null) {
             double offset = 0;
-            if(iMin < 1) {
+            if (iMin < 1) {
                 offset = 1 - iMin;
             }
             double logIMin = Math.log10(iMin + offset);
@@ -570,7 +570,7 @@ public class SpeciesColourOption {
             }
         } else {
             double offset = 0;
-            if(legend.getMinMax()[0] < 1) {
+            if (legend.getMinMax()[0] < 1) {
                 offset = 1 - legend.getMinMax()[0];
             }
             double min = Math.log10(legend.getMinMax()[0] + offset + 1);
@@ -817,14 +817,14 @@ public class SpeciesColourOption {
                     highlight = new boolean[dArray.length];
                     dmin = (Double) object[0];
                     dmax = (Double) object[1];
-                    if(Double.isNaN(dmax) || Double.isNaN(dmin)) {
+                    if (Double.isNaN(dmax) || Double.isNaN(dmin)) {
                         for (i = 0; i < dArray.length; i++) {
                             highlight[i] = Double.isNaN(dArray[i]);
                         }
                     } else {
                         for (i = 0; i < dArray.length; i++) {
                             highlight[i] = (dArray[i] <= dmax && dArray[i] >= dmin);
-                                    //|| (Double.isNaN(dArray[i]) && dmax >= 0 && dmin <= 0);
+                            //|| (Double.isNaN(dArray[i]) && dmax >= 0 && dmin <= 0);
                         }
                     }
                 }
@@ -834,14 +834,14 @@ public class SpeciesColourOption {
                     highlight = new boolean[iArray.length];
                     imin = (Integer) object[0];
                     imax = (Integer) object[1];
-                    if(Integer.MIN_VALUE == imin) {
+                    if (Integer.MIN_VALUE == imin) {
                         for (i = 0; i < dArray.length; i++) {
                             highlight[i] = Double.isNaN(dArray[i]);
                         }
                     } else {
-                        for (i = 0;i < iArray.length; i++) {
+                        for (i = 0; i < iArray.length; i++) {
                             highlight[i] = (iArray[i] <= imax && iArray[i] >= imin);
-                                   // || (iArray[i] == Integer.MIN_VALUE && imax >= 0 && imin <= 0);
+                            // || (iArray[i] == Integer.MIN_VALUE && imax >= 0 && imin <= 0);
                         }
                     }
                 }
@@ -876,6 +876,29 @@ public class SpeciesColourOption {
         }
 
         return highlight;
+    }
+
+    public Object parseFilter(String filter) {
+        try {
+            String[] parts = filter.split("\t");
+
+            switch (type) {
+                case 0: //double
+                    Double[] o1 = {new Double(Double.parseDouble(parts[0])), new Double(Double.parseDouble(parts[1]))};
+                    return o1;
+                case 1: //int
+                    Integer[] o2 = {new Integer((int)Double.parseDouble(parts[0])), new Integer((int)Double.parseDouble(parts[1]))};
+                    return o2;
+                case 3: //string, appending lookup values
+                    Object [] o3 = {parts};
+                    return o3;
+                case 2: //boolean
+                    Boolean[] o4 = {new Boolean(Boolean.parseBoolean(parts[0]))};
+                    return o4;
+            }
+        } catch (Exception e) {
+        }
+        return null;
     }
 
     boolean isContinous() {

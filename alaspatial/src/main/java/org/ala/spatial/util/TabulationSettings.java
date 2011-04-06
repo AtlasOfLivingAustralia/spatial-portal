@@ -263,16 +263,16 @@ public class TabulationSettings {
             SpatialLogger.log("Tabulation Settings", e.toString());
         }
 
-        System.out.println("tabulation_settings.xml: " + filename);
-        try {
-            RandomAccessFile raf = new RandomAccessFile(filename, "r");
-            byte[] b = new byte[(int) raf.length()];
-            String s = new String(b, "UTF-8");
-            System.out.println(s);
-            raf.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        System.out.println("tabulation_settings.xml: " + filename);
+//        try {
+//            RandomAccessFile raf = new RandomAccessFile(filename, "r");
+//            byte[] b = new byte[(int) raf.length()];
+//            String s = new String(b, "UTF-8");
+//            System.out.println(s);
+//            raf.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
 
 
