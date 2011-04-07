@@ -25,17 +25,19 @@
     </ChannelSelection>
     <ColorMap extended="true">
  	<!--Lower-->
-	<ColorMapEntry color="#CCCCFF" quantity="MIN_QUANTITY" label="MIN_LABEL"/>
-        <ColorMapEntry color="#009999" quantity="10_QUANTITY" label="10_LABEL"/>
-        <ColorMapEntry color="#99FF66" quantity="20_QUANTITY" label="20_LABEL"/>
-        <ColorMapEntry color="#FFFF66" quantity="30_QUANTITY" label="30_LABEL"/>
-        <ColorMapEntry color="#FFFF00" quantity="40_QUANTITY" label="40_LABEL"/>
-        <ColorMapEntry color="#FF9900" quantity="50_QUANTITY" label="50_LABEL"/>
-        <ColorMapEntry color="#FF6600" quantity="60_QUANTITY" label="60_LABEL"/>
-        <ColorMapEntry color="#FF6666" quantity="70_QUANTITY" label="70_LABEL"/>
-        <ColorMapEntry color="#FF3300" quantity="80_QUANTITY" label="80_LABEL"/>
-        <ColorMapEntry color="#CC33FF" quantity="90_QUANTITY" label="90_LABEL"/>
-        <ColorMapEntry color="#FF33FF" quantity="MAX_QUANTITY" label="MAX_LABEL"/>
+		
+<ColorMapEntry color = "#002DD0" quantity="MIN_QUANTITY" label="MIN_LABEL"/>
+<ColorMapEntry color = "#005BA2" quantity="Q1_QUANTITY"/>
+<ColorMapEntry color = "#008C73" quantity="Q2_QUANTITY"/>
+<ColorMapEntry color = "#00B944" quantity="Q3_QUANTITY"/>
+<ColorMapEntry color = "#00E716" quantity="Q4_QUANTITY"/>
+<ColorMapEntry color = "#A0FF00" quantity="Q5_QUANTITY"/>
+<ColorMapEntry color = "#FFFF00" quantity="Q6_QUANTITY"/>
+<ColorMapEntry color = "#FFC814" quantity="Q7_QUANTITY"/>
+<ColorMapEntry color = "#FFA000" quantity="Q8_QUANTITY"/>
+<ColorMapEntry color = "#FF5B00" quantity="Q9_QUANTITY"/>
+<ColorMapEntry color = "#FF0000" quantity="MAX_QUANTITY" label="MAX_LABEL"/>
+
 	<!--Higher-->
     </ColorMap>
 </RasterSymbolizer>

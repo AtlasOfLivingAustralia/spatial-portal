@@ -12,12 +12,25 @@ for line in unitFile.readlines():
 	name,unit =  line.split(';')
 	unitDict[name.replace('"','')] = unit.replace('"','').replace('\n','')
 
-scaleFile = open("scale.csv")
-logLayers = []
-for line in scaleFile.readlines():
-	name,log10,step,best,margin = line.split(',')
-	logLayers.append(name)
+#scaleFile = open("scale.csv")
+#logLayers = []
+#for line in scaleFile.readlines():
+#	name,log10,step,best,margin = line.split(',')
+#	logLayers.append(name.lower())
 
+minmaxFile = open("minmax.csv")
+minmaxDict = {}
+for line in minmaxFile.readlines():
+	print(name)
+	name,min,max,nodata = line.split(',')
+	minmaxDict[name] = min + ',' + max
+
+cutPointsFile = open("cutpoints.csv")
+cutPointsDict = {}
+for line in cutPointsFile.readlines():
+	print(line)
+	name,type,minVar,min,cpVar,cutpoints,title,q1,q2,q3,q4,q5,q6,q7,q8,q9,max,distribution,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10 = line.split(',')
+	cutPointsDict[name.lower()] = [min,q1,q2,q3,q4,q5,q6,q7,q8,q9,max]
 for root, dirs, files in os.walk(edlconfig.dataset):
 	for name in files:
 		if ((".geotiff" in name) or (".tif" in name)):
@@ -28,8 +41,9 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 			sld = layername+".sld"
 
 					
-			f = open("template.sld", 'r')
-                        text = f.read()
+#			f = open("template.sld", 'r')
+			f = open("log-sld.xml",'r') 
+                       	text = f.read()
 			nodata = None
 	
 			unit = ""
@@ -41,37 +55,68 @@ for root, dirs, files in os.walk(edlconfig.dataset):
     				if not line: break
 				if "Computed" in line:
 		    			print line
-					min,max = line.strip().split('Min/Max=')[1].split(',')
-					if ((float(max) - float(min)) > 10):
-						min = math.floor(float(min)/10)*10
-						max = math.ceil(float(max)/10)*10
-					else:
-						min = float(min)
-						max = float(max)
-					if (min == float(-10000.0)):
-                                                min = float(0) #FIXME - hack for bad nodata/min
-						nodata = -10000
-					text = text.replace("MIN_QUANTITY",str(min))
-					text = text.replace("MIN_LABEL",str(min) + " " + unit)
-					text = text.replace("MAX_QUANTITY",str(max))
-					text = text.replace("MAX_LABEL",str(max) + " " + unit)
+				#	min,max = line.strip().split('Min/Max=')[1].split(',')
+				#	if (layername in minmaxDict):
+				#		min,max = minmaxDict[layername].split(',')
+				#	else:
+				#		break
+				#	if ((float(max) - float(min)) > 10):
+				#		min = math.floor(float(min)/10)*10
+				#		max = math.ceil(float(max)/10)*10
+				#	else:
+				#		min = float(min)
+				#		max = float(max)
+				
+					if(layername.lower() in cutPointsDict):
+						cutPoints = cutPointsDict[layername.lower()]
+						min = cutPoints[0]
+						max = cutPoints[10]
 
-					if (layername.lower() in logLayers):
-						multiplier = 1
-						value_range = float(max) - float(min)
-						if value_range < 1:  #Log scale won't work properly without multipier
-							multiplier = 10
-						d = math.log(value_range*multiplier,10)/4
-						for i in range(1,4):
-							value = min + ((10**(i*d))/multiplier)
-							text = text.replace("Q" + str(i) + "_QUANTITY",str(value))
-							text = text.replace("Q" + str(i) + "_LABEL",str(value) + " " + unit)
-					else:
-						d = (float(max) - float(min))/4
-						print(d)
-						for i in range(1,4):
-							text = text.replace("Q" + str(i) + "_QUANTITY",str(min+i*d))
-							text = text.replace("Q" + str(i) + "_LABEL",str(min+i*d) + " " + unit)
+						text = text.replace("MIN_QUANTITY",str(min))
+						text = text.replace("MIN_LABEL",str(min) + " " + unit)
+						text = text.replace("MAX_QUANTITY",str(max))
+						text = text.replace("MAX_LABEL",str(max) + " " + unit)
+						
+						if (cutPoints[0] == cutPoints[1]):
+							text = text.replace("<ColorMapEntry color = \"#005BA2\" quantity=\"Q1_QUANTITY\"/>","")
+						
+						for i in range(1,10):
+							cutPoint = cutPoints[i]
+							text = text.replace("Q" + str(i) + "_QUANTITY",str(cutPoint))
+					elif (layername in minmaxDict):
+						min,max = minmaxDict[layername].split(',')
+						if (float(min) == float(-10000.0)):
+                                                        min = float(0) #FIXME - hack for bad nodata/min
+                                                        nodata = -10000
+					
+						text = text.replace("MIN_QUANTITY",str(min))
+                                                text = text.replace("MIN_LABEL",str(min) + " " + unit)
+                                                text = text.replace("MAX_QUANTITY",str(max))
+                                                text = text.replace("MAX_LABEL",str(max) + " " + unit)
+						
+						d = (float(max) - float(min))/10
+						for i in range(1,10):
+							text = text.replace("Q" + str(i) + "_QUANTITY",str(float(min)+i*d))
+	
+								
+
+#					if (layername.lower() in logLayers):
+#						multiplier = 1
+#						value_range = float(max) - float(min)
+#						if value_range < 1:  #Log scale won't work properly without multipier
+#							multiplier = 10
+#						d = math.log(value_range*multiplier,10)/16
+#						for i in range(1,16):
+#							value = min + ((10**(i*d))/multiplier)
+#							text = text.replace("Q" + str(i) + "_QUANTITY",str(value))
+#							text = text.replace("Q" + str(i) + "_LABEL",str(value) + " " + unit)
+#					else:
+					##	ignore = True
+					#	d = (float(max) - float(min))/16
+					#	print(d)
+				#		for i in range(1,16):
+#							text = text.replace("Q" + str(i) + "_QUANTITY",str(min+i*d))
+#							text = text.replace("Q" + str(i) + "_LABEL",str(min+i*d) + " " + unit)
 				if "NoData" in line:
 					print line
 					if (nodata is None):
@@ -87,17 +132,5 @@ for root, dirs, files in os.walk(edlconfig.dataset):
 			fout = open(sld, 'w')
                         fout.write(text)
 			fout.close()
-				
-
-			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPOST -H 'Content-type: text/xml' -d '<style><name>"+layername+"_style</name><filename>"+layername+".sld</filename></style>' " + edlconfig.geoserver_url + "/geoserver/rest/styles/"
-			print(curlstring)
-			os.system(curlstring)
-			curlstring = "curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: application/vnd.ogc.sld+xml' -d @"+sld+" " + edlconfig.geoserver_url + "/geoserver/rest/styles/"+layername+"_style"
-			print(curlstring)
-			os.system(curlstring)
-	
-			curlstring="curl -u " + edlconfig.geoserver_userpass + " -XPUT -H 'Content-type: text/xml' -d '<layer><defaultStyle><name>"+layername+"_style</name></defaultStyle><enabled>true</enabled></layer>' " + edlconfig.geoserver_url + "/geoserver/rest/layers/ALA:"+layername
-			print(curlstring)
-			os.system(curlstring)
 					
 						

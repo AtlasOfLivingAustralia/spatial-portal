@@ -23,7 +23,7 @@ import edlconfig
 for root, dirs, files in os.walk(edlconfig.dataset):
 	for name in files:
 		if ".tif" in name:
-			layername = edlconfig.source + "_" + name.replace(".tif","")
+			layername = name.replace(".tif","")
 			request = "curl -u " + edlconfig.geoserver_userpass + " -XPUT -H \"image/tif\" --data-binary @" + os.path.join(root,name) + " " + edlconfig.geoserver_url + "/geoserver/rest/workspaces/ALA/coveragestores/" + layername + "/file.geotiff"
 			print(request)
 			os.system(request)
