@@ -16,14 +16,12 @@
           </sld:GrayChannel>
         </sld:ChannelSelection>
         <sld:ColorMap>
-          
           <sld:ColorMapEntry color="#002DD0" quantity="-32358" label="-32358 PSU"/>
           <sld:ColorMapEntry color="#005BA2" quantity="-25845.7"/>
           <sld:ColorMapEntry color="#008C73" quantity="-19333.4"/>
           <sld:ColorMapEntry color="#00B944" quantity="-12821.1"/>
           <sld:ColorMapEntry color="#00E716" quantity="-6308.8"/>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="0.0"/>
-
           <sld:ColorMapEntry color="#A0FF00" quantity="203.5"/>
           <sld:ColorMapEntry color="#FFFF00" quantity="6715.8"/>
           <sld:ColorMapEntry color="#FFC814" quantity="13228.1"/>

@@ -16,7 +16,7 @@
           </sld:GrayChannel>
         </sld:ChannelSelection>
         <sld:ColorMap>
-          <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-10000.0"/>
+          <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="0.0"/>
           <sld:ColorMapEntry color="#002DD0" quantity="MIN_QUANTITY" label="MIN_LABEL"/>
           <sld:ColorMapEntry color="#005BA2" quantity="Q1_QUANTITY"/>
           <sld:ColorMapEntry color="#008C73" quantity="Q2_QUANTITY"/>

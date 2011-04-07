@@ -24,7 +24,6 @@
           <sld:ColorMapEntry color="#A0FF00" quantity="-7021.5"/>
           <sld:ColorMapEntry color="#FFFF00" quantity="-3206.8"/>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="0.00"/>
-
           <sld:ColorMapEntry color="#FFC814" quantity="607.9"/>
           <sld:ColorMapEntry color="#FFA000" quantity="4422.6"/>
           <sld:ColorMapEntry color="#FF5B00" quantity="8237.3"/>

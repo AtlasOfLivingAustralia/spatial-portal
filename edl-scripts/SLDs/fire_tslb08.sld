@@ -18,7 +18,6 @@
         <sld:ColorMap>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-9999"/>
           <sld:ColorMapEntry color="#002DD0" quantity="1.0" label="1.0 years"/>
-          <sld:ColorMapEntry color="#005BA2" quantity="1.0"/>
           <sld:ColorMapEntry color="#008C73" quantity="2.0"/>
           <sld:ColorMapEntry color="#00B944" quantity="3.0"/>
           <sld:ColorMapEntry color="#00E716" quantity="5.0"/>

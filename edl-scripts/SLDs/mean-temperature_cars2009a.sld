@@ -16,7 +16,6 @@
           </sld:GrayChannel>
         </sld:ChannelSelection>
         <sld:ColorMap>
-          
           <sld:ColorMapEntry color="#002DD0" quantity="-28068" label="-28068 degrees C"/>
           <sld:ColorMapEntry color="#005BA2" quantity="-22109.2"/>
           <sld:ColorMapEntry color="#008C73" quantity="-16150.4"/>

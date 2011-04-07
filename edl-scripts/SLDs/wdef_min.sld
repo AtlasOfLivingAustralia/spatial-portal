@@ -18,7 +18,6 @@
         <sld:ColorMap>
           <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-9999"/>
           <sld:ColorMapEntry color="#002DD0" quantity="0.0" label="0.0 mm"/>
-          <sld:ColorMapEntry color="#005BA2" quantity="0.0"/>
           <sld:ColorMapEntry color="#008C73" quantity="5.966007"/>
           <sld:ColorMapEntry color="#00B944" quantity="9.1468935"/>
           <sld:ColorMapEntry color="#00E716" quantity="12.325818"/>

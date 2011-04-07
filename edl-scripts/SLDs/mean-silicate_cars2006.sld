@@ -16,7 +16,6 @@
           </sld:GrayChannel>
         </sld:ChannelSelection>
         <sld:ColorMap>
-          
           <sld:ColorMapEntry color="#002DD0" quantity="-30963" label="-30963 umol/l"/>
           <sld:ColorMapEntry color="#005BA2" quantity="-27866.7"/>
           <sld:ColorMapEntry color="#008C73" quantity="-24770.4"/>
@@ -28,7 +27,7 @@
           <sld:ColorMapEntry color="#FFA000" quantity="-6192.6"/>
           <sld:ColorMapEntry color="#FF5B00" quantity="-3096.3"/>
           <sld:ColorMapEntry color="#FF0000" quantity="-1" label="0 umol/l"/>
-          <sld:ColorMapEntry color="#FF33FF" quantity="0.000" opacity="0"/>
+          <sld:ColorMapEntry color="#FF33FF" opacity="0" quantity="0.000"/>
         </sld:ColorMap>
       </sld:RasterSymbolizer>
     </sld:Rule>

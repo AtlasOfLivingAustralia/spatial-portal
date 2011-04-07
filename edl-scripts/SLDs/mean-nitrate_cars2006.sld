@@ -16,7 +16,6 @@
           </sld:GrayChannel>
         </sld:ChannelSelection>
         <sld:ColorMap>
-         
           <sld:ColorMapEntry color="#002DD0" quantity="-32727" label="-32727 umol/l"/>
           <sld:ColorMapEntry color="#005BA2" quantity="-29185.2"/>
           <sld:ColorMapEntry color="#008C73" quantity="-25643.4"/>
