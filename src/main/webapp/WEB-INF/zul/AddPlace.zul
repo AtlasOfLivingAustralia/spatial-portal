@@ -1,0 +1,26 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="addplacewindow" use="org.ala.spatial.analysis.web.AddPlaceController"
+    apply="org.ala.spatial.analysis.web.AddPlaceController" width="70%">
+        <caption label="Add species" />
+
+        <vbox width="100%">
+            <separator />
+            <label value="Enter place name" />
+            <separator />
+            <hbox>
+                <separator orient="vertical" />
+                <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="320px">
+                    <comboitem label=""/>
+                </combobox>
+            </hbox>
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>

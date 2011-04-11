@@ -1,0 +1,27 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="addmodelwindow" use="org.ala.spatial.analysis.web.AddModelController"
+    apply="org.ala.spatial.analysis.web.AddModelController" width="70%">
+        <caption label="Add model" />
+
+        <vbox width="100%">
+            <separator />
+            <label value="Select a model" />
+            <separator />
+            <radiogroup id="rgModel" orient="vertical">
+                <radio id="rMaxent" label="Prediction" />
+                <radio id="rAloc" label="Classification" />
+                <radio id="rScatterplot" label="Scatterplot" />
+                <radio id="rGdm" label="GDM" />
+                <radio id="rTabulation" label="Tabulation" />
+            </radiogroup>
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>

@@ -1,0 +1,32 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?component name="layerList" macro-uri="/WEB-INF/zul/layers.zul"?>
+<zk>
+    <window id="addlayerwindow" use="org.ala.spatial.analysis.web.AddLayerController"
+    apply="org.ala.spatial.analysis.web.AddLayerController" width="70%">
+        <caption label="Add layer" />
+
+        <vbox width="100%">
+            <separator />
+            <label value="Enter a layer name or keyword" />
+            <separator />
+            <hbox>
+                <separator orient="vertical" />
+                <vbox>
+                    <label value="Enter a layer name or a keyword" />
+                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true"  width="90%" >
+                        <comboitem label=""/>
+                    </combobox>
+                </vbox>
+            </hbox>
+            <separator />
+            <layerList id="layerList" height="400px"/>
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>

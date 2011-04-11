@@ -1,0 +1,22 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areapointandradiuswindow" use="org.ala.spatial.analysis.web.AreaPointAndRadius"
+    apply="org.ala.spatial.analysis.web.AreaPointAndRadius" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+        <caption label="Draw Point and Radius" />
+        <vbox width="100%">
+            <separator />
+            <label sclass="wordwrap" value="1. Zoom and pan to the area of interest." />
+            <label sclass="wordwrap" value="2. With the mouse, place the cursor over the centre point of the area of interest." />
+            <label sclass="wordwrap" value="3. Hold down the (left) mouse button and drag the radius to define the area of interest." />
+            <label sclass="wordwrap" value="4. Release the mouse button." />
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="Next" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
+

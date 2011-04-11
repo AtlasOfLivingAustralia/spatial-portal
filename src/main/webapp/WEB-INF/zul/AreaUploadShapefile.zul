@@ -1,0 +1,21 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areaboundingboxwindow" use="org.ala.spatial.analysis.web.AreaUploadShapefile"
+    apply="org.ala.spatial.analysis.web.AreaUploadShapefile" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+        <caption label="Upload Shapefile" />
+        <vbox width="100%">
+            <separator />
+            <label sclass="wordwrap" value="Select a shapefile with a single polygon to upload." />
+            <label sclass="wordwrap" value="Note: if a shapefile with multiple polygons is uploaded, only the first polygon detected will be used." />
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <fileupload label="Upload Shapefile" id="fileUpload" sclass="goButton fUploadButton" />
+                <button sclass="goButton" label="Next" id="btnOk" visible="false"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
+

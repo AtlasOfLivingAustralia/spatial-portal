@@ -1,0 +1,21 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areaboundingboxwindow" use="org.ala.spatial.analysis.web.AreaBoundingBox"
+    apply="org.ala.spatial.analysis.web.AreaBoundingBox" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+        <caption label="Draw Bounding Box" />
+        <vbox width="100%">
+            <separator />
+            <label sclass="wordwrap" value="1. Zoom and pan to the area of interest." />
+            <label sclass="wordwrap" value="2. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size." />
+            <label sclass="wordwrap" value="3. Release the mouse button." />
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="Next" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
+

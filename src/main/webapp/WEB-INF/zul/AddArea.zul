@@ -1,0 +1,32 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="addareawindow" use="org.ala.spatial.analysis.web.AddAreaController"
+    apply="org.ala.spatial.analysis.web.AddAreaController" width="70%">
+        <caption label="Add layer" />
+
+        <vbox width="100%">
+            <separator />
+            <label value="Enter a layer name or keyword" />
+            <separator />
+            <radiogroup id="cbAreaSelection" orient="vertical">
+                <radio label="Draw bounding box..." id="ciBoundingBox" />
+                <radio label="Draw polygon..." id="ciPolygon" />
+                <radio label="Draw point and radius..." id="ciPointAndRadius" />
+                <radio label="Create radius from address..." id="ciAddressRadiusSelection"/>
+                <radio label="Select predefined (displayed) map polygon..." id="ciMapPolygon" />
+                <radio label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
+                <radio label="Upload Shapefile..." id="ciUploadShapefile" />
+                <radio label="Box - Australia" id="ciBoxAustralia" />
+                <radio label="Box - World" id="ciBoxWorld" />
+                <radio label="Box - Current View" id="ciBoxCurrentView" />
+            </radiogroup>
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="Next" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>

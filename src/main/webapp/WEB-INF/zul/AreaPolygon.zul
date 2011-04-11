@@ -1,0 +1,19 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areapolygonwindow" use="org.ala.spatial.analysis.web.AreaPolygon"
+    apply="org.ala.spatial.analysis.web.AreaPolygon" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+        <caption label="Draw Polygon" />
+        <vbox width="100%">
+            <separator />
+            <label sclass="wordwrap" value="1. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button." />
+            <label sclass="wordwrap" value="2. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area." />
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+    </window>
+</zk>
+

@@ -1,0 +1,21 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="areamappolygonwindow" use=org.ala.spatial.analysis.web.AreaMapPolygon"
+    apply="org.ala.spatial.analysis.web.AreaMapPolygon" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+        <caption label="Select Map Polygon" />
+        <vbox width="100%">
+            <separator />
+            <label sclass="wordwrap" value="1. Zoom and pan to the area of interest." />
+            <label sclass="wordwrap" value="2. Identify the polygon of interest by a (left) mouse click within that polygon." />
+            <label sclass="wordwrap" value="3. The area selected will be highlighted red." />
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
+

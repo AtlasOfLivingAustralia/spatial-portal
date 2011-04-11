@@ -1,0 +1,27 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="uploadspecieswindow" use="org.ala.spatial.analysis.web.UploadSpeciesController"
+    apply="org.ala.spatial.analysis.web.UploadSpeciesController" width="70%">
+        <caption label="Upload Species" />
+
+        <vbox width="100%">
+            <separator />
+            <label value="1. Enter a name for the new layer" sclass="word-wrap" style="white-space: normal; padding: 5px" />
+            <textbox id="tbName" />
+             <separator />
+            <label value="2. Enter a description for the dataset" sclass="word-wrap" style="white-space: normal; padding: 5px"/>
+            <textbox id="tbDesc" />
+            <separator />
+            <label value="3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))"
+                sclass="word-wrap" style="white-space: normal; padding: 5px" />
+            <fileupload id="fileUpload" label="Upload File" upload="true" />
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="Next" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
