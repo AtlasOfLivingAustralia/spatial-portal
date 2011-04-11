@@ -367,5 +367,29 @@ public class RemoteMapImpl implements RemoteMap {
     public void setLayerUtilities(LayerUtilities layerUtilities) {
         this.layerUtilities = layerUtilities;
     }
-   
+
+    public MapLayer createLocalLayer(int type, String label) {
+        MapLayer layer = new MapLayer();
+
+        layer.setName(label);
+        layer.setLayer(label);
+        layer.setId(label);
+
+        layer.setEnvColour("red");
+
+        int r = 255;
+        int g = 0;
+        int b = 0;
+
+        layer.setBlueVal(b);
+        layer.setGreenVal(g);
+        layer.setRedVal(r);
+
+        layer.setType(type);
+
+        layer.setDisplayable(true);
+
+        return layer;
+
+    }
 }

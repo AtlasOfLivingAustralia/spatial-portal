@@ -212,7 +212,7 @@ public class ScatterplotWCController extends UtilityComposer {
         backgroundName = taxon;
 
         //only add it to the map if this was signaled from an event
-        clearSelection();
+        //clearSelection();
 
         if (event != null) {
             Events.echoEvent("doSpeciesChange", this, null);
@@ -346,7 +346,7 @@ public class ScatterplotWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
 
@@ -360,7 +360,7 @@ public class ScatterplotWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
 
@@ -479,7 +479,7 @@ public class ScatterplotWCController extends UtilityComposer {
             } catch (Exception e) {
                 e.printStackTrace();
                 clearSelection();
-                getMapComposer().applyChange();
+                getMapComposer().applyChange(mapLayer);
             }
         } else {
             tbxMissingCount.setValue("");
@@ -539,7 +539,7 @@ public class ScatterplotWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
 
@@ -569,7 +569,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
         mapLayer = null;
 
-        getMapComposer().getOpenLayersJavascript().execute("clearSelection()");
+        annotation = null;
 
         scatterplotButtons.setVisible(false);
     }
@@ -771,7 +771,7 @@ public class ScatterplotWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
     String prevBlockPlot = null;
@@ -1226,10 +1226,10 @@ public class ScatterplotWCController extends UtilityComposer {
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
 
                     if (chkHighlightActiveAreaOccurrences.isChecked()) {
-                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
+                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(null/*getMapComposer().getSelectionArea()*/, "UTF-8"));
                     }
                     if (chkRestrictOccurrencesToActiveArea.isChecked()) {
-                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
+                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(null/*getMapComposer().getSelectionArea()*/, "UTF-8"));
                     }
 
                     sbProcessUrl.append("&colourmode=").append(data.colourMode);
@@ -1306,7 +1306,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     //                    sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
                     //                }
                     if (chkRestrictOccurrencesToActiveArea.isChecked()) {
-                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
+                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(null/*getMapComposer().getSelectionArea()*/, "UTF-8"));
                     }
 
                     //sbProcessUrl.append("&colourmode=").append(data.colourMode);

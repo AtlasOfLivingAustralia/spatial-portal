@@ -142,7 +142,7 @@ public class SpeciesListResults extends UtilityComposer {
 
         Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
 
-        getMapComposer().updateUserLogAnalysis("species list", getMapComposer().getSelectionArea(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
+        getMapComposer().updateUserLogAnalysis("species list", null/*getMapComposer().getSelectionArea()*/, "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
 
         detach();
     }
@@ -177,7 +177,7 @@ public class SpeciesListResults extends UtilityComposer {
 
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
-        String area = getMapComposer().getSelectionArea();
+        String area = null;//getMapComposer().getSelectionArea();
 
         if (area.contains("ENVELOPE(")) {
             shape = "none";

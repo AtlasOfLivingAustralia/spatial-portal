@@ -42,6 +42,6 @@ public class ActiveLayerDNDEventListener extends PortalEvent implements EventLis
         Listitem dragged = (Listitem) dropEvent.getDragged();
         Listitem dropped = (Listitem) dropEvent.getTarget();
         mapComposer.reorderList(dragged, dropped);
-        mapComposer.updateLayerControls();
+//        mapComposer.updateLayerControls();
     }
 }

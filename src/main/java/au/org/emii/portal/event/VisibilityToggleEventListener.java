@@ -68,7 +68,7 @@ public class VisibilityToggleEventListener implements EventListener {
 				openLayersJavascript.removeMapLayerNow(layer);
 				checkbox.setTooltiptext("Show");
 
-            			mapComposer.hideLayerControls(layer);
+//            			mapComposer.hideLayerControls(layer);
 
                                 /* Disable child elements.
                                  * - lastchild of listcell is layerController

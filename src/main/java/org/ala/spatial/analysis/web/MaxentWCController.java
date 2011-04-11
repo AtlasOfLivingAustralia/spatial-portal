@@ -147,7 +147,7 @@ public class MaxentWCController extends UtilityComposer {
             sbProcessUrl.append("&txtTestPercentage=" + txtTestPercentage.getValue());
 
             /* user selected region support */
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             if (area == null || area.length() == 0) {                
                 area = "none";
             }

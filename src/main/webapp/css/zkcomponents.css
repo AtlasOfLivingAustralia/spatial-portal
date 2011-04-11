@@ -824,4 +824,47 @@ closebox a.helpButtonMain:hover {
 /* scatterplot end             */
 /*******************************/
 
+.btnAddSpecies, .btnAddPlace, .btnAddArea, .btnAddLayer, .btnAddModel {
+    margin:0 0 0 0;
+    /*padding: 5px 10px;*/
+    display:block;
+    border-style:outset;
+    /*height:5em;*/
+    /*width:127px;*/
+    overflow:hidden;    
+    line-height: 1em;
+    padding: 5px;
+    font-size: 9px;
+    font-weight: bold;
+    width: 80px;
+    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    cursor: pointer;
+}
 
+.btnAddSpecies {
+    background-color: RGB(230,185,184)
+}
+
+.btnAddPlace {
+    background-color: RGB(215,228,189)
+}
+
+.btnAddArea {
+    background-color: RGB(198,217,241)
+}
+
+.btnAddLayer {
+    background-color: RGB(252,213,181)
+}
+
+.btnAddModel {
+    background-color: RGB(204,193,218)
+}
+
+.selectedLayer {
+    background-color: RGB(217,217,217);
+    font-weight: bold;
+    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    width: 400px;
+    height: 25px;
+}

@@ -69,7 +69,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                 public void onEvent(Event event) throws Exception {
                     // refresh count may be required if area is
                     // not an envelope.
-                    String area = getMapComposer().getSelectionArea();
+                    String area = null;//getMapComposer().getSelectionArea();
                     if (!area.startsWith("ENVELOPE(") && !area.startsWith("LAYER(")) {
                         refreshCount();
                     }
@@ -330,7 +330,7 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         try {
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             //String polygon = getMapComposer().getSelectionAreaPolygon();
 
             StringBuffer sbProcessUrl = new StringBuffer();
@@ -401,7 +401,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
-        String area = getMapComposer().getSelectionArea();
+        String area = null;//getMapComposer().getSelectionArea();
 
         if (area.contains("ENVELOPE(")) {
             shape = "none";
@@ -553,7 +553,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     private void calculateArea() {
         try {
 
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             area = StringUtils.replace(area, "POLYGON((", "");
             area = StringUtils.replace(area, "))", "");
 

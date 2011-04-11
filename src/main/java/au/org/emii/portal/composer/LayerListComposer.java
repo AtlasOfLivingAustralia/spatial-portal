@@ -1,5 +1,6 @@
 package au.org.emii.portal.composer;
 
+import org.ala.spatial.analysis.web.AddLayerController;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.ArrayList;
@@ -32,12 +33,13 @@ import org.zkoss.zul.Treerow;
  */
 public class LayerListComposer extends UtilityComposer {
 
-    private Tree tree;
+    public Tree tree;
     private Popup pupLayerAction;
     private Toolbarbutton llAdd;
     private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
+    AddLayerController alc;
     private String satServer = null;
     private String geoServer = "";
     SettingsSupplementary settingsSupplementary;
@@ -55,7 +57,7 @@ public class LayerListComposer extends UtilityComposer {
             System.out.println("tree is ready");
         }
 
-        mc = getThisMapComposer();
+        mc = getThisMapComposer();        
 
         System.out.print("Settings.Suppl:");
         SettingsSupplementary settingsSupplementary = mc.getSettingsSupplementary();
@@ -234,7 +236,18 @@ public class LayerListComposer extends UtilityComposer {
 
     }
 
+    void initALC() {
+        if(alc == null) {
+            try {
+                alc = (AddLayerController) getMapComposer().getFellow("addlayerwindow");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void renderTree() {
+
         tree.setTreeitemRenderer(new TreeitemRenderer() {
 
             @Override
@@ -348,9 +361,12 @@ public class LayerListComposer extends UtilityComposer {
 
                                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                                mc.addWMSLayer(joLayer.getString("displayname"),
-                                        joLayer.getString("displaypath"),
-                                        (float) 0.75, metadata);
+                                initALC();
+                                alc.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata);
+
+//                                mc.addWMSLayer(joLayer.getString("displayname"),
+//                                        joLayer.getString("displaypath"),
+//                                        (float) 0.75, metadata);
                             } else {
                                 String classAttribute = joLayer.getString("classname");
                                 String classValue = joLayer.getString("displayname");
@@ -361,17 +377,19 @@ public class LayerListComposer extends UtilityComposer {
                                 // Messagebox.show(displaypath);
                                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                                mc.addWMSLayer(layer + " - " + classValue,
-                                        displaypath,
-                                        (float) 0.75, metadata);
+                                alc.setLayer(layer + " - " + classValue, displaypath, metadata);
+
+//                                mc.addWMSLayer(layer + " - " + classValue,
+//                                        displaypath,
+//                                        (float) 0.75, metadata);
                             }
 
-                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
+//                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
 
                             //close parent if it is 'addlayerwindow'
-                            try {
-                                getRoot().getFellow("addlayerwindow").detach();
-                            } catch (Exception e) {}
+//                            try {
+//                                getRoot().getFellow("addlayerwindow").detach();
+//                            } catch (Exception e) {}
                         }
                     });
 

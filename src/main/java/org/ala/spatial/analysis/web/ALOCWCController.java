@@ -104,7 +104,7 @@ public class ALOCWCController extends UtilityComposer {
             sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             if (area == null || area.length() == 0) {
                 area = "none";
             }

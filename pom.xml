@@ -12,13 +12,11 @@
     <url>http://www.ala.org.au</url>
     <dependencies>
         <!-- alaspatial styles -->
-        <!--
         <dependency>
             <groupId>org.ala.spatial</groupId>
             <artifactId>alaspatial</artifactId>
             <version>1.00</version>
         </dependency>
-        -->
         <dependency>
             <groupId>jfree</groupId>
             <artifactId>jfreechart</artifactId>

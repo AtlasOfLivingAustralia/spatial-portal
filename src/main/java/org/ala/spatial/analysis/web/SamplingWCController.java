@@ -102,7 +102,7 @@ public class SamplingWCController extends UtilityComposer {
             }
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             if (area == null || area.length() == 0) {
                 area = "none";
             }
@@ -243,7 +243,7 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             if (area == null || area.length() == 0) {                
                 area = "none";
             }
@@ -302,7 +302,7 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             if (area == null || area.length() == 0) {   
                 area = "none";
             }

@@ -625,13 +625,13 @@ public class FilteringWCController extends UtilityComposer {
 
     void updateActiveArea(boolean hide) {
         //trigger update to 'active area'
-        Component c = getParent().getParent();
-        while (c != null && !c.getId().equals("selectionwindow")) {
-            c = c.getParent();
-        }
-        if (c != null) {
-            ((SelectionController) c).onEnvelopeDone(hide);
-        }
+//        Component c = getParent().getParent();
+//        while (c != null && !c.getId().equals("selectionwindow")) {
+//            c = c.getParent();
+//        }
+//        if (c != null) {
+//            ((SelectionController) c).onEnvelopeDone(hide);
+//        }
     }
 
     public void onClick$apply_continous(Event event) {

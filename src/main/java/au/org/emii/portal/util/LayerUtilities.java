@@ -27,6 +27,15 @@ public interface LayerUtilities {
     public int THREDDS = 5;
     public int BING = 10;
     /**
+     * Dummy layers.
+     */
+    public int MAP = 12;
+    public int ALOC = 14;
+    public int MAXENT = 15;
+    public int GDM = 16;
+    public int SCATTERPLOT = 17;
+    public int TABULATION = 18;
+    /**
      * Constants used to indicate layer type.  Do not hard code these
      * value into other applications - they may change.  Instead, for
      * external non-java applications use the String representations

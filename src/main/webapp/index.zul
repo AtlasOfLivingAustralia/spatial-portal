@@ -89,11 +89,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         </window>
 
         <borderlayout width="100%">
-            <north id="header" height="45">
+            <north id="header" height="45" visible="false">
             </north>
-            <west title=" " size="${settingsSupplementary.values.menu_default_width}" flex="true" autoscroll="true"
-                   id="menus" collapsible="true" 
-                   splittable="true" minsize="250" width="400px">
+            <west title=" " size="${settingsSupplementary.values.menu_default_width}"
+                   id="menus" collapsible="false"
+                   splittable="false" width="400px">
                 <div id="westChild">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
                         <div zclass="closebox" zindex="500" left="2px" top="2px">
@@ -108,416 +108,42 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     </div>
 
                     <div id="westContent" class="westContent" visible="true">
+                        <div>
+                            <hbox>
+                                <button sclass="btnAddSpecies" id="btnAddSpecies" label="Add species" />
+                                <button sclass="btnAddPlace" id="btnAddPlace" label="Add place" />
+                                <button sclass="btnAddArea" id="btnAddArea" label="Add area" />
+                                <button sclass="btnAddLayer" id="btnAddLayer" label="Add layer" />
+                                <button sclass="btnAddModel" id="btnAddModel" label="Add model" />
+                            </hbox>
+                        </div>
+                        <div>
 
-                        <div sclass="leftmenutabs">
-                        <!--  hide the left menu (west element) -->
-                            <div zclass="closebox" zindex="500" width="22px" top="5px">
-                                <toolbarbutton label="Help"
-                                           sclass="helpButtonMain"
-                                           tooltiptext="ALA Spatial Portal Help" 
-                                           forward="onClick=onActivateLink()" >                                
-                                    <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/species-maps-help/" />
-                                    <custom-attributes label="Help" />
-                                </toolbarbutton>
-                                <toolbarbutton
-                                id="hideLeftMenu"
-                                label=""
-                                image="img/buttonclose.png"
-                                hoverImage="img/buttonclose-over.png"
-                                visible="false"
-                                />
+                            <leftMenuSearch id="leftMenuSearch" visible="false" />
+                       
+                            <div id="activeLayersHolder" height="200px" width="400px">
+                                <listbox id="activeLayersList" />
                             </div>
 
-                            <tabbox id="mainTab" zclass="menuswitch" zindex="600" style="border:0px!important;">
-                                <tabs>
-                                    <tab id="startNavigationTab" label="Start" />
-                                    <tab id="mapNavigationTab" label="Map" />
-                                    <tab id="linkNavigationTab" label="Analysis" />
-                                </tabs>
-                            </tabbox>
-                        </div>
-
-                        <div id="startNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.START_TAB}">
-                            <leftMenuLinks id="leftMenuLinks" />
-                        </div>
-                        <div id="mapNavigationTabContent" visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.MAP_TAB}">
-                            <div>
-                                <separator/>
-                                <div id="layerNavigationTabContent" visible="true">
-                                    <hbox width="95%">
-                                        <div style="float: left margin-left: 5px" >
-                                            <label style="font-weight: bold" value="Active Layers"  />
-                                        </div>
-                                    </hbox>
-                                    <separator/>
-                  
-                            <!-- active layers -->
-                                    <div id="activeLayersHolder">
-                                        <listbox id="activeLayersList" />
-                                    </div>
-
-                                    <div id="layerControls" sclass="highlighted" visible="false">
-
-                                    <div id="clusterpoints" align="left" style="padding-top:0px">
-                                        <hbox width="100%">
-                                            <label value="Display as:" sclass="h3" />
-                                            <radiogroup id="pointtype">
-                                                <radio id="rGrid" label="Density grid" />
-                                                <radio id="rCluster" label="Clusters" visible="false"/>
-                                                <radio id="rPoint" label="Points" />
-                                            </radiogroup>
-                                        </hbox>
-                                    </div>
-                                    <separator />
-                                        
-                                <!-- opacity-->
-                                        <div id="opacityControls" >
-                                            <vbox>
-                                                <hbox>
-                                                    <div style="padding-top:0px" width="60px">
-                                                        <label value="Opacity: " sclass="h3" />
-                                                    </div>
-                                                    <div  width="250px">
-                                                        <slider id="opacitySlider" width="95%" />
-                                                    </div>
-                                                    <div align="right" style="padding-top:0px">
-                                                        <label id="opacityLabel" />
-                                                    </div>
-
-                                                </hbox>
-                                            </vbox>
-                                        </div>
-
-
-                                        <div  width="100%">
-                                            <div id="sizeChooser" visible="false" width="100%">
-                                                <hbox>
-                                                    <div style="padding-top:0px" width="60px">
-                                                        <label value="Size: " sclass="h3" />
-                                                    </div>
-                                                    <div width="250px">
-                                                        <slider id="sizeSlider" maxpos="30" width="95%" />
-                                                    </div>
-                                                    <div align="right" style="padding-top:0px">
-                                                        <label id="sizeLabel" />
-                                                    </div>
-                                                </hbox>
-                                            </div>
-                                            <div id="colourChooser" visible="false">
-                                                <hbox>
-                                                    <label value="Colour:" sclass="h3" />
-                                                    <separator orient="vertical" />
-                                                    <combobox id="cbColour" >
-                                                        <comboitem label="User defined" id="ciColourUser" value="-1" />
-                                                        <!-- comboitem label="Density Grid" value="grid" /-->
-                                                        <comboitem label="General Categories" value="10" />
-                                                        <comboitem label="Scientific Name" value="taxon_name" />
-                                                        <comboitem label="Species" value="species" />
-                                                        <comboitem label="Genus" value="genus" />
-                                                        <comboitem label="Family" value="family" />
-                                                        <comboitem label="Order" value="order" />
-                                                        <comboitem label="Class" value="class" />
-                                                        <comboitem label="Phylum" value="phylum" />
-                                                        <comboitem label="Kingdom" value="kingdom" />
-                                                        <comboitem label="Uncertainty" value="u" />
-                                                        <comboitem label="Data Provider" value="p" />
-                                                        <comboitem label="Institution" value="in" />
-                                                        <comboitem label="Year" value="y" />
-                                                        <comboitem label="Collection" value="c" />
-                                                        <comboitem label="Basis of Record" value="b" />
-                                                        <comboitem label="Altitude" value="a" />
-                                                        <comboitem label="Depth" value="d" />
-                                                    </combobox>
-                                                </hbox>
-                                                <div id="divUserColours" >
-                                                    <separator />
-                                                    <hbox >
-                                                        <separator orient="vertical" />
-                                                        <separator orient="vertical" />
-                                                        <separator orient="vertical" />
-                                                        <separator orient="vertical" />
-                                                        <separator orient="vertical" />
-                                                        <style dynamic="true">
-
-			<!-- cut/hide the vertical borders in the grid rows -->
-                        .noborder  tr.z-row td.z-row-inner, tr.z-row .z-cell, div.z-grid
-{
-border: none;
-zoom: 1;
-background: white;
-border-top: none;
-border-left: none;
-border-right: none;
-border-bottom: none;
-}
-    
-                                                        </style>
-                                                        <grid id="cpGrid" width="280px" sclass="noborder" >
-                                                            <rows>
-                                                                <row>
-                                                                    <div style="background-color:#8b0000" height="12px" onClick="mapPortalPage.selectColour(self)" />
-                                                                    <div style="background-color:#FF0000" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#CD5C5C" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#E9967A" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-
-                                                                    <div style="background-color:#8B4513" height="12px" onClick="mapPortalPage.selectColour(self)" />
-                                                                    <div style="background-color:#D2691E" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#F4A460" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#FFA500" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-
-                                                                    <div style="background-color:#006400" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#008000" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#00FF00" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#90EE90" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-
-                                                                    <div style="background-color:#191970" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#0000FF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#9999FF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#B0CFDE" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                </row>
-                                                                <row>
-                                                                    <div style="background-color:#4682B4" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#5F9EA0" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#00FFFF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#B0E0E6" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-
-                                                                    <div style="background-color:#556B2F" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#BDB76B" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#FFFF00" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#FFE4B5" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-
-                                                                    <div style="background-color:#4B0082" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#800080" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#FF00FF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#DDA0DD" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-
-                                                                    <div style="background-color:#000000" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#777777" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#BBBBBB" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                    <div style="background-color:#FFFFFF" height="12px" onClick="mapPortalPage.selectColour(self)"  />
-                                                                </row>
-                                                            </rows>
-                                                        </grid>
-                                                        <separator height="20px" />
-                                                    </hbox>
-
-                                                    <vbox >
-                                                        <hbox>
-
-                                                            <div style="padding-top:0px" width="60px">
-                                                                <label value="Red: " sclass="h3" />
-                                                            </div>
-
-                                                            <div width="250px">
-                                                                <slider id="redSlider" maxpos="255" width="95%" />
-                                                            </div>
-
-                                                            <div align="right" style="padding-top:0px">
-                                                                <label id="redLabel" />
-                                                            </div>
-                                                        </hbox>
-                                                        <hbox>
-
-
-
-                                                            <div style="padding-top:0px" width="60px">
-                                                                <label value="Green: " sclass="h3" />
-                                                            </div>
-
-                                                            <div  width="250px">
-                                                                <slider id="greenSlider" maxpos="255" width="95%" />
-                                                            </div>
-
-                                                            <div align="right" style="padding-top:0px">
-                                                                <label id="greenLabel" />
-                                                            </div>
-                                                        </hbox>
-                                                        <hbox>
-
-
-                                                            <div style="padding-top:0px" width="60px">
-                                                                <label value="Blue: " sclass="h3" />
-                                                            </div>
-
-                                                            <div  width="250px">
-                                                                <slider id="blueSlider" maxpos="255" width="95%" />
-                                                            </div>
-
-                                                            <div align="right" style="padding-top:0px">
-                                                                <label id="blueLabel" />
-                                                            </div>
-                                                        </hbox>
-                                                    </vbox>
-                                                </div>
-                                                <vbox>
-                                                    <hbox width="100%">
-                                                        <div id="uncertainty" align="left" style="padding-top:0px" visible="false">
-                                                            <separator />
-                                                            <separator />
-                                                            <checkbox id="chkUncertaintySize" label=" Display spatial uncertainty as a circle" />
-                                                            <separator />
-                                                            <hbox id="uncertaintyLegend" visible="false">
-                                                                <separator orient="vertical" spacing="20px" />
-                                                                <vbox>
-                                                                    <label value="Uncertainty Legend" />
-                                                                    <hbox>
-                                                                        <image src="img/whitecircle.png" />
-                                                                        <label value="&lt; 30km (mapped with actual radius)" />
-                                                                    </hbox>
-                                                                    <hbox>
-                                                                        <image src="img/greencircle.png" />
-                                                                        <label value="&gt; 30km (mapped with 30km radius)" />
-                                                                    </hbox>
-                                                                    <hbox>
-                                                                        <image src="img/yellowcircle.png" />
-                                                                        <label value="unknown (mapped with 30km radius)" />
-                                                                    </hbox>
-                                                                </vbox>
-                                                            </hbox>
-                                                            <separator />
-                                                        </div>
-                                                        <separator />
-                                                    </hbox>                                                   
-                                                </vbox>
-                                            </div>                                            
-                                            <separator />
-                                            <separator />
-
-                                            <div style="padding-top:0px" width="60px">
-                                                <label value="Legend : " sclass="h3" />
-                                            </div>
-                                            <div  width="60%">
-                                                <image id="legendImg" width="50px" height="50px" />
-                                            </div>
-                                            <div align="right" style="padding-top:0px" visible="false">
-                                                <label id="legendLabel" value="Click symbol to edit" />
-                                            </div>
-                                            <div  width="60%">
-                                                <image id="legendImgUri" visible="false"/>
-                                            </div>
-                                            <div id="legendHtml" visible="true"/>
-                                        </div>
-                                    </div>
-
-                                <!--  reset / save map buttons 
-                                    <separator />
-                                    <div align="right" style="margin-right:5px;" >
-                                        <button id="removeAllLayers" label="Remove All Layers" sclass="goButton" />
-                                    </div>-->
-
-                                <!-- contains the user parameters -->
-                                    <textbox id="userparams" visible="false" multiline="true" value="${param}" />
-
-                                </div>
-
-                                <separator/>
-
-                                <separator bar="true"/>
-                                <tabbox id="mapOptsTabbox" width="95%">
-                                    <tabs>
-                                        <tab label="Species" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-species-tab/&quot;)" />
-                                        <tab label="Locations" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-locations-tab/&quot;)" />
-                                        <tab label="Layers" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-layers-tab/&quot;)" />
-                                        <tab label="Custom" onClick="mapCXHelp.setAttribute(&quot;link&quot;,settingsSupplementary.getValue(&quot;help_url&quot;) + &quot;/spatial-portal-help/map-tab-layers-tab/&quot;)" visible="false" />
-                                    </tabs>
-                                    <toolbar>
-                                        <toolbarbutton id="mapCXHelp"
-                                            image="/img/help.png"
-                                            forward="onClick=onActivateLink()" >
-                                            <custom-attributes link="${settingsSupplementary.values.help_url}/explore/species-maps/map-tab-species-tab/" />
-                                        </toolbarbutton>
-                                    </toolbar>
-                                    <tabpanels>
-                                        <tabpanel width="100%">
-                                            <div width="100%">
-                                                <vbox width="100%">
-                                                    <label>Enter a scientific or common name</label>
-                                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="320px" >
-                                                        <comboitem label=""/>
-                                                    </combobox>
-                                                    <label sclass="exampleText">e.g. Macropus rufus</label>
-                                                </vbox>
-                                            </div>
-                                            <separator />
-                                            <button id="btnUploadSpecies" label="Upload species file" sclass="goButton" />
-                                        </tabpanel>
-                                        <tabpanel>
-                                            <div>
-                                                <vbox>
-                                                    <label value="Enter place name" />
-                                                    <hbox>
-                                                        <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" width="320px">
-                                                            <comboitem label=""/>
-                                                        </combobox>
-                                                        <label id="resultGaz" />
-                                                    </hbox>
-                                                    <label sclass="exampleText">e.g. Australian Capital Territory</label>
-                                                </vbox>
-                                            </div>
-                                        </tabpanel>
-                                        <tabpanel>
-                                            <!-- layers -->
-                                            <div>
-                                                <vbox>
-                                                    <label value="Enter a layer name or a keyword" />
-                                                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true"  width="320px" >
-                                                        <comboitem label=""/>
-                                                    </combobox>
-                                                    <div width="320px">
-                                                        <label sclass="exampleText">e.g. Temperature</label>
-                                                        <div style="float:right;margin-right:5px">
-                                                            <a href="${settingsSupplementary.values.sat_url}/alaspatial/layers" target="blank_">Layer table</a>
-                                                            <a href="${settingsSupplementary.values.geonetwork_url}" target="blank_">Metadata search</a>
-                                                        </div>
-                                                     </div>
-                                                </vbox>                                               
-                                            </div>
-
-                                            <separator />
-                                            <layerList id="layerList" />
-                                        </tabpanel>
-                                    </tabpanels>
-                                </tabbox>
+                            <div width="400px" height="25px" style="background-color: RGB(217,217,217)" >
+                                <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
                             </div>
-                        </div>
-                        <div id="linkNavigationTabContent"
-                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.LINK_TAB}">
-                            <leftMenuAnalysis id="leftMenuAnalysis" />
-                        </div>
 
-                        <div id="searchNavigationTabContent"
-                             visible="${session.attributes.portalSession.currentNavigationTab == au.org.emii.PortalSession.SEARCH_TAB}">
-                            <leftMenuSearch id="leftMenuSearch" />
+                            <div id="layerControls" sclass="highlighted">
+
+                            </div>
+                        
+                            <leftMenuAnalysis id="leftMenuAnalysis" visible="false"/>
+                            <textbox id="userparams" visible="false" multiline="true" value="${param}" />
+
                         </div>
                     </div>
                 </div>
             </west>
 
-
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
-                <!--
-                    <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
-                        <hbox>
-                            <n:ul id="cssdropdown" >
-                                <n:li id="mapopt" class="headlink goButton">
-                                    <n:span><n:span id="selmap">Normal</n:span> 
-                                    <n:span style="float:right">&#8711;</n:span></n:span>
-                                    <n:ul>
-                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Minimal');">Minimal</n:a></n:li>
-                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Normal');">Normal</n:a></n:li>
-                                        <n:li><n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;$('#selmap').html('Satellite');">Satellite</n:a></n:li>
-                                    </n:ul>
-                                </n:li>
-                            </n:ul>
-                            <button label="Zoom to my location"  w:onClick="goToUserLocation()" sclass="goButton" image="img/74-location.png" visible="false" />
-                            <separator orient="vertical" spacing="2px" />
-                            <button label="Download map" w:onClick="printHack('')" sclass="goButton" image="img/picture_save.png" />
-                            <separator orient="vertical" spacing="1px" />
-                            <button id="reloadPortal" label="Reset map" sclass="goButton" image="img/arrow_refresh.png" />
-                            </hbox>
-                    </div>
-                    -->
+          <!--
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
                         <n:ul id="cssdropdown" >
                             <n:li id="mapopt" class="headlink goButton">
@@ -544,17 +170,10 @@ border-bottom: none;
                                 </n:ul>
                             </n:li>
                         </n:ul>
-                    </div>
+                    </div> -->
             
                     <div style="float:left" width="100%" height="100%" >
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
-                    </div>
-
-                    <div id="layerSwitcherContainer" sclass="layerSwitcherContainer_min"  visible="false" >
-                        <image 	id="layerSwitcherShow" src="/img/layer-switcher-maximize.png"
-                                visible="true" style="float:right;margin-bottom:10px;" />
-                        <image 	id="layerSwitcherHide" src="/img/layer-switcher-minimize.png"
-                                visible="false" style="float:right;margin-bottom:10px;"/>
                     </div>
                 </div>
             </center>

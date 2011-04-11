@@ -6,7 +6,9 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
@@ -126,6 +128,10 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * alaspatial ref number for species record highlight flag
      */
     String highlight = null;
+    /*
+     * data for 'dummy' layers
+     */
+    HashMap<String, Object> data = new HashMap<String, Object>();
 
     public void setDefaultStyleLegendUriSet(boolean defaultStyleLegendUriSet) {
         this.defaultStyleLegendUriSet = defaultStyleLegendUriSet;
@@ -725,6 +731,15 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
             mapLayer.mapLayerMetadata =
                     (MapLayerMetadata) mapLayerMetadata;
         }
+
+        // copy data objects
+        mapLayer.data = new HashMap<String, Object>();
+        if(data != null) {
+            for(Entry<String, Object> entry : mapLayer.data.entrySet()) {
+                mapLayer.data.put(entry.getKey(), entry.getValue());
+            }
+        }
+        
         return mapLayer;
     }
 
@@ -893,5 +908,13 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     public String getColourMode() {
         return colourMode;
+    }
+
+    public Object getData(String key) {
+        return data.get(key);
+    }
+
+    public void setData(String key, Object value) {
+        data.put(key, value);
     }
 }

@@ -2838,21 +2838,21 @@ function loadKmlFile(name, kmlurl) {
 
 function displayBiostorRecords() {
     //parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
-    parent.displayHTMLInformation("biostormsg",'updating...');
-
-    var currBounds = map.getExtent().transform(map.projection, map.displayProjection);
-
-    var biostorurl = "http://biostor.org/bounds.php?";
-    biostorurl += "bounds=" + currBounds.left + "," + currBounds.bottom + "," + currBounds.right + "," + currBounds.top;
-    $.getJSON(proxy_script + biostorurl, function(data){
-        var html = '<ol>';
-        for(var i=0, item; item=data.list[i]; i++) {
-            html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
-        }
-        html += '</ol>';
-        parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
-        parent.displayHTMLInformation('biostorlist',html);
-    });
+//    parent.displayHTMLInformation("biostormsg",'updating...');
+//
+//    var currBounds = map.getExtent().transform(map.projection, map.displayProjection);
+//
+//    var biostorurl = "http://biostor.org/bounds.php?";
+//    biostorurl += "bounds=" + currBounds.left + "," + currBounds.bottom + "," + currBounds.right + "," + currBounds.top;
+//    $.getJSON(proxy_script + biostorurl, function(data){
+//        var html = '<ol>';
+//        for(var i=0, item; item=data.list[i]; i++) {
+//            html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
+//        }
+//        html += '</ol>';
+//        parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
+//        parent.displayHTMLInformation('biostorlist',html);
+//    });
 
 }
 

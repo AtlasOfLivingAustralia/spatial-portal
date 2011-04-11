@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <?page title="Maxent" contentType="text/html;charset=UTF-8" id="ScatterplotPage"?>
 <zk xmlns:w="http://www.zkoss.org/2005/zk/client" xmlns:n="http://www.zkoss.org/2005/zk/native">
-    <hbox>
+    <!--hbox>
         <button sclass="goButton" id="btnScatOverlapped" label="+" onClick='
             scatterplotwindow.setWidth("500px");
             scatterplotwindow.setHeight("800px");
@@ -27,17 +27,16 @@
             Clients.evalJavaScript("setupRband();");
             '
             visible="false"/>
-    </hbox>
+    </hbox-->
     <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
             apply="org.ala.spatial.analysis.web.ScatterplotWCController"
-            width="340px"
+            width="400px"
             height="850px"
-            title="Scatterplot"
             >
-        <caption id="scatCaption" visible="true" >
+        <!--caption id="scatCaption" visible="true" >
             <toolbarbutton id="btnEmbedded" label="Docked" visible="false" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatEmbedded")[0]),"onClick", null));'/>
             <toolbarbutton id="btnOverlapped" label="Floating" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatOverlapped")[0]),"onClick", null));'/>
-        </caption>
+        </caption-->
         <div id="scatControls" visible="true" width="325px">
             <vbox >
                 <separator />
