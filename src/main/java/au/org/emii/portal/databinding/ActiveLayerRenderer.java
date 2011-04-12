@@ -43,7 +43,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		checkbox.setParent(listcell);
 		checkbox.setTooltiptext("Hide");
 		
-		Label label = new Label(layerUtilities.chompLayerName(layer.getName()));
+		Label label = new Label(layerUtilities.chompLayerName(layer.getDisplayName()));
 		label.setParent(listcell);
 		listcell.setParent(item);
 
@@ -56,9 +56,9 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		item.setValue(layer);
 	
 		// simple description for tooltip
-		label.setTooltiptext(layerUtilities.getTooltip(layer.getName(),layer.getDescription()));
+		label.setTooltiptext(layerUtilities.getTooltip(layer.getDisplayName(),layer.getDescription()));
 		
-                label.addEventListener("onClick", new ActiveLayersInfoEventListener());
+                //label.addEventListener("onClick", new ActiveLayersInfoEventListener());
 		label.setStyle("float:left;");
 		checkbox.setStyle("float:left;");
 		

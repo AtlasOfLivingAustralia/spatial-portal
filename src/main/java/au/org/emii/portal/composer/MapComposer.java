@@ -62,6 +62,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.AnalysisController;
+import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
@@ -116,6 +117,7 @@ import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
+import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -127,6 +129,7 @@ import org.zkoss.zul.Toolbarbutton;
 import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.api.Textbox;
+import org.zkoss.zul.event.ListDataEvent;
 
 /**
  * ZK composer for the index.zul page
@@ -198,7 +201,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     //private Image legendImgUri;
     //private Div legendHtml;
     //private Label legendLabel;
-    private HtmlMacroComponent leftMenuAnalysis;
+    //private HtmlMacroComponent leftMenuAnalysis;
+    HtmlMacroComponent contextualMenu;
     public String tbxPrintHack;
     int mapZoomLevel = 4;
     Hashtable activeLayerMapProperties;
@@ -685,6 +689,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             logger.debug(
                     "not displaying map layer because its already listed or is marked non-displayable");
         }
+
+        ((ContextualMenu)contextualMenu.getFellow("contextualMenuWindow")).refresh();
+
         return layerAdded;
 
     }
@@ -748,6 +755,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
+         ((ContextualMenu)contextualMenu.getFellow("contextualMenuWindow")).refresh();
+
         // hide layer controls
         //hideLayerControls(null);
     }
@@ -790,6 +799,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
         }
+
+         ((ContextualMenu)contextualMenu.getFellow("contextualMenuWindow")).refresh();
 
         // hide layer controls
         //hideLayerControls(null);
@@ -935,7 +946,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             // we must tell any future tree menus that the map layer is already
             // displayed as we didn't use changeSelection()
             mapLayer.setListedInActiveLayers(true);
-
+            
             logger.debug("leaving addUserDefinedLayerToMenu");
         }
     }
@@ -2695,6 +2706,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             addLsidBoundingBoxToMetadata(md, lsid);
+
+            ((ContextualMenu)contextualMenu.getFellow("contextualMenuWindow")).refresh();
         }
 
         return ml;
@@ -2735,6 +2748,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
 
             addLsidBoundingBoxToMetadata(md, lsid);
+
+            ((ContextualMenu)contextualMenu.getFellow("contextualMenuWindow")).refresh();
         }
 
         return ml;
@@ -2825,7 +2840,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             ml.setMapLayerMetadata(md);
                         }
 
-                        updateLayerControls();
+                        updateLayerControls();                        
 
                         return ml;
                     } else {
@@ -3581,7 +3596,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     void updateLayerControls() {
-         //remove children
+        //remove children
         for(int i=layerControls.getChildren().size()-1;i>=0;i--) {
             try {
                 ((Component)layerControls.getChildren().get(i)).detach();
@@ -3670,6 +3685,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     void updateFromLegend() {
         MapLayer ml = llc2MapLayer;
 
+        //layer on map settings
         if(llc2.getRed() != ml.getRedVal()
                 || llc2.getGreen() != ml.getGreenVal()
                 || llc2.getBlue() != ml.getBlueVal()
@@ -3690,9 +3706,67 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
             applyChange(ml);
         }
+        
+        //layer in menu settings
+        if(!ml.getDisplayName().equals(llc2.getDisplayName())) {
+            ml.setDisplayName(llc2.getDisplayName());
+            
+            //selection label
+            lblSelectedLayer.setValue(llc2.getDisplayName());
+
+            //layer list
+            int idx = activeLayersList.getSelectedIndex();
+            List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
+            activeLayersList.setModel(new ListModelList(activeLayers, true));
+            activeLayersList.setSelectedIndex(idx);
+
+
+            //redraw label
+//            for(Listitem li : (List<Listitem>) activeLayersList.getItems()) {
+//                if(((MapLayer)li.getValue()) == ml) {
+//                    int idx = activeLayersList.getIndexOfItem(li);
+//                    ListDataEvent lde = new ListDataEvent(activeLayersList.getModel(), ListDataEvent.CONTENTS_CHANGED, -1, -1);
+//
+//                    lblSelectedLayer.setValue(llc2.getDisplayName());
+//                    return;
+//                }
+//            }
+        }
     }
 
     public void onSelect$activeLayersList(Event event) {
         updateLayerControls();
+
+        ((ContextualMenu)contextualMenu.getFellow("contextualMenuWindow")).refresh();
+    }
+
+    public List<MapLayer> getPolygonLayers() {
+        ArrayList<MapLayer> list = new ArrayList<MapLayer>();
+        List<MapLayer> allLayers = getPortalSession().getActiveLayers();
+        for(int i=0;i<allLayers.size();i++) {
+            if(allLayers.get(i).isPolygonLayer()) {
+                list.add(allLayers.get(i));
+            }
+        }
+
+        return list;
+    }
+
+    public List<MapLayer> getSpeciesLayers() {
+        ArrayList<MapLayer> list = new ArrayList<MapLayer>();
+        List<MapLayer> allLayers = getPortalSession().getActiveLayers();
+        for(int i=0;i<allLayers.size();i++) {
+            if(allLayers.get(i).getMapLayerMetadata() != null
+                    && allLayers.get(i).getMapLayerMetadata().getSpeciesLsid() != null) {
+                list.add(allLayers.get(i));
+            }
+        }
+
+        return list;
+    }
+    
+    public boolean isSelectedLayer(MapLayer ml) {
+        MapLayer selectedLayer = getActiveLayersSelection(false);
+        return selectedLayer == ml;
     }
 }

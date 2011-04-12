@@ -48,6 +48,7 @@ public class RemoteMapImpl implements RemoteMap {
     public MapLayer createWKTLayer(String wkt, String label) {
         MapLayer wktLayer = new MapLayer();
 
+        wktLayer.setPolygonLayer(true);
 
         logger.debug("adding WKT feature layer " + label);
         wktLayer.setName(label);
@@ -77,6 +78,7 @@ public class RemoteMapImpl implements RemoteMap {
 
     public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties) {
         MapLayer geoJSON = new MapLayer();
+        geoJSON.setPolygonLayer(true);
 
         // just check if properties is null,
         // if so, just create an empty object

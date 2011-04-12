@@ -31,6 +31,7 @@ import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Slider;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -73,6 +74,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     public Radio rPoint, rCluster, rGrid;
     MapLayer mapLayer;
     boolean inInit = false;
+    Textbox txtLayerName;
 
     @Override
     public void afterCompose() {
@@ -97,7 +99,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         Color c = new Color(red, green, blue);
 
         legendImg.setContent(lm.singleCircleImage(c, 50, 50, 20.0));
-        sizeChooser.setVisible(true);
+//        sizeChooser.setVisible(true);
 
         if (cbColour.getSelectedItem() != ciColourUser) {
             legendHtml.setVisible(true);
@@ -215,9 +217,11 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public void init(MapLayer ml,String lsid, int red, int green, int blue, int size, int opacity, String colourMode, int type, boolean uncertainty, EventListener listener) {
+    public void init(MapLayer ml, String lsid, int red, int green, int blue, int size, int opacity, String colourMode, int type, boolean uncertainty, EventListener listener) {
         mapLayer = ml;
         inInit = true;
+
+        txtLayerName.setValue(ml.getDisplayName());
 
         this.lsid = lsid;
 
@@ -525,5 +529,20 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         } catch (Exception e) {
         }
         return isUserUploadedCoordinates;
+    }
+
+    public String getDisplayName() {
+        return txtLayerName.getValue();
+    }
+
+    public void onChange$txtLayerName(Event event) {
+        refreshLayer();
+    }
+
+    boolean onchanging = true;
+    public void onChanging$txtLayerName(Event event) {
+        if(onchanging) {
+            refreshLayer();
+        }
     }
 }

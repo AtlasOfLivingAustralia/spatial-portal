@@ -75,7 +75,7 @@ public class FilteringResultsWCController extends UtilityComposer {
                     }
                 }
             };
-            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
+            //getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
 
         }
     }

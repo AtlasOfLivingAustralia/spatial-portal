@@ -5,6 +5,14 @@
     apply="au.org.emii.portal.composer.LayerLegendComposer2" width="350px" height="400px" >
 
         <div id="layerControls" >
+            <div>
+                <hbox width="100%">
+                    <label value="Layer name:" sclass="h3" />
+                    <textbox id="txtLayerName" width="250px"/>
+                </hbox>
+            </div>
+            <separator />
+            
             <div id="clusterpoints" align="left" style="padding-top:0px">
                 <hbox width="100%">
                     <label value="Display as:" sclass="h3" />

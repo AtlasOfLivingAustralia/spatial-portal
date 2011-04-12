@@ -54,11 +54,11 @@ public class LegendComposer extends UtilityComposer {
 			image.setSrc(uri);
 			if (description.isVisible()) {
 				// we are still in a popup so we need to set the label;
-				description.setValue(mapLayer.getName());
+				description.setValue(mapLayer.getDisplayName());
 			}
 			else {
 				// we are a free-floating window, just use the title
-				setTitle(mapLayer.getName() + "  ");
+				setTitle(mapLayer.getDisplayName() + "  ");
 			}
 		}
 		else {

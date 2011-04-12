@@ -1,0 +1,7 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="contextualMenuWindow" use="org.ala.spatial.analysis.web.ContextualMenu"
+    apply="org.ala.spatial.analysis.web.ContextualMenu" width="70%">
+        <vbox id="contents" />
+    </window>
+</zk>

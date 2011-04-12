@@ -3,6 +3,7 @@ package au.org.emii.portal.menu;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -132,6 +133,18 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * data for 'dummy' layers
      */
     HashMap<String, Object> data = new HashMap<String, Object>();
+    /*
+     * display name
+     */
+    String displayName = null;
+    /*
+     * flag to determine if this is a polygon layer
+     */
+    private boolean polygonLayer = false;
+    /*
+     * layer sub type.  e.g. source
+     */
+    protected int subType = LayerUtilitiesImpl.UNSUPPORTED;
 
     public void setDefaultStyleLegendUriSet(boolean defaultStyleLegendUriSet) {
         this.defaultStyleLegendUriSet = defaultStyleLegendUriSet;
@@ -152,7 +165,12 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     protected String geometryWKT = null;
 
     public String getWKT() {
-        return geometryWKT;
+        if(isPolygonLayer() && getType() != LayerUtilities.WKT) {
+            //TODO: query for non-wkt layer geometry
+            return null;
+        } else {
+            return geometryWKT;
+        }
     }
 
     public void setWKT(String wkt) {
@@ -916,5 +934,35 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     public void setData(String key, Object value) {
         data.put(key, value);
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String name) {
+        displayName = name;
+    }
+
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        setDisplayName(name);
+    }
+
+    public void setPolygonLayer(boolean isPolygon) {
+        polygonLayer = isPolygon;
+    }
+
+    public boolean isPolygonLayer() {
+        return polygonLayer;
+    }
+
+    public int getSubType() {
+        return subType;
+    }
+
+    public void setSubType(int type) {
+        subType = type;
     }
 }

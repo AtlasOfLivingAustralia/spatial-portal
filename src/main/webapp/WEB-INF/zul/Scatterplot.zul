@@ -222,10 +222,7 @@ function doMouseUp(event) {
 }
 
 function clearSelection() {
-    var d1 = document.getElementById("chartDiv");
-    var d2 = document.getElementById("chartDivBack");
-    d2.style.backgroundImage = "";
-    d1.style.backgroundImage = "";
+    
 }
 
 function chartSelection(x1, y1, x2, y2) {

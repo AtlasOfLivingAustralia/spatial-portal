@@ -2,10 +2,8 @@
 <?script type="text/javascript" src="index.js.dsp"?>
 
 <?component name="leftMenuSearch" macro-uri="/WEB-INF/zul/leftMenuSearch.zul"?>
-<?component name="leftMenuAnalysis" macro-uri="/WEB-INF/zul/Analysis.zul"?>
-<?component name="leftMenuLinks" macro-uri="/WEB-INF/zul/leftMenuLinks.zul"?>
 <?component name="footer" macro-uri="/WEB-INF/zul/footer.zul"?>
-<?component name="layerList" macro-uri="/WEB-INF/zul/layers.zul"?>
+<?component name="contextualMenu" macro-uri="/WEB-INF/zul/ContextualMenu.zul"?>
 
 <?page id="MapZul" title="${portalNaming.portalName}" cacheable="false"
 language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
@@ -133,9 +131,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                             </div>
                         
-                            <leftMenuAnalysis id="leftMenuAnalysis" visible="false"/>
                             <textbox id="userparams" visible="false" multiline="true" value="${param}" />
 
+                        </div>
+                        <div>
+                            <contextualMenu id="contextualMenu" width="400px" />
                         </div>
                     </div>
                 </div>
