@@ -868,3 +868,25 @@ closebox a.helpButtonMain:hover {
     width: 400px;
     height: 25px;
 }
+
+/*******************************/
+/* modal window styles start   */
+/*******************************/
+
+.wLabel {
+    margin-left:5px;
+}
+
+.wCaption {
+    margin-left:20px;
+    font-style:italic;
+}
+
+.wButtons {
+    float:right;
+    margin-right:5px;
+}
+
+/*******************************/
+/* modal window styles end     */
+/*******************************/

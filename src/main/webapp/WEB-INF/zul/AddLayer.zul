@@ -2,31 +2,30 @@
 <?component name="layerList" macro-uri="/WEB-INF/zul/layers.zul"?>
 <zk>
     <window id="addlayerwindow" use="org.ala.spatial.analysis.web.AddLayerController"
-    apply="org.ala.spatial.analysis.web.AddLayerController" width="70%">
+    apply="org.ala.spatial.analysis.web.AddLayerController" width="400px">
         <caption label="Add layer" />
 
         <vbox width="100%">
             <separator />
-            <label value="Enter a layer name or keyword" />
+            <label sclass="wLabel" value="Enter a layer name or keyword"/>
             <separator />
-            <hbox>
-                <separator orient="vertical" />
-                <vbox>
-                    <label value="Enter a layer name or a keyword" />
-                    <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true"  width="90%" >
-                        <comboitem label=""/>
-                    </combobox>
-                </vbox>
-            </hbox>
+            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px">
+                <comboitem label=""/>
+            </combobox>
+            <separator/>
+            <label sclass="wCaption" value='For example: "Temperature"'/>
             <separator />
+            <div style="margin-left:5px">
             <layerList id="layerList" height="400px"/>
-            <separator />
-            <div style="float:right;margin-right:5px">
+            </div>
+        </vbox>
+        <separator />
+        <div sclass="wButtons">
+            <hbox>
                 <button sclass="goButton" label="OK" id="btnOk"/>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
-            </div>
-            <separator />
-        </vbox>
-
+            </hbox>
+        </div>
+        <separator />
     </window>
 </zk>
