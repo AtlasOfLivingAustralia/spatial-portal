@@ -16,6 +16,7 @@ import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
+import org.zkoss.zk.ui.util.Clients;
 
 /**
  *
@@ -148,6 +149,10 @@ public class ContextualMenu extends UtilityComposer {
                             new SamplingEvent(getMapComposer(), null, polygonLayer.getName())));
             actions.add(new Action("Produce classification for " + polygonLayer.getDisplayName(),
                             new ClassificationEvent(getMapComposer(), polygonLayer.getName())));
+        }
+
+        if(gridLayer != null){
+            actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
         }
 
         if(speciesLayer != null && gridLayer != null) {
@@ -299,5 +304,20 @@ class AreaReportEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
 
+    }
+}
+
+class GridLayerHoverEvent implements EventListener {
+    MapComposer mc;
+    String layerName;
+
+    public GridLayerHoverEvent (MapComposer mc, String layerName) {
+        this.mc = mc;
+        this.layerName = layerName;
+    }
+
+    @Override
+    public void onEvent(Event event) throws Exception {
+        Clients.evalJavaScript("mapFrame.toggleActiveHover();");
     }
 }
