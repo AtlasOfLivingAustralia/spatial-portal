@@ -3,6 +3,7 @@ package au.org.emii.portal.composer;
 import org.ala.spatial.analysis.web.AddLayerController;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -128,7 +129,7 @@ public class LayerListComposer extends UtilityComposer {
             Iterator it1 = htCat1.keySet().iterator();
             while (it1.hasNext()) {
                 String catKey = (String) it1.next();
-                JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
+                JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node',subtype:" + LayerUtilities.CONTEXTUAL + "}");
 
                 //sort 2nd level branches
                 ArrayList sorted = (ArrayList) htCat1.get(catKey);
@@ -206,7 +207,10 @@ public class LayerListComposer extends UtilityComposer {
                 alCat1 = new ArrayList();
             }
             //System.out.println("\tAdding new cat2");
-            JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2_full + "',type:'node'}");
+            String subtype = ((JSONObject)treeNode.getData()).getString("type");
+            JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2_full + "',type:'node',subtype:" 
+                    +((subtype.equalsIgnoreCase("environmental"))?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL)
+                    + "}");
             SimpleTreeNode stnCat2 = new SimpleTreeNode(joCat2, alCat2);
             //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
             //System.out.println("\t=======================" + stnCat2);
@@ -362,7 +366,8 @@ public class LayerListComposer extends UtilityComposer {
                                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
                                 initALC();
-                                alc.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata);
+                                alc.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata, 
+                                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(joLayer.getString("displayname"),
 //                                        joLayer.getString("displaypath"),
@@ -377,7 +382,7 @@ public class LayerListComposer extends UtilityComposer {
                                 // Messagebox.show(displaypath);
                                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                                alc.setLayer(layer + " - " + classValue, displaypath, metadata);
+                                alc.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(layer + " - " + classValue,
 //                                        displaypath,

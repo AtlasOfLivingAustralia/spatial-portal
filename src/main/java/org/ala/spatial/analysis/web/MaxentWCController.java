@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -287,7 +288,7 @@ public class MaxentWCController extends UtilityComposer {
         }
 
         String layername = "Maxent model for " + speciesName;
-        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl);
+        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl, LayerUtilities.MAXENT);
         MapLayer ml = getMapComposer().getMapLayer(layername);
         String infoUrl = satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();

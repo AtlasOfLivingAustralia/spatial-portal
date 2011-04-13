@@ -388,6 +388,7 @@ public class RemoteMapImpl implements RemoteMap {
         layer.setRedVal(r);
 
         layer.setType(type);
+        layer.setSubType(type);
 
         layer.setDisplayable(true);
 

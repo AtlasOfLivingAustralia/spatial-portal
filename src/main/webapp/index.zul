@@ -68,6 +68,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <doublebox id="eastReal" visible="false" />
 
         <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
+        <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
 
         <script defer="true" type="text/JavaScript" src="scripts/index.js" />
                 
@@ -107,9 +108,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                     <div id="westContent" class="westContent" visible="true">
                         <div>
-                            <hbox>
-
-                                <div style="position:absolute;float:left;left:10px;">
+                            <hbox height="40px">
+                                <div style="position:absolute;float:left;left:10px;z-index:100">
                                     <n:ul class="spMenu" >
                                         <n:li class="headlink menuButton">
                                             <n:span>
@@ -130,7 +130,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         </n:li>
                                     </n:ul>
                                 </div>
-                                <div style="position:absolute;float:left;left:160px;">
+                                <div style="position:absolute;float:left;left:160px;z-index:100">
                                     <n:ul class="spMenu" >
                                         <n:li class="headlink menuButton">
                                             <n:span>
@@ -514,19 +514,19 @@ setTimeout(needOverlay, 500);  //start
 //TODO: WIRE THESE INTO ZK
 
 function addSpeciesAction(){
-    alert("Add Species");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSpecies', null));
 }
 
 function addAreaAction(){
-    alert("Add Area");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddArea', null));
 }
 
 function addLayerAction(){
-    alert("Add Layer");
+   zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddLayer', null));
 }
 
 function runSamplingAction(){
-    alert("Run Sampling");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddPlace', null));
 }
 
 function runSpeciesList(){
@@ -562,11 +562,12 @@ function runExport(){
 }
 
 function resetMap(){
-    alert("Reset Map");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$reloadPortal', null));
 }
 
 function loadHelp(){
-    alert("Load Help");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', 
+        jq('$sat_url')[0].innerHTML + "/explore/species-maps/species-maps-help/"));
 }
 
           ]]>

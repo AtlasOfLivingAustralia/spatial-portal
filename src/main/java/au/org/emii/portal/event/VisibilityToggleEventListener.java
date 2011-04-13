@@ -62,6 +62,8 @@ public class VisibilityToggleEventListener implements EventListener {
                                 Image image =
                                         (Image) ((Listcell) listitem.getFirstChild()).getLastChild();
                                 image.setVisible(true);
+
+                                mapComposer.refreshContextualMenu();
                                 
 			}
 			else {
@@ -70,6 +72,7 @@ public class VisibilityToggleEventListener implements EventListener {
 
 //            			mapComposer.hideLayerControls(layer);
 
+                                mapComposer.refreshContextualMenu();
                                 /* Disable child elements.
                                  * - lastchild of listcell is layerController
                                  * img, see ActiveLayerRenderer

@@ -8,6 +8,7 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.UnsupportedEncodingException;
 import org.ala.spatial.util.LayersUtil;
@@ -277,7 +278,7 @@ public class ALOCWCController extends UtilityComposer {
             ex.printStackTrace();
         }
 
-        getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox);
+        getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
         MapLayer mapLayer = getMapComposer().getMapLayer(layerLabel);
         if (mapLayer != null) {
             WMSStyle style = new WMSStyle();

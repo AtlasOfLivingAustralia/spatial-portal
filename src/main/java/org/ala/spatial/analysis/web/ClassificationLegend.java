@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.MapComposer;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -299,7 +300,7 @@ public class ClassificationLegend extends UtilityComposer {
         bbox.add(154.00000000084);
         bbox.add(-9.0);
 
-        getMapComposer().addImageLayer(pid, layerLabel, imagePath, opacity, bbox);
+        getMapComposer().addImageLayer(pid, layerLabel, imagePath, opacity, bbox, LayerUtilities.ALOC);
 
     }
 }

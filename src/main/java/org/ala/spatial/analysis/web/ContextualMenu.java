@@ -140,7 +140,7 @@ public class ContextualMenu extends UtilityComposer {
                             new ScatterplotEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(), null)));
         }
         if(polygonLayer != null) {
-            actions.add(new Action("View metadata " + speciesLayer.getDisplayName(),
+            actions.add(new Action("View metadata " + polygonLayer.getDisplayName(),
                             new MetadataEvent(getMapComposer(), polygonLayer.getName())));
             actions.add(new Action("Download species list for " + polygonLayer.getDisplayName(),
                             new SpeciesListEvent(getMapComposer(), polygonLayer.getName())));

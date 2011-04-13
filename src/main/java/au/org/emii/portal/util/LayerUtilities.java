@@ -27,7 +27,7 @@ public interface LayerUtilities {
     public int THREDDS = 5;
     public int BING = 10;
     /**
-     * Dummy layers.
+     * layer dummy and sub types
      */
     public int MAP = 12;
     public int ALOC = 14;
@@ -35,6 +35,10 @@ public interface LayerUtilities {
     public int GDM = 16;
     public int SCATTERPLOT = 17;
     public int TABULATION = 18;
+    public int CONTEXTUAL = 19;
+    public int GRID = 20;
+    public int SPECIES = 21;
+    public int ENVIRONMENTAL_ENVELOPE = 22;
     /**
      * Constants used to indicate layer type.  Do not hard code these
      * value into other applications - they may change.  Instead, for

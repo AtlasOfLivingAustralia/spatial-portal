@@ -958,6 +958,18 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
         return polygonLayer;
     }
 
+    public boolean isSpeciesLayer() {
+        return (mapLayerMetadata != null && mapLayerMetadata.getSpeciesLsid() != null);
+    }
+
+    public boolean isGridLayer() {
+        return subType == LayerUtilities.GRID;
+    }
+
+    public boolean isContextualLayer() {
+        return subType == LayerUtilities.CONTEXTUAL;
+    }
+
     public int getSubType() {
         return subType;
     }

@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.LayerListComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import net.sf.json.JSONObject;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
@@ -21,6 +22,7 @@ public class AddLayerController extends UtilityComposer {
     String satServer;
 
     String treeName, treePath, treeMetadata;
+    int treeSubType;
 
     @Override
     public void afterCompose() {
@@ -33,7 +35,7 @@ public class AddLayerController extends UtilityComposer {
         if(treeName != null) {
             getMapComposer().addWMSLayer(treeName,
                             treePath,
-                            (float) 0.75, treeMetadata);
+                            (float) 0.75, treeMetadata, treeSubType);
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
         }
@@ -56,14 +58,16 @@ public class AddLayerController extends UtilityComposer {
 
             metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + jo.getString("uid");
 
-            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata);
+            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata, 
+                    jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
         } else {
             JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
             if (!joLayer.getString("type").contentEquals("class")) {
 
                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata);
+                setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
+                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
             } else {
                 String classAttribute = joLayer.getString("classname");
                 String classValue = joLayer.getString("displayname");
@@ -74,7 +78,8 @@ public class AddLayerController extends UtilityComposer {
                 // Messagebox.show(displaypath);
                 String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                setLayer(layer + " - " + classValue,     displaypath, metadata);
+                setLayer(layer + " - " + classValue, displaypath, metadata,
+                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
             }
 
             //close parent if it is 'addlayerwindow'
@@ -82,14 +87,13 @@ public class AddLayerController extends UtilityComposer {
                 getRoot().getFellow("addlayerwindow").detach();
             } catch (Exception e) {}
         }
-
-        this.detach();
     }
 
-    public void setLayer(String name, String displaypath, String metadata) {
+    public void setLayer(String name, String displaypath, String metadata, int subType) {
         treeName = name;
         treePath = displaypath;
         treeMetadata = metadata;
+        treeSubType = subType;
 
         //fill autocomplete text
         lac.setText(name);
