@@ -3540,6 +3540,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/AddModel.zul");
     }
 
+    public void onClick$btnAddMaxent(Event event) {
+        openModal("WEB-INF/zul/AddToolMaxent.zul");
+    }
+
+    public void onClick$btnAddSampling(Event event) {
+        openModal("WEB-INF/zul/AddToolSampling.zul");
+    }
+
+    public void onClick$btnAddAloc(Event event) {
+        openModal("WEB-INF/zul/AddToolALOC.zul");
+    }
+
+    public void onClick$btnAddScatterplot(Event event) {
+        openModal("WEB-INF/zul/AddToolScatterplot.zul");
+    }
+
     void openModal(String page) {
         Window window = (Window) Executions.createComponents(page, this, null);
         try {

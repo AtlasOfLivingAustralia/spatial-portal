@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul">
+    <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolMaxentComposer"
+    apply="org.ala.spatial.analysis.web.AddToolMaxentComposer" width="500px" height="300px"
+    action="show: slideDown;hide: slideUp">
+
+        <vbox>
+            <div id="atstep1" visible="true" zclass="first">
+                <label id="atstep1_desc" value="Step 1: Select area(s) for" />
+                <label id="atstep1_label" value="(none)" />
+                <separator />
+                <radiogroup id="rgArea" orient="vertical">
+                    <radio id="rAreaCurrent" label="Current extent" checked="true" />
+                    <radio id="rAreaAustralia" label="Australia" />
+                    <radio id="rAreaWorld" label="World" />
+                </radiogroup>
+            </div>
+
+            <div id="atstep2" visible="false" zclass="step2">
+                <label id="atstep2_desc" value="Step 2: Select species(s) for" />
+                <label id="atstep2_label" value="(none)" />
+                <separator />
+                <radiogroup id="rgSpeces" orient="vertical">
+                    <radio id="rSpeciesAll" label="All species" value="allspecies" checked="true" />
+                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" />
+                    <radio id="rSpeciesOther" label="Another species:" />
+                </radiogroup>
+                <vbox width="100%">
+                    <separator />
+                    <label sclass="wLabel" value="Enter a scientific or common name"/>
+                    <separator />
+                    <hbox>
+                        <separator orient="vertical" />
+                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
+                            <comboitem label=""/>
+                        </combobox>
+                    </hbox>
+                    <separator/>
+                    <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                </vbox>
+            </div>
+
+            <div id="atstep3" visible="false" zclass="step3">
+                <label id="atstep3_desc" value="Step 3: Select grid(s) for" />
+                <label id="atstep3_label" value="(none)" />
+                <separator />
+                <vbox>
+                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="440px" height="210px" multiple="true" checkmark="true">
+                        <listhead>
+                            <listheader label="category"  />
+                            <listheader label="name" />
+                            <listheader label=" "  />
+                            <listheader label=" " width="10px" />
+                        </listhead>
+                    </listbox>
+                    <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
+                </vbox>
+            </div>
+
+            <div id="atstep4" visible="false" zclass="step4">
+                <label id="atstep4_desc" value="Step 4: Select your analytical options for " />
+                <label id="atstep4_label" value="(none)" />
+                <vbox>
+                    <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" />
+                    <checkbox id="chkRCurves" label="Create response curves" checked="true" />
+                </vbox>
+                <vbox>
+                    <separator />
+                    <hbox>
+                        <label value="Random test percentage (0 - 100):" />
+                        <textbox id="txtTestPercentage" value="0" />
+                    </hbox>
+                </vbox>
+
+            </div>
+
+
+            <div id="atstep5" visible="false" zclass="last">
+                <label id="atstep5_desc" value="Step 5: Name your output for" />
+                <label id="atstep5_label" value="(none)" />
+                <separator />
+                <hbox>
+                    <label value="Name:" />
+                    <textbox id="tToolName" />
+                </hbox>
+                <vbox>
+                    <label value="Summary" style="font-weight: bold" />
+                    <div id="atsummary"></div>
+                </vbox>
+            </div>
+
+            <div sclass="wizButtonContainer">
+                <hbox>
+                    <button sclass="goButton" label="Cancel" id="btnCancel" />
+                    <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                    <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                </hbox>
+            </div>
+
+        </vbox>
+
+    </window>
+</zk>

@@ -119,3 +119,184 @@ function roundNumber(num, dec) {
     Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
     return result;
 }
+
+
+
+
+
+
+
+        var retryFixExtent = 0;
+        function fixExtent(a,b,c,d) {
+            map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d),true);
+
+            //does not always stick
+            if(retryFixExtent < 1) {
+                retryFixExtent++;
+                setTimeout(function() { fixExtent(a,b,c,d); }, 2000);
+            }
+        }
+
+
+
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+////  code for "onIframeMapFullyLoaded"
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+
+
+
+jQuery('.hidden_image :hidden').show();
+
+if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
+    jQuery('.z-north').show();
+    jQuery('.z-south').show();
+}
+
+function printHack(o) {
+    //session variables not in session
+    var size = map.getSize().w + "," + (document.body.clientHeight-68);
+    var extent = map.getExtent().toBBOX();
+    var lhsWidth = 0;
+    var basemap = currentbaselayertxt
+    var mapHTML = size + "," + extent + "," + lhsWidth + "," + currentbaselayertxt;
+
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$onPrint', mapHTML));
+}
+function changeBaseLayer(type) {
+    currentbaselayertxt = type;
+
+    $('li.bmapoption').removeClass('mapoptsel');
+
+    if (type == 'normal') {
+        map.setBaseLayer(bLayer2);
+        $('#nor_mapoption').addClass('mapoptsel');
+    } else if (type == 'hybrid') {
+        map.setBaseLayer(bLayer);
+        $('#sat_mapoption').addClass('mapoptsel');
+    } else if (type == 'minimal') {
+        map.setBaseLayer(bLayer3);
+        $('#min_mapoption').addClass('mapoptsel');
+    }
+}
+
+function showSpeciesInfo(occids, lon, lat) {
+    window.mapFrame.showSpeciesInfo(occids, lon, lat);
+}
+
+
+function goToUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position){
+            window.mapFrame.goToLocation(position.coords.longitude, position.coords.latitude, 15);
+        });
+    } else {
+        alert("Unable to determine your location");
+    }
+}
+
+function displayHTMLInformation(element, info) {
+    $('#'+element).html(info);
+}
+function displayArea(area) {
+   $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
+}
+function displayArea2(area) {
+  $('#jsarea2').html(addCommas('' + area.toFixed(2)));
+}
+function addCommas(nStr) {
+    nStr += '';
+    x = nStr.split('.');
+    x1 = x[0];
+    x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1;
+}
+
+
+//capture mouse events during window resize or move over an iframe
+var overlayon = false;
+function needOverlay() {
+    var zkresizing = parent.document.getElementById("zk_ddghost");
+    var zkmoving = parent.document.getElementById("zk_wndghost");
+
+    if(zkresizing != null && zkresizing.className.indexOf('drop') >= 0) {
+        //do nothing with drag/drop
+    } else if(!overlayon && (zkmoving != null || zkresizing != null)) {
+        //sit above zk (z-index:1800)
+        parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:white;opacity:0.01;filter:alpha(opacity=1);'></div>");
+        overlayon = true;
+    } else if(overlayon && zkmoving == null && zkresizing == null) {
+        overlayon = false;
+        parent.jq(parent.document.getElementById("overlay_")).remove();
+    }
+    setTimeout(needOverlay, 500);
+ }
+setTimeout(needOverlay, 500);  //start
+
+
+//TODO: WIRE THESE INTO ZK
+
+function addSpeciesAction(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSpecies', null));
+}
+
+function addAreaAction(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddArea', null));
+}
+
+function addLayerAction(){
+   zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddLayer', null));
+}
+
+function runSpeciesList(){
+    alert("Run Species List");
+}
+
+function runAreaReport(){
+    alert("Run Area Report");
+}
+
+function runSamplingAction(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSampling', null));
+}
+
+function runPrediction(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddMaxent', null));
+}
+
+function runClassification(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddAloc', null));
+}
+
+function runScatterPlot(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddScatterplot', null));
+}
+
+function runTabulation(){
+    alert("Run Tabulation");
+}
+
+function runGDM(){
+    alert("Run GDM");
+}
+
+function runImport(){
+    alert("Run Import");
+}
+
+function runExport(){
+    alert("Run Export");
+}
+
+function resetMap(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$reloadPortal', null));
+}
+
+function loadHelp(){
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', "http://www.ala.org.au/spatial-portal-help/spatial-portal-help-contents  "));
+}

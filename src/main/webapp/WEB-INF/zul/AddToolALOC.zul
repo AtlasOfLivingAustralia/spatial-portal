@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul">
+    <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolALOCComposer"
+    apply="org.ala.spatial.analysis.web.AddToolALOCComposer" width="500px" height="300px"
+    action="show: slideDown;hide: slideUp">
+
+        <vbox>
+            <div id="atstep1" visible="true" zclass="first">
+                <label id="atstep1_desc" value="Step 1: Select area(s) for" />
+                <label id="atstep1_label" value="(none)" />
+                <separator />
+                <radiogroup id="rgArea" orient="vertical">
+                    <radio id="rAreaCurrent" label="Current extent" checked="true" />
+                    <radio id="rAreaAustralia" label="Australia" />
+                    <radio id="rAreaWorld" label="World" />
+                </radiogroup>
+            </div>
+
+            <div id="atstep2" visible="false" zclass="step2">
+                <label id="atstep2_desc" value="Step 2: Select grid(s) for" />
+                <label id="atstep2_label" value="(none)" />
+                <separator />
+                <vbox>
+                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="440px" height="210px" multiple="true" checkmark="true">
+                        <listhead>
+                            <listheader label="category"  />
+                            <listheader label="name" />
+                            <listheader label=" "  />
+                            <listheader label=" " width="10px" />
+                        </listhead>
+                    </listbox>
+                    <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
+                </vbox>
+            </div>
+
+            <div id="atstep3" visible="false" zclass="step3">
+                <label id="atstep3_desc" value="Step 3: Select your analytical options for " />
+                <label id="atstep3_label" value="(none)" />
+                <vbox>
+                    <label value="Enter number of groups to generate" />
+                    <intbox id="groupCount" value="20"/>
+                </vbox>
+
+            </div>
+
+
+            <div id="atstep4" visible="false" zclass="last">
+                <label id="atstep4_desc" value="Step 4: Name your output for" />
+                <label id="atstep4_label" value="(none)" />
+                <separator />
+                <hbox>
+                    <label value="Name:" />
+                    <textbox id="tToolName" />
+                </hbox>
+                <vbox>
+                    <label value="Summary" style="font-weight: bold" />
+                    <div id="atsummary"></div>
+                </vbox>
+            </div>
+
+            <div sclass="wizButtonContainer">
+                <hbox>
+                    <button sclass="goButton" label="Cancel" id="btnCancel" />
+                    <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                    <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                </hbox>
+            </div>
+
+        </vbox>
+
+    </window>
+</zk>

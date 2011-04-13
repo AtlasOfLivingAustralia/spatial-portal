@@ -48,52 +48,15 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
     <window id="mapPortalPage" width="100%" height="100%"
             use="au.org.emii.portal.composer.MapComposer" apply="au.org.emii.portal.composer.MapComposer"
             style="overflow:hidden;">
-        <!--
-            Nasty hack to stop you getting SEVERE errors in the console. The
-            iframe in the holder gets moved into ErrorMessageWithDetail.zul when
-            raw text is required to be displayed and then gets moved back here
-            when the window is closed. Yuk
-        -->
-        <div id="rawMessageHackHolder" visible="false">
-            <iframe id="rawMessageIframeHack" width="100%" height="250px" />
-        </div>
-
-
-        <!--  flag indicating whether safe to load map (OL library loaded) -->
-        <!-- textbox visible="true" id="safeToLoadMap" value="false" / -->
-        
-        <doublebox id="southReal" visible="false" />
-        <doublebox id="northReal" visible="false" />
-        <doublebox id="westReal" visible="false" />
-        <doublebox id="eastReal" visible="false" />
-
-        <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
-        <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
 
         <script defer="true" type="text/JavaScript" src="scripts/index.js" />
                 
-        <!-- external content (Links) popup -->
-        <window id="externalContentWindow" visible="false" width="80%"
-                height="80%" border="normal" sizable="true"
-                use="au.org.emii.portal.composer.ExternalContentComposer" >
-            <caption id="caption">
-                <toolbarbutton id="download" label="Download output" target="_blank" />
-                <toolbarbutton id="reset" label="Reset Window" />
-                <toolbarbutton id="breakout" label="Open in new Window" target="_blank" />
-                <toolbarbutton id="hide" label="Close" />
-            </caption>
-            <separator />
-            <iframe id="externalContentIframe" width="100%" height="100%" />
-            <html id="externalContentHTML" ></html>
-        </window>
-
-        <borderlayout width="100%">
-            <north id="header" height="45" visible="false">
-            </north>
+        <borderlayout width="100%" height="100%">
+            <north id="header" height="45" visible="false"></north>
             <west title=" " size="${settingsSupplementary.values.menu_default_width}"
                    id="menus" collapsible="false"
                    splittable="false" width="400px">
-                <div id="westChild">
+                <div id="westChild" vflex="1" height="600px">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
                         <div zclass="closebox" zindex="500" left="2px" top="2px">
                             <toolbarbutton
@@ -106,7 +69,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         </div>
                     </div>
 
-                    <div id="westContent" class="westContent" visible="true">
+                    <div id="westContent" class="westContent" visible="true" vflex="1" height="500px">
                         <div>
                             <hbox height="40px">
                                 <div style="position:absolute;float:left;left:10px;z-index:100">
@@ -147,6 +110,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 <n:li class="tool" id="runAreaReport">
                                                     <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
                                                 </n:li>
+                                                <n:li class="tool" id="runClassification">
+                                                    <n:a href="#" n:onClick="runClassification();">Classification</n:a>
+                                                </n:li>
                                                 <n:li class="tool" id="runScatterplot">
                                                     <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
                                                 </n:li>
@@ -173,33 +139,33 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                 <div style="position:absolute;float:left;left:310px;z-index:100">
                                     <n:ul class="spMenu" >
                                         <n:li class="helpButton">
-                                                <n:a href="#" n:onClick="loadHelp();">Help</n:a>
+                                            <n:a href="#" n:onClick="loadHelp();">Help</n:a>
                                         </n:li>
                                     </n:ul>
                                 </div>
                             </hbox>
                         </div>
-                        <div>
+                        <div vflex="1">
 
                             <leftMenuSearch id="leftMenuSearch" visible="false" />
                        
-                            <div id="activeLayersHolder" height="200px" width="400px">
-                                <listbox id="activeLayersList" />
+                            <div id="activeLayersHolder" height="22%" width="400px" style="overflow: auto" vflex="0">
+                                <listbox id="activeLayersList" />                                
                             </div>
 
-                            <div width="400px" height="25px" style="background-color: RGB(217,217,217)" >
+                            <div width="400px" height="3%" style="background-color: RGB(217,217,217)" >
                                 <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
                             </div>
 
-                            <div id="layerControls" sclass="highlighted">
+                            <div id="layerControls" height="60%" sclass="highlighted" style="" >
 
                             </div>
-                        
-                            <textbox id="userparams" visible="false" multiline="true" value="${param}" />
 
-                        </div>
-                        <div>
-                            <contextualMenu id="contextualMenu" width="400px" />
+                            <div height="15%" style="overflow: auto">
+                                <contextualMenu id="contextualMenu" width="400px" />
+                            </div>
+
+                            <textbox id="userparams" visible="false" multiline="true" value="${param}" />
                         </div>
                     </div>
                 </div>
@@ -247,19 +213,25 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </south>
         </borderlayout>
 
-        <script defer="false" type="text/javascript"><![CDATA[
-        var retryFixExtent = 0;
-        function fixExtent(a,b,c,d) {
-            map.zoomToExtent(new OpenLayers.Bounds(a,b,c,d),true);
+        <!-- external content (Links) popup -->
+        <window id="externalContentWindow" visible="false" width="80%"
+                height="80%" border="normal" sizable="true"
+                use="au.org.emii.portal.composer.ExternalContentComposer" >
+            <caption id="caption">
+                <toolbarbutton id="download" label="Download output" target="_blank" />
+                <toolbarbutton id="reset" label="Reset Window" />
+                <toolbarbutton id="breakout" label="Open in new Window" target="_blank" />
+                <toolbarbutton id="hide" label="Close" />
+            </caption>
+            <separator />
+            <iframe id="externalContentIframe" width="100%" height="100%" />
+            <html id="externalContentHTML" ></html>
+        </window>
 
-            //does not always stick
-            if(retryFixExtent < 1) {
-                retryFixExtent++;
-                setTimeout(function() { fixExtent(a,b,c,d); }, 2000);
-            }
-        }
-        
-        var onIframeMapFullyLoaded = function() {
+
+
+        <script defer="false" type="text/javascript"><![CDATA[
+                    var onIframeMapFullyLoaded = function() {
             //update screen widths before map is loaded (hide header)
             var h0 = window.location.href.split('?');
             if(h0.length > 1){
@@ -327,7 +299,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             }
 
             ${session.attributes.portalSession.onIframeMapFullyLoaded};
-            
+
             map = window.mapFrame.map;
             mapFrame = window.mapFrame;
 
@@ -342,7 +314,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         printing = true;
                         h1[i] = h1[i].substring(2,h1[i].length);
                         var h2 = h1[i].split(",");
-                        if(h2.length > 5){                           
+                        if(h2.length > 5){
                             fixExtent(1*h2[2],1*h2[3],1*h2[4],1*h2[5]);
                             //map.zoomToExtent(new OpenLayers.Bounds(1*h2[2],1*h2[3],1*h2[4],1*h2[5]), true);
 
@@ -354,7 +326,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             window.frames["mapFrame"].document.getElementById('controlPanZoom').style.display = "none";
                         }
 
-                        if(h2.length > 7 && currentbaselayertxt != h2[7]) {                                
+                        if(h2.length > 7 && currentbaselayertxt != h2[7]) {
                             changeBaseLayer(h2[7]);
                         }
 
@@ -402,7 +374,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     }
                                 }
                                 vl[i].redraw(true);
-                            }                                
+                            }
                         }
 
                     //scale text?
@@ -421,158 +393,32 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             }
         };
 
-jQuery('.hidden_image :hidden').show();
-
-if (parent.location.href.indexOf("spatial-dev.ala.org.au") > -1 || parent.location.href.indexOf("spatial.ala.org.au") > -1 || parent.location.href.indexOf("spatial-test.ala.org.au") > -1 || parent.location.href.indexOf("localhost") > -1) {
-    jQuery('.z-north').show();
-    jQuery('.z-south').show();
-}    
-        
-function printHack(o) {
-    //session variables not in session
-    var size = map.getSize().w + "," + (document.body.clientHeight-68); 
-    var extent = map.getExtent().toBBOX();
-    var lhsWidth = 0;
-    var basemap = currentbaselayertxt
-    var mapHTML = size + "," + extent + "," + lhsWidth + "," + currentbaselayertxt;
-    
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$onPrint', mapHTML));
-}
-function changeBaseLayer(type) {
-    currentbaselayertxt = type;
-
-    $('li.bmapoption').removeClass('mapoptsel');
-
-    if (type == 'normal') {
-        map.setBaseLayer(bLayer2);
-        $('#nor_mapoption').addClass('mapoptsel');
-    } else if (type == 'hybrid') {
-        map.setBaseLayer(bLayer);
-        $('#sat_mapoption').addClass('mapoptsel');
-    } else if (type == 'minimal') {
-        map.setBaseLayer(bLayer3);
-        $('#min_mapoption').addClass('mapoptsel');
-    }
-}
-
-function showSpeciesInfo(occids, lon, lat) {
-    window.mapFrame.showSpeciesInfo(occids, lon, lat); 
-}
-
-
-function goToUserLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position){
-            window.mapFrame.goToLocation(position.coords.longitude, position.coords.latitude, 15);
-        });
-    } else {
-        alert("Unable to determine your location");
-    }
-}
-
-function displayHTMLInformation(element, info) {
-    $('#'+element).html(info);
-}
-function displayArea(area) {
-   $('#jsarea').html('OL area: ' + addCommas(area.toFixed(2)) + ' sq km');
-}
-function displayArea2(area) {
-  $('#jsarea2').html(addCommas('' + area.toFixed(2)));
-}
-function addCommas(nStr) {
-    nStr += '';
-    x = nStr.split('.');
-    x1 = x[0];
-    x2 = x.length > 1 ? '.' + x[1] : '';
-    var rgx = /(\d+)(\d{3})/;
-    while (rgx.test(x1)) {
-        x1 = x1.replace(rgx, '$1' + ',' + '$2');
-    }
-    return x1;
-}
-
-
-//capture mouse events during window resize or move over an iframe
-var overlayon = false;
-function needOverlay() {
-    var zkresizing = parent.document.getElementById("zk_ddghost");
-    var zkmoving = parent.document.getElementById("zk_wndghost");
-
-    if(zkresizing != null && zkresizing.className.indexOf('drop') >= 0) {
-        //do nothing with drag/drop
-    } else if(!overlayon && (zkmoving != null || zkresizing != null)) {
-        //sit above zk (z-index:1800)
-        parent.jq(parent.document.body).append("<div id='overlay_' style='position:absolute;width:100%;height:100%;top:0;left:0;z-index:1900;background-color:white;opacity:0.01;filter:alpha(opacity=1);'></div>");
-        overlayon = true;
-    } else if(overlayon && zkmoving == null && zkresizing == null) {
-        overlayon = false;
-        parent.jq(parent.document.getElementById("overlay_")).remove();
-    }
-    setTimeout(needOverlay, 500);
- }
-setTimeout(needOverlay, 500);  //start
-
-
-//TODO: WIRE THESE INTO ZK
-
-function addSpeciesAction(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddSpecies', null));
-}
-
-function addAreaAction(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddArea', null));
-}
-
-function addLayerAction(){
-   zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddLayer', null));
-}
-
-function runSamplingAction(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAddPlace', null));
-}
-
-function runSpeciesList(){
-    alert("Run Species List");
-}
-
-function runAreaReport(){
-    alert("Run Area Report");
-}
-
-function runScatterPlot(){
-    alert("Run Scatter Plot");
-}
-
-function runTabulation(){
-    alert("Run Tabulation");
-}
-
-function runPrediction(){
-    alert("Run Prediction");
-}
-
-function runGDM(){
-    alert("Run GDM");
-}
-
-function runImport(){
-    alert("Run Import");
-}
-
-function runExport(){
-    alert("Run Export");
-}
-
-function resetMap(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$reloadPortal', null));
-}
-
-function loadHelp(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', "http://www.ala.org.au/spatial-portal-help/spatial-portal-help-contents  "));
-}
-
-          ]]>
+        ]]>
         </script>
+
+        <!--
+            Nasty hack to stop you getting SEVERE errors in the console. The
+            iframe in the holder gets moved into ErrorMessageWithDetail.zul when
+            raw text is required to be displayed and then gets moved back here
+            when the window is closed. Yuk
+        -->
+        <div id="rawMessageHackHolder" visible="false">
+            <iframe id="rawMessageIframeHack" width="100%" height="250px" />
+        </div>
+
+
+        <!--  flag indicating whether safe to load map (OL library loaded) -->
+        <!-- textbox visible="true" id="safeToLoadMap" value="false" / -->
+
+        <doublebox id="southReal" visible="false" />
+        <doublebox id="northReal" visible="false" />
+        <doublebox id="westReal" visible="false" />
+        <doublebox id="eastReal" visible="false" />
+
+        <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
+        <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
+
+
           <!-- script defer="false" type="text/javascript"><![CDATA[
             
        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
