@@ -121,10 +121,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
                                                 </n:li>
                                                 <n:li id="addArea">
-                                                    <n:a href="#" n:onClick="addAreaAction();">Area</n:a>
+                                                    <n:a href="#" n:onClick="addAreaAction();">Areas</n:a>
                                                 </n:li>
                                                 <n:li id="addLayer">
-                                                    <n:a href="#" n:onClick="addLayerAction();">Grid</n:a>
+                                                    <n:a href="#" n:onClick="addLayerAction();">Layers</n:a>
                                                 </n:li>
                                             </n:ul>
                                         </n:li>
