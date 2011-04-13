@@ -9,7 +9,8 @@
             <label sclass="wordwrap" value="2. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area." />
             <separator />
             <div style="float:right;margin-right:5px">
-                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Clear" id="btnClear"/>
+                <button sclass="goButton" label="Next" id="btnNext"/>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
             </div>
             <separator />

@@ -90,25 +90,24 @@ function setSelectionGeometry(geometry_orig) {
     var mapObj = window.frames.mapFrame.map;
     geometry.transform(mapObj.projection, mapObj.displayProjection);
     var value = geometry.toString();
-    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$areapolygonwindow')[0]), 'onSelectionGeom', value));
 }
 
 function setSelectionLayerGeometry(geometry_orig) {
     var geometry = geometry_orig;
-
+    
     var mapObj = window.frames.mapFrame.map;
     var value = "LAYER(" + geometry.toString() + ")";
-    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSelectionGeom', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$areapolygonwindow')[0]), 'onSelectionGeom', value));
 }
 
 function setBoxGeometry(geometry_orig) {
     var geometry = geometry_orig.clone();
-
     // transform the geometry from Google Projection to EPSG:4326
     var mapObj = window.frames.mapFrame.map;
     geometry.transform(mapObj.projection, mapObj.displayProjection);
     var value = geometry.toString();
-    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onBoxGeom', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$areaboundingboxwindow')[0]), 'onBoxGeom', value));
 }
 
 function roundNumber(num, dec) {
