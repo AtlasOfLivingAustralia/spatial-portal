@@ -33,15 +33,15 @@ public class AreaPolygon extends UtilityComposer {
 	satServer = "http://spatial-dev.ala.org.au";
     }
 
-     public void onClick$btnNext(Event event) {
-	this.detach();
+    public void onClick$btnNext(Event event) {
+        this.detach();
     }
 
     public void onClick$btnClear(Event event) {
-	MapComposer mc = getThisMapComposer();
-	mc.removeLayer("Active Area");
-	String script = mc.getOpenLayersJavascript().addPolygonDrawingTool();
-	mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        MapComposer mc = getThisMapComposer();
+        mc.removeLayer("Active Area");
+        String script = mc.getOpenLayersJavascript().addPolygonDrawingTool();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
     }
 
     public void onClick$btnCancel(Event event) {

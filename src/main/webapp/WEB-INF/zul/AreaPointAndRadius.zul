@@ -11,7 +11,8 @@
             <label sclass="wordwrap" value="4. Release the mouse button." />
             <separator />
             <div style="float:right;margin-right:5px">
-                <button sclass="goButton" label="Next" id="btnOk"/>
+                   <button sclass="goButton" label="Clear" id="btnClear"/>
+                <button sclass="goButton" label="Next" id="btnNext"/>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
             </div>
             <separator />

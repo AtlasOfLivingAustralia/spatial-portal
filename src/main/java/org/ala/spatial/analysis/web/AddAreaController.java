@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
@@ -18,7 +19,7 @@ public class AddAreaController extends UtilityComposer {
     
     SettingsSupplementary settingsSupplementary;
     Radiogroup cbAreaSelection;
-    Radio ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustraia, ciBoxWorld, ciBoxCurrentView;
+    Radio ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
 
     @Override
     public void afterCompose() {
@@ -27,7 +28,7 @@ public class AddAreaController extends UtilityComposer {
 
     public void onClick$btnOk(Event event) {
         String windowName = "";
-	MapComposer mc = getMapComposer();
+        MapComposer mc = getMapComposer();
 
 	String script = "";
         if (cbAreaSelection.getSelectedItem() == ciBoundingBox) {
@@ -45,18 +46,27 @@ public class AddAreaController extends UtilityComposer {
            windowName = "WEB-INF/zul/AreaUploadShapefile.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             windowName = "WEB-INF/zul/AreaMapPolygon.zul";
-	    script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
+            script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
         } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
             windowName = "WEB-INF/zul/AreaEnvironmentalEnvelope.zul";
+        } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
+            String wkt = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+            MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+        } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
+            String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
+            MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+        } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
+            
         }
-	mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        Window window = (Window) Executions.createComponents(windowName, getMapComposer(), null);
-        try {
-            window.doOverlapped();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!windowName.contentEquals("")) {
+            mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+            Window window = (Window) Executions.createComponents(windowName, getMapComposer(), null);
+            try {
+                window.doOverlapped();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
         this.detach();
     }
 

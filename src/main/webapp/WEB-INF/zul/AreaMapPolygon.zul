@@ -1,6 +1,6 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
-    <window id="areamappolygonwindow" use=org.ala.spatial.analysis.web.AreaMapPolygon"
+    <window id="areamappolygonwindow" use="org.ala.spatial.analysis.web.AreaMapPolygon"
     apply="org.ala.spatial.analysis.web.AreaMapPolygon" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
         <caption label="Select Map Polygon" />
         <vbox width="100%">

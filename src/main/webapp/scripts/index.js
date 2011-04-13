@@ -65,12 +65,12 @@ function showInfoOne() {
 
 function setSearchPointAnalysis(point_orig) {
     var point = point_orig.clone();
-
+   
     // transform the point from Google Projection to EPSG:4326
     var mapObj = window.frames.mapFrame.map;
     point.transform(mapObj.projection, mapObj.displayProjection);
     var value = point.lon + "," + point.lat;
-    zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchPoint', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$areamappolygonwindow')[0]), 'onSearchPoint', value));
 }
 
 function setSpeciesSearchPointAnalysis(point_orig) {
@@ -81,6 +81,7 @@ function setSpeciesSearchPointAnalysis(point_orig) {
     point.transform(mapObj.projection, mapObj.displayProjection);
     var value = point.lon + "," + point.lat;
     zAu.send(new zk.Event(zk.Widget.$(jq('$selectionwindow')[0]), 'onSearchSpeciesPoint', value));
+    
 }
 
 function setSelectionGeometry(geometry_orig) {
@@ -91,14 +92,17 @@ function setSelectionGeometry(geometry_orig) {
     geometry.transform(mapObj.projection, mapObj.displayProjection);
     var value = geometry.toString();
     zAu.send(new zk.Event(zk.Widget.$(jq('$areapolygonwindow')[0]), 'onSelectionGeom', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$areapointandradiuswindow')[0]), 'onSelectionGeom', value));
+    
+    
 }
 
 function setSelectionLayerGeometry(geometry_orig) {
     var geometry = geometry_orig;
-    
+    alert("Passing geom");
     var mapObj = window.frames.mapFrame.map;
     var value = "LAYER(" + geometry.toString() + ")";
-    zAu.send(new zk.Event(zk.Widget.$(jq('$areapolygonwindow')[0]), 'onSelectionGeom', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$areamappolygonwindow')[0]), 'onSelectionGeom', value));
 }
 
 function setBoxGeometry(geometry_orig) {

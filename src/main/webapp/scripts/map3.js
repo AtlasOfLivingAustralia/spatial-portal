@@ -496,39 +496,9 @@ function navigateToAreaTab() {
 
 var defaultSelectFeatureStyle = null;
 function addFeatureSelectionTool() {
-    //    areaSelectControl = new OpenLayers.Control.SelectFeature(
-    //        selectionLayers,
-    //        {
-    //            //            clickout: true,
-    //            //            toggle: false,
-    //            //            multiple: false,
-    //            //            hover: false,
-    //            //            toggleKey: "ctrlKey", // ctrl key removes from selection
-    //            //            multipleKey: "shiftKey" // shift key adds to selection
-    //            'onSelect': featureSelected
-    //        }
-    //        );
-    //
-    //    map.addControl(areaSelectControl);
-    //    selectControl.deactivate();
-    //    clickEventHandler.deactivate();
-    //    areaSelectControl.activate();
     removeAreaSelection();
     areaSelectOn = true;
     mapClickControl = null;
-    
-    //    clickEventHandler = new OpenLayers.Handler.Click({
-    //        'map': map
-    //    }, {
-    //        'click': function(e) {
-    //            getpointInfo(e);
-    //            mkpopup(e);
-    //        }
-    //    });
-    //    clickEventHandler.activate();
-    //    clickEventHandler.fallThrough = false;
-    //    alert("here");
-
 
     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
         defaultHandlerOptions: {
@@ -557,20 +527,6 @@ function addFeatureSelectionTool() {
     mapClickControl.fallThrough = true;
     map.addControl(mapClickControl);
     mapClickControl.activate();
-
-///////////////////
-//    //  setVectorLayersSelectable();
-//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-//    layer_style.fillColor = "red";
-//    layer_style.strokeColor = "red";
-
-//    featureSelectLayer = new OpenLayers.Layer.Vector("Selected Feature Layer", {
-//        style: layer_style
-//    });
-//    featureSelectLayer.setVisibility(true);
-//    map.addLayer(featureSelectLayer);
-
-    
 }
 
 

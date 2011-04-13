@@ -111,23 +111,34 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+	cbRadius.setReadonly(true);
+	cbRadius.setDisabled(true);
+	cbRadius.setSelectedItem(ci1km);
     }
 
     public void onClick$btnOk(Event event) {
-        onClick$btnRadiusFromAddress(null);
+        createRadiusFromAddress();
         this.detach();
     }
 
     public void onClick$btnCancel(Event event) {
+        MapComposer mc = getThisMapComposer();
+        mc.removeLayer("Active Area");
         this.detach();
     }
 
-    public void onClick$btnRadiusFromAddress(Event event) {
+    public void createRadiusFromAddress() {
         String wkt = radiusFromAddress(addressBox.getText());
         if (wkt.contentEquals("none")) {
             return;
         } else {
-            getMapComposer().addWKTLayer(wkt, "Active Area");
+            try {
+                MapComposer mc = getThisMapComposer();
+                MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+            }
+            catch(Exception e) {
+                logger.error("Error adding WKT layer");
+            }
         }
     }
 
@@ -138,6 +149,7 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
             List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getText() + ", Australia");
 
             addressLabel.setValue(addresses.get(0).getAddressLine());
+	    cbRadius.setDisabled(false);
         } catch (geo.google.GeoException ge) {
             ge.printStackTrace();
         }
@@ -243,5 +255,19 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
             e.printStackTrace();
             return "none";
         }
+    }
+
+       /**
+     * Gets the main pages controller so we can add a
+     * drawing tool to the map
+     * @return MapComposer = map controller class
+     */
+    private MapComposer getThisMapComposer() {
+
+        MapComposer mapComposer = null;
+        Page page = getPage();
+        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
+
+        return mapComposer;
     }
 }
