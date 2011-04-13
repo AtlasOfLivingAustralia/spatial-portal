@@ -680,12 +680,12 @@ tr.z-listitem-over{background:#dae7f6;}tr.z-listitem-over-seld{background:#6eadf
     cursor: pointer;
 }
 
-.goButton {
-    /*height: 38px;
+/*.goButton {
+    height: 30px;
     color: #EEEEEE;
     background-color: teal;
-    font-size: 12px;*/
-}
+    font-size: 12px;
+}*/
 
 .fUploadButton {
     padding: 3px !important;
@@ -753,44 +753,6 @@ closebox a.helpButtonMain:hover {
     align: center;
     vertical-align: middle;
 }
-
-
-/*******************************/
-/* MAP SELECTOR DROPDOWN START */
-/*******************************/
-/* General */
-#cssdropdown, #cssdropdown ul { list-style: none; font-weight: bold; font-size: 10px}
-#cssdropdown, #cssdropdown * { padding: 0; margin: 0; }
-
-/* Head links */
-#cssdropdown li.headlink { width: 110px; float: left; padding: 5px; text-align: left; } /*border: 1px black solid; background-color: #e9e9e9; */
-#cssdropdown li.headlink a { display: block; padding: 15px; }
-
-/* Child lists and links */
-#cssdropdown li.headlink ul { display: none; border-top: 1px black solid; text-align: left; margin-top: 10px;}
-#cssdropdown li.headlink:hover ul { display: block; }
-#cssdropdown li.headlink ul li a, .mapoption { padding: 5px 5px 5px 20px; height: 17px; text-decoration: none; line-height: 1.7em}
-#cssdropdown li.headlink ul li a:visited { color: black;}
-#cssdropdown li.headlink ul li a:hover, .mapoption:hover, .mapoption button:hover { background-color: #bbb; }
-
-#cssdropdown li.headlink {/*background: #eee url(../img/world.png) no-repeat 8px 6px;*/background-color: #eee; padding:10px;}
-.mapoptsel {background: #eee url(../img/arrow_right.png) no-repeat 1px 6px;}
-
-
-.mapoption {
-    border-top: 1px dotted black;
-    padding: 5px 0 !important;
-}
-
-.mapoption button {
-    border-color: transparent;
-    font-weight: bold !important;
-    font-size: 11px !important;
-}
-
-/*******************************/
-/* MAP SELECTOR DROPDOWN START */
-/*******************************/
 
 
 /*******************************/
@@ -889,4 +851,63 @@ closebox a.helpButtonMain:hover {
 
 /*******************************/
 /* modal window styles end     */
+/*******************************/
+
+
+/*******************************/
+/* ADD MENU DROPDOWN START */
+/*******************************/
+.menuButton {
+    display:block;
+    overflow:hidden;
+    border:1px solid #ccc;
+    -moz-border-radius: 7px; /* FF1+ */
+    -webkit-border-radius: 7px; /* Saf3+, Chrome */
+    border-radius: 7px; /* Opera 10.5, IE 9 */
+    line-height: 1em;
+    padding: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    color: white;
+    cursor: pointer;
+}
+
+
+/* General */
+.spMenu, .spMenu ul { list-style: none; font-weight: bold; font-size: 12px; font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif; }
+.spMenu, .spMenu * { padding: 0; margin: 0; }
+
+/* Head links */
+.spMenu li.headlink { width: 140px; float: left; padding: 0px; text-align: left; text-indent:10px;}
+.spMenu li.headlink a { display: block; }
+
+/* Child lists and links */
+.spMenu li.headlink { background-color: teal; padding-top:10px; padding-bottom: 10px; padding-right: 0px; }
+.spMenu li.headlink ul { display: none; text-align: left; margin-top: 10px; }
+.spMenu li.headlink:hover { padding-bottom: 0px;}
+.spMenu li.headlink:hover ul { display: block; }
+.spMenu li.headlink ul li a { padding: 5px 5px 5px 10px; height: 17px; text-decoration: none; line-height: 1.7em; color: black; }
+.spMenu li.headlink ul li a:visited { color: black; }
+
+
+#addSpecies a { background-color:#CCFFCC; border-style:solid; border-color: transparent; border-width:3px; }
+#addSpecies a:hover{ border-color: #000; }
+
+#addArea a { background-color:#FFFFCC; border-style:solid; border-color: transparent; border-width:3px; }
+#addArea a:hover{ border-color: #000; }
+
+#addLayer a { background-color:#CCFFFF; border-style:solid; border-color: transparent; border-width:3px; }
+#addLayer a:hover{ border-color: #000; }
+
+.tool a { background-color:#FFCCCC; border-style:solid; border-color: transparent; border-width:3px; }
+.tool a:hover{ border-color: #000; }
+
+.bmapoption a { background-color:transparent; border-style:solid; border-color: transparent; border-width:3px; }
+.bmapoption a:hover{ border-color: #000; }
+
+.mapoptsel {background: #eee url(../img/arrow_right.png) no-repeat 1px 6px;}
+
+/*******************************/
+/* ADD MENU DROPDOWN END       */
 /*******************************/

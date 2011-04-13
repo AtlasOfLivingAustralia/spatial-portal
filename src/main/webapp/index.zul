@@ -108,11 +108,73 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     <div id="westContent" class="westContent" visible="true">
                         <div>
                             <hbox>
-                                <button sclass="btnAddSpecies" id="btnAddSpecies" label="Add species" />
+
+                                <div style="position:absolute;float:left;left:10px;">
+                                    <n:ul class="spMenu" >
+                                        <n:li class="headlink menuButton">
+                                            <n:span>
+                                                <n:span>Add to Map</n:span>
+                                                <n:span style="float:right; padding-right:5px">&#8711;</n:span>
+                                            </n:span>
+                                            <n:ul>
+                                                <n:li id="addSpecies">
+                                                    <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
+                                                </n:li>
+                                                <n:li id="addArea">
+                                                    <n:a href="#" n:onClick="addAreaAction();">Area</n:a>
+                                                </n:li>
+                                                <n:li id="addLayer">
+                                                    <n:a href="#" n:onClick="addLayerAction();">Grid</n:a>
+                                                </n:li>
+                                            </n:ul>
+                                        </n:li>
+                                    </n:ul>
+                                </div>
+                                <div style="position:absolute;float:left;left:160px;">
+                                    <n:ul class="spMenu" >
+                                        <n:li class="headlink menuButton">
+                                            <n:span>
+                                                <n:span>Tools</n:span>
+                                                <n:span style="float:right; padding-right:5px">&#8711;</n:span>
+                                            </n:span>
+                                            <n:ul>
+                                                <n:li class="tool" id="runSampling">
+                                                    <n:a href="#" n:onClick="runSamplingAction();">Sampling</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runSpeciesList">
+                                                    <n:a href="#" n:onClick="runSpeciesList();">Species List</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runAreaReport">
+                                                    <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runScatterplot">
+                                                    <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runTabulation">
+                                                    <n:a href="#" n:onClick="runTabulation();">Tabulation</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runPrediction">
+                                                    <n:a href="#" n:onClick="runPrediction();">Prediction</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runGDM">
+                                                    <n:a href="#" n:onClick="runGDM();">GDM</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runImport">
+                                                    <n:a href="#" n:onClick="runImport();">Import</n:a>
+                                                </n:li>
+                                                <n:li class="tool" id="runExport">
+                                                    <n:a href="#" n:onClick="runExport();">Export</n:a>
+                                                </n:li>
+                                            </n:ul>
+                                        </n:li>
+                                    </n:ul>
+                                </div>
+
+                                <!-- <button sclass="btnAddSpecies" id="btnAddSpecies" label="Add species" />
                                 <button sclass="btnAddPlace" id="btnAddPlace" label="Add place" />
                                 <button sclass="btnAddArea" id="btnAddArea" label="Add area" />
                                 <button sclass="btnAddLayer" id="btnAddLayer" label="Add layer" />
-                                <button sclass="btnAddModel" id="btnAddModel" label="Add model" />
+                                <button sclass="btnAddModel" id="btnAddModel" label="Add model" /> -->
                             </hbox>
                         </div>
                         <div>
@@ -143,13 +205,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
-          <!--
+
                     <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
-                        <n:ul id="cssdropdown" >
-                            <n:li id="mapopt" class="headlink goButton">
+                        <n:ul class="spMenu" >
+                            <n:li class="headlink menuButton">
                                 <n:span>
-                                    <n:span id="selmap">Map</n:span>
-                                    <n:span style="float:right">&#8711;</n:span>
+                                    <n:span>Map</n:span>
+                                    <n:span style="float:right;padding-right:5px">&#8711;</n:span>
                                 </n:span>
                                 <n:ul>
                                     <n:li id="min_mapoption" class="bmapoption">
@@ -161,16 +223,16 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     <n:li id="sat_mapoption" class="bmapoption">
                                         <n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;">Satellite</n:a>
                                     </n:li>
-                                    <n:li class="mapoption">
-                                        <button label="Download map" w:onClick="printHack('')" />
+                                    <n:li class="tool">
+                                        <n:a href="#" n:onClick="printHack('');">Download Map</n:a>
                                     </n:li>
-                                    <n:li class="mapoption">
-                                        <button id="reloadPortal" label="Reset map" />
+                                    <n:li class="tool">
+                                        <n:a href="#" n:onClick="resetMap();">Reset Map</n:a>
                                     </n:li>
                                 </n:ul>
                             </n:li>
                         </n:ul>
-                    </div> -->
+                    </div>
             
                     <div style="float:left" width="100%" height="100%" >
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
@@ -447,6 +509,65 @@ function needOverlay() {
     setTimeout(needOverlay, 500);
  }
 setTimeout(needOverlay, 500);  //start
+
+
+//TODO: WIRE THESE INTO ZK
+
+function addSpeciesAction(){
+    alert("Add Species");
+}
+
+function addAreaAction(){
+    alert("Add Area");
+}
+
+function addLayerAction(){
+    alert("Add Layer");
+}
+
+function runSamplingAction(){
+    alert("Run Sampling");
+}
+
+function runSpeciesList(){
+    alert("Run Species List");
+}
+
+function runAreaReport(){
+    alert("Run Area Report");
+}
+
+function runScatterPlot(){
+    alert("Run Scatter Plot");
+}
+
+function runTabulation(){
+    alert("Run Tabulation");
+}
+
+function runPrediction(){
+    alert("Run Prediction");
+}
+
+function runGDM(){
+    alert("Run GDM");
+}
+
+function runImport(){
+    alert("Run Import");
+}
+
+function runExport(){
+    alert("Run Export");
+}
+
+function resetMap(){
+    alert("Reset Map");
+}
+
+function loadHelp(){
+    alert("Load Help");
+}
 
           ]]>
         </script>
