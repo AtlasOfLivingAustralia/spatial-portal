@@ -661,11 +661,7 @@ tr.z-listitem-over{background:#dae7f6;}tr.z-listitem-over-seld{background:#6eadf
 
 
 .buttons, .helpButtonMain, .goButton {
-    /*margin:0 15px 0 0;*/
-    /*padding: 5px 10px;*/
     display:block;
-    /*height:5em;*/
-    /*width:127px;*/
     overflow:hidden;
     border:1px solid #ccc;
     -moz-border-radius: 7px; /* FF1+ */
@@ -674,10 +670,12 @@ tr.z-listitem-over{background:#dae7f6;}tr.z-listitem-over-seld{background:#6eadf
     background:transparent url(http://www.ala.org.au/wp-content/themes/ala/images/button_bg.png) right bottom repeat-x;
     line-height: 1em;
     padding: 5px;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: bold;
     font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
     cursor: pointer;
+    color: white;
+    background: teal;
 }
 
 /*.goButton {
@@ -864,13 +862,34 @@ closebox a.helpButtonMain:hover {
     -moz-border-radius: 7px; /* FF1+ */
     -webkit-border-radius: 7px; /* Saf3+, Chrome */
     border-radius: 7px; /* Opera 10.5, IE 9 */
-    line-height: 1em;
-    padding: 5px;
     font-size: 12px;
     font-weight: bold;
     font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
     color: white;
     cursor: pointer;
+    background-color:teal;
+    padding:10px;
+    margin:0px;
+    list-style:none;
+}
+
+.helpButton a{
+    display:block;
+    overflow:hidden;
+    border:1px solid #ccc;
+    -moz-border-radius: 7px; /* FF1+ */
+    -webkit-border-radius: 7px; /* Saf3+, Chrome */
+    border-radius: 7px; /* Opera 10.5, IE 9 */
+    font-size: 12px;
+    font-weight: bold;
+    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    color: white;
+    cursor: pointer;
+    background-color:teal;
+    padding:10px;
+    margin:0px;
+    list-style:none;
+    text-decoration: none;
 }
 
 
@@ -891,20 +910,20 @@ closebox a.helpButtonMain:hover {
 .spMenu li.headlink ul li a:visited { color: black; }
 
 
-#addSpecies a { background-color:#CCFFCC; border-style:solid; border-color: transparent; border-width:3px; }
-#addSpecies a:hover{ border-color: #000; }
+#addSpecies a { background-color:#CCFFCC; border-style:solid; border-color: transparent; border-width:3px}
+#addSpecies a:hover{ border-color: black;}
 
 #addArea a { background-color:#FFFFCC; border-style:solid; border-color: transparent; border-width:3px; }
-#addArea a:hover{ border-color: #000; }
+#addArea a:hover{ border-color: black; }
 
 #addLayer a { background-color:#CCFFFF; border-style:solid; border-color: transparent; border-width:3px; }
-#addLayer a:hover{ border-color: #000; }
+#addLayer a:hover{ border-color: black; }
 
-.tool a { background-color:#FFCCCC; border-style:solid; border-color: transparent; border-width:3px; }
-.tool a:hover{ border-color: #000; }
+.tool a { background-color:#FFCCCC; border-style:solid; border-color: transparent; border-width:3px }
+.tool a:hover{ border-color: black;}
 
 .bmapoption a { background-color:transparent; border-style:solid; border-color: transparent; border-width:3px; }
-.bmapoption a:hover{ border-color: #000; }
+.bmapoption a:hover{ border-color: black; }
 
 .mapoptsel {background: #eee url(../img/arrow_right.png) no-repeat 1px 6px;}
 

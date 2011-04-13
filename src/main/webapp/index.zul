@@ -170,11 +170,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                     </n:ul>
                                 </div>
 
-                                <!-- <button sclass="btnAddSpecies" id="btnAddSpecies" label="Add species" />
-                                <button sclass="btnAddPlace" id="btnAddPlace" label="Add place" />
-                                <button sclass="btnAddArea" id="btnAddArea" label="Add area" />
-                                <button sclass="btnAddLayer" id="btnAddLayer" label="Add layer" />
-                                <button sclass="btnAddModel" id="btnAddModel" label="Add model" /> -->
+                                <div style="position:absolute;float:left;left:310px;z-index:100">
+                                    <n:ul class="spMenu" >
+                                        <n:li class="helpButton">
+                                                <n:a href="#" n:onClick="loadHelp();">Help</n:a>
+                                        </n:li>
+                                    </n:ul>
+                                </div>
                             </hbox>
                         </div>
                         <div>
@@ -566,8 +568,7 @@ function resetMap(){
 }
 
 function loadHelp(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', 
-        jq('$sat_url')[0].innerHTML + "/explore/species-maps/species-maps-help/"));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', "http://www.ala.org.au/spatial-portal-help/spatial-portal-help-contents  "));
 }
 
           ]]>
