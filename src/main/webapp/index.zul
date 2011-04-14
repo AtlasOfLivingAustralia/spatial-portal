@@ -70,15 +70,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     </div>
 
                     <div id="westContent" class="westContent" visible="true" vflex="1" height="500px">
-                        <div>
+                        <div height="50px">
                             <hbox height="40px">
-                                <div style="position:absolute;float:left;left:10px;z-index:100">
-                                    <n:ul class="spMenu" >
-                                        <n:li class="headlink menuButton">
-                                            <n:span>
-                                                <n:span>Add to Map</n:span>
-                                                <n:span style="float:right; padding-right:5px">&#8711;</n:span>
-                                            </n:span>
+
+                                <div class="menu" style="position:absolute;float:left;left:50px; margin-top:5px">
+                                    <n:ul>
+                                        <n:li><n:a href="#">Add To Map</n:a>
                                             <n:ul>
                                                 <n:li id="addSpecies">
                                                     <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
@@ -91,60 +88,48 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </n:li>
                                             </n:ul>
                                         </n:li>
-                                    </n:ul>
-                                </div>
-                                <div style="position:absolute;float:left;left:160px;z-index:100">
-                                    <n:ul class="spMenu" >
-                                        <n:li class="headlink menuButton">
-                                            <n:span>
-                                                <n:span>Tools</n:span>
-                                                <n:span style="float:right; padding-right:5px">&#8711;</n:span>
-                                            </n:span>
+                                        <n:li><n:a href="#">Tools</n:a>
                                             <n:ul>
-                                                <n:li class="tool" id="runSampling">
+                                                <n:li id="runSampling">
                                                     <n:a href="#" n:onClick="runSamplingAction();">Sampling</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runSpeciesList">
+                                                <n:li id="runSpeciesList">
                                                     <n:a href="#" n:onClick="runSpeciesList();">Species List</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runAreaReport">
+                                                <n:li id="runAreaReport">
                                                     <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runClassification">
+                                                <n:li id="runClassification">
                                                     <n:a href="#" n:onClick="runClassification();">Classification</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runScatterplot">
+                                                <n:li id="runScatterplot">
                                                     <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runTabulation">
+                                                <n:li id="runTabulation">
                                                     <n:a href="#" n:onClick="runTabulation();">Tabulation</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runPrediction">
+                                                <n:li id="runPrediction">
                                                     <n:a href="#" n:onClick="runPrediction();">Prediction</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runGDM">
+                                                <n:li id="runGDM">
                                                     <n:a href="#" n:onClick="runGDM();">GDM</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runImport">
+                                                <n:li id="runImport">
                                                     <n:a href="#" n:onClick="runImport();">Import</n:a>
                                                 </n:li>
-                                                <n:li class="tool" id="runExport">
+                                                <n:li id="runExport">
                                                     <n:a href="#" n:onClick="runExport();">Export</n:a>
                                                 </n:li>
                                             </n:ul>
                                         </n:li>
-                                    </n:ul>
-                                </div>
-
-                                <div style="position:absolute;float:left;left:310px;z-index:100">
-                                    <n:ul class="spMenu" >
-                                        <n:li class="helpButton">
+                                        <n:li>
                                             <n:a href="#" n:onClick="loadHelp();">Help</n:a>
                                         </n:li>
                                     </n:ul>
                                 </div>
                             </hbox>
                         </div>
+
                         <div vflex="1">
 
                             <leftMenuSearch id="leftMenuSearch" visible="false" />
@@ -174,27 +159,23 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
 
-                    <div id="mapbuttons" style="position:absolute;float:right;right:10px;">
-                        <n:ul class="spMenu" >
-                            <n:li class="headlink menuButton">
-                                <n:span>
-                                    <n:span>Map</n:span>
-                                    <n:span style="float:right;padding-right:5px">&#8711;</n:span>
-                                </n:span>
+                    <div class="menu" style="position:absolute;float:right;right:10px; margin-top:5px">
+                        <n:ul>
+                            <n:li><n:a href="#">Map Options</n:a>
                                 <n:ul>
-                                    <n:li id="min_mapoption" class="bmapoption">
+                                    <n:li>
                                         <n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;">Minimal</n:a>
                                     </n:li>
-                                    <n:li id="nor_mapoption" class="bmapoption">
+                                    <n:li>
                                         <n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;">Normal</n:a>
                                     </n:li>
-                                    <n:li id="sat_mapoption" class="bmapoption">
+                                    <n:li>
                                         <n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;">Satellite</n:a>
                                     </n:li>
-                                    <n:li class="tool">
+                                    <n:li>
                                         <n:a href="#" n:onClick="printHack('');">Download Map</n:a>
                                     </n:li>
-                                    <n:li class="tool">
+                                    <n:li>
                                         <n:a href="#" n:onClick="resetMap();">Reset Map</n:a>
                                     </n:li>
                                 </n:ul>

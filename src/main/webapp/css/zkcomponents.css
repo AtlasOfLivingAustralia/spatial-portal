@@ -867,86 +867,105 @@ closebox a.helpButtonMain:hover {
 
 
 /*******************************/
-/* ADD MENU DROPDOWN START */
+/* MENU DROPDOWN START         */
 /*******************************/
-.menuButton {
-    display:block;
-    overflow:hidden;
-    border:1px solid #ccc;
-    -moz-border-radius: 7px; /* FF1+ */
-    -webkit-border-radius: 7px; /* Saf3+, Chrome */
-    border-radius: 7px; /* Opera 10.5, IE 9 */
-    font-size: 12px;
-    font-weight: bold;
-    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
-    color: white;
-    cursor: pointer;
-    background-color:teal;
-    padding:7px;
-    margin:0px;
-    list-style:none;
-}
 
-.helpButton a{
-    display:block;
-    overflow:hidden;
-    border:1px solid #ccc;
-    -moz-border-radius: 7px; /* FF1+ */
-    -webkit-border-radius: 7px; /* Saf3+, Chrome */
-    border-radius: 7px; /* Opera 10.5, IE 9 */
-    font-size: 12px;
-    font-weight: bold;
-    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
-    color: white;
-    cursor: pointer;
-    background-color:teal;
-    padding:7px;
-    margin:0px;
-    list-style:none;
-    text-decoration: none;
-}
+.menu{
+	border:none;
+	border:0px;
+	margin:0px;
+	padding:0px;
+	font-family:Arial,Helvetica,sans-serif;
+	font-size:13px;
+	font-weight:bold;
+	}
+.menu ul{
+	background-image: "../img/leftnav_bg_active.png";
+        background-repeat: repeat;
+	height:30px;
+	list-style:none;
+	margin:0;
+	padding:0;
+	}
+	.menu li{
+		float:left;
+		padding:0px;
+		}
+	.menu li a{
+                background: #2580a2 url("../img/leftnav_bg_active.png") bottom left repeat;
+		color:#cccccc;
+		display:block;
+		font-weight:normal;
+		line-height:30px;
+		margin:0px;
+		padding:0px 25px;
+		text-align:center;
+		text-decoration:none;
+		}
+		.menu li a:hover, .menu ul li:hover a{
+			background: #2580a2 url("../img/menu/hover.gif") bottom center no-repeat;
+			color:#FFFFFF;
+			text-decoration:none;
+			}
+	.menu li ul{
+		background:#333333;
+		display:none;
+		height:auto;
+		padding:0px;
+		margin:0px;
+		border:0px;
+		position:absolute;
+		width:225px;
+		z-index:200;
+		/*top:1em;
+		/*left:0;*/
+		}
+	.menu li:hover ul{
+		display:block;
 
-.helpButton a:hover{
-    color:black;
-    cursor:pointer;
-}
+		}
+	.menu li li {
+		background:url('../img/menu/sub_sep.gif') bottom left no-repeat;
+		display:block;
+		float:none;
+		margin:0px;
+		padding:0px;
+		width:225px;
+		}
+	.menu li:hover li a{
+		background:none;
+
+		}
+	.menu li ul a{
+		display:block;
+		height:30px;
+		font-size:12px;
+                font-family:Arial,Helvetica,sans-serif;
+		margin:0px;
+		padding:0px 10px 0px 15px;
+		text-align:left;
+		}
+		.menu li ul a:hover, .menu li ul li:hover a{
+			background:#2580a2 url('../img/menu/hover_sub.gif') center left no-repeat;
+			border:0px;
+			color:#ffffff;
+			text-decoration:none;
+			}
+	.menu p{
+		clear:left;
+		}
 
 
-/* General */
-.spMenu, .spMenu ul { list-style: none; font-weight: bold; font-size: 12px; font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif; }
-.spMenu, .spMenu * { padding: 0; margin: 0; }
+/* addSpecies #CCFFCC */
 
-/* Head links */
-.spMenu li.headlink { width: 140px; float: left; padding: 0px; text-align: left; text-indent:10px;}
-.spMenu li.headlink a { display: block; }
+/* addArea #FFFFCC */
 
-/* Child lists and links */
-.spMenu li.headlink { background-color: teal; padding-top:7px; padding-bottom: 7px; padding-right: 0px;}
-.spMenu li.headlink:hover {color: black}
-.spMenu li.headlink ul { display: none; text-align: left; padding-top: 7px; }
-.spMenu li.headlink:hover { padding-bottom: 0px;}
-.spMenu li.headlink:hover ul { display: block; }
-.spMenu li.headlink ul li a { padding: 5px 5px 5px 10px; height: 17px; text-decoration: none; line-height: 1.7em; color: black; }
-.spMenu li.headlink ul li a:visited { color: black; }
+/* addLayer #CCFFFF */
 
-
-#addSpecies a { background-color:#CCFFCC; border-style:solid; border-color: transparent; border-width:3px}
-#addSpecies a:hover{ border-color: black;}
-
-#addArea a { background-color:#FFFFCC; border-style:solid; border-color: transparent; border-width:3px; }
-#addArea a:hover{ border-color: black; }
-
-#addLayer a { background-color:#CCFFFF; border-style:solid; border-color: transparent; border-width:3px; }
-#addLayer a:hover{ border-color: black; }
-
-.tool a { background-color:#FFCCCC; border-style:solid; border-color: transparent; border-width:3px }
-.tool a:hover{ border-color: black;}
-
-.bmapoption a { background-color:transparent; border-style:solid; border-color: transparent; border-width:3px; }
-.bmapoption a:hover{ border-color: black; }
+/* tool #FFCCCC */
 
 .mapoptsel {background: #eee url(../img/arrow_right.png) no-repeat 1px 6px;}
 
 /*******************************/
-/* ADD MENU DROPDOWN END       */
+/* MENU DROPDOWN END           */
 /*******************************/
