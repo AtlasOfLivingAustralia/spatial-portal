@@ -19,7 +19,7 @@ public class AddAreaController extends UtilityComposer {
     
     SettingsSupplementary settingsSupplementary;
     Radiogroup cbAreaSelection;
-    Radio ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
+    Radio ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
 
     @Override
     public void afterCompose() {
@@ -40,6 +40,8 @@ public class AddAreaController extends UtilityComposer {
         } else if (cbAreaSelection.getSelectedItem() == ciPointAndRadius) {
             windowName = "WEB-INF/zul/AreaPointAndRadius.zul";
 	    script = mc.getOpenLayersJavascript().addRadiusDrawingTool();
+        } else if (cbAreaSelection.getSelectedItem() == ciRegionSelection) {
+            windowName = "WEB-INF/zul/AreaRegionSelection.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciAddressRadiusSelection) {
             windowName = "WEB-INF/zul/AreaAddressRadiusSelection.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciUploadShapefile) {

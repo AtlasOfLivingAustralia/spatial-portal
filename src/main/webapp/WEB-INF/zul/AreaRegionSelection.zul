@@ -1,0 +1,34 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="arearegionselectionwindow" use="org.ala.spatial.analysis.web.AreaRegionSelection"
+    apply="org.ala.spatial.analysis.web.AreaRegionSelection" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+        <caption label="Select Gazetteer location" />
+        <vbox width="100%">
+            <separator />
+            <label sclass="wordwrap" value="1. Search for location." />
+            <separator />
+            <hbox>
+                <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" />
+              
+            </hbox>
+            <separator />
+            <label id="addressLabel" />
+            <separator />
+            <label sclass="wordwrap" value="2. Select radius." />
+            <separator />
+            <combobox id="cbRadius" >
+                <comboitem label="1km radius" id="ci1km" />
+                <comboitem label="5km radius" id="ci5km" />
+                <comboitem label="10km radius" id="ci10km" />
+                <comboitem label="20km radius" id="ci20km" />
+            </combobox>
+            <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>
+

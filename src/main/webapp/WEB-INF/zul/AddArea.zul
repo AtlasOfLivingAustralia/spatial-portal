@@ -13,6 +13,7 @@
                 <radio label="Draw polygon..." id="ciPolygon" />
                 <radio label="Draw point and radius..." id="ciPointAndRadius" />
                 <radio label="Create radius from address..." id="ciAddressRadiusSelection"/>
+                <radio label="Select gazetteer region" id="ciRegionSelection" />
                 <radio label="Select predefined (displayed) map polygon..." id="ciMapPolygon" />
                 <radio label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
                 <radio label="Upload Shapefile..." id="ciUploadShapefile" />
