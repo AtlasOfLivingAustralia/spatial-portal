@@ -4,7 +4,7 @@
  */
 package org.ala.spatial.analysis.web;
 
-import antlr.debug.Event;
+import org.zkoss.zk.ui.event.Event;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
@@ -18,6 +18,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.zkoss.zhtml.Button;
 import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zul.Comboitem;
@@ -30,6 +31,9 @@ public class AreaRegionSelection extends UtilityComposer {
 
     String satServer;
     String geoServer;
+    Button btnOk;
+    Button btnClear;
+    Button btnCancel;
     private AutoComplete gazetteerAuto;
     //private SettingsSupplementary settingsSupplementary = null;
 
@@ -46,10 +50,6 @@ public class AreaRegionSelection extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-        try { 
-            Messagebox.show("Working??");
-        }
-        catch (Exception e) {}
         this.detach();
     }
 

@@ -5,13 +5,13 @@
         <caption label="Select Gazetteer location" />
         <vbox width="100%">
             <separator />
-            <label sclass="wordwrap" value="1. Search for location." />
+            <label sclass="wordwrap" value="Search for location." />
             <separator />
             <hbox>
                 <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true" />
               
             </hbox>
-            <separator />
+         <!--   <separator />
             <label id="addressLabel" />
             <separator />
             <label sclass="wordwrap" value="2. Select radius." />
@@ -21,8 +21,9 @@
                 <comboitem label="5km radius" id="ci5km" />
                 <comboitem label="10km radius" id="ci10km" />
                 <comboitem label="20km radius" id="ci20km" />
-            </combobox>
+            </combobox> -->
             <div style="float:right;margin-right:5px">
+                <button sclass="goButton" label="Clear" id="btnClear"/>
                 <button sclass="goButton" label="OK" id="btnOk"/>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
             </div>
