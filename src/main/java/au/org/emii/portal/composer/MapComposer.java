@@ -3495,6 +3495,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //        }
 //        return isUserUploadedCoordinates;
 //    }
+
+    public String getNextAreaLayerName(String layerPrefix) {
+        layerPrefix += " ";
+        int i = 1;
+        while (getMapLayer(layerPrefix + i) != null) {
+            i++;
+        }
+        return layerPrefix + i;
+    }
+
     public String getNextActiveAreaLayerName() {
         String layerPrefix = "Occurrences in Active area ";
         int i = 1;

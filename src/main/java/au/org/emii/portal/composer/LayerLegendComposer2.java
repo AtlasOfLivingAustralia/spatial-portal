@@ -382,6 +382,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
     public void onCheck$pointtype(Event event) {
         refreshLayer();
+
+        setupLayerControls(mapLayer);
     }
 
     void refreshLayer() {

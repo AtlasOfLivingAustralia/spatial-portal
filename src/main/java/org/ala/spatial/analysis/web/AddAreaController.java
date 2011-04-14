@@ -53,12 +53,13 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/AreaEnvironmentalEnvelope.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
             String wkt = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
-            MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+            MapLayer mapLayer = mc.addWKTLayer(wkt, mc.getNextAreaLayerName("Australia Bounding Box"));
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-            MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+            MapLayer mapLayer = mc.addWKTLayer(wkt, mc.getNextAreaLayerName("World Bounding Box "));
         } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
-            
+            String wkt = mc.getMapComposer().getViewArea();
+            MapLayer mapLayer = mc.addWKTLayer(wkt, mc.getNextAreaLayerName("View Area"));
         }
         if (!windowName.contentEquals("")) {
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
@@ -74,19 +75,5 @@ public class AddAreaController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         this.detach();
-    }
-
-     /**
-     * Gets the main pages controller so we can add a
-     * drawing tool to the map
-     * @return MapComposer = map controller class
-     */
-    private MapComposer getThisMapComposer() {
-
-        MapComposer mapComposer = null;
-        Page page = getPage();
-        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
-
-        return mapComposer;
     }
 }

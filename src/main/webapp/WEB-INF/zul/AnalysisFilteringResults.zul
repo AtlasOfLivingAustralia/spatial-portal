@@ -77,5 +77,11 @@
             </n:tr>            
         </n:table>
         <separator />
+
+        <div sclass="wButtons">
+            <hbox>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+            </hbox>
+        </div>
     </window>
 </zk>

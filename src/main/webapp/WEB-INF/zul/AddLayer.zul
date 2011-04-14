@@ -15,14 +15,15 @@
             <separator/>
             <label sclass="wCaption" value='For example: "Temperature"'/>
             <separator />
-            <div style="margin-left:5px">
-            <layerList id="layerList" height="400px"/>
+            <separator />
+            <div height="300px" style="margin-left:5px;overflow: auto">
+                <layerList id="layerList" height="400px"/>
             </div>
         </vbox>
         <separator />
         <div sclass="wButtons">
             <hbox>
-                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="OK" id="btnOk" disabled="true" />
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
             </hbox>
         </div>

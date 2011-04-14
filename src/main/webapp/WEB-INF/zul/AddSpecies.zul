@@ -1,4 +1,5 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?component name="uploadSpecies" macro-uri="/WEB-INF/zul/UploadSpecies.zul"?>
 <zk>
     <window id="addspecieswindow" use="org.ala.spatial.analysis.web.AddSpeciesController"
     apply="org.ala.spatial.analysis.web.AddSpeciesController" width="400px">
@@ -16,6 +17,8 @@
             </hbox>
             <separator/>
             <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+            <separator />
+            <separator />
         </vbox>
         <separator />
         <div sclass="wButtons">

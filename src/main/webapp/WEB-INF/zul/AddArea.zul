@@ -6,27 +6,41 @@
 
         <vbox width="100%">
             <separator />
-            <label sclass="wLabel" value="Select a method to select an area:"/>
-            <separator />
-            <radiogroup id="cbAreaSelection" orient="vertical">
-                <radio label="Draw bounding box..." id="ciBoundingBox" />
-                <radio label="Draw polygon..." id="ciPolygon" />
-                <radio label="Draw point and radius..." id="ciPointAndRadius" />
-                <radio label="Create radius from address..." id="ciAddressRadiusSelection"/>
-                <radio label="Select gazetteer region" id="ciRegionSelection" />
-                <radio label="Select predefined (displayed) map polygon..." id="ciMapPolygon" />
-                <radio label="Define environmental envelope..." id="ciEnvironmentalEnvelope" />
-                <radio label="Upload Shapefile..." id="ciUploadShapefile" />
-                <radio label="Box - Australia" id="ciBoxAustralia" />
-                <radio label="Box - World" id="ciBoxWorld" />
-                <radio label="Box - Current View" id="ciBoxCurrentView" />
-            </radiogroup>
+            <label sclass="wLabel" value="Select a method to defining an area."/>
+            <div style="margin-left:20px" >
+                <radiogroup id="cbAreaSelection" orient="vertical" onCheck="btnOk.setDisabled(false)">
+                    <vbox>
+                    <separator />
+                    <label value="Interact with the map" />
+                    <radio label="Draw bounding box" id="ciBoundingBox" />
+                    <radio label="Draw polygon" id="ciPolygon" />
+                    <radio label="Draw point and radius" id="ciPointAndRadius" />
+                    <radio label="Select predefined (displayed) map polygon" id="ciMapPolygon" />
+
+                    <separator />
+                    <label value="Searching" />
+                    <radio label="Create radius from address" id="ciAddressRadiusSelection"/>
+                    <radio label="Select gazetteer region" id="ciRegionSelection" />                    
+
+                    <separator />
+                    <label value="Preset areas" />
+                    <radio label="Box - Australia" id="ciBoxAustralia" />
+                    <radio label="Box - World" id="ciBoxWorld" />
+                    <radio label="Box - Current View" id="ciBoxCurrentView" />
+
+                    <separator />
+                    <label value="Others" />
+                    <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
+                    <radio label="Upload Shapefile" id="ciUploadShapefile" />
+                    </vbox>
+                </radiogroup>
+            </div>
         </vbox>
 
             <separator />
             <div sclass="wButtons">
                 <hbox>
-                    <button sclass="goButton" label="Next" id="btnOk"/>
+                    <button sclass="goButton" label="Ok" id="btnOk" disabled="true"/>
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 </hbox>
             </div>

@@ -52,6 +52,12 @@ public class FilteringResultsWCController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        try {
+            refreshCount();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -69,14 +75,19 @@ public class FilteringResultsWCController extends UtilityComposer {
                 public void onEvent(Event event) throws Exception {
                     // refresh count may be required if area is
                     // not an envelope.
-                    String area = null;//getMapComposer().getSelectionArea();
-                    if (!area.startsWith("ENVELOPE(") && !area.startsWith("LAYER(")) {
-                        refreshCount();
+                    String area = null;
+                    if(getMapComposer().getPolygonLayers().size() > 0) {
+                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
+                    } else {
+                        //TODO: not view area
+                        area = getMapComposer().getViewArea();
                     }
+                    //if (!area.startsWith("ENVELOPE(") && !area.startsWith("LAYER(")) {
+                        refreshCount();
+                    //}
                 }
             };
-            //getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
-
+            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
         }
     }
 
@@ -330,7 +341,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
 
         try {
-            String area = null;//getMapComposer().getSelectionArea();
+           String area = null;
+                    if(getMapComposer().getPolygonLayers().size() > 0) {
+                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
+                    } else {
+                        //TODO: not view area
+                        area = getMapComposer().getViewArea();
+                    }
             //String polygon = getMapComposer().getSelectionAreaPolygon();
 
             StringBuffer sbProcessUrl = new StringBuffer();
@@ -401,7 +418,13 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
-        String area = null;//getMapComposer().getSelectionArea();
+        String area = null;
+                    if(getMapComposer().getPolygonLayers().size() > 0) {
+                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
+                    } else {
+                        //TODO: not view area
+                        area = getMapComposer().getViewArea();
+                    }
 
         if (area.contains("ENVELOPE(")) {
             shape = "none";
@@ -553,7 +576,13 @@ public class FilteringResultsWCController extends UtilityComposer {
     private void calculateArea() {
         try {
 
-            String area = null;//getMapComposer().getSelectionArea();
+            String area = null;
+                    if(getMapComposer().getPolygonLayers().size() > 0) {
+                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
+                    } else {
+                        //TODO: not view area
+                        area = getMapComposer().getViewArea();
+                    }
             area = StringUtils.replace(area, "POLYGON((", "");
             area = StringUtils.replace(area, "))", "");
 
@@ -634,5 +663,9 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     private double Uc(double a) {
         return a * (Math.PI / 180);
+    }
+
+    public void onClick$btnCancel(Event event) {
+        this.detach();
     }
 }

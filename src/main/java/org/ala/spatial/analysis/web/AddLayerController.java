@@ -10,6 +10,7 @@ import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.HtmlMacroComponent;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Button;
 
 /**
  *
@@ -23,6 +24,8 @@ public class AddLayerController extends UtilityComposer {
 
     String treeName, treePath, treeMetadata;
     int treeSubType;
+
+    Button btnOk;
 
     @Override
     public void afterCompose() {
@@ -49,6 +52,7 @@ public class AddLayerController extends UtilityComposer {
 
     public void onChange$lac(Event event) {
         treeName = null;
+        btnOk.setDisabled(true);
         
         LayerListComposer llc = (LayerListComposer) getFellow("layerList").getFellow("layerswindow");
 
@@ -101,6 +105,8 @@ public class AddLayerController extends UtilityComposer {
         //clear selection on tree
         LayerListComposer llc = (LayerListComposer) getFellow("layerList").getFellow("layerswindow");
         llc.tree.clearSelection();
+
+        btnOk.setDisabled(false);
     }
 
 
