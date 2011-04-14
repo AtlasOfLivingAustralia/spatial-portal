@@ -907,6 +907,7 @@ closebox a.helpButtonMain:hover {
 }
 
 .helpButton a:hover{
+    color:black;
     cursor:pointer;
 }
 
@@ -920,7 +921,8 @@ closebox a.helpButtonMain:hover {
 .spMenu li.headlink a { display: block; }
 
 /* Child lists and links */
-.spMenu li.headlink { background-color: teal; padding-top:7px; padding-bottom: 7px; padding-right: 0px; }
+.spMenu li.headlink { background-color: teal; padding-top:7px; padding-bottom: 7px; padding-right: 0px;}
+.spMenu li.headlink:hover {color: black}
 .spMenu li.headlink ul { display: none; text-align: left; padding-top: 7px; }
 .spMenu li.headlink:hover { padding-bottom: 0px;}
 .spMenu li.headlink:hover ul { display: block; }
