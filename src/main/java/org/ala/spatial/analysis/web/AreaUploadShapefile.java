@@ -16,7 +16,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.ShapefileReader;
+import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Zipper;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
@@ -103,7 +103,7 @@ public class AreaUploadShapefile extends UtilityComposer {
                 }
                 if (type.equalsIgnoreCase("shp")) {
                     System.out.println("Uploaded file is a shapefile. Loading...");
-                    Map shape = ShapefileReader.loadShapefile(new File(file));
+                    Map shape = ShapefileUtils.loadShapefile(new File(file));
 
                     if (shape == null) {
                         return;

@@ -3,15 +3,17 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Textbox;
-
 
 /**
  *
@@ -22,18 +24,18 @@ public class AreaPolygon extends UtilityComposer {
     String satServer;
     private Textbox displayGeom;
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
-    //private SettingsSupplementary settingsSupplementary = null;
+    private SettingsSupplementary settingsSupplementary;
+    Button btnNext; 
     String layerName;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-	// if (settingsSupplementary != null) {
-
-         //   satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-       // }
-        satServer = "http://spatial-dev.ala.org.au";
+        if (settingsSupplementary != null) {
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
+//        satServer = "http://spatial-dev.ala.org.au";
     }
 
     public void onClick$btnNext(Event event) {
@@ -66,14 +68,14 @@ public class AreaPolygon extends UtilityComposer {
         String selectionGeom = (String) event.getData();
 
         try {
-	
+
             String wkt = "";
             if (selectionGeom.contains("NaN NaN")) {
                 displayGeom.setValue(DEFAULT_AREA);
-              //  lastTool = null;
+                //  lastTool = null;
             } else if (selectionGeom.startsWith("LAYER(")) {
                 //reset stored size
-               // storedSize = null;
+                // storedSize = null;
                 //get WKT from this feature
                 String v = selectionGeom.replace("LAYER(", "");
                 //FEATURE(table name if known, class name)
@@ -92,7 +94,7 @@ public class AreaPolygon extends UtilityComposer {
                 wkt = selectionGeom;
                 displayGeom.setValue(wkt);
             }
-      //      updateComboBoxText();
+            //      updateComboBoxText();
             updateSpeciesList(false); // true
 
             //get the current MapComposer instance
@@ -102,13 +104,16 @@ public class AreaPolygon extends UtilityComposer {
             if (wkt.length() > 0) {
                 layerName = mc.getNextAreaLayerName("My polygon");
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
+                btnNext.setDisabled(false);
+
             }
-         //   rgAreaSelection.getSelectedItem().setChecked(false);
+            //   rgAreaSelection.getSelectedItem().setChecked(false);
 
         } catch (Exception e) {//FIXME
         }
     }
-         /**
+
+    /**
      * updates species list analysis tab with refreshCount
      */
     void updateSpeciesList(boolean populateSpeciesList) {
@@ -123,7 +128,7 @@ public class AreaPolygon extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-       // updateAreaLabel();
+        // updateAreaLabel();
     }
 
     /**
@@ -140,7 +145,7 @@ public class AreaPolygon extends UtilityComposer {
         return mapComposer;
     }
 
-      /**
+    /**
      * get Active Area as WKT string, from a layer name
      *
      * @param layer name of layer as String
@@ -207,8 +212,8 @@ public class AreaPolygon extends UtilityComposer {
         System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + wkt);
         return wkt;
     }
-    
-      /**
+
+    /**
      * transform json string with geometries into wkt.
      *
      * extracts 'shape_area' if available and assigns it to storedSize.

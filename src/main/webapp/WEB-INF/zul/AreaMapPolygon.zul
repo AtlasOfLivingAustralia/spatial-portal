@@ -1,22 +1,19 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="areamappolygonwindow" use="org.ala.spatial.analysis.web.AreaMapPolygon"
-    apply="org.ala.spatial.analysis.web.AreaMapPolygon" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+    apply="org.ala.spatial.analysis.web.AreaMapPolygon" sclass="embedWindows" height="100%">
         <caption label="Select Map Polygon" />
-        <vbox width="100%">
+        <vbox sclass="embedWindowsContent">
             <separator />
             <label sclass="wordwrap" value="1. Zoom and pan to the area of interest." />
             <label sclass="wordwrap" value="2. Identify the polygon of interest by a (left) mouse click within that polygon." />
             <label sclass="wordwrap" value="3. The area selected will be highlighted red." />
             <separator />
-             <hbox>
-                <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
-                <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
-                <button sclass="goButton" label="Clear" id="btnClear"/>
-            </hbox>
-            <div style="float:right;margin-right:5px">
+            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
+            <div sclass="embedWindowsButtons">
                 <hbox>
-                    <button sclass="goButton" label="OK" id="btnNext"/>
+                    <button sclass="goButton" label="Clear" id="btnClear"/>
+                    <button sclass="goButton" label="Next" id="btnNext"/>
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 </hbox>
             </div>

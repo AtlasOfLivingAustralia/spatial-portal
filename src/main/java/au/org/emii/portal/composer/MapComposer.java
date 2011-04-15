@@ -1,9 +1,7 @@
 package au.org.emii.portal.composer;
 
-import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.databinding.ActiveLayerRenderer;
 import au.org.emii.portal.request.DesktopState;
-import au.org.emii.portal.databinding.EmptyActiveLayersRenderer;
 import au.org.emii.portal.wms.GenericServiceAndBaseLayerSupport;
 import au.org.emii.portal.net.HttpConnection;
 import au.org.emii.portal.motd.MOTD;
@@ -24,28 +22,13 @@ import au.org.emii.portal.util.SessionPrint;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
 import java.awt.Color;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -54,85 +37,53 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONObject;
 import org.ala.spatial.analysis.web.AddToolComposer;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
-import org.ala.spatial.analysis.web.AnalysisController;
 import org.ala.spatial.analysis.web.ContextualMenu;
-import org.ala.spatial.analysis.web.LayersAutoComplete;
-import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.LegendMaker;
 import org.ala.spatial.util.ScatterplotData;
-import org.ala.spatial.util.UserData;
+import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
-import org.geotools.data.FeatureSource;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.opengis.feature.simple.SimpleFeature;
-import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
 import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
-import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
-import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
-import org.zkoss.zul.Button;
 import org.zkoss.zul.Caption;
 import org.zkoss.zul.Checkbox;
-import org.zkoss.zul.Combobox;
-import org.zkoss.zul.Comboitem;
-import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Filedownload;
-import org.zkoss.zul.Fileupload;
-import org.zkoss.zul.Hbox;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Iframe;
-import org.zkoss.zul.Image;
 import org.zkoss.zul.West;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zul.Listbox;
 import org.zkoss.zul.Listcell;
 import org.zkoss.zul.Listitem;
-import org.zkoss.zul.ListitemRenderer;
 import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.Radio;
-import org.zkoss.zul.Radiogroup;
-import org.zkoss.zul.Separator;
-import org.zkoss.zul.SimpleListModel;
-import org.zkoss.zul.Slider;
-import org.zkoss.zul.Tab;
 import org.zkoss.zul.Toolbarbutton;
-import org.zkoss.zul.Vbox;
 import org.zkoss.zul.Window;
 import org.zkoss.zul.api.Textbox;
-import org.zkoss.zul.event.ListDataEvent;
 
 /**
  * ZK composer for the index.zul page
@@ -3921,4 +3872,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Clients.evalJavaScript(response);
     }
     
+    public void exportArea(Event event) {
+        try {
+            MapLayer ml = llc2MapLayer;
+            if (ml.isPolygonLayer()) {
+
+                String id = String.valueOf(System.currentTimeMillis());
+
+                File shpDir = new File("/data/ala/runtime/output/layers/"+id+"/");
+                shpDir.mkdirs();
+                File shpfile = new File("/data/ala/runtime/output/layers/"+id+"/ActiveArea.shp");
+                ShapefileUtils.saveShapefile(shpfile,ml.getWKT());
+
+                String downloadUrl = settingsSupplementary.getValue(CommonData.SAT_URL);
+                downloadUrl += "/ws/download/"+id;
+                Filedownload.save(new URL(downloadUrl), "application/zip");
+
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to export user area");
+            e.printStackTrace(System.out);
+        }
+    }
 }

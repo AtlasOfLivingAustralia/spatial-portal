@@ -83,7 +83,7 @@ import org.zkoss.zul.Window;
 import java.io.File;
 import java.io.StringReader;
 import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.ShapefileReader;
+import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Zipper;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Events;

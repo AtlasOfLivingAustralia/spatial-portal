@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -25,6 +26,7 @@ import org.zkoss.zul.Textbox;
  */
 public class AreaMapPolygon extends UtilityComposer {
 
+    SettingsSupplementary settingsSupplementary;
     String satServer;
     String geoServer;
     private Textbox displayGeom;
@@ -34,13 +36,13 @@ public class AreaMapPolygon extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        satServer = "http://spatial-dev.ala.org.au";
-        geoServer = "http://spatial-dev.ala.org.au/geoserver/rest";
+        //satServer = "http://spatial-dev.ala.org.au";
+        //geoServer = "http://spatial-dev.ala.org.au/geoserver/rest";
 
-//        if (settingsSupplementary != null) {
-//            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-//            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-//        }
+        if (settingsSupplementary != null) {
+            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
+            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
+        }
 
     }
 

@@ -517,6 +517,6 @@
         <zkVersion>5.0.5</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
-        <geotools.version>2.6-SNAPSHOT</geotools.version>
+        <geotools.version>2.7-SNAPSHOT</geotools.version>
     </properties>
 </project>

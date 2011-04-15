@@ -1,21 +1,18 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="areapolygonwindow" use="org.ala.spatial.analysis.web.AreaPolygon"
-    apply="org.ala.spatial.analysis.web.AreaPolygon" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+    apply="org.ala.spatial.analysis.web.AreaPolygon" sclass="embedWindows" height="100%">
         <caption label="Draw Polygon" />
-        <vbox width="100%">
+        <vbox sclass="embedWindowsContent">
             <separator />
             <label sclass="wordwrap" value="1. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button." />
             <label sclass="wordwrap" value="2. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area." />
             <separator />
-             <hbox>
-                <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
-                <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
-                <button sclass="goButton" label="Clear" id="btnClear"/>
-            </hbox>
-            <div style="float:right;margin-right:5px;">
-                <hbox>                    
-                    <button sclass="goButton" label="OK" id="btnNext"/>
+            <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
+            <div sclass="embedWindowsButtons">
+                <hbox>
+                    <button sclass="goButton" label="Clear" id="btnClear"/>
+                    <button sclass="goButton" label="Next" id="btnNext" disabled="true" />
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 </hbox>
             </div>
