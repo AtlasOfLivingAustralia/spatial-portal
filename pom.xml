@@ -345,9 +345,9 @@
             <version>1.11</version>
         </dependency>
 	<dependency>
-	    <groupId>zk</groupId>
+	    <groupId>org.zkoss.theme</groupId>
 	    <artifactId>silvertail</artifactId>
-	    <version>1</version>
+	    <version>5.0.6.1</version>
 	</dependency>
     </dependencies>
     <issueManagement>
