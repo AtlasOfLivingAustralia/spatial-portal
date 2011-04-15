@@ -344,6 +344,11 @@
             <artifactId>jts</artifactId>
             <version>1.11</version>
         </dependency>
+	<dependency>
+	    <groupId>zk</groupId>
+	    <artifactId>silvertail</artifactId>
+	    <version>1</version>
+	</dependency>
     </dependencies>
     <issueManagement>
         <system>Google Code</system>
@@ -442,6 +447,12 @@
         </plugins>
     </build>
     <repositories>
+         <repository>
+           <id>ala-repository</id>
+           <name>ala-repository</name>
+           <url>http://maven.ala.org.au/repository</url>
+         </repository>
+
         <repository>
             <releases>
                 <updatePolicy>never</updatePolicy>
