@@ -72,10 +72,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                     <div id="westContent" class="westContent" visible="true" vflex="1" height="500px">
                         <div height="50px">
                             <hbox height="40px">
-
-                                <div class="menu" style="position:absolute;float:left;left:50px; margin-top:5px">
+                                <div class="menu" style="position:absolute;float:left;left:0px;width:400px;margin-top:0px">
                                     <n:ul>
-                                        <n:li><n:a href="#">Add To Map</n:a>
+                                        <n:li><n:a style="width:90px" href="#">Add To Map</n:a>
                                             <n:ul>
                                                 <n:li id="addSpecies">
                                                     <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
@@ -88,7 +87,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </n:li>
                                             </n:ul>
                                         </n:li>
-                                        <n:li><n:a href="#">Tools</n:a>
+                                        <n:li><n:a style="width:80px" href="#">Tools</n:a>
                                             <n:ul>
                                                 <n:li id="runSampling">
                                                     <n:a href="#" n:onClick="runSamplingAction();">Sampling</n:a>
@@ -123,7 +122,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:ul>
                                         </n:li>
                                         <n:li>
-                                            <n:a href="#" n:onClick="loadHelp();">Help</n:a>
+                                            <n:a style="width:80px" href="#" n:onClick="loadHelp();">Help</n:a>
                                         </n:li>
                                     </n:ul>
                                 </div>

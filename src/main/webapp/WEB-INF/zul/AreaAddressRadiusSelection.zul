@@ -25,11 +25,13 @@
             <hbox>
                 <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
                 <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
+                <button sclass="goButton" label="Create" id="btnCreate"/>
             </hbox>
             <div style="float:right;margin-right:5px">
-                <button sclass="goButton" label="Create" id="btnCreate"/>
-                <button sclass="goButton" label="OK" id="btnOk"/>
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                <hbox>
+                    <button sclass="goButton" label="OK" id="btnOk"/>
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                </hbox>
             </div>
             <separator />
         </vbox>

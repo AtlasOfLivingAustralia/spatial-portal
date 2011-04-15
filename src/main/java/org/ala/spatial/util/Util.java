@@ -1,10 +1,10 @@
-package org.ala.spatial.analysis.web;
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.ala.spatial.util;
 
-import geo.google.GeoAddressStandardizer;
-import java.util.List;
-import org.zkoss.zk.ui.event.Event;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
@@ -98,112 +98,90 @@ import org.zkoss.zul.Fileupload;
  *
  * @author Adam
  */
-public class AreaAddressRadiusSelection extends UtilityComposer {
+public class Util {
 
-    private Textbox addressBox;
-    Combobox cbRadius;
-    Comboitem ci1km;
-    Comboitem ci5km;
-    Comboitem ci10km;
-    Comboitem ci20km;
-    Label addressLabel;
-    private Textbox displayGeom;
-    private static final String DEFAULT_AREA = "CURRENTVIEW()";
-    String layerName;
+    /**
+     * get Active Area as WKT string, from a layer name and feature class
+     *
+     * @param layer name of layer as String
+     * @param classification value of feature classification
+     * @param register_shape true to register the shape with alaspatial shape register
+     * @return
+     */
+    public static String getWktFromURI(String layer, boolean register_shape) {
+        String feature_text = null;//DEFAULT_AREA;
 
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
-        cbRadius.setReadonly(true);
-        cbRadius.setDisabled(true);
-        cbRadius.setSelectedItem(ci1km);
-    }
-
-    public void onClick$btnOk(Event event) {
-        this.detach();
-    }
-
-    public void onClick$btnCreate(Event event) {
-        createRadiusFromAddress();
-    }
-
-    public void onClick$btnCancel(Event event) {
-        MapComposer mc = getThisMapComposer();
-        if(layerName != null && mc.getMapLayer(layerName) != null) {
-            mc.removeLayer(layerName);
+        if (!register_shape) {
+            String json = readGeoJSON(layer);
+            return feature_text = wktFromJSON(json);
         }
-        this.detach();
-    }
 
-    public void createRadiusFromAddress() {
-        String wkt = radiusFromAddress(addressBox.getText());
-        if (wkt.contentEquals("none")) {
-            return;
-        } else {
-            try {
-                MapComposer mc = getThisMapComposer();
-                layerName = mc.getNextAreaLayerName("My circle");
-                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
-                displayGeom.setText(wkt);
-            }
-            catch(Exception e) {
-                logger.error("Error adding WKT layer");
-            }
-        }
-    }
-
-    public void onClick$btnFindAddress(Event event) {
         try {
-            GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
+            String uri = layer;
+            String gaz = "gazetteer/";
+            int i1 = uri.indexOf(gaz);
+            int i2 = uri.indexOf("/", i1 + gaz.length() + 1);
+            int i3 = uri.lastIndexOf(".json");
+            String table = uri.substring(i1 + gaz.length(), i2);
+            String value = uri.substring(i2 + 1, i3);
+            //test if available in alaspatial
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/lookup");
+            get.addParameter("table", table);
+            get.addParameter("value", value);
+            get.addRequestHeader("Accept", "text/plain");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            System.out.println("register table and value with alaspatial: " + slist);
 
-            List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getText() + ", Australia");
+            if (slist != null && result == 200) {
+                feature_text = "LAYER(" + layer + "," + slist + ")";
 
-            addressLabel.setValue(addresses.get(0).getAddressLine());
-            cbRadius.setDisabled(false);
-        } catch (geo.google.GeoException ge) {
-            ge.printStackTrace();
+                return feature_text;
+            }
+        } catch (Exception e) {
+            System.out.println("no alaspatial shape for layer: " + layer);
+            e.printStackTrace();
         }
-    }
-
-    private String radiusFromAddress(String address) {
         try {
+            //class_name is same as layer name
+            String json = readGeoJSON(layer);
+            feature_text = wktFromJSON(json);
 
-            GeoAddressStandardizer st = new GeoAddressStandardizer("AABBCC");
-
-            List<GeoAddress> addresses = st.standardizeToGeoAddresses(address + ", Australia");
-
-            GeoCoordinate gco = addresses.get(0).getCoordinate();
-
-            double radius = 1000;
-            if (cbRadius.getSelectedItem() == ci1km) {
-                radius = 1000;
+            if (!register_shape) {
+                return feature_text;
             }
-            if (cbRadius.getSelectedItem() == ci5km) {
-                radius = 5000;
-            }
-            if (cbRadius.getSelectedItem() == ci10km) {
-                radius = 10000;
-            }
-            if (cbRadius.getSelectedItem() == ci20km) {
-                radius = 20000;
-            }
-            return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
 
-        } catch (geo.google.GeoException ge) {
-            return "none";
+            //register wkt with alaspatial and use LAYER(layer name, id)
+            HttpClient client = new HttpClient();
+            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/register");
+            get.addParameter("area", feature_text);
+            get.addRequestHeader("Accept", "text/plain");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            System.out.println("register wkt shape with alaspatial: " + slist);
+
+            feature_text = "LAYER(" + layer + "," + slist + ")";
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + feature_text);
+        return feature_text;
     }
 
-    private String createCircle(double x, double y, final double RADIUS) {
+    static public String createCircle(double x, double y, final double RADIUS) {
         return createCircle(x, y, RADIUS, 50);
 
     }
 
-    private String createCircle(double x, double y, final double RADIUS, int sides) {
+    static public String createCircle(double x, double y, final double RADIUS, int sides) {
 
         try {
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
+//            CoordinateReferenceSystem dataCRS = CRS.decode("EPSG:4326");
+//            CoordinateReferenceSystem googleCRS = CRS.decode("EPSG:900913");
             String wkt4326 = "GEOGCS[" + "\"WGS 84\"," + "  DATUM[" + "    \"WGS_1984\","
                     + "    SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
                     + "    TOWGS84[0,0,0,0,0,0,0]," + "    AUTHORITY[\"EPSG\",\"6326\"]],"
@@ -256,28 +234,74 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
             LinearRing ring = geometryFactory.createLinearRing(coords);
             Polygon polygon = geometryFactory.createPolygon(ring, null);
 
+
+            //Geometry polyGeom = JTS.transform(coords,reverseTransform);
             WKTWriter writer = new WKTWriter();
             String wkt = writer.write(polygon);
             return wkt.replaceAll("POLYGON ", "POLYGON").replaceAll(", ", ",");
 
         } catch (Exception e) {
             System.out.println("Circle fail!");
-            e.printStackTrace();
+            return "none";
+        }
+
+    }
+
+    static private String readGeoJSON(String feature) {
+        StringBuffer content = new StringBuffer();
+
+        try {
+            // Construct data
+
+            // Send data
+            URL url = new URL(feature);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+
+            // Get the response
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = rd.readLine()) != null) {
+                content.append(line);
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+        }
+        return content.toString();
+    }
+
+    /**
+     * transform json string with geometries into wkt.
+     *
+     * extracts 'shape_area' if available and assigns it to storedSize.
+     *
+     * @param json
+     * @return
+     */
+    static private String wktFromJSON(String json) {
+        try {
+            JSONObject obj = JSONObject.fromObject(json);
+            JSONArray geometries = obj.getJSONArray("geometries");
+            String wkt = "";
+            for (int i = 0; i < geometries.size(); i++) {
+                String coords = geometries.getJSONObject(i).getString("coordinates");
+
+                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
+                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
+
+                } else {
+                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
+                }
+
+                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
+            }
+            return wkt;
+        } catch (JSONException e) {
             return "none";
         }
     }
 
-       /**
-     * Gets the main pages controller so we can add a
-     * drawing tool to the map
-     * @return MapComposer = map controller class
-     */
-    private MapComposer getThisMapComposer() {
-
-        MapComposer mapComposer = null;
-        Page page = getPage();
-        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
-
-        return mapComposer;
+    static public double convertPixelsToMeters(int pixels, double latitude, int zoom) {
+        return ((Math.cos(latitude * Math.PI / 180.0) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom))) * pixels;
     }
 }

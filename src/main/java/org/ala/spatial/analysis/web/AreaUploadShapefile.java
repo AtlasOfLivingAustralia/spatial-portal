@@ -111,7 +111,8 @@ public class AreaUploadShapefile extends UtilityComposer {
                         String wkt = (String) shape.get("wkt");
                         wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
                         System.out.println("Got shapefile wkt...");
-                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, "Active Area");
+                        String layerName = getMapComposer().getNextAreaLayerName(m.getName());
+                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName);
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
                     }

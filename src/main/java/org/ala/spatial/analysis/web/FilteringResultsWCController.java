@@ -49,6 +49,12 @@ public class FilteringResultsWCController extends UtilityComposer {
     Label lblArea;
     Label lblArea2val;
 
+    String reportArea = null;
+
+    public void setReportArea(String wkt) {
+        reportArea = wkt;
+    }
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -76,7 +82,9 @@ public class FilteringResultsWCController extends UtilityComposer {
                     // refresh count may be required if area is
                     // not an envelope.
                     String area = null;
-                    if(getMapComposer().getPolygonLayers().size() > 0) {
+                    if(reportArea != null) {
+                        area = reportArea;
+                    } else if(getMapComposer().getPolygonLayers().size() > 0) {
                         area = getMapComposer().getPolygonLayers().get(0).getWKT();
                     } else {
                         //TODO: not view area
@@ -441,9 +449,10 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    static public void open() {
+    static public void open(String wkt) {
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
                 "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);
+        win.setReportArea(wkt);
         try {
             win.doModal();
         } catch (Exception e) {

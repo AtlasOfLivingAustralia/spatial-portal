@@ -88,6 +88,8 @@ public class AddToolComposer extends UtilityComposer {
                 String key = it.next();
                 this.params.put(key, params.get(key));
             }
+        } else {
+            this.params = params;
         }
     }
 

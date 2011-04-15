@@ -17,6 +17,7 @@ public class AreaBoundingBox extends UtilityComposer {
     private String boxGeom;
     private Textbox displayGeom;
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
+    String layerName;
 
     @Override
     public void afterCompose() {
@@ -29,7 +30,9 @@ public class AreaBoundingBox extends UtilityComposer {
 
     public void onClick$btnClear(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         String script = mc.getOpenLayersJavascript().addBoxDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         displayGeom.setValue(DEFAULT_AREA);
@@ -37,7 +40,9 @@ public class AreaBoundingBox extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         this.detach();
     }
 
@@ -61,7 +66,8 @@ public class AreaBoundingBox extends UtilityComposer {
             //add feature to the map as a new layer
             //mc.removeLayer("Area Selection");
             //mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
-            MapLayer mapLayer = mc.addWKTLayer(boxGeom, "Active Area");
+            layerName = mc.getNextAreaLayerName("My box");
+            MapLayer mapLayer = mc.addWKTLayer(boxGeom, layerName);
 
 		//rgAreaSelection.getSelectedItem().setChecked(false);
 

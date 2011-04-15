@@ -37,6 +37,8 @@ public class SpeciesListResults extends UtilityComposer {
     int results_count = 0;
     int results_count_occurrences = 0;
 
+    public String wkt;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -142,7 +144,10 @@ public class SpeciesListResults extends UtilityComposer {
 
         Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
 
-        getMapComposer().updateUserLogAnalysis("species list", null/*getMapComposer().getSelectionArea()*/, "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
+        if(wkt == null) {
+            wkt = getMapComposer().getViewArea();
+        }
+        getMapComposer().updateUserLogAnalysis("species list", wkt/*getMapComposer().getSelectionArea()*/, "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
 
         detach();
     }
@@ -177,8 +182,11 @@ public class SpeciesListResults extends UtilityComposer {
 
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
-        String area = null;//getMapComposer().getSelectionArea();
-
+        String area = wkt;//getMapComposer().getSelectionArea();
+        if(area == null) {
+            wkt = getMapComposer().getViewArea();
+            area = wkt;
+        }
         if (area.contains("ENVELOPE(")) {
             shape = "none";
             pid = area.substring(9, area.length() - 1);

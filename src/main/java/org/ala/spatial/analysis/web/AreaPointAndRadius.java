@@ -21,6 +21,7 @@ public class AreaPointAndRadius extends UtilityComposer {
 	String satServer;
     private Textbox displayGeom;
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
+    String layerName;
     
     @Override
     public void afterCompose() {
@@ -39,7 +40,9 @@ public class AreaPointAndRadius extends UtilityComposer {
 
     public void onClick$btnClear(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         String script = mc.getOpenLayersJavascript().addRadiusDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         displayGeom.setText(DEFAULT_AREA);
@@ -47,7 +50,9 @@ public class AreaPointAndRadius extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         this.detach();
     }
 
@@ -93,7 +98,8 @@ public class AreaPointAndRadius extends UtilityComposer {
 
             //add feature to the map as a new layer
             if (wkt.length() > 0) {
-                MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+                layerName = mc.getNextAreaLayerName("My circle");
+                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
             }
          //   rgAreaSelection.getSelectedItem().setChecked(false);
 

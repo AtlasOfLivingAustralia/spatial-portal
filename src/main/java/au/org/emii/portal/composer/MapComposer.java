@@ -59,6 +59,7 @@ import java.util.zip.ZipInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONObject;
+import org.ala.spatial.analysis.web.AddToolComposer;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.AnalysisController;
@@ -66,11 +67,13 @@ import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.LayersAutoComplete;
 import org.ala.spatial.analysis.web.SelectionController;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
+import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.LegendMaker;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.UserData;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -3531,48 +3534,59 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$btnAddSpecies(Event event) {
-        openModal("WEB-INF/zul/AddSpecies.zul");
+        openModal("WEB-INF/zul/AddSpecies.zul", null);
     }
 
     public void onClick$btnAddPlace(Event event) {
-        openModal("WEB-INF/zul/AddPlace.zul");
+        openModal("WEB-INF/zul/AddPlace.zul", null);
     }
 
     public void onClick$btnAddArea(Event event) {
-        openModal("WEB-INF/zul/AddArea.zul");
+        openModal("WEB-INF/zul/AddArea.zul", null);
     }
 
     public void onClick$btnAddLayer(Event event) {
-        openModal("WEB-INF/zul/AddLayer.zul");
+        openModal("WEB-INF/zul/AddLayer.zul", null);
     }
 
     public void onClick$btnAddModel(Event event) {
-        openModal("WEB-INF/zul/AddModel.zul");
+        openModal("WEB-INF/zul/AddModel.zul", null);
     }
 
     public void onClick$btnAddMaxent(Event event) {
-        openModal("WEB-INF/zul/AddToolMaxent.zul");
+        openModal("WEB-INF/zul/AddToolMaxent.zul", null);
     }
 
     public void onClick$btnAddSampling(Event event) {
-        openModal("WEB-INF/zul/AddToolSampling.zul");
+        openModal("WEB-INF/zul/AddToolSampling.zul", null);
     }
 
     public void onClick$btnAddAloc(Event event) {
-        openModal("WEB-INF/zul/AddToolALOC.zul");
+        openModal("WEB-INF/zul/AddToolALOC.zul", null);
     }
 
     public void onClick$btnAddScatterplot(Event event) {
-        openModal("WEB-INF/zul/AddToolScatterplot.zul");
+        openModal("WEB-INF/zul/AddToolScatterplot.zul", null);
     }
 
-    void openModal(String page) {
+    public Window openModal(String page, Hashtable<String, Object> params) {
         Window window = (Window) Executions.createComponents(page, this, null);
+
+        //try to set params before opening the window
+        try {
+            if(params != null) {
+                ((AddToolComposer)window).setParams(params);        
+            }
+        } catch(Exception e) {
+            
+        }
+
         try {
             window.doModal();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return window;
     }
 
     void openOverlapped(String page) {
@@ -3789,5 +3803,122 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void refreshContextualMenu() {
         ((ContextualMenu) contextualMenu.getFellow("contextualMenuWindow")).refresh();
+        MapLayer selectedLayer = getActiveLayersSelection(false);
+        if(selectedLayer != null && selectedLayer.isGridLayer()) {
+            Clients.evalJavaScript("mapFrame.showActiveHover();");
+        } else {
+            Clients.evalJavaScript("mapFrame.hideActiveHover();");
+        }
     }
+
+    /**
+     * Searches the occurrences at a given point and then maps the polygon feature
+     * found at the location (for the current top contextual layer).
+     * @param event triggered by the usual javascript trickery
+     */
+    public void onSearchSpeciesPoint(Event event) {
+        String searchSpeciesPoint = (String) event.getData();
+
+        String params[] = searchSpeciesPoint.split(",");
+        double lon = Double.parseDouble(params[0]);
+        double lat = Double.parseDouble(params[1]);
+
+        int zoom = getMapComposer().getMapZoom();
+
+        double BUFFER_DISTANCE = 0.1;
+
+        String response = "";
+
+        try {
+
+            Map speciesfilters = (Map) Sessions.getCurrent().getAttribute("speciesfilters");
+            if (speciesfilters == null) {
+                return;
+            }
+
+            boolean hasActiveArea = false;
+            String lsidtypes = "";
+            String lsids = "";
+            Iterator it = speciesfilters.keySet().iterator();
+            while (it.hasNext()) {
+                String lt = (String) it.next();
+                String li = (String) speciesfilters.get(lt);
+                li = li.split("=")[1];
+                li = li.replaceAll("'", "");
+                if (li.indexOf(";color") > 0) {
+                    li = li.substring(0, li.indexOf(";color"));
+                }
+
+                lsidtypes += "type=" + lt;
+                if (li.equalsIgnoreCase("aa")) {
+                    hasActiveArea = true;
+                }
+                if (it.hasNext()) {
+                    lsidtypes += "&";
+                }
+
+                lsids += "lsid=" + URLEncoder.encode(li, "UTF-8");
+                if (it.hasNext()) {
+                    lsids += "&";
+                }
+            }
+
+            String reqUri;
+
+            //get max radius for visible points layers
+            int maxSize = 0;
+            List udl = getMapComposer().getPortalSession().getActiveLayers();
+            Iterator iudl = udl.iterator();
+            MapLayer mapLayer = null;
+            int gridSize = 256 / 8;   //size of grids in pixels
+            while (iudl.hasNext()) {
+                MapLayer ml = (MapLayer) iudl.next();
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md != null && md.getSpeciesLsid() != null
+                        && !ml.isClustered() && ml.isDisplayed()) {
+                    if (ml.getSizeVal() > maxSize) {
+                        maxSize = ml.getSizeVal();
+                    }
+                    if (ml.getColourMode().equals("grid") && gridSize > maxSize) {
+                        maxSize = gridSize;
+                    }
+                }
+            }
+
+            //small buffer for circles not being circles
+            maxSize += 5;
+
+            //convert to radius in m at zoom, then back to longitude
+            double radius = Util.convertPixelsToMeters(maxSize, lat, zoom);
+
+            String wkt2 = Util.createCircle(lon, lat, radius);
+
+            reqUri = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial";
+            reqUri += "/species/info/now";
+            reqUri += "?area=" + URLEncoder.encode(wkt2, "UTF-8");
+            reqUri += "&" + lsids;
+
+//            if (hasActiveArea) {
+//                reqUri += "&aa=" + URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8");
+//            }
+
+            System.out.println("locfeat calling: " + reqUri);
+
+            HttpClient client = new HttpClient();
+            GetMethod post = new GetMethod(reqUri);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
+            response = slist;
+            System.out.println("locfeat data: " + slist);
+        } catch (Exception e) {
+            System.out.println("error loading new geojson:");
+            e.printStackTrace(System.out);
+        }
+
+        response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
+        Clients.evalJavaScript(response);
+    }
+    
 }

@@ -70,7 +70,8 @@ function setSearchPointAnalysis(point_orig) {
     var mapObj = window.frames.mapFrame.map;
     point.transform(mapObj.projection, mapObj.displayProjection);
     var value = point.lon + "," + point.lat;
-    zAu.send(new zk.Event(zk.Widget.$(jq('$areamappolygonwindow')[0]), 'onSearchPoint', value));
+    //zAu.send(new zk.Event(zk.Widget.$(jq('$areamappolygonwindow')[0]), 'onSearchPoint', value));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onSearchPoint', value));
 }
 
 function setSpeciesSearchPointAnalysis(point_orig) {

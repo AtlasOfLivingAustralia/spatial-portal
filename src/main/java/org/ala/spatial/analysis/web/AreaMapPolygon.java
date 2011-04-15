@@ -29,6 +29,7 @@ public class AreaMapPolygon extends UtilityComposer {
     String geoServer;
     private Textbox displayGeom;
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
+    String layerName;
 
     @Override
     public void afterCompose() {
@@ -49,7 +50,9 @@ public class AreaMapPolygon extends UtilityComposer {
 
     public void onClick$btnClear(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         String script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         displayGeom.setValue(DEFAULT_AREA);
@@ -57,7 +60,9 @@ public class AreaMapPolygon extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         this.detach();
     }
 
@@ -131,7 +136,8 @@ public class AreaMapPolygon extends UtilityComposer {
                         } else {
                             displayGeom.setValue(feature_text);
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
-                            MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+                            layerName = mc.getNextAreaLayerName("Map polygon");
+                            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
                             updateSpeciesList(false);
                             //searchPoint.setValue("");
                             //setInstructions(null, null);

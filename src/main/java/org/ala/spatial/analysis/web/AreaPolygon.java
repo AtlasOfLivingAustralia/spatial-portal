@@ -23,6 +23,7 @@ public class AreaPolygon extends UtilityComposer {
     private Textbox displayGeom;
     private static final String DEFAULT_AREA = "CURRENTVIEW()";
     //private SettingsSupplementary settingsSupplementary = null;
+    String layerName;
 
     @Override
     public void afterCompose() {
@@ -41,7 +42,9 @@ public class AreaPolygon extends UtilityComposer {
 
     public void onClick$btnClear(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         String script = mc.getOpenLayersJavascript().addPolygonDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         displayGeom.setValue(DEFAULT_AREA);
@@ -49,7 +52,9 @@ public class AreaPolygon extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         MapComposer mc = getThisMapComposer();
-        mc.removeLayer("Active Area");
+        if(layerName != null && mc.getMapLayer(layerName) != null) {
+            mc.removeLayer(layerName);
+        }
         this.detach();
     }
 
@@ -95,7 +100,8 @@ public class AreaPolygon extends UtilityComposer {
 
             //add feature to the map as a new layer
             if (wkt.length() > 0) {
-                MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+                layerName = mc.getNextAreaLayerName("My polygon");
+                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
             }
          //   rgAreaSelection.getSelectedItem().setChecked(false);
 
