@@ -8,6 +8,10 @@
             <label sclass="wordwrap" value="1. Using the mouse, position the cursor at the first point to be digitized and click the left mouse button." />
             <label sclass="wordwrap" value="2. Move the cursor to the second vertext of the polygon and click the mouse button. Repeat as required to define the area." />
             <separator />
+             <hbox>
+                <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
+                <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
+            </hbox>
             <div style="float:right;margin-right:5px">
                 <button sclass="goButton" label="Clear" id="btnClear"/>
                 <button sclass="goButton" label="Next" id="btnNext"/>

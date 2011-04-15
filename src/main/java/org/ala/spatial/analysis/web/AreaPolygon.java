@@ -8,9 +8,9 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Textbox;
 
 
 /**
@@ -20,6 +20,8 @@ import org.zkoss.zk.ui.event.Event;
 public class AreaPolygon extends UtilityComposer {
 
     String satServer;
+    private Textbox displayGeom;
+    private static final String DEFAULT_AREA = "CURRENTVIEW()";
     //private SettingsSupplementary settingsSupplementary = null;
 
     @Override
@@ -30,7 +32,7 @@ public class AreaPolygon extends UtilityComposer {
 
          //   satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
        // }
-	satServer = "http://spatial-dev.ala.org.au";
+        satServer = "http://spatial-dev.ala.org.au";
     }
 
     public void onClick$btnNext(Event event) {
@@ -42,11 +44,12 @@ public class AreaPolygon extends UtilityComposer {
         mc.removeLayer("Active Area");
         String script = mc.getOpenLayersJavascript().addPolygonDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        displayGeom.setValue(DEFAULT_AREA);
     }
 
     public void onClick$btnCancel(Event event) {
-	MapComposer mc = getThisMapComposer();
-	mc.removeLayer("Active Area");
+        MapComposer mc = getThisMapComposer();
+        mc.removeLayer("Active Area");
         this.detach();
     }
 
@@ -61,7 +64,7 @@ public class AreaPolygon extends UtilityComposer {
 	
             String wkt = "";
             if (selectionGeom.contains("NaN NaN")) {
-              //  displayGeom.setValue(DEFAULT_AREA);
+                displayGeom.setValue(DEFAULT_AREA);
               //  lastTool = null;
             } else if (selectionGeom.startsWith("LAYER(")) {
                 //reset stored size
@@ -71,7 +74,7 @@ public class AreaPolygon extends UtilityComposer {
                 //FEATURE(table name if known, class name)
                 v = v.substring(0, v.length() - 1);
                 wkt = getLayerGeoJsonAsWkt(v, true);
-               // displayGeom.setValue(wkt);
+                displayGeom.setValue(wkt);
 
                 //for display
                 wkt = getLayerGeoJsonAsWkt(v, false);
@@ -82,7 +85,7 @@ public class AreaPolygon extends UtilityComposer {
 //                }
             } else {
                 wkt = selectionGeom;
-//                displayGeom.setValue(wkt);
+                displayGeom.setValue(wkt);
             }
       //      updateComboBoxText();
             updateSpeciesList(false); // true

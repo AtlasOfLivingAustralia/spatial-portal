@@ -9,6 +9,10 @@
             <label sclass="wordwrap" value="2. Using the mouse, position the cursor over the area of interest and hold down the left mouse button and drag a rectangle to the required shape and size." />
             <label sclass="wordwrap" value="3. Release the mouse button." />
             <separator />
+            <hbox>
+                <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
+                <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
+            </hbox>
             <div style="float:right;margin-right:5px">
             <button sclass="goButton" label="Clear" id="btnClear"/>
                 <button sclass="goButton" label="Next" id="btnNext"/>

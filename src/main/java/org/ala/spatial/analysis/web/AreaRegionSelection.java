@@ -19,9 +19,9 @@ import org.ala.spatial.gazetteer.AutoComplete;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Button;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -35,6 +35,8 @@ public class AreaRegionSelection extends UtilityComposer {
     Button btnClear;
     Button btnCancel;
     private AutoComplete gazetteerAuto;
+    private Textbox displayGeom;
+    private static final String DEFAULT_AREA = "CURRENTVIEW()";
     //private SettingsSupplementary settingsSupplementary = null;
 
     @Override
@@ -56,8 +58,7 @@ public class AreaRegionSelection extends UtilityComposer {
     public void onClick$btnClear(Event event) {
         MapComposer mc = getThisMapComposer();
         mc.removeLayer("Active Area");
-        
-       
+        displayGeom.setText(DEFAULT_AREA);
     }
 
     public void onClick$btnCancel(Event event) {
@@ -102,12 +103,14 @@ public class AreaRegionSelection extends UtilityComposer {
 
 
         //add feature to the map as active area
-
         String json = readGeoJSON(geoServer + link);
         String wkt = wktFromJSON(json);
         MapComposer mc = getThisMapComposer();
         MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
         //  updateSpeciesList(false);
+
+        String feature_text = getWktFromURI(geoServer + link, true);
+        displayGeom.setValue(feature_text);
 
 
 

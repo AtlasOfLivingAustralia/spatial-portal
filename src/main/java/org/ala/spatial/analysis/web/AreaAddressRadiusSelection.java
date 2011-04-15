@@ -107,18 +107,23 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
     Comboitem ci10km;
     Comboitem ci20km;
     Label addressLabel;
+    private Textbox displayGeom;
+    private static final String DEFAULT_AREA = "CURRENTVIEW()";
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-	cbRadius.setReadonly(true);
-	cbRadius.setDisabled(true);
-	cbRadius.setSelectedItem(ci1km);
+        cbRadius.setReadonly(true);
+        cbRadius.setDisabled(true);
+        cbRadius.setSelectedItem(ci1km);
     }
 
     public void onClick$btnOk(Event event) {
-        createRadiusFromAddress();
         this.detach();
+    }
+
+    public void onClick$btnCreate(Event event) {
+        createRadiusFromAddress();
     }
 
     public void onClick$btnCancel(Event event) {
@@ -135,6 +140,7 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
             try {
                 MapComposer mc = getThisMapComposer();
                 MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
+                displayGeom.setText(wkt);
             }
             catch(Exception e) {
                 logger.error("Error adding WKT layer");
@@ -149,7 +155,7 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
             List<GeoAddress> addresses = st.standardizeToGeoAddresses(addressBox.getText() + ", Australia");
 
             addressLabel.setValue(addresses.get(0).getAddressLine());
-	    cbRadius.setDisabled(false);
+            cbRadius.setDisabled(false);
         } catch (geo.google.GeoException ge) {
             ge.printStackTrace();
         }

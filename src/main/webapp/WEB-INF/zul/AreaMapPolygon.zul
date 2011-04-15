@@ -9,6 +9,10 @@
             <label sclass="wordwrap" value="2. Identify the polygon of interest by a (left) mouse click within that polygon." />
             <label sclass="wordwrap" value="3. The area selected will be highlighted red." />
             <separator />
+             <hbox>
+                <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
+                <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
+            </hbox>
             <div style="float:right;margin-right:5px">
                 <button sclass="goButton" label="Clear" id="btnClear"/>
                 <button sclass="goButton" label="Next" id="btnNext"/>

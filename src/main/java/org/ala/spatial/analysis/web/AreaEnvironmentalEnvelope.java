@@ -605,6 +605,7 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
         }
 
         updateActiveArea(true);
+        this.detach();
     }
 
     void showActiveArea() {

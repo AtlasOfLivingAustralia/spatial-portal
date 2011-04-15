@@ -15,9 +15,9 @@ import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -27,6 +27,8 @@ public class AreaMapPolygon extends UtilityComposer {
 
     String satServer;
     String geoServer;
+    private Textbox displayGeom;
+    private static final String DEFAULT_AREA = "CURRENTVIEW()";
 
     @Override
     public void afterCompose() {
@@ -50,6 +52,7 @@ public class AreaMapPolygon extends UtilityComposer {
         mc.removeLayer("Active Area");
         String script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        displayGeom.setValue(DEFAULT_AREA);
     }
 
     public void onClick$btnCancel(Event event) {
@@ -126,7 +129,7 @@ public class AreaMapPolygon extends UtilityComposer {
 
                             break;
                         } else {
-                            //displayGeom.setValue(feature_text);
+                            displayGeom.setValue(feature_text);
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
                             MapLayer mapLayer = mc.addWKTLayer(wkt, "Active Area");
                             updateSpeciesList(false);

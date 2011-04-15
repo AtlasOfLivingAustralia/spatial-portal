@@ -10,6 +10,10 @@
             <label sclass="wordwrap" value="3. Hold down the (left) mouse button and drag the radius to define the area of interest." />
             <label sclass="wordwrap" value="4. Release the mouse button." />
             <separator />
+            <hbox>
+                <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
+                <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
+            </hbox>
             <div style="float:right;margin-right:5px">
                    <button sclass="goButton" label="Clear" id="btnClear"/>
                 <button sclass="goButton" label="Next" id="btnNext"/>

@@ -3,10 +3,10 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -15,6 +15,8 @@ import org.zkoss.zk.ui.event.Event;
 public class AreaBoundingBox extends UtilityComposer {
 
     private String boxGeom;
+    private Textbox displayGeom;
+    private static final String DEFAULT_AREA = "CURRENTVIEW()";
 
     @Override
     public void afterCompose() {
@@ -22,19 +24,20 @@ public class AreaBoundingBox extends UtilityComposer {
     }
 
     public void onClick$btnNext(Event event) {
-	this.detach();
+        this.detach();
     }
 
     public void onClick$btnClear(Event event) {
-	MapComposer mc = getThisMapComposer();
-	mc.removeLayer("Active Area");
-	String script = mc.getOpenLayersJavascript().addBoxDrawingTool();
-	mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        MapComposer mc = getThisMapComposer();
+        mc.removeLayer("Active Area");
+        String script = mc.getOpenLayersJavascript().addBoxDrawingTool();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        displayGeom.setValue(DEFAULT_AREA);
     }
 
     public void onClick$btnCancel(Event event) {
-	MapComposer mc = getThisMapComposer();
-	mc.removeLayer("Active Area");
+        MapComposer mc = getThisMapComposer();
+        mc.removeLayer("Active Area");
         this.detach();
     }
 
@@ -44,10 +47,9 @@ public class AreaBoundingBox extends UtilityComposer {
         try {
 	
             if (boxGeom.contains("NaN NaN")) {
-               // displayGeom.setValue(DEFAULT_AREA);
-             //   lastTool = null;
+                displayGeom.setValue(DEFAULT_AREA);
             } else {
-              //displayGeom.setValue(boxGeom);
+              displayGeom.setValue(boxGeom);
             }
            // updateComboBoxText();
             updateSpeciesList(false); // true

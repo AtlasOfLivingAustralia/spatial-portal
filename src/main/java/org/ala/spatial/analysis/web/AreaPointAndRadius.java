@@ -10,6 +10,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -18,7 +19,9 @@ import org.zkoss.zk.ui.event.Event;
 public class AreaPointAndRadius extends UtilityComposer {
 
 	String satServer;
-
+    private Textbox displayGeom;
+    private static final String DEFAULT_AREA = "CURRENTVIEW()";
+    
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -35,15 +38,16 @@ public class AreaPointAndRadius extends UtilityComposer {
     }
 
     public void onClick$btnClear(Event event) {
-	MapComposer mc = getThisMapComposer();
-	mc.removeLayer("Active Area");
-	String script = mc.getOpenLayersJavascript().addRadiusDrawingTool();
-	mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        MapComposer mc = getThisMapComposer();
+        mc.removeLayer("Active Area");
+        String script = mc.getOpenLayersJavascript().addRadiusDrawingTool();
+        mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+        displayGeom.setText(DEFAULT_AREA);
     }
 
     public void onClick$btnCancel(Event event) {
-	MapComposer mc = getThisMapComposer();
-	mc.removeLayer("Active Area");
+        MapComposer mc = getThisMapComposer();
+        mc.removeLayer("Active Area");
         this.detach();
     }
 
@@ -58,7 +62,7 @@ public class AreaPointAndRadius extends UtilityComposer {
 
             String wkt = "";
             if (selectionGeom.contains("NaN NaN")) {
-              //  displayGeom.setValue(DEFAULT_AREA);
+                displayGeom.setValue(DEFAULT_AREA);
               //  lastTool = null;
             } else if (selectionGeom.startsWith("LAYER(")) {
                 //reset stored size
@@ -68,7 +72,7 @@ public class AreaPointAndRadius extends UtilityComposer {
                 //FEATURE(table name if known, class name)
                 v = v.substring(0, v.length() - 1);
                 wkt = getLayerGeoJsonAsWkt(v, true);
-               // displayGeom.setValue(wkt);
+                displayGeom.setValue(wkt);
 
                 //for display
                 wkt = getLayerGeoJsonAsWkt(v, false);
@@ -79,7 +83,7 @@ public class AreaPointAndRadius extends UtilityComposer {
 //                }
             } else {
                 wkt = selectionGeom;
-//                displayGeom.setValue(wkt);
+                displayGeom.setValue(wkt);
             }
       //      updateComboBoxText();
             updateSpeciesList(false); // true
