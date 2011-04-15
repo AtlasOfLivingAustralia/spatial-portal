@@ -664,25 +664,26 @@ tr.z-listitem-over{background:#dae7f6;}tr.z-listitem-over-seld{background:#6eadf
     display:block;
     overflow:hidden;
     border:1px solid #ccc;
-    -moz-border-radius: 7px; /* FF1+ */
-    -webkit-border-radius: 7px; /* Saf3+, Chrome */
-    border-radius: 7px; /* Opera 10.5, IE 9 */
-    background:transparent url(http://www.ala.org.au/wp-content/themes/ala/images/button_bg.png) right bottom repeat-x;
+/*    -moz-border-radius: 7px;  FF1+
+    -webkit-border-radius: 7px;  Saf3+, Chrome 
+    border-radius: 7px;  Opera 10.5, IE 9 */
+    background: #2580a2 url("../img/leftnav_bg_active.png") bottom left repeat;
     line-height: 1em;
-    padding: 7px;
+    padding: 5px;
     font-size: 12px;
-    font-weight: bold;
-    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    /*font-weight: bold;*/
+    font-family: Arial,Helvetica,sans-serif;
     cursor: pointer;
-    color: white;
-    background: teal;
+    color: #cccccc;
+    /*background: teal;*/
     border-width: 3px;
     border-color: transparent;
 }
 
 .buttons:hover, .helpButtonMain:hover, .goButton:hover {
-    color: black;
-    border-color: black;
+    background: #2580a2 url("../img/menu/hover.gif") bottom center no-repeat;
+    color:#FFFFFF;
+    text-decoration:none;
 }
 
 .z-button-os-disd {
