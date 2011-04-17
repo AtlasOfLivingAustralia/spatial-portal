@@ -17,6 +17,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
     <style src="css/zkcomponents.css" media="screen" />
     <style src="css/zkprint.css" media="print" />
+
+    <style src="css/sf.css" />
+
   
     <script defer="false" type="text/javascript">
         var mapLayers = null;
@@ -56,7 +59,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             <west title=" " size="${settingsSupplementary.values.menu_default_width}"
                    id="menus" collapsible="false"
                    splittable="false" width="400px">
-                <div id="westChild" vflex="1" height="600px">
+                <div id="westChild" vflex="1">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >
                         <div zclass="closebox" zindex="500" left="2px" top="2px">
                             <toolbarbutton
@@ -69,90 +72,124 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                         </div>
                     </div>
 
-                    <div id="westContent" class="westContent" visible="true" vflex="1" height="500px">
-                        <div height="50px">
-                            <hbox height="40px">
-                                <div class="menu" style="position:absolute;float:left;left:0px;width:400px;margin-top:0px">
-                                    <n:ul>
-                                        <n:li><n:a style="width:90px" href="#">Add To Map</n:a>
-                                            <n:ul>
-                                                <n:li id="addSpecies">
-                                                    <n:a href="#" n:onClick="addSpeciesAction();">Species</n:a>
-                                                </n:li>
-                                                <n:li id="addArea">
-                                                    <n:a href="#" n:onClick="addAreaAction();">Areas</n:a>
-                                                </n:li>
-                                                <n:li id="addLayer">
-                                                    <n:a href="#" n:onClick="addLayerAction();">Layers</n:a>
-                                                </n:li>
-                                            </n:ul>
-                                        </n:li>
-                                        <n:li><n:a style="width:80px" href="#">Tools</n:a>
-                                            <n:ul>
-                                                <n:li id="runSampling">
-                                                    <n:a href="#" n:onClick="runSamplingAction();">Sampling</n:a>
-                                                </n:li>
-                                                <n:li id="runSpeciesList">
-                                                    <n:a href="#" n:onClick="runSpeciesList();">Species List</n:a>
-                                                </n:li>
-                                                <n:li id="runAreaReport">
-                                                    <n:a href="#" n:onClick="runAreaReport();">Area Report</n:a>
-                                                </n:li>
-                                                <n:li id="runClassification">
-                                                    <n:a href="#" n:onClick="runClassification();">Classification</n:a>
-                                                </n:li>
-                                                <n:li id="runScatterplot">
-                                                    <n:a href="#" n:onClick="runScatterPlot();">Scatterplot</n:a>
-                                                </n:li>
-                                                <n:li id="runTabulation">
-                                                    <n:a href="#" n:onClick="runTabulation();">Tabulation</n:a>
-                                                </n:li>
-                                                <n:li id="runPrediction">
-                                                    <n:a href="#" n:onClick="runPrediction();">Prediction</n:a>
-                                                </n:li>
-                                                <n:li id="runGDM">
-                                                    <n:a href="#" n:onClick="runGDM();">GDM</n:a>
-                                                </n:li>
-                                                <n:li id="runImport">
-                                                    <n:a href="#" n:onClick="runImport();">Import</n:a>
-                                                </n:li>
-                                                <n:li id="runExport">
-                                                    <n:a href="#" n:onClick="runExport();">Export</n:a>
-                                                </n:li>
-                                            </n:ul>
-                                        </n:li>
-                                        <n:li>
-                                            <n:a style="width:80px" href="#" n:onClick="loadHelp();">Help</n:a>
-                                        </n:li>
-                                    </n:ul>
+                    <div id="westContent" class="westContent" visible="true" height="100%">
+                        <div width="100%" sclass="menudiv" height="39px" >
+                            <n:div id='nav' style="left: 100px;">
+                                <n:ul class='sf'>
+                                    <n:li class='nav-contact'>
+                                        <n:a href='#'>
+                                            <n:span>Add To Map</n:span>
+                                        </n:a>
+                                        <n:ul>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="addSpeciesAction();">
+                                                    <n:span>Species</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="addAreaAction();">
+                                                    <n:span>Areas</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="addLayerAction();">
+                                                    <n:span>Layers</n:span>
+                                                </n:a>
+                                            </n:li>
+                                        </n:ul>
+                                    </n:li>
+                                    <n:li class='nav-tools'>
+                                        <n:a href='#'>
+                                            <n:span>Tools</n:span>
+                                        </n:a>
+                                        <n:ul>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runSamplingAction();">
+                                                    <n:span>Sampling</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runSpeciesList();">
+                                                    <n:span>Species List</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runAreaReport();">
+                                                    <n:span>Area Report</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runClassification();">
+                                                    <n:span>Classification</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runScatterPlot();">
+                                                    <n:span>Scatterplot</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runTabulation();">
+                                                    <n:span>Tabulation</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runPrediction();">
+                                                    <n:span>Prediction</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runGDM();">
+                                                    <n:span>GDM</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runImport();">
+                                                    <n:span>Import</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runImporunExport();rt();">
+                                                    <n:span>Export</n:span>
+                                                </n:a>
+                                            </n:li>
+                                        </n:ul>
+                                    </n:li>
+                                </n:ul>
+                            </n:div><!--close nav-->
+                        </div>
+                        <borderlayout>
+                            <north height="219px">
+                                <div>
+                                    <!-- space for top level menu -->
+                                    <div height="39px" />
+
+                                    <div id="activeLayersHolder"  width="400px" style="overflow: auto;background:white" height="180px">
+                                        <listbox id="activeLayersList" />
+                                    </div>
                                 </div>
-                            </hbox>
-                        </div>
-
-                        <div vflex="1">
-
-                            <leftMenuSearch id="leftMenuSearch" visible="false" />
-                       
-                            <div id="activeLayersHolder" height="22%" width="400px" style="overflow: auto" vflex="0">
-                                <listbox id="activeLayersList" />                                
-                            </div>
-
-                            <div width="400px" height="3%" style="background-color: RGB(217,217,217)" >
-                                <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
-                            </div>
-
-                            <div id="layerControls" height="60%" sclass="highlighted" style="" >
-
-                            </div>
-
-                            <div height="15%" style="overflow: auto">
-                                <contextualMenu id="contextualMenu" width="400px" />
-                            </div>
-
-                            <textbox id="userparams" visible="false" multiline="true" value="${param}" />
-                        </div>
+                            </north>
+                            <center vflex="false">
+                                <vlayout height="100%" style="overflow-y: auto" >
+                                    <div width="400px" sclass="selectedLayer">
+                                        <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
+                                    </div>
+                                    <separator />
+                                    <div  id="layerControls"/>
+                                </vlayout>
+                            </center>
+                            <south height="100px">
+                                <div sclass="contextualDiv" height="90px" width="390px">
+                                    <contextualMenu id="contextualMenu" style="margin:2px" width="390px" />
+                                </div>
+                            </south>
+                        </borderlayout>
                     </div>
+                    
+                    <leftMenuSearch id="leftMenuSearch" visible="false" />
+                    <textbox id="userparams" visible="false" multiline="true" value="${param}" />
                 </div>
+
             </west>
 
             <center id="center">
@@ -160,7 +197,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                     <div class="menu" style="position:absolute;float:right;right:10px; margin-top:5px">
                         <n:ul>
-                            <n:li><n:a href="#">Map Options</n:a>
+                            <n:li>
+                                <n:a href="#">Map Options</n:a>
                                 <n:ul>
                                     <n:li>
                                         <n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;">Minimal</n:a>

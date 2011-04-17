@@ -6,6 +6,7 @@ import au.org.emii.portal.menu.MapLayer;
 import org.zkoss.zk.ui.Page;
 
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Textbox;
 
 /**
@@ -16,15 +17,22 @@ public class AreaBoundingBox extends UtilityComposer {
 
     private String boxGeom;
     private Textbox displayGeom;
-    private static final String DEFAULT_AREA = "CURRENTVIEW()";
     String layerName;
+    Textbox txtLayerName;
+    Button btnNext;
+    Button btnClear;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
     public void onClick$btnNext(Event event) {
+        //reapply layer name
+        getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
+        getMapComposer().redrawLayersList();
+        
         this.detach();
     }
 
@@ -35,7 +43,9 @@ public class AreaBoundingBox extends UtilityComposer {
         }
         String script = mc.getOpenLayersJavascript().addBoxDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        displayGeom.setValue(DEFAULT_AREA);
+        displayGeom.setValue("");
+        btnNext.setDisabled(true);
+        btnClear.setDisabled(true);
     }
 
     public void onClick$btnCancel(Event event) {
@@ -52,7 +62,7 @@ public class AreaBoundingBox extends UtilityComposer {
         try {
 	
             if (boxGeom.contains("NaN NaN")) {
-                displayGeom.setValue(DEFAULT_AREA);
+                displayGeom.setValue("");
             } else {
               displayGeom.setValue(boxGeom);
             }
@@ -66,14 +76,11 @@ public class AreaBoundingBox extends UtilityComposer {
             //add feature to the map as a new layer
             //mc.removeLayer("Area Selection");
             //mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
-            layerName = mc.getNextAreaLayerName("My box");
-            MapLayer mapLayer = mc.addWKTLayer(boxGeom, layerName);
+            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+            MapLayer mapLayer = mc.addWKTLayer(boxGeom, layerName, txtLayerName.getValue());
 
-		//rgAreaSelection.getSelectedItem().setChecked(false);
-
-            //wfsQueryBBox(boxGeom.getValue());
-
-
+            btnNext.setDisabled(false);
+            btnClear.setDisabled(false);
         } catch (Exception e) {//FIXME
         }
 

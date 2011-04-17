@@ -58,10 +58,10 @@ public class VisibilityToggleEventListener implements EventListener {
                                  * - lastchild of listcell is layerController
                                  * img, see ActiveLayerRenderer
                                  */
-                                listitem.setDisabled(false);
-                                Image image =
-                                        (Image) ((Listcell) listitem.getFirstChild()).getLastChild();
-                                image.setVisible(true);
+//                                listitem.setDisabled(false);
+//                                Image image =
+//                                        (Image) ((Listcell) listitem.getFirstChild()).getFirstChild().getNextSibling();
+//                                image.setVisible(true);
 
                                 mapComposer.refreshContextualMenu();
                                 
@@ -77,10 +77,10 @@ public class VisibilityToggleEventListener implements EventListener {
                                  * - lastchild of listcell is layerController
                                  * img, see ActiveLayerRenderer
                                  */
-                                listitem.setDisabled(true);
-                                Image image =
-                                        (Image) ((Listcell) listitem.getFirstChild()).getLastChild();
-                                image.setVisible(false);
+//                                listitem.setDisabled(true);
+//                                Image image =
+//                                        (Image) ((Listcell) listitem.getFirstChild()).getFirstChild().getNextSibling();
+//                                image.setVisible(false);
 			}
 			
 		}

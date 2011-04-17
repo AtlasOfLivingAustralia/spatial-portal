@@ -41,16 +41,11 @@ public class LayerListComposer extends UtilityComposer {
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
     AddLayerController alc;
-    private String satServer = null;
-    private String geoServer = "";
     SettingsSupplementary settingsSupplementary;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
 
         if (tree == null) {
             System.out.println("tree is null");
@@ -58,32 +53,10 @@ public class LayerListComposer extends UtilityComposer {
             System.out.println("tree is ready");
         }
 
-        mc = getThisMapComposer();        
-
-        System.out.print("Settings.Suppl:");
-        SettingsSupplementary settingsSupplementary = mc.getSettingsSupplementary();
-        if (settingsSupplementary == null) {
-            System.out.println(" is bad");
-        } else {
-            System.out.println(" is good");
-        }
-        System.out.print("mc.geoserver:" + mc.geoServer);
-
-        System.out.print("Settings.Global:");
-        Settings settings = mc.getSettings();
-        if (settingsSupplementary == null) {
-            System.out.println(" is bad");
-        } else {
-            System.out.println(" is good");
-        }
-
+        mc = getThisMapComposer();
 
         System.out.println("Loading the LayerListComposer");
         iterateAndLoad2();
-
-
-        //System.out.println("with:\n" + layerlist);
-
     }
 
     private MapComposer getThisMapComposer() {
@@ -287,7 +260,7 @@ public class LayerListComposer extends UtilityComposer {
                         public void onEvent(Event event) throws Exception {                            
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
                             String s = jo.getString("uid");
-                            String metadata = satServer + "/layers/" + s;
+                            String metadata = CommonData.satServer + "/layers/" + s;
                             mc.activateLink(metadata, "Metadata", false);
                         }
                     });
@@ -363,7 +336,7 @@ public class LayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
                             if (!joLayer.getString("type").contentEquals("class")) {
 
-                                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
                                 initALC();
                                 alc.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata, 
@@ -380,7 +353,7 @@ public class LayerListComposer extends UtilityComposer {
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
                                 alc.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 
@@ -408,7 +381,7 @@ public class LayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
 
-                            String metadata = satServer + "/layers/" + joLayer.getString("uid");
+                            String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                             mc.activateLink(metadata, "Metadata", false);
 

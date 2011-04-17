@@ -27,18 +27,11 @@ public class ALOCProgressWCController extends UtilityComposer {
     Timer timer;
     Textbox tbPid;
     public String pid = null;
-    private String satServer = "";
-    private SettingsSupplementary settingsSupplementary = null;
     public ALOCWCController parent = null;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         timer.stop();
     }
 
@@ -91,7 +84,7 @@ public class ALOCProgressWCController extends UtilityComposer {
     String get(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());

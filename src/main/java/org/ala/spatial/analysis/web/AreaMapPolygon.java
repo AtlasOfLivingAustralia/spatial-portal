@@ -18,6 +18,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Textbox;
 
 /**
@@ -27,23 +28,17 @@ import org.zkoss.zul.Textbox;
 public class AreaMapPolygon extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
-    String satServer;
-    String geoServer;
     private Textbox displayGeom;
-    private static final String DEFAULT_AREA = "CURRENTVIEW()";
     String layerName;
+    Textbox txtLayerName;
+    Button btnNext;
+    Button btnClear;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-        //satServer = "http://spatial-dev.ala.org.au";
-        //geoServer = "http://spatial-dev.ala.org.au/geoserver/rest";
 
-        if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
     public void onClick$btnNext(Event event) {
@@ -57,7 +52,9 @@ public class AreaMapPolygon extends UtilityComposer {
         }
         String script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        displayGeom.setValue(DEFAULT_AREA);
+        displayGeom.setValue("");
+        btnNext.setDisabled(true);
+        btnClear.setDisabled(true);
     }
 
     public void onClick$btnCancel(Event event) {
@@ -107,7 +104,7 @@ public class AreaMapPolygon extends UtilityComposer {
 
                         searchComplete = true;
                         System.out.println(ml.getName());
-                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, geoServer);
+                        String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, CommonData.geoServer);
                         System.out.println(featureURI);
                         if (featureURI == null) {
                             continue;
@@ -138,11 +135,14 @@ public class AreaMapPolygon extends UtilityComposer {
                         } else {
                             displayGeom.setValue(feature_text);
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
-                            layerName = mc.getNextAreaLayerName("Map polygon");
-                            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
+                            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+                            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
                             updateSpeciesList(false);
                             //searchPoint.setValue("");
                             //setInstructions(null, null);
+
+                            btnNext.setDisabled(false);
+                            btnClear.setDisabled(false);
                             break;
 
                         }
@@ -243,7 +243,7 @@ public class AreaMapPolygon extends UtilityComposer {
             String value = uri.substring(i2 + 1, i3);
             //test if available in alaspatial
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(satServer + "/alaspatial/species/shape/lookup");
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/lookup");
             get.addParameter("table", table);
             get.addParameter("value", value);
             get.addRequestHeader("Accept", "text/plain");
@@ -272,7 +272,7 @@ public class AreaMapPolygon extends UtilityComposer {
             //register wkt with alaspatial and use LAYER(layer name, id)
             HttpClient client = new HttpClient();
             //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
-            PostMethod get = new PostMethod(satServer + "/alaspatial/species/shape/register");
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/register");
             get.addParameter("area", feature_text);
             get.addRequestHeader("Accept", "text/plain");
             int result = client.executeMethod(get);

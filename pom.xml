@@ -11,14 +11,12 @@
     <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
     <url>http://www.ala.org.au</url>
     <dependencies>
-        <!-- alaspatial styles -->
-        <!--
-        <dependency>
+        <!-- alaspatial styles -->        
+        <!--dependency>
             <groupId>org.ala.spatial</groupId>
             <artifactId>alaspatial</artifactId>
             <version>1.00</version>
-        </dependency>
-        -->
+        </dependency-->
         <dependency>
             <groupId>jfree</groupId>
             <artifactId>jfreechart</artifactId>
@@ -525,7 +523,7 @@
     <properties>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <springVersion>3.0.1.RELEASE</springVersion>
-        <zkVersion>5.0.5</zkVersion>
+        <zkVersion>5.0.6</zkVersion>
         <jerseyVersion>1.1.4.1</jerseyVersion>
         <aspectJVersion>1.6.8</aspectJVersion>
         <geotools.version>2.7-SNAPSHOT</geotools.version>

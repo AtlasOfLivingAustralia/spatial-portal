@@ -18,10 +18,7 @@ import org.zkoss.zul.Button;
  */
 public class AddLayerController extends UtilityComposer {
     
-    SettingsSupplementary settingsSupplementary;
     LayersAutoComplete lac;
-    String satServer;
-
     String treeName, treePath, treeMetadata;
     int treeSubType;
 
@@ -30,8 +27,6 @@ public class AddLayerController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
     }
 
     public void onClick$btnOk(Event event) {
@@ -60,7 +55,7 @@ public class AddLayerController extends UtilityComposer {
             JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
             String metadata = "";
 
-            metadata = settingsSupplementary.getValue(CommonData.SAT_URL) + "/alaspatial/layers/" + jo.getString("uid");
+            metadata = CommonData.satServer + "/alaspatial/layers/" + jo.getString("uid");
 
             setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata, 
                     jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
@@ -68,7 +63,7 @@ public class AddLayerController extends UtilityComposer {
             JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
             if (!joLayer.getString("type").contentEquals("class")) {
 
-                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
                 setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
@@ -80,7 +75,7 @@ public class AddLayerController extends UtilityComposer {
                 //Filtered requests don't work on
                 displaypath = displaypath.replace("gwc/service/", "");
                 // Messagebox.show(displaypath);
-                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
                 setLayer(layer + " - " + classValue, displaypath, metadata,
                         joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);

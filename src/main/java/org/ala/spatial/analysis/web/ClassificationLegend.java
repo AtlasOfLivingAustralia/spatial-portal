@@ -34,11 +34,9 @@ import org.zkoss.zul.Listheader;
 
 public class ClassificationLegend extends UtilityComposer {
 
-    private SettingsSupplementary settingsSupplementary = null;
     String pid = "";
     String layerLabel = "";
     String imagePath = "";
-    private String satServer = "";
     public Slider redSlider;
     public Slider greenSlider;
     public Slider blueSlider;
@@ -56,9 +54,6 @@ public class ClassificationLegend extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
 
         pid = (String) (Executions.getCurrent().getArg().get("pid"));
         System.out.println("PID:" + pid);
@@ -83,7 +78,7 @@ public class ClassificationLegend extends UtilityComposer {
         try {
             // call get
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/layer/get?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/get?");
             sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
 
             HttpClient client = new HttpClient();
@@ -98,7 +93,7 @@ public class ClassificationLegend extends UtilityComposer {
             String[] slista = slist.split("\n");
 
             client = new HttpClient();
-            get = new GetMethod(satServer + "/alaspatial/" + slista[1]);
+            get = new GetMethod(CommonData.satServer + "/alaspatial/" + slista[1]);
             get.addRequestHeader("Accept", "text/plain");
             result = client.executeMethod(get);
             slist = get.getResponseBodyAsString();
@@ -230,7 +225,7 @@ public class ClassificationLegend extends UtilityComposer {
         try {
             // call get
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/layer/set?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/set?");
             sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("&idx="
                     + URLEncoder.encode("" + colours_index, "UTF-8"));
@@ -248,7 +243,7 @@ public class ClassificationLegend extends UtilityComposer {
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
             System.out.println("updated layer image:" + slist);
-            imagePath = satServer + "/alaspatial/" + slist.split("\r\n")[0];
+            imagePath = CommonData.satServer + "/alaspatial/" + slist.split("\r\n")[0];
             loadMap();
         } catch (Exception e) {
             e.printStackTrace();

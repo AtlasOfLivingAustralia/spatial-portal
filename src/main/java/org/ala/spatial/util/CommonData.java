@@ -66,8 +66,8 @@ public class CommonData {
     static HashMap<String, String[]> species_wms_layers = null;
     static HashMap<String, String[]> copy_species_wms_layers = null;
     //Common
-    static String satServer;
-    static String geoServer;
+    static public String satServer;
+    static public String geoServer;
 
     /*
      * initialize common data from geoserver and satserver

@@ -24,6 +24,7 @@ import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.Fileupload;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -112,7 +113,7 @@ public class AreaUploadShapefile extends UtilityComposer {
                         wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
                         System.out.println("Got shapefile wkt...");
                         String layerName = getMapComposer().getNextAreaLayerName(m.getName());
-                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName);
+                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, m.getName());
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
                     }

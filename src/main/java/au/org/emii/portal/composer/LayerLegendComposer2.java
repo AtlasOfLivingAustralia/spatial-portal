@@ -339,10 +339,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
     private String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
         try {
-            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/species/colourlegend?lsid="
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
                     + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
                     + "&colourmode="
                     + URLEncoder.encode(colourmode, "UTF-8")); // testurl
@@ -518,10 +516,9 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         //check for user uploaded coordinates
         boolean isUserUploadedCoordinates = false;
         try {
-            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
             String lsid = currentSelection.getMapLayerMetadata().getSpeciesLsid();
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
+            GetMethod get = new GetMethod(CommonData.satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();

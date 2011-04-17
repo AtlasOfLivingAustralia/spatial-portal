@@ -32,16 +32,10 @@ public class AddToolComposer extends UtilityComposer {
     String selectedMethod = "";
     SpeciesAutoComplete searchSpeciesAuto;
     EnvironmentalList lbListLayers;
-    String geoServer = null, satServer = null;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
 
         setupDefaultParams();
 
@@ -145,7 +139,7 @@ public class AddToolComposer extends UtilityComposer {
         try {
 
             if (fullList) {
-                lbListLayers.init(getMapComposer(), satServer, true);
+                lbListLayers.init(getMapComposer(), CommonData.satServer, true);
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (int i = 0; i < layers.size(); i++) {

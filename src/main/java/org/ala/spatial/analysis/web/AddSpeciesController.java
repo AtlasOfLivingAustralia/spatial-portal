@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Button;
 
 /**
  *
@@ -12,6 +13,7 @@ public class AddSpeciesController extends UtilityComposer {
     
     SettingsSupplementary settingsSupplementary;
     SpeciesAutoComplete searchSpeciesAuto;
+    Button btnOk;
 
     @Override
     public void afterCompose() {
@@ -25,5 +27,13 @@ public class AddSpeciesController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         this.detach();
+    }
+
+    public void onChange$searchSpeciesAuto(Event event) {
+        btnOk.setDisabled(true);
+
+        if (searchSpeciesAuto.getSelectedItem() != null) {
+            btnOk.setDisabled(false);
+        }
     }
 }

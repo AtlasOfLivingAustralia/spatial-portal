@@ -7,7 +7,9 @@
         <div id="layerControls" >
             <div>
                 <hbox width="100%">
-                    <label value="Layer name:" sclass="h3" />
+                    <div style="padding-top:0px" width="65px">
+                        <label value="Layer name" sclass="h3" />
+                    </div>
                     <textbox id="txtLayerName" width="250px"/>
                 </hbox>
             </div>
@@ -15,7 +17,9 @@
             
             <div id="clusterpoints" align="left" style="padding-top:0px">
                 <hbox width="100%">
-                    <label value="Display as:" sclass="h3" />
+                    <div style="padding-top:0px" width="65px">
+                        <label value="Display as" sclass="h3" />
+                    </div>
                     <radiogroup id="pointtype">
                         <radio id="rGrid" label="Density grid" />
                         <radio id="rCluster" label="Clusters" visible="false"/>
@@ -29,8 +33,8 @@
             <div id="opacityControls" >
                 <vbox>
                     <hbox>
-                        <div style="padding-top:0px" width="60px">
-                            <label value="Opacity: " sclass="h3" />
+                        <div style="padding-top:0px" width="65px">
+                            <label value="Opacity" sclass="h3" />
                         </div>
                         <div  width="250px">
                             <slider id="opacitySlider" width="95%" />
@@ -42,13 +46,11 @@
                     </hbox>
                 </vbox>
             </div>
-
-
             <div  width="100%">
                 <div id="sizeChooser" visible="false" width="100%">
                     <hbox>
-                        <div style="padding-top:0px" width="60px">
-                            <label value="Size: " sclass="h3" />
+                        <div style="padding-top:0px" width="65px">
+                            <label value="Size" sclass="h3" />
                         </div>
                         <div width="250px">
                             <slider id="sizeSlider" maxpos="30" width="95%" />
@@ -60,8 +62,9 @@
                 </div>
                 <div id="colourChooser" >
                     <hbox>
-                        <label value="Colour:" sclass="h3" />
-                        <separator orient="vertical" />
+                        <div style="padding-top:0px" width="65px">
+                            <label value="Colour" sclass="h3" />
+                        </div>
                         <combobox id="cbColour" >
                             <comboitem label="User defined" id="ciColourUser" value="-1" />
                                                         <!-- comboitem label="Density Grid" value="grid" /-->
@@ -104,6 +107,7 @@ border-top: none;
 border-left: none;
 border-right: none;
 border-bottom: none;
+padding: 1px 0px 0px 5px;
 }
 
                             </style>
@@ -153,14 +157,13 @@ border-bottom: none;
                                     </row>
                                 </rows>
                             </grid>
-                            <separator height="20px" />
                         </hbox>
 
                         <vbox >
-                            <hbox>
-
-                                <div style="padding-top:0px" width="60px">
-                                    <label value="Red: " sclass="h3" />
+                            <separator />
+                            <hbox>                                
+                                <div style="padding-top:0px" width="65px">
+                                    <label value="Red" sclass="h3" />
                                 </div>
 
                                 <div width="250px">
@@ -172,8 +175,8 @@ border-bottom: none;
                                 </div>
                             </hbox>
                             <hbox>
-                                <div style="padding-top:0px" width="60px">
-                                    <label value="Green: " sclass="h3" />
+                                <div style="padding-top:0px" width="65px">
+                                    <label value="Green" sclass="h3" />
                                 </div>
 
                                 <div  width="250px">
@@ -185,10 +188,8 @@ border-bottom: none;
                                 </div>
                             </hbox>
                             <hbox>
-
-
-                                <div style="padding-top:0px" width="60px">
-                                    <label value="Blue: " sclass="h3" />
+                                <div style="padding-top:0px" width="65px">
+                                    <label value="Blue" sclass="h3" />
                                 </div>
 
                                 <div  width="250px">
@@ -235,8 +236,8 @@ border-bottom: none;
                 <separator />
                 <separator />
 
-                <div style="padding-top:0px" width="60px">
-                    <label value="Legend : " sclass="h3" />
+                <div style="padding-top:0px" width="65px">
+                    <label value="Legend" sclass="h3" />
                 </div>
                 <div  width="60%">
                     <image id="legendImg" width="50px" height="50px" />

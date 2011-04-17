@@ -19,15 +19,11 @@ import org.zkoss.zul.Comboitem;
  */
 public class AddPlaceController extends UtilityComposer {
     
-    SettingsSupplementary settingsSupplementary;
     private AutoComplete gazetteerAuto;
-    String satServer;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
     }
 
     public void onClick$btnOk(Event event) {
@@ -53,16 +49,9 @@ public class AddPlaceController extends UtilityComposer {
 
         String link = (String) ci.getValue();
         String label = ci.getLabel();
-        String geoServer = "";
-        if (settingsSupplementary != null) {
-            geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-            logger.debug(geoServer + link);
-        } else {
-            return;
-        }
 
         //add feature to the map as a new layer
-        MapLayer mapLayer = getMapComposer().addGeoJSON(label, geoServer + link);
+        MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.geoServer + link);
 
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
             JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
@@ -71,7 +60,7 @@ public class AddPlaceController extends UtilityComposer {
             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
             mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
 
-            getMapComposer().updateUserLogMapLayer("gaz", label + "|" + geoServer + link);
+            getMapComposer().updateUserLogMapLayer("gaz", label + "|" + CommonData.geoServer + link);
 
         }
 

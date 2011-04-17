@@ -30,8 +30,6 @@ public class SpeciesListResults extends UtilityComposer {
     public Button download;
     public Listbox popup_listbox_results;
     public Label results_label;
-    private String satServer;
-    private SettingsSupplementary settingsSupplementary = null;
     Row rowUpdating;
     Row rowCounts;
     int results_count = 0;
@@ -153,18 +151,15 @@ public class SpeciesListResults extends UtilityComposer {
     }
 
     private String postInfo(String urlPart) {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod get = new PostMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
 
-            System.out.println("satServer:" + satServer + " ** postInfo:" + urlPart + " ** " + shape);
+            System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
 
             int result = client.executeMethod(get);
 

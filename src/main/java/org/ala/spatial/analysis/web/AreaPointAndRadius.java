@@ -6,10 +6,12 @@ import au.org.emii.portal.menu.MapLayer;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Textbox;
 
 /**
@@ -18,23 +20,24 @@ import org.zkoss.zul.Textbox;
  */
 public class AreaPointAndRadius extends UtilityComposer {
 
-	String satServer;
     private Textbox displayGeom;
-    private static final String DEFAULT_AREA = "CURRENTVIEW()";
     String layerName;
+    Textbox txtLayerName;
+    Button btnNext;
+    Button btnClear;
     
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-	// if (settingsSupplementary != null) {
-
-         //   satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-       // }
-	satServer = "http://spatial-dev.ala.org.au";
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
     public void onClick$btnNext(Event event) {
+        //reapply layer name
+        getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
+        getMapComposer().redrawLayersList();
+        
         this.detach();
     }
 
@@ -45,7 +48,9 @@ public class AreaPointAndRadius extends UtilityComposer {
         }
         String script = mc.getOpenLayersJavascript().addRadiusDrawingTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-        displayGeom.setText(DEFAULT_AREA);
+        displayGeom.setText("");
+        btnNext.setDisabled(true);
+        btnClear.setDisabled(true);
     }
 
     public void onClick$btnCancel(Event event) {
@@ -67,7 +72,7 @@ public class AreaPointAndRadius extends UtilityComposer {
 
             String wkt = "";
             if (selectionGeom.contains("NaN NaN")) {
-                displayGeom.setValue(DEFAULT_AREA);
+                displayGeom.setValue("");
               //  lastTool = null;
             } else if (selectionGeom.startsWith("LAYER(")) {
                 //reset stored size
@@ -98,10 +103,13 @@ public class AreaPointAndRadius extends UtilityComposer {
 
             //add feature to the map as a new layer
             if (wkt.length() > 0) {
-                layerName = mc.getNextAreaLayerName("My circle");
-                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
+                 layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
             }
          //   rgAreaSelection.getSelectedItem().setChecked(false);
+
+            btnNext.setDisabled(false);
+            btnClear.setDisabled(false);
 
         } catch (Exception e) {//FIXME
         }
@@ -163,7 +171,7 @@ public class AreaPointAndRadius extends UtilityComposer {
             String value = uri.substring(i2 + 1, i3);
             //test if available in alaspatial
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(satServer + "/alaspatial/species/shape/lookup");
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/lookup");
             get.addParameter("table", table);
             get.addParameter("value", value);
             get.addRequestHeader("Accept", "text/plain");
@@ -191,7 +199,7 @@ public class AreaPointAndRadius extends UtilityComposer {
             //register wkt with alaspatial and use LAYER(layer name, id)
             HttpClient client = new HttpClient();
             //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
-            PostMethod get = new PostMethod(satServer + "/alaspatial/species/shape/register");
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/register");
             get.addParameter("area", wkt);
             get.addRequestHeader("Accept", "text/plain");
             int result = client.executeMethod(get);

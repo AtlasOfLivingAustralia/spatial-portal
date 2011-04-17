@@ -41,7 +41,6 @@ public class FilteringResultsWCController extends UtilityComposer {
     public String[] results = null;
     public String pid;
     String shape;
-    private String satServer;
     private SettingsSupplementary settingsSupplementary = null;
     int results_count = 0;
     int results_count_occurrences = 0;
@@ -211,10 +210,6 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$downloadsamples() {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("/filtering/apply");
@@ -223,7 +218,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             String samplesfile = postInfo(sbProcessUrl.toString());
 
-            URL u = new URL(satServer + "/alaspatial/" + samplesfile);
+            URL u = new URL(CommonData.satServer + "/alaspatial/" + samplesfile);
             SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
             String sdate = date.format(new Date());
 
@@ -247,11 +242,6 @@ public class FilteringResultsWCController extends UtilityComposer {
         } catch (Exception e) {
         e.printStackTrace();
         }*/
-
-
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
 
         //validate with 'occurrences count'
         if (results_count_occurrences > settingsSupplementary.getValueAsInt("max_record_count_download")) {
@@ -329,7 +319,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("species/area/register");
 
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
             get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
@@ -344,10 +334,6 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onMapSpecies(Event event) {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         try {
            String area = null;
                     if(getMapComposer().getPolygonLayers().size() > 0) {
@@ -365,21 +351,17 @@ public class FilteringResultsWCController extends UtilityComposer {
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName();
             getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences);
 
-            getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
+            getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private String getInfo(String urlPart) {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         try {
             HttpClient client = new HttpClient();
 
-            GetMethod get = new GetMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
             int result = client.executeMethod(get);
@@ -397,18 +379,15 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     private String postInfo(String urlPart) {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod get = new PostMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
 
-            System.out.println("satServer:" + satServer + " ** postInfo:" + urlPart + " ** " + shape);
+            System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
 
             int result = client.executeMethod(get);
 
@@ -483,10 +462,6 @@ public class FilteringResultsWCController extends UtilityComposer {
     Textbox taLSIDs;
 
     public void onClick$btnAddLSIDs(Event event) {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         try {
             String lsids = taLSIDs.getValue().trim();
             lsids = lsids.replace("\n", ",");
@@ -500,7 +475,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
 
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             pid = get.getResponseBodyAsString();
@@ -516,16 +491,12 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void intersectWithSpeciesDistributions() {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("ws/intersect/shape");
 
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
             get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);

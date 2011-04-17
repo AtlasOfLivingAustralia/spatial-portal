@@ -13,6 +13,7 @@ import au.org.emii.portal.lang.LanguagePack;
 import org.springframework.beans.factory.annotation.Required;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Div;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listcell;
@@ -44,7 +45,8 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		checkbox.setTooltiptext("Hide");
 		
 		Label label = new Label(layerUtilities.chompLayerName(layer.getDisplayName()));
-		label.setParent(listcell);
+		//do after legend
+                //label.setParent(listcell);
 		listcell.setParent(item);
 
 		// dnd list reordering support
@@ -107,17 +109,33 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 			else if (layer.isSupportsAnimation()) {
 				// layer is supports animation but is not currently animated
 				legend = new Image(languagePack.getLang("map_legend_animatable_icon"));
-			}
-			else {
-				// just a plain layer
+			} else {
+                            legend = new Image();
+                            legend.setWidth("20px");
+                            legend.setHeight("20px");
+                            int red = 0;
+                            int green = 0;
+                            int blue = 0;
+                            if (layer.isGridLayer()) {
+                                red = 0; green = 0; blue = 255;
+                            } else if (layer.isSpeciesLayer()) {
+                                red = 0; green = 255; blue = 0;
+                            } else if (layer.isPolygonLayer()) {
+                                red = 0; green = 255; blue = 0;
+                            } else if (layer.isContextualLayer()) {
+                                red = 255; green = 255; blue = 0;
+                            } else {
+				//just a plain layer
 				legend = new Image(languagePack.getLang("layer_legend_icon"));
-			}
+                            }
+                            legend.setStyle("background-color:RGB(" + red + "," + green + "," + blue + ");");
+                        }
 			
 			/* hack to get things to align properly - want everything
 			 * floating left except the image which floats right 
 			 */
 
-			legend.setStyle("float:right;");
+			legend.setStyle("float:left;");
 			
 			legend.setParent(listcell);
 			
@@ -132,13 +150,34 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 
 		} else {
                     Image legend;
-                    legend = new Image(languagePack.getLang("layer_legend_icon"));
-                    legend.setStyle("float:right;");
+                    //legend = new Image(languagePack.getLang("layer_legend_icon"));
+                    legend = new Image();
+                    legend.setWidth("20px");
+                    legend.setHeight("20px");
+                    int red = 0;
+                    int green = 0;
+                    int blue = 0;
+                    if (layer.isGridLayer()) {
+                        red = 0; green = 0; blue = 255;
+                    } else if (layer.isSpeciesLayer()) {
+                        red = 0; green = 255; blue = 0;
+                    } else if (layer.isPolygonLayer()) {
+                        red = 0; green = 255; blue = 0;
+                    } else if (layer.isContextualLayer()) {
+                        red = 255; green = 255; blue = 0;
+                    } else {
+                        //just a plain layer
+                        legend = new Image(languagePack.getLang("layer_legend_icon"));
+                    }
+                    legend.setStyle("background-color:RGB(" + red + "," + green + "," + blue + ")");
+
+                    legend.setStyle("float:left;");
 		    legend.setParent(listcell);
                     legend.setTooltiptext("View/edit the legend");
                     legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
                 }
 
+                label.setParent(listcell);
                 
 
                 //Image legend = new Image(languagePack.getLang("layer_le_icon"));

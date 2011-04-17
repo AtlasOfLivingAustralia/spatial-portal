@@ -38,8 +38,6 @@ public class ALOCWCController extends UtilityComposer {
 
     private Intbox groupCount;
     Tabbox tabboxclassification;
-    private String satServer = "";
-    private SettingsSupplementary settingsSupplementary = null;
     int generation_count = 1;
     String pid;
     String layerLabel;
@@ -53,13 +51,9 @@ public class ALOCWCController extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
+        layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
 
-        layersUtil = new LayersUtil(getMapComposer(), satServer);
-
-        lbListLayers.init(getMapComposer(), satServer, true);
+        lbListLayers.init(getMapComposer(), CommonData.satServer, true);
     }
 
     public void onClick$btnProduce(Event event) {
@@ -101,7 +95,7 @@ public class ALOCWCController extends UtilityComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/aloc/processgeoq?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/aloc/processgeoq?");
             sbProcessUrl.append("gc=" + URLEncoder.encode(String.valueOf(groupCount.getValue()), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
@@ -200,7 +194,7 @@ public class ALOCWCController extends UtilityComposer {
         double[] d = new double[6];
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/output/aloc/" + pid + "/aloc.pngextents.txt");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/output/aloc/" + pid + "/aloc.pngextents.txt");
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
@@ -224,7 +218,7 @@ public class ALOCWCController extends UtilityComposer {
     String getJob(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
@@ -243,7 +237,7 @@ public class ALOCWCController extends UtilityComposer {
     }
 
     public void loadMap(Event event) {
-        String uri = satServer + "/alaspatial/output/layers/" + pid + "/img.png";
+        String uri = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/img.png";
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();
@@ -296,7 +290,7 @@ public class ALOCWCController extends UtilityComposer {
                 md = new MapLayerMetadata();
             }
 
-            String infoUrl = satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:"+pid;
+            String infoUrl = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:"+pid;
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid)); 
 
@@ -353,7 +347,7 @@ public class ALOCWCController extends UtilityComposer {
     String get(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());

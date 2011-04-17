@@ -1,9 +1,26 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="areaboundingboxwindow" use="org.ala.spatial.analysis.web.AreaUploadShapefile"
-    apply="org.ala.spatial.analysis.web.AreaUploadShapefile" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
+    apply="org.ala.spatial.analysis.web.AreaUploadShapefile"  xmlns:n="http://www.zkoss.org/2005/zk/native"
+        width="400px" >
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="addspecieswindow.detach()" style="display: inline" />
+
         <caption label="Upload Shapefile" />
         <vbox width="100%">
+            <div>
+                <hbox width="100%">
+                    <label value="Layer name:" sclass="h3" />
+                    <textbox id="txtLayerName" width="250px"/>
+                </hbox>
+            </div>
             <separator />
             <label sclass="wordwrap" value="Select a shapefile with a single polygon to upload." />
             <label sclass="wordwrap" value="Note: if a shapefile with multiple polygons is uploaded, only the first polygon detected will be used." />

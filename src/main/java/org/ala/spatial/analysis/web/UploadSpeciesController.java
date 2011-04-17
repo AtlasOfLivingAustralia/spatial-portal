@@ -202,12 +202,7 @@ public class UploadSpeciesController extends UtilityComposer {
         loadUserPoints(new UserData(name), data);
     }
 
-    public void loadUserPoints(UserData ud, Reader data) {
-        String satServer = null;
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
+    public void loadUserPoints(UserData ud, Reader data) {  
         try {
             // Read a line in to check if it's a valid file
             // if it throw's an error, then it's not a valid csv file
@@ -262,7 +257,7 @@ public class UploadSpeciesController extends UtilityComposer {
 
             // Post it to alaspatial app
             HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(satServer + "/alaspatial/ws/points/register"); // testurl
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/points/register"); // testurl
             post.addRequestHeader("Accept", "text/plain");
             post.addParameter("name", ud.getName());
             post.addParameter("points", sbUPoints.toString());
@@ -323,11 +318,6 @@ public class UploadSpeciesController extends UtilityComposer {
     }
 
     public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
-        String satServer = null;
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         try {
             //don't care if it has a header
 
@@ -355,7 +345,7 @@ public class UploadSpeciesController extends UtilityComposer {
             sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
 
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             String pid = get.getResponseBodyAsString();
@@ -538,7 +528,7 @@ public class UploadSpeciesController extends UtilityComposer {
                 SimpleFeature feature = (SimpleFeature) it.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
                 WKTWriter wkt = new WKTWriter();
-                getMapComposer().addWKTLayer(wkt.write(geom), feature.getID());
+                getMapComposer().addWKTLayer(wkt.write(geom), feature.getID(), feature.getID());
                 break;
             }
             featureCollection.close(it);

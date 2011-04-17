@@ -27,7 +27,6 @@ import org.zkoss.zul.Tabbox;
 public class SamplingWCController extends UtilityComposer {
     private SpeciesAutoComplete sac;
     Tabbox tabboxsampling;
-    private String satServer = "";
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
     private String pid;    
@@ -35,15 +34,10 @@ public class SamplingWCController extends UtilityComposer {
 
     @Override
     public void afterCompose() {
-        super.afterCompose();
+        super.afterCompose();        
+            layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
 
-            if (settingsSupplementary != null) {
-                satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-            }
-        
-            layersUtil = new LayersUtil(getMapComposer(), satServer);
-
-            lbListLayers.init(getMapComposer(), satServer, false);
+            lbListLayers.init(getMapComposer(), CommonData.satServer, false);
     }
 
     public void onClick$btnClearSelection(Event event){
@@ -94,7 +88,7 @@ public class SamplingWCController extends UtilityComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/preview?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/preview?");
             if(taxon == null) {
                 sbProcessUrl.append("taxonid=null");
             } else {
@@ -239,7 +233,7 @@ public class SamplingWCController extends UtilityComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/processq/download?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/processq/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
@@ -298,7 +292,7 @@ public class SamplingWCController extends UtilityComposer {
             }
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/process/download?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             
@@ -321,11 +315,11 @@ public class SamplingWCController extends UtilityComposer {
             if (slist.equalsIgnoreCase("")) {
                 Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
             } else {
-                System.out.println("Sending file to user: " + satServer + "/alaspatial" + slist);
+                System.out.println("Sending file to user: " + CommonData.satServer + "/alaspatial" + slist);
 
-                URL url = new URL(satServer + "/alaspatial" + slist);
+                URL url = new URL(CommonData.satServer + "/alaspatial" + slist);
                 Filedownload.save(url.openStream(), "application/zip",url.getFile());
-                getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
+                getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
             }
 
         } catch (Exception e) {
@@ -337,7 +331,7 @@ public class SamplingWCController extends UtilityComposer {
     String getJob(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();

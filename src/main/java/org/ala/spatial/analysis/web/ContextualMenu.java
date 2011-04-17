@@ -8,6 +8,8 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import org.zkoss.zhtml.Li;
+import org.zkoss.zhtml.Ul;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -41,10 +43,15 @@ public class ContextualMenu extends UtilityComposer {
         
         ArrayList<Action> actions = getActions();
 
+        Ul ul = new Ul();
+        ul.setParent(contents);
+
         for(int i=0;i<actions.size() && i < 5;i++) {
+            Li li = new Li();
+            li.setParent(ul);
             A a = new A(actions.get(i).label);
             a.addEventListener("onClick", actions.get(i).eventListener);
-            a.setParent(contents);
+            a.setParent(li);
         }
     }
 

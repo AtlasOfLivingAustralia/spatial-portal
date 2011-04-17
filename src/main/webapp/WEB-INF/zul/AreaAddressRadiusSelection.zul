@@ -1,31 +1,49 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="areaaddressradiusselectionwindow" use="org.ala.spatial.analysis.web.AreaAddressRadiusSelection"
-    apply="org.ala.spatial.analysis.web.AreaAddressRadiusSelection" width="400px" height="100%" style="position:absolute;left:0px;top:0px">
-        <caption label="Draw Address Radius Selection" />
+    apply="org.ala.spatial.analysis.web.AreaAddressRadiusSelection" width="400px"  xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="areaaddressradiusselectionwindow.detach()" style="display: inline" />
+        
+        <caption label="Create an Address Radius" />
         <vbox width="100%">
-            <separator />
-            <label sclass="wordwrap" value="1. Enter address ...." />
-            <separator />
-            <hbox>
-                <textbox id="addressBox" tooltiptext="e.g. Black Mountain, Canberra" width="95%" />
-                <button id="btnFindAddress" label="Find" />
+            <hbox width="100%">
+                <div width="80px">
+                    <label value="Layer name" sclass="h3" />
+                </div>
+                <textbox id="txtLayerName" width="250px"/>
             </hbox>
             <separator />
-            <label id="addressLabel" />
+            <hbox width="100%">
+                <div width="80px">
+                    <label value="Enter address" sclass="h3" />
+                </div>
+                <textbox id="addressBox" width="250px"/>
+                <button id="btnFindAddress" label="Search" />
+            </hbox>
+            <label sclass="wCaption" value='For example: "Black Mountain, Canberra"'/>
             <separator />
-            <label sclass="wordwrap" value="2. Select radius." />
+            <hbox sclass="highlighted" width="100%">
+                <label id="addressLabel" />
+            </hbox>
             <separator />
-            <combobox id="cbRadius" >
-                <comboitem label="1km radius" id="ci1km" />
-                <comboitem label="5km radius" id="ci5km" />
-                <comboitem label="10km radius" id="ci10km" />
-                <comboitem label="20km radius" id="ci20km" />
-            </combobox>
-            <hbox>
-                <label value="Active Area" style="color: red; font-weight: bold" visible="false" />
-                <textbox id="displayGeom" readonly="true" width="250px" visible="true" multiline="true" height="100px" style="color: red" />
-                <button sclass="goButton" label="Create" id="btnCreate"/>
+            <hbox width="100%">
+                <div width="80px">
+                    <label value="Select radius" sclass="h3" />
+                </div>
+                <combobox id="cbRadius" >
+                    <comboitem label="1km radius" id="ci1km" />
+                    <comboitem label="5km radius" id="ci5km" />
+                    <comboitem label="10km radius" id="ci10km" />
+                    <comboitem label="20km radius" id="ci20km" />
+                </combobox>
             </hbox>
             <div style="float:right;margin-right:5px">
                 <hbox>

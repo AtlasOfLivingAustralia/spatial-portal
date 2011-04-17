@@ -70,7 +70,6 @@ public class ScatterplotWCController extends UtilityComposer {
     private static final String NUMBER_SERIES = "Number series";
     private static final String ACTIVE_AREA_SERIES = "In Active Area";
     private SettingsSupplementary settingsSupplementary = null;
-    String satServer;
     Chart chart;
     //Div chartImg;
     SpeciesAutoComplete sac;
@@ -114,11 +113,7 @@ public class ScatterplotWCController extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
-        layersUtil = new LayersUtil(getMapComposer(), satServer);
+        layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
 
         this.addEventListener("onSize", new EventListener() {
 
@@ -503,7 +498,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(satServer).append("/alaspatial/ws/sampling/scatterplot/register?");
+                sbProcessUrl.append(CommonData.satServer).append("/alaspatial/ws/sampling/scatterplot/register?");
                 sbProcessUrl.append("lsid=").append(URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
 
                 int pos = 0;
@@ -712,7 +707,7 @@ public class ScatterplotWCController extends UtilityComposer {
             }
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
@@ -788,7 +783,7 @@ public class ScatterplotWCController extends UtilityComposer {
             int countNonZero = 0;
             try {
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(satServer).append("/alaspatial/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
+                sbProcessUrl.append(CommonData.satServer).append("/alaspatial/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
 
                 sbProcessUrl.append("&xaxis=").append(URLEncoder.encode(env1, "UTF-8")).append(",").append(min1).append(",").append(max1);
                 sbProcessUrl.append("&yaxis=").append(URLEncoder.encode(env2, "UTF-8")).append(",").append(min2).append(",").append(max2);
@@ -1104,10 +1099,8 @@ public class ScatterplotWCController extends UtilityComposer {
 
     String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
         try {
-            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/species/colourlegend?lsid="
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
                     + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
                     + "&colourmode="
                     + URLEncoder.encode(colourmode, "UTF-8")); // testurl
@@ -1146,7 +1139,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
                 // call get
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(satServer + "/alaspatial/ws/layer/get?");
+                sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/get?");
                 sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
 
                 HttpClient client = new HttpClient();
@@ -1161,7 +1154,7 @@ public class ScatterplotWCController extends UtilityComposer {
                 String[] slista = slist.split("\n");
 
                 client = new HttpClient();
-                get = new GetMethod(satServer + "/alaspatial/" + slista[1]);
+                get = new GetMethod(CommonData.satServer + "/alaspatial/" + slista[1]);
                 get.addRequestHeader("Accept", "text/plain");
                 result = client.executeMethod(get);
                 slist = get.getResponseBodyAsString();
@@ -1220,7 +1213,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     prevResample = thisResample;
 
                     StringBuffer sbProcessUrl = new StringBuffer();
-                    sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/scatterplot?");
+                    sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/scatterplot?");
                     sbProcessUrl.append("taxonid=" + URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
                     String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
@@ -1297,7 +1290,7 @@ public class ScatterplotWCController extends UtilityComposer {
                 String thisResampleBackground = backgroundLSID + "*" + data.getLayer1() + "*" + data.getLayer2();
                 if (prevResampleBackground == null || !prevResampleBackground.equals(thisResampleBackground)) {
                     StringBuffer sbProcessUrl = new StringBuffer();
-                    sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/scatterplot?");
+                    sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/scatterplot?");
                     sbProcessUrl.append("taxonid=" + URLEncoder.encode(backgroundLSID.replace(".", "__"), "UTF-8"));
                     String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));

@@ -31,6 +31,7 @@ public class AddAreaController extends UtilityComposer {
         MapComposer mc = getMapComposer();
 
 	String script = "";
+        boolean overlapped = true;
         if (cbAreaSelection.getSelectedItem() == ciBoundingBox) {
             windowName = "WEB-INF/zul/AreaBoundingBox.zul";
 	    script = mc.getOpenLayersJavascript().addBoxDrawingTool();
@@ -41,8 +42,10 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/AreaPointAndRadius.zul";
 	    script = mc.getOpenLayersJavascript().addRadiusDrawingTool();
         } else if (cbAreaSelection.getSelectedItem() == ciRegionSelection) {
+            overlapped = false;
             windowName = "WEB-INF/zul/AreaRegionSelection.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciAddressRadiusSelection) {
+            overlapped = false;
             windowName = "WEB-INF/zul/AreaAddressRadiusSelection.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciUploadShapefile) {
            windowName = "WEB-INF/zul/AreaUploadShapefile.zul";
@@ -53,19 +56,26 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/AreaEnvironmentalEnvelope.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {
             String wkt = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
-            MapLayer mapLayer = mc.addWKTLayer(wkt, mc.getNextAreaLayerName("Australia Bounding Box"));
+            String layerName =  mc.getNextAreaLayerName("Australia Bounding Box");
+            MapLayer mapLayer = mc.addWKTLayer(wkt,layerName, layerName);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-            MapLayer mapLayer = mc.addWKTLayer(wkt, mc.getNextAreaLayerName("World Bounding Box "));
+            String layerName = mc.getNextAreaLayerName("World Bounding Box");
+            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
         } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
             String wkt = mc.getMapComposer().getViewArea();
-            MapLayer mapLayer = mc.addWKTLayer(wkt, mc.getNextAreaLayerName("View Area"));
+            String layerName = mc.getNextAreaLayerName("View Area");
+            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
         }
         if (!windowName.contentEquals("")) {
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
             Window window = (Window) Executions.createComponents(windowName, getMapComposer(), null);
             try {
-                window.doOverlapped();
+                if(overlapped) {
+                    window.doOverlapped();
+                } else {
+                    window.doModal();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

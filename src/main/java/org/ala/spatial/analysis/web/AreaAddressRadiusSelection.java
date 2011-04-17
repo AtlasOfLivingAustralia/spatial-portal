@@ -2,6 +2,8 @@ package org.ala.spatial.analysis.web;
 
 import geo.google.GeoAddressStandardizer;
 import java.util.List;
+import org.zkoss.zk.ui.Component;
+import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.Event;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
@@ -92,6 +94,7 @@ import org.ala.spatial.util.Zipper;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.UploadEvent;
+import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Fileupload;
 
 /**
@@ -108,8 +111,10 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
     Comboitem ci20km;
     Label addressLabel;
     private Textbox displayGeom;
-    private static final String DEFAULT_AREA = "CURRENTVIEW()";
     String layerName;
+    Textbox txtLayerName;
+    Button btnOk;
+    Button btnClear;
 
     @Override
     public void afterCompose() {
@@ -117,9 +122,11 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
         cbRadius.setReadonly(true);
         cbRadius.setDisabled(true);
         cbRadius.setSelectedItem(ci1km);
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
     public void onClick$btnOk(Event event) {
+        createRadiusFromAddress();
         this.detach();
     }
 
@@ -128,10 +135,7 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
     }
 
     public void onClick$btnCancel(Event event) {
-        MapComposer mc = getThisMapComposer();
-        if(layerName != null && mc.getMapLayer(layerName) != null) {
-            mc.removeLayer(layerName);
-        }
+        MapComposer mc = getMapComposer();
         this.detach();
     }
 
@@ -141,9 +145,9 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
             return;
         } else {
             try {
-                MapComposer mc = getThisMapComposer();
-                layerName = mc.getNextAreaLayerName("My circle");
-                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName);
+                MapComposer mc = getMapComposer();
+                layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+                MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
                 displayGeom.setText(wkt);
             }
             catch(Exception e) {
@@ -160,6 +164,7 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
 
             addressLabel.setValue(addresses.get(0).getAddressLine());
             cbRadius.setDisabled(false);
+            btnOk.setDisabled(false);
         } catch (geo.google.GeoException ge) {
             ge.printStackTrace();
         }
@@ -265,19 +270,5 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
             e.printStackTrace();
             return "none";
         }
-    }
-
-       /**
-     * Gets the main pages controller so we can add a
-     * drawing tool to the map
-     * @return MapComposer = map controller class
-     */
-    private MapComposer getThisMapComposer() {
-
-        MapComposer mapComposer = null;
-        Page page = getPage();
-        mapComposer = (MapComposer) page.getFellow("mapPortalPage");
-
-        return mapComposer;
     }
 }
