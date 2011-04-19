@@ -44,6 +44,7 @@ import org.ala.spatial.analysis.web.AddToolComposer;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
+import org.ala.spatial.analysis.web.FilteringResultsWCController;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
@@ -664,6 +665,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                         if (activeLayers.size() == 0) {
                             displayEmptyActiveLayers(activeLayersList);
+                            lblSelectedLayer.setValue("No layers added");
                         }
                     }
                 } else {
@@ -916,12 +918,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // tell the list about them...
         if (activeLayers.size() == 0) {
-            displayEmptyActiveLayers(activeLayersList);
-        } else {
-            activeLayersList.setModel(activeLayerModel);
-            activeLayersList.setItemRenderer(activeLayerRenderer);
+            activeLayers.add(remoteMap.createLocalLayer(LayerUtilities.MAP, "Map Options"));
         }
 
+        activeLayersList.setModel(activeLayerModel);
+        activeLayersList.setItemRenderer(activeLayerRenderer);
+        
         //showCurrentMenu();
 
         //activateNavigationTab(portalSession.getCurrentNavigationTab());
@@ -1783,6 +1785,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //        if (cbColour != null) {
 //            cbColour.setSelectedItem(ciColourUser);
 //        }
+
+        //active layers list
+
     }
 
     /**
@@ -3495,6 +3500,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/AddToolScatterplot.zul", null);
     }
 
+    public void onClick$btnAreaReport(Event event) {
+        List<MapLayer> polygonLayers = getPolygonLayers();
+        if(polygonLayers == null || polygonLayers.size() == 0) {
+            FilteringResultsWCController.open(getViewArea());
+        } else {
+            FilteringResultsWCController.open(polygonLayers.get(0).getWKT());
+        }
+    }
+
     public Window openModal(String page, Hashtable<String, Object> params) {
         Window window = (Window) Executions.createComponents(page, this, null);
 
@@ -3586,6 +3600,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     MapLayer llc2MapLayer;
 
     void showLayerDefault(MapLayer ml) {
+        if(ml.getType() == LayerUtilities.MAP) {
+            Window window = (Window)Executions.createComponents("WEB-INF/zul/MapOptions.zul", layerControls, null);
+            try {
+                window.doEmbedded();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
         llc2MapLayer = ml;
         llc2 = (LayerLegendComposer2) Executions.createComponents("WEB-INF/zul/LayerLegend2.zul", layerControls, null);
         MapLayerMetadata md = ml.getMapLayerMetadata();

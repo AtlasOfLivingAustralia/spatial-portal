@@ -104,8 +104,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         </n:a>
                                         <n:ul>
                                             <n:li>
-                                                <n:a href='#' n:onClick="runSamplingAction();">
-                                                    <n:span>Sampling</n:span>
+                                                <n:a href='#' n:onClick="runAreaReport();">
+                                                    <n:span>Area Report</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
@@ -114,13 +114,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </n:a>
                                             </n:li>
                                             <n:li>
-                                                <n:a href='#' n:onClick="runAreaReport();">
-                                                    <n:span>Area Report</n:span>
-                                                </n:a>
-                                            </n:li>
-                                            <n:li>
-                                                <n:a href='#' n:onClick="runClassification();">
-                                                    <n:span>Classification</n:span>
+                                                <n:a href='#' n:onClick="runSamplingAction();">
+                                                    <n:span>Sampling</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
@@ -128,11 +123,16 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <n:span>Scatterplot</n:span>
                                                 </n:a>
                                             </n:li>
-                                            <n:li>
+                                             <n:li>
                                                 <n:a href='#' n:onClick="runTabulation();">
-                                                    <n:span>Tabulation</n:span>
+                                                    <n:span>(Tabulation)</n:span>
                                                 </n:a>
                                             </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="runClassification();">
+                                                    <n:span>Classification</n:span>
+                                                </n:a>
+                                            </n:li>  
                                             <n:li>
                                                 <n:a href='#' n:onClick="runPrediction();">
                                                     <n:span>Prediction</n:span>
@@ -140,17 +140,17 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runGDM();">
-                                                    <n:span>GDM</n:span>
+                                                    <n:span>(GDM)</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runImport();">
-                                                    <n:span>Import</n:span>
+                                                    <n:span>(Import)</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runImporunExport();rt();">
-                                                    <n:span>Export</n:span>
+                                                    <n:span>(Export)</n:span>
                                                 </n:a>
                                             </n:li>
                                         </n:ul>
@@ -171,7 +171,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             </north>
                             <center vflex="false">
                                 <vlayout height="100%" style="overflow-y: auto" >
-                                    <div width="400px" sclass="selectedLayer">
+                                    <div width="400px" sclass="selectedLayerDiv">
                                         <label id="lblSelectedLayer" value="No layers added" sclass="selectedLayer" />
                                     </div>
                                     <separator />
@@ -195,7 +195,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             <center id="center">
                 <div id="mapcontainer" width="100%" height="100%" >
 
-                    <div class="menu" style="position:absolute;float:right;right:10px; margin-top:5px">
+                    <div class="menu" style="position:absolute;float:right;right:10px; margin-top:5px" visible="false">
                         <n:ul>
                             <n:li>
                                 <n:a href="#">Map Options</n:a>

@@ -259,7 +259,7 @@ function runSpeciesList(){
 }
 
 function runAreaReport(){
-    alert("Run Area Report");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnAreaReport', null));
 }
 
 function runSamplingAction(){

@@ -436,9 +436,10 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     legendHtml.setVisible(false);
                 }
 
-                if (m.isClustered()) {
-                    pointtype.setSelectedItem(rCluster);
-                } else if (m.getColourMode().equals("grid")) {
+                //if (m.isClustered()) {
+                //    pointtype.setSelectedItem(rCluster);
+                //} else
+                if (m.getColourMode().equals("grid")) {
                     pointtype.setSelectedItem(rGrid);
                 } else {
                     pointtype.setSelectedItem(rPoint);

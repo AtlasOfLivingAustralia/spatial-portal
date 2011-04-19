@@ -810,7 +810,10 @@ closebox a.helpButtonMain:hover {
     font-style: italic;
     font-size: 18px;
     font-family: Arial,Helvetica,sans-serif;
-    padding: 1px;
+    padding: 1px;    
+}
+
+.selectedLayerDiv {
     padding-top: 15px;
     border-top: 4px solid #D9D9D9;
 }
@@ -1198,4 +1201,15 @@ z-index: 1103;
     opacity: 0.7;
     cursor: pointer;
     display: block;
+}
+
+.z-window-modal-cm {
+    border: 0;
+}
+
+.z-window-highlighted-cl, .z-window-highlighted-cr, .z-window-highlighted-bl {
+    padding: 0;
+}
+.z-window-highlighted-bl {
+    height: 0;
 }

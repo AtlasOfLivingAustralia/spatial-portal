@@ -69,29 +69,31 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		/* show the legend graphic when the user hovers over the pallette icon
 		 * if 
 		 */
-		Image remove = new Image(languagePack.getLang("layer_remove_icon"));
-		remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
-		remove.setParent(listcell);
-		remove.setStyle("float:right;");
-		remove.setTooltiptext("remove layer");
+                if(layer.getType() != LayerUtilities.MAP) {
+                    Image remove = new Image(languagePack.getLang("layer_remove_icon"));
+                    remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
+                    remove.setParent(listcell);
+                    remove.setStyle("float:right;");
+                    remove.setTooltiptext("remove layer");
 
-                Image info = new Image(languagePack.getLang("layer_info_icon"));
-                info.setParent(listcell);
-                info.setStyle("float:right;");
-                info.setTooltiptext("metadata");
-                info.addEventListener("onClick", new ActiveLayersInfoEventListener());
-
-
-                Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
-                zoomextent.setParent(listcell);
-                zoomextent.setStyle("float:right");
-                zoomextent.setTooltiptext("zoom to extent");
-                zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+                    Image info = new Image(languagePack.getLang("layer_info_icon"));
+                    info.setParent(listcell);
+                    info.setStyle("float:right;");
+                    info.setTooltiptext("metadata");
+                    info.addEventListener("onClick", new ActiveLayersInfoEventListener());
 
 
-                
+                    Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
+                    zoomextent.setParent(listcell);
+                    zoomextent.setStyle("float:right");
+                    zoomextent.setTooltiptext("zoom to extent");
+                    zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+                } else {
+                    checkbox.setDisabled(true);
+                }
 
-		
+
+                Image legend;
 		if (layer.isDefaultStyleLegendUriSet()) {
 			/* animated layers get a "special" key icon
 			 * Since setting this icon will only happen if style 
@@ -101,7 +103,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 			 * display the special animation key icon, that's 
 			 * why
 			 */
-			Image legend;
 			if (layer.isCurrentlyAnimated()) {
 				// layer is currently being animated (implies supports animation)
 				legend = new Image(languagePack.getLang("map_legend_animated_icon"));
@@ -149,7 +150,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                         legend.setTooltiptext("View/edit the legend");
 
 		} else {
-                    Image legend;
                     //legend = new Image(languagePack.getLang("layer_legend_icon"));
                     legend = new Image();
                     legend.setWidth("20px");
@@ -178,7 +178,11 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                 }
 
                 label.setParent(listcell);
-                
+
+                if(layer.getType() == LayerUtilities.MAP) {
+                    checkbox.setVisible(false);
+                    legend.setVisible(false);
+                }
 
                 //Image legend = new Image(languagePack.getLang("layer_le_icon"));
                 //info.setParent(listcell);
