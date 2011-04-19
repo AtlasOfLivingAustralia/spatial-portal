@@ -19,7 +19,7 @@ public class AddAreaController extends UtilityComposer {
     
     SettingsSupplementary settingsSupplementary;
     Radiogroup cbAreaSelection;
-    Radio ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
+    Radio ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
 
     @Override
     public void afterCompose() {
@@ -49,6 +49,10 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/AreaAddressRadiusSelection.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciUploadShapefile) {
            windowName = "WEB-INF/zul/AreaUploadShapefile.zul";
+           overlapped = false;
+        } else if (cbAreaSelection.getSelectedItem() == ciUploadKML) {
+           windowName = "WEB-INF/zul/AreaUploadShapefile.zul";
+           overlapped = false;
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             windowName = "WEB-INF/zul/AreaMapPolygon.zul";
             script = mc.getOpenLayersJavascript().addFeatureSelectionTool();

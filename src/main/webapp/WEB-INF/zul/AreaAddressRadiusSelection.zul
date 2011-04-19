@@ -13,15 +13,15 @@
         <a sclass="fancybox-close" onClick="areaaddressradiusselectionwindow.detach()" style="display: inline" />
         
         <caption label="Create an Address Radius" />
-        <vbox width="100%">
-            <hbox width="100%">
+        <vbox width="90%" style="margin-left:10px;margin-right:10px">
+            <hbox width="90%">
                 <div width="80px">
                     <label value="Layer name" sclass="h3" />
                 </div>
                 <textbox id="txtLayerName" width="250px"/>
             </hbox>
             <separator />
-            <hbox width="100%">
+            <hbox width="90%">
                 <div width="80px">
                     <label value="Enter address" sclass="h3" />
                 </div>

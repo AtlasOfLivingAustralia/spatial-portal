@@ -122,6 +122,7 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
         cbRadius.setReadonly(true);
         cbRadius.setDisabled(true);
         cbRadius.setSelectedItem(ci1km);
+        btnOk.setDisabled(true);
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 

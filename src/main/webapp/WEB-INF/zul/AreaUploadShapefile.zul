@@ -13,8 +13,8 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addspecieswindow.detach()" style="display: inline" />
 
-        <caption label="Upload Shapefile" />
-        <vbox width="100%">
+        <caption label="Upload Polygon" />
+        <vbox width="100%" style="float:left;margin-left:10px">
             <div>
                 <hbox width="100%">
                     <label value="Layer name:" sclass="h3" />
@@ -22,11 +22,11 @@
                 </hbox>
             </div>
             <separator />
-            <label sclass="wordwrap" value="Select a shapefile with a single polygon to upload." />
-            <label sclass="wordwrap" value="Note: if a shapefile with multiple polygons is uploaded, only the first polygon detected will be used." />
+            <label sclass="wordwrap" value="Select a zipped shapefile directory or a kml file." />
+            <label sclass="wordwrap" value="Note: if a file with multiple polygons is uploaded, only the first polygon detected will be used." />
             <separator />
-            <div style="float:right;margin-right:5px">
-                <fileupload label="Upload Shapefile" id="fileUpload" sclass="goButton fUploadButton" />
+            <div style="float:right;margin-right:10px">
+                <fileupload label="Upload File" id="fileUpload" sclass="goButton fUploadButton" />
                 <button sclass="goButton" label="OK" id="btnOk" visible="false"/>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
             </div>

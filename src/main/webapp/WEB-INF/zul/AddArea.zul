@@ -42,6 +42,7 @@
                     <label value="Others" />
                     <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
                     <radio label="Upload Shapefile" id="ciUploadShapefile" />
+                    <radio label="Upload KML" id="ciUploadKML" />
                     </vbox>
                 </radiogroup>
             </div>
