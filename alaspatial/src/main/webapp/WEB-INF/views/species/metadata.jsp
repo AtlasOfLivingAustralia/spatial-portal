@@ -17,7 +17,7 @@
         <link rel="stylesheet" href="/alaspatial/styles/style.css" type="text/css" media="all" />
     </head>
     <body>
-        <h1 class="md_heading">Species information for ${speciesname}</h1>
+        <!--<h1 class="md_heading">Species information for ${speciesname}</h1>-->
         <table class="md_table">
             <tbody>
                 <tr class="md_grey-bg">
