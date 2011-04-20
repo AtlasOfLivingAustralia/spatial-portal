@@ -25,8 +25,7 @@ public class AddAreaController extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        //deactivate ciMapPolygon when no contextual layers present
-        ciMapPolygon.setDisabled(getMapComposer().getContextualLayers().size() == 0);
+     
     }
 
     public void onClick$btnOk(Event event) {
