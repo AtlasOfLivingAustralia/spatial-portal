@@ -302,10 +302,11 @@ function resetMap(){
 }
 
 function loadHelp(page){
+    help_base_url = jq('$help_url')[0].innerHTML + "/spatial-portal-help";
     if (undefined === page){
         page = 'spatial-portal-help-contents';
     }
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', "http://www.ala.org.au/spatial-portal-help/" + page));
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
 }
 
 
