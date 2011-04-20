@@ -204,13 +204,13 @@
      <!-- (printing) command for wkhtmltoimage -->
      <wkhtmltoimage_cmd>/data/ala/utils/wkhtmltoimage/wkhtmltoimage-amd64</wkhtmltoimage_cmd>
      <!-- (printing) local path for print output, also web accessible -->
-     <print_output_path>/usr/local/tomcat/instance_03_webportal/webapps/webportal/print/</print_output_path>
+     <print_output_path>/Users/ajay/Sites/ala/output/print/</print_output_path>
      <!-- (printing) url for print_output_path -->
-     <print_output_url>http://spatial.ala.org.au/print/</print_output_url>
+     <print_output_url>http://localhost/~ajay/ala/output/print/</print_output_url>
      <!-- (printing) server url -->
      <print_server_url>http://spatial-dev.ala.org.au/</print_server_url>
     <!-- url to species metadata.  _lsid_ is replaced with actual lsid -->
-     <species_metadata_url>http://bie.ala.org.au/species/_lsid_</species_metadata_url>
+     <species_metadata_url>http://spatial-dev.ala.org.au/alaspatial/species/metadata/_lsid_</species_metadata_url>
      <help_url>http://test.ala.org.au</help_url>
      <geonetwork_url>http://spatial-dev.ala.org.au/geonetwork</geonetwork_url>
     </tns:supplementary>
