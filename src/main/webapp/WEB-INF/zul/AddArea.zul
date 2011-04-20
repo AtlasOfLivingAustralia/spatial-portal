@@ -11,7 +11,8 @@
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addareawindow.onClick$btnCancel(null)" style="display: inline" />
-
+        <a sclass="fancybox-help" onClick="" style="display: inline" />
+        
         <caption label="Add Area" />
 
         <vbox width="100%">

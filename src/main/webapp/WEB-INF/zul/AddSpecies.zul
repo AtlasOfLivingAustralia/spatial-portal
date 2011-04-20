@@ -12,9 +12,8 @@
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />        
         <a sclass="fancybox-close" onClick="addspecieswindow.onClick$btnCancel(null)" style="display: inline" />
-
+        <a sclass="fancybox-help" onClick="" style="display: inline" />
         <caption label="Add species" sclass="caption" />
-
         <vbox width="100%">
             <separator />
             <label sclass="wLabel" value="Enter a scientific or common name"/>
