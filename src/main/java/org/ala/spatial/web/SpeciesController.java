@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +35,12 @@ import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -134,7 +141,7 @@ public class SpeciesController {
                 slist.append(s).append("\n");
             }
 
-            String s = OccurrencesCollection.getCommonNames(name, aslist, 40 - ((aslist==null)?0:aslist.length));
+            String s = OccurrencesCollection.getCommonNames(name, aslist, 40 - ((aslist == null) ? 0 : aslist.length));
             slist.append(s);
 
         } catch (Exception e) {
@@ -913,5 +920,81 @@ public class SpeciesController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequestMapping(value = "/metadata/{lsid:.+}", method = RequestMethod.GET)
+    public ModelAndView speciesMetadata(@PathVariable("lsid") String lsid) {
+            ModelMap modelMap = null;
+        try {
+
+            String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies"};
+            String surl = "http://biocache.ala.org.au/occurrences/searchByTaxon.json?q=" + lsid;
+
+            modelMap = new ModelMap();
+
+            HttpClient client = new HttpClient();
+            GetMethod post = new GetMethod(surl);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonFactory factory = mapper.getJsonFactory();
+            JsonParser jp = factory.createJsonParser(slist);
+            JsonNode root = mapper.readTree(jp);
+
+            JsonNode joOcc = root.get("searchResult").get("occurrences").get(0);
+
+            // 1. add the Taxonomic hierarchy
+            Map classification = new TreeMap();
+            String[] entityQuery = root.get("entityQuery").getTextValue().split(":");
+            String spClass = entityQuery[0].trim();
+            Vector cList = new Vector(); 
+            for (String c : classificationList) {
+                if (c.equals(spClass))break;
+                classification.put(c, joOcc.get(c.replace("ss", "zz")).getTextValue() + ";" + joOcc.get(c + "Lsid").getTextValue());
+                
+                cList.add(c + ";" + joOcc.get(c.replace("ss", "zz")).getTextValue() + ";" + joOcc.get(c + "Lsid").getTextValue());
+            }
+            cList.add(spClass + ";" + entityQuery[1].trim() + ";" + lsid);
+            classification.put(entityQuery[0].trim(), lsid);
+            modelMap.addAttribute("classificationList", classificationList);
+            modelMap.addAttribute("classification", classification);
+            modelMap.addAttribute("cList", cList);
+            
+            
+            // 2. add the Number of species
+            //modelMap.addAttribute("occ_count", root.get("searchResult").get("totalRecords").getIntValue());
+            
+            // 3. add the Number of occurrences
+            modelMap.addAttribute("occ_count", root.get("searchResult").get("totalRecords").getValueAsText());
+            
+            // 4. add the Institutions
+            Map institutions = new TreeMap(); 
+            JsonNode facetResults = root.get("searchResult").get("facetResults");
+            for (int i = 0; i < facetResults.size(); i++) {
+                JsonNode jofr = facetResults.get(i);
+                if (jofr.get("fieldName").getTextValue().equalsIgnoreCase("data_resource")) {
+                    JsonNode jadr = jofr.get("fieldResult");
+                    for (int j = 0; j < jadr.size(); j++) {
+                        JsonNode jodr = jadr.get(j);
+                        institutions.put(jodr.get("label").getTextValue(), jodr.get("count").getValueAsText());
+                    }
+                }
+            }
+            modelMap.addAttribute("institutions", institutions);
+
+            modelMap.addAttribute("lsid", lsid);
+            modelMap.addAttribute("speciesname", entityQuery[1].trim());
+            modelMap.addAttribute("speciesRant", entityQuery[0].trim());
+            
+
+        } catch (Exception e) {
+            System.out.println("error generating species metadata");
+            e.printStackTrace(System.out);
+        }
+
+        return new ModelAndView("species/metadata", modelMap);
     }
 }
