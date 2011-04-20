@@ -48,6 +48,7 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		//do after legend
                 //label.setParent(listcell);
 		listcell.setParent(item);
+                listcell.setStyle("padding:5px;");
 
 		// dnd list reordering support
 		item.addEventListener("onDrop", new ActiveLayerDNDEventListener());
@@ -63,7 +64,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                 //label.addEventListener("onClick", new ActiveLayersInfoEventListener());
 		label.setStyle("float:left;");
 		checkbox.setStyle("float:left;");
-		
 
 		
 		/* show the legend graphic when the user hovers over the pallette icon
@@ -92,101 +92,42 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                     checkbox.setDisabled(true);
                 }
 
-
+                //Set the legend graphic based on the layer type
                 Image legend;
-		if (layer.isDefaultStyleLegendUriSet()) {
-			/* animated layers get a "special" key icon
-			 * Since setting this icon will only happen if style 
-			 * legends are available, it is an assumption that
-			 * only layers with legends will be animatable, so 
-			 * if you have a layer with no legend that doesn't 
-			 * display the special animation key icon, that's 
-			 * why
-			 */
-			if (layer.isCurrentlyAnimated()) {
-				// layer is currently being animated (implies supports animation)
-				legend = new Image(languagePack.getLang("map_legend_animated_icon"));
-			}
-			else if (layer.isSupportsAnimation()) {
-				// layer is supports animation but is not currently animated
-				legend = new Image(languagePack.getLang("map_legend_animatable_icon"));
-			} else {
-                            legend = new Image();
-                            legend.setWidth("20px");
-                            legend.setHeight("20px");
-                            int red = 0;
-                            int green = 0;
-                            int blue = 0;
-                            if (layer.isGridLayer()) {
-                                red = 0; green = 0; blue = 255;
-                            } else if (layer.isSpeciesLayer()) {
-                                red = 0; green = 255; blue = 0;
-                            } else if (layer.isPolygonLayer()) {
-                                red = 0; green = 255; blue = 0;
-                            } else if (layer.isContextualLayer()) {
-                                red = 255; green = 255; blue = 0;
-                            } else {
-				//just a plain layer
-				legend = new Image(languagePack.getLang("layer_legend_icon"));
-                            }
-                            legend.setStyle("background-color:RGB(" + red + "," + green + "," + blue + ");");
-                        }
-			
-			/* hack to get things to align properly - want everything
-			 * floating left except the image which floats right 
-			 */
-
-			legend.setStyle("float:left;");
-			
-			legend.setParent(listcell);
-			
-
-
-			// hover a tooltip image over the icon
-			Popup popup = (Popup) Executions.createComponents("/WEB-INF/zul/LegendPopup.zul", legend.getRoot(), null);	
-			popup.addEventListener("onOpen", new LegendTooltipOpenEventListener(layer));
-			legend.setTooltip(popup);
-                        legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
-                        legend.setTooltiptext("View/edit the legend");
-
-		} else {
-                    //legend = new Image(languagePack.getLang("layer_legend_icon"));
-                    legend = new Image();
-                    legend.setWidth("20px");
-                    legend.setHeight("20px");
-                    int red = 0;
-                    int green = 0;
-                    int blue = 0;
-                    if (layer.isGridLayer()) {
-                        red = 0; green = 0; blue = 255;
-                    } else if (layer.isSpeciesLayer()) {
-                        red = 0; green = 255; blue = 0;
-                    } else if (layer.isPolygonLayer()) {
-                        red = 0; green = 255; blue = 0;
-                    } else if (layer.isContextualLayer()) {
-                        red = 255; green = 255; blue = 0;
-                    } else {
-                        //just a plain layer
-                        legend = new Image(languagePack.getLang("layer_legend_icon"));
-                    }
-                    legend.setStyle("background-color:RGB(" + red + "," + green + "," + blue + ")");
-
-                    legend.setStyle("float:left;");
-		    legend.setParent(listcell);
-                    legend.setTooltiptext("View/edit the legend");
-                    legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
+                legend = new Image();
+                legend.setWidth("18px");
+                legend.setHeight("18px");
+                int red = 0;
+                int green = 0;
+                int blue = 0;
+                if (layer.isGridLayer()) {
+                    legend = new Image(languagePack.getLang("icon_grid"));
+                } else if (layer.isSpeciesLayer()) {
+                    legend = new Image(languagePack.getLang("icon_species"));
+                } else if (layer.isPolygonLayer()) {
+                    legend = new Image(languagePack.getLang("icon_polygon"));
+                } else if (layer.isContextualLayer()) {
+                    legend = new Image(languagePack.getLang("icon_contextual"));
+                } else {
+                    //just a plain layer
+                    legend = new Image(languagePack.getLang("layer_legend_icon"));
                 }
+
+                //todo: support analysis layers (languagePack.getLang("icon_analysis"))
+
+                legend.setStyle("background-color:RGB(" + red + "," + green + "," + blue + ")");
+                legend.setStyle("float:left;");
+                legend.setParent(listcell);
+                legend.setTooltiptext("View/edit the legend");
+                legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
+
 
                 label.setParent(listcell);
 
                 if(layer.getType() == LayerUtilities.MAP) {
                     checkbox.setVisible(false);
-                    legend.setVisible(false);
+                    legend.setVisible(true);
                 }
-
-                //Image legend = new Image(languagePack.getLang("layer_le_icon"));
-                //info.setParent(listcell);
-
 
 	}
 

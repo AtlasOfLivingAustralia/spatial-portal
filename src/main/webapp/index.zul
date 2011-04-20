@@ -74,9 +74,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                     <div id="westContent" class="westContent" visible="true" height="100%">
                         <div width="100%" sclass="menudiv" height="39px" >
-                            <n:div id='nav' style="left: 100px;">
+                            <n:div id='nav' style="left: 50px;">
                                 <n:ul class='sf'>
-                                    <n:li class='nav-contact'>
+                                    <n:li class='nav-add'>
                                         <n:a href='#'>
                                             <n:span>Add To Map</n:span>
                                         </n:a>
@@ -115,7 +115,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runSamplingAction();">
-                                                    <n:span>Sampling</n:span>
+                                                    <n:span>Species Sample</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
@@ -125,17 +125,17 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
                                              <n:li>
                                                 <n:a href='#' n:onClick="runTabulation();">
-                                                    <n:span>(Tabulation)</n:span>
+                                                    <n:span>(Tabulate)</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runClassification();">
-                                                    <n:span>Classification</n:span>
+                                                    <n:span>Classify</n:span>
                                                 </n:a>
                                             </n:li>  
                                             <n:li>
                                                 <n:a href='#' n:onClick="runPrediction();">
-                                                    <n:span>Prediction</n:span>
+                                                    <n:span>Predict</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
@@ -145,12 +145,54 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runImport();">
-                                                    <n:span>(Import)</n:span>
+                                                    <n:span>Import</n:span>
                                                 </n:a>
                                             </n:li>
                                             <n:li>
                                                 <n:a href='#' n:onClick="runImporunExport();rt();">
-                                                    <n:span>(Export)</n:span>
+                                                    <n:span>Export</n:span>
+                                                </n:a>
+                                            </n:li>
+                                        </n:ul>
+                                    </n:li>
+                                    <n:li class='nav-help'>
+                                        <n:a href='#'>
+                                            <n:span>Help</n:span>
+                                        </n:a>
+                                        <n:ul>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="loadHelp();">
+                                                    <n:span>Getting Started</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="loadHelp('what-is-the-spatial-portal');">
+                                                    <n:span>The Map Window</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="loadHelp();">
+                                                    <n:span>Add to map</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="loadHelp();">
+                                                    <n:span>Tools</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="loadHelp();">
+                                                    <n:span>Layers Area</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="loadHelp();">
+                                                    <n:span>Display Area</n:span>
+                                                </n:a>
+                                            </n:li>
+                                            <n:li>
+                                                <n:a href='#' n:onClick="loadHelp();">
+                                                    <n:span>Hint Area</n:span>
                                                 </n:a>
                                             </n:li>
                                         </n:ul>

@@ -298,6 +298,9 @@ function resetMap(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$reloadPortal', null));
 }
 
-function loadHelp(){
-    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', "http://www.ala.org.au/spatial-portal-help/spatial-portal-help-contents  "));
+function loadHelp(page){
+    if (undefined === page){
+        page = 'spatial-portal-help-contents';
+    }
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', "http://www.ala.org.au/spatial-portal-help/" + page));
 }

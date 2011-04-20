@@ -63,27 +63,13 @@ ul.sf li.sfHover li ul {
 
 .nav-login.nav-right a, .nav-logout.nav-right a {position:absolute;right:-263px;}
 
-.nav-home a{width:56px;background:transparent url(../img/nav_s.png) no-repeat 0 0; background-position:0 0;}
-.nav-explore a{width:66px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-56px 0;}
-.nav-tools a{width:52px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-122px 0;}
-.nav-share a{width:56px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-174px 0;}
-.nav-support a{width:70px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-230px 0;}
-.nav-contact a{width:89px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-300px 0;}
-.nav-about a{width:116px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-389px 0;}
-.nav-login a{width:67px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-505px 0;}
-.nav-logout a{width:67px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-572px 0;}
-.nav-myprofile a{width:81px;background:transparent url(../img/nav_s.png) no-repeat; background-position:-639px 0;}
+.nav-add a{width:92px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:0 0;}
+.nav-tools a{width:52px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-92px 0;}
+.nav-help a{width:56px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-144px 0;}
 
-.nav-home a:hover,.nav-home.selected a{background-position:0 -51px;z-index:100;}
-.nav-explore a:hover,.nav-explore.selected a,#page-329 .nav-explore a,#page-883 .nav-explore a,#page-collections-map  .nav-explore a, .nav-explore.sfHover a, .nav-explore:hover > a{background-position:-56px -51px;z-index:100;}
-.nav-tools a:hover,.nav-tools.selected a,#page-36 .nav-tools a, .nav-tools.sfHover a, .nav-tools:hover{background-position:-122px -51px;z-index:100;}
-.nav-share a:hover,.nav-share.selected a,#page-77 .nav-share a, .nav-share.sfHover a, .nav-share:hover{background-position:-174px -51px;z-index:100;}
-.nav-support a:hover,#page-81 .nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-230px -51px;z-index:100;}
-.nav-contact a:hover,.nav-contact.selected a,#page-74 .nav-contact a, .nav-contact.sfHover a, .nav-contact:hover{background-position:-300px -51px;z-index:100;}
-.nav-about a:hover,.nav-about.selected a,#page-5 .nav-about a, #page-2 .nav-about a,.nav-about.sfHover a, .nav-about:hover{background-position:-389px -51px;z-index:100;}
-.nav-login a:hover,.nav-login.selected a,.nav-login.sfHover a, .nav-login:hover{background-position:-505px -51px;z-index:100;}
-.nav-logout a:hover,.nav-logout.selected a,.nav-logout.sfHover a, .nav-logout:hover{background-position:-572px -51px;z-index:100;}
-.nav-myprofile a:hover,.nav-myprofile.selected a,#page-95 .nav-myprofile a,.nav-myprofile.sfHover a, .nav-myprofile:hover{background-position:-639px -51px;z-index:100;}
+.nav-add a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:0px -51px;z-index:100;}
+.nav-tools a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-92px -51px;z-index:100;}
+.nav-help a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-144px -51px;z-index:100;}
 
 /* end of image replace */
 
