@@ -11,7 +11,7 @@ current font colour:  0b5888
 */
 html, body {
 
-    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    font-family: Arial,Helvetica,sans-serif;;
     font-weight: normal;
     font-size: 12px;
     background-color: #EBEBEB;
@@ -269,7 +269,7 @@ a[rel="external"], a.external {
 
 .z-west-header {
     font-size: 16px;
-    font-family: Verdana,Tahoma,Arial, "lucida console", sans-serif;
+    font-family: Arial,Helvetica,sans-serif;;
     padding-left: 10px;
     font-weight: bold;
     background-color: #375c79;
@@ -604,7 +604,7 @@ tr.z-listitem-disd a:visited,tr.z-listitem-disd a:hover,td.z-listcell-disd a:vis
     margin: 5px 30px;
     text-align: center;
     color: white;
-    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    font-family: Arial,Helvetica,sans-serif;;
 }
 
 #ft * {
@@ -669,7 +669,8 @@ tr.z-listitem-disd a:visited,tr.z-listitem-disd a:hover,td.z-listcell-disd a:vis
 }
 
 .fUploadButton {
-    padding: 3px !important;
+    padding: 0px !important;
+    margin: 0px 1px 0 0;
 }
 
 .helpButton {
@@ -780,7 +781,7 @@ closebox a.helpButtonMain:hover {
     font-size: 9px;
     font-weight: bold;
     width: 80px;
-    font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+    font-family: Arial,Helvetica,sans-serif;
     cursor: pointer;
 }
 
@@ -1020,6 +1021,9 @@ tr.z-listitem-seld, tr.z-listitem-seld span, tr.z-listitem-seld div  {
 tr.z-listitem-over, tr.z-listitem-over span, tr.z-listitem-over div {
     background: #DD3102;
     color: white;
+    padding: 0;
+    border: 0;
+    margin: 0;
 }
 
 .menudiv {
@@ -1224,4 +1228,57 @@ z-index: 1103;
 }
 .z-window-highlighted-bl {
     height: 0;
+}
+
+.legendlist div.z-listbox-body {
+    overflow: visible;
+    border: 0px;
+}
+
+.legendlist td.z-listcell {
+    padding: 0px;
+    border: 0px;
+}
+
+.legendlist td.z-listcell-over {
+    padding: 0px;
+    border: 0px;
+}
+
+.fUploadButton td.z-button-tl, .fUploadButton td.z-button-tm, .fUploadButton td.z-button-tr,
+.fUploadButton td.z-button-cl, .fUploadButton td.z-button-cr,
+.fUploadButton td.z-button-bl, .fUploadButton td.z-button-bm, .fUploadButton td.z-button-br {
+    display: none;
+}
+
+.fUploadButton td.z-button-cm {
+    -webkit-appearance: button;
+    margin: 0em;
+    font: -webkit-small-control;
+    color: initial;
+    letter-spacing: normal;
+    word-spacing: normal;
+    line-height: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    -webkit-box-align: center;
+    text-align: center;
+    cursor: default;
+    color: buttontext;
+    border: 2px outset buttonface;
+    background-color: buttonface;
+    box-sizing: border-box;
+    padding: 1px 6px;
+    float: right;
+    font-weight: normal;
+}
+
+.webkit span.z-button {
+    margin: 0px 1px 0 0;
+}
+
+.z-south {
+    background-color: white;
 }

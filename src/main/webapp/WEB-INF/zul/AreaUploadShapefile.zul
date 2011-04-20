@@ -13,11 +13,12 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="areaboundingboxwindow.onClick$btnCancel(null)" style="display: inline" />
 
-        <caption label="Upload Polygon" />
+        <caption label="Upload Shapefile" />
+        <separator />
         <vbox width="100%" style="float:left;margin-left:10px">
             <div>
                 <hbox width="100%">
-                    <label value="Layer name:" sclass="h3" />
+                    <label value="Area name" sclass="h3" />
                     <textbox id="txtLayerName" width="250px"/>
                 </hbox>
             </div>
@@ -26,9 +27,13 @@
             <label sclass="wordwrap" value="Note: if a file with multiple polygons is uploaded, only the first polygon detected will be used." />
             <separator />
             <div style="float:right;margin-right:10px">
-                <fileupload label="Upload File" id="fileUpload" sclass="goButton fUploadButton" />
+                <hbox>
+                <div>
+                    <fileupload label="Next" id="fileUpload" sclass="fUploadButton" />
+                </div>
                 <button sclass="goButton" label="OK" id="btnOk" visible="false"/>
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                </hbox>
             </div>
             <separator />
         </vbox>

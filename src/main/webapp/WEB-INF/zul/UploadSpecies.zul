@@ -1,7 +1,8 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="uploadspecieswindow" use="org.ala.spatial.analysis.web.UploadSpeciesController"
-    apply="org.ala.spatial.analysis.web.UploadSpeciesController" width="400px">
+    apply="org.ala.spatial.analysis.web.UploadSpeciesController" width="400px"
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -24,10 +25,10 @@
             <separator />
             <label value="3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))"
                 sclass="word-wrap" style="white-space: normal; padding: 5px" />
-            <fileupload id="fileUpload" label="Upload File" upload="true" />
+            
             <separator />
             <div style="float:right;margin-right:5px">
-                <button sclass="goButton" label="Next" id="btnOk"/>
+                <fileupload  sclass="fUploadButton" id="fileUpload" label="Choose file" upload="true" />
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
             </div>
             <separator />

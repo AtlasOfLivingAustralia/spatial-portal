@@ -327,7 +327,7 @@ function buildMapReal() {
 //        });
     bLayer3 = new OpenLayers.Layer.OSM();
 
-    bLayer4 = new OpenLayers.Layer.WMS("Outline","http://spatial.ala.org.au/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
+    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
 
     map.addLayers([bLayer2,bLayer,bLayer3,bLayer4]);
     parent.bLayer = bLayer;

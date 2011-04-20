@@ -2,7 +2,7 @@
 <?page title="ALOC" contentType="text/html;charset=UTF-8" id="AnalysisALOCPage"?>
 <zk>
     <window id="layerlegend" use="au.org.emii.portal.composer.LayerLegendComposer2"
-    apply="au.org.emii.portal.composer.LayerLegendComposer2" width="350px" height="400px" >
+    apply="au.org.emii.portal.composer.LayerLegendComposer2" width="400px">
 
         <div id="layerControls" >
             <div>
@@ -11,6 +11,7 @@
                         <label value="Layer name" sclass="h3" />
                     </div>
                     <textbox id="txtLayerName" width="250px"/>
+                    <button sclass="goButton" label="apply" forward="onOK$txtLayerName" />
                 </hbox>
             </div>
             <separator />

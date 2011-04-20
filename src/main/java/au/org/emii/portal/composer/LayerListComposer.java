@@ -40,7 +40,7 @@ public class LayerListComposer extends UtilityComposer {
     private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
-    AddLayerController alc;
+    public AddLayerController alc;
     SettingsSupplementary settingsSupplementary;
 
     @Override
@@ -355,6 +355,7 @@ public class LayerListComposer extends UtilityComposer {
                                 // Messagebox.show(displaypath);
                                 String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
+                                initALC();
                                 alc.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(layer + " - " + classValue,

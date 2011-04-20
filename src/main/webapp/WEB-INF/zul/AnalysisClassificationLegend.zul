@@ -4,7 +4,7 @@
     <window
      border="none"
      apply="org.ala.spatial.analysis.web.ClassificationLegend"
-     use="org.ala.spatial.analysis.web.ClassificationLegend" mode="embedded" width="98%" height="220px" style="overflow:auto" >
+     use="org.ala.spatial.analysis.web.ClassificationLegend" mode="embedded" width="98%" >
         <style>
             .legendlist div.z-listitem-cnt {
                 font-size: 10px;
@@ -13,9 +13,8 @@
              }
         </style>
 
-        <div height="100%" style="overflow: auto">
             <label id="lblEdit" value="Click colour to edit" />
-            <listbox sclass="legendlist" id="legend" multiple="false" checkmark="false" width="100%" vflex="true" fixedLayout="true" height="10%" >
+            <listbox sclass="legendlist" id="legend" multiple="false" checkmark="false" width="100%" vflex="true"  >
                 <listhead>
                     <listheader label="group" width="210px"></listheader>
                     <listheader label="colour" width="50px"></listheader>
@@ -64,7 +63,7 @@
                 <div align="right" width="90%">
                     <button id="applyChange" label="Apply" />
                 </div>
-            </div>
+       
         </div>
     </window>
 

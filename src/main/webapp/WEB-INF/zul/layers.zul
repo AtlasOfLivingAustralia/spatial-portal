@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="layerswindow" style="text-align: left" use="au.org.emii.portal.composer.LayerListComposer" apply="au.org.emii.portal.composer.LayerListComposer">
+    <window id="layerswindow" style="text-align: left" 
+    use="au.org.emii.portal.composer.LayerListComposer"
+    apply="au.org.emii.portal.composer.LayerListComposer">
         <vbox>
             <label value="Browse layers via categories" style="font-weight: bold;" />
         </vbox>

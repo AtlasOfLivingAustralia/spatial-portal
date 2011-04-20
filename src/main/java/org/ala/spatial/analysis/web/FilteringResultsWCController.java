@@ -7,6 +7,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -46,7 +48,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     int results_count_occurrences = 0;
     boolean addedListener = false;
     Label lblArea;
-    Label lblArea2val;
+    Label lblBiostor;
 
     String reportArea = null;
 
@@ -71,31 +73,31 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         setUpdatingCount(true);
 
-        System.out.println("redraw:filteringresultswccontroller");
-        if (!addedListener) {
-            addedListener = true;
-            //register for viewport changes
-            EventListener el = new EventListener() {
-
-                public void onEvent(Event event) throws Exception {
-                    // refresh count may be required if area is
-                    // not an envelope.
-                    String area = null;
-                    if(reportArea != null) {
-                        area = reportArea;
-                    } else if(getMapComposer().getPolygonLayers().size() > 0) {
-                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
-                    } else {
-                        //TODO: not view area
-                        area = getMapComposer().getViewArea();
-                    }
-                    //if (!area.startsWith("ENVELOPE(") && !area.startsWith("LAYER(")) {
-                        refreshCount();
-                    //}
-                }
-            };
-            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
-        }
+//        System.out.println("redraw:filteringresultswccontroller");
+//        if (!addedListener) {
+//            addedListener = true;
+//            //register for viewport changes
+//            EventListener el = new EventListener() {
+//
+//                public void onEvent(Event event) throws Exception {
+//                    // refresh count may be required if area is
+//                    // not an envelope.
+//                    String area = null;
+//                    if(reportArea != null) {
+//                        area = reportArea;
+//                    } else if(getMapComposer().getPolygonLayers().size() > 0) {
+//                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
+//                    } else {
+//                        //TODO: not view area
+//                        area = getMapComposer().getViewArea();
+//                    }
+//                    //if (!area.startsWith("ENVELOPE(") && !area.startsWith("LAYER(")) {
+//                        refreshCount();
+//                    //}
+//                }
+//            };
+//            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
+//        }
     }
 
     void setUpdatingCount(boolean set) {
@@ -103,10 +105,8 @@ public class FilteringResultsWCController extends UtilityComposer {
             results_label2_occurrences.setValue("updating...");
             results_label2_species.setValue("updating...");
             sdLabel.setValue("updating...");
-
-
-            //calculateArea();
-
+            lblArea.setValue("updating...");
+            lblBiostor.setValue("updating...");
         }
     }
 
@@ -160,6 +160,8 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onRefreshCount(Event e) throws Exception {
         //temporary:
         intersectWithSpeciesDistributions();
+        calculateArea();
+        biostor();
 
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
@@ -563,8 +565,11 @@ public class FilteringResultsWCController extends UtilityComposer {
                         //TODO: not view area
                         area = getMapComposer().getViewArea();
                     }
+
+            area = StringUtils.replace(area, "MULTIPOLYGON((", "");
             area = StringUtils.replace(area, "POLYGON((", "");
-            area = StringUtils.replace(area, "))", "");
+            area = StringUtils.replace(area, ")", "");
+            area = StringUtils.replace(area, "(", "");
 
             String[] areaarr = area.split(",");
 
@@ -576,7 +581,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             totalarea = Math.abs(totalarea*6378137*6378137);
 
-            lblArea2val.setValue((totalarea / 1000 / 1000) + " sq km");
+            lblArea.setValue(String.format("%,d",(int)(totalarea / 1000 / 1000)));
 
         } catch (Exception e) {
             System.out.println("Error in calculateArea");
@@ -647,5 +652,98 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         this.detach();
+    }
+
+    String biostorHtml = null;
+    private void biostor() {
+        try {
+            String area = null;
+            if(getMapComposer().getPolygonLayers().size() > 0) {
+                area = getMapComposer().getPolygonLayers().get(0).getWKT();
+            } else {
+                //TODO: not view area
+                area = getMapComposer().getViewArea();
+            }
+
+            area = StringUtils.replace(area, "MULTIPOLYGON((", "");
+            area = StringUtils.replace(area, "POLYGON((", "");
+            area = StringUtils.replace(area, "(", "");
+            area = StringUtils.replace(area, ")", "");
+
+            String[] areaarr = area.split(",");
+
+            double lat1 = 0;            
+            double lat2 = 0;
+            double long1 = 0;
+            double long2 = 0;
+            for (int f = 0; f < areaarr.length; ++f) {
+                String [] s = areaarr[f].split(" ");
+                double long0 = Double.parseDouble(s[0]);
+                double lat0 = Double.parseDouble(s[1]);
+
+                if(f == 0 || long0 < long1) {
+                    long1 = long0;
+                }
+                if(f == 0 || long0 > long2) {
+                    long2 = long0;
+                }
+                if(f == 0 || lat0 < lat1) {
+                    lat1 = lat0;
+                }
+                if(f == 0 || lat0 > lat2) {
+                    lat2 = lat0;
+                }
+            }
+
+            String biostorurl = "http://biostor.org/bounds.php?";
+            biostorurl += "bounds=" + long1 + "," + lat1 + "," + long2 + "," + lat2;
+
+            HttpClient client = new HttpClient();
+            client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+            GetMethod get = new GetMethod(biostorurl);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+            biostorHtml = null;
+            if(slist != null) {
+                
+                JSONArray list = JSONObject.fromObject(slist).getJSONArray("list");
+                StringBuilder sb = new StringBuilder();
+                sb.append("<ol>");
+                for(int i=0;i<list.size();i++) {
+                    sb.append("<li>");
+                    sb.append("<a href=\"http://biostor.org/reference/");
+                    sb.append(list.getJSONObject(i).getString("id"));
+                    sb.append("\" target=\"_blank\">");
+                    sb.append(list.getJSONObject(i).getString("title"));
+                    sb.append("</li>");
+                }
+                sb.append("</ol>");
+                
+                if(list.size() > 0) {
+                    biostorHtml = sb.toString();
+                }
+
+//                $.getJSON(proxy_script + biostorurl, function(data){
+//                            var html = '<ol>';
+//                            for(var i=0, item; item=data.list[i]; i++) {
+//                                html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
+//                            }
+//                            html += '</ol>';
+//                            parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
+//                            parent.displayHTMLInformation('biostorlist',html);
+//                        });
+                lblBiostor.setValue(String.valueOf(list.size()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void onClick$lblBiostor(Event event) {
+        if(biostorHtml != null) {
+            Event ev = new Event(null, null, "Biostor Documents\n" + biostorHtml);
+            getMapComposer().openHTML(ev);
+        }
     }
 }

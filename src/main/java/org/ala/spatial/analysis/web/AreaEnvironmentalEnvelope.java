@@ -68,6 +68,7 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
     private String pid = "";
     private MapComposer mc;
     LayersUtil layersUtil;
+    Button filter_done;
     /**
      * for functions in popup box
      */
@@ -78,6 +79,7 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
     String activeAreaExtent = null;
     String activeAreaMetadata = null;
     private String activeAreaSize = null;
+    Label txtLayerName;
 
     @Override
     public void afterCompose() {
@@ -94,6 +96,8 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
 
         // init the session on the server and get a pid (process_id)
         pid = getInfo("/filtering/init");
+
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
     public String getAreaSize() {
@@ -187,6 +191,8 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
             listFix();
 
             showAdjustPopup(new_value, lc, li);
+
+            filter_done.setDisabled(false);
         } catch (Exception e) {
             //TODO: error message
             e.printStackTrace(System.out);
@@ -324,6 +330,8 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
 
         showAdjustPopup(null);
 
+        filter_done.setDisabled(selectedLayers.size() == 0);
+
         listFix();
 
         //reset active area size
@@ -335,6 +343,8 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
         String label;
 
         popup_continous.setVisible(false);
+
+        filter_done.setDisabled(true);
 
         //change to get last item
         int count = lbSelLayers.getItemCount();
@@ -395,6 +405,7 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
             mc.removeLayer(LAYER_PREFIX + layername);
         } else if (layername.equalsIgnoreCase("Active Area")) {
             showActiveArea();
+            detach();
         }
     }
 
@@ -595,14 +606,13 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
             e.printStackTrace(System.out);
         }
 
-        updateActiveArea(true);
-        this.detach();
+        //do detach after adding the new layer
     }
 
     void showActiveArea() {
         if (activeAreaUrl != null) {
-            loadMap(activeAreaUrl, "Active Area");
-            MapLayer ml = mc.getMapLayer("Active Area");
+            loadMap(activeAreaUrl, txtLayerName.getValue());
+            MapLayer ml = mc.getMapLayer(txtLayerName.getValue());
             if (ml.getMapLayerMetadata() == null) {
                 ml.setMapLayerMetadata(new MapLayerMetadata());
             }
@@ -876,5 +886,10 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
                 mc.removeLayer(LAYER_PREFIX + idx.substring(4));
             }
         }
+    }
+
+    public void onClick$btnCancel(Event event) {
+        onClick$btnClearSelection(event);
+        detach();
     }
 }

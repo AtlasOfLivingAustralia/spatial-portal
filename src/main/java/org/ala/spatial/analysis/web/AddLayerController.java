@@ -27,6 +27,8 @@ public class AddLayerController extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        //((LayerListComposer)((HtmlMacroComponent)getFellow("layerList")).getFellow("layerswindow")).alc = this;
     }
 
     public void onClick$btnOk(Event event) {

@@ -65,6 +65,7 @@ public class UploadSpeciesController extends UtilityComposer {
     Textbox tbDesc;
     Textbox tbName;
     Fileupload fileUpload;
+    private EventListener eventListener;
 
     @Override
     public void afterCompose() {
@@ -101,7 +102,7 @@ public class UploadSpeciesController extends UtilityComposer {
         });
     }
 
-    public void onClick$btnOk(Event event) {  
+    public void onClick$btnOk(Event event) {
         this.detach();
     }
 
@@ -280,19 +281,19 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
-            MapLayer ml = null;
-            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
-                //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-                ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount());
-            } else {
-                ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount());
-            }
-            MapLayerMetadata md = ml.getMapLayerMetadata();
-            if (md == null) {
-                md = new MapLayerMetadata();
-                ml.setMapLayerMetadata(md);
-            }
-            md.setMoreInfo(metadata);
+//            MapLayer ml = null;
+//            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
+//                //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+//                ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount());
+//            } else {
+//                ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount());
+//            }
+//            MapLayerMetadata md = ml.getMapLayerMetadata();
+//            if (md == null) {
+//                md = new MapLayerMetadata();
+//                ml.setMapLayerMetadata(md);
+//            }
+//            md.setMoreInfo(metadata);
             //md.setSpeciesRank("User");
 
 
@@ -303,6 +304,10 @@ public class UploadSpeciesController extends UtilityComposer {
             }
             htUserSpecies.put(slist, ud);
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+
+            if(eventListener != null) {
+                eventListener.onEvent(new Event("",null,slist + "\t" + ud.getName()));
+            }
 
             // close the reader and data streams
             reader.close();
@@ -538,5 +543,9 @@ public class UploadSpeciesController extends UtilityComposer {
             System.out.println("unable to load user shapefile: ");
             e.printStackTrace(System.out);
         }
+    }
+
+    void setEventListener(EventListener eventListener) {
+        this.eventListener = eventListener;
     }
 }

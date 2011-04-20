@@ -568,7 +568,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ((Caption) externalContentWindow.getFellow("caption")).setLabel(
                     label);
             externalContentWindow.setPosition("center");
-            externalContentWindow.doOverlapped();
+            //externalContentWindow.doOverlapped();
+            try {
+                externalContentWindow.doModal();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -918,11 +923,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         // tell the list about them...
         if (activeLayers.size() == 0) {
-            activeLayers.add(remoteMap.createLocalLayer(LayerUtilities.MAP, "Map Options"));
+            activeLayers.add(remoteMap.createLocalLayer(LayerUtilities.MAP, "Map options"));
         }
 
         activeLayersList.setModel(activeLayerModel);
         activeLayersList.setItemRenderer(activeLayerRenderer);
+        activeLayersList.setSelectedIndex(activeLayerModel.size()-1);
+
+        updateLayerControls();
         
         //showCurrentMenu();
 

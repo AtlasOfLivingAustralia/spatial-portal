@@ -11,7 +11,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="addareawindow.onClick$btnCancel(null)" style="display: inline" />
-        <a sclass="fancybox-help" onClick="" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('/explore/species-maps/species-maps-help/')" style="display: inline" />
         
         <caption label="Add Area" />
 
@@ -30,7 +30,7 @@
 
                     <separator />
                     <label value="Searching" />
-                    <radio label="Create radius from address" id="ciAddressRadiusSelection"/>
+                    <radio label="Use radius based on street address" id="ciAddressRadiusSelection"/>
                     <radio label="Select gazetteer region" id="ciRegionSelection" />                    
 
                     <separator />

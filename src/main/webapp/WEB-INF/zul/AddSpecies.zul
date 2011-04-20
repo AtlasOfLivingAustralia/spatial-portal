@@ -30,6 +30,8 @@
             <separator />
         </vbox>
         <separator />
+        <button sclass="goButton" label="Upload species" id="btnUpload"/>
+        <separator />
         <div sclass="wButtons">
             <hbox>
                 <button sclass="goButton" label="OK" id="btnOk" disabled="true" />

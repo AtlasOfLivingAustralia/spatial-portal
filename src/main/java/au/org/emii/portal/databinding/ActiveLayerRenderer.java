@@ -124,11 +124,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 
                 label.setParent(listcell);
 
-                if(layer.getType() == LayerUtilities.MAP) {
-                    checkbox.setVisible(false);
-                    legend.setVisible(true);
-                }
-
 	}
 
     public LanguagePack getLanguagePack() {

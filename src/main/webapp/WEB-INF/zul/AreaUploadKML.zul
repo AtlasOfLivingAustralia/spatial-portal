@@ -17,7 +17,7 @@
         <vbox width="100%" style="float:left;margin-left:10px">
             <div>
                 <hbox width="100%">
-                    <label value="Layer name:" sclass="h3" />
+                    <label value="Area name" sclass="h3" />
                     <textbox id="txtLayerName" width="250px"/>
                 </hbox>
             </div>

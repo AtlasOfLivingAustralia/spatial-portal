@@ -256,7 +256,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             pointtype.setSelectedItem(rPoint);
         }
 
-        chkUncertaintySize.setChecked(uncertainty);
+        chkUncertaintySize.setChecked(uncertainty);        
 
         updateUserColourDiv();
         updateLegendImage();
@@ -376,6 +376,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
     public void onCheck$chkUncertaintySize() {
          refreshLayer();
+         uncertaintyLegend.setVisible(chkUncertaintySize.isChecked());
     }
 
     public void onCheck$pointtype(Event event) {
@@ -511,6 +512,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
             clusterpoints.setVisible(false);
             cbColour.setDisabled(true);
         }
+
+        uncertaintyLegend.setVisible(chkUncertaintySize.isChecked());
     }
 
      private boolean isUserUploadedCoordinates(MapLayer currentSelection) {
@@ -535,14 +538,11 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         return txtLayerName.getValue();
     }
 
-    public void onChange$txtLayerName(Event event) {
-        refreshLayer();
-    }
+//    public void onChange$txtLayerName(Event event) {
+//        refreshLayer();
+//    }
 
-    boolean onchanging = true;
-    public void onChanging$txtLayerName(Event event) {
-        if(onchanging) {
-            refreshLayer();
-        }
+    public void onOK$txtLayerName(Event event) {
+        refreshLayer();
     }
 }
