@@ -179,6 +179,9 @@ function changeBaseLayer(type) {
     } else if (type == 'minimal') {
         map.setBaseLayer(bLayer3);
         $('#min_mapoption').addClass('mapoptsel');
+    } else if (type == 'outline') {
+        map.setBaseLayer(bLayer4);
+        $('#min_mapoption').addClass('mapoptsel');
     }
 }
 

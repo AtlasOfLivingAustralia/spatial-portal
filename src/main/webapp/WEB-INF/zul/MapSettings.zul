@@ -7,6 +7,7 @@
                     <label value="Base map" sclass="h3" />
                 </div>
                 <radiogroup>
+                    <radio onCheck='Clients.evalJavaScript("changeBaseLayer(\"outline\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Outline" />
                     <radio onCheck='Clients.evalJavaScript("changeBaseLayer(\"minimal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Minimal" />
                     <radio onCheck='Clients.evalJavaScript("changeBaseLayer(\"normal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Normal" />
                     <radio onCheck='Clients.evalJavaScript("changeBaseLayer(\"hybrid\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Satellite" />

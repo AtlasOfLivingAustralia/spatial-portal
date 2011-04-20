@@ -156,7 +156,7 @@ function checkLibraryLoaded() {
 
 }
 
-var bLayer,bLayer2,bLayer3;
+var bLayer,bLayer2,bLayer3,bLayer4;
 function loadBaseMap() {
 
     goToLocation(134, -25, 4);
@@ -186,6 +186,8 @@ function changeBaseLayer(type) {
         map.setBaseLayer(bLayer);
     } else if (type == 'minimal') {
         map.setBaseLayer(bLayer3);
+    } else if (type == 'outline') {
+        map.setBaseLayer(bLayer4);
     }
 }
 
@@ -325,10 +327,13 @@ function buildMapReal() {
 //        });
     bLayer3 = new OpenLayers.Layer.OSM();
 
-    map.addLayers([bLayer2,bLayer,bLayer3]);
+    bLayer4 = new OpenLayers.Layer.WMS("Outline","http://spatial-dev.ala.org.au/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
+
+    map.addLayers([bLayer2,bLayer,bLayer3,bLayer4]);
     parent.bLayer = bLayer;
     parent.bLayer2 = bLayer2;
     parent.bLayer3 = bLayer3;
+    parent.bLayer4 = bLayer4;
 
 
 

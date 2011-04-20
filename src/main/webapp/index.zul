@@ -28,6 +28,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         var bLayer = null;
         var bLayer2 = null;
         var bLayer3 = null;
+        var bLayer4 = null;
         var OpenLayers = null;
         var baseLayers = null;
         var currentbaselayertxt = "normal";
@@ -242,6 +243,9 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             <n:li>
                                 <n:a href="#">Map Options</n:a>
                                 <n:ul>
+                                    <n:li>
+                                        <n:a href="#" n:onClick="changeBaseLayer('outline');window.mapFrame.baseLayerSwitchStatus=1;">Outline</n:a>
+                                    </n:li>
                                     <n:li>
                                         <n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;">Minimal</n:a>
                                     </n:li>
