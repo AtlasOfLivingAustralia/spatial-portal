@@ -12,7 +12,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="areaaddressradiusselectionwindow.onClick$btnCancel(null)" style="display: inline" />
         
-        <caption label="Create an Address Radius" />
+        <caption label="Use radius based on street address" />
         <vbox width="90%" style="margin-left:10px;margin-right:10px">
             <hbox width="90%">
                 <div width="80px">

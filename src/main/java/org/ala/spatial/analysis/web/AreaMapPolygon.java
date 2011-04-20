@@ -1,9 +1,11 @@
 package org.ala.spatial.analysis.web;
 
+import au.org.emii.portal.composer.ContextualLayerListComposer;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -16,10 +18,14 @@ import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Radio;
+import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Vbox;
 
 /**
  *
@@ -31,17 +37,33 @@ public class AreaMapPolygon extends UtilityComposer {
     private Textbox displayGeom;
     String layerName;
     Textbox txtLayerName;
-    Button btnNext;
+    Button btnOk;
     Button btnClear;
-
+    Button btnAddLayer;
+    ContextualLayersAutoComplete autoCompleteLayers;
+    String treeName, treePath, treeMetadata;
+    int treeSubType;
+    Radio rAddLayer;
+    Vbox vbxLayerList;
+    Radiogroup rgPolygonLayers;
     @Override
     public void afterCompose() {
         super.afterCompose();
-
+        loadLayerSelection();
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
-    public void onClick$btnNext(Event event) {
+    public void onClick$btnAddLayer(Event event) {
+         if(treeName != null) {
+            getMapComposer().addWMSLayer(treeName,
+                            treePath,
+                            (float) 0.75, treeMetadata, treeSubType);
+
+            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
+        }
+    }
+
+    public void onClick$btnOk(Event event) {
         this.detach();
     }
 
@@ -53,7 +75,7 @@ public class AreaMapPolygon extends UtilityComposer {
         String script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
         mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
         displayGeom.setValue("");
-        btnNext.setDisabled(true);
+        btnOk.setDisabled(true);
         btnClear.setDisabled(true);
     }
 
@@ -65,16 +87,120 @@ public class AreaMapPolygon extends UtilityComposer {
         this.detach();
     }
 
+    public void onCheck$rgPolygonLayers(Event event) {
+        
+          Radio selectedItem = rgPolygonLayers.getSelectedItem();
+          if (selectedItem == rAddLayer) {
+              vbxLayerList.setVisible(true);
+          }
+          else {
+              vbxLayerList.setVisible(false);
+              //Add and remove layer to set as top layer
+              String layerName = selectedItem.getValue();
+              MapComposer mc = getThisMapComposer();
+              MapLayer ml = mc.getMapLayer(layerName);
+              mc.removeLayer(layerName);
+              mc.activateLayer(ml, true);
+          }
+    }
+
+
+      public void loadLayerSelection() {
+        try {
+
+            Radio rSelectedLayer = (Radio) getFellowIfAny("rSelectedLayer");
+
+            List<MapLayer> layers = getMapComposer().getContextualLayers();
+            if (layers.size() > 0 ) {
+                for (int i = 0; i < layers.size(); i++) {
+                    MapLayer lyr = layers.get(i);
+                    Radio rAr = new Radio(lyr.getDisplayName());
+                    rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                    rAr.setValue(lyr.getDisplayName());
+                    rAr.setParent(rgPolygonLayers);
+                    rgPolygonLayers.insertBefore(rAr, rSelectedLayer);
+                }
+                
+                rAddLayer = new Radio("Add Other Layer ...");
+                rAddLayer.setValue("Add Other Layer ...");
+                rAddLayer.setParent(rgPolygonLayers);
+                rgPolygonLayers.insertBefore(rAddLayer,rSelectedLayer);
+                rSelectedLayer.setSelected(true);
+            }
+            else {
+                vbxLayerList.setVisible(true);
+            }
+            
+        } catch (Exception e) {
+            
+        }
+    }
+
+    public void onChange$lac(Event event) {
+        treeName = null;
+        //btnOk.setDisabled(true);
+        
+        ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerswindow");
+
+        if (autoCompleteLayers.getItemCount() > 0 && autoCompleteLayers.getSelectedItem() != null) {
+            JSONObject jo = (JSONObject) autoCompleteLayers.getSelectedItem().getValue();
+            String metadata = "";
+
+            metadata = CommonData.satServer + "/alaspatial/layers/" + jo.getString("uid");
+
+            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata, 
+                    jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+        } else {
+            JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
+            if (!joLayer.getString("type").contentEquals("class")) {
+
+                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+
+                setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
+                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+            } else {
+                String classAttribute = joLayer.getString("classname");
+                String classValue = joLayer.getString("displayname");
+                String layer = joLayer.getString("layername");
+                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
+                //Filtered requests don't work on
+                displaypath = displaypath.replace("gwc/service/", "");
+                // Messagebox.show(displaypath);
+                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+
+                setLayer(layer + " - " + classValue, displaypath, metadata,
+                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+            }
+
+            //close parent if it is 'addlayerwindow'
+            try {
+                getRoot().getFellow("addlayerwindow").detach();
+            } catch (Exception e) {}
+        }
+    }
+
+    public void setLayer(String name, String displaypath, String metadata, int subType) {
+        treeName = name;
+        treePath = displaypath;
+        treeMetadata = metadata;
+        treeSubType = subType;
+
+        //fill autocomplete text
+        autoCompleteLayers.setText(name);
+
+        //clear selection on tree
+         ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerswindow");
+        llc.tree.clearSelection();
+
+       // btnOk.setDisabled(false);
+    }
+
     /**
      * Searches the gazetter at a given point and then maps the polygon feature
      * found at the location (for the current top contextual layer).
      * @param event triggered by the usual javascript trickery
      */
     public void onSearchPoint(Event event) {
-
-      
-            
-        
         String searchPoint = (String) event.getData();
         String lon = searchPoint.split(",")[0];
         String lat = searchPoint.split(",")[1];
@@ -87,7 +213,9 @@ public class AreaMapPolygon extends UtilityComposer {
         for (int i = 0; i < activeLayers.size(); i++) {
             MapLayer ml = activeLayers.get(i);
 
-            String activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
+            String activeLayerName = "none";
+            if (ml.getUri() != null)
+                activeLayerName = ml.getUri().replaceAll("^.*ALA:", "").replaceAll("&.*", "");
             System.out.println("ACTIVE LAYER: " + activeLayerName);
             if (ml.isDisplayed()) {
                 for (int j = 0; j < layerlist.size(); j++) {
@@ -141,7 +269,7 @@ public class AreaMapPolygon extends UtilityComposer {
                             //searchPoint.setValue("");
                             //setInstructions(null, null);
 
-                            btnNext.setDisabled(false);
+                            btnOk.setDisabled(false);
                             btnClear.setDisabled(false);
                             break;
 
@@ -309,4 +437,6 @@ public class AreaMapPolygon extends UtilityComposer {
         }
         return content.toString();
     }
+
+
 }

@@ -1,4 +1,5 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?component name="ContextualLayersTree" macro-uri="/WEB-INF/zul/ContextualLayersTree.zul"?>
 <zk>
     <window id="areamappolygonwindow" use="org.ala.spatial.analysis.web.AreaMapPolygon"
     apply="org.ala.spatial.analysis.web.AreaMapPolygon" width="360px" xmlns:n="http://www.zkoss.org/2005/zk/native"
@@ -14,24 +15,42 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="areamappolygonwindow.onClick$btnCancel(null)" style="display: inline" />
 
-        <caption label="Select Map Polygon" />
+        <caption label="Select Polygon From Mapped Layer" />
         <vbox sclass="embedWindowsContent">
             <div>
                 <hbox width="100%">
-                    <label value="Layer name:" sclass="h3" />
+                    <label value="Area name:" sclass="h3" />
                     <textbox id="txtLayerName" width="250px"/>
                 </hbox>
             </div>
             <separator />
-            <label sclass="wordwrap" value="1. Zoom and pan to the area of interest." />
+            <label sclass="wordwrap" value="1. Choose layer to select polygon from." />
             <label sclass="wordwrap" value="2. Identify the polygon of interest by a (left) mouse click within that polygon." />
-            <label sclass="wordwrap" value="3. The area selected will be highlighted red." />
+            <label sclass="wordwrap" value="3. The area selected will be highlighted red." /> 
             <separator />
+            
+            <radiogroup id="rgPolygonLayers" orient="vertical">
+
+                   <!-- <radio id="rAddLayer" label="Add Layer" value="addLayer" /> -->
+                </radiogroup>
+            <vbox id="vbxLayerList" visible="false">
+                <hbox>
+                    <combobox id="autoCompleteLayers" use="org.ala.spatial.analysis.web.ContextualLayersAutoComplete" autodrop="true" width="250px">
+                        <comboitem label=""/>
+                    </combobox>
+                    
+                        <button sclass="goButton" label="Add" id="btnAddLayer"/>
+                   
+                </hbox>
+                <div height="300px" style="margin-left:5px;overflow: auto">
+                    <ContextualLayersTree id="layerTree" height="400px"/>
+                </div>
+            </vbox>
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
             <div sclass="embedWindowsButtons">
                 <hbox>
                     <button sclass="goButton" label="Clear" id="btnClear"/>
-                    <button sclass="goButton" label="Ok" id="btnNext"/>
+                    <button sclass="goButton" label="Ok" id="btnOk"/>
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
                 </hbox>
             </div>

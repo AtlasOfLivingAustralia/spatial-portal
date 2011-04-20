@@ -26,7 +26,7 @@
                     <radio label="Draw bounding box" id="ciBoundingBox" />
                     <radio label="Draw polygon" id="ciPolygon" />
                     <radio label="Draw point and radius" id="ciPointAndRadius" />
-                    <radio label="Select predefined (displayed) map polygon" id="ciMapPolygon" />
+                    <radio label="Select polygon from mapped layer" id="ciMapPolygon" />
 
                     <separator />
                     <label value="Searching" />
@@ -42,6 +42,7 @@
                     <separator />
                     <label value="Others" />
                     <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
+                    <radio label="Upload WKT" id="ciWKT" />
                     <radio label="Upload Shapefile" id="ciUploadShapefile" />
                     <radio label="Upload KML" id="ciUploadKML" />
                     </vbox>

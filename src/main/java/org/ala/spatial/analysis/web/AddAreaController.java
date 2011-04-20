@@ -19,7 +19,7 @@ public class AddAreaController extends UtilityComposer {
     
     SettingsSupplementary settingsSupplementary;
     Radiogroup cbAreaSelection;
-    Radio ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
+    Radio ciWKT,ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
 
     @Override
     public void afterCompose() {
@@ -51,7 +51,7 @@ public class AddAreaController extends UtilityComposer {
            windowName = "WEB-INF/zul/AreaUploadShapefile.zul";
            overlapped = false;
         } else if (cbAreaSelection.getSelectedItem() == ciUploadKML) {
-           windowName = "WEB-INF/zul/AreaUploadShapefile.zul";
+           windowName = "WEB-INF/zul/AreaUploadKML.zul";
            overlapped = false;
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
             windowName = "WEB-INF/zul/AreaMapPolygon.zul";
@@ -70,6 +70,8 @@ public class AddAreaController extends UtilityComposer {
             String wkt = mc.getMapComposer().getViewArea();
             String layerName = mc.getNextAreaLayerName("View Area");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
+        } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
+            windowName = "WEB-INF/zul/AreaWKT.zul";
         }
         if (!windowName.contentEquals("")) {
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
