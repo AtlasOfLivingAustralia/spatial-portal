@@ -27,7 +27,8 @@ public class SamplingProgressWCController extends UtilityComposer {
     Timer timer;
     Textbox tbPid;
     public String pid = null;
-    public SamplingWCController parent = null;
+    //public SamplingWCController parent = null;
+    public AddToolSamplingComposer parent = null;
 
     @Override
     public void afterCompose() {

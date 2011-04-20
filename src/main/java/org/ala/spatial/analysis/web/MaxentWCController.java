@@ -218,7 +218,7 @@ public class MaxentWCController extends UtilityComposer {
 
     void openProgressBar() {
         MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
-        window.parent = this;
+        //window.parent = this;
         window.start(pid);
         try {
             window.doModal();

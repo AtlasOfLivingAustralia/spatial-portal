@@ -11,9 +11,9 @@
                 <label id="atstep1_label" value="(none)" />
                 <separator />
                 <radiogroup id="rgArea" orient="vertical">
-                    <radio id="rAreaCurrent" label="Current extent" checked="true" />
-                    <radio id="rAreaAustralia" label="Australia" />
-                    <radio id="rAreaWorld" label="World" />
+                    <radio id="rAreaCurrent" label="Current extent" value="current" />
+                    <radio id="rAreaAustralia" label="Australia" value="australia" />
+                    <radio id="rAreaWorld" label="World" value="world" />
                 </radiogroup>
             </div>
 
@@ -21,10 +21,10 @@
                 <label id="atstep2_desc" value="Step 2: Select species(s) for" />
                 <label id="atstep2_label" value="(none)" />
                 <separator />
-                <radiogroup id="rgSpeces" orient="vertical">
-                    <radio id="rSpeciesAll" label="All species" value="allspecies" checked="true" />
-                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" />
-                    <radio id="rSpeciesOther" label="Another species:" />
+                <radiogroup id="rgSpecies" orient="vertical">
+                    <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
+                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
+                    <radio id="rSpeciesOther" value="other" label="Another species:" />
                 </radiogroup>
                 <vbox width="100%">
                     <separator />
@@ -82,7 +82,7 @@
                 <separator />
                 <hbox>
                     <label value="Name:" />
-                    <textbox id="tToolName" />
+                    <textbox id="tToolName" width="250px" />
                 </hbox>
                 <vbox>
                     <label value="Summary" style="font-weight: bold" />
@@ -92,6 +92,7 @@
 
             <div sclass="wizButtonContainer">
                 <hbox>
+                    <button sclass="goButton" label="Help" id="btnHelp" />
                     <button sclass="goButton" label="Cancel" id="btnCancel" />
                     <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
                     <button sclass="goButton" label="Next &gt;" id="btnOk" />

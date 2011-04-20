@@ -11,9 +11,9 @@
                 <label id="atstep1_label" value="(none)" />
                 <separator />
                 <radiogroup id="rgArea" orient="vertical">
-                    <radio id="rAreaCurrent" label="Current extent" checked="true" />
-                    <radio id="rAreaAustralia" label="Australia" />
-                    <radio id="rAreaWorld" label="World" />
+                    <radio id="rAreaCurrent" label="Current extent" value="current" />
+                    <radio id="rAreaAustralia" label="Australia" value="australia" />
+                    <radio id="rAreaWorld" label="World" value="world" />
                 </radiogroup>
             </div>
 
@@ -51,7 +51,7 @@
                 <separator />
                 <hbox>
                     <label value="Name:" />
-                    <textbox id="tToolName" />
+                    <textbox id="tToolName" width="250px" />
                 </hbox>
                 <vbox>
                     <label value="Summary" style="font-weight: bold" />
@@ -61,6 +61,7 @@
 
             <div sclass="wizButtonContainer">
                 <hbox>
+                    <button sclass="goButton" label="Help" id="btnHelp" />
                     <button sclass="goButton" label="Cancel" id="btnCancel" />
                     <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
                     <button sclass="goButton" label="Next &gt;" id="btnOk" />

@@ -125,7 +125,7 @@ public class ALOCWCController extends UtilityComposer {
             getMapComposer().updateUserLogAnalysis("Classification", "gc: " + groupCount.getValue() + ";area: " + area, sbenvsel.toString(), slist, pid, layerLabel);
 
             ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", this, null);
-            window.parent = this;
+            //window.parent = this;
             window.start(pid);
             window.doModal();
 
@@ -166,7 +166,7 @@ public class ALOCWCController extends UtilityComposer {
 
     void openProgressBar() {
         ALOCProgressWCController window = (ALOCProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisALOCProgress.zul", this, null);
-        window.parent = this;
+        //window.parent = this;
         window.start(pid);
         try {
             window.doModal();

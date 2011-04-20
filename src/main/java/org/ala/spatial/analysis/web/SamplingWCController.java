@@ -63,7 +63,7 @@ public class SamplingWCController extends UtilityComposer {
             }
 
             SamplingResultsWCController window = (SamplingResultsWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingResults.zul", this, null);
-            window.parent = this;
+            //window.parent = this;
 
             StringBuffer sbenvsel = new StringBuffer();
 
@@ -254,7 +254,7 @@ public class SamplingWCController extends UtilityComposer {
             System.out.println("Got response from SamplingWSController: \n" + pid);
 
             SamplingProgressWCController window = (SamplingProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingProgress.zul", this, null);
-            window.parent = this;
+            //window.parent = this;
             window.start(pid);
             window.doModal();
             getMapComposer().updateUserLogAnalysis("Sampling", "Species: " + taxon + ";area: " + area, sbenvsel.toString(), sbProcessUrl.toString(), pid, "Sampling starting file download for pid: " + pid);

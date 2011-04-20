@@ -111,7 +111,10 @@ public class ScatterplotWCController extends UtilityComposer {
 
     @Override
     public void afterCompose() {
+
+        System.out.println("******************in SP.aftercompose.1");
         super.afterCompose();
+        System.out.println("******************in SP.aftercompose.2");
 
         layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
 
@@ -122,6 +125,20 @@ public class ScatterplotWCController extends UtilityComposer {
                 redraw();
             }
         });
+
+        getScatterplotData();
+        
+        //MapLayer mapLayer = getMapComposer().getActiveLayersSelection(true);
+        MapLayer mapLayer = getMapComposer().llc2MapLayer;
+
+        data.setLsid((String)mapLayer.getData("lsid"));
+        data.setSpeciesName((String)mapLayer.getData("name"));
+        data.setLayer1((String)mapLayer.getData("layer1"));
+        data.setLayer1Name((String)mapLayer.getData("layer1Name"));
+        data.setLayer2((String)mapLayer.getData("layer2"));
+        data.setLayer2Name((String)mapLayer.getData("layer2Name"));
+
+        System.out.println("Loading scatterplot for : " + (String)mapLayer.getData("lsid"));
     }
 
     @Override

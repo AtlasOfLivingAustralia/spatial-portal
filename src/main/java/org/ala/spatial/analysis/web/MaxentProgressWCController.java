@@ -26,7 +26,8 @@ public class MaxentProgressWCController extends UtilityComposer {
     Timer timer;
     Textbox tbPid;
     public String pid = null;
-    public MaxentWCController parent = null;
+    //public MaxentWCController parent = null;
+    public AddToolMaxentComposer parent = null;
 
     @Override
     public void afterCompose() {

@@ -3304,6 +3304,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //            applyChange();
 //        }
 //    }
+
+    public void loadScatterplot(ScatterplotData data, String lyrName) {
+        MapLayer ml = remoteMap.createLocalLayer(LayerUtilities.SCATTERPLOT, lyrName);
+        ml.setData("lsid", data.getLsid());
+        ml.setData("name", data.getSpeciesName());
+        ml.setData("layer1", data.getLayer1());
+        ml.setData("layer1Name", data.getLayer1Name());
+        ml.setData("layer2", data.getLayer2());
+        ml.setData("layer2Name", data.getLayer2Name());
+        //activateLayerForScatterplot(data, "species");
+        addUserDefinedLayerToMenu(ml, true);
+    }
     /*
      * remove it + map it
      */
@@ -3589,6 +3601,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 return;
         }
 
+        System.out.println("******************** selecting active layer: " + selectedLayer.getName() + " at " + page);
+
         window = (Window) Executions.createComponents(page, layerControls, null);
         try {
             window.doEmbedded();
@@ -3597,7 +3611,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
     LayerLegendComposer2 llc2;
-    MapLayer llc2MapLayer;
+    public MapLayer llc2MapLayer;
 
     void showLayerDefault(MapLayer ml) {
         if(ml.getType() == LayerUtilities.MAP) {

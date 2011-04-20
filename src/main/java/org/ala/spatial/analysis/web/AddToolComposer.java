@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.util.CommonData;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
+import org.zkoss.zul.Textbox;
 
 /**
  *
@@ -23,13 +25,15 @@ import org.zkoss.zul.Radiogroup;
 public class AddToolComposer extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
-    Radiogroup rgModel, rgSpecies;
-    Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
-    Radio rSpeciesAll, rSpeciesMapped, rSpeciesOther;
-    Button btnCancel, btnOk, btnBack;
     int currentStep = 1, totalSteps = 5;
     Hashtable<String, Object> params;
     String selectedMethod = "";
+    String pid = "";
+    Radiogroup rgArea, rgSpecies;
+    Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
+    Radio rSpeciesAll, rSpeciesMapped, rSpeciesOther;
+    Button btnCancel, btnOk, btnBack, btnHelp;
+    Textbox tToolName;
     SpeciesAutoComplete searchSpeciesAuto;
     EnvironmentalList lbListLayers;
 
@@ -54,6 +58,10 @@ public class AddToolComposer extends UtilityComposer {
 
     public void updateWindowTitle() {
         this.setTitle("Step " + currentStep + " of " + totalSteps + " - " + selectedMethod);
+    }
+
+    public void updateName(String name) {
+        tToolName.setValue(name);
     }
 
     private void loadSummaryDetails() {
@@ -90,7 +98,7 @@ public class AddToolComposer extends UtilityComposer {
     public void loadSpeciesLayers() {
         try {
 
-            Radiogroup rgSpeces = (Radiogroup) getFellowIfAny("rgSpeces");
+            Radiogroup rgSpecies = (Radiogroup) getFellowIfAny("rgSpecies");
             Radio rSpeciesMapped = (Radio) getFellowIfAny("rSpeciesMapped");
 
             List<MapLayer> layers = getMapComposer().getSpeciesLayers();
@@ -99,13 +107,20 @@ public class AddToolComposer extends UtilityComposer {
                 MapLayer lyr = layers.get(i);
                 Radio rSp = new Radio(lyr.getDisplayName());
                 rSp.setValue(lyr.getMapLayerMetadata().getSpeciesLsid());
-                rgSpeces.insertBefore(rSp, rSpeciesMapped);
+                rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                rgSpecies.insertBefore(rSp, rSpeciesMapped);
             }
 
             if (layers.size() > 1) {
                 rSpeciesMapped.setLabel("All " + layers.size() + " species currently mapped");
             } else {
                 rSpeciesMapped.setVisible(false);
+            }
+
+            if (layers.size() > 0) {
+                rgSpecies.getItemAtIndex(1).setSelected(true);
+            } else {
+                rgSpecies.getItemAtIndex(0).setSelected(true);
             }
 
         } catch (Exception e) {
@@ -123,14 +138,16 @@ public class AddToolComposer extends UtilityComposer {
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
-                System.out.println(lyr.getDisplayName());
                 Radio rAr = new Radio(lyr.getDisplayName());
+                rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
+                rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
             }
 
+            rAreaCurrent.setSelected(true);
         } catch (Exception e) {
-            System.out.println("Unable to load species layers:");
+            System.out.println("Unable to load active area layers:");
             e.printStackTrace(System.out);
         }
     }
@@ -168,6 +185,58 @@ public class AddToolComposer extends UtilityComposer {
             }
 
         } catch (Exception e) {
+        }
+    }
+
+    public void onChange$searchSpeciesAuto(Event event) {
+        /*
+        if (searchSpeciesAuto.getSelectedItem() != null) {
+
+        String taxon = searchSpeciesAuto.getValue();
+        String rank = "";
+
+        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
+        if (spVal.trim().contains(": ")) {
+        taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
+        rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
+
+        } else {
+        rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+        }
+        if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
+        rank = "taxon";
+        }
+
+        String lsid = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+
+        Radiogroup rgSpecies = (Radiogroup) getFellowIfAny("rgSpecies");
+        Radio rSpeciesAll = (Radio) getFellowIfAny("rSpeciesAll");
+        Radio rSp = new Radio(taxon);
+        rSp.setId(taxon.replaceAll(" ", ""));
+        rSp.setValue(lsid);
+        rgSpecies.insertBefore(rSp, rgSpecies.getItemAtIndex(1));
+        rSp.setSelected(true);
+        }
+         * 
+         */
+        getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto);
+    }
+
+    public void onClick$btnHelp(Event event) {
+        String helpurl = "";
+
+        if (selectedMethod.equals("Prediction")) {
+            helpurl = "http://www.ala.org.au/spatial-portal-help/analysis-prediction-tab/";
+        } else if (selectedMethod.equals("Sampling")) {
+            helpurl = "http://www.ala.org.au/spatial-portal-help/analysis-sampling-tab/";
+        } else if (selectedMethod.equals("Classification")) {
+            helpurl = "http://www.ala.org.au/spatial-portal-help/analysis-classification-tab/";
+        } else if (selectedMethod.equals("Scatterplot")) {
+            helpurl = "http://www.ala.org.au/spatial-portal-help/scatterplot-tab/";
+        }
+
+        if (StringUtils.isNotBlank(helpurl)) {
+            getMapComposer().activateLink(helpurl, "Help", false, "");
         }
     }
 
@@ -226,6 +295,7 @@ public class AddToolComposer extends UtilityComposer {
 
                     if (nextDiv.getZclass().equalsIgnoreCase("last")) {
                         loadSummaryDetails();
+                        onLastPanel();
                     }
 
                     btnOk.setLabel(((!nextDiv.getZclass().equalsIgnoreCase("last")) ? "Next >" : "Finish"));
@@ -235,18 +305,96 @@ public class AddToolComposer extends UtilityComposer {
             } else {
                 System.out.println("In the last step. Let's run the analytical tool!!!");
                 currentStep = 1;
-                this.detach();
-                Messagebox.show("Running your analysis tool: " + selectedMethod);
+                onFinish();
             }
 
             //btnCancel.setLabel("< Back");
             btnBack.setDisabled(false);
             updateWindowTitle();
 
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AddToolComposer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
             Logger.getLogger(AddToolComposer.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void onLastPanel() {
+    }
+
+    public void onFinish() {
+        try {
+            this.detach();
+
+            Messagebox.show("Running your analysis tool: " + selectedMethod);
+
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AddToolComposer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+        }
+    }
+
+    public void loadMap(Event event) {
+    }
+
+    public String getSelectedArea() {
+        String area = rgArea.getSelectedItem().getValue();
+
+        try {
+            if (area.equals("current")) {
+                area = getMapComposer().getViewArea();
+            } else if (area.equals("australia")) {
+                area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+            } else if (area.equals("world")) {
+                area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected area");
+            e.printStackTrace(System.out);
+        }
+
+        return area;
+    }
+
+    public String getSelectedSpecies() {
+        String species = rgSpecies.getSelectedItem().getValue();
+        try {
+            if (species.equals("allspecies")) {
+            } else if (species.equals("allmapped")) {
+                species = "";
+                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+
+                for (int i = 0; i < layers.size(); i++) {
+                    MapLayer lyr = layers.get(i);
+                    Radio rSp = new Radio(lyr.getDisplayName());
+                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
+                }
+                species = species.substring(0, species.length() - 1);
+            } else if (species.equals("other")) {
+                if (searchSpeciesAuto.getSelectedItem() != null) {
+                    species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected species");
+            e.printStackTrace(System.out);
+        }
+
+        return species;
+    }
+
+    public String getSelectedLayers() {
+        String layers = "";
+
+        try {
+            String[] sellayers = lbListLayers.getSelectedLayers();
+            for (String l : sellayers) {
+                layers += l + ":";
+            }
+            layers = layers.substring(0, layers.length() - 1);
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected layers");
+            e.printStackTrace(System.out);
+        }
+
+        return layers;
     }
 }

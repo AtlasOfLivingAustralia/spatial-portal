@@ -27,7 +27,8 @@ public class ALOCProgressWCController extends UtilityComposer {
     Timer timer;
     Textbox tbPid;
     public String pid = null;
-    public ALOCWCController parent = null;
+//    public ALOCWCController parent = null;
+    public AddToolComposer parent = null;
 
     @Override
     public void afterCompose() {
@@ -66,6 +67,7 @@ public class ALOCProgressWCController extends UtilityComposer {
 
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
+            System.out.println("ALOC DONE. Calling loadMap");
             Events.echoEvent("loadMap",parent, null);
             //showReferenceNumber();
             this.detach();
@@ -86,6 +88,8 @@ public class ALOCProgressWCController extends UtilityComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
+            System.out.println("checking status every '"+timer.getDelay()+"' sec: " + sbProcessUrl.toString());
+            
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
