@@ -60,6 +60,10 @@ public class AreaWKT extends UtilityComposer {
     }
 
     public boolean validWKT(String wkt) {
+        if (wkt.replaceAll(" ","").isEmpty()){
+            invalidWKT.setValue("WKT is Invalid");
+            return false;
+        }
         try {
             WKTReader wktReader = new WKTReader();
             wktReader.read(wkt);

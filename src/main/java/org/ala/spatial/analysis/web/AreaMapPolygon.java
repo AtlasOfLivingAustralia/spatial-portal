@@ -61,6 +61,8 @@ public class AreaMapPolygon extends UtilityComposer {
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
         }
+        btnOk.setDisabled(false);
+        btnClear.setDisabled(false);
     }
 
     public void onClick$btnOk(Event event) {
@@ -129,6 +131,8 @@ public class AreaMapPolygon extends UtilityComposer {
             }
             else {
                 vbxLayerList.setVisible(true);
+                btnOk.setDisabled(true);
+                btnClear.setDisabled(true);
             }
             
         } catch (Exception e) {

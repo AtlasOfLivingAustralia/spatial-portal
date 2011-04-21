@@ -25,7 +25,6 @@ public class AddAreaController extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
 
-     
     }
 
     public void onClick$btnOk(Event event) {

@@ -33,8 +33,8 @@
 
                    <!-- <radio id="rAddLayer" label="Add Layer" value="addLayer" /> -->
                 </radiogroup>
-            <vbox id="vbxLayerList" visible="false">
-                <hbox>
+            <vbox id="vbxLayerList" visible="false" sclass="embedWindowsContent">
+                <hbox width="100%">
                     <combobox id="autoCompleteLayers" use="org.ala.spatial.analysis.web.ContextualLayersAutoComplete" autodrop="true" width="250px">
                         <comboitem label=""/>
                     </combobox>
@@ -42,7 +42,7 @@
                         <button sclass="goButton" label="Add" id="btnAddLayer"/>
                    
                 </hbox>
-                <div height="300px" style="margin-left:5px;overflow: auto">
+                <div height="300px" style="margin-left:20px;overflow: auto">
                     <ContextualLayersTree id="layerTree" height="400px"/>
                 </div>
             </vbox>
