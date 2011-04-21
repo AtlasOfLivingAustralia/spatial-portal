@@ -95,8 +95,9 @@ public class LayerListComposer extends UtilityComposer {
                 } else {
                     stn = new SimpleTreeNode(jo, classNodes);
                 }
+                //System.out.println("=========== classification 1: " + jo.getString("classification1") + " classification 2: " + jo.getString("classification2") + " layer display name:" + jo.getString("displayname"));
                 addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
-
+                //System.out.println(jo.toString(4));
             }
 
             Iterator it1 = htCat1.keySet().iterator();
@@ -185,17 +186,19 @@ public class LayerListComposer extends UtilityComposer {
                     +((subtype.equalsIgnoreCase("environmental"))?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL)
                     + "}");
             SimpleTreeNode stnCat2 = new SimpleTreeNode(joCat2, alCat2);
-            //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
+            System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
             //System.out.println("\t=======================" + stnCat2);
             boolean found = false;
             for (int i = 0; i < alCat1.size(); i++) {
-                // System.out.print("\t\t " + alCat1.get(i));
-                if (stnCat2.toString().equals(alCat1.get(i).toString())) {
-                    //      System.out.println(": found");
+                System.out.print("\t\t " + alCat1.get(i));
+                //System.out.println("comparing " + stnCat2.toString() + " to " + alCat1.get(i).toString());
+                //if (stnCat2.toString().equals(alCat1.get(i).toString())) {
+                if (alCat1.get(i).toString().indexOf(cat2) != -1){
+                    System.out.println(": found");
                     found = true;
                     break;
                 } else {
-                    //      System.out.println(": not this");
+                    System.out.println(": not this");
                 }
             }
             if (!found) {
@@ -229,11 +232,11 @@ public class LayerListComposer extends UtilityComposer {
 
             @Override
             public void render(Treeitem item, Object data) throws Exception {
-
                 SimpleTreeNode t = (SimpleTreeNode) data;
 
                 JSONObject joLayer = JSONObject.fromObject(t.getData());
-
+                //System.out.println("Rendering tree item: " + joLayer.getString("displayName"));
+                
                 Treerow tr = null;
                 /*
                  * Since only one treerow is allowed, if treerow is not null,
