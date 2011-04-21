@@ -30,7 +30,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
         super.afterCompose();
 
         this.selectedMethod = "Sampling";
-        this.totalSteps = 4;
+        this.totalSteps = 3;
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
@@ -55,7 +55,8 @@ public class AddToolSamplingComposer extends AddToolComposer {
         System.out.println("Layers: " + getSelectedLayers());
 
         //this.detach();
-        runsampling(); 
+        //runsampling();
+        download(null);
 
     }
 

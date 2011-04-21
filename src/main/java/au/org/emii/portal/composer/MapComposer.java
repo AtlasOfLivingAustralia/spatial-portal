@@ -45,6 +45,7 @@ import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.FilteringResultsWCController;
+import org.ala.spatial.analysis.web.HasMapLayer;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
@@ -450,7 +451,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         //map species
-        mapSpeciesByLsid(lsid, taxon, rank, 0);
+        mapSpeciesByLsid(lsid, taxon, rank, 0, LayerUtilities.SPECIES);
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
@@ -1844,7 +1845,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void echoMapSpeciesByLSID(Event event) {
         String lsid = (String) event.getData();
         try {
-            mapSpeciesByLsid(lsid, lsid);
+            mapSpeciesByLsid(lsid, lsid, LayerUtilities.SPECIES);
         } catch (Exception e) {
             //try again
             Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
@@ -2418,11 +2419,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         menus.setSplittable(!maximise);
     }
 
-    public MapLayer mapSpeciesByLsid(String lsid, String species) {
-        return mapSpeciesByLsid(lsid, species, "species", 0);
+    public MapLayer mapSpeciesByLsid(String lsid, String species, int subType) {
+        return mapSpeciesByLsid(lsid, species, "species", 0, subType);
     }
 
-    public MapLayer mapSpeciesByLsid(String lsid, String species, String rank, int count) {
+    public MapLayer mapSpeciesByLsid(String lsid, String species, String rank, int count, int subType) {
         if (species == null || (lsid != null && species.equalsIgnoreCase(lsid))) {
             String speciesrank = LayersUtil.getScientificNameRank(lsid);
             species = speciesrank.split(",")[0];
@@ -2437,10 +2438,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer ml = null;
         if (countOfLsid(lsid) > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD) || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
             //ml = mapSpeciesByLsidCluster(lsid, species, rank);
-            ml = mapSpeciesByLsidFilterGrid(lsid, species, rank, count);
+            ml = mapSpeciesByLsidFilterGrid(lsid, species, rank, count, subType);
         } else {
             //return mapSpeciesByLsidPoints(lsid,species);
-            ml = mapSpeciesByLsidFilter(lsid, species, rank, count);
+            ml = mapSpeciesByLsidFilter(lsid, species, rank, count, subType);
         }
 
         if (ml != null) {
@@ -2604,10 +2605,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
-    public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank, int count) {
+    public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank, int count, int subType) {
         String filter = rank + "conceptid='" + lsid + "'";
 
-        MapLayer ml = mapSpeciesWMSByFilter(species, filter);
+        MapLayer ml = mapSpeciesWMSByFilter(species, filter, subType);
 
         if (ml != null) {
             addToSession(species, filter);
@@ -2644,10 +2645,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ml;
     }
 
-    public MapLayer mapSpeciesByLsidFilterGrid(String lsid, String species, String rank, int count) {
+    public MapLayer mapSpeciesByLsidFilterGrid(String lsid, String species, String rank, int count, int subType) {
         String filter = rank + "conceptid='" + lsid + "';colormode:grid";
 
-        MapLayer ml = mapSpeciesWMSByFilter(species, filter);
+        MapLayer ml = mapSpeciesWMSByFilter(species, filter, subType);
 
         if (ml != null) {
             addToSession(species, filter);
@@ -2686,7 +2687,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ml;
     }
 
-    public MapLayer mapSpeciesWMSByFilter(String label, String filter) {
+    public MapLayer mapSpeciesWMSByFilter(String label, String filter, int subType) {
         String uri;
         String layerName = "ALA:occurrences";
         String sld = "species_point";
@@ -2741,7 +2742,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 MapLayer mapLayer = null;
                 if (getMapLayer(label) == null) {
-                    boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString, LayerUtilities.SPECIES);
+                    boolean addedOk = addKnownWMSLayer(label, uri + filter, (float) 0.8, "", envString, subType);
                     if (addedOk) {
                         MapLayer ml = getMapLayer(label);
                         ml.setDynamicStyle(true);
@@ -3314,15 +3315,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //    }
 
     public void loadScatterplot(ScatterplotData data, String lyrName) {
-        MapLayer ml = remoteMap.createLocalLayer(LayerUtilities.SCATTERPLOT, lyrName);
-        ml.setData("lsid", data.getLsid());
-        ml.setData("name", data.getSpeciesName());
-        ml.setData("layer1", data.getLayer1());
-        ml.setData("layer1Name", data.getLayer1Name());
-        ml.setData("layer2", data.getLayer2());
-        ml.setData("layer2Name", data.getLayer2Name());
-        //activateLayerForScatterplot(data, "species");
+        MapLayer ml = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT);
+        ml.setSubType(LayerUtilities.SCATTERPLOT);
+        ml.setData("scatterplotData", data);
         addUserDefinedLayerToMenu(ml, true);
+        updateLayerControls();
     }
     /*
      * remove it + map it
@@ -3368,7 +3365,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             //map as WMS points layer
             mapLayer = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(),
                     (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getSpeciesRank() : "species",
-                    (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getOccurrencesCount() : 0);
+                    (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getOccurrencesCount() : 0,
+                    LayerUtilities.SPECIES);
             if (mapLayer != null) {
                 MapLayerMetadata md = mapLayer.getMapLayerMetadata();
                 if (md == null) {
@@ -3521,12 +3519,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void onClick$btnAreaReport(Event event) {
-        List<MapLayer> polygonLayers = getPolygonLayers();
-        if(polygonLayers == null || polygonLayers.size() == 0) {
-            FilteringResultsWCController.open(getViewArea());
-        } else {
-            FilteringResultsWCController.open(polygonLayers.get(0).getWKT());
-        }
+        openModal("WEB-INF/zul/AddToolAreaReport.zul", null);
+    }
+
+     public void onClick$btnSpeciesList(Event event) {
+        openModal("WEB-INF/zul/AddToolSpeciesList.zul", null);
     }
 
     public Window openModal(String page, Hashtable<String, Object> params) {
@@ -3592,26 +3589,34 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             case LayerUtilities.SCATTERPLOT:
                 page = "WEB-INF/zul/Scatterplot.zul";
                 break;
-            case LayerUtilities.MAXENT:
-                page = "WEB-INF/zul/AnalysisMaxent.zul";
-                break;
-            case LayerUtilities.ALOC:
-                page = "WEB-INF/zul/AnalysisALOC.zul";
-                break;
-            case LayerUtilities.GDM:
-                page = "WEB-INF/zul/AnalysisGDM.zul";
-                break;
+//            case LayerUtilities.MAXENT:
+//                page = "WEB-INF/zul/AnalysisMaxent.zul";
+//                break;
+//            case LayerUtilities.ALOC:
+//                page = "WEB-INF/zul/AnalysisALOC.zul";
+//                break;
+//            case LayerUtilities.GDM:
+//                page = "WEB-INF/zul/AnalysisGDM.zul";
+//                break;
             case LayerUtilities.TABULATION:
                 page = "WEB-INF/zul/AnalysisTabulation.zul";
                 break;
             default:
-                showLayerDefault(selectedLayer);
-                return;
+                if(selectedLayer.getSubType() == LayerUtilities.SCATTERPLOT) {
+                    page = "WEB-INF/zul/Scatterplot.zul";
+                } else {
+                    showLayerDefault(selectedLayer);
+                    return;
+                }
         }
 
         System.out.println("******************** selecting active layer: " + selectedLayer.getName() + " at " + page);
 
         window = (Window) Executions.createComponents(page, layerControls, null);
+        try {
+            ((HasMapLayer) window).setMapLayer(selectedLayer);
+        } catch (Exception e) {
+        }
         try {
             window.doEmbedded();
         } catch (Exception e) {

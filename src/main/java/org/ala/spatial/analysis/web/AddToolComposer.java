@@ -10,8 +10,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.lang.StringUtils;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
@@ -54,6 +57,9 @@ public class AddToolComposer extends UtilityComposer {
         params.put("step3", "Select grid(s)");
         params.put("step4", "Select your analytical options");
         params.put("step5", "Name your output for");
+
+        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+        btnOk.setLabel(((!currentDiv.getZclass().contains("last")) ? "Next >" : "Finish"));
     }
 
     public void updateWindowTitle() {
@@ -61,7 +67,9 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void updateName(String name) {
-        tToolName.setValue(name);
+        if(tToolName != null) {
+            tToolName.setValue(name);
+        }
     }
 
     private void loadSummaryDetails() {
@@ -120,7 +128,12 @@ public class AddToolComposer extends UtilityComposer {
             if (layers.size() > 0) {
                 rgSpecies.getItemAtIndex(1).setSelected(true);
             } else {
-                rgSpecies.getItemAtIndex(0).setSelected(true);
+                for(int i=0;i<rgSpecies.getItemCount();i++) {
+                    if(rgSpecies.getItemAtIndex(i).isVisible()) {
+                        rgSpecies.getItemAtIndex(i).setSelected(true);
+                        break;
+                    }
+                }
             }
 
         } catch (Exception e) {
@@ -175,15 +188,18 @@ public class AddToolComposer extends UtilityComposer {
     public void onCheck$rgSpecies(Event event) {
         try {
             System.out.println("onCheck$rgSpeces activated");
-            if (searchSpeciesAuto != null) {
-
-                if (rgSpecies.getSelectedItem() == rSpeciesOther) {
-                    searchSpeciesAuto.setDisabled(false);
-                } else {
-                    searchSpeciesAuto.setDisabled(true);
+            if (rgSpecies != null && rgSpecies.getSelectedItem() == rSpeciesOther) {
+                if(divOtherSpecies != null) {
+                    divOtherSpecies.setVisible(true);
+                    return;
                 }
             }
-
+            if(divOtherSpecies != null) {
+                divOtherSpecies.setVisible(false);
+            }
+            if(event != null) {
+                toggles();
+            }
         } catch (Exception e) {
         }
     }
@@ -219,7 +235,9 @@ public class AddToolComposer extends UtilityComposer {
         }
          * 
          */
-        getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto);
+        //getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto);
+
+        toggles();
     }
 
     public void onClick$btnHelp(Event event) {
@@ -251,7 +269,7 @@ public class AddToolComposer extends UtilityComposer {
         Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
         Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep - 1))) : null;
 
-        if (currentDiv.getZclass().equalsIgnoreCase("first")) {
+        if (currentDiv.getZclass().contains("first")) {
             //currentStep = 1;
             //this.detach();
             btnBack.setDisabled(true);
@@ -262,11 +280,12 @@ public class AddToolComposer extends UtilityComposer {
 
             if (previousDiv != null) {
                 //btnCancel.setLabel(((!previousDiv.getZclass().equalsIgnoreCase("first")) ? "< Back" : "Cancel"));
-                btnBack.setDisabled(((!previousDiv.getZclass().equalsIgnoreCase("first")) ? false : true));
+                btnBack.setDisabled(((!previousDiv.getZclass().contains("first")) ? false : true));
             }
         }
 
         btnOk.setLabel("Next >");
+        toggles();
         updateWindowTitle();
 
     }
@@ -285,7 +304,7 @@ public class AddToolComposer extends UtilityComposer {
             System.out.println("Previous step zclass: " + ((previousDiv != null) ? previousDiv.getZclass() : "-na-"));
 
 
-            if (!currentDiv.getZclass().equalsIgnoreCase("last")) {
+            if (!currentDiv.getZclass().contains("last")) {
                 currentDiv.setVisible(false);
                 nextDiv.setVisible(true);
 
@@ -293,12 +312,12 @@ public class AddToolComposer extends UtilityComposer {
                 // now include the extra options for step 4 
                 if (nextDiv != null) {
 
-                    if (nextDiv.getZclass().equalsIgnoreCase("last")) {
+                    if (nextDiv.getZclass().contains("last")) {
                         loadSummaryDetails();
                         onLastPanel();
                     }
 
-                    btnOk.setLabel(((!nextDiv.getZclass().equalsIgnoreCase("last")) ? "Next >" : "Finish"));
+                    btnOk.setLabel(((!nextDiv.getZclass().contains("last")) ? "Next >" : "Finish"));
                 }
 
                 currentStep++;
@@ -315,6 +334,8 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception ex) {
             Logger.getLogger(AddToolComposer.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        toggles();
     }
 
     public void onLastPanel() {
@@ -381,20 +402,132 @@ public class AddToolComposer extends UtilityComposer {
         return species;
     }
 
+     public String getSelectedSpeciesName() {
+        String species = rgSpecies.getSelectedItem().getValue();
+        try {
+            if (species.equals("allspecies")) {
+            } else if (species.equals("allmapped")) {
+                species = "";
+                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+
+                for (int i = 0; i < layers.size(); i++) {
+                    MapLayer lyr = layers.get(i);
+                    Radio rSp = new Radio(lyr.getDisplayName());
+                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
+                }
+                species = species.substring(0, species.length() - 1);
+            } else if (species.equals("other")) {
+                if (searchSpeciesAuto.getSelectedItem() != null) {
+                    species = (String) (searchSpeciesAuto.getText());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected species");
+            e.printStackTrace(System.out);
+        }
+
+        return species;
+    }
+
     public String getSelectedLayers() {
         String layers = "";
 
         try {
-            String[] sellayers = lbListLayers.getSelectedLayers();
-            for (String l : sellayers) {
-                layers += l + ":";
+            if(lbListLayers.getSelectedLayers().length > 0) {
+                String[] sellayers = lbListLayers.getSelectedLayers();
+                for (String l : sellayers) {
+                    layers += l + ":";
+                }
+                layers = layers.substring(0, layers.length() - 1);
             }
-            layers = layers.substring(0, layers.length() - 1);
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected layers");
             e.printStackTrace(System.out);
         }
 
         return layers;
+    }
+    
+    Div divOtherSpecies;
+
+    UploadSpeciesController usc;
+    public void onClick$btnUpload(Event event) {
+        try {
+            usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", getMapComposer(), null);
+            usc.setEventListener(new EventListener() {
+
+                    @Override
+                    public void onEvent(Event event) throws Exception {
+                        setLsid((String)event.getData());
+                    }
+                });
+            usc.doModal();
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void setLsid(String lsidName) {
+        String [] s = lsidName.split("\t");
+        String species = s[1];
+        String lsid = s[0];
+
+        /* set species from layer selector */
+        if (species != null) {
+            String tmpSpecies = species;
+            searchSpeciesAuto.setValue(tmpSpecies);
+            searchSpeciesAuto.refresh(tmpSpecies);
+
+            if (searchSpeciesAuto.getSelectedItem() == null) {
+                List list = searchSpeciesAuto.getItems();
+                for (int i = 0; i < list.size(); i++) {
+                    Comboitem ci = (Comboitem) list.get(i);
+                    //compare name
+                    if (ci.getLabel().equalsIgnoreCase(searchSpeciesAuto.getValue())) {
+                        //compare lsid
+                        if (ci.getAnnotatedProperties() != null
+                                && ((String)ci.getAnnotatedProperties().get(0)).equals(lsid)){
+                            searchSpeciesAuto.setSelectedItem(ci);
+                            break;
+                        }
+                    }
+                }
+            }
+            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
+        }
+        usc.detach();
+    }
+
+    public void onSelect$lbListLayers(Event event) {
+        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+        if(currentDiv.getZclass().contains("minlayers1")
+                && lbListLayers.getSelectedCount() >= 1) {
+            btnOk.setDisabled(false);
+        } else if(currentDiv.getZclass().contains("minlayers2")
+                && lbListLayers.getSelectedCount() >= 2) {
+            btnOk.setDisabled(false);
+        } else if(currentDiv.getZclass().contains("optional")) {
+            btnOk.setDisabled(false);
+        }
+    }
+
+    void toggles() {
+        btnOk.setDisabled(true);
+
+        onSelect$lbListLayers(null);
+        onCheck$rgSpecies(null);
+
+        Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
+        if(currentDiv.getZclass().contains("species")) {
+            btnOk.setDisabled(
+                    divOtherSpecies.isVisible() &&
+                    (searchSpeciesAuto.getSelectedItem() == null
+                    || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
+                    || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
+        }
+
+        if (currentDiv.getZclass().contains("optional")) {
+            btnOk.setDisabled(false);
+        }
     }
 }

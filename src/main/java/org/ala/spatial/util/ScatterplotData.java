@@ -21,6 +21,15 @@ public class ScatterplotData {
     boolean enabled;
     String lsid;
     String name;
+    String backgroundLsid;
+
+    //area info
+    String filterWkt;
+    String highlightWkt;
+
+    //grid
+    boolean envGrid;
+
     //appearance
     public String colourMode = "-1";
     public int red = 0;
@@ -33,7 +42,8 @@ public class ScatterplotData {
         enabled = false;
     }
 
-    public ScatterplotData(String lsid, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled) {
+    public ScatterplotData(String lsid, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
+            ,String backgroundLsid, String filterWkt, String highlightWkt, boolean envGri) {
         this.lsid = lsid;
         this.name = name;
         this.layer1 = layer1;
@@ -43,6 +53,10 @@ public class ScatterplotData {
         this.pid = pid;
         this.selection = selection;
         this.enabled = enabled;
+        this.backgroundLsid = backgroundLsid;
+        this.filterWkt = filterWkt;
+        this.highlightWkt = highlightWkt;
+        this.envGrid = envGrid;
     }
 
     public String getLayer1() {
@@ -115,5 +129,25 @@ public class ScatterplotData {
 
     public String getSpeciesName() {
         return name;
+    }
+
+    public String getBackgroundLsid() {
+        return backgroundLsid;
+    }
+
+    public String getFilterWkt() {
+        return filterWkt;
+    }
+
+    public String getHighlightWkt() {
+        return highlightWkt;
+    }
+
+    public boolean isEnvGrid() {
+        return envGrid;
+    }
+
+    public void setBackgroundLsid(String backgroundLsid) {
+        this.backgroundLsid = backgroundLsid;
     }
 }

@@ -3,14 +3,24 @@
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolSamplingComposer"
     apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="500px" height="300px"
-    action="show: slideDown;hide: slideUp">
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp()" style="display: inline" />
 
-        <vbox>
+        <separator />
+        <vbox style="padding-left: 10px" >
 
-
-            <div id="atstep1" visible="true" zclass="first">
-                <label id="atstep1_desc" value="Step 1: Select area(s) for" />
-                <label id="atstep1_label" value="(none)" />
+            <div id="atstep1" visible="true" zclass="first optional">
+                <label id="atstep1_desc" value="Restrict occurrences to an area" />
+                <label id="atstep1_label" value="" />
                 <separator />
                 <radiogroup id="rgArea" orient="vertical">
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
@@ -19,33 +29,37 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep2" visible="false" zclass="step2">
-                <label id="atstep2_desc" value="Step 2: Select species(s) for" />
-                <label id="atstep2_label" value="(none)" />
+            <div id="atstep2" visible="false" zclass="step2 species">
+                <label id="atstep2_desc" value="Select species" />
+                <label id="atstep2_label" value="" />
                 <separator />
                 <radiogroup id="rgSpecies" orient="vertical">
                     <radio id="rSpeciesAll" label="All species" value="allspecies" />
-                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" />
-                    <radio id="rSpeciesOther" value="other" label="Another species:" />
+                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false"/>
+                    <radio id="rSpeciesOther" value="other" label="Other species (search, upload species locations, upload lsids)" />
                 </radiogroup>
                 <vbox width="100%">
-                    <separator />
-                    <label sclass="wLabel" value="Enter a scientific or common name"/>
-                    <separator />
-                    <hbox>
-                        <separator orient="vertical" />
-                        <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
-                            <comboitem label=""/>
-                        </combobox>
-                    </hbox>
-                    <separator/>
-                    <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                    <div id="divOtherSpecies" visible="false" >
+                        <separator />
+                        <label sclass="wLabel" value="Enter a scientific or common name"/>
+                        <separator />
+                        <hbox>
+                            <separator orient="vertical" />
+                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
+                                <comboitem label=""/>
+                            </combobox>
+                        </hbox>
+                        <separator/>
+                        <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                        <separator />
+                        <button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" />
+                    </div>
                 </vbox>
             </div>
 
-            <div id="atstep3" visible="false" zclass="step3">
-                <label id="atstep3_desc" value="Step 3: Select grid(s) for" />
-                <label id="atstep3_label" value="(none)" />
+            <div id="atstep3" visible="false" zclass="last optional">
+                <label id="atstep3_desc" value="Select layers" />
+                <label id="atstep3_label" value="" />
                 <separator />
                 <vbox>
                     <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="440px" height="210px" multiple="true" checkmark="true">
@@ -56,28 +70,15 @@
                             <listheader label=" " width="10px" />
                         </listhead>
                     </listbox>
-                    <button id="btnClearSelection" label="Clear layers"  sclass="goButton" />
+                    <button id="btnClearSelection" label="Clear layers"  sclass="goButton" style="float:left" />
                 </vbox>
             </div>
 
-            <div id="atstep4" visible="false" zclass="last">
-                <label id="atstep4_desc" value="Step 4: Name your output for" />
-                <label id="atstep4_label" value="(none)" />
-                <separator />
-                <hbox>
-                    <label value="Name:" />
-                    <textbox id="tToolName" />
-                </hbox>
-                <vbox>
-                    <label value="Summary" style="font-weight: bold" />
-                    <div id="atsummary"></div>
-                </vbox>
-            </div>
-
+            <textbox id="tToolName" visible="false" />
 
             <div sclass="wizButtonContainer">
                 <hbox>
-                    <button sclass="goButton" label="Help" id="btnHelp" />
+                    <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
                     <button sclass="goButton" label="Cancel" id="btnCancel" />
                     <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
                     <button sclass="goButton" label="Next &gt;" id="btnOk" />

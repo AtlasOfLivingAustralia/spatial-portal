@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
+import org.jfree.chart.plot.XYPlot;
 
 /**
  * Representation of a map layer - used for both rendering map layers

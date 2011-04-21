@@ -7,6 +7,7 @@ package org.ala.spatial.analysis.web;
 import java.awt.geom.Rectangle2D;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.ScatterplotData;
+import org.zkoss.zul.Checkbox;
 
 /**
  *
@@ -18,6 +19,8 @@ public class AddToolScatterplotComposer extends AddToolComposer {
     ScatterplotData data;
     EnvLayersCombobox cbLayer1;
     EnvLayersCombobox cbLayer2;
+    SpeciesAutoComplete bgSearchSpeciesAuto;
+    Checkbox chkShowEnvIntersection;
 
     @Override
     public void afterCompose() {
@@ -50,7 +53,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         //this.detach();
 
         String lsid = getSelectedSpecies();
-        String name = rgSpecies.getSelectedItem().getLabel();
+        String name = getSelectedSpeciesName();
 
         JSONObject jo = (JSONObject) cbLayer1.getSelectedItem().getValue();
         String lyr1name = cbLayer1.getText();
@@ -62,9 +65,22 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         String pid = "";
         Rectangle2D.Double selection = null;
-        boolean enabled = false;
+        boolean enabled = true;
 
-        ScatterplotData data = new ScatterplotData(lsid, name, lyr1value, lyr1name, lyr2value, lyr2name, pid, selection, enabled);
+        String backgroundLsid = null;
+        if(bgSearchSpeciesAuto.getSelectedItem() != null
+                && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
+                && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
+                backgroundLsid = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+        }
+
+        String filterWkt = null;
+        String highlightWkt = null;
+
+        boolean envGrid = chkShowEnvIntersection.isChecked();
+
+        ScatterplotData data = new ScatterplotData(lsid, name, lyr1value, lyr1name, lyr2value, lyr2name, pid, selection, enabled
+                ,backgroundLsid, filterWkt, highlightWkt, envGrid);
 
         getMapComposer().loadScatterplot(data, tToolName.getValue());
 

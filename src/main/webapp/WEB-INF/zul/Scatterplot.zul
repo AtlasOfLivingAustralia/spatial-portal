@@ -30,14 +30,14 @@
     </hbox-->
     <window id="scatterplotwindow" use="org.ala.spatial.analysis.web.ScatterplotWCController"
             apply="org.ala.spatial.analysis.web.ScatterplotWCController"
-            width="400px"
-            height="850px"
+            width="380px"
+            height="600px"
             >
         <!--caption id="scatCaption" visible="true" >
             <toolbarbutton id="btnEmbedded" label="Docked" visible="false" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatEmbedded")[0]),"onClick", null));'/>
             <toolbarbutton id="btnOverlapped" label="Floating" style="text-decoration: underline" w:onClick='zAu.send(new zk.Event(zk.Widget.$(jq("$btnScatOverlapped")[0]),"onClick", null));'/>
         </caption-->
-        <div id="scatControls" visible="true" width="325px">
+        <div id="scatControls" visible="false" width="100%">
             <vbox >
                 <separator />
                 <checkbox id="chkRestrictOccurrencesToActiveArea" label="Only use occurrences in Active Area" />
@@ -104,7 +104,7 @@
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
                     <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />
-                    <button sclass="goButton" label="View data" id="scatterplotDataDownload" />
+                    <button sclass="goButton" label="Download data" id="scatterplotDataDownload" />
                 </hbox>
             </div>
             <separator />
@@ -125,48 +125,28 @@
         
         
         <html><![CDATA[       
-        <div id="chartDivBack" class="chartDiv"><div id="chartDiv" class="chartDiv" style="position:absolute;"></div></div>
-        <div id="rband"></div>
+        <div id="chartDivBack" class="chartDiv">
+        <div id="chartDiv" class="chartDiv" style="position:absolute"
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div></div>
+        <div id="rband"
+            onMouseDown="doMouseDown(event)"
+            onMouseMove="doMouseDrag(event)"
+            onMouseUp="doMouseUp(event)"></div>
         ]]>
         </html>
 
         <div id="chartImg" width="300px" height="300px" style="float:left;" />
 
         <!-- chartImg.height = scatterplotwindow.height - tbxChartSelection.height -->
-        <textbox id="tbxChartSelection" visible="false" height="465px" />
+        <textbox id="tbxChartSelection" visible="false" height="215px" />
         <script type="text/JavaScript"><![CDATA[
 var startx = 0;
 var starty = 0;
 var endx = 0;
 var endy = 0;
 var resizing = false;
-
-$(document).ready(function() {
-    setupRband();
-});
-
-function setupRband() {   
-    $('#chartDivBack').mousedown(function(event){
-        event.preventDefault();
-        doMouseDown(event);
-
-        $('#chartDivBack, #rband').bind('mousemove',function(event){
-            doMouseDrag(event);
-        });
-
-        $('#chartDivBack, #rband').bind('mouseup',function(event){
-            doMouseUp(event);
-            $('#chartDivBack, #rband').unbind('mousemove');
-            $('#chartDivBack, #rband').unbind('mouseup');
-        });
-
-        //$('#rband').bind('mouseup',function(event){
-        //    doMouseUp(event);
-        //    $('#rband').unbind('mousemove');
-        //    $('#rband').unbind('mouseup');
-        //});
-    });
-}
 
 function doMouseDown(event) {
  $('#rband').offset($('#chartDivBack').offset());
@@ -176,14 +156,14 @@ function doMouseDown(event) {
 
         $('#rband').offset({ top: starty, left: startx }).show();
 
-        document.getElementById("chartDivBack").style.backgroundImage = "";
-
         // prevent default behavior of text selection
         return false;
 }
 
 function doMouseDrag(event) {
     if(resizing){
+    console.log("resizing");
+    console.log(event);
         var left, top, width, height;
 
         endx = event.pageX;
@@ -216,6 +196,8 @@ function doMouseDrag(event) {
 
 function doMouseUp(event) {
     if(resizing){
+    console.log("mouseup");
+    console.log(event);
         resizing = false;
         chartSelection(startx, starty, endx, endy);
     }
@@ -234,10 +216,9 @@ function chartSelection(x1, y1, x2, y2) {
         + "," + (y1.replace("px","")-$(jq('#chartDivBack')[0]).offset().top)
         + "," + (x2.replace("px","")-$(jq('#chartDivBack')[0]).offset().left)
         + "," + (y2.replace("px","")-$(jq('#chartDivBack')[0]).offset().top);
-    //for delay in new background being returned
-    var d1 = document.getElementById("chartDiv");
-    var d2 = document.getElementById("chartDivBack");
-    d2.style.backgroundImage = d1.style.backgroundImage;
+    var cd = document.getElementById('chartDiv');
+    var ci = document.getElementById('chartDivBack');
+    ci.style.backgroundImage=cd.style.backgroundImage;
     zAu.send(new zk.Event(zk.Widget.$(jq('$scatterplotwindow')[0]), 'onChange$tbxChartSelection', value));
 }
 

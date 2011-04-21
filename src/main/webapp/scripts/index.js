@@ -258,7 +258,7 @@ function addLayerAction(){
 }
 
 function runSpeciesList(){
-    alert("Run Species List");
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onClick$btnSpeciesList', null));
 }
 
 function runAreaReport(){

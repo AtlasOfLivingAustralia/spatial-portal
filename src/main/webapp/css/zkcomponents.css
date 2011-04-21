@@ -1282,3 +1282,35 @@ z-index: 1103;
 .z-south {
     background-color: white;
 }
+
+div.z-window-modal-header {
+    font-family: Arial, Aelvetica,sans-serif;
+    color: #718804;
+    font-weight: normal;
+    padding-left: 10px;
+    font-size: 18px;
+}
+
+.z-window-modal-cl, .z-window-modal-bl, .z-window-modal-br, .z-window-modal-cr {
+    padding: 0;
+    margin: 0;
+    height: 0px;
+}
+
+.envlist .z-listheader-cnt input, .z-list-group-inner div input, .z-listheader-img  {
+ display: none;
+ }
+
+ .envlist div.z-listcell-cnt {
+ font-size: 10px;
+ }
+
+ .lcRed {
+ background: #bb2222;
+ }
+ .lcYellow {
+ background: #ffff22;
+ }
+ .lcGreen {
+ background: #22aa22;
+ }

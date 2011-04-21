@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -351,7 +352,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             //register points with a new id for mapping
             String lsid = registerPointsInArea(area);
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName();
-            getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences);
+            getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES);
 
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
@@ -484,7 +485,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             System.out.println("btnAddLSIDs:" + pid);
 
-            getMapComposer().mapSpeciesByLsid(pid, "User entered LSIDs");
+            getMapComposer().mapSpeciesByLsid(pid, "User entered LSIDs", LayerUtilities.SPECIES);
 
             //getMapComposer().updateUserLogAnalysis("Sampling", "", "", u.getFile(), pid, "Sampling download");
         } catch (Exception e) {
@@ -742,7 +743,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onClick$lblBiostor(Event event) {
         if(biostorHtml != null) {
-            Event ev = new Event(null, null, "Biostor Documents\n" + biostorHtml);
+            Event ev = new Event("onClick", this, "Biostor Documents\n" + biostorHtml);
             getMapComposer().openHTML(ev);
         }
     }

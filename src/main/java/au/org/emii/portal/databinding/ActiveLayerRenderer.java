@@ -95,11 +95,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
                 //Set the legend graphic based on the layer type
                 Image legend;
                 legend = new Image();
-                legend.setWidth("18px");
-                legend.setHeight("18px");
-                int red = 0;
-                int green = 0;
-                int blue = 0;
                 if (layer.isGridLayer()) {
                     legend = new Image(languagePack.getLang("icon_grid"));
                 } else if (layer.isSpeciesLayer()) {
@@ -115,7 +110,6 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 
                 //todo: support analysis layers (languagePack.getLang("icon_analysis"))
 
-                legend.setStyle("background-color:RGB(" + red + "," + green + "," + blue + ")");
                 legend.setStyle("float:left;");
                 legend.setParent(listcell);
                 legend.setTooltiptext("View/edit the legend");

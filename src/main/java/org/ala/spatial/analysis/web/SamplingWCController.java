@@ -2,6 +2,7 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
@@ -374,7 +375,7 @@ public class SamplingWCController extends UtilityComposer {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
         }
         System.out.println("mapping rank and species: " + rank + " - " + taxon);
-        getMapComposer().mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank, 0);
+        getMapComposer().mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank, 0, LayerUtilities.SPECIES);
     }
 
     /**
