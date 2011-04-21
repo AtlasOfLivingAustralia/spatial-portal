@@ -6,7 +6,7 @@
     action="show: slideDown;hide: slideUp">
 
         <vbox>
-            <div id="atstep1" visible="true" zclass="first">
+            <div id="atstep1" visible="true" zclass="first" style="padding:5px">
                 <label id="atstep1_desc" value="Step 1: Select area(s) for" />
                 <label id="atstep1_label" value="(none)" />
                 <separator />
@@ -17,12 +17,12 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep2" visible="false" zclass="step2">
+            <div id="atstep2" visible="false" zclass="step2" style="padding:5px">
                 <label id="atstep2_desc" value="Step 2: Select grid(s) for" />
                 <label id="atstep2_label" value="(none)" />
                 <separator />
                 <vbox>
-                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="440px" height="210px" multiple="true" checkmark="true">
+                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="475px" height="160px" multiple="true" checkmark="true">
                         <listhead>
                             <listheader label="category"  />
                             <listheader label="name" />
@@ -34,7 +34,7 @@
                 </vbox>
             </div>
 
-            <div id="atstep3" visible="false" zclass="step3">
+            <div id="atstep3" visible="false" zclass="step3" style="padding:5px">
                 <label id="atstep3_desc" value="Step 3: Select your analytical options for " />
                 <label id="atstep3_label" value="(none)" />
                 <vbox>
@@ -45,7 +45,7 @@
             </div>
 
 
-            <div id="atstep4" visible="false" zclass="last">
+            <div id="atstep4" visible="false" zclass="last" style="padding:5px">
                 <label id="atstep4_desc" value="Step 4: Name your output for" />
                 <label id="atstep4_label" value="(none)" />
                 <separator />
