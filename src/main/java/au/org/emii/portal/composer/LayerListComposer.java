@@ -131,7 +131,7 @@ public class LayerListComposer extends UtilityComposer {
             SimpleTreeNode root = new SimpleTreeNode("ROOT", top);
             SimpleTreeModel stm = new SimpleTreeModel(root);
             tree.setModel(stm);
-
+            tree.setHflex("min");
             renderTree();
         } catch (Exception e) {
             //FIXME:
