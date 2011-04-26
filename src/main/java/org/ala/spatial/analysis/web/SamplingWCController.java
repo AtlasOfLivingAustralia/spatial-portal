@@ -5,9 +5,11 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Hashtable;
 import java.util.List;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -26,22 +28,23 @@ import org.zkoss.zul.Tabbox;
  * @author ajay
  */
 public class SamplingWCController extends UtilityComposer {
+
     private SpeciesAutoComplete sac;
     Tabbox tabboxsampling;
     private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
-    private String pid;    
+    private String pid;
     EnvironmentalList lbListLayers;
 
     @Override
     public void afterCompose() {
-        super.afterCompose();        
-            layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
+        super.afterCompose();
+        layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
 
-            lbListLayers.init(getMapComposer(), CommonData.satServer, false);
+        lbListLayers.init(getMapComposer(), CommonData.satServer, false);
     }
 
-    public void onClick$btnClearSelection(Event event){
+    public void onClick$btnClearSelection(Event event) {
         lbListLayers.clearSelection();
     }
 
@@ -52,7 +55,7 @@ public class SamplingWCController extends UtilityComposer {
     public void onClick$btnSample(Event event) {
         runsampling();
     }
-    
+
     public void runsampling() {
         try {
             String taxon = cleanTaxon();
@@ -68,16 +71,16 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbenvsel = new StringBuffer();
 
-            String [] selectedLayers = lbListLayers.getSelectedLayers();
+            String[] selectedLayers = lbListLayers.getSelectedLayers();
             if (selectedLayers.length > 0) {
                 int i = 0;
-                for(i=0;i<selectedLayers.length;i++){
+                for (i = 0; i < selectedLayers.length; i++) {
                     if (selectedLayers[i] == null) {
                         // seems to be null, shouldn't be, but let's ignore it
                         continue;
                     }
                     sbenvsel.append(selectedLayers[i]);
-                    if (i < selectedLayers.length-1) {
+                    if (i < selectedLayers.length - 1) {
                         sbenvsel.append(":");
                     }
                 }
@@ -90,13 +93,13 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/preview?");
-            if(taxon == null) {
+            if (taxon == null) {
                 sbProcessUrl.append("taxonid=null");
             } else {
                 sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
             }
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            
+
             String area = null;//getMapComposer().getSelectionArea();
             if (area == null || area.length() == 0) {
                 area = "none";
@@ -154,22 +157,22 @@ public class SamplingWCController extends UtilityComposer {
                     top_row = aslist[i].split("~");
 
                     /*for (int k = 0; k < top_row.length; k++) {
-                        if (isContextual(top_row[k])) {
-                            try {
-                                String layername = top_row[k].trim().replaceAll(" ", "_");
-                                client = new HttpClient();
-                                GetMethod getmethod = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + layername + "/extents"); // testurl
-                                getmethod.addRequestHeader("Accept", "text/plain");
+                    if (isContextual(top_row[k])) {
+                    try {
+                    String layername = top_row[k].trim().replaceAll(" ", "_");
+                    client = new HttpClient();
+                    GetMethod getmethod = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + layername + "/extents"); // testurl
+                    getmethod.addRequestHeader("Accept", "text/plain");
 
-                                result = client.executeMethod(getmethod);
-                                String[] salist = getmethod.getResponseBodyAsString().split("<br>");
-                                contextualLists.put(new Integer(k), salist);
+                    result = client.executeMethod(getmethod);
+                    String[] salist = getmethod.getResponseBodyAsString().split("<br>");
+                    contextualLists.put(new Integer(k), salist);
 
-                                System.out.println("# records=" + salist.length);
-                            } catch (Exception e) {
-                                e.printStackTrace(System.out);
-                            }
-                        }
+                    System.out.println("# records=" + salist.length);
+                    } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                    }
+                    }
                     }*/
                 }
                 String[] rec = aslist[i].split("~");
@@ -189,14 +192,14 @@ public class SamplingWCController extends UtilityComposer {
                     boolean isenvironmental = isEnvironmental(top_row[k]);
 
                     if (iscontextual || isenvironmental) {
-                        if (i == 0) {
-                            label.addEventListener("onClick", new EventListener() {
+                    if (i == 0) {
+                    label.addEventListener("onClick", new EventListener() {
 
-                                public void onEvent(Event event) throws Exception {
-                                    showLayerExtentsLabel(event.getTarget());
-                                }
-                            });
-                        }
+                    public void onEvent(Event event) throws Exception {
+                    showLayerExtentsLabel(event.getTarget());
+                    }
+                    });
+                    }
                     }*/
                 }
             }
@@ -212,17 +215,17 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbenvsel = new StringBuffer();
 
-             String [] selectedLayers = lbListLayers.getSelectedLayers();
+            String[] selectedLayers = lbListLayers.getSelectedLayers();
             if (selectedLayers.length > 0) {
                 int i = 0;
-                for(i=0;i<selectedLayers.length;i++){
+                for (i = 0; i < selectedLayers.length; i++) {
                     if (selectedLayers[i] == null) {
                         // seems to be null, shouldn't be, but let's ignore it
                         continue;
                     }
 
                     sbenvsel.append(selectedLayers[i]);
-                    if (i < selectedLayers.length-1) {
+                    if (i < selectedLayers.length - 1) {
                         sbenvsel.append(":");
                     }
                 }
@@ -237,14 +240,14 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/processq/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            
+
             String area = null;//getMapComposer().getSelectionArea();
-            if (area == null || area.length() == 0) {                
+            if (area == null || area.length() == 0) {
                 area = "none";
             }
 
             HttpClient client = new HttpClient();
-                      PostMethod get = new PostMethod(sbProcessUrl.toString());
+            PostMethod get = new PostMethod(sbProcessUrl.toString());
             get.addParameter("area", area);
 
             get.addRequestHeader("Accept", "text/plain");
@@ -271,17 +274,17 @@ public class SamplingWCController extends UtilityComposer {
 
             StringBuffer sbenvsel = new StringBuffer();
 
-             String [] selectedLayers = lbListLayers.getSelectedLayers();
+            String[] selectedLayers = lbListLayers.getSelectedLayers();
             if (selectedLayers.length > 0) {
                 int i = 0;
-                for(i=0;i<selectedLayers.length;i++){
+                for (i = 0; i < selectedLayers.length; i++) {
                     if (selectedLayers[i] == null) {
                         // seems to be null, shouldn't be, but let's ignore it
                         continue;
                     }
 
                     sbenvsel.append(selectedLayers[i]);
-                    if (i < selectedLayers.length-1) {
+                    if (i < selectedLayers.length - 1) {
                         sbenvsel.append(":");
                     }
                 }
@@ -296,9 +299,9 @@ public class SamplingWCController extends UtilityComposer {
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
-            
+
             String area = null;//getMapComposer().getSelectionArea();
-            if (area == null || area.length() == 0) {   
+            if (area == null || area.length() == 0) {
                 area = "none";
             }
 
@@ -319,7 +322,7 @@ public class SamplingWCController extends UtilityComposer {
                 System.out.println("Sending file to user: " + CommonData.satServer + "/alaspatial" + slist);
 
                 URL url = new URL(CommonData.satServer + "/alaspatial" + slist);
-                Filedownload.save(url.openStream(), "application/zip",url.getFile());
+                Filedownload.save(url.openStream(), "application/zip", url.getFile());
                 getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
             }
 
@@ -349,7 +352,7 @@ public class SamplingWCController extends UtilityComposer {
         }
         return "";
     }
- 
+
     private void loadSpeciesOnMap() {
 
         // check if the species name is not valid
@@ -375,7 +378,18 @@ public class SamplingWCController extends UtilityComposer {
             rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
         }
         System.out.println("mapping rank and species: " + rank + " - " + taxon);
-        getMapComposer().mapSpeciesByLsid((String) (sac.getSelectedItem().getAnnotatedProperties().get(0)), taxon, rank, 0, LayerUtilities.SPECIES);
+
+        String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
+        Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+        int subType = LayerUtilities.SPECIES;
+        if (htUserSpecies != null) {
+            UserData ud = htUserSpecies.get(lsid);
+            if (ud != null && ud.getSubType() != 0) {
+                subType = ud.getSubType();
+            }
+        }
+
+        getMapComposer().mapSpeciesByLsid(lsid, taxon, rank, 0, subType);
     }
 
     /**
@@ -395,7 +409,7 @@ public class SamplingWCController extends UtilityComposer {
     private String cleanTaxon() {
         String taxon = null;
 
-        if(sac.getSelectedItem() == null && sac.getValue() != null){
+        if (sac.getSelectedItem() == null && sac.getValue() != null) {
             String taxValue = sac.getValue();
             if (taxValue.contains(" (")) {
                 taxValue = StringUtils.substringBefore(taxValue, " (");
@@ -416,9 +430,9 @@ public class SamplingWCController extends UtilityComposer {
                 }
             }
         }
-        
+
         if (sac.getSelectedItem() != null && sac.getSelectedItem().getAnnotatedProperties() != null
-                && sac.getSelectedItem().getAnnotatedProperties().size() > 0 ) {
+                && sac.getSelectedItem().getAnnotatedProperties().size() > 0) {
             taxon = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
         }
 
@@ -432,7 +446,7 @@ public class SamplingWCController extends UtilityComposer {
         //get top species and list of env/ctx layers
         //String species = layersUtil.getFirstSpeciesLayer();
         String speciesandlsid = layersUtil.getFirstSpeciesLsidLayer();
-        String species = null; 
+        String species = null;
         if (StringUtils.isNotBlank(speciesandlsid)) {
             species = speciesandlsid.split(",")[0];
         }

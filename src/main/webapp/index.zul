@@ -238,36 +238,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </west>
 
             <center id="center">
-                <div id="mapcontainer" width="100%" height="100%" >
-
-                    <div class="menu" style="position:absolute;float:right;right:10px; margin-top:5px" visible="false">
-                        <n:ul>
-                            <n:li>
-                                <n:a href="#">Map Options</n:a>
-                                <n:ul>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="changeBaseLayer('outline');window.mapFrame.baseLayerSwitchStatus=1;">Outline</n:a>
-                                    </n:li>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="changeBaseLayer('minimal');window.mapFrame.baseLayerSwitchStatus=1;">Minimal</n:a>
-                                    </n:li>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="changeBaseLayer('normal');window.mapFrame.baseLayerSwitchStatus=1;">Normal</n:a>
-                                    </n:li>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="changeBaseLayer('hybrid');window.mapFrame.baseLayerSwitchStatus=1;">Satellite</n:a>
-                                    </n:li>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="printHack('');">Download Map</n:a>
-                                    </n:li>
-                                    <n:li>
-                                        <n:a href="#" n:onClick="resetMap();">Reset Map</n:a>
-                                    </n:li>
-                                </n:ul>
-                            </n:li>
-                        </n:ul>
-                    </div>
-            
+                <div id="mapcontainer" width="100%" height="100%" >            
                     <div style="float:left" width="100%" height="100%" >
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
                     </div>
@@ -480,6 +451,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <doublebox id="northReal" visible="false" />
         <doublebox id="westReal" visible="false" />
         <doublebox id="eastReal" visible="false" />
+
+        <textbox id="baseMap" visible="false" />
 
         <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
         <label id="geoserver_url" value="${settingsSupplementary.values.geoserver_url}" visible="false" />

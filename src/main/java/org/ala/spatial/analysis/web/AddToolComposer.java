@@ -3,12 +3,17 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
+import java.net.URLEncoder;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.util.CommonData;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -29,12 +34,13 @@ public class AddToolComposer extends UtilityComposer {
 
     SettingsSupplementary settingsSupplementary;
     int currentStep = 1, totalSteps = 5;
-    Hashtable<String, Object> params;
+    Map<String, Object> params;
     String selectedMethod = "";
     String pid = "";
     Radiogroup rgArea, rgSpecies;
     Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
     Radio rSpeciesAll, rSpeciesMapped, rSpeciesOther;
+    Radio rAreaWorld;
     Button btnCancel, btnOk, btnBack, btnHelp;
     Textbox tToolName;
     SpeciesAutoComplete searchSpeciesAuto;
@@ -45,18 +51,25 @@ public class AddToolComposer extends UtilityComposer {
         super.afterCompose();
 
         setupDefaultParams();
+        setParams(Executions.getCurrent().getArg());
 
         //loadStepLabels();
         updateWindowTitle();
     }
 
     private void setupDefaultParams() {
-        params = new Hashtable<String, Object>();
-        params.put("step1", "Select area(s)");
-        params.put("step2", "Select species(s)");
-        params.put("step3", "Select grid(s)");
-        params.put("step4", "Select your analytical options");
-        params.put("step5", "Name your output for");
+        Hashtable<String, Object> p = new Hashtable<String, Object>();
+        p.put("step1", "Select area(s)");
+        p.put("step2", "Select species(s)");
+        p.put("step3", "Select grid(s)");
+        p.put("step4", "Select your analytical options");
+        p.put("step5", "Name your output for");
+
+        if (params == null) {
+            params = p;
+        } else {
+            setParams(p);
+        }
 
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
         btnOk.setLabel(((!currentDiv.getZclass().contains("last")) ? "Next >" : "Finish"));
@@ -87,12 +100,15 @@ public class AddToolComposer extends UtilityComposer {
         }
     }
 
-    public void setParams(Hashtable<String, Object> params) {
+    public void setParams(Map<String, Object> params) {
         //this.params = params;
 
         // iterate thru' the passed params and load them into the
         // existing default params
-        if (params != null) {
+        if (params == null) {
+            setupDefaultParams();
+        }
+        if (params != null && params.keySet() != null && params.keySet().iterator() != null) {
             Iterator<String> it = params.keySet().iterator();
             while (it.hasNext()) {
                 String key = it.next();
@@ -111,21 +127,37 @@ public class AddToolComposer extends UtilityComposer {
 
             List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
+            Radio selectedSpecies = null;
+            String selectedLsid = (String) params.get("lsid");
+            int speciesLayersCount = 0;
+
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
+                if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                    speciesLayersCount++;
+                }
+
                 Radio rSp = new Radio(lyr.getDisplayName());
                 rSp.setValue(lyr.getMapLayerMetadata().getSpeciesLsid());
                 rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
+
+                if(selectedLsid != null && rSp.getValue().equals(selectedLsid)) {
+                    selectedSpecies = rSp;
+                }
             }
 
-            if (layers.size() > 1) {
-                rSpeciesMapped.setLabel("All " + layers.size() + " species currently mapped");
+            if (speciesLayersCount > 1) {
+                rSpeciesMapped.setLabel("All " + speciesLayersCount + " species currently mapped (excludes coordinate uploads)");
             } else {
                 rSpeciesMapped.setVisible(false);
             }
 
-            if (layers.size() > 0) {
+            if (selectedSpecies != null) {
+                rgSpecies.setSelectedItem(selectedSpecies);
+            } else if (selectedLsid != null && selectedLsid.equals("none")) {
+                rgSpecies.setSelectedItem(rSpeciesAll);
+            } else if (layers.size() > 0) {
                 rgSpecies.getItemAtIndex(1).setSelected(true);
             } else {
                 for(int i=0;i<rgSpecies.getItemCount();i++) {
@@ -148,6 +180,9 @@ public class AddToolComposer extends UtilityComposer {
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgArea");
             Radio rAreaCurrent = (Radio) getFellowIfAny("rAreaCurrent");
 
+            String selectedLayerName = (String) params.get("polygonLayerName");
+            Radio rSelectedLayer = null;
+
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
@@ -156,9 +191,24 @@ public class AddToolComposer extends UtilityComposer {
                 rAr.setValue(lyr.getWKT());
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
+
+                if(selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+                    rSelectedLayer = rAr;
+                }
             }
 
-            rAreaCurrent.setSelected(true);
+            if(rSelectedLayer != null) {
+                rSelectedLayer.setSelected(true);
+            } else if(selectedLayerName != null && selectedLayerName.equals("none")) {
+                rgArea.setSelectedItem(rAreaWorld);
+            } else {
+                for(int i=0;i<rgArea.getItemCount();i++) {
+                    if(rgArea.getItemAtIndex(i).isVisible()) {
+                        rgArea.getItemAtIndex(i).setSelected(true);
+                        break;
+                    }
+                }
+            }
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
             e.printStackTrace(System.out);
@@ -174,11 +224,14 @@ public class AddToolComposer extends UtilityComposer {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (int i = 0; i < layers.size(); i++) {
                     MapLayer lyr = layers.get(i);
-                    System.out.println(lyr.getDisplayName());
+                    //System.out.println(lyr.getDisplayName());
                 }
             }
 
-
+            String layers = (String) params.get("environmentalLayerName");
+            if(layers != null) {
+                lbListLayers.selectLayers(layers.split(","));
+            }
         } catch (Exception e) {
             System.out.println("Unable to load species layers:");
             e.printStackTrace(System.out);
@@ -383,12 +436,32 @@ public class AddToolComposer extends UtilityComposer {
                 species = "";
                 List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
+                StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < layers.size(); i++) {
                     MapLayer lyr = layers.get(i);
-                    Radio rSp = new Radio(lyr.getDisplayName());
-                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
+                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                        sb.append(lyr.getMapLayerMetadata().getSpeciesLsid() + ",");
+                    }
                 }
-                species = species.substring(0, species.length() - 1);
+                String lsids = sb.toString().substring(0, sb.length() - 1);
+
+                //get lsid to match
+                StringBuilder sbProcessUrl = new StringBuilder();
+                sbProcessUrl.append("/species/lsid/register");
+                sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
+
+                HttpClient client = new HttpClient();
+                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+                int result = client.executeMethod(get);
+                String pid = get.getResponseBodyAsString();
+
+                if (result == 200 && pid != null && pid.length() > 0) {
+                    species = pid;
+                } else {
+                    //TODO: error
+                }
+
             } else if (species.equals("other")) {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));

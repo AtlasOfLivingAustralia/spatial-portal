@@ -8,6 +8,9 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Radio;
+import org.zkoss.zul.Radiogroup;
+import org.zkoss.zul.Vbox;
 
 /**
  *
@@ -19,14 +22,22 @@ public class AddSpeciesController extends UtilityComposer {
     SpeciesAutoComplete searchSpeciesAuto;
     Button btnOk;
     private String lsid;
+    Radio rSearch;
+    Radiogroup rgAddSpecies;
+    Vbox vboxSearch;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
+        rSearch.setSelected(true);
     }
 
     public void onClick$btnOk(Event event) {
-        getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto);
+        if(rSearch.isSelected()) {
+            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto);
+        } else {
+            onClick$btnUpload(event);
+        }
         this.detach();
     }
 
@@ -85,6 +96,18 @@ public class AddSpeciesController extends UtilityComposer {
                 }
             }
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
+        }
+    }
+
+    public void onCheck$rgAddSpecies(Event event) {
+        if(rSearch.isSelected()) {
+           btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
+           btnOk.setLabel("OK");
+           vboxSearch.setVisible(true);
+        } else {
+           btnOk.setDisabled(false);
+           btnOk.setLabel("Next");
+           vboxSearch.setVisible(false);
         }
     }
 }

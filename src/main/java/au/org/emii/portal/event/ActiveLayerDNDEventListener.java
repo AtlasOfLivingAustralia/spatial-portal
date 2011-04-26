@@ -17,7 +17,7 @@ public class ActiveLayerDNDEventListener extends PortalEvent implements EventLis
     public void onEvent(Event event) throws Exception {
         logger.debug("active layers item drop received");
         MapComposer mapComposer = getMapComposer(event);
-        if (mapComposer.safeToPerformMapAction()) {
+        if (mapComposer != null && mapComposer.safeToPerformMapAction()) {
             logger.debug("inside ActiveLayerDNDEventListener.onEvent()");
 
             if (event instanceof DropEvent) {

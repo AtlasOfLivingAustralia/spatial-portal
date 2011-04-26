@@ -99,6 +99,7 @@ public class UploadSpeciesController extends UtilityComposer {
             public void onEvent(Event event) throws Exception {
                 UserData ud = new UserData(tbName.getValue(), tbDesc.getValue(), "points");
                 doFileUpload(ud, event);
+                onClick$btnCancel(null);
             }
         });
     }
@@ -282,21 +283,24 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
-//            MapLayer ml = null;
-//            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
-//                //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-//                ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount());
-//            } else {
-//                ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount());
-//            }
-//            MapLayerMetadata md = ml.getMapLayerMetadata();
-//            if (md == null) {
-//                md = new MapLayerMetadata();
-//                ml.setMapLayerMetadata(md);
-//            }
-//            md.setMoreInfo(metadata);
-            //md.setSpeciesRank("User");
+            MapLayer ml = null;
+            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
+                //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+                ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+            } else {
+                ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+            }
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                ml.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(metadata);
+            md.setSpeciesRank("User");
 
+            ud.setMetadata(metadata);
+            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
+            ud.setLsid(slist);
 
             // add it to the user session
             Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
@@ -369,7 +373,7 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Description: " + ud.getDescription() + " \n";
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
-
+//
             MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES);
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
@@ -377,6 +381,9 @@ public class UploadSpeciesController extends UtilityComposer {
                 ml.setMapLayerMetadata(md);
             }
             md.setMoreInfo(metadata);
+            ud.setMetadata(metadata);
+            ud.setSubType(LayerUtilities.SPECIES);
+            ud.setLsid(pid);
 
             // add it to the user session
             Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");

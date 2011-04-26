@@ -28,8 +28,10 @@
             
             <separator />
             <div style="float:right;margin-right:5px">
-                <fileupload  sclass="fUploadButton" id="fileUpload" label="Choose file" upload="true" />
-                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                <hbox>
+                    <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                </hbox>
             </div>
             <separator />
         </vbox>

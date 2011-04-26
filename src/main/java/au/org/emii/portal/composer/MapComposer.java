@@ -165,6 +165,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     //Combobox cbColour;
     //Comboitem ciColourUser; //User selected colour
     Label lblSelectedLayer;
+    String baseMap = "normal";
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -607,6 +608,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
              * it a new ListModelList instance based on live data
              */
             activeLayersList.setModel(new ListModelList(activeLayers, true));
+            adjustActiveLayersList();
         }
 
         if (!activeLayers.contains(mapLayer) && mapLayer.isDisplayable()) {
@@ -633,6 +635,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             if (doJavaScript) {
                 openLayersJavascript.activateMapLayerNow(mapLayer);
             }
+
+            adjustActiveLayersList();
 
             updateLayerControls();
             layerAdded = true;
@@ -928,6 +932,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         activeLayersList.setModel(activeLayerModel);
+        adjustActiveLayersList();
         activeLayersList.setItemRenderer(activeLayerRenderer);
         activeLayersList.setSelectedIndex(activeLayerModel.size()-1);
 
@@ -1102,25 +1107,19 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             MapLayer mapLayer = getMapLayer(label);
             if (mapLayer != null) {
                 deactiveLayer(mapLayer, true, false);
-
             } else {
                 // fail
                 showMessage(languagePack.getLang("wms_layer_remove_error"));
                 logger.info("unable to remove layer with label" + label);
             }
-
         }
-
     }
 
-    public boolean addImageLayer(String id, String label, String uri, float opacity, List<Double> bbox, int subType) {
-        boolean addedOk = false;
+    public MapLayer addImageLayer(String id, String label, String uri, float opacity, List<Double> bbox, int subType) {
+         // check if layer already present
+        MapLayer imageLayer = getMapLayer(label);
 
         if (safeToPerformMapAction()) {
-
-            // check if layer already present
-            MapLayer imageLayer = getMapLayer(label);
-
             if (imageLayer == null) {
                 System.out.println("activating new layer");
 
@@ -1158,19 +1157,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //call this to add it to the map and also put it in the active layer list
                 activateLayer(imageLayer, true, true);
 
-                addedOk = true;
             } else {
                 System.out.println("refreshing exisiting layer");
                 imageLayer.setUri(uri); // + "&_lt=" + System.currentTimeMillis());
                 imageLayer.setOpacity(opacity); // (float) 0.75
 
                 openLayersJavascript.reloadMapLayerNow(imageLayer);
-
-                addedOk = true;
             }
         }
 
-        return addedOk;
+        return imageLayer;
     }
 
     /*
@@ -3527,16 +3523,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public Window openModal(String page, Hashtable<String, Object> params) {
-        Window window = (Window) Executions.createComponents(page, this, null);
-
-        //try to set params before opening the window
-        try {
-            if(params != null) {
-                ((AddToolComposer)window).setParams(params);        
-            }
-        } catch(Exception e) {
-            
-        }
+        Window window = (Window) Executions.createComponents(page, this, params);       
 
         try {
             window.doModal();
@@ -3719,6 +3706,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         int idx = activeLayersList.getSelectedIndex();
         List<MapLayer> activeLayers = getPortalSession().getActiveLayers();
         activeLayersList.setModel(new ListModelList(activeLayers, true));
+        adjustActiveLayersList();
         activeLayersList.setSelectedIndex(idx);
     }
 
@@ -3905,7 +3893,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void exportArea(Event event) {
         try {
             MapLayer ml = llc2MapLayer;
-            if (ml.isPolygonLayer()) {
+            if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
 
                 String id = String.valueOf(System.currentTimeMillis());
 
@@ -3922,6 +3910,35 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         } catch (Exception e) {
             System.out.println("Unable to export user area");
             e.printStackTrace(System.out);
+        }
+    }
+
+    public void onBaseMap(Event event) {
+        String newBaseMap = (String) event.getData();
+        baseMap = newBaseMap;
+    }
+
+    public String getBaseMap() {
+        return baseMap;
+    }
+
+    void adjustActiveLayersList() {
+        if(activeLayersList != null && activeLayersList.getItems() != null) {
+            for(Listitem li : (List<Listitem>) activeLayersList.getItems()) {
+                if(li.getValue() != null
+                        && ((MapLayer)li.getValue()).getName().equals("Map options")) {
+                    li.setDraggable("false");
+                    li.setDroppable("false");
+                } else {
+//                    li.addEventListener("onDrop", new EventListener() {
+//
+//                        @Override
+//                        public void onEvent(Event event) throws Exception {
+//                            redrawLayersList();
+//                        }
+//                    });
+                }
+            }
         }
     }
 }

@@ -39,6 +39,7 @@ public interface LayerUtilities {
     public int GRID = 20;
     public int SPECIES = 21;
     public int ENVIRONMENTAL_ENVELOPE = 22;
+    public int SPECIES_UPLOAD = 23;
     /**
      * Constants used to indicate layer type.  Do not hard code these
      * value into other applications - they may change.  Instead, for

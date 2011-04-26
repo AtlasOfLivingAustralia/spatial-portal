@@ -239,7 +239,7 @@ class SamplingEvent implements EventListener {
         if(environmentalLayerName != null) {
             params.put("environmentalLayerName", environmentalLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put("environmentalLayerName", "none");
         }
         AddToolSamplingComposer window = (AddToolSamplingComposer) mc.openModal("WEB-INF/zul/AddToolSampling.zul", params);
     }
@@ -274,7 +274,7 @@ class PredictionEvent implements EventListener {
         if(environmentalLayerName != null) {
             params.put("environmentalLayerName", environmentalLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put("environmentalLayerName", "none");
         }
         AddToolMaxentComposer window = (AddToolMaxentComposer) mc.openModal("WEB-INF/zul/AddToolMaxent.zul", params);
     }
@@ -302,7 +302,7 @@ class ClassificationEvent implements EventListener {
         if(environmentalLayerName != null) {
             params.put("environmentalLayerName", environmentalLayerName);
         } else {
-            params.put("polygonLayerName", "none");
+            params.put("environmentalLayerName", "none");
         }
         AddToolALOCComposer window = (AddToolALOCComposer) mc.openModal("WEB-INF/zul/AddToolALOC.zul", params);
     }
@@ -354,26 +354,26 @@ class SpeciesListEvent implements EventListener {
 
     @Override
     public void onEvent(Event event) throws Exception {
-//        Hashtable<String, Object> params = new Hashtable<String, Object>();
-//        if(polygonLayerName != null) {
-//            params.put("polygonLayerName", polygonLayerName);
-//        } else {
-//            params.put("polygonLayerName", "none");
-//        }
-//        AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
-
-        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
-        MapLayer ml = mc.getMapLayer(polygonLayerName);
-        if(ml != null) {
-            window.wkt = ml.getWKT();
+        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        if(polygonLayerName != null) {
+            params.put("polygonLayerName", polygonLayerName);
         } else {
-            window.wkt = mc.getViewArea();
+            params.put("polygonLayerName", "none");
         }
-        try {
-            window.doModal();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
+
+//        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
+//        MapLayer ml = mc.getMapLayer(polygonLayerName);
+//        if(ml != null) {
+//            window.wkt = ml.getWKT();
+//        } else {
+//            window.wkt = mc.getViewArea();
+//        }
+//        try {
+//            window.doModal();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 }
 
@@ -421,20 +421,20 @@ class AreaReportEvent implements EventListener {
 
     @Override
     public void onEvent(Event event) throws Exception {
-//        Hashtable<String, Object> params = new Hashtable<String, Object>();
-//        if(polygonLayerName != null) {
-//            params.put("polygonLayerName", polygonLayerName);
-//        } else {
-//            params.put("polygonLayerName", "none");
-//        }
-//        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params);
-
-        MapLayer ml = mc.getMapLayer(polygonLayerName);
-        if(ml != null) {
-            FilteringResultsWCController.open(ml.getWKT());
+        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        if(polygonLayerName != null) {
+            params.put("polygonLayerName", polygonLayerName);
         } else {
-            FilteringResultsWCController.open(null);
+            params.put("polygonLayerName", "none");
         }
+        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params);
+
+//        MapLayer ml = mc.getMapLayer(polygonLayerName);
+//        if(ml != null) {
+//            FilteringResultsWCController.open(ml.getWKT());
+//        } else {
+//            FilteringResultsWCController.open(null);
+//        }
     }
 }
 

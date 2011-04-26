@@ -14,24 +14,28 @@
         <a sclass="fancybox-close" onClick="addspecieswindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp()" style="display: inline" />
         <caption label="Add species" sclass="caption" />
-        <vbox width="100%">
-            <separator />
-            <label sclass="wLabel" value="Enter a scientific or common name"/>
-            <separator />
-            <hbox>
-                <separator orient="vertical" />
-                <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
-                    <comboitem label=""/>
-                </combobox>
-            </hbox>
-            <separator/>
-            <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
-            <separator />
-            <separator />
-        </vbox>
-        <separator />
-        <button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" />
-        <separator />
+        <separator/>
+        <div style="margin-left:20px" >
+            <radiogroup id="rgAddSpecies" >
+                <vbox>
+                    <radio id="rSearch" label="Search for a species by scientific or common name" />
+                    <vbox id="vboxSearch">
+                        <hbox>
+                            <separator orient="vertical" />
+                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
+                                <comboitem label=""/>
+                            </combobox>
+                        </hbox>
+                        <separator/>
+                        <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                        <separator />
+                        <separator />
+                    </vbox>
+                    <radio label="Upload coordinates" />
+                    <radio label="Upload LSIDs" />
+                </vbox>
+            </radiogroup>
+        </div>
         <div sclass="wButtons">
             <hbox>
                 <button sclass="goButton" label="OK" id="btnOk" disabled="true" />

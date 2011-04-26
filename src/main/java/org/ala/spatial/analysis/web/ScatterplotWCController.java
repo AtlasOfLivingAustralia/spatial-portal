@@ -667,6 +667,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
         UserData ud = new UserData(layername, description, "scatterplot");
         ud.setFeatureCount(numRecords);
+        ud.setLsid(id);
+        ud.setMetadata(id + ", " + layername + ", " + description);
+        ud.setSubType(LayerUtilities.SPECIES);
 
         // add it to the user session
         Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
