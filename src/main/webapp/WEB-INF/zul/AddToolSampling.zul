@@ -67,7 +67,7 @@
                             <listheader label="category"  />
                             <listheader label="name" />
                             <listheader label=" "  />
-                            <listheader label=" " width="10px" />
+                            <listheader label=" " width="10px" visible="false" />
                         </listhead>
                     </listbox>
                     <button id="btnClearSelection" label="Clear layers"  sclass="goButton" style="float:left" />

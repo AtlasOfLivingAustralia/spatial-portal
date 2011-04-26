@@ -181,7 +181,7 @@ function changeBaseLayer(type) {
         $('#min_mapoption').addClass('mapoptsel');
     } else if (type == 'outline') {
         map.setBaseLayer(bLayer4);
-        $('#min_mapoption').addClass('mapoptsel');
+        $('#out_mapoption').addClass('mapoptsel');
     }
 
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'onBaseMap', type));

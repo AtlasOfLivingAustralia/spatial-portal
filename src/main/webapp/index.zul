@@ -150,7 +150,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </n:a>
                                             </n:li>
                                             <n:li style="display:none" >
-                                                <n:a href='#' n:onClick="runImporunExport();rt();">
+                                                <n:a href='#' n:onClick="runExport();">
                                                     <n:span>Export</n:span>
                                                 </n:a>
                                             </n:li>

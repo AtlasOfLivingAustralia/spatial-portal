@@ -934,10 +934,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activeLayersList.setModel(activeLayerModel);
         adjustActiveLayersList();
         activeLayersList.setItemRenderer(activeLayerRenderer);
-        activeLayersList.setSelectedIndex(activeLayerModel.size()-1);
+        //activeLayersList.setSelectedIndex(activeLayerModel.size()-1);
 
-        updateLayerControls();
-        
+        //updateLayerControls();
+
         //showCurrentMenu();
 
         //activateNavigationTab(portalSession.getCurrentNavigationTab());
@@ -3597,8 +3597,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
         }
 
-        System.out.println("******************** selecting active layer: " + selectedLayer.getName() + " at " + page);
-
         window = (Window) Executions.createComponents(page, layerControls, null);
         try {
             ((HasMapLayer) window).setMapLayer(selectedLayer);
@@ -3903,7 +3901,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 ShapefileUtils.saveShapefile(shpfile,ml.getWKT());
 
                 String downloadUrl = CommonData.satServer;
-                downloadUrl += "/ws/download/"+id;
+                downloadUrl += "/alaspatial/ws/download/"+id;
                 Filedownload.save(new URL(downloadUrl), "application/zip");
 
             }
