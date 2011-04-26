@@ -81,6 +81,10 @@ public class SpeciesColourOption {
     }
 
     public static String getColourLegend(String lsid, String colourMode) {
+        return getColourLegend(lsid, colourMode, true);
+    }
+
+    public static String getColourLegend(String lsid, String colourMode, boolean writeToFile) {
         String legend = null;
 
         //legend for 'grid' colourMode
@@ -141,10 +145,14 @@ public class SpeciesColourOption {
                 str.append("name, red, green, blue").append("\n");
                 str.append(legend);
 
-                //register
-                LayerImgService.registerLayerLegend(TabulationSettings.base_output_dir, pid, str.toString());
+                if (writeToFile) {
+                    //register
+                    LayerImgService.registerLayerLegend(TabulationSettings.base_output_dir, pid, str.toString());
 
-                return pid;
+                    return pid;
+                } else {
+                    return str.toString(); 
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -887,10 +895,10 @@ public class SpeciesColourOption {
                     Double[] o1 = {new Double(Double.parseDouble(parts[0])), new Double(Double.parseDouble(parts[1]))};
                     return o1;
                 case 1: //int
-                    Integer[] o2 = {new Integer((int)Double.parseDouble(parts[0])), new Integer((int)Double.parseDouble(parts[1]))};
+                    Integer[] o2 = {new Integer((int) Double.parseDouble(parts[0])), new Integer((int) Double.parseDouble(parts[1]))};
                     return o2;
                 case 3: //string, appending lookup values
-                    Object [] o3 = {parts};
+                    Object[] o3 = {parts};
                     return o3;
                 case 2: //boolean
                     Boolean[] o4 = {new Boolean(Boolean.parseBoolean(parts[0]))};

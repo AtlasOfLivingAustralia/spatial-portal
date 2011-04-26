@@ -36,11 +36,16 @@
                     </td>
                 </tr>
                 <tr>
+                    <td class="md_th">Number of Species</td>
+                    <td class="md_spacer"/>
+                    <td class="md_value">${species_count}</td>
+                </tr>
+                <tr class="md_grey-bg">
                     <td class="md_th">Number of Occurrences</td>
                     <td class="md_spacer"/>
                     <td class="md_value">${occ_count}</td>
                 </tr>
-                <tr class="md_grey-bg">
+                <tr>
                     <td class="md_th">Institutions</td>
                     <td class="md_spacer"/>
                     <td class="md_value">
@@ -49,7 +54,7 @@
                         </c:forEach>
                     </td>
                 </tr>
-                <tr>
+                <tr class="md_grey-bg">
                     <td class="md_value" colspan="3">More information for <a href="http://bie.ala.org.au/species/${lsid}" target="_blank">${speciesname}</a></td>
                 </tr>
             </tbody>
