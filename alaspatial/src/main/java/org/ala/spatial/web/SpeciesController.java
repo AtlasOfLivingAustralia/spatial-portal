@@ -924,7 +924,7 @@ public class SpeciesController {
 
     @RequestMapping(value = "/metadata/{lsid:.+}", method = RequestMethod.GET)
     public ModelAndView speciesMetadata(@PathVariable("lsid") String lsid) {
-            ModelMap modelMap = null;
+        ModelMap modelMap = null;
         try {
 
             String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies"};
@@ -950,11 +950,13 @@ public class SpeciesController {
             Map classification = new TreeMap();
             String[] entityQuery = root.get("entityQuery").getTextValue().split(":");
             String spClass = entityQuery[0].trim();
-            Vector cList = new Vector(); 
+            Vector cList = new Vector();
             for (String c : classificationList) {
-                if (c.equals(spClass))break;
+                if (c.equals(spClass)) {
+                    break;
+                }
                 classification.put(c, joOcc.get(c.replace("ss", "zz")).getTextValue() + ";" + joOcc.get(c + "Lsid").getTextValue());
-                
+
                 cList.add(c + ";" + joOcc.get(c.replace("ss", "zz")).getTextValue() + ";" + joOcc.get(c + "Lsid").getTextValue());
             }
             cList.add(spClass + ";" + entityQuery[1].trim() + ";" + lsid);
@@ -962,16 +964,25 @@ public class SpeciesController {
             modelMap.addAttribute("classificationList", classificationList);
             modelMap.addAttribute("classification", classification);
             modelMap.addAttribute("cList", cList);
-            
-            
+
+
             // 2. add the Number of species
             //modelMap.addAttribute("occ_count", root.get("searchResult").get("totalRecords").getIntValue());
+            String legend = SpeciesColourOption.getColourLegend(lsid, spClass, false);
+            System.out.println("Species Count Legend: \n" + legend);
+//            String[] lines = legend.split("\r\n");
+//            if (lines.length == 1) { //oops
+//                lines = slist.split("\n");
+//            }
+            String[] lines = legend.split("\n");
+            modelMap.addAttribute("species_count", "" + (lines.length-1));
+            
             
             // 3. add the Number of occurrences
             modelMap.addAttribute("occ_count", root.get("searchResult").get("totalRecords").getValueAsText());
-            
+
             // 4. add the Institutions
-            Map institutions = new TreeMap(); 
+            Map institutions = new TreeMap();
             JsonNode facetResults = root.get("searchResult").get("facetResults");
             for (int i = 0; i < facetResults.size(); i++) {
                 JsonNode jofr = facetResults.get(i);
@@ -988,7 +999,7 @@ public class SpeciesController {
             modelMap.addAttribute("lsid", lsid);
             modelMap.addAttribute("speciesname", entityQuery[1].trim());
             modelMap.addAttribute("speciesRant", entityQuery[0].trim());
-            
+
 
         } catch (Exception e) {
             System.out.println("error generating species metadata");
