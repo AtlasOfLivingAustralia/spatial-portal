@@ -934,9 +934,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activeLayersList.setModel(activeLayerModel);
         adjustActiveLayersList();
         activeLayersList.setItemRenderer(activeLayerRenderer);
-        //activeLayersList.setSelectedIndex(activeLayerModel.size()-1);
+        activeLayersList.setSelectedIndex(activeLayerModel.size()-1);
 
-        //updateLayerControls();
+        updateLayerControls();
 
         //showCurrentMenu();
 
