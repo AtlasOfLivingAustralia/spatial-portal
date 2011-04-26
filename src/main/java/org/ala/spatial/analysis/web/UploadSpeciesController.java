@@ -28,6 +28,7 @@ import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.ala.spatial.util.CommonData;
@@ -43,6 +44,7 @@ import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.Component;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -61,12 +63,13 @@ import org.zkoss.zul.Window;
  * @author ajay
  */
 public class UploadSpeciesController extends UtilityComposer {
-    
+
     SettingsSupplementary settingsSupplementary;
     Textbox tbDesc;
     Textbox tbName;
     Fileupload fileUpload;
     private EventListener eventListener;
+    private boolean addToMap;
 
     @Override
     public void afterCompose() {
@@ -102,6 +105,15 @@ public class UploadSpeciesController extends UtilityComposer {
                 onClick$btnCancel(null);
             }
         });
+
+        Map<String, String> map = Executions.getCurrent().getArg();
+        if (map != null && map.get("addToMap") != null && map.get("addToMap").equals("false")) {
+            addToMap = false;
+        } else {
+            addToMap = true;
+        }
+
+
     }
 
     public void onClick$btnOk(Event event) {
@@ -205,7 +217,7 @@ public class UploadSpeciesController extends UtilityComposer {
         loadUserPoints(new UserData(name), data);
     }
 
-    public void loadUserPoints(UserData ud, Reader data) {  
+    public void loadUserPoints(UserData ud, Reader data) {
         try {
             // Read a line in to check if it's a valid file
             // if it throw's an error, then it's not a valid csv file
@@ -283,20 +295,22 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
-            MapLayer ml = null;
-            if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
-                //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-                ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
-            } else {
-                ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+            if (addToMap) {
+                MapLayer ml = null;
+                if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
+                    //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
+                    ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                } else {
+                    ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                }
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(metadata);
+                md.setSpeciesRank("User");
             }
-            MapLayerMetadata md = ml.getMapLayerMetadata();
-            if (md == null) {
-                md = new MapLayerMetadata();
-                ml.setMapLayerMetadata(md);
-            }
-            md.setMoreInfo(metadata);
-            md.setSpeciesRank("User");
 
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
@@ -310,8 +324,8 @@ public class UploadSpeciesController extends UtilityComposer {
             htUserSpecies.put(slist, ud);
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
 
-            if(eventListener != null) {
-                eventListener.onEvent(new Event("",null,slist + "\t" + ud.getName()));
+            if (eventListener != null) {
+                eventListener.onEvent(new Event("", null, slist + "\t" + ud.getName()));
             }
 
             // close the reader and data streams
@@ -373,14 +387,17 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Description: " + ud.getDescription() + " \n";
             metadata += "Date: " + ud.getDisplayTime() + " \n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
-//
-            MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES);
-            MapLayerMetadata md = ml.getMapLayerMetadata();
-            if (md == null) {
-                md = new MapLayerMetadata();
-                ml.setMapLayerMetadata(md);
+
+            if (addToMap) {
+                MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES);
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(metadata);
             }
-            md.setMoreInfo(metadata);
+
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES);
             ud.setLsid(pid);

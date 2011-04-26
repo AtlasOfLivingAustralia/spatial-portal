@@ -111,7 +111,7 @@
             <hbox>
                 <label id="tbxSelectionCount" />
                 <div id="scatterplotButtons" visible="false">
-                    <button sclass="goButton" label="clear selection" id="btnClearSelection" />
+                    <button sclass="goButton" label="clear selection" id="btnClearSelection" visible="false" />
                     <button sclass="goButton" label="add in/out layers to map" id="addNewLayers" />
                 </div>
             </hbox>

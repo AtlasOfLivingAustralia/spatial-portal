@@ -27,10 +27,12 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         super.afterCompose();
 
         this.selectedMethod = "Scatterplot";
-        this.totalSteps = 5;
+        this.totalSteps = 6;
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
+        this.loadAreaLayersHighlight();
+        this.loadSpeciesLayersBk();
         this.updateWindowTitle();
 
         this.updateName(getMapComposer().getNextAreaLayerName("My Scatterplot"));
@@ -67,25 +69,24 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         Rectangle2D.Double selection = null;
         boolean enabled = true;
 
-        String backgroundLsid = null;
-        if(bgSearchSpeciesAuto.getSelectedItem() != null
+        String backgroundLsid = getSelectedSpeciesBk();
+        if (bgSearchSpeciesAuto.getSelectedItem() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
-                backgroundLsid = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+            backgroundLsid = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
         }
 
-        String filterWkt = null;
-        String highlightWkt = null;
+        String filterWkt = getSelectedArea();
+        String highlightWkt = getSelectedAreaHighlight();
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        ScatterplotData data = new ScatterplotData(lsid, name, lyr1value, lyr1name, lyr2value, lyr2name, pid, selection, enabled
-                ,backgroundLsid, filterWkt, highlightWkt, envGrid);
+        ScatterplotData data = new ScatterplotData(lsid, name, lyr1value, 
+                lyr1name, lyr2value, lyr2name, pid, selection, enabled,
+                backgroundLsid, filterWkt, highlightWkt, envGrid);
 
         getMapComposer().loadScatterplot(data, tToolName.getValue());
 
-        this.detach(); 
-        
-
+        this.detach();
     }
 }

@@ -5,6 +5,7 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -37,14 +38,19 @@ public class AddToolComposer extends UtilityComposer {
     Map<String, Object> params;
     String selectedMethod = "";
     String pid = "";
-    Radiogroup rgArea, rgSpecies;
+    Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
     Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
     Radio rSpeciesAll, rSpeciesMapped, rSpeciesOther;
-    Radio rAreaWorld;
+    Radio rSpeciesNoneBk, rSpeciesAllBk, rSpeciesMappedBk, rSpeciesOtherBk;
+    Radio rAreaWorld, rAreaWorldHighlight;
     Button btnCancel, btnOk, btnBack, btnHelp;
     Textbox tToolName;
-    SpeciesAutoComplete searchSpeciesAuto;
+    SpeciesAutoComplete searchSpeciesAuto, bgSearchSpeciesAuto;
     EnvironmentalList lbListLayers;
+    Div divOtherSpecies, divOtherSpeciesBk;
+    UploadSpeciesController usc;
+    EnvLayersCombobox cbLayer1;
+    EnvLayersCombobox cbLayer2;
 
     @Override
     public void afterCompose() {
@@ -80,7 +86,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void updateName(String name) {
-        if(tToolName != null) {
+        if (tToolName != null) {
             tToolName.setValue(name);
         }
     }
@@ -142,7 +148,7 @@ public class AddToolComposer extends UtilityComposer {
                 rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
 
-                if(selectedLsid != null && rSp.getValue().equals(selectedLsid)) {
+                if (selectedLsid != null && rSp.getValue().equals(selectedLsid)) {
                     selectedSpecies = rSp;
                 }
             }
@@ -160,13 +166,55 @@ public class AddToolComposer extends UtilityComposer {
             } else if (layers.size() > 0) {
                 rgSpecies.getItemAtIndex(1).setSelected(true);
             } else {
-                for(int i=0;i<rgSpecies.getItemCount();i++) {
-                    if(rgSpecies.getItemAtIndex(i).isVisible()) {
+                for (int i = 0; i < rgSpecies.getItemCount(); i++) {
+                    if (rgSpecies.getItemAtIndex(i).isVisible()) {
                         rgSpecies.getItemAtIndex(i).setSelected(true);
                         break;
                     }
                 }
             }
+
+        } catch (Exception e) {
+            System.out.println("Unable to load species layers:");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void loadSpeciesLayersBk() {
+        try {
+
+            Radiogroup rgSpecies = (Radiogroup) getFellowIfAny("rgSpeciesBk");
+            Radio rSpeciesMapped = (Radio) getFellowIfAny("rSpeciesMappedBk");
+
+            List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+
+//            Radio selectedSpecies = null;
+//            String selectedLsid = (String) params.get("lsidBackground");
+            int speciesLayersCount = 0;
+
+            for (int i = 0; i < layers.size(); i++) {
+                MapLayer lyr = layers.get(i);
+                if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                    speciesLayersCount++;
+                }
+
+                Radio rSp = new Radio(lyr.getDisplayName());
+                rSp.setValue(lyr.getMapLayerMetadata().getSpeciesLsid());
+                rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                rgSpecies.insertBefore(rSp, rSpeciesMapped);
+
+//                if(selectedLsid != null && rSp.getValue().equals(selectedLsid)) {
+//                    selectedSpecies = rSp;
+//                }
+            }
+
+            if (speciesLayersCount > 1) {
+                rSpeciesMapped.setLabel("All " + speciesLayersCount + " species currently mapped (excludes coordinate uploads)");
+            } else {
+                rSpeciesMapped.setVisible(false);
+            }
+
+            rSpeciesNoneBk.setSelected(true);
 
         } catch (Exception e) {
             System.out.println("Unable to load species layers:");
@@ -192,23 +240,54 @@ public class AddToolComposer extends UtilityComposer {
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
 
-                if(selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+                if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
                     rSelectedLayer = rAr;
                 }
             }
 
-            if(rSelectedLayer != null) {
+            if (rSelectedLayer != null) {
                 rSelectedLayer.setSelected(true);
-            } else if(selectedLayerName != null && selectedLayerName.equals("none")) {
+            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
                 rgArea.setSelectedItem(rAreaWorld);
             } else {
-                for(int i=0;i<rgArea.getItemCount();i++) {
-                    if(rgArea.getItemAtIndex(i).isVisible()) {
+                for (int i = 0; i < rgArea.getItemCount(); i++) {
+                    if (rgArea.getItemAtIndex(i).isVisible()) {
                         rgArea.getItemAtIndex(i).setSelected(true);
                         break;
                     }
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Unable to load active area layers:");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void loadAreaLayersHighlight() {
+        try {
+
+            Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgAreaHighlight");
+            Radio rAreaCurrent = (Radio) getFellowIfAny("rAreaCurrentHighlight");
+            Radio rAreaNone = (Radio) getFellowIfAny("rAreaNoneHighlight");
+
+//            String selectedLayerName = (String) params.get("polygonLayerName");
+//            Radio rSelectedLayer = null;
+
+            List<MapLayer> layers = getMapComposer().getPolygonLayers();
+            for (int i = 0; i < layers.size(); i++) {
+                MapLayer lyr = layers.get(i);
+                Radio rAr = new Radio(lyr.getDisplayName());
+                rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                rAr.setValue(lyr.getWKT());
+                rAr.setParent(rgArea);
+                rgArea.insertBefore(rAr, rAreaCurrent);
+
+//                if(selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+//                    rSelectedLayer = rAr;
+//                }
+            }
+
+            rAreaNone.setSelected(true);
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
             e.printStackTrace(System.out);
@@ -229,7 +308,7 @@ public class AddToolComposer extends UtilityComposer {
             }
 
             String layers = (String) params.get("environmentalLayerName");
-            if(layers != null) {
+            if (layers != null) {
                 lbListLayers.selectLayers(layers.split(","));
             }
         } catch (Exception e) {
@@ -242,15 +321,34 @@ public class AddToolComposer extends UtilityComposer {
         try {
             System.out.println("onCheck$rgSpeces activated");
             if (rgSpecies != null && rgSpecies.getSelectedItem() == rSpeciesOther) {
-                if(divOtherSpecies != null) {
+                if (divOtherSpecies != null) {
                     divOtherSpecies.setVisible(true);
                     return;
                 }
             }
-            if(divOtherSpecies != null) {
+            if (divOtherSpecies != null) {
                 divOtherSpecies.setVisible(false);
             }
-            if(event != null) {
+            if (event != null) {
+                toggles();
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    public void onCheck$rgSpeciesBk(Event event) {
+        try {
+            System.out.println("onCheck$rgSpeces activated");
+            if (rgSpeciesBk != null && rgSpeciesBk.getSelectedItem() == rSpeciesOtherBk) {
+                if (divOtherSpeciesBk != null) {
+                    divOtherSpeciesBk.setVisible(true);
+                    return;
+                }
+            }
+            if (divOtherSpeciesBk != null) {
+                divOtherSpeciesBk.setVisible(false);
+            }
+            if (event != null) {
                 toggles();
             }
         } catch (Exception e) {
@@ -428,6 +526,27 @@ public class AddToolComposer extends UtilityComposer {
         return area;
     }
 
+    public String getSelectedAreaHighlight() {
+        String area = rgAreaHighlight.getSelectedItem().getValue();
+
+        try {
+            if (area.equals("none")) {
+                area = null;
+            } else if (area.equals("current")) {
+                area = getMapComposer().getViewArea();
+            } else if (area.equals("australia")) {
+                area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+            } else if (area.equals("world")) {
+                area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected area");
+            e.printStackTrace(System.out);
+        }
+
+        return area;
+    }
+
     public String getSelectedSpecies() {
         String species = rgSpecies.getSelectedItem().getValue();
         try {
@@ -475,7 +594,56 @@ public class AddToolComposer extends UtilityComposer {
         return species;
     }
 
-     public String getSelectedSpeciesName() {
+    public String getSelectedSpeciesBk() {
+        String species = rgSpeciesBk.getSelectedItem().getValue();
+        try {
+            if (species.equals("none")) {
+                species = null;
+            } else if (species.equals("allspecies")) {
+            } else if (species.equals("allmapped")) {
+                species = "";
+                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < layers.size(); i++) {
+                    MapLayer lyr = layers.get(i);
+                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+                        sb.append(lyr.getMapLayerMetadata().getSpeciesLsid() + ",");
+                    }
+                }
+                String lsids = sb.toString().substring(0, sb.length() - 1);
+
+                //get lsid to match
+                StringBuilder sbProcessUrl = new StringBuilder();
+                sbProcessUrl.append("/species/lsid/register");
+                sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
+
+                HttpClient client = new HttpClient();
+                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+                int result = client.executeMethod(get);
+                String pid = get.getResponseBodyAsString();
+
+                if (result == 200 && pid != null && pid.length() > 0) {
+                    species = pid;
+                } else {
+                    //TODO: error
+                }
+
+            } else if (species.equals("other")) {
+                if (bgSearchSpeciesAuto.getSelectedItem() != null) {
+                    species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve selected species");
+            e.printStackTrace(System.out);
+        }
+
+        return species;
+    }
+
+    public String getSelectedSpeciesName() {
         String species = rgSpecies.getSelectedItem().getValue();
         try {
             if (species.equals("allspecies")) {
@@ -506,7 +674,7 @@ public class AddToolComposer extends UtilityComposer {
         String layers = "";
 
         try {
-            if(lbListLayers.getSelectedLayers().length > 0) {
+            if (lbListLayers.getSelectedLayers().length > 0) {
                 String[] sellayers = lbListLayers.getSelectedLayers();
                 for (String l : sellayers) {
                     layers += l + ":";
@@ -520,28 +688,45 @@ public class AddToolComposer extends UtilityComposer {
 
         return layers;
     }
-    
-    Div divOtherSpecies;
 
-    UploadSpeciesController usc;
     public void onClick$btnUpload(Event event) {
         try {
-            usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", getMapComposer(), null);
+            HashMap<String, String> hm = new HashMap<String, String>();
+            hm.put("addToMap", "false");
+            usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", getMapComposer(), hm);
             usc.setEventListener(new EventListener() {
 
-                    @Override
-                    public void onEvent(Event event) throws Exception {
-                        setLsid((String)event.getData());
-                    }
-                });
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    setLsid((String) event.getData());
+                }
+            });
             usc.doModal();
-        }catch(Exception e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClick$btnUploadBk(Event event) {
+        try {
+            HashMap<String, String> hm = new HashMap<String, String>();
+            hm.put("addToMap", "false");
+            usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", getMapComposer(), hm);
+            usc.setEventListener(new EventListener() {
+
+                @Override
+                public void onEvent(Event event) throws Exception {
+                    setLsidBk((String) event.getData());
+                }
+            });
+            usc.doModal();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     void setLsid(String lsidName) {
-        String [] s = lsidName.split("\t");
+        String[] s = lsidName.split("\t");
         String species = s[1];
         String lsid = s[0];
 
@@ -559,7 +744,7 @@ public class AddToolComposer extends UtilityComposer {
                     if (ci.getLabel().equalsIgnoreCase(searchSpeciesAuto.getValue())) {
                         //compare lsid
                         if (ci.getAnnotatedProperties() != null
-                                && ((String)ci.getAnnotatedProperties().get(0)).equals(lsid)){
+                                && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
                             searchSpeciesAuto.setSelectedItem(ci);
                             break;
                         }
@@ -571,15 +756,46 @@ public class AddToolComposer extends UtilityComposer {
         usc.detach();
     }
 
+    void setLsidBk(String lsidName) {
+        String[] s = lsidName.split("\t");
+        String species = s[1];
+        String lsid = s[0];
+
+        /* set species from layer selector */
+        if (species != null) {
+            String tmpSpecies = species;
+            bgSearchSpeciesAuto.setValue(tmpSpecies);
+            bgSearchSpeciesAuto.refresh(tmpSpecies);
+
+            if (bgSearchSpeciesAuto.getSelectedItem() == null) {
+                List list = bgSearchSpeciesAuto.getItems();
+                for (int i = 0; i < list.size(); i++) {
+                    Comboitem ci = (Comboitem) list.get(i);
+                    //compare name
+                    if (ci.getLabel().equalsIgnoreCase(bgSearchSpeciesAuto.getValue())) {
+                        //compare lsid
+                        if (ci.getAnnotatedProperties() != null
+                                && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
+                            bgSearchSpeciesAuto.setSelectedItem(ci);
+                            break;
+                        }
+                    }
+                }
+            }
+            btnOk.setDisabled(bgSearchSpeciesAuto.getSelectedItem() == null);
+        }
+        usc.detach();
+    }
+
     public void onSelect$lbListLayers(Event event) {
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        if(currentDiv.getZclass().contains("minlayers1")
+        if (currentDiv.getZclass().contains("minlayers1")
                 && lbListLayers.getSelectedCount() >= 1) {
             btnOk.setDisabled(false);
-        } else if(currentDiv.getZclass().contains("minlayers2")
+        } else if (currentDiv.getZclass().contains("minlayers2")
                 && lbListLayers.getSelectedCount() >= 2) {
             btnOk.setDisabled(false);
-        } else if(currentDiv.getZclass().contains("optional")) {
+        } else if (currentDiv.getZclass().contains("optional")) {
             btnOk.setDisabled(false);
         }
     }
@@ -591,10 +807,17 @@ public class AddToolComposer extends UtilityComposer {
         onCheck$rgSpecies(null);
 
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        if(currentDiv.getZclass().contains("species")) {
+        if (currentDiv.getZclass().contains("layers2auto")) {
+            cbLayer2 = (EnvLayersCombobox) getFellowIfAny("cbLayer2");
+            cbLayer1 = (EnvLayersCombobox) getFellowIfAny("cbLayer1");
+            btnOk.setDisabled(cbLayer2.getSelectedItem() == null
+                    || cbLayer1.getSelectedItem() == null);
+        }
+        
+        if (currentDiv.getZclass().contains("species")) {
             btnOk.setDisabled(
-                    divOtherSpecies.isVisible() &&
-                    (searchSpeciesAuto.getSelectedItem() == null
+                    divOtherSpecies.isVisible()
+                    && (searchSpeciesAuto.getSelectedItem() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }
@@ -602,5 +825,13 @@ public class AddToolComposer extends UtilityComposer {
         if (currentDiv.getZclass().contains("optional")) {
             btnOk.setDisabled(false);
         }
+    }
+
+    public void onChange$cbLayer2(Event event) {
+        toggles();
+    }
+
+    public void onChange$cbLayer1(Event event) {
+        toggles();
     }
 }

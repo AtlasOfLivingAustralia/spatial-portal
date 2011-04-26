@@ -51,14 +51,30 @@
                         <separator/>
                         <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
                         <separator />
-                        <button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" />
+                        <hbox>
+                            <button sclass="goButton" label="Upload coordinates" id="btnUpload" class="float:left" />
+                            <button sclass="goButton" label="Upload LSIDs" id="btnUploadLsids" onClick="addtoolwindow.onClick$btnUpload(null)"
+                                class="float:left" />
+                        </hbox>
                     </div>
                 </vbox>
             </div>
 
             <div id="atstep3" visible="false" zclass="step3 optional">
-                <label id="atstep3_desc" value="Select two environmental layers" />
+                <label id="atstep3_desc" value="Highlight occurrences on the scatterplot that are in an area" />
                 <label id="atstep3_label" value="" />
+                <separator />
+                <radiogroup id="rgAreaHighlight" orient="vertical">
+                    <radio id="rAreaNoneHighlight" label="No highlight" value="none" />
+                    <radio id="rAreaCurrentHighlight" label="Current extent" value="current" />
+                    <radio id="rAreaAustraliaHighlight" label="Australia" value="australia" />
+                    <radio id="rAreaWorldHighlight" label="World" value="world" />
+                </radiogroup>
+            </div>
+
+            <div id="atstep4" visible="false" zclass="step4 layers2auto">
+                <label id="atstep4_desc" value="Select two environmental layers" />
+                <label id="atstep4_label" value="" />
                 <separator />
                 <groupbox >
                     <hbox>X
@@ -72,29 +88,43 @@
                     <checkbox id="chkShowEnvIntersection" label="Show environmental layer intersection" />
                 </groupbox>
             </div>
-
-            <div id="atstep4" visible="false" zclass="step4 optional">
-                <label id="atstep4_desc" value="Select background species" />
-                <label id="atstep4_label" value="" />
+            
+            <div id="atstep5" visible="false" zclass="step5 optional">
+                <label id="atstep5_desc" value="Select background species" />
+                <label id="atstep5_label" value="" />
                 <separator />
+                <radiogroup id="rgSpeciesBk" orient="vertical">
+                    <radio id="rSpeciesNoneBk" label="No background species" value="none" visible="true" />
+                    <radio id="rSpeciesAllBk" label="All species" value="allspecies" visible="false" />
+                    <radio id="rSpeciesMappedBk" label="All species currently mapped" value="allmapped" visible="false"/>
+                    <radio id="rSpeciesOtherBk" value="other" label="Other species (search, upload species locations, upload lsids)" />
+                </radiogroup>
                 <vbox width="100%">
-                    <separator />
-                    <label sclass="wLabel" value="Enter a scientific or common name as a background species"/>
-                    <separator />
-                    <hbox>
-                        <separator orient="vertical" />
-                        <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
-                            <comboitem label=""/>
-                        </combobox>
-                    </hbox>
-                    <separator/>
-                    <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                    <div id="divOtherSpeciesBk" visible="false" >
+                        <separator />
+                        <label sclass="wLabel" value="Enter a scientific or common name as a background species"/>
+                        <separator />
+                        <hbox>
+                            <separator orient="vertical" />
+                            <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
+                                <comboitem label=""/>
+                            </combobox>
+                        </hbox>
+                        <separator/>
+                        <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                        <separator />
+                        <hbox>
+                            <button sclass="goButton" label="Upload coordinates" id="btnUploadBk" class="float:left" />
+                            <button sclass="goButton" label="Upload LSIDs" id="btnUploadLsidsBk" onClick="addtoolwindow.onClick$btnUploadBk(null)"
+                                class="float:left" />
+                        </hbox>
+                    </div>
                 </vbox>
             </div>
 
-            <div id="atstep5" visible="false" zclass="last optional">
-                <label id="atstep5_desc" value="Layer name" />
-                <label id="atstep5_label" value="(none)" />
+            <div id="atstep6" visible="false" zclass="last optional">
+                <label id="atstep6_desc" value="Layer name" />
+                <label id="atstep6_label" value="(none)" />
                 <separator />
                 <hbox>
                     <label value="Name" />

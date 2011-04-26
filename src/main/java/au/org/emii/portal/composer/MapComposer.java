@@ -3312,6 +3312,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void loadScatterplot(ScatterplotData data, String lyrName) {
         MapLayer ml = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT);
+        ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
         ml.setData("scatterplotData", data);
         addUserDefinedLayerToMenu(ml, true);
@@ -3565,7 +3566,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
 
-        lblSelectedLayer.setValue(selectedLayer.getName());
+        lblSelectedLayer.setValue(selectedLayer.getDisplayName());
 
         String page = "";
         Window window = null;
@@ -3731,7 +3732,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
             if (allLayers.get(i).getMapLayerMetadata() != null
-                    && allLayers.get(i).getMapLayerMetadata().getSpeciesLsid() != null) {
+                    && allLayers.get(i).getMapLayerMetadata().getSpeciesLsid() != null
+                    && allLayers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
                 list.add(allLayers.get(i));
             }
         }
@@ -3743,7 +3745,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         ArrayList<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
-            if (allLayers.get(i).isGridLayer()) {
+            if (allLayers.get(i).isGridLayer()
+                    && allLayers.get(i).getSubType() != LayerUtilities.MAXENT) {
                 list.add(allLayers.get(i));
             }
         }
@@ -3755,7 +3758,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         ArrayList<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
-            if (allLayers.get(i).isContextualLayer()) {
+            if (allLayers.get(i).isContextualLayer()
+                    && allLayers.get(i).getSubType() != LayerUtilities.ALOC) {
                 list.add(allLayers.get(i));
             }
         }
