@@ -15,6 +15,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
+import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Zipper;
@@ -32,6 +33,7 @@ import org.zkoss.zul.Textbox;
  */
 public class AreaUploadShapefile extends UtilityComposer {
     Fileupload fileUpload;
+    Textbox txtLayerName;
 
     @Override
     public void afterCompose() {
@@ -171,9 +173,9 @@ public class AreaUploadShapefile extends UtilityComposer {
             out.write(kmlstr);
             out.close();
 
-            String kmlurl = "http://spatial-dev.ala.org.au/output/layers/" + id + "/" + name;
+            String kmlurl = CommonData.satServer + "/output/layers/" + id + "/" + name;
 
-            MapLayer mapLayer = getMapComposer().getGenericServiceAndBaseLayerSupport().createMapLayer("User-defined kml layer", "User-defined layer", "KML", kmlurl);
+            MapLayer mapLayer = getMapComposer().getGenericServiceAndBaseLayerSupport().createMapLayer("User-defined kml layer", txtLayerName.getValue(), "KML", kmlurl);
 
             if (mapLayer == null) {
                 logger.debug("The layer " + name + " couldnt be created");

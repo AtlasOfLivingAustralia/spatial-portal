@@ -3906,7 +3906,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 String downloadUrl = CommonData.satServer;
                 downloadUrl += "/alaspatial/ws/download/"+id;
-                Filedownload.save(new URL(downloadUrl), "application/zip");
+                Filedownload.save(new URL(downloadUrl).openStream(), "application/zip",ml.getDisplayName().replaceAll(" ", "_") + ".zip");
 
             }
         } catch (Exception e) {

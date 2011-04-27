@@ -23,7 +23,7 @@
                 </hbox>
             </div>
             <separator />
-            <label sclass="wordwrap" value="Select a zipped shapefile directory or a kml file." />
+            <label sclass="wordwrap" value="Select a zipped shapefile directory." />
             <label sclass="wordwrap" value="Note: if a file with multiple polygons is uploaded, only the first polygon detected will be used." />
             <separator />
             <div style="float:right;margin-right:10px">
