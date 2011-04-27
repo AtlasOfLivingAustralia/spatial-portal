@@ -1014,9 +1014,10 @@ a:hover, a:active, #nav-tabs li a:hover.selected, h2 a:hover, h2 a:active, #page
 }
 
 tr.z-listitem-seld, tr.z-listitem-seld span, tr.z-listitem-seld div  {
-    background: #08525F;
+    background-color: #08525F;
     color: white;
 }
+
 
 tr.z-listitem-over, tr.z-listitem-over span, tr.z-listitem-over div {
     background: #DD3102;
