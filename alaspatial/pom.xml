@@ -16,6 +16,18 @@
     </properties>
     <dependencies>
         <dependency>
+            <!-- http://code.google.com/p/six11utils/ -->
+            <groupId>six11utils</groupId>
+            <artifactId>six11utils</artifactId>
+            <version>1</version>
+        </dependency>
+        <dependency>
+            <!-- http://math.nist.gov/javanumerics/jama/ -->
+            <groupId>jama</groupId>
+            <artifactId>jama</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
             <groupId>jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <version>1.0.13</version>
@@ -349,7 +361,9 @@
         <repository>
             <id>org.jboss.repository.maven</id>
             <url>http://repository.jboss.org/maven2</url>
-            <snapshots><enabled>false</enabled></snapshots>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>GeoTools repo</id>
