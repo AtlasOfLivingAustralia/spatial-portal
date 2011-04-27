@@ -968,12 +968,7 @@ public class SpeciesController {
 
             // 2. add the Number of species
             //modelMap.addAttribute("occ_count", root.get("searchResult").get("totalRecords").getIntValue());
-            String legend = SpeciesColourOption.getColourLegend(lsid, spClass, false);
-            System.out.println("Species Count Legend: \n" + legend);
-//            String[] lines = legend.split("\r\n");
-//            if (lines.length == 1) { //oops
-//                lines = slist.split("\n");
-//            }
+            String legend = SpeciesColourOption.getColourLegend(lsid, "species", false);
             String[] lines = legend.split("\n");
             modelMap.addAttribute("species_count", "" + (lines.length-1));
             
