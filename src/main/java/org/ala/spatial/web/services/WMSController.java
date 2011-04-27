@@ -878,7 +878,7 @@ public class WMSController {
             @RequestParam(value = "HEIGHT", required = false, defaultValue = "") String heightString,
             HttpServletRequest request, HttpServletResponse response) {
 
-        int divs = 8; //number of x & y divisions in the WIDTH/HEIGHT
+        int divs = 16; //number of x & y divisions in the WIDTH/HEIGHT
 
         response.setHeader("Cache-Control", "max-age=86400"); //age == 1 day
         response.setContentType("image/png"); //only png images generated
