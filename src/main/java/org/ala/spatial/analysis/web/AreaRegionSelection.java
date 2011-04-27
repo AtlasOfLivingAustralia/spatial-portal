@@ -24,6 +24,7 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
 
@@ -56,13 +57,14 @@ public class AreaRegionSelection extends UtilityComposer {
         MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.geoServer + link);
         
         JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-//        //if the layer is a point create a radius
-//        if (jo.getString("type").equalsIgnoreCase("point")) {
-//            JSONArray coords = jo.getJSONArray("coordinates");
-//            String wkt = createCircle(coords.getDouble(0),coords.getDouble(1),5000);
-//            getMapComposer().removeLayer(label);
-//            mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
-//        }
+        //if the layer is a point create a radius
+        if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
+            String coords = jo.getJSONArray("geometries").getJSONObject(0).getString("coordinates").replace("[","").replace("]","");
+
+            String wkt = createCircle(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),5000);
+            getMapComposer().removeLayer(label);
+            mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
+        }
        
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
             String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
