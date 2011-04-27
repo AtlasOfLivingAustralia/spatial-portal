@@ -1,5 +1,10 @@
 package org.ala.spatial.analysis.method;
 
+
+import Jama.Matrix;
+import org.six11.util.math.PCA;
+
+
 /** 
  * PCA to get colours
  */
@@ -12,7 +17,8 @@ public class Pca {
 	 * @return	for each data record, one r, one g and one b component as 0-255 integer
 	 */
 	public static int [][] getColours(double [][] cdata){
-		if(cdata == null || cdata.length == 0){
+
+                if(cdata == null || cdata.length == 0){
 			return null;
 		}
 
@@ -104,91 +110,100 @@ public class Pca {
 			}
 		}else */
                 {
-			/* use PCA to get top 3 eigenvectors for colours */
-			
-			/* column means, 
-			 * assumption: no missing values  
-			 */
-			double [] sum = new double[nvars];
-			double [] mean = new double[nvars];
-			for(i=0;i<data.length;i++){
-				for(j=0;j<nvars;j++){
-					sum[j] += data[i][j];
-				}
-			}
-			for(j=0;j<nvars;j++){
-				mean[j] = sum[j]/((double)data.length);
-			}	
-			
-			/* make covarient matrix */
-			double [][] covar = new double[nvars][nvars];			
-			double [][] covar_copy = new double[nvars][nvars];
-			
-			for(i=0;i<nvars;i++){
-				for(j=0;j<nvars;j++){
-					for(k=0;k<data.length;k++){
-						covar[i][j] +=
-							(data[k][i] - mean[i])
-							*(data[k][j] - mean[j]);
-					}
-					covar[i][j] /= (double) data.length;
-					covar_copy[i][j] = covar[i][j];
-				}
-			}
-			
-			/* use pca() */
-			double [] work = new double [covar.length];
-			double [] eigval = new double [covar.length];
-			
-			pca(covar,work,eigval);
-			
-			/* determine columns for top 3 eigval's */
-			double [] topeigval = new double[3];
-			int [] topeigcol = new int[3];
-			for(j=0;j<3;j++){
-				topeigval[j] = Double.MAX_VALUE*-1;
-				/* get first valid point */
-				for(i=0;i<eigval.length;i++){
-					if((j==0 || eigval[i]<topeigval[j-1])){					
-						topeigval[j] = eigval[i];
-						topeigcol[j] = i;
-						break;
-					}
-				}
-				/* do test this pass */
-				for(i=0;i<eigval.length;i++){
-					if((j==0 || eigval[i]<topeigval[j-1]) && (topeigval[j] < eigval[i])){
-					
-						topeigval[j] = eigval[i];
-						topeigcol[j] = i;
-					}
-				}
-			}
-			
-			//dump eigval for inspection
-			System.out.println("eigval=");
-			for(i=0;i<eigval.length;i++){
-				System.out.print(eigval[i] + ",");
-			}
-			System.out.println("");
-			
-			//dump covar [0][1][2] for inspection			
-			for(j=0;j<3;j++){
-				System.out.println("covar(" + j + ")=" + topeigcol[j]);
-				for(i=0;i<covar.length;i++){
-					System.out.print(covar[i][topeigcol[j]] + ",");
-				}	
-			}
-			
-			/* convert top 3 covar to values */
-			double [][] values = new double[data.length][3];
-			for(j=0;j<3;j++){
-				for(i=0;i<covar.length;i++){
-					for(k=0;k<data.length;k++){
-						values[k][j] += data[k][i] * covar[i][topeigcol[j]];						
-					}
-				}
-			}
+//			/* use PCA to get top 3 eigenvectors for colours */
+//
+//			/* column means,
+//			 * assumption: no missing values
+//			 */
+//			double [] sum = new double[nvars];
+//			double [] mean = new double[nvars];
+//			for(i=0;i<data.length;i++){
+//				for(j=0;j<nvars;j++){
+//					sum[j] += data[i][j];
+//				}
+//			}
+//			for(j=0;j<nvars;j++){
+//				mean[j] = sum[j]/((double)data.length);
+//			}
+//
+//			/* make covarient matrix */
+//			double [][] covar = new double[nvars][nvars];
+//			double [][] covar_copy = new double[nvars][nvars];
+//
+//			for(i=0;i<nvars;i++){
+//				for(j=0;j<nvars;j++){
+//					for(k=0;k<data.length;k++){
+//						covar[i][j] +=
+//							(data[k][i] - mean[i])
+//							*(data[k][j] - mean[j]);
+//					}
+//					covar[i][j] /= (double) data.length;
+//					covar_copy[i][j] = covar[i][j];
+//				}
+//			}
+//
+//			/* use pca() */
+//			double [] work = new double [covar.length];
+//			double [] eigval = new double [covar.length];
+//
+//			pca(covar,work,eigval);
+//
+//			/* determine columns for top 3 eigval's */
+//			double [] topeigval = new double[3];
+//			int [] topeigcol = new int[3];
+//			for(j=0;j<3;j++){
+//				topeigval[j] = Double.MAX_VALUE*-1;
+//				/* get first valid point */
+//				for(i=0;i<eigval.length;i++){
+//					if((j==0 || eigval[i]<topeigval[j-1])){
+//						topeigval[j] = eigval[i];
+//						topeigcol[j] = i;
+//						break;
+//					}
+//				}
+//				/* do test this pass */
+//				for(i=0;i<eigval.length;i++){
+//					if((j==0 || eigval[i]<topeigval[j-1]) && (topeigval[j] < eigval[i])){
+//
+//						topeigval[j] = eigval[i];
+//						topeigcol[j] = i;
+//					}
+//				}
+//			}
+//
+//			//dump eigval for inspection
+//			System.out.println("eigval=");
+//			for(i=0;i<eigval.length;i++){
+//				System.out.print(eigval[i] + ",");
+//			}
+//			System.out.println("");
+//
+//			//dump covar [0][1][2] for inspection
+//			for(j=0;j<3;j++){
+//				System.out.println("covar(" + j + ")=" + topeigcol[j]);
+//				for(i=0;i<covar.length;i++){
+//					System.out.print(covar[i][topeigcol[j]] + ",");
+//				}
+//			}
+//
+//			/* convert top 3 covar to values */
+//			double [][] values = new double[data.length][3];
+//			for(j=0;j<3;j++){
+//				for(i=0;i<covar.length;i++){
+//					for(k=0;k<data.length;k++){
+//						values[k][j] += data[k][i] * covar[i][topeigcol[j]];
+//					}
+//				}
+//			}
+
+    PCA pca = new PCA(data);
+    k = 3;
+    Matrix features = PCA.getDominantComponentsMatrix(pca.getDominantComponents(k));
+    Matrix featuresXpose = features.transpose();
+    Matrix adjustedInput = new Matrix(PCA.getMeanAdjusted(data, pca.getMeans()));
+    Matrix xformedData = featuresXpose.times(adjustedInput.transpose());
+
+    double [][] values = xformedData.transpose().getArray();
 			
 			/* get min/max of values */
 			double [] minval = new double[3];
