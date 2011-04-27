@@ -16,9 +16,11 @@
                 </radiogroup>
             </hbox>
             <separator />
-            <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
-            <separator />
-            <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+           <hbox style="float: right">
+           <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
+           <separator />
+           <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+           </hbox>
         </vbox>
     </window>
 </zk>

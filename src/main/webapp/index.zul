@@ -87,11 +87,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <n:span>Species</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
                                                 <n:a href='#' n:onClick="addAreaAction();">
                                                     <n:span>Areas</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
                                                 <n:a href='#' n:onClick="addLayerAction();">
                                                     <n:span>Layers</n:span>
@@ -109,46 +111,55 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <n:span>Area Report</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
                                                 <n:a href='#' n:onClick="runSpeciesList();">
                                                     <n:span>Species List</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
                                                 <n:a href='#' n:onClick="runSamplingAction();">
                                                     <n:span>Species Sample</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
                                                 <n:a href='#' n:onClick="runScatterPlot();">
                                                     <n:span>Scatterplot</n:span>
                                                 </n:a>
                                             </n:li>
+
                                              <n:li style="display:none" >
                                                 <n:a href='#' n:onClick="runTabulation();">
                                                     <n:span>(Tabulate)</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
                                                 <n:a href='#' n:onClick="runClassification();">
                                                     <n:span>Classify</n:span>
                                                 </n:a>
-                                            </n:li>  
+                                            </n:li>
+
                                             <n:li>
                                                 <n:a href='#' n:onClick="runPrediction();">
                                                     <n:span>Predict</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li style="display:none" >
                                                 <n:a href='#' n:onClick="runGDM();">
                                                     <n:span>(GDM)</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li style="display:none" >
                                                 <n:a href='#' n:onClick="runImport();">
                                                     <n:span>Import</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li style="display:none" >
                                                 <n:a href='#' n:onClick="runExport();">
                                                     <n:span>Export</n:span>
@@ -162,37 +173,43 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                         </n:a>
                                         <n:ul>
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp();">
+                                                <n:a href='#' n:onClick="loadHelp('getting-started');">
                                                     <n:span>Getting Started</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('what-is-the-spatial-portal');">
+                                                <n:a href='#' n:onClick="loadHelp('the-map-window');">
                                                     <n:span>The Map Window</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp();">
+                                                <n:a href='#' n:onClick="loadHelp('add-to-map');">
                                                     <n:span>Add to map</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp();">
+                                                <n:a href='#' n:onClick="loadHelp('tools');">
                                                     <n:span>Tools</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp();">
-                                                    <n:span>Layers Area</n:span>
+                                                <n:a href='#' n:onClick="loadHelp('layers-arealist');">
+                                                    <n:span>Layers Area/List</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp();">
+                                                <n:a href='#' n:onClick="loadHelp('display-area');">
                                                     <n:span>Display Area</n:span>
                                                 </n:a>
                                             </n:li>
+
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp();">
+                                                <n:a href='#' n:onClick="loadHelp('hints-area');">
                                                     <n:span>Hint Area</n:span>
                                                 </n:a>
                                             </n:li>
