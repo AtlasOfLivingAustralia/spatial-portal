@@ -1116,9 +1116,19 @@ function setupPopup(count, centerlonlat) {
 function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     var occinfo = data.occurrence;
 
-    var species = occinfo.species;
-    if (occinfo.speciesLsid != null) {
-        species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
+//    var species = occinfo.species;
+//    if (occinfo.speciesLsid != null) {
+//        species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
+//    }
+
+    var rank = occinfo.rank;
+    var speciesname = eval("occinfo."+occinfo.rank);
+    var specieslsid = eval("occinfo."+occinfo.rank+"Lsid");
+    species = (speciesname!=null)?speciesname:"";
+    if (specieslsid != null) {
+        species = '<a href="http://bie.ala.org.au/species/'+specieslsid+'" target="_blank">'+species+'</a>';
+    } else {
+        species = species + ' (<i>Supplied as: "' + data.rawOccurrence.scientificName + '"</i>) ';
     }
 
     var family = occinfo.family;
