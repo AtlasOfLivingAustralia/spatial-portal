@@ -18,46 +18,74 @@
     </head>
     <body>
         <!--<h1 class="md_heading">Species information for ${speciesname}</h1>-->
-        <table class="md_table">
-            <tbody>
-                <tr class="md_grey-bg">
-                    <td class="md_th">Classification</td>
-                    <td class="md_spacer"/>
-                    <td class="md_value">
-                        <%--
-                        <c:forEach var="c" items="${classification}" varStatus="curr">
-                            <a href="http://bie.ala.org.au/species/${c.value}">${c.key}</a> ${!curr.last ? "&gt;" : ""} <br />
-                        </c:forEach>
-                        --%>
-                        <c:forEach var="cl" items="${cList}" varStatus="curr">
-                            <c:set var="c" value="${fn:split(cl, ';')}" />
-                            <a href="http://bie.ala.org.au/species/${c[2]}" target="_blank">${c[1]}</a>${!curr.last ? " :" : ""}
-                        </c:forEach>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="md_th">Number of Species</td>
-                    <td class="md_spacer"/>
-                    <td class="md_value">${species_count}</td>
-                </tr>
-                <tr class="md_grey-bg">
-                    <td class="md_th">Number of Occurrences</td>
-                    <td class="md_spacer"/>
-                    <td class="md_value">${occ_count}</td>
-                </tr>
-                <tr>
-                    <td class="md_th">Institutions</td>
-                    <td class="md_spacer"/>
-                    <td class="md_value">
-                        <c:forEach var="i" items="${institutions}" varStatus="curr">
-                            ${i.key}: <a href="http://biocache.ala.org.au/occurrences/searchByTaxon?q=${i.value}&fq=data_resource:${i.key}" target="_blank">${i.value} records</a> <br />
-                        </c:forEach>
-                    </td>
-                </tr>
-                <tr class="md_grey-bg">
-                    <td class="md_value" colspan="3">More information for <a href="http://bie.ala.org.au/species/${lsid}" target="_blank">${speciesname}</a></td>
-                </tr>
-            </tbody>
-        </table>
+
+        <c:choose>
+            <c:when test="${metadatatype == 'activearea'}">
+                <table class="md_table">
+                    <tbody>
+                        <tr class="md_grey-bg">
+                            <td class="md_th">Number of Occurrences</td>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${occ_count}</td>
+                        </tr>
+                        <tr>
+                            <td class="md_th">Institutions</td>
+                            <td class="md_spacer"/>
+                            <td class="md_value">
+                                <c:forEach var="i" items="${institutions}" varStatus="curr">
+                                    ${i.key}: <a href="http://biocache.ala.org.au/occurrences/searchByTaxon?q=${i.value}&fq=data_resource:${i.key}" target="_blank">${i.value} records</a> <br />
+                                </c:forEach>
+                            </td>
+                        </tr>
+                        <tr class="md_grey-bg">
+                            <td class="md_value" colspan="3">Download as <a href="/output/sampling/${lsid}_0" target="_blank">GeoJSON</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </c:when>
+            <c:otherwise>
+                <table class="md_table">
+                    <tbody>
+                        <tr class="md_grey-bg">
+                            <td class="md_th">Classification</td>
+                            <td class="md_spacer"/>
+                            <td class="md_value">
+                                <%--
+                                <c:forEach var="c" items="${classification}" varStatus="curr">
+                                    <a href="http://bie.ala.org.au/species/${c.value}">${c.key}</a> ${!curr.last ? "&gt;" : ""} <br />
+                                </c:forEach>
+                                --%>
+                                <c:forEach var="cl" items="${cList}" varStatus="curr">
+                                    <c:set var="c" value="${fn:split(cl, ';')}" />
+                                    <a href="http://bie.ala.org.au/species/${c[2]}" target="_blank">${c[1]}</a>${!curr.last ? " :" : ""}
+                                </c:forEach>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="md_th">Number of Species</td>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${species_count}</td>
+                        </tr>
+                        <tr class="md_grey-bg">
+                            <td class="md_th">Number of Occurrences</td>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${occ_count}</td>
+                        </tr>
+                        <tr>
+                            <td class="md_th">Institutions</td>
+                            <td class="md_spacer"/>
+                            <td class="md_value">
+                                <c:forEach var="i" items="${institutions}" varStatus="curr">
+                                    ${i.key}: <a href="http://biocache.ala.org.au/occurrences/searchByTaxon?q=${i.value}&fq=data_resource:${i.key}" target="_blank">${i.value} records</a> <br />
+                                </c:forEach>
+                            </td>
+                        </tr>
+                        <tr class="md_grey-bg">
+                            <td class="md_value" colspan="3">More information for <a href="http://bie.ala.org.au/species/${lsid}" target="_blank">${speciesname}</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </c:otherwise>
+        </c:choose>
     </body>
 </html>
