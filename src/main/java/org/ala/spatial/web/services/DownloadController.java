@@ -47,11 +47,25 @@ public class DownloadController {
                 System.out.println("Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile);
                 //return "Found " + dir.getName() + " in " + dir.getParent() + " and zipped at: " + zipfile;
 
+                String parentName = "ALA_";
+                String parentPath = dir.getParent().substring(dir.getParent().lastIndexOf("/")+1);
+                if ("maxent".equals(parentPath)) {
+                    parentName = "ALA_Prediction_";
+                } else if ("sampling".equals(parentPath)) {
+                    parentName = "ALA_Species_Samples_";
+                } else if ("layers".equals(parentPath) || "aloc".equals(parentPath)) {
+                    parentName = "ALA_Classification_";
+                } else if ("gdm".equals(parentPath)) {
+                    parentName = "ALA_GDM_";
+                } else if ("filtering".equals(parentPath)) {
+                    parentName = "ALA_EnvFilter_";
+                }
+
 
                 File file = new File(zipfile); 
                 response.setContentType("application/zip");
                 response.setContentLength(safeLongToInt(file.length()));
-                response.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+                response.setHeader("Content-Disposition", "attachment; filename=\"" + parentName + pid + ".zip\"");
 
                 FileCopyUtils.copy(new FileInputStream(file), response.getOutputStream());
 
