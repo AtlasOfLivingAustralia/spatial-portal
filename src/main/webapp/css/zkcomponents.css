@@ -1020,7 +1020,7 @@ tr.z-listitem-seld, tr.z-listitem-seld span, tr.z-listitem-seld div  {
 
 
 tr.z-listitem-over, tr.z-listitem-over span, tr.z-listitem-over div {
-    background: #DD3102;
+    background-color: #DD3102;
     color: white;
     padding: 0;
     border: 0;

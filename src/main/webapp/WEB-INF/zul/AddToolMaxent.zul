@@ -74,7 +74,7 @@
             </div>
 
             <div id="atstep4" visible="false" zclass="step4 optional">
-                <label id="atstep4_desc" value="Select your analytical options for " />
+                <label id="atstep4_desc" value="MaxEnt options" />
                 <label id="atstep4_label" value="" />
                 <vbox>
                     <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" />
@@ -90,11 +90,10 @@
             </div>
 
             <div id="atstep5" visible="false" zclass="last optional">
-                <label id="atstep5_desc" value="Name your output layer" />
+                <label id="atstep5_desc" value="Name for prediction layer" />
                 <label id="atstep5_label" value="" />
                 <separator />
                 <hbox>
-                    <label value="Layer name" />
                     <textbox id="tToolName" width="250px" />
                 </hbox>
                 <vbox>

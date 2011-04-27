@@ -35,8 +35,8 @@ public class AddToolAreaReportComposer extends AddToolComposer {
     @Override
     public void onFinish() {
         String area = getSelectedArea();
-        FilteringResultsWCController.open(area);
+        String areaName = getSelectedAreaName();
+        FilteringResultsWCController.open(area, areaName);
         detach();
     }
-
 }

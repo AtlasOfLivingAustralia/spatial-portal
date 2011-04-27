@@ -121,6 +121,9 @@
                 <checkbox id="chkSelectMissingRecords" label="select records with missing values " visible="false" />
                 <label id="tbxMissingCount" />
             </hbox>
+            <div width="100%" >
+                <label id="lblMissing" value="No valid records" visible="false" style="float:left;"/>
+            </div>
         </vbox>
         
         

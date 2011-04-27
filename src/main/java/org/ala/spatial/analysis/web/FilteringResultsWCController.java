@@ -52,14 +52,16 @@ public class FilteringResultsWCController extends UtilityComposer {
     Label lblBiostor;
 
     String reportArea = null;
+    String areaName = "Area Report";
 
-    public void setReportArea(String wkt) {
+    public void setReportArea(String wkt, String name) {
         reportArea = wkt;
-    }
+        areaName = name;
+        setTitle(name);
 
-    @Override
-    public void afterCompose() {
-        super.afterCompose();
+        if (name.equals("Current extent")) {
+            addListener();
+        }
 
         try {
             refreshCount();
@@ -69,36 +71,43 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     @Override
+    public void afterCompose() {
+        super.afterCompose();
+
+//        try {
+//            refreshCount();
+//        }catch (Exception e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    @Override
+    public void detach() {
+        getMapComposer().getLeftmenuSearchComposer().removeViewportEventListener("filteringResults");
+        
+        super.detach();
+    }
+
+    @Override
     public void redraw(Writer out) throws java.io.IOException {
         super.redraw(out);
 
         setUpdatingCount(true);
+    }
 
-//        System.out.println("redraw:filteringresultswccontroller");
-//        if (!addedListener) {
-//            addedListener = true;
-//            //register for viewport changes
-//            EventListener el = new EventListener() {
-//
-//                public void onEvent(Event event) throws Exception {
-//                    // refresh count may be required if area is
-//                    // not an envelope.
-//                    String area = null;
-//                    if(reportArea != null) {
-//                        area = reportArea;
-//                    } else if(getMapComposer().getPolygonLayers().size() > 0) {
-//                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
-//                    } else {
-//                        //TODO: not view area
-//                        area = getMapComposer().getViewArea();
-//                    }
-//                    //if (!area.startsWith("ENVELOPE(") && !area.startsWith("LAYER(")) {
-//                        refreshCount();
-//                    //}
-//                }
-//            };
-//            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
-//        }
+    void addListener() {
+        if (!addedListener) {
+            addedListener = true;
+            //register for viewport changes
+            EventListener el = new EventListener() {
+
+                public void onEvent(Event event) throws Exception {
+                    reportArea = getMapComposer().getViewArea();
+                    refreshCount();
+                }
+            };
+            getMapComposer().getLeftmenuSearchComposer().addViewportEventListener("filteringResults", el);
+        }
     }
 
     void setUpdatingCount(boolean set) {
@@ -409,12 +418,13 @@ public class FilteringResultsWCController extends UtilityComposer {
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
         String area = null;
-                    if(getMapComposer().getPolygonLayers().size() > 0) {
-                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
-                    } else {
-                        //TODO: not view area
-                        area = getMapComposer().getViewArea();
-                    }
+
+        if(getMapComposer().getPolygonLayers().size() > 0) {
+            area = getMapComposer().getPolygonLayers().get(0).getWKT();
+        } else {
+            //TODO: not view area
+            area = getMapComposer().getViewArea();
+        }
 
         if (area.contains("ENVELOPE(")) {
             shape = "none";
@@ -431,12 +441,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    static public void open(String wkt) {
+    static public void open(String wkt, String name) {
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
-                "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);
-        win.setReportArea(wkt);
+                "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);        
         try {
-            win.doModal();
+            win.doOverlapped();
+            win.setPosition("center");
+            win.setReportArea(wkt, name);
         } catch (Exception e) {
             e.printStackTrace();
         }

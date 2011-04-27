@@ -2604,7 +2604,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank, int count, int subType) {
         String filter = rank + "conceptid='" + lsid + "'";
 
-        MapLayer ml = mapSpeciesWMSByFilter(species, filter, subType);
+        MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType);
 
         if (ml != null) {
             addToSession(species, filter);

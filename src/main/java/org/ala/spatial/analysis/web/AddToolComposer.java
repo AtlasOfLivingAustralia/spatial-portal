@@ -319,7 +319,6 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onCheck$rgSpecies(Event event) {
         try {
-            System.out.println("onCheck$rgSpeces activated");
             if (rgSpecies != null && rgSpecies.getSelectedItem() == rSpeciesOther) {
                 if (divOtherSpecies != null) {
                     divOtherSpecies.setVisible(true);
@@ -517,6 +516,14 @@ public class AddToolComposer extends UtilityComposer {
                 area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
             } else if (area.equals("world")) {
                 area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
+            } else {
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                for(MapLayer ml : layers) {
+                    if (area.equals(ml.getDisplayName())) {
+                        area = ml.getWKT();
+                        break;
+                    }
+                }
             }
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected area");
@@ -538,6 +545,14 @@ public class AddToolComposer extends UtilityComposer {
                 area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
             } else if (area.equals("world")) {
                 area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
+            } else {
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                for(MapLayer ml : layers) {
+                    if (area.equals(ml.getDisplayName())) {
+                        area = ml.getWKT();
+                        break;
+                    }
+                }
             }
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected area");
@@ -816,8 +831,8 @@ public class AddToolComposer extends UtilityComposer {
         
         if (currentDiv.getZclass().contains("species")) {
             btnOk.setDisabled(
-                    divOtherSpecies.isVisible()
-                    && (searchSpeciesAuto.getSelectedItem() == null
+                    !(divOtherSpecies.isVisible()
+                    || searchSpeciesAuto.getSelectedItem() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }
@@ -833,5 +848,12 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onChange$cbLayer1(Event event) {
         toggles();
+    }
+
+
+    public String getSelectedAreaName() {
+        String areaName = rgArea.getSelectedItem().getLabel();
+
+        return areaName;
     }
 }

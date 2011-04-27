@@ -79,7 +79,7 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
     String activeAreaExtent = null;
     String activeAreaMetadata = null;
     private String activeAreaSize = null;
-    Label txtLayerName;
+    Textbox txtLayerName;
 
     @Override
     public void afterCompose() {
@@ -405,6 +405,8 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
             mc.removeLayer(LAYER_PREFIX + layername);
         } else if (layername.equalsIgnoreCase("Active Area")) {
             showActiveArea();
+        }
+        if (p == 0) {
             detach();
         }
     }
@@ -779,7 +781,8 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
         //bbox.add(17143201.58216413);
         //bbox.add(-1006021.0627551343);
 
-        mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
+        MapLayer ml = mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
+        ml.setWKT("ENVELOPE(" + pid + ")");
 
     }
 

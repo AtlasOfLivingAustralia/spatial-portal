@@ -956,7 +956,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     }
 
     public boolean isPolygonLayer() {
-        return polygonLayer;
+        return polygonLayer || subType == LayerUtilities.ENVIRONMENTAL_ENVELOPE;
     }
 
     public boolean isSpeciesLayer() {

@@ -85,7 +85,7 @@
                         <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
                         </combobox>
                     </hbox>
-                    <checkbox id="chkShowEnvIntersection" label="Show environmental layer intersection" />
+                    <checkbox id="chkShowEnvIntersection" label="Display possible environments in area" />
                 </groupbox>
             </div>
             
@@ -123,11 +123,10 @@
             </div>
 
             <div id="atstep6" visible="false" zclass="last optional">
-                <label id="atstep6_desc" value="Layer name" />
-                <label id="atstep6_label" value="(none)" />
+                <label id="atstep6_desc" value="Name for scatterplot layer" />
+                <label id="atstep6_label" value="" />
                 <separator />
                 <hbox>
-                    <label value="Name" />
                     <textbox id="tToolName" width="250px" />
                 </hbox>
                 <vbox>

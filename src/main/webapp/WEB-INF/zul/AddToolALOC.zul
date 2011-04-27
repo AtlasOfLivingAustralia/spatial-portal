@@ -55,11 +55,10 @@
             </div>
 
             <div id="atstep4" visible="false" zclass="last optional" style="padding:5px">
-                <label id="atstep4_desc" value="Name your output for" />
+                <label id="atstep4_desc" value="Name for classification layer" />
                 <label id="atstep4_label" value="" />
                 <separator />
                 <hbox>
-                    <label value="Name" />
                     <textbox id="tToolName" width="250px" />
                 </hbox>
                 <vbox>

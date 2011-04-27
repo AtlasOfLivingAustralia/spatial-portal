@@ -114,13 +114,13 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                             <n:li>
                                                 <n:a href='#' n:onClick="runSpeciesList();">
-                                                    <n:span>Species List</n:span>
+                                                    <n:span>Download Species List</n:span>
                                                 </n:a>
                                             </n:li>
 
                                             <n:li>
                                                 <n:a href='#' n:onClick="runSamplingAction();">
-                                                    <n:span>Species Sample</n:span>
+                                                    <n:span>Download Species Sample</n:span>
                                                 </n:a>
                                             </n:li>
 

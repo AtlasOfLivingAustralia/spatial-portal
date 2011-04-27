@@ -56,13 +56,13 @@ public class AddSpeciesController extends UtilityComposer {
     public void onClick$btnUpload(Event event) {
         try {
             UploadSpeciesController usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", getMapComposer(), null);
-            usc.setEventListener(new EventListener() {
-
-                    @Override
-                    public void onEvent(Event event) throws Exception {
-                        setLsid((String)event.getData());
-                    }
-                });
+//            usc.setEventListener(new EventListener() {
+//
+//                    @Override
+//                    public void onEvent(Event event) throws Exception {
+//                        setLsid((String)event.getData());
+//                    }
+//                });
             usc.doModal();
         }catch(Exception e) {
             e.printStackTrace();

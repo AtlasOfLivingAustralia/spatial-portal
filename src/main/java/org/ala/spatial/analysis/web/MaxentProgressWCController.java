@@ -47,7 +47,10 @@ public class MaxentProgressWCController extends UtilityComposer {
     public void onTimer$timer(Event e) {
         //get status
 
-        jobstatus.setValue(get("status"));
+        String status = get("status");
+        if(status.length() > 0) {
+            jobstatus.setValue(status);
+        }
 
         String s = get("state");
         if(s.equals("job does not exist")){

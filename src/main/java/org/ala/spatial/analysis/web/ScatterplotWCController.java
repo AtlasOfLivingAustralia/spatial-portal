@@ -108,6 +108,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     //String backgroundLSID;
     //private String backgroundName;
     Div envLegend;
+    Boolean missing_data = false;
+    Label lblMissing;
 
     @Override
     public void afterCompose() {
@@ -264,7 +266,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
     public ScatterplotData getScatterplotData() {
         if (data == null) {
-            if(mapLayer == null) {
+            if (mapLayer == null) {
                 data = new ScatterplotData();
             } else {
                 data = (ScatterplotData) mapLayer.getData("scatterplotData");
@@ -375,138 +377,140 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 && data.getLayer1() != null && data.getLayer1().length() > 0
                 && data.getLayer2() != null && data.getLayer2().length() > 0
                 && xyzDataset != null) {
-            try {
-                //only permits redrawing if imagePath has been defined
-                if(imagePath != null) {
-                    int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
-                    int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
-                    if (height > width) {
-                        height = width;
-                    } else {
-                        width = height;
-                    }
-
-                    //save to file
-                    String pth = this.settingsSupplementary.getValue("print_output_path");
-                    String htmlurl = settingsSupplementary.getValue("print_output_url");
-
-                    String script = "updateScatterplot(" + width + "," + height + ",'url("
-                            + imagePath.replace(pth, htmlurl) + ")')";
-                    Clients.evalJavaScript(script);
-                    scatterplotDownloads.setVisible(true);
-                } else {
-                    //active area must be drawn first
-                    if (data.getHighlightWkt() != null && aaDataset != null) {
-                        jChart = ChartFactory.createScatterPlot(data.getSpeciesName()
-                                , data.getLayer1Name(), data.getLayer2Name()
-                                , aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
-                    } else {
-                        jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
-                    }
-                    jChart.setBackgroundPaint(Color.white);
-                    plot = (XYPlot) jChart.getPlot();
-                    if (annotation != null) {
-                        plot.addAnnotation(annotation);
-                    }
-
-                    Font axisfont = new Font("Arial", Font.PLAIN, 10);
-                    Font titlefont = new Font("Arial", Font.BOLD, 11);
-                    plot.getDomainAxis().setLabelFont(axisfont);
-                    plot.getDomainAxis().setTickLabelFont(axisfont);
-                    plot.getRangeAxis().setLabelFont(axisfont);
-                    plot.getRangeAxis().setTickLabelFont(axisfont);
-                    plot.setBackgroundPaint(new Color(160, 220, 220));
-
-                    plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
-
-                    jChart.getTitle().setFont(titlefont);
-
-                    //active area must be drawn first
-                    if (data.getHighlightWkt() != null && aaDataset != null) {
-                        plot.setRenderer(getActiveAreaRenderer());
-
-                        int datasetCount = plot.getDatasetCount();
-                        plot.setDataset(datasetCount, xyzDataset);
-                        plot.setRenderer(datasetCount, getRenderer(zmin, zmax, seriesColours, seriesNames));
-                    } else {
-                        plot.setRenderer(getRenderer(zmin, zmax, seriesColours, seriesNames));
-                    }
-
-                    //add points background
-                    if (data.getBackgroundLsid() != null) {
-                        resampleBackground();
-
-                        if (backgroundXyzDataset != null) {
-                            int datasetCount = plot.getDatasetCount();
-                            plot.setDataset(datasetCount, backgroundXyzDataset);
-                            plot.setRenderer(datasetCount, getBackgroundRenderer());
+            if (missing_data) {
+                lblMissing.setVisible(true);
+            } else {
+                lblMissing.setVisible(false);
+                try {
+                    //only permits redrawing if imagePath has been defined
+                    if (imagePath != null) {
+                        int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
+                        int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
+                        if (height > width) {
+                            height = width;
+                        } else {
+                            width = height;
                         }
-                    }
 
-                    //add block background
-                    if (data.isEnvGrid()) {
-                        NumberAxis x = (NumberAxis) plot.getDomainAxis();
-                        NumberAxis y = (NumberAxis) plot.getRangeAxis();
-                        addBlockPlot(plot,
-                                data.getLayer1(),
-                                data.getLayer1Name(),
-                                x.getLowerBound(),
-                                x.getUpperBound(),
-                                data.getLayer2(),
-                                data.getLayer2Name(),
-                                y.getLowerBound(),
-                                y.getUpperBound());
-                    }
+                        //save to file
+                        String pth = this.settingsSupplementary.getValue("print_output_path");
+                        String htmlurl = settingsSupplementary.getValue("print_output_url");
 
-                    chartRenderingInfo = new ChartRenderingInfo();
-
-                    int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
-                    int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
-                    if (height > width) {
-                        height = width;
+                        String script = "updateScatterplot(" + width + "," + height + ",'url("
+                                + imagePath.replace(pth, htmlurl) + ")')";
+                        Clients.evalJavaScript(script);
+                        scatterplotDownloads.setVisible(true);
                     } else {
-                        width = height;
+                        //active area must be drawn first
+                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                            jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
+                        } else {
+                            jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
+                        }
+                        jChart.setBackgroundPaint(Color.white);
+                        plot = (XYPlot) jChart.getPlot();
+                        if (annotation != null) {
+                            plot.addAnnotation(annotation);
+                        }
+
+                        Font axisfont = new Font("Arial", Font.PLAIN, 10);
+                        Font titlefont = new Font("Arial", Font.BOLD, 11);
+                        plot.getDomainAxis().setLabelFont(axisfont);
+                        plot.getDomainAxis().setTickLabelFont(axisfont);
+                        plot.getRangeAxis().setLabelFont(axisfont);
+                        plot.getRangeAxis().setTickLabelFont(axisfont);
+                        plot.setBackgroundPaint(new Color(160, 220, 220));
+
+                        plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
+
+                        jChart.getTitle().setFont(titlefont);
+
+                        //active area must be drawn first
+                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                            plot.setRenderer(getActiveAreaRenderer());
+
+                            int datasetCount = plot.getDatasetCount();
+                            plot.setDataset(datasetCount, xyzDataset);
+                            plot.setRenderer(datasetCount, getRenderer(zmin, zmax, seriesColours, seriesNames));
+                        } else {
+                            plot.setRenderer(getRenderer(zmin, zmax, seriesColours, seriesNames));
+                        }
+
+                        //add points background
+                        if (data.getBackgroundLsid() != null) {
+                            resampleBackground();
+
+                            if (backgroundXyzDataset != null) {
+                                int datasetCount = plot.getDatasetCount();
+                                plot.setDataset(datasetCount, backgroundXyzDataset);
+                                plot.setRenderer(datasetCount, getBackgroundRenderer());
+                            }
+                        }
+
+                        //add block background
+                        if (data.isEnvGrid()) {
+                            NumberAxis x = (NumberAxis) plot.getDomainAxis();
+                            NumberAxis y = (NumberAxis) plot.getRangeAxis();
+                            addBlockPlot(plot,
+                                    data.getLayer1(),
+                                    data.getLayer1Name(),
+                                    x.getLowerBound(),
+                                    x.getUpperBound(),
+                                    data.getLayer2(),
+                                    data.getLayer2Name(),
+                                    y.getLowerBound(),
+                                    y.getUpperBound());
+                        }
+
+                        chartRenderingInfo = new ChartRenderingInfo();
+
+                        int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
+                        int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
+                        if (height > width) {
+                            height = width;
+                        } else {
+                            width = height;
+                        }
+                        BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
+                        byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
+
+                        //save to file
+                        String uid = String.valueOf(System.currentTimeMillis());
+                        String pth = this.settingsSupplementary.getValue("print_output_path");
+                        String htmlurl = settingsSupplementary.getValue("print_output_url");
+
+                        imagePath = pth + uid + ".png";
+
+                        try {
+                            FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
+                            fos.write(bytes);
+                            fos.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        //chartImg.setWidth(width + "px");
+                        //chartImg.setHeight(height + "px");
+                        String script = "updateScatterplot(" + width + "," + height + ",'url(" + htmlurl + uid + ".png)')";
+                        Clients.evalJavaScript(script);
+                        //chartImg.setVisible(true);
+                        scatterplotDownloads.setVisible(true);
+
+                        if (missingCount > 0) {
+                            tbxMissingCount.setValue("(" + missingCount + ")");
+                            chkSelectMissingRecords.setVisible(true);
+                        } else {
+                            tbxMissingCount.setValue("");
+                            chkSelectMissingRecords.setVisible(false);
+                        }
+                        store();
                     }
-                    BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
-                    byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
-
-                    //save to file
-                    String uid = String.valueOf(System.currentTimeMillis());
-                    String pth = this.settingsSupplementary.getValue("print_output_path");
-                    String htmlurl = settingsSupplementary.getValue("print_output_url");
-
-                    imagePath = pth + uid + ".png";
-
-                    try {
-                        FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
-                        fos.write(bytes);
-                        fos.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    //chartImg.setWidth(width + "px");
-                    //chartImg.setHeight(height + "px");
-                    String script = "updateScatterplot(" + width + "," + height + ",'url(" + htmlurl + uid + ".png)')";
-                    Clients.evalJavaScript(script);
-                    //chartImg.setVisible(true);
-                    scatterplotDownloads.setVisible(true);
-
-                    if (missingCount > 0) {
-                        tbxMissingCount.setValue("(" + missingCount + ")");
-                        chkSelectMissingRecords.setVisible(true);
-                    } else {
-                        tbxMissingCount.setValue("");
-                        chkSelectMissingRecords.setVisible(false);
-                    }
-                    store();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    clearSelection();
+                    getMapComposer().applyChange(mapLayer);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                clearSelection();
-                getMapComposer().applyChange(mapLayer);
             }
-            
         } else {
             tbxMissingCount.setValue("");
         }
@@ -963,6 +967,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     private DefaultXYZDataset createDataset(int pos, double[][] dblTmp, HashMap<String, Integer> ts, String[] series, double[] seriesDbl, String[] seriesNames) {
         DefaultXYZDataset xyzDataset = new DefaultXYZDataset();
         double[][] dbl = {{0.0}, {0.0}, {0.0}};
+        missing_data = false;
         if (dblTmp != null && dblTmp.length > 0 && dblTmp[0].length > 0) {
             //add series
             if (ts.size() > 1) {
@@ -1010,7 +1015,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             }
         } else {
             xyzDataset.addSeries("lsid", dbl);
+            missing_data = true;
         }
+
         return xyzDataset;
     }
 
@@ -1346,7 +1353,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     get.addRequestHeader("Accept", "text/plain");
 
                     int result = client.executeMethod(get);
-                    String slist = get.getResponseBodyAsString();                    
+                    String slist = get.getResponseBodyAsString();
 
                     String[] lines = slist.split("\n");
 
@@ -1444,12 +1451,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         this.mapLayer = mapLayer;
         data = (ScatterplotData) mapLayer.getData("scatterplotData");
         retrieve();
-        
+
         redraw();
     }
 
     private void retrieve() {
-        if(mapLayer != null) {
+        if (mapLayer != null) {
             //data = (ScatterplotData) mapLayer.getData("scatterplotData");
             jChart = (JFreeChart) mapLayer.getData("jChart");
             plot = (XYPlot) mapLayer.getData("plot");
@@ -1486,11 +1493,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             chkShowEnvIntersection.setChecked((Boolean) mapLayer.getData("chkShowEnvIntersection"));
 
             imagePath = (String) mapLayer.getData("imagePath");
+            missing_data = (Boolean) mapLayer.getData("missing_data");
         }
     }
 
     private void store() {
-        if(mapLayer != null) {
+        if (mapLayer != null) {
             mapLayer.setData("scatterplotData", data);
             mapLayer.setData("jChart", jChart);
             mapLayer.setData("plot", plot);
@@ -1526,6 +1534,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             mapLayer.setData("chkShowEnvIntersection", new Boolean(chkShowEnvIntersection.isChecked()));
 
             mapLayer.setData("imagePath", imagePath);
+            mapLayer.setData("missing_data", new Boolean(missing_data));
         }
     }
 }

@@ -17,19 +17,26 @@
 
         <vbox width="100%">
             <separator />
-            <label sclass="wLabel" value="Enter a layer name or keyword"/>
-            <separator />
-            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px">
-                <comboitem label=""/>
-            </combobox>
-            <separator/>
-            <label sclass="wCaption" value='For example: "Temperature"'/>
-            <separator />
-            <separator />
-            <div height="300px" style="margin-left:5px;overflow: auto">
-                <layerList id="layerList" height="400px"/>
-            </div>
-        </vbox>
+            <radiogroup id="rgAddLayer" >
+                <vbox>
+                    <radio id="rSearch" label="Search for a species by scientific or common name" />
+                        <div id="divSearch" >
+                            <separator />
+                            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px">
+                                <comboitem label=""/>
+                            </combobox>
+                            <separator/>
+                            <label sclass="wCaption" value='For example: "Temperature"'/>
+                        </div>
+                    <radio id="rTree" label="Browse by classification tree" />
+                        <div id="divTree" visible="false">
+                            <separator />
+                            <div height="300px" style="margin-left:5px;overflow: auto">
+                                <layerList id="layerList" height="400px"/>
+                            </div>
+                        </div>
+                 </vbox>
+             </radiogroup>
         <separator />
         <div sclass="wButtons">
             <hbox>

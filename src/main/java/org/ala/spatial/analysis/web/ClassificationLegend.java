@@ -139,13 +139,22 @@ public class ClassificationLegend extends UtilityComposer {
                     lc.setParent(li);
 
                     //count
-                    if (ss.length > 4) {
+                    try {
+                        int count = Integer.parseInt(ss[4]);
                         countheader.setVisible(true);
                         lc = new Listcell(ss[4]);
                         lc.setParent(li);
-                    } else {
+                    } catch (Exception e) {
                         countheader.setVisible(false);
                     }
+
+//                    if (ss.length > 4) {
+//                        countheader.setVisible(true);
+//                        lc = new Listcell(ss[4]);
+//                        lc.setParent(li);
+//                    } else {
+//                        countheader.setVisible(false);
+//                    }
 
                     if (!readonly) {
                         lc.addEventListener("onClick", new EventListener() {
