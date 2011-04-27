@@ -10,6 +10,7 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Intbox;
 import org.zkoss.zul.Messagebox;
 
@@ -124,6 +125,16 @@ public class AddToolALOCComposer extends AddToolComposer {
             String infoUrl = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:"+pid;
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid));
+
+        try {
+            // set off the download as well
+            String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip",tToolName.getValue().replaceAll(" ", "_")+".zip"); // "ALA_Prediction_"+pid+".zip"
+        } catch (Exception ex) {
+            System.out.println("Error generating download for classification model:");
+            ex.printStackTrace(System.out);
+        }
+
 
             //Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
         }

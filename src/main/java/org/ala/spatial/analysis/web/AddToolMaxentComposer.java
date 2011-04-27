@@ -2,12 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +18,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Textbox;
 
 /**
@@ -27,11 +28,10 @@ import org.zkoss.zul.Textbox;
 public class AddToolMaxentComposer extends AddToolComposer {
 
     int generation_count = 1;
-
     private Checkbox chkJackknife;
     private Checkbox chkRCurves;
     private Textbox txtTestPercentage;
-    private String taxon = ""; 
+    private String taxon = "";
 
     @Override
     public void afterCompose() {
@@ -44,7 +44,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
         this.loadSpeciesLayers();
         this.loadGridLayers(true);
         this.updateWindowTitle();
-        
+
     }
 
     @Override
@@ -63,7 +63,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
         System.out.println("Species: " + getSelectedSpecies());
         System.out.println("Layers: " + getSelectedLayers());
 
-        runmaxent(); 
+        runmaxent();
 
         //this.detach();
 
@@ -71,7 +71,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
     public void runmaxent() {
         try {
-            String taxon = getSelectedSpecies(); 
+            String taxon = getSelectedSpecies();
             String sbenvsel = getSelectedLayers();
             String area = getSelectedArea();
 
@@ -187,8 +187,17 @@ public class AddToolMaxentComposer extends AddToolComposer {
             md = new MapLayerMetadata();
             ml.setMapLayerMetadata(md);
         }
-        md.setMoreInfo(infoUrl + "\nMaxent Output\npid:"+pid);
+        md.setMoreInfo(infoUrl + "\nMaxent Output\npid:" + pid);
         md.setId(Long.valueOf(pid));
+
+        try {
+            // set off the download as well
+            String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip",tToolName.getValue().replaceAll(" ", "_")+".zip"); // "ALA_Prediction_"+pid+".zip"
+        } catch (Exception ex) {
+            System.out.println("Error generating download for prediction model:");
+            ex.printStackTrace(System.out);
+        }
 
         this.detach();
 
@@ -217,6 +226,4 @@ public class AddToolMaxentComposer extends AddToolComposer {
         }
         return "";
     }
-
-
 }
