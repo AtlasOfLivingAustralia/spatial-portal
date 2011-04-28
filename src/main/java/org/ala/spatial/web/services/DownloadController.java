@@ -97,7 +97,7 @@ public class DownloadController {
             File[] files = baseDir.listFiles(ff);
             for (int i = 0; i < files.length; i++) {
                 File f = files[i];
-                if (f.isDirectory()) {
+                if (f.isDirectory() && !f.getName().equalsIgnoreCase("layers")) {
                     if (f.getName().equalsIgnoreCase(pid)) {
                         return f;
                     } else {

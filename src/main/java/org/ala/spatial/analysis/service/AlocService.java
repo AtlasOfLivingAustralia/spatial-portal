@@ -124,7 +124,7 @@ public class AlocService {
             }
             fw.append("</p>");
 
-            fw.append("<p> <a href=\"" + TabulationSettings.alaspatial_path + "files/inter_layer_association.csv\" >");
+            fw.append("<p> <a href=\"" + TabulationSettings.base_output_url + "/files/inter_layer_association.csv\" >");
             fw.append("<span class=\"title\">Inter-layer dissimilarity matrix (csv)</span>  ");
             fw.append("</a>");
             fw.append("</p>");
