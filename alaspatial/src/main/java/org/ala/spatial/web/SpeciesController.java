@@ -7,7 +7,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -25,6 +24,7 @@ import org.ala.spatial.analysis.index.BoundingBoxes;
 import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
 import org.ala.spatial.analysis.index.OccurrencesCollection;
 import org.ala.spatial.analysis.index.OccurrencesFilter;
+import org.ala.spatial.analysis.index.OccurrencesSpeciesList;
 import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingService;
@@ -962,6 +962,9 @@ public class SpeciesController {
 
         try {
             modelMap = new ModelMap();
+            modelMap.addAttribute("lsid", lsid);
+            modelMap.addAttribute("metadatatype", "biocache");
+
 
             ObjectMapper mapper = new ObjectMapper();
             JsonFactory factory = mapper.getJsonFactory();
@@ -977,6 +980,10 @@ public class SpeciesController {
             // 1. add the Taxonomic hierarchy
             Map classification = new TreeMap();
             String[] entityQuery = root.get("entityQuery").getTextValue().split(":");
+
+            modelMap.addAttribute("speciesname", entityQuery[1].trim());
+            modelMap.addAttribute("speciesrank", entityQuery[0].trim());
+
             String spClass = entityQuery[0].trim();
             Vector cList = new Vector();
             for (String c : classificationList) {
@@ -995,34 +1002,50 @@ public class SpeciesController {
 
 
             // 2. add the Number of species
-            //modelMap.addAttribute("occ_count", root.get("searchResult").get("totalRecords").getIntValue());
-            String legend = SpeciesColourOption.getColourLegend(lsid, "species", false);
-            String[] lines = legend.split("\n");
-            modelMap.addAttribute("species_count", "" + (lines.length - 1));
+            // add the following snippet IF you need a list of species as well
+//            String legend = SpeciesColourOption.getColourLegend(lsid, "species", false);
+//            String[] lines = legend.split("\n");
+//            modelMap.addAttribute("species_count", "" + (lines.length - 1));
+            int geoOccCount = 0;
+            int geoSpCount = 0;
+            ArrayList<OccurrencesSpeciesList> osla = OccurrencesCollection.getSpeciesList(new OccurrencesFilter(lsid, Integer.MAX_VALUE));
+            if (osla != null) {
+                if (osla.size() > 0) {
+                    geoOccCount = osla.get(0).getOccurrencesCount();
+                    geoSpCount = osla.get(0).getSpeciesCount();
+                }
+            }
+            modelMap.addAttribute("geoOccCount", geoOccCount);
+            modelMap.addAttribute("geoSpCount", geoSpCount);
 
 
             // 3. add the Number of occurrences
             modelMap.addAttribute("occ_count", root.get("searchResult").get("totalRecords").getValueAsText());
 
             // 4. add the Institutions
+//            Map institutions = new TreeMap();
+//            JsonNode facetResults = root.get("searchResult").get("facetResults");
+//            for (int i = 0; i < facetResults.size(); i++) {
+//                JsonNode jofr = facetResults.get(i);
+//                if (jofr.get("fieldName").getTextValue().equalsIgnoreCase("data_resource")) {
+//                    JsonNode jadr = jofr.get("fieldResult");
+//                    for (int j = 0; j < jadr.size(); j++) {
+//                        JsonNode jodr = jadr.get(j);
+//                        institutions.put(jodr.get("label").getTextValue(), jodr.get("count").getValueAsText());
+//                    }
+//                }
+//            }
+//            modelMap.addAttribute("institutions", institutions);
+
             Map institutions = new TreeMap();
-            JsonNode facetResults = root.get("searchResult").get("facetResults");
-            for (int i = 0; i < facetResults.size(); i++) {
-                JsonNode jofr = facetResults.get(i);
-                if (jofr.get("fieldName").getTextValue().equalsIgnoreCase("data_resource")) {
-                    JsonNode jadr = jofr.get("fieldResult");
-                    for (int j = 0; j < jadr.size(); j++) {
-                        JsonNode jodr = jadr.get(j);
-                        institutions.put(jodr.get("label").getTextValue(), jodr.get("count").getValueAsText());
-                    }
-                }
+            String legend = SpeciesColourOption.getColourLegend(lsid, "in", false);
+            String[] lines = legend.split("\n");
+            for (String l : lines) {
+                String[] in = l.split(",");
+                if (in.length < 5) continue;
+                institutions.put((("".equals(in[0])) ? "Unknown" : in[0]), in[4]);
             }
             modelMap.addAttribute("institutions", institutions);
-
-            modelMap.addAttribute("lsid", lsid);
-            modelMap.addAttribute("speciesname", entityQuery[1].trim());
-            modelMap.addAttribute("speciesrank", entityQuery[0].trim());
-            modelMap.addAttribute("metadatatype", "biocache");
 
         } catch (Exception e) {
             System.out.println("Error loading species metadata from biocache");
@@ -1032,107 +1055,69 @@ public class SpeciesController {
         return modelMap;
     }
 
+    @RequestMapping(value = "/metadata/aa/{lsid:.+}", method = RequestMethod.GET)
+    public ModelAndView activeAreaSpeciesMetadata(@PathVariable("lsid") String lsid) {
+        ModelMap modelMap = null;
+        try {
+            modelMap = loadActiveAreaSpeciesMetadata(lsid);
+        } catch (Exception e) {
+            System.out.println("error generating species metadata");
+            e.printStackTrace(System.out);
+        }
+
+        return new ModelAndView("species/metadata", modelMap);
+    }
+
     private ModelMap loadActiveAreaSpeciesMetadata(String lsid) {
         ModelMap modelMap = null;
 
         try {
             modelMap = new ModelMap();
-
-            /*
-            
-            String currentPath = TabulationSettings.base_output_dir;
-            currentPath = "/data/ala/runtime";
-            String gjsonfile = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator + lsid + "_0";
-
-            int occCount = 0;
-            Map<String, Integer> institutions = new TreeMap<String, Integer>();
-
-            ObjectMapper mapper = new ObjectMapper();
-            JsonParser jp = new JsonFactory().createJsonParser(new File(gjsonfile));
-            JsonNode root = mapper.readTree(jp);
-
-            Iterator<JsonNode> features = root.get("features").getElements();
-            while(features.hasNext()) {
-                JsonNode f = features.next();
-                String in = f.get("properties").get("p").getTextValue();
-
-                System.out.print("got in: " + in);
-
-                Integer inc = null;
-                if (institutions.containsKey(in)) {
-                    inc = institutions.get(in);
-                    int i=inc.intValue();
-                    System.out.print("   already present: " + inc.intValue());
-                    inc = new Integer(i+1);
-                    System.out.println("   inc++: " + inc.intValue());
-                    
-                } else {
-                    System.out.print("   new created ");
-                    inc = new Integer(1);                    
-                }
-                institutions.put(in, inc); 
-
-                occCount++; 
-
-            }
-
             modelMap.addAttribute("lsid", lsid);
-            modelMap.addAttribute("occ_count", occCount);
-            modelMap.addAttribute("institutions", institutions);
             modelMap.addAttribute("speciesname", "Occurrences in Active area");
             modelMap.addAttribute("metadatatype", "activearea");
 
-
-            System.out.println("counts: ");
-            SimpleRegion region = SimpleShapeFile.parseWKT("none");
-            int[] counts = FilteringService.getSpeciesCount(lsid, region);
-            System.out.println(counts[0] + "\n" + counts[1]);
-             *
-             *
-             */
-
-//            int occCount = 0;
-//            Map<String, Integer> institutions = new TreeMap<String, Integer>();
-//            String[][] samples = SamplingService.newForLSID(lsid).sampleSpecies(lsid, null, null, null, -1, null); // TabulationSettings.MAX_RECORD_COUNT_DOWNLOAD
-//            for (int i = 1; i < samples.length; i++) {
-//                String p = samples[i][1];
-//
-//            }
-
-//            String currentPath = TabulationSettings.base_output_dir;
-//            String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
-//            File fDir = new File(outputpath);
-//            fDir.mkdir();
-//
-//            String gjsonFile = SamplingService.getLSIDAsGeoJSONIntoParts(lsid, fDir);
-//            String[] infofiles = gjsonFile.split("\n");
-//            System.out.println("");
-
+            // use the following snippet IF you need the list of species as well
             // occ_count
-            System.out.println("Getting occ count...");
-            ArrayList<OccurrenceRecordNumbers> orn = OccurrencesCollection.getRecordNumbers(new OccurrencesFilter(lsid, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
-            int count = 0;
-            if (orn != null) {
-                for (OccurrenceRecordNumbers o : orn) {
-                    count += o.getRecords().length;
+//            System.out.println("Getting occ count...");
+//            ArrayList<OccurrenceRecordNumbers> orn = OccurrencesCollection.getRecordNumbers(new OccurrencesFilter(lsid, TabulationSettings.MAX_RECORD_COUNT_CLUSTER));
+//            int count = 0;
+//            if (orn != null) {
+//                for (OccurrenceRecordNumbers o : orn) {
+//                    count += o.getRecords().length;
+//                }
+//            }
+//            modelMap.addAttribute("occ_count", count);
+//            System.out.println("occ_count: " + count);
+//
+//            System.out.println("Getting sp count...");
+//            String legend = SpeciesColourOption.getColourLegend(lsid, "taxon_name", false);
+//            String[] lines = legend.split("\n");
+//            modelMap.addAttribute("species_count", "" + (lines.length - 1));
+//            System.out.println("sp_count: " + (lines.length - 1));
+
+
+            int geoOccCount = 0;
+            int geoSpCount = 0;
+            ArrayList<OccurrencesSpeciesList> osla = OccurrencesCollection.getSpeciesList(new OccurrencesFilter(lsid, Integer.MAX_VALUE));
+            if (osla != null) {
+                if (osla.size() > 0) {
+                    geoOccCount = osla.get(0).getOccurrencesCount();
+                    geoSpCount = osla.get(0).getSpeciesCount(); 
                 }
             }
+            modelMap.addAttribute("geoOccCount", geoOccCount);
+            modelMap.addAttribute("geoSpCount", geoSpCount);
 
-            System.out.println("occ_count: " + count);
-
-
-            System.out.println("Getting sp count...");
-            SimpleRegion region = SimpleShapeFile.parseWKT("none"); 
-            int[] counts = FilteringService.getSpeciesCount(lsid, region);
-            String count2 = String.valueOf(counts[0] + "\n" + counts[1]);
-            System.out.println("spcount: " + count2);
-
-            modelMap.addAttribute("lsid", lsid);
-            modelMap.addAttribute("occ_count", count);
-            //modelMap.addAttribute("institutions", institutions);
-            modelMap.addAttribute("speciesname", "Occurrences in Active area");
-            modelMap.addAttribute("metadatatype", "activearea");
-
+            Map institutions = new TreeMap();
+            String legend = SpeciesColourOption.getColourLegend(lsid, "in", false);
+            String[] lines = legend.split("\n");
+            for (String l : lines) {
+                String[] in = l.split(",");
+                if (in.length < 5) continue;
+                institutions.put((("".equals(in[0])) ? "Unknown" : in[0]), in[4]);
+            }
+            modelMap.addAttribute("institutions", institutions);
 
         } catch (Exception e) {
             System.out.println("Unable to generate metadata for species in active area");
