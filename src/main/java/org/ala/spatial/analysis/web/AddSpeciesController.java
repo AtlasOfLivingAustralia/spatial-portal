@@ -23,6 +23,8 @@ public class AddSpeciesController extends UtilityComposer {
     Button btnOk;
     private String lsid;
     Radio rSearch;
+    Radio rUploadCoordinates;
+    Radio rUploadLSIDs;
     Radiogroup rgAddSpecies;
     Vbox vboxSearch;
 
@@ -63,6 +65,15 @@ public class AddSpeciesController extends UtilityComposer {
 //                        setLsid((String)event.getData());
 //                    }
 //                });
+            if(rUploadCoordinates.isSelected()) {
+                usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+            }
+            else if(rUploadLSIDs.isSelected()){
+                usc.setTbInstructions("3. Select file (text file, one LSID per line)");
+            }
+            else{
+                usc.setTbInstructions("3. Select file");
+            }
             usc.doModal();
         }catch(Exception e) {
             e.printStackTrace();

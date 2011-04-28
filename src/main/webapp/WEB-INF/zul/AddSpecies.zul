@@ -31,8 +31,8 @@
                         <separator />
                         <separator />
                     </vbox>
-                    <radio label="Upload coordinates" />
-                    <radio label="Upload LSIDs" />
+                    <radio id ="rUploadCoordinates" label="Upload coordinates" />
+                    <radio id ="rUploadLSIDs" label="Upload LSIDs" />
                 </vbox>
             </radiogroup>
         </div>

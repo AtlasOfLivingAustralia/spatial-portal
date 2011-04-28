@@ -141,40 +141,40 @@ public class ContextualMenu extends UtilityComposer {
         
         //actions rules
         if(polygonLayer != null) {
-            actions.add(new Action("View area report for " + polygonLayer.getDisplayName(),
+            actions.add(new Action("View area report for \"" + polygonLayer.getDisplayName() + "\"",
                         new AreaReportEvent(getMapComposer(), polygonLayer.getName())));
         }
         if(firstLayer != null) {
-            actions.add(new Action("View metadata " + firstLayer.getDisplayName(),
+            actions.add(new Action("View metadata for \"" + firstLayer.getDisplayName() + "\"",
                             new MetadataEvent(getMapComposer(), firstLayer.getName())));
         }
         if(speciesLayer != null) {
-            actions.add(new Action("Download all records for " + speciesLayer.getDisplayName()
-                    + ((polygonLayer != null)?" for " + polygonLayer.getDisplayName():""),
+            actions.add(new Action("Download all records for \"" + speciesLayer.getDisplayName() + "\""
+                    + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"":""),
                             new SamplingEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
                                 (polygonLayer != null)?polygonLayer.getName():null, null)));
         } else if(polygonLayer != null) {
             actions.add(new Action("Download all records " +
-                    ((polygonLayer != null)?" for " + polygonLayer.getDisplayName():""),
+                    ((polygonLayer != null)?" for " + "\"" + polygonLayer.getDisplayName() + "\"":""),
                             new SamplingEvent(getMapComposer(), null, polygonLayer.getName(), null)));
         }
         if (polygonLayer != null) {
-                actions.add(new Action("Download species list for " + polygonLayer.getDisplayName(),
+                actions.add(new Action("Download species list for \"" + polygonLayer.getDisplayName() + "\"",
                         new SpeciesListEvent(getMapComposer(), polygonLayer.getName())));
         }
         if (polygonLayer != null) {
-            actions.add(new Action("Produce classification for " + polygonLayer.getDisplayName(),
+            actions.add(new Action("Generate classification for \"" + polygonLayer.getDisplayName() + "\"",
                         new ClassificationEvent(getMapComposer(), polygonLayer.getName(), null)));
         }
         if (speciesLayer != null) {
-            actions.add(new Action("Produce scatterplot for " + speciesLayer.getDisplayName()
-                    + ((polygonLayer != null)?" for " + polygonLayer.getDisplayName():""),
+            actions.add(new Action("Produce scatterplot for \"" + speciesLayer.getDisplayName() + "\""
+                    + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"":""),
                         new ScatterplotEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
                             (polygonLayer != null)?polygonLayer.getName():null, null)));
         }
         if (speciesLayer != null) {
-            actions.add(new Action("Produce prediction for " + speciesLayer.getDisplayName()
-                    + ((polygonLayer != null)?" for " + polygonLayer.getDisplayName():""),
+            actions.add(new Action("Produce prediction for \"" + speciesLayer.getDisplayName() + "\""
+                    + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"" :""),
                         new PredictionEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
                             (polygonLayer != null)?polygonLayer.getName():null, null)));
         }

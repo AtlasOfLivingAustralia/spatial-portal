@@ -23,9 +23,7 @@
             <label value="2. Enter a description for the dataset" sclass="word-wrap" style="white-space: normal; padding: 5px"/>
             <textbox id="tbDesc" />
             <separator />
-            <label value="3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))"
-                sclass="word-wrap" style="white-space: normal; padding: 5px" />
-            
+            <label id="tbInstructions" style="white-space: normal; padding: 5px" />
             <separator />
             <div style="float:right;margin-right:5px">
                 <hbox>

@@ -68,6 +68,8 @@ public class UploadSpeciesController extends UtilityComposer {
     Textbox tbDesc;
     Textbox tbName;
     Fileupload fileUpload;
+    Label tbInstructions;
+    
     private EventListener eventListener;
     private boolean addToMap;
 
@@ -572,5 +574,9 @@ public class UploadSpeciesController extends UtilityComposer {
 
     void setEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    void setTbInstructions(String instructions){
+        tbInstructions.setValue(instructions);
     }
 }
