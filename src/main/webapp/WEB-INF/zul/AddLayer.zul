@@ -19,7 +19,7 @@
             <separator />
             <radiogroup id="rgAddLayer" >
                 <vbox>
-                    <radio id="rSearch" label="Search for a species by scientific or common name" />
+                    <radio id="rSearch" label="Enter a layer name or keyword" />
                         <div id="divSearch" >
                             <separator />
                             <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px">

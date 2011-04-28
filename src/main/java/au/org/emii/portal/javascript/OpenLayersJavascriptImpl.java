@@ -246,10 +246,15 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + "		'" + mapLayer.getNameJS() + "', "
                 + "		'" + mapLayer.getUriJS() + "', "
                 + " 		new OpenLayers.Bounds("
-                + bbox.get(0) + ","
-                + bbox.get(1) + ","
-                + bbox.get(2) + ","
-                + bbox.get(3)
+//                + bbox.get(0) + ","
+//                + bbox.get(1) + ","
+//                + bbox.get(2) + ","
+//                + bbox.get(3)
+//Only image layer is for Env Envelope and Classification, they have fixed ranges close to:
+                + "112" + ","
+                + "-44" + ","
+                + "154" + ","
+                + "-9"
                 + "		).transform(map.displayProjection, map.projection), "
                 //+ "             map.baseLayer.getExtent(),       "
                 + " 		new OpenLayers.Size("

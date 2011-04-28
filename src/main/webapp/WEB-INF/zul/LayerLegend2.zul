@@ -81,7 +81,7 @@
                             <comboitem label="Uncertainty" value="u" />
                             <comboitem label="Data Provider" value="p" />
                             <comboitem label="Institution" value="in" />
-                            <comboitem label="Year" value="y" />
+                            <comboitem label="Year" value="y" visible="false" />
                             <comboitem label="Collection" value="c" />
                             <comboitem label="Basis of Record" value="b" />
                             <comboitem label="Altitude" value="a" />

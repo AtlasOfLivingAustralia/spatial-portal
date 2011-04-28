@@ -53,11 +53,13 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     String reportArea = null;
     String areaName = "Area Report";
+    String areaDisplayName = "Area Report";
 
-    public void setReportArea(String wkt, String name) {
+    public void setReportArea(String wkt, String name, String displayname) {
         reportArea = wkt;
         areaName = name;
-        setTitle(name);
+        areaDisplayName = displayname;
+        setTitle(displayname);
 
         if (name.equals("Current extent")) {
             addListener();
@@ -92,7 +94,9 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void redraw(Writer out) throws java.io.IOException {
         super.redraw(out);
 
-        setUpdatingCount(true);
+        if (reportArea != null) {
+            setUpdatingCount(true);
+        }
     }
 
     void addListener() {
@@ -213,9 +217,15 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     public void onClick$results_label2_species() {
         //preview species list
-        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", this, null);
+//        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", this, null);
+//        try {
+//            window.doModal();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName);
         try {
-            window.doModal();
+            sle.onEvent(null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -256,64 +266,70 @@ public class FilteringResultsWCController extends UtilityComposer {
         }*/
 
         //validate with 'occurrences count'
-        if (results_count_occurrences > settingsSupplementary.getValueAsInt("max_record_count_download")) {
-            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area. Cannot \nproduce sample for more than " + settingsSupplementary.getValueAsInt("max_record_count_download") + " occurrences.");
-            return;
-        }
-
+//        if (results_count_occurrences > settingsSupplementary.getValueAsInt("max_record_count_download")) {
+//            getMapComposer().showMessage(results_count_occurrences + " occurrences in the active area. Cannot \nproduce sample for more than " + settingsSupplementary.getValueAsInt("max_record_count_download") + " occurrences.");
+//            return;
+//        }
+//
+//        try {
+//            StringBuffer sbProcessUrl = new StringBuffer();
+//            sbProcessUrl.append("/filtering/apply");
+//            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+//            sbProcessUrl.append("/samples/list/preview");
+//
+//            String slist = postInfo(sbProcessUrl.toString());
+//
+//            String[] aslist = slist.split(";");
+//            System.out.println("Result count: " + aslist.length);
+//            int count = 0;
+//            for (int i = 0; i < aslist.length; i++) {
+//                String[] rec = aslist[i].split("~");
+//                if (rec.length > 0) {
+//                    count++;
+//                }
+//            }
+//            count--; //don't include header in count
+//
+//            if (slist.trim().length() == 0 || count == 0) {
+//                getMapComposer().showMessage("No records available for selected criteria.");
+//                return;
+//            }
+//
+//            //create window
+//            SamplingAreaResultsWCController window = (SamplingAreaResultsWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingAreaResults.zul", this, null);
+//            window.parent = this;
+//            window.doModal();
+//
+//            if (count == 1) {
+//                window.samplingresultslabel.setValue("preview: 1 record");
+//            } else {
+//                window.samplingresultslabel.setValue("preview: " + count + " records");
+//            }
+//
+//            // load into the results popup
+//            String[] top_row = null;
+//            for (int i = 0; i < aslist.length; i++) {
+//                if (i == 0) {
+//                    top_row = aslist[i].split("~");
+//                }
+//                String[] rec = aslist[i].split("~");
+//
+//                System.out.println("Column Count: " + rec.length);
+//
+//                Row r = new Row();
+//                r.setParent(window.results_rows);
+//                // set the value
+//                for (int k = 0; k < rec.length && k < top_row.length; k++) {
+//                    Label label = new Label(rec[k]);
+//                    label.setParent(r);
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null);
         try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/filtering/apply");
-            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-            sbProcessUrl.append("/samples/list/preview");
-
-            String slist = postInfo(sbProcessUrl.toString());
-
-            String[] aslist = slist.split(";");
-            System.out.println("Result count: " + aslist.length);
-            int count = 0;
-            for (int i = 0; i < aslist.length; i++) {
-                String[] rec = aslist[i].split("~");
-                if (rec.length > 0) {
-                    count++;
-                }
-            }
-            count--; //don't include header in count
-
-            if (slist.trim().length() == 0 || count == 0) {
-                getMapComposer().showMessage("No records available for selected criteria.");
-                return;
-            }
-
-            //create window
-            SamplingAreaResultsWCController window = (SamplingAreaResultsWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingAreaResults.zul", this, null);
-            window.parent = this;
-            window.doModal();
-
-            if (count == 1) {
-                window.samplingresultslabel.setValue("preview: 1 record");
-            } else {
-                window.samplingresultslabel.setValue("preview: " + count + " records");
-            }
-
-            // load into the results popup
-            String[] top_row = null;
-            for (int i = 0; i < aslist.length; i++) {
-                if (i == 0) {
-                    top_row = aslist[i].split("~");
-                }
-                String[] rec = aslist[i].split("~");
-
-                System.out.println("Column Count: " + rec.length);
-
-                Row r = new Row();
-                r.setParent(window.results_rows);
-                // set the value
-                for (int k = 0; k < rec.length && k < top_row.length; k++) {
-                    Label label = new Label(rec[k]);
-                    label.setParent(r);
-                }
-            }
+            sle.onEvent(null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -441,13 +457,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    static public void open(String wkt, String name) {
+    static public void open(String wkt, String name, String displayName) {
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
                 "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);        
         try {
             win.doOverlapped();
             win.setPosition("center");
-            win.setReportArea(wkt, name);
+            win.setReportArea(wkt, name, displayName);
         } catch (Exception e) {
             e.printStackTrace();
         }

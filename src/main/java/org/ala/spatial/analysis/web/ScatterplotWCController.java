@@ -968,7 +968,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         DefaultXYZDataset xyzDataset = new DefaultXYZDataset();
         double[][] dbl = {{0.0}, {0.0}, {0.0}};
         missing_data = false;
-        if (dblTmp != null && dblTmp.length > 0 && dblTmp[0].length > 0) {
+        if (dblTmp != null && dblTmp.length > 0 && dblTmp[0].length > 0
+                && series != null && series.length > 0) {
             //add series
             if (ts.size() > 1) {
                 if (seriesNames == null) {
@@ -1338,11 +1339,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
 
-                    //                if (chkHighlightActiveAreaOccurrences.isChecked()) {
-                    //                    sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
-                    //                }
+//                    if (data.getHighlightWkt() != null) {
+//                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
+//                    }
                     if (data.getFilterWkt() != null) {
-                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(null/*getMapComposer().getSelectionArea()*/, "UTF-8"));
+                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
                     }
 
                     //sbProcessUrl.append("&colourmode=").append(data.colourMode);

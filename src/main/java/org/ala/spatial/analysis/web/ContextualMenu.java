@@ -148,6 +148,10 @@ public class ContextualMenu extends UtilityComposer {
             actions.add(new Action("View metadata for \"" + firstLayer.getDisplayName() + "\"",
                             new MetadataEvent(getMapComposer(), firstLayer.getName())));
         }
+        if (polygonLayer != null) {
+                actions.add(new Action("Download species list for \"" + polygonLayer.getDisplayName() + "\"",
+                        new SpeciesListEvent(getMapComposer(), polygonLayer.getName())));
+        }
         if(speciesLayer != null) {
             actions.add(new Action("Download all records for \"" + speciesLayer.getDisplayName() + "\""
                     + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"":""),
@@ -157,11 +161,7 @@ public class ContextualMenu extends UtilityComposer {
             actions.add(new Action("Download all records " +
                     ((polygonLayer != null)?" for " + "\"" + polygonLayer.getDisplayName() + "\"":""),
                             new SamplingEvent(getMapComposer(), null, polygonLayer.getName(), null)));
-        }
-        if (polygonLayer != null) {
-                actions.add(new Action("Download species list for \"" + polygonLayer.getDisplayName() + "\"",
-                        new SpeciesListEvent(getMapComposer(), polygonLayer.getName())));
-        }
+        }        
         if (polygonLayer != null) {
             actions.add(new Action("Generate classification for \"" + polygonLayer.getDisplayName() + "\"",
                         new ClassificationEvent(getMapComposer(), polygonLayer.getName(), null)));

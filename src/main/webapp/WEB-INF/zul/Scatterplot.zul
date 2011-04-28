@@ -100,7 +100,7 @@
                 </groupbox>
             </vbox>
         </div>
-        <vbox height="160px">
+        <vbox >
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
                     <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />
@@ -129,7 +129,7 @@
         
         <html><![CDATA[       
         <div id="chartDivBack" class="chartDiv">
-        <div id="chartDiv" class="chartDiv" style="position:absolute"
+        <div id="chartDiv" class="chartDiv" 
             onMouseDown="doMouseDown(event)"
             onMouseMove="doMouseDrag(event)"
             onMouseUp="doMouseUp(event)"></div></div>
@@ -165,8 +165,6 @@ function doMouseDown(event) {
 
 function doMouseDrag(event) {
     if(resizing){
-    console.log("resizing");
-    console.log(event);
         var left, top, width, height;
 
         endx = event.pageX;
@@ -199,8 +197,6 @@ function doMouseDrag(event) {
 
 function doMouseUp(event) {
     if(resizing){
-    console.log("mouseup");
-    console.log(event);
         resizing = false;
         chartSelection(startx, starty, endx, endy);
     }

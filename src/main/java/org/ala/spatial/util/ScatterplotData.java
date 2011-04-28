@@ -43,7 +43,7 @@ public class ScatterplotData {
     }
 
     public ScatterplotData(String lsid, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
-            ,String backgroundLsid, String filterWkt, String highlightWkt, boolean envGri) {
+            ,String backgroundLsid, String filterWkt, String highlightWkt, boolean envGrid) {
         this.lsid = lsid;
         this.name = name;
         this.layer1 = layer1;

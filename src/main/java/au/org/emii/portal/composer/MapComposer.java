@@ -68,6 +68,7 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
+import org.zkoss.zk.ui.metainfo.ZScript;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zul.Caption;
@@ -488,6 +489,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         // tell openLayers to change zIndexs
         openLayersJavascript.updateMapLayerIndexesNow(activeLayers);
 
+        redrawLayersList();
+
         // hide legend controls
         //hideLayerControls(null);
     }
@@ -608,7 +611,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
              * it a new ListModelList instance based on live data
              */
             activeLayersList.setModel(new ListModelList(activeLayers, true));
-            adjustActiveLayersList();
+            
         }
 
         if (!activeLayers.contains(mapLayer) && mapLayer.isDisplayable()) {
@@ -636,14 +639,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 openLayersJavascript.activateMapLayerNow(mapLayer);
             }
 
-            adjustActiveLayersList();
-
             updateLayerControls();
             layerAdded = true;
         } else {
             logger.debug(
                     "not displaying map layer because its already listed or is marked non-displayable");
         }
+
+        adjustActiveLayersList();
 
         refreshContextualMenu();
 
@@ -1099,7 +1102,22 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         return null;
+    }
 
+    public MapLayer getMapLayerDisplayName(String label) {
+        // check if layer already present
+        List udl = getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        System.out.println("session active layers: " + udl.size() + " looking for: " + label);
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
+            if (ml.getDisplayName().equals(label)) {
+                return ml;
+            }
+        }
+
+        return null;
     }
 
     public void removeLayer(String label) {
@@ -3448,7 +3466,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public String getNextAreaLayerName(String layerPrefix) {
         layerPrefix += " ";
         int i = 1;
-        while (getMapLayer(layerPrefix + i) != null) {
+        while (getMapLayer(layerPrefix + i) != null
+                || getMapLayerDisplayName(layerPrefix + i) != null ) {
             i++;
         }
         return layerPrefix + i;
@@ -3931,14 +3950,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         && ((MapLayer)li.getValue()).getName().equals("Map options")) {
                     li.setDraggable("false");
                     li.setDroppable("false");
-                } else {
-//                    li.addEventListener("onDrop", new EventListener() {
-//
-//                        @Override
-//                        public void onEvent(Event event) throws Exception {
-//                            redrawLayersList();
-//                        }
-//                    });
                 }
             }
         }

@@ -166,7 +166,8 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     protected String geometryWKT = null;
 
     public String getWKT() {
-        if(isPolygonLayer() && getType() != LayerUtilities.WKT) {
+        if(isPolygonLayer() && getType() != LayerUtilities.WKT
+                && geometryWKT == null) {
             //TODO: query for non-wkt layer geometry
             return null;
         } else {

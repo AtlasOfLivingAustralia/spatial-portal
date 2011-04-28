@@ -566,6 +566,7 @@ public class AddToolComposer extends UtilityComposer {
         String species = rgSpecies.getSelectedItem().getValue();
         try {
             if (species.equals("allspecies")) {
+                species = "none";
             } else if (species.equals("allmapped")) {
                 species = "";
                 List<MapLayer> layers = getMapComposer().getSpeciesLayers();
@@ -615,6 +616,7 @@ public class AddToolComposer extends UtilityComposer {
             if (species.equals("none")) {
                 species = null;
             } else if (species.equals("allspecies")) {
+                species = "none";
             } else if (species.equals("allmapped")) {
                 species = "";
                 List<MapLayer> layers = getMapComposer().getSpeciesLayers();
@@ -646,6 +648,9 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
             } else if (species.equals("other")) {
+                if (bgSearchSpeciesAuto == null) {
+                    bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
+                }
                 if (bgSearchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
                 }
@@ -778,6 +783,10 @@ public class AddToolComposer extends UtilityComposer {
 
         /* set species from layer selector */
         if (species != null) {
+            if(bgSearchSpeciesAuto == null) {
+                bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
+            }
+                        
             String tmpSpecies = species;
             bgSearchSpeciesAuto.setValue(tmpSpecies);
             bgSearchSpeciesAuto.refresh(tmpSpecies);
@@ -852,6 +861,19 @@ public class AddToolComposer extends UtilityComposer {
 
 
     public String getSelectedAreaName() {
+        String area = rgArea.getSelectedItem().getLabel();
+        List<MapLayer> layers = getMapComposer().getPolygonLayers();
+        for(MapLayer ml : layers) {
+            if (area.equals(ml.getDisplayName())) {
+                area = ml.getName();
+                break;
+            }
+        }
+
+        return area;
+    }
+
+    public String getSelectedAreaDisplayName() {
         String areaName = rgArea.getSelectedItem().getLabel();
 
         return areaName;

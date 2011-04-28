@@ -406,7 +406,7 @@ public class AreaEnvironmentalEnvelope extends UtilityComposer {
         } else if (layername.equalsIgnoreCase("Active Area")) {
             showActiveArea();
         }
-        if (p == 0) {
+        if (p <= 0) {
             detach();
         }
     }

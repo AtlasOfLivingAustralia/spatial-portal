@@ -36,7 +36,8 @@ public class AddToolAreaReportComposer extends AddToolComposer {
     public void onFinish() {
         String area = getSelectedArea();
         String areaName = getSelectedAreaName();
-        FilteringResultsWCController.open(area, areaName);
+        String areaDisplayName = getSelectedAreaDisplayName();
+        FilteringResultsWCController.open(area, areaName, areaDisplayName);
         detach();
     }
 }

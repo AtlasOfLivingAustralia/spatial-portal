@@ -499,6 +499,14 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 legendImg.setVisible(false);
                 colourChooser.setVisible(false);
                 sizeChooser.setVisible(false);
+            } else {
+                //image layer?
+                legendImgUri.setVisible(false);
+                legendHtml.setVisible(false);
+                legendLabel.setVisible(false);
+                legendImg.setVisible(false);
+                colourChooser.setVisible(false);
+                sizeChooser.setVisible(false);
             }
             layerControls.setVisible(true);
             layerControls.setAttribute("activeLayerName", currentSelection.getName());

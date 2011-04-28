@@ -130,7 +130,7 @@
                     <textbox id="tToolName" width="250px" />
                 </hbox>
                 <vbox>
-                    <label value="Summary" style="font-weight: bold" />
+                    <label value="Summary" style="font-weight: bold" visible="false" />
                     <div id="atsummary"></div>
                 </vbox>
             </div>
