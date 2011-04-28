@@ -45,5 +45,6 @@
             </hbox>
         </div>
         <separator />
+        </vbox>
     </window>
 </zk>
