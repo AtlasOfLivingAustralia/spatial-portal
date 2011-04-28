@@ -1899,25 +1899,25 @@ public class OccurrencesIndex {
             }
 
             if (extra != null) {
-                for (int j = 0; j < extra.size(); j++) {                    
+                for (int j = 0; j < extra.size(); j++) {
                     if (extra.get(j).isHighlight()) {
                         //treat lsid matches different to fake-lsid-lists
-                        if(filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
+                        if (filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
                             //lookup with dataset hash and species offset
                             IndexedRecord ir = filterSpeciesRecords(filter.searchTerm);
-                            extra.get(j).assignHighlightData(r, (ir==null)?0:ir.record_start, getHash());
-                        } else if(filter.searchTerm != null) {
+                            extra.get(j).assignHighlightData(r, (ir == null) ? 0 : ir.record_start, getHash());
+                        } else if (filter.searchTerm != null) {
                             //'highlight' are stored by 'searchTerm' only,
                             //retrieve whole records and translate r to
                             //all 'highlight' records
-                            int [] rAll = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
-                            int [] r2 = new int[r.length];
+                            int[] rAll = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
+                            int[] r2 = new int[r.length];
                             int rpos = 0;
-                            for(int i=0;i<rAll.length;i++) {
-                                if(r[rpos] == rAll[i]) {
+                            for (int i = 0; i < rAll.length; i++) {
+                                if (r[rpos] == rAll[i]) {
                                     r2[rpos] = i;
                                     rpos++;
-                                    if(rpos >= r.length) {
+                                    if (rpos >= r.length) {
                                         break;
                                     }
                                 }
@@ -1935,14 +1935,14 @@ public class OccurrencesIndex {
         return p;
     }
 
-    double[] getPoints(/*SpeciesColourOption sco*/ String lookupName, String key) {
+    double[] getPoints(/*SpeciesColourOption sco*/String lookupName, String key) {
         //TODO: move away from extra_index        
         for (int i = 0; i < TabulationSettings.occurrences_csv_fields_lookups.length; i++) {
-            if(TabulationSettings.occurrences_csv_fields_lookups[i].equalsIgnoreCase(lookupName)) {
-                int [] r = (int[]) extra_indexes[i].get(key);
-                double[] d = new double[r.length*2];
+            if (TabulationSettings.occurrences_csv_fields_lookups[i].equalsIgnoreCase(lookupName)) {
+                int[] r = (int[]) extra_indexes[i].get(key);
+                double[] d = new double[r.length * 2];
                 int pos = 0;
-                for(int j=0;j<r.length;j++) {
+                for (int j = 0; j < r.length; j++) {
                     d[pos] = all_points[r[j]][0];
                     d[pos + 1] = all_points[r[j]][1];
                     pos += 2;
@@ -1950,7 +1950,7 @@ public class OccurrencesIndex {
                 return d;
             }
         }
-        
+
         return null;
 
 
@@ -1960,32 +1960,32 @@ public class OccurrencesIndex {
         int[] input3 = (int[]) o[1];
         int lookForIndex = -1;
         for(int i=0;i<sArray.length;i++) {
-            if(sArray[i].equalsIgnoreCase(key)) {
-                lookForIndex = i;
-                break;
-            }
+        if(sArray[i].equalsIgnoreCase(key)) {
+        lookForIndex = i;
+        break;
+        }
         }
 
         if(lookForIndex >= 0) {
-            //count
-            int count = 0;
-            for(int i=0;i<input3.length;i++) {
-                if(input3[i] == lookForIndex) {
-                    count++;
-                }
-            }
+        //count
+        int count = 0;
+        for(int i=0;i<input3.length;i++) {
+        if(input3[i] == lookForIndex) {
+        count++;
+        }
+        }
 
-            //get
-            double[] d = new double[count*2];
-            int pos = 0;
-            for(int i=0;i<input3.length;i++) {
-                if(input3[i] == lookForIndex) {
-                    d[pos] = all_points[i][0];
-                    d[pos + 1] = all_points[i][1];
-                    pos += 2;
-                }
-            }
-            return d;
+        //get
+        double[] d = new double[count*2];
+        int pos = 0;
+        for(int i=0;i<input3.length;i++) {
+        if(input3[i] == lookForIndex) {
+        d[pos] = all_points[i][0];
+        d[pos + 1] = all_points[i][1];
+        pos += 2;
+        }
+        }
+        return d;
         }
 
         return null;*/
@@ -2016,7 +2016,7 @@ public class OccurrencesIndex {
      * @param filters list of valid filter objects
      * @return
      */
-    int highlightLsid(String keyEnd, String lsid, Object [] filters) {
+    int highlightLsid(String keyEnd, String lsid, Object[] filters) {
         //String layer1, double x1, double x2, String layer2, double y1, double y2
         SamplingIndex ss = new SamplingIndex(index_path, null);
         int[] r = getRecordNumbers(new OccurrencesFilter(lsid, PART_SIZE_MAX)); //TODO: config limited
@@ -2035,74 +2035,74 @@ public class OccurrencesIndex {
         //do and's first
         boolean[] highlight = new boolean[len];
         int numAndFilters = 0;
-        for(int andOr = 0; andOr < 2; andOr ++) {
-            for(int j=0;j<numFilters;j++) {
-                Object [] f = (Object[]) filters[j];
+        for (int andOr = 0; andOr < 2; andOr++) {
+            for (int j = 0; j < numFilters; j++) {
+                Object[] f = (Object[]) filters[j];
 
-                if(((String)f[0]).equalsIgnoreCase("and") == (andOr == 0)) {
+                if (((String) f[0]).equalsIgnoreCase("and") == (andOr == 0)) {
                     numAndFilters++;
-                    if(f.length == 3) { //sco or contextual
+                    if (f.length == 3) { //sco or contextual
                         SpeciesColourOption sco = SpeciesColourOption.fromName((String) f[1], false);
-                        if(sco != null) {
+                        if (sco != null) {
                             sco.assignData(r, attributesMap.get(sco.getName()));
-                            boolean [] h = sco.getFiltered((Object[]) f[2]);
+                            boolean[] h = sco.getFiltered((Object[]) f[2]);
                             for (int i = 0; i < len; i++) {
-                                if(h[i]){
+                                if (h[i]) {
                                     highlightCount[i]++;
                                 }
                             }
                         } else { //contextual
                             Layer layer = Layers.getLayer((String) f[1]);
-                            String [] filteredCategories = (String []) f[2];
+                            String[] filteredCategories = (String[]) f[2];
                             String[] lookup_values = SamplingIndex.getLayerCatagories(
-                                layer);
+                                    layer);
 
-                            int [] selection = new int[filteredCategories.length];
-                            for(int i=0;i<selection.length;i++) {
+                            int[] selection = new int[filteredCategories.length];
+                            for (int i = 0; i < selection.length; i++) {
                                 selection[i] = java.util.Arrays.binarySearch(lookup_values, filteredCategories[i]);
-                                if(selection[i] < 0) {
+                                if (selection[i] < 0) {
                                     selection[i] = -1;
                                 }
                             }
 
                             //get data
-                            int [] cat = ss.getRecordsInt(layer.name, r);
+                            int[] cat = ss.getRecordsInt(layer.name, r);
                             for (int i = 0; i < len; i++) {
-                                for(int k=0;k<selection.length;k++) {
-                                    if(selection[k] == cat[i]) {
+                                for (int k = 0; k < selection.length; k++) {
+                                    if (selection[k] == cat[i]) {
                                         highlightCount[i]++;
                                     }
                                 }
                             }
                         }
-                    } else if(f.length == 4) { //environmental
+                    } else if (f.length == 4) { //environmental
                         float[] d = ss.getRecordsFloat(Layers.getLayer((String) f[1]).name, r);
-                        double min = Math.min((Double)f[2], (Double)f[3]);
-                        double max = Math.max((Double)f[2], (Double)f[3]);
+                        double min = Math.min((Double) f[2], (Double) f[3]);
+                        double max = Math.max((Double) f[2], (Double) f[3]);
 
-                        if(Double.isNaN(max) || Double.isNaN(min)) {
+                        if (Double.isNaN(max) || Double.isNaN(min)) {
                             for (int i = 0; i < len; i++) {
-                                if(Float.isNaN(d[i])) {
+                                if (Float.isNaN(d[i])) {
                                     highlightCount[i]++;
                                 }
                             }
                         } else {
                             for (int i = 0; i < len; i++) {
-                                if(d[i] <= max && d[i] >= min) {
+                                if (d[i] <= max && d[i] >= min) {
                                     highlightCount[i]++;
                                 } //else if(Float.isNaN(d[i]) && max >= 0 && min <=0) {
-                                  //  highlightCount[i]++;
+                                //  highlightCount[i]++;
                                 //}
                             }
                         }
                     }
-                }                
+                }
             }
-            if(andOr == 0) {
+            if (andOr == 0) {
                 //AND update
-                if(numAndFilters > 0) {
-                    for(int i=0;i<len;i++) {
-                        if(highlightCount[i] == numAndFilters) {
+                if (numAndFilters > 0) {
+                    for (int i = 0; i < len; i++) {
+                        if (highlightCount[i] == numAndFilters) {
                             highlight[i] = true;
                         } else {
                             highlightCount[i] = 0; //reset for OR test
@@ -2111,15 +2111,15 @@ public class OccurrencesIndex {
                 }
             } else {
                 //OR update
-                 for(int i=0;i<highlight.length;i++) {
-                   if(highlightCount[i] > 0) {
+                for (int i = 0; i < highlight.length; i++) {
+                    if (highlightCount[i] > 0) {
                         highlight[i] = true;
                         count++;
                     }
                 }
             }
         }
-        
+
         RecordSelectionLookup.addSelection(getHash() + keyEnd, highlight);
 
         return count;
@@ -2147,8 +2147,8 @@ public class OccurrencesIndex {
 
         if (r != null) {
             als = new ArrayList<String>(r.length);
-            int [] rcopy = r;
-            if(filter.maxRecords < r.length) {
+            int[] rcopy = r;
+            if (filter.maxRecords < r.length) {
                 rcopy = java.util.Arrays.copyOf(r, filter.maxRecords);
             }
             String[] sr = getSortedRecords(rcopy);
@@ -2253,6 +2253,9 @@ public class OccurrencesIndex {
         SimpleRegion region = filter.region;
         if (region == null) {
             //no region, use records
+            if (records == null) {
+                records = getRecordNumbers(filter);
+            }
             spos = 0;
             i = 0;
             while (i < records.length) {
@@ -2312,7 +2315,7 @@ public class OccurrencesIndex {
                                 j++;
                                 k = grid_points_idx[j];
                                 //pickup duplicated locations
-                                while(j < end
+                                while (j < end
                                         && all_points[k][0] == x
                                         && all_points[k][1] == y) {
                                     if (speciesNumberInRecordsOrder[k] >= 0) {
@@ -2331,7 +2334,7 @@ public class OccurrencesIndex {
         }
 
         //consolidate intermediate
-        for(i=0;i<speciesIntermediate.length;i++) {
+        for (i = 0; i < speciesIntermediate.length; i++) {
             species[speciesIndexLookup[i]] = speciesIntermediate[i];
         }
 
@@ -2767,7 +2770,7 @@ public class OccurrencesIndex {
     public int registerHighlight(OccurrencesFilter filter, String key, String highlightPid, boolean include) {
         int[] r = getRecordNumbers(filter);
         if (r != null) {
-            if(filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
+            if (filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
                 //lookup by replacing 'h' with dataset hash
                 IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
                 boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
@@ -2779,7 +2782,7 @@ public class OccurrencesIndex {
                     }
                 }
                 r = java.util.Arrays.copyOf(r, pos);
-            } else if(filter.searchTerm != null) {
+            } else if (filter.searchTerm != null) {
                 //'highlight' are stored by 'searchTerm' only,
                 //retrieve whole records already produced
                 r = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
@@ -2807,22 +2810,22 @@ public class OccurrencesIndex {
     }
 
     String[] listLookupKeys(String lookupName) {
-        String [] lookupNames = listLookups();
-        if(lookupNames == null) {
+        String[] lookupNames = listLookups();
+        if (lookupNames == null) {
             return null;
         }
         HashMap<String, Object> hm = null;
-        for(int i=0;i<lookupNames.length && i < extra_indexes.length;i++) {
-            if(lookupNames[i].equalsIgnoreCase(lookupName)) {
+        for (int i = 0; i < lookupNames.length && i < extra_indexes.length; i++) {
+            if (lookupNames[i].equalsIgnoreCase(lookupName)) {
                 hm = extra_indexes[i];
                 break;
             }
         }
 
-        if(hm != null) {
-            String [] keys = new String[hm.keySet().size()];
+        if (hm != null) {
+            String[] keys = new String[hm.keySet().size()];
             int p = 0;
-            for(String s : hm.keySet()) {
+            for (String s : hm.keySet()) {
                 keys[p] = s;
                 p++;
             }

@@ -19,27 +19,36 @@
     <body>
         <!--<h1 class="md_heading">Species information for ${speciesname}</h1>-->
 
+        <!-- metadatatype: ${metadatatype} -->
+
         <c:choose>
-            <c:when test="${metadatatype == 'activearea'}">
+            <c:when test='${metadatatype == "activearea"}'>
                 <table class="md_table">
                     <tbody>
                         <tr class="md_grey-bg">
                             <td class="md_th">Number of Occurrences</td>
                             <td class="md_spacer"/>
-                            <td class="md_value">${occ_count}</td>
+                            <td class="md_value">${geoOccCount}</td>
                         </tr>
                         <tr>
+                            <td class="md_th">Number of Species</td>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${geoSpCount}</td>
+                        </tr>
+                        <tr class="md_grey-bg">
                             <td class="md_th">Institutions</td>
                             <td class="md_spacer"/>
                             <td class="md_value">
                                 <c:forEach var="i" items="${institutions}" varStatus="curr">
-                                    ${i.key}: <a href="http://biocache.ala.org.au/occurrences/searchByTaxon?q=${i.value}&fq=data_resource:${i.key}" target="_blank">${i.value} records</a> <br />
+                                    ${i.key}: ${i.value} records <br />
                                 </c:forEach>
                             </td>
                         </tr>
-                        <tr class="md_grey-bg">
+                        <!--
+                        <tr>
                             <td class="md_value" colspan="3">Download as <a href="/output/sampling/${lsid}_0" target="_blank">GeoJSON</a></td>
                         </tr>
+                        -->
                     </tbody>
                 </table>
             </c:when>
@@ -64,19 +73,19 @@
                         <tr>
                             <td class="md_th">Number of Species</td>
                             <td class="md_spacer"/>
-                            <td class="md_value">${species_count}</td>
+                            <td class="md_value">${geoSpCount}</td>
                         </tr>
                         <tr class="md_grey-bg">
                             <td class="md_th">Number of Occurrences</td>
                             <td class="md_spacer"/>
-                            <td class="md_value">${occ_count}</td>
+                            <td class="md_value">${geoOccCount}</td>
                         </tr>
                         <tr>
                             <td class="md_th">Institutions</td>
                             <td class="md_spacer"/>
                             <td class="md_value">
                                 <c:forEach var="i" items="${institutions}" varStatus="curr">
-                                    ${i.key}: <a href="http://biocache.ala.org.au/occurrences/searchByTaxon?q=${i.value}&fq=data_resource:${i.key}" target="_blank">${i.value} records</a> <br />
+                                    ${i.key}: ${i.value} records <br />
                                 </c:forEach>
                             </td>
                         </tr>
