@@ -118,7 +118,7 @@ public class SamplingWSController {
             }
             
             SamplingService ss = SamplingService.newForLSID(species);
-            if(species.length() == 0 || species.equals("null")) {
+            if(species.length() == 0 || species.equals("null") || species.equals("none")) {
                 species = null;
             }
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"));

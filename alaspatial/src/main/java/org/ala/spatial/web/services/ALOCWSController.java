@@ -99,8 +99,8 @@ public class ALOCWSController {
 
 
             StringBuffer legend = new StringBuffer();
-            System.out.println("legend path:" + outputpath + "aloc.png.csv");
-            BufferedReader flegend = new BufferedReader(new FileReader(outputpath + "aloc.png.csv"));
+            System.out.println("legend path:" + outputpath + "classification_means_date_time.csv");
+            BufferedReader flegend = new BufferedReader(new FileReader(outputpath + "classification_means_date_time.csv"));
             while ((line = flegend.readLine()) != null) {
                 legend.append(line);
                 legend.append("\r\n");
@@ -108,8 +108,8 @@ public class ALOCWSController {
             flegend.close();
 
             StringBuffer metadata = new StringBuffer();
-            System.out.println("meatadata path:" + outputpath + "aloc.png.html");
-            BufferedReader fmetadata = new BufferedReader(new FileReader(outputpath + "aloc.png.html"));
+            System.out.println("meatadata path:" + outputpath + "classification.html");
+            BufferedReader fmetadata = new BufferedReader(new FileReader(outputpath + "classification.html"));
             while ((line = fmetadata.readLine()) != null) {
                 metadata.append(line);
                 metadata.append("\n");

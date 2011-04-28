@@ -123,8 +123,8 @@ public class AnalysisJobAloc extends AnalysisJob {
 
             /* register with LayerImgService */
             StringBuffer legend = new StringBuffer();
-            System.out.println("legend path:" + filepath + "aloc.png.csv");
-            BufferedReader flegend = new BufferedReader(new FileReader(filepath + "aloc.png.csv"));
+            System.out.println("legend path:" + filepath + "classification_means_date_time.csv");
+            BufferedReader flegend = new BufferedReader(new FileReader(filepath + "classification_means_date_time.csv"));
             while ((line = flegend.readLine()) != null) {
                 legend.append(line);
                 legend.append("\r\n");
@@ -132,8 +132,8 @@ public class AnalysisJobAloc extends AnalysisJob {
             flegend.close();
 
             StringBuffer metadata = new StringBuffer();
-            System.out.println("meatadata path:" + filepath + "aloc.png.html");
-            BufferedReader fmetadata = new BufferedReader(new FileReader(filepath + "aloc.png.html"));
+            System.out.println("meatadata path:" + filepath + "classification.html");
+            BufferedReader fmetadata = new BufferedReader(new FileReader(filepath + "classification.html"));
             while ((line = fmetadata.readLine()) != null) {
                 metadata.append(line);
                 metadata.append("\n");
