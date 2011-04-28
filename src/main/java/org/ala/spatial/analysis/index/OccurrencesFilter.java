@@ -55,7 +55,9 @@ public class OccurrencesFilter {
         if (layers != null) {
             this.columns = new ArrayList<String>(layers.length);
             for (String s : layers) {
-                this.columns.add(Layers.getLayer(s).name);
+                if (s != null && s.length() > 0) {
+                    this.columns.add(Layers.getLayer(s).name);
+                }
             }
         }
     }

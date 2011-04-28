@@ -401,7 +401,10 @@ public class FilteringWSController {
                 return;// "";  //error
             }
 
-            //System.out.println("[[[]]] getlist: " + pid + " " + shape);
+            if(shape.contains("ENVELOPE")) {
+                pid = shape.replace("ENVELOPE(", "").replace(")", "");
+                shape = "none";
+            }
 
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 

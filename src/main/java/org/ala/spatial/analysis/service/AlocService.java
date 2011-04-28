@@ -124,8 +124,8 @@ public class AlocService {
             }
             fw.append("</p>");
 
-            fw.append("<p> <a href=\"" + TabulationSettings.alaspatial_path + "layers/analysis/inter_layer_association.pdf\" >");
-            fw.append("<span class=\"title\">Inter-layer dissimilarity matrix (pdf)</span>  ");
+            fw.append("<p> <a href=\"" + TabulationSettings.alaspatial_path + "files/inter_layer_association.csv\" >");
+            fw.append("<span class=\"title\">Inter-layer dissimilarity matrix (csv)</span>  ");
             fw.append("</a>");
             fw.append("</p>");
 
@@ -268,52 +268,12 @@ public class AlocService {
 
         /* run aloc
          * Note: requested number of groups may not always equal request
-         */
-        //long start = System.currentTimeMillis();
-        //int[] groups0 = Aloc.runGowerMetricThreaded(data_pieces, numberOfGroups, layers.length, pieces, job);
-        //long middle = System.currentTimeMillis();
-        //long one = middle - start;
-
-        //reset data
-        //data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
-        //start = System.currentTimeMillis();
-        //int[] groups1 = Aloc.runGowerMetricThreadedSpeedup1(data_pieces, numberOfGroups, layers.length, pieces, job);
-        //middle = System.currentTimeMillis();
-        //long two = middle -start;
-
-        //reset data
-        //data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
-        //start  = System.currentTimeMillis();
+         */      
         int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, job);
         if (job != null && job.isCancelled()) {
             return null;
         }
-        //middle = System.currentTimeMillis();
-        //long three = middle -start;
 
-        /* pieces = 1;
-        data_pieces = GridCutter.cut(layers, region, pieces, filename + "extents.txt", envelope,job);
-        int[] groups3 = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, job);
-
-        //System.out.println("ALOC TIMINGS: (A)" + (one) + " (B)" + (two) + " (C)" + (three));
-
-        //System.out.println("start check: " + groups.length + " == " + groups0.length);
-        int count = 0;
-        int count2 = 0;
-        int count3 = 0;
-        for(i=0;i<groups.length;i++){
-        //if(groups[i] != groups1[i]){
-        //                count++;
-        //          }
-        if(groups[i] != groups3[i]){
-        count3++;
-        }
-        //  if(groups[i] != groups0[i]){
-        //      count2++;
-        //  }
-        }
-        System.out.println("end check: (a-b)" + (count / (double)groups.length) + " (a-c)" + (count2 / (double)groups.length)  + " (c-d)" + (count3) + " of " + groups.length);
-         */
         if (job != null) {
             job.log("identified groups");
         }
@@ -370,7 +330,7 @@ public class AlocService {
 
 
         /* export means + colours */
-        exportMeansColours(filename + ".csv", group_means, colours, layers);
+        exportMeansColours(filename.replace("aloc.png","classification_means_date_time.csv"), group_means, colours, layers);
         if (job != null) {
             job.log("exported group means and colours");
         }
@@ -379,10 +339,10 @@ public class AlocService {
         String pth = "output" + File.separator + "aloc" + File.separator;
         int pos = filename.indexOf(pth);
         String f = filename.substring(pos + pth.length());
-        String urlpth = TabulationSettings.alaspatial_path + "output/aloc/" + f.replace("\\", "/");
-        exportMetadata(filename + ".html", numberOfGroups, layers,
+        String urlpth = TabulationSettings.alaspatial_path + "output/aloc/" + f.replace("\\", "/").replace("aloc.png","classification_means_date_time.csv");
+        exportMetadata(filename.replace("aloc.png","classification") + ".html", numberOfGroups, layers,
                 (job != null) ? job.getName() : "",
-                urlpth + ".csv",
+                urlpth,
                 (job != null) ? job.area : "",
                 width, height, extents[2], extents[3], extents[4], extents[5]);
 
