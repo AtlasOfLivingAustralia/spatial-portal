@@ -46,6 +46,7 @@ public class AreaMapPolygon extends UtilityComposer {
     Radio rAddLayer;
     Vbox vbxLayerList;
     Radiogroup rgPolygonLayers;
+ //   List<Radio> radioItems;
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -60,9 +61,28 @@ public class AreaMapPolygon extends UtilityComposer {
                             (float) 0.75, treeMetadata, treeSubType);
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
+        
+
+            btnOk.setDisabled(false);
+            btnClear.setDisabled(false);
+
+
+            Radio rNewLayer;
+            rNewLayer = new Radio(treeName);
+            rNewLayer.setValue(treeName);
+            rNewLayer.setParent(rgPolygonLayers);
+
+            Radio rSelectedLayer = rgPolygonLayers.getSelectedItem();
+            rgPolygonLayers.insertBefore(rNewLayer, rSelectedLayer);
+//            if (rSelectedLayer != null) {
+//                rSelectedLayer.setChecked(false);
+//                rSelectedLayer.setSelected(false);
+//            }
+            rNewLayer.setSelected(true);
+            rNewLayer.setChecked(true);
+       
         }
-        btnOk.setDisabled(false);
-        btnClear.setDisabled(false);
+
     }
 
     public void onClick$btnOk(Event event) {
@@ -97,6 +117,14 @@ public class AreaMapPolygon extends UtilityComposer {
           }
           else {
               vbxLayerList.setVisible(false);
+              //Add option to add extra layer if not available
+               if (rAddLayer == null) {
+                rAddLayer = new Radio("Add Other Layer ...");
+                rAddLayer.setValue("Add Other Layer ...");
+                rAddLayer.setParent(rgPolygonLayers);
+                Radio rSelectedLayer = rgPolygonLayers.getSelectedItem();
+                rgPolygonLayers.insertBefore(rAddLayer,null);
+              }
               //Add and remove layer to set as top layer
               String layerName = selectedItem.getValue();
               MapComposer mc = getThisMapComposer();
@@ -115,11 +143,16 @@ public class AreaMapPolygon extends UtilityComposer {
             List<MapLayer> layers = getMapComposer().getContextualLayers();
             if (layers.size() > 0 ) {
                 for (int i = 0; i < layers.size(); i++) {
+
                     MapLayer lyr = layers.get(i);
                     Radio rAr = new Radio(lyr.getDisplayName());
                     rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                     rAr.setValue(lyr.getDisplayName());
                     rAr.setParent(rgPolygonLayers);
+
+                    if (i == 0) {
+                        rAr.setSelected(true);
+                    }
                     rgPolygonLayers.insertBefore(rAr, rSelectedLayer);
                 }
                 
@@ -140,7 +173,7 @@ public class AreaMapPolygon extends UtilityComposer {
         }
     }
 
-    public void onChange$lac(Event event) {
+    public void onChange$autoCompleteLayers(Event event) {
         treeName = null;
         //btnOk.setDisabled(true);
         
@@ -202,7 +235,7 @@ public class AreaMapPolygon extends UtilityComposer {
     /**
      * Searches the gazetter at a given point and then maps the polygon feature
      * found at the location (for the current top contextual layer).
-     * @param event triggered by the usual javascript trickery
+     * @param event 
      */
     public void onSearchPoint(Event event) {
         String searchPoint = (String) event.getData();
@@ -234,7 +267,7 @@ public class AreaMapPolygon extends UtilityComposer {
                             && jo.getString("type").equalsIgnoreCase("contextual")
                             && jo.getString("name").equalsIgnoreCase(activeLayerName)) {
 
-                        searchComplete = true;
+                        
                         System.out.println(ml.getName());
                         String featureURI = GazetteerPointSearch.PointSearch(lon, lat, activeLayerName, CommonData.geoServer);
                         System.out.println(featureURI);
@@ -262,9 +295,10 @@ public class AreaMapPolygon extends UtilityComposer {
                         String json = readGeoJSON(featureURI);
                         String wkt = wktFromJSON(json);
                         if (wkt.contentEquals("none")) {
-
-                            break;
+                            continue;
+                          //  break;
                         } else {
+                            searchComplete = true;
                             displayGeom.setValue(feature_text);
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
                             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
