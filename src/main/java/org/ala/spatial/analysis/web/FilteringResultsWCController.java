@@ -433,14 +433,14 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
-        String area = null;
+        String area = reportArea;
 
-        if(getMapComposer().getPolygonLayers().size() > 0) {
-            area = getMapComposer().getPolygonLayers().get(0).getWKT();
-        } else {
-            //TODO: not view area
-            area = getMapComposer().getViewArea();
-        }
+//        if(getMapComposer().getPolygonLayers().size() > 0) {
+//            area = getMapComposer().getPolygonLayers().get(0).getWKT();
+//        } else {
+//            //TODO: not view area
+//            area = getMapComposer().getViewArea();
+//        }
 
         if (area.contains("ENVELOPE(")) {
             shape = "none";
@@ -521,6 +521,12 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void intersectWithSpeciesDistributions() {
+        if(shape.equals("none")) {
+            //env envelope intersect with species distributions
+            sdLabel.setValue("0");
+            speciesDistributionText = null;
+            return;
+        }
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("ws/intersect/shape");
@@ -584,16 +590,13 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     private void calculateArea() {
+        if (shape.equals("none")) {
+            sdLabel.setValue("0");
+            speciesDistributionText = null;
+        }
+
         try {
-
-            String area = null;
-                    if(getMapComposer().getPolygonLayers().size() > 0) {
-                        area = getMapComposer().getPolygonLayers().get(0).getWKT();
-                    } else {
-                        //TODO: not view area
-                        area = getMapComposer().getViewArea();
-                    }
-
+            String area = reportArea;
             area = StringUtils.replace(area, "MULTIPOLYGON((", "");
             area = StringUtils.replace(area, "POLYGON((", "");
             area = StringUtils.replace(area, ")", "");
@@ -685,13 +688,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     String biostorHtml = null;
     private void biostor() {
         try {
-            String area = null;
-            if(getMapComposer().getPolygonLayers().size() > 0) {
-                area = getMapComposer().getPolygonLayers().get(0).getWKT();
-            } else {
-                //TODO: not view area
-                area = getMapComposer().getViewArea();
-            }
+            String area = reportArea;
 
             area = StringUtils.replace(area, "MULTIPOLYGON((", "");
             area = StringUtils.replace(area, "POLYGON((", "");

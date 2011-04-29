@@ -301,8 +301,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             document.getElementsByTagName("html")[0].style.margin = "0px";
 
                             //hide map buttons
-                            var q = jq('$mapbuttons')[0];
-                            q.style.display="none";
+                            //var q = jq('$mapbuttons')[0];
+                            //q.style.display="none";
 
                             //hide north
                             q = document.getElementById(zk.Widget.$(jq('$header')[0]).uuid + "-real");
@@ -345,6 +345,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                             n.style.height = val2 + "px";
 
                             mapFrame.document.getElementById("zoomtolocation").style.display="none";
+                            mapFrame.document.getElementById("hoverTool").style.display="none";
 
                             jQuery('.z-center')[0].style.border = "0px";
                         }

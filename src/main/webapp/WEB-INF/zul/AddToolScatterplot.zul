@@ -77,11 +77,13 @@
                 <label id="atstep4_label" value="" />
                 <separator />
                 <groupbox >
-                    <hbox>X
+                    <hbox>
+                        <label value="X" width="15px" />
                         <combobox id="cbLayer2" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
                         </combobox>
                     </hbox>
-                    <hbox>Y
+                    <hbox>
+                        <label value="Y" width="15px" />
                         <combobox id="cbLayer1" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="280px" >
                         </combobox>
                     </hbox>

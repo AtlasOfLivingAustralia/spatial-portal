@@ -245,17 +245,21 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image("
                 + "		'" + mapLayer.getNameJS() + "', "
                 + "		'" + mapLayer.getUriJS() + "', "
-                + " 		new OpenLayers.Bounds("
-//                + bbox.get(0) + ","
-//                + bbox.get(1) + ","
-//                + bbox.get(2) + ","
-//                + bbox.get(3)
-//Only image layer is for Env Envelope and Classification, they have fixed ranges close to:
-                + "112" + ","
-                + "-44" + ","
-                + "154" + ","
-                + "-9"
-                + "		).transform(map.displayProjection, map.projection), "
+                + " 		new OpenLayers.Bounds(";
+
+        if (mapLayer.getSubType() == LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
+            script +=  "112.9" + ","
+                + "-43.8" + ","
+                + "153.64" + ","
+                + "-9";
+        } else {
+            script += bbox.get(0) + ","
+                + bbox.get(1) + ","
+                + bbox.get(2) + ","
+                + bbox.get(3);
+        }
+        
+        script += "		).transform(map.displayProjection, map.projection), "
                 //+ "             map.baseLayer.getExtent(),       "
                 + " 		new OpenLayers.Size("
                 + settingsSupplementary.getValue("animation_width") + ","

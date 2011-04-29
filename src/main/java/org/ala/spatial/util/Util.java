@@ -4,95 +4,27 @@
  */
 package org.ala.spatial.util;
 
-import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.menu.MapLayer;
-import au.org.emii.portal.menu.MapLayerMetadata;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
-import com.vividsolutions.jts.io.gml2.GMLWriter;
-import geo.google.GeoAddressStandardizer;
-import geo.google.datamodel.GeoAddress;
-import geo.google.datamodel.GeoCoordinate;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import org.ala.spatial.gazetteer.GazetteerPointSearch;
-import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-import org.zkoss.zhtml.Messagebox;
-import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.HtmlMacroComponent;
-import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.Sessions;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.ForwardEvent;
-import org.zkoss.zk.ui.event.OpenEvent;
-import org.zkoss.zk.ui.util.Clients;
-import org.zkoss.zul.Button;
-import org.zkoss.zul.Combobox;
-import org.zkoss.zul.Comboitem;
-import org.zkoss.zul.Div;
-import org.zkoss.zul.Hbox;
-import org.zkoss.zul.Label;
-import org.zkoss.zul.Listbox;
-import org.zkoss.zul.Popup;
-import org.zkoss.zul.Radio;
-import org.zkoss.zul.Radiogroup;
-import org.zkoss.zul.Separator;
-import org.zkoss.zul.SimpleListModel;
-import org.zkoss.zul.Textbox;
-import org.zkoss.zul.Vbox;
-import org.zkoss.zul.Window;
-import java.io.File;
-import java.io.StringReader;
-import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.ShapefileUtils;
-import org.ala.spatial.util.Zipper;
-import org.zkoss.util.media.Media;
-import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.event.UploadEvent;
-import org.zkoss.zul.Fileupload;
 
 /**
  *
@@ -278,7 +210,7 @@ public class Util {
      * @param json
      * @return
      */
-    static private String wktFromJSON(String json) {
+    static public String wktFromJSON(String json) {
         try {
             JSONObject obj = JSONObject.fromObject(json);
             JSONArray geometries = obj.getJSONArray("geometries");

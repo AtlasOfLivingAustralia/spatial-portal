@@ -1284,7 +1284,7 @@ div.z-listheader-cnt {
     background-color: white;
 }
 
-div.z-window-modal-header {
+div.z-window-modal-header, div.z-window-overlapped-header {
     font-family: Arial, Aelvetica,sans-serif;
     color: #718804;
     font-weight: normal;

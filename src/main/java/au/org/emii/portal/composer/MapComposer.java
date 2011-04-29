@@ -1874,7 +1874,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("User params: " + userparams.getValue());
 
             Map<String, String> userParams = getUserParameters(userparams.getValue());
-            if (userParams != null) {
+            if (userParams != null && userParams.get("p") == null) {
 
                 if (userParams.containsKey("species_lsid")) {
                     //TODO: get species name as layer name

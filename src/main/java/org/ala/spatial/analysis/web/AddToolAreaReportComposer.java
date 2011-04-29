@@ -5,6 +5,8 @@
 
 package org.ala.spatial.analysis.web;
 
+import org.zkoss.zul.Window;
+
 /**
  *
  * @author ajay
@@ -34,6 +36,11 @@ public class AddToolAreaReportComposer extends AddToolComposer {
 
     @Override
     public void onFinish() {
+        //close any existing area report
+        Window w = (Window) getPage().getFellowIfAny("popup_results");
+        if(w != null) {
+            w.detach();
+        }
         String area = getSelectedArea();
         String areaName = getSelectedAreaName();
         String areaDisplayName = getSelectedAreaDisplayName();

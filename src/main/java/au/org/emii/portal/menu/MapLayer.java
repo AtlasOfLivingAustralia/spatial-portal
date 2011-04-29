@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import org.ala.spatial.util.Util;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.jfree.chart.plot.XYPlot;
@@ -166,11 +167,16 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     protected String geometryWKT = null;
 
     public String getWKT() {
-        if(isPolygonLayer() && getType() != LayerUtilities.WKT
-                && geometryWKT == null) {
+        if(isPolygonLayer()
+                && getType() != LayerUtilities.WKT
+                && geometryWKT == null
+                && geoJSON == null) {
             //TODO: query for non-wkt layer geometry
             return null;
         } else {
+            if(geometryWKT == null) {
+                geometryWKT = Util.wktFromJSON(geoJSON);
+            }
             return geometryWKT;
         }
     }
