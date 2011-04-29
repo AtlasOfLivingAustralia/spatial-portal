@@ -44,7 +44,7 @@ import org.zkoss.zul.Window;
  *
  * @author ajay
  */
-public class AreaEnvironmentalEnvelope extends UtilityComposer {
+public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     public static final String LAYER_PREFIX = "";//"Envelope: ";
     private static final long serialVersionUID = -26560838825366347L;

@@ -3,6 +3,9 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import java.util.Map;
+import org.zkoss.zk.ui.Component;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 
 import org.zkoss.zk.ui.event.Event;
@@ -13,11 +16,11 @@ import org.zkoss.zul.Textbox;
  *
  * @author Adam
  */
-public class AreaBoundingBox extends UtilityComposer {
+public class AreaBoundingBox extends AreaToolComposer {
 
     private String boxGeom;
     private Textbox displayGeom;
-    String layerName;
+    //String layerName;
     Textbox txtLayerName;
     Button btnNext;
     Button btnClear;
@@ -32,13 +35,13 @@ public class AreaBoundingBox extends UtilityComposer {
         //reapply layer name
         getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
         getMapComposer().redrawLayersList();
-        
+
         this.detach();
     }
 
     public void onClick$btnClear(Event event) {
         MapComposer mc = getThisMapComposer();
-        if(layerName != null && mc.getMapLayer(layerName) != null) {
+        if (layerName != null && mc.getMapLayer(layerName) != null) {
             mc.removeLayer(layerName);
         }
         String script = mc.getOpenLayersJavascript().addBoxDrawingTool();
@@ -50,23 +53,23 @@ public class AreaBoundingBox extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         MapComposer mc = getThisMapComposer();
-        if(layerName != null && mc.getMapLayer(layerName) != null) {
+        if (layerName != null && mc.getMapLayer(layerName) != null) {
             mc.removeLayer(layerName);
         }
         this.detach();
     }
 
-     public void onBoxGeom(Event event) {
+    public void onBoxGeom(Event event) {
         boxGeom = (String) event.getData();
         //setInstructions(null, null);
         try {
-	
+
             if (boxGeom.contains("NaN NaN")) {
                 displayGeom.setValue("");
             } else {
-              displayGeom.setValue(boxGeom);
+                displayGeom.setValue(boxGeom);
             }
-           // updateComboBoxText();
+            // updateComboBoxText();
             updateSpeciesList(false); // true
 
 
@@ -76,7 +79,7 @@ public class AreaBoundingBox extends UtilityComposer {
             //add feature to the map as a new layer
             //mc.removeLayer("Area Selection");
             //mc.deactiveLayer(mc.getMapLayer("Area Selection"), true,true);
-            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
             MapLayer mapLayer = mc.addWKTLayer(boxGeom, layerName, txtLayerName.getValue());
 
             btnNext.setDisabled(false);
@@ -86,7 +89,7 @@ public class AreaBoundingBox extends UtilityComposer {
 
     }
 
-       /**
+    /**
      * updates species list analysis tab with refreshCount
      */
     void updateSpeciesList(boolean populateSpeciesList) {
@@ -101,7 +104,7 @@ public class AreaBoundingBox extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-       // updateAreaLabel();
+        // updateAreaLabel();
     }
 
     /**

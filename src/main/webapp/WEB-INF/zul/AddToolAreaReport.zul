@@ -25,6 +25,7 @@
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
                     <radio id="rAreaAustralia" label="Australia" value="australia" />
                     <radio id="rAreaWorld" label="World" value="world" />
+                    <radio id="rAreaCustom" label="Add new active area" value="custom" />
                 </radiogroup>
             </div>
 

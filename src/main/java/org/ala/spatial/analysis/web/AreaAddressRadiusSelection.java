@@ -30,7 +30,7 @@ import org.zkoss.zul.Textbox;
  *
  * @author Adam
  */
-public class AreaAddressRadiusSelection extends UtilityComposer {
+public class AreaAddressRadiusSelection extends AreaToolComposer {
 
     private Textbox addressBox;
     Combobox cbRadius;
@@ -40,7 +40,7 @@ public class AreaAddressRadiusSelection extends UtilityComposer {
     Comboitem ci20km;
     Label addressLabel;
     private Textbox displayGeom;
-    String layerName;
+    //String layerName;
     Textbox txtLayerName;
     Button btnOk;
     Button btnClear;

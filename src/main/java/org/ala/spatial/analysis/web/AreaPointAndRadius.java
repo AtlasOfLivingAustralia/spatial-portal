@@ -18,10 +18,10 @@ import org.zkoss.zul.Textbox;
  *
  * @author Adam
  */
-public class AreaPointAndRadius extends UtilityComposer {
+public class AreaPointAndRadius extends AreaToolComposer {
 
     private Textbox displayGeom;
-    String layerName;
+    //String layerName;
     Textbox txtLayerName;
     Button btnNext;
     Button btnClear;

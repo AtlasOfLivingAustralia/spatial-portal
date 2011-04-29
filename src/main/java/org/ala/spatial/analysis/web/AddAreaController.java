@@ -5,7 +5,6 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -76,7 +75,7 @@ public class AddAreaController extends UtilityComposer {
         }
         if (!windowName.contentEquals("")) {
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-            Window window = (Window) Executions.createComponents(windowName, getMapComposer(), null);
+            Window window = (Window) Executions.createComponents(windowName, this.getParent(), Executions.getCurrent().getArg());
             try {
                 if (overlapped) {
                     window.doOverlapped();
@@ -86,6 +85,10 @@ public class AddAreaController extends UtilityComposer {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        } else if (this.getParent().getId().equals("addtoolwindow")) {
+            AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+            analysisParent.hasCustomArea = true;
+            analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
         }
         this.detach();
     }

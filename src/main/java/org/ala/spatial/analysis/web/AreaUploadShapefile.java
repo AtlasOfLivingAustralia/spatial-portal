@@ -31,13 +31,14 @@ import org.zkoss.zul.Textbox;
  *
  * @author Adam
  */
-public class AreaUploadShapefile extends UtilityComposer {
+public class AreaUploadShapefile extends AreaToolComposer {
     Fileupload fileUpload;
     Textbox txtLayerName;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
+        txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
         fileUpload.addEventListener("onUpload", new EventListener() {
 
                 public void onEvent(Event event) throws Exception {
@@ -114,8 +115,9 @@ public class AreaUploadShapefile extends UtilityComposer {
                         String wkt = (String) shape.get("wkt");
                         wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
                         System.out.println("Got shapefile wkt...");
-                        String layerName = getMapComposer().getNextAreaLayerName(m.getName());
-                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, m.getName());
+                        //String layerName = getMapComposer().getNextAreaLayerName(txtLayerName.getValue());
+                        layerName = txtLayerName.getValue(); 
+                        MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
                     }

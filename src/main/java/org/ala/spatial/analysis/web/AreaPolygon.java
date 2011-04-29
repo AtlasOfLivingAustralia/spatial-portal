@@ -19,11 +19,11 @@ import org.zkoss.zul.Textbox;
  *
  * @author Adam
  */
-public class AreaPolygon extends UtilityComposer {
+public class AreaPolygon extends AreaToolComposer {
 
     private Textbox displayGeom;
     Button btnNext; 
-    String layerName;
+    //String layerName;
     Textbox txtLayerName;
     Button btnClear;
 

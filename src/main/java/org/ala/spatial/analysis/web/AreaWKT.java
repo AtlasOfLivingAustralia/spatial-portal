@@ -23,11 +23,11 @@ import org.zkoss.zul.Textbox;
  *
  * @author Adam
  */
-public class AreaWKT extends UtilityComposer {
+public class AreaWKT extends AreaToolComposer {
 
    
     private Textbox displayGeom;
-    String layerName;
+    //String layerName;
     Textbox txtLayerName;
     Label invalidWKT;
     Button btnOk;

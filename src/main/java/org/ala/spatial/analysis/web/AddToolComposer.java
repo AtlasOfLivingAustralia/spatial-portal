@@ -17,6 +17,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
@@ -26,6 +27,7 @@ import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -42,7 +44,7 @@ public class AddToolComposer extends UtilityComposer {
     Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
     Radio rSpeciesAll, rSpeciesMapped, rSpeciesOther;
     Radio rSpeciesNoneBk, rSpeciesAllBk, rSpeciesMappedBk, rSpeciesOtherBk;
-    Radio rAreaWorld, rAreaWorldHighlight;
+    Radio rAreaWorld, rAreaCustom, rAreaWorldHighlight;
     Button btnCancel, btnOk, btnBack, btnHelp;
     Textbox tToolName;
     SpeciesAutoComplete searchSpeciesAuto, bgSearchSpeciesAuto;
@@ -52,9 +54,18 @@ public class AddToolComposer extends UtilityComposer {
     EnvLayersCombobox cbLayer1;
     EnvLayersCombobox cbLayer2;
 
+    String winTop = "300px";
+    String winLeft = "500px";
+
+    boolean setCustomArea = false;
+    boolean hasCustomArea = false;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        winTop = this.getTop();
+        winLeft = this.getLeft();
 
         setupDefaultParams();
         setParams(Executions.getCurrent().getArg());
@@ -101,6 +112,7 @@ public class AddToolComposer extends UtilityComposer {
                 summary += "<strong>Species</strong>: ";
                 summary += "<strong>Grids</strong>: ";
                 summary += "<strong>Additional options</strong>: ";
+                atsummary.setContext(summary);
             }
         } catch (Exception e) {
         }
@@ -223,6 +235,9 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void loadAreaLayers() {
+        loadAreaLayers(null);
+    }
+    public void loadAreaLayers(String selectedAreaName) {
         try {
 
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgArea");
@@ -256,6 +271,16 @@ public class AddToolComposer extends UtilityComposer {
                         break;
                     }
                 }
+            }
+
+            if (selectedAreaName != null && !selectedAreaName.equals("")) {
+                for (int i = 0; i < rgArea.getItemCount(); i++) {
+                    if (rgArea.getItemAtIndex(i).isVisible() && rgArea.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
+                        rgArea.getItemAtIndex(i).setSelected(true);
+                        break;
+                    }
+                }
+
             }
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
@@ -314,6 +339,16 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception e) {
             System.out.println("Unable to load species layers:");
             e.printStackTrace(System.out);
+        }
+    }
+
+    public void onCheck$rgArea(Event event) {
+        setCustomArea = false;
+        hasCustomArea = false;
+        if (rgArea.getSelectedItem() == rAreaCustom) {
+            setCustomArea = true;
+            hasCustomArea = false;
+            //this.setHeight("700px");
         }
     }
 
@@ -440,9 +475,45 @@ public class AddToolComposer extends UtilityComposer {
 
     }
 
+    public void resetWindow(String selectedArea) {
+        try {
+            if (hasCustomArea) {
+                loadAreaLayers(selectedArea);
+            }
+            this.setTop(winTop);
+            this.setLeft(winLeft);
+            
+            this.doModal();
+        } catch (InterruptedException ex) {
+            System.out.println("InterruptedException when resetting analysis window");
+            ex.printStackTrace(System.out);
+        } catch (SuspendNotAllowedException ex) {
+            System.out.println("Exception when resetting analysis window");
+            ex.printStackTrace(System.out);
+        }
+    }
+
     public void onClick$btnOk(Event event) {
 
         try {
+
+            if (setCustomArea && !hasCustomArea) {
+                this.doOverlapped();
+                this.setTop("-9999px");
+                this.setLeft("-9999px");
+
+                Map<String, Object> winProps = new HashMap<String, Object>();
+                winProps.put("parent", this);
+                winProps.put("parentname", "AddTool");
+                winProps.put("selectedMethod", selectedMethod);
+
+                Window window = (Window) Executions.createComponents("WEB-INF/zul/AddArea.zul", this, winProps);
+                window.setAttribute("winProps", winProps, true);
+                window.doModal();
+
+                return;
+            }
+
 
             Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
@@ -518,7 +589,7 @@ public class AddToolComposer extends UtilityComposer {
                 area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                for(MapLayer ml : layers) {
+                for (MapLayer ml : layers) {
                     if (area.equals(ml.getDisplayName())) {
                         area = ml.getWKT();
                         break;
@@ -547,7 +618,7 @@ public class AddToolComposer extends UtilityComposer {
                 area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                for(MapLayer ml : layers) {
+                for (MapLayer ml : layers) {
                     if (area.equals(ml.getDisplayName())) {
                         area = ml.getWKT();
                         break;
@@ -837,7 +908,7 @@ public class AddToolComposer extends UtilityComposer {
             btnOk.setDisabled(cbLayer2.getSelectedItem() == null
                     || cbLayer1.getSelectedItem() == null);
         }
-        
+
         if (currentDiv.getZclass().contains("species")) {
             btnOk.setDisabled(
                     !(divOtherSpecies.isVisible()
@@ -858,7 +929,6 @@ public class AddToolComposer extends UtilityComposer {
     public void onChange$cbLayer1(Event event) {
         toggles();
     }
-
 
     public String getSelectedAreaName() {
         String area = rgArea.getSelectedItem().getLabel();

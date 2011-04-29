@@ -32,7 +32,7 @@ import org.zkoss.zul.Comboitem;
  *
  * @author angus
  */
-public class AreaRegionSelection extends UtilityComposer {
+public class AreaRegionSelection extends AreaToolComposer {
 
     Button btnOk;
     private AutoComplete gazetteerAuto;

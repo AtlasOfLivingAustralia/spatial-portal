@@ -31,11 +31,11 @@ import org.zkoss.zul.Vbox;
  *
  * @author Adam
  */
-public class AreaMapPolygon extends UtilityComposer {
+public class AreaMapPolygon extends AreaToolComposer {
 
     SettingsSupplementary settingsSupplementary;
     private Textbox displayGeom;
-    String layerName;
+    //String layerName;
     Textbox txtLayerName;
     Button btnOk;
     Button btnClear;
