@@ -12,7 +12,7 @@
 
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Layer information</title>
         <link rel="stylesheet" href="/alaspatial/styles/style.css" type="text/css" media="all" />
     </head>

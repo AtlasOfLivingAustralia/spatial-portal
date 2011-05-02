@@ -229,6 +229,9 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
                 setStage(3);
 
+                // generate the readme.txt file
+                CitationService.generatePredictionReadme(msets.getOutputPath(), msets.getSpeciesFilepath().substring(msets.getSpeciesFilepath().lastIndexOf("points")));
+
                 setProgress(1, "finished");
 
                 setCurrentState(SUCCESSFUL);
