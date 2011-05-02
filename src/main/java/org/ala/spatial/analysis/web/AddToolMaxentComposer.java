@@ -226,4 +226,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
         }
         return "";
     }
+
+    public void onClick$btnClearSelection(Event event) {
+        System.out.println("Clear button pressed");
+        lbListLayers.clearSelection();
+    }
 }

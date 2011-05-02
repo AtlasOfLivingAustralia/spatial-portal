@@ -1022,9 +1022,9 @@ tr.z-listitem-seld, tr.z-listitem-seld span, tr.z-listitem-seld div  {
 tr.z-listitem-over, tr.z-listitem-over span, tr.z-listitem-over div {
     background-color: #DD3102;
     color: white;
-    padding: 0;
+    /*padding: 0;
     border: 0;
-    margin: 0;
+    margin: 0;*/
 }
 
 .menudiv {

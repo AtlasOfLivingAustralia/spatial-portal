@@ -62,7 +62,7 @@
                 <label id="atstep3_label" value="" />
                 <separator />
                 <vbox>
-                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="440px" height="210px" multiple="true" checkmark="true">
+                    <listbox sclass="envlist" fixedLayout="false" id="lbListLayers" use="org.ala.spatial.analysis.web.EnvironmentalList" width="410px" height="190px" multiple="true" checkmark="true">
                         <listhead>
                             <listheader label="category"  />
                             <listheader label="name" />
