@@ -101,8 +101,6 @@ public class GridCutter {
         width = xmax - xmin + 1;
         height = ymax - ymin + 1;
 
-
-
         //layer output container
         double[] dfiltered = new double[width * height];
 

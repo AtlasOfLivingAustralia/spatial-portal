@@ -186,8 +186,6 @@ public class JobsZK extends GenericForwardComposer {
 
                 System.out.println("got [" + pid + "][" + gc + "][" + area + "][" + envlist + "]");
 
-
-                StringBuffer sbenvsel = new StringBuffer();
                 StringBuffer sbProcessUrl = new StringBuffer();
                 sbProcessUrl.append(TabulationSettings.alaspatial_path + "ws/aloc/processgeoq?");
                 sbProcessUrl.append("gc="
@@ -195,11 +193,10 @@ public class JobsZK extends GenericForwardComposer {
                 sbProcessUrl.append("&envlist="
                                 + URLEncoder.encode(envlist, "UTF-8"));
 
-                        sbProcessUrl.append("&area="
-                                        + URLEncoder.encode(area, "UTF-8"));
-
                 HttpClient client = new HttpClient();
                 PostMethod get = new PostMethod(sbProcessUrl.toString());
+
+                get.addParameter("area",URLEncoder.encode(area, "UTF-8"));
 
                 get.addRequestHeader("Accept", "text/plain");
 
