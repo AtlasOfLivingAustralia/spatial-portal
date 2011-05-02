@@ -1315,3 +1315,7 @@ div.z-window-modal-header, div.z-window-overlapped-header {
  .lcGreen {
  background: #22aa22;
  }
+
+ .underline {
+     text-decoration: underline;
+}

@@ -3,8 +3,10 @@ package org.ala.spatial.util;
 import java.net.URLEncoder;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
@@ -34,6 +36,34 @@ public class LayersUtil {
     public static final String LAYER_TYPE_CSV_EXCEL = "text/x-comma-separated-values";
     public static final String LAYER_TYPE_EXCEL = "application/vnd.ms-excel";
     public static final String LAYER_TYPE_ZIP = "application/zip";
+
+    /**
+     * generate basic HTML for metadata of a WKT layer.
+     * 
+     * @param wkt as String
+     * @return html as String
+     */
+    public static String getMetadataForWKT(String method, String wkt) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        String date = sdf.format(new Date());
+        String area = String.format("%,d", (int) Util.calculateArea(wkt));
+        String shortWkt = (wkt.length() > 300)? wkt.substring(0,300) + "...": wkt;
+
+        return "Area metadata\n" + method + "<br>" + date + "<br>" + area + " sq km<br>" + shortWkt;
+    }
+
+    /**
+     * generate basic HTML for metadata of a layer with a description.
+     *
+     * @param wkt as String
+     * @return html as String
+     */
+    public static String getMetadata(String description) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        String date = sdf.format(new Date());
+        return "Area metadata\n" + description + "<br>" + date;
+    }
+
     /**
      * MapComposer for retrieving active layer names
      */

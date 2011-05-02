@@ -30,7 +30,8 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                     logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
-                    mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
+                    //mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
+                    Events.echoEvent("openHTML", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo());
                 } else {
                     logger.debug("no metadata is available for current layer");
                     mapComposer.showMessage("Metadata currently unavailable");

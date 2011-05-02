@@ -31,7 +31,7 @@
                     <label value="Species" />
                 </n:td>
                 <n:td>
-                    <n:u><label id="results_label2_species" style="cursor:pointer;" /></n:u>
+                    <label id="results_label2_species" style="cursor:pointer;" />
                 </n:td>
             </n:tr>
             <n:tr height="18px" >
@@ -39,7 +39,7 @@
                     <label value="Occurrences" />
                 </n:td>
                 <n:td>
-                    <n:u><label id="results_label2_occurrences" style="cursor:pointer;" /></n:u>
+                    <label id="results_label2_occurrences" style="cursor:pointer;" />
                 </n:td>
                 <n:td>
                     <button label="Map all" id="mapspecies" visible="false" sclass="goButton"/>
@@ -52,7 +52,7 @@
                     >Expert distributions</div></u> ]]></html>
                 </n:td>
                 <n:td>
-                    <n:u><label id="sdLabel" style="cursor:pointer;" /></n:u>
+                    <label id="sdLabel" style="cursor:pointer;" />
                 </n:td>
             </n:tr>            
             <n:tr height="18px" >
@@ -62,7 +62,7 @@
                     >Biostor documents</div></u> ]]></html>
                 </n:td>
                 <n:td width="80px">
-                    <n:u><label id="lblBiostor" style="cursor:pointer;" /></n:u>
+                    <label id="lblBiostor" style="cursor:pointer;" />
                 </n:td>
             </n:tr>      
         </n:table>

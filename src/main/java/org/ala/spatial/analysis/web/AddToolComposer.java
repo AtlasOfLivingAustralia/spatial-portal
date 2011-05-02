@@ -60,6 +60,8 @@ public class AddToolComposer extends UtilityComposer {
     boolean setCustomArea = false;
     boolean hasCustomArea = false;
 
+    MapLayer prevTopArea = null;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -89,7 +91,13 @@ public class AddToolComposer extends UtilityComposer {
         }
 
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        btnOk.setLabel(((!currentDiv.getZclass().contains("last")) ? "Next >" : "Finish"));
+        if(currentDiv.getZclass().contains("download")) {
+            btnOk.setLabel("Download");
+        } else if (currentDiv.getZclass().contains("last")) {
+            btnOk.setLabel("Finish");
+        } else {
+            btnOk.setLabel("Next >");
+        }
     }
 
     public void updateWindowTitle() {
@@ -477,13 +485,29 @@ public class AddToolComposer extends UtilityComposer {
 
     public void resetWindow(String selectedArea) {
         try {
+            boolean ok = false;
             if (hasCustomArea) {
-                loadAreaLayers(selectedArea);
+                MapLayer curTopArea = null;
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                if(layers != null && layers.size() > 0) {
+                    curTopArea = layers.get(0);
+                } else {
+                    curTopArea = null;
+                }
+                
+                if(curTopArea != prevTopArea) {
+                    loadAreaLayers(curTopArea.getDisplayName());
+                    ok = true;
+                }                
             }
             this.setTop(winTop);
             this.setLeft(winLeft);
             
             this.doModal();
+            
+            if(ok) {
+                onClick$btnOk(null);
+            }
         } catch (InterruptedException ex) {
             System.out.println("InterruptedException when resetting analysis window");
             ex.printStackTrace(System.out);
@@ -506,6 +530,13 @@ public class AddToolComposer extends UtilityComposer {
                 winProps.put("parent", this);
                 winProps.put("parentname", "AddTool");
                 winProps.put("selectedMethod", selectedMethod);
+
+                List<MapLayer> layers = getMapComposer().getPolygonLayers();
+                if(layers != null && layers.size() > 0) {
+                    prevTopArea = layers.get(0);
+                } else {
+                    prevTopArea = null;
+                }
 
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/AddArea.zul", this, winProps);
                 window.setAttribute("winProps", winProps, true);
@@ -538,7 +569,13 @@ public class AddToolComposer extends UtilityComposer {
                         onLastPanel();
                     }
 
-                    btnOk.setLabel(((!nextDiv.getZclass().contains("last")) ? "Next >" : "Finish"));
+                    if(nextDiv.getZclass().contains("download")) {
+                        btnOk.setLabel("Download");
+                    } else if (currentDiv.getZclass().contains("last")) {
+                        btnOk.setLabel("Finish");
+                    } else {
+                        btnOk.setLabel("Next >");
+                    }
                 }
 
                 currentStep++;
@@ -911,8 +948,8 @@ public class AddToolComposer extends UtilityComposer {
 
         if (currentDiv.getZclass().contains("species")) {
             btnOk.setDisabled(
-                    !(divOtherSpecies.isVisible()
-                    || searchSpeciesAuto.getSelectedItem() == null
+                    divOtherSpecies.isVisible()
+                    && (searchSpeciesAuto.getSelectedItem() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }
@@ -947,5 +984,9 @@ public class AddToolComposer extends UtilityComposer {
         String areaName = rgArea.getSelectedItem().getLabel();
 
         return areaName;
+    }
+
+    public void onClick$btnClearSelection(Event event) {
+        lbListLayers.clearSelection();
     }
 }

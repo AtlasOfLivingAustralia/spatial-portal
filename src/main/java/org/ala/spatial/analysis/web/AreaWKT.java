@@ -94,25 +94,7 @@ public class AreaWKT extends AreaToolComposer {
             mc.removeLayer(layerName);
         }
         this.detach();
-    }
-    
-       /**
-     * updates species list analysis tab with refreshCount
-     */
-    void updateSpeciesList(boolean populateSpeciesList) {
-        try {
-            FilteringResultsWCController win =
-                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf").getFellow("selectionwindow").getFellow("speciesListForm").getFellow("popup_results");
-            //if (!populateSpeciesList) {
-            win.refreshCount();
-            //} else {
-            //    win.onClick$refreshButton2();
-            // }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-       // updateAreaLabel();
-    }
+    }  
 
     /**
      * Gets the main pages controller so we can add a

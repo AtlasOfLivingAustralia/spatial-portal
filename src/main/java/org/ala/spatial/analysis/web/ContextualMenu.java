@@ -17,6 +17,7 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.A;
 import org.zkoss.zul.Vbox;
 import org.zkoss.zk.ui.util.Clients;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -173,7 +174,7 @@ public class ContextualMenu extends UtilityComposer {
                             (polygonLayer != null)?polygonLayer.getName():null, null)));
         }
         if (speciesLayer != null) {
-            actions.add(new Action("Produce prediction for \"" + speciesLayer.getDisplayName() + "\""
+            actions.add(new Action("Generate prediction for \"" + speciesLayer.getDisplayName() + "\""
                     + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"" :""),
                         new PredictionEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
                             (polygonLayer != null)?polygonLayer.getName():null, null)));
@@ -243,6 +244,8 @@ class SamplingEvent implements EventListener {
             params.put("environmentalLayerName", "none");
         }
         AddToolSamplingComposer window = (AddToolSamplingComposer) mc.openModal("WEB-INF/zul/AddToolSampling.zul", params);
+        window.onClick$btnOk(event);
+        window.onClick$btnOk(event);
     }
 }
 
@@ -278,6 +281,8 @@ class PredictionEvent implements EventListener {
             params.put("environmentalLayerName", "none");
         }
         AddToolMaxentComposer window = (AddToolMaxentComposer) mc.openModal("WEB-INF/zul/AddToolMaxent.zul", params);
+        window.onClick$btnOk(event);
+        window.onClick$btnOk(event);
     }
 }
 
@@ -306,6 +311,7 @@ class ClassificationEvent implements EventListener {
             params.put("environmentalLayerName", "none");
         }
         AddToolALOCComposer window = (AddToolALOCComposer) mc.openModal("WEB-INF/zul/AddToolALOC.zul", params);
+        window.onClick$btnOk(event);
     }
 }
 
@@ -340,7 +346,9 @@ class ScatterplotEvent implements EventListener {
         } else {
             params.put("environmentalLayerName", "default");
         }
-        mc.openModal("WEB-INF/zul/AddToolScatterplot.zul", params);
+        AddToolComposer window = (AddToolComposer) mc.openModal("WEB-INF/zul/AddToolScatterplot.zul", params);
+        window.onClick$btnOk(event);
+        window.onClick$btnOk(event);
     }
 }
 
@@ -362,6 +370,7 @@ class SpeciesListEvent implements EventListener {
             params.put("polygonLayerName", "none");
         }
         AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
+        window.onClick$btnOk(event);
 
 //        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
 //        MapLayer ml = mc.getMapLayer(polygonLayerName);
@@ -402,7 +411,7 @@ class MetadataEvent implements EventListener {
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                 //logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
-                mc.showMessage(mapLayer.getMapLayerMetadata().getMoreInfo());
+                Events.echoEvent("openUrl", mc, mapLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
             } else {
                 //logger.debug("no metadata is available for current layer");
                 mc.showMessage("Metadata currently unavailable");
@@ -422,20 +431,20 @@ class AreaReportEvent implements EventListener {
 
     @Override
     public void onEvent(Event event) throws Exception {
-        Hashtable<String, Object> params = new Hashtable<String, Object>();
-        if(polygonLayerName != null) {
-            params.put("polygonLayerName", polygonLayerName);
-        } else {
-            params.put("polygonLayerName", "none");
-        }
-        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params);
-
-//        MapLayer ml = mc.getMapLayer(polygonLayerName);
-//        if(ml != null) {
-//            FilteringResultsWCController.open(ml.getWKT());
+//        Hashtable<String, Object> params = new Hashtable<String, Object>();
+//        if(polygonLayerName != null) {
+//            params.put("polygonLayerName", polygonLayerName);
 //        } else {
-//            FilteringResultsWCController.open(null);
+//            params.put("polygonLayerName", "none");
 //        }
+//        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params);
+
+        MapLayer ml = mc.getMapLayer(polygonLayerName);
+        Window w = (Window) mc.getPage().getFellowIfAny("popup_results");
+        if(w != null) {
+            w.detach();
+        }
+        FilteringResultsWCController.open(ml.getWKT(), ml.getName(), ml.getDisplayName());
     }
 }
 

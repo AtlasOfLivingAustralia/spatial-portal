@@ -19,13 +19,7 @@ public class ExternalContentComposer extends Window {
         this.getFellow("hide").addEventListener("onClick", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
-                ((Iframe)event.getTarget() //toolbarbutton
-                        .getParent() //control
-                        .getParent().getFellow("externalContentIframe")).setSrc("/img/loading_small.gif");
-
-                event.getTarget() //toolbarbutton
-                        .getParent() //control
-                        .getParent().setVisible(false); //window
+                close();
             }
         });
         
@@ -33,6 +27,13 @@ public class ExternalContentComposer extends Window {
 
             public void onEvent(Event event) throws Exception {
                 Events.echoEvent("setSrc", event.getTarget().getParent().getParent(), null);
+            }
+        });
+
+        this.getFellow("breakout").addEventListener("onClick", new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                close();
             }
         });
     }
@@ -44,13 +45,7 @@ public class ExternalContentComposer extends Window {
         this.getFellow("hide").addEventListener("onClick", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
-                ((Iframe)event.getTarget() //toolbarbutton
-                        .getParent() //control
-                        .getParent().getFellow("externalContentIframe")).setSrc("/img/loading_small.gif");
-
-                event.getTarget() //toolbarbutton
-                        .getParent() //control
-                        .getParent().setVisible(false); //window
+                close();
             }
         });
 
@@ -58,6 +53,13 @@ public class ExternalContentComposer extends Window {
 
             public void onEvent(Event event) throws Exception {
                 Events.echoEvent("setSrc", event.getTarget().getParent().getParent(), null);
+            }
+        });
+
+        this.getFellow("breakout").addEventListener("onClick", new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                close();
             }
         });
     }
@@ -69,5 +71,9 @@ public class ExternalContentComposer extends Window {
         } else {
             ((Iframe)getFellow("externalContentIframe")).setSrc(src);
         }
+    }
+
+    void close() {
+        detach();
     }
 }

@@ -18,14 +18,14 @@
         <separator />
         <vbox style="padding-left: 10px" >
             <div id="atstep1" visible="true" zclass="first optional last" style="padding:5px">
-                <label id="atstep1_desc" value="Restrict report to an area" />
+                <label id="atstep1_desc" value="Apply to an area" />
                 <label id="atstep1_label" value="" />
                 <separator />
                 <radiogroup id="rgArea" orient="vertical">
                     <radio id="rAreaCurrent" label="Current extent" value="current" />
                     <radio id="rAreaAustralia" label="Australia" value="australia" />
                     <radio id="rAreaWorld" label="World" value="world" />
-                    <radio id="rAreaCustom" label="Add new active area" value="custom" />
+                    <radio id="rAreaCustom" label="Define new area" value="custom" />
                 </radiogroup>
             </div>
 

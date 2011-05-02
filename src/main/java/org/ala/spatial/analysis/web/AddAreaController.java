@@ -3,7 +3,9 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import org.ala.spatial.util.LayersUtil;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Radio;
@@ -62,14 +64,32 @@ public class AddAreaController extends UtilityComposer {
             String wkt = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
             String layerName = mc.getNextAreaLayerName("Australia Bounding Box");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
+            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                mapLayer.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(LayersUtil.getMetadata("Australia " + wkt));
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
             String layerName = mc.getNextAreaLayerName("World Bounding Box");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
+            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                mapLayer.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(LayersUtil.getMetadata("World " + wkt));
         } else if (cbAreaSelection.getSelectedItem() == ciBoxCurrentView) {
             String wkt = mc.getMapComposer().getViewArea();
             String layerName = mc.getNextAreaLayerName("View Area");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
+            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+            if (md == null) {
+                md = new MapLayerMetadata();
+                mapLayer.setMapLayerMetadata(md);
+            }
+            md.setMoreInfo(LayersUtil.getMetadata("Current view " + wkt));
         } else if (cbAreaSelection.getSelectedItem() == ciWKT) {
             windowName = "WEB-INF/zul/AreaWKT.zul";
         }

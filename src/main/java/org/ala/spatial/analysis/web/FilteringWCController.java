@@ -706,29 +706,9 @@ public class FilteringWCController extends UtilityComposer {
         try {
             popup_filter.count = Integer.parseInt(strCount.split("\n")[0]);
             ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount.split("\n")[0]);
-
-            //update Species List analysis tab
-            updateSpeciesList(popup_filter.count, Integer.parseInt(strCount.split("\n")[1]));
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * updates species list analysis tab with refreshCount
-     *
-     * similar function in SelectionController.java
-     */
-    void updateSpeciesList(int newCount, int newOccurrencesCount) {
-        try {
-            FilteringResultsWCController win =
-                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf") //AnalysisSelection
-                    .getFellow("speciesListForm").getFellow("popup_results");
-            win.refreshCount(newCount, newOccurrencesCount);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     private String postInfo(String urlPart) {

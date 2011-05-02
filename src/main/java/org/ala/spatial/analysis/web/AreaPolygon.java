@@ -3,11 +3,13 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
@@ -96,8 +98,6 @@ public class AreaPolygon extends AreaToolComposer {
                 wkt = selectionGeom;
                 displayGeom.setValue(wkt);
             }
-            //      updateComboBoxText();
-            updateSpeciesList(false); // true
 
             //get the current MapComposer instance
             MapComposer mc = getThisMapComposer();
@@ -106,6 +106,13 @@ public class AreaPolygon extends AreaToolComposer {
             if (wkt.length() > 0) {
                 layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
+                MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+                if(md == null) {
+                    md = new MapLayerMetadata();
+                    mapLayer.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(LayersUtil.getMetadataForWKT("User drawn polygon", wkt));
+
                 btnNext.setDisabled(false);
                 btnClear.setDisabled(false);
 
@@ -114,24 +121,6 @@ public class AreaPolygon extends AreaToolComposer {
 
         } catch (Exception e) {//FIXME
         }
-    }
-
-    /**
-     * updates species list analysis tab with refreshCount
-     */
-    void updateSpeciesList(boolean populateSpeciesList) {
-//        try {
-//            FilteringResultsWCController win =
-//                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf").getFellow("selectionwindow").getFellow("speciesListForm").getFellow("popup_results");
-//            //if (!populateSpeciesList) {
-//            win.refreshCount();
-//            //} else {
-//            //    win.onClick$refreshButton2();
-//            // }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        // updateAreaLabel();
     }
 
     /**

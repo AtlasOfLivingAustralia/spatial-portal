@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -14,6 +15,7 @@ import geo.google.GeoAddressStandardizer;
 import geo.google.datamodel.GeoAddress;
 import geo.google.datamodel.GeoCoordinate;
 import java.util.List;
+import org.ala.spatial.util.LayersUtil;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
@@ -44,6 +46,8 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
     Textbox txtLayerName;
     Button btnOk;
     Button btnClear;
+    private double longitude;
+    private double latitude;
 
     @Override
     public void afterCompose() {
@@ -76,11 +80,18 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
         } else {
             try {
                 MapComposer mc = getMapComposer();
-                layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+                layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
                 MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
+
+                MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    mapLayer.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(LayersUtil.getMetadata(cbRadius.getText() + " radius around " + addressLabel.getValue() + " (" + longitude + ", " + latitude + ")"));
+
                 displayGeom.setText(wkt);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 logger.error("Error adding WKT layer");
             }
         }
@@ -122,6 +133,8 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
             if (cbRadius.getSelectedItem() == ci20km) {
                 radius = 20000;
             }
+            longitude = gco.getLongitude();
+            latitude = gco.getLatitude();
             return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
 
         } catch (geo.google.GeoException ge) {

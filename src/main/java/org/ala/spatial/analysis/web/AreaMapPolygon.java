@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.ContextualLayerListComposer;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.io.BufferedReader;
@@ -16,6 +17,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Messagebox;
@@ -303,10 +305,13 @@ public class AreaMapPolygon extends AreaToolComposer {
                             //mc.removeFromList(mc.getMapLayer("Active Area"));
                             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
                             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
-                            updateSpeciesList(false);
-                            //searchPoint.setValue("");
-                            //setInstructions(null, null);
-
+                            MapLayerMetadata md = mapLayer.getMapLayerMetadata();
+                            if(md == null) {
+                                md = new MapLayerMetadata();
+                                mapLayer.setMapLayerMetadata(md);
+                            }
+                            md.setMoreInfo(LayersUtil.getMetadataForWKT("User selected map polygon", wkt));
+                       
                             btnOk.setDisabled(false);
                             btnClear.setDisabled(false);
                             break;
@@ -316,24 +321,6 @@ public class AreaMapPolygon extends AreaToolComposer {
                 }
             }
         }
-    }
-    
-     /**
-     * updates species list analysis tab with refreshCount
-     */
-    void updateSpeciesList(boolean populateSpeciesList) {
-//        try {
-//            FilteringResultsWCController win =
-//                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf").getFellow("selectionwindow").getFellow("speciesListForm").getFellow("popup_results");
-//            //if (!populateSpeciesList) {
-//            win.refreshCount();
-//            //} else {
-//            //    win.onClick$refreshButton2();
-//            // }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//       // updateAreaLabel();
     }
 
     /**

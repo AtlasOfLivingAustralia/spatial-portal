@@ -20,6 +20,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
@@ -235,5 +236,97 @@ public class Util {
 
     static public double convertPixelsToMeters(int pixels, double latitude, int zoom) {
         return ((Math.cos(latitude * Math.PI / 180.0) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom))) * pixels;
+    }
+
+    static public double calculateArea(String wkt) {
+        double sumarea = 0;
+        
+        try {
+            String [] areas = wkt.split("\\),\\(");
+
+            for(String area : areas) {
+                area = StringUtils.replace(area, "MULTIPOLYGON((", "");
+                area = StringUtils.replace(area, "POLYGON((", "");
+                area = StringUtils.replace(area, ")", "");
+                area = StringUtils.replace(area, "(", "");
+
+                String[] areaarr = area.split(",");
+
+                double totalarea = 0.0;
+                String d = areaarr[0];
+                for (int f = 1; f < areaarr.length - 2; ++f) {
+                    totalarea += Mh(d, areaarr[f], areaarr[f + 1]);
+                }
+
+                sumarea += totalarea * 6378137 * 6378137;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error in calculateArea");
+            e.printStackTrace(System.out);
+        }
+
+        return sumarea;
+    }
+
+    static private double Mh(String a, String b, String c) {
+        return Nh(a, b, c) * hi(a, b, c);
+    }
+
+    static private double Nh(String a, String b, String c) {
+        String[] poly = {a, b, c, a};
+        double[] area = new double[3];
+        int i = 0;
+        double j = 0.0;
+        for (i = 0; i < 3; ++i) {
+            area[i] = vd(poly[i], poly[i + 1]);
+            j += area[i];
+        }
+        j /= 2;
+        double f = Math.tan(j / 2);
+        for (i = 0; i < 3; ++i) {
+            f *= Math.tan((j - area[i]) / 2);
+        }
+        return 4 * Math.atan(Math.sqrt(Math.abs(f)));
+    }
+
+    static private double hi(String a, String b, String c) {
+        String[] d = {a, b, c};
+
+        int i = 0;
+        double[][] bb = new double[3][3];
+        for (i = 0; i < 3; ++i) {
+            String[] coords = d[i].split(" ");
+            double lng = Double.parseDouble(coords[0]);
+            double lat = Double.parseDouble(coords[1]);
+
+            double y = Uc(lat);
+            double x = Uc(lng);
+
+            bb[i][0] = Math.cos(y) * Math.cos(x);
+            bb[i][1] = Math.cos(y) * Math.sin(x);
+            bb[i][2] = Math.sin(y);
+        }
+
+        return (bb[0][0] * bb[1][1] * bb[2][2] + bb[1][0] * bb[2][1] * bb[0][2] + bb[2][0] * bb[0][1] * bb[1][2] - bb[0][0] * bb[2][1] * bb[1][2] - bb[1][0] * bb[0][1] * bb[2][2] - bb[2][0] * bb[1][1] * bb[0][2] > 0) ? 1 : -1;
+    }
+
+    static private double vd(String a, String b) {
+        String[] coords1 = a.split(" ");
+        double lng1 = Double.parseDouble(coords1[0]);
+        double lat1 = Double.parseDouble(coords1[1]);
+
+        String[] coords2 = b.split(" ");
+        double lng2 = Double.parseDouble(coords2[0]);
+        double lat2 = Double.parseDouble(coords2[1]);
+
+        double c = Uc(lat1);
+        double d = Uc(lat2);
+
+        return 2 * Math.asin(Math.sqrt(Math.pow(Math.sin((c - d) / 2), 2) + Math.cos(c) * Math.cos(d) * Math.pow(Math.sin((Uc(lng1) - Uc(lng2)) / 2), 2)));
+    }
+
+    static private double Uc(double a) {
+        return a * (Math.PI / 180);
     }
 }

@@ -584,11 +584,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     public void onClick$filter_done(Event event) {
         applyFilterEvented();
 
-        //hide this window
-        //getParent() //htmlmacrocomponent
-        //       .getParent() //div to hide
-        //            .setVisible(false);
-
         try {
             String urlPart = "/filtering/merge";
             urlPart += "/pid/" + URLEncoder.encode(pid, "UTF-8");
@@ -600,7 +595,14 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             activeAreaSize = imagefilepath[2];
 
             //make the metadata?
-            activeAreaMetadata = "Environmental Envelope";
+            StringBuilder sb = new StringBuilder();
+            sb.append("Environmental Envelope<br>");
+            for(int i=0;i<selectedLayers.size();i++) {
+                String layername = (String) selectedLayers.get(i);
+                SPLFilter f = getSPLFilter(layername);
+                sb.append(f.layername).append(": ").append(f.getFilterString()).append("<br>");
+            }
+            activeAreaMetadata = LayersUtil.getMetadata(sb.toString());
 
             removeAllSelectedLayers(true);  //this also shows active area
 
@@ -718,28 +720,9 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             popup_filter.count = Integer.parseInt(strCount.split("\n")[0]);
             ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount.split("\n")[0]);
 
-            //update Species List analysis tab
-            updateSpeciesList(popup_filter.count, Integer.parseInt(strCount.split("\n")[1]));
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * updates species list analysis tab with refreshCount
-     *
-     * similar function in SelectionController.java
-     */
-    void updateSpeciesList(int newCount, int newOccurrencesCount) {
-//        try {
-//            FilteringResultsWCController win =
-//                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf") //AnalysisSelection
-//                    .getFellow("speciesListForm").getFellow("popup_results");
-//            win.refreshCount(newCount, newOccurrencesCount);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
     }
 
     private String postInfo(String urlPart) {
@@ -892,7 +875,6 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     public void onClick$btnCancel(Event event) {
-        onClick$btnClearSelection(event);
-        detach();
+        removeAllSelectedLayers(false);
     }
 }
