@@ -109,7 +109,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /*
      * Autowired controls
      */
-    private Window externalContentWindow;
+
     private Iframe rawMessageIframeHack;
     private Div rawMessageHackHolder;
     //private Slider opacitySlider;
@@ -521,13 +521,15 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void activateLink(String uri, String label, boolean isExternal, String downloadPid) {
+        Window externalContentWindow = (Window)Executions.createComponents("WEB-INF/zul/ExternalContent.zul", layerControls, null);
+
         if (isExternal) {
             // change browsers current location
             Clients.evalJavaScript("window.location.href ='" + uri + "';");
         } else {
-            // iframe in another id-space so can't be auto wired
-            Iframe iframe = getExternalContentIframe();
-            Html html = getExternalContentHtml();
+
+            Iframe iframe = (Iframe) externalContentWindow.getFellow("externalContentIframe");
+            Html html = (Html) externalContentWindow.getFellow("externalContentHTML");
 
             if (uri.charAt(0) == '*') {
                 //html content
@@ -2861,18 +2863,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public LeftMenuSearchComposer getLeftmenuSearchComposer() {
         return (LeftMenuSearchComposer) getFellow("leftMenuSearch").getFellow("leftSearch");
-    }
-
-    /**
-     * iframe in another id-space so can't be auto wired
-     * @return
-     */
-    private Iframe getExternalContentIframe() {
-        return (Iframe) externalContentWindow.getFellow("externalContentIframe");
-    }
-
-    private Html getExternalContentHtml() {
-        return (Html) externalContentWindow.getFellow("externalContentHTML");
     }
 
     public DesktopState getDesktopState() {

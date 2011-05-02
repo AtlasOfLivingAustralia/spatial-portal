@@ -267,7 +267,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </south>
         </borderlayout>
 
-        <!-- external content (Links) popup -->
+        <!-- external content (Links) popup
         <window id="externalContentWindow" visible="false" width="80%"
                 height="80%" border="normal" sizable="true"
                 use="au.org.emii.portal.composer.ExternalContentComposer" >
@@ -280,9 +280,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             <separator />
             <iframe id="externalContentIframe" width="100%" height="100%" />
             <html id="externalContentHTML" ></html>
-        </window>
-
-
+        </window> -->
 
         <script defer="false" type="text/javascript"><![CDATA[
                     var onIframeMapFullyLoaded = function() {
