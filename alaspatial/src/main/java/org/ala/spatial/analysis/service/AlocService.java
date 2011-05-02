@@ -330,7 +330,7 @@ public class AlocService {
 
 
         /* export means + colours */
-        exportMeansColours(filename.replace("aloc.png","classification_means_date_time.csv"), group_means, colours, layers);
+        exportMeansColours(filename.replace("aloc.png","classification_means.csv"), group_means, colours, layers);
         if (job != null) {
             job.log("exported group means and colours");
         }
@@ -339,7 +339,7 @@ public class AlocService {
         String pth = "output" + File.separator + "aloc" + File.separator;
         int pos = filename.indexOf(pth);
         String f = filename.substring(pos + pth.length());
-        String urlpth = TabulationSettings.alaspatial_path + "output/aloc/" + f.replace("\\", "/").replace("aloc.png","classification_means_date_time.csv");
+        String urlpth = TabulationSettings.alaspatial_path + "output/aloc/" + f.replace("\\", "/").replace("aloc.png","classification_means.csv");
         exportMetadata(filename.replace("aloc.png","classification") + ".html", numberOfGroups, layers,
                 (job != null) ? job.getName() : "",
                 urlpth,
