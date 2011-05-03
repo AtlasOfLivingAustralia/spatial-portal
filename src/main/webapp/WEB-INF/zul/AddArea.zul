@@ -26,7 +26,7 @@
                     <radio label="Draw bounding box" id="ciBoundingBox" />
                     <radio label="Draw polygon" id="ciPolygon" />
                     <radio label="Draw point and radius" id="ciPointAndRadius" />
-                    <radio label="Select single polygon from mapped layer" id="ciMapPolygon" />
+                    <radio label="Select area from polygonal layer" id="ciMapPolygon" />
 
                     <separator />
                     <label value="Searching" style="font-weight:bold"  />

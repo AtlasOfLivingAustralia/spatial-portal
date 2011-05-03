@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.analysis.web.AreaMapPolygon;
+import org.ala.spatial.analysis.web.ContextualLayerSelection;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
@@ -39,7 +40,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
     private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
-    AreaMapPolygon areaMapPolygon;
+    ContextualLayerSelection contextualLayerSelection;
     SettingsSupplementary settingsSupplementary;
 
     @Override
@@ -213,9 +214,9 @@ public class ContextualLayerListComposer extends UtilityComposer {
     }
 
     void initALC() {
-        if(areaMapPolygon == null) {
+        if(contextualLayerSelection == null) {
             try {
-                areaMapPolygon = (AreaMapPolygon) getMapComposer().getFellow("areamappolygonwindow"); 
+                contextualLayerSelection = (ContextualLayerSelection) getMapComposer().getFellow("contextuallayerselectionwindow");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -338,7 +339,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
                                 initALC();
-                                areaMapPolygon.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
+                                contextualLayerSelection.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
                                         joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(joLayer.getString("displayname"),
@@ -354,7 +355,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 // Messagebox.show(displaypath);
                                 String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                                areaMapPolygon.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+                                contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(layer + " - " + classValue,
 //                                        displaypath,

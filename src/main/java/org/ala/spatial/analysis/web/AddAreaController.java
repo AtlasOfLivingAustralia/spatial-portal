@@ -5,6 +5,7 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.util.List;
 import org.ala.spatial.util.LayersUtil;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -56,8 +57,17 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/AreaUploadKML.zul";
             overlapped = false;
         } else if (cbAreaSelection.getSelectedItem() == ciMapPolygon) {
-            windowName = "WEB-INF/zul/AreaMapPolygon.zul";
-            script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
+            List<MapLayer> layers = getMapComposer().getContextualLayers();
+            if (layers.isEmpty()) {
+                //present layer selection window
+                windowName = "WEB-INF/zul/ContextualLayerSelection.zul";
+                overlapped = false;
+            }
+            else
+            {
+                windowName = "WEB-INF/zul/AreaMapPolygon.zul";
+                script = mc.getOpenLayersJavascript().addFeatureSelectionTool();
+            }
         } else if (cbAreaSelection.getSelectedItem() == ciEnvironmentalEnvelope) {
             windowName = "WEB-INF/zul/AreaEnvironmentalEnvelope.zul";
         } else if (cbAreaSelection.getSelectedItem() == ciBoxAustralia) {

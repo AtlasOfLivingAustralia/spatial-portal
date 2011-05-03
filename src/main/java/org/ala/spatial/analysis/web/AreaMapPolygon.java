@@ -2,7 +2,6 @@ package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.ContextualLayerListComposer;
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
@@ -20,7 +19,7 @@ import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zhtml.Messagebox;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zul.Button;
@@ -28,6 +27,7 @@ import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Vbox;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -42,9 +42,9 @@ public class AreaMapPolygon extends AreaToolComposer {
     Button btnOk;
     Button btnClear;
     Button btnAddLayer;
-    ContextualLayersAutoComplete autoCompleteLayers;
-    String treeName, treePath, treeMetadata;
-    int treeSubType;
+//    ContextualLayersAutoComplete autoCompleteLayers;
+//    String treeName, treePath, treeMetadata;
+//    int treeSubType;
     Radio rAddLayer;
     Vbox vbxLayerList;
     Radiogroup rgPolygonLayers;
@@ -54,38 +54,11 @@ public class AreaMapPolygon extends AreaToolComposer {
         super.afterCompose();
         loadLayerSelection();
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
+         btnOk.setDisabled(true);
+        btnClear.setDisabled(true);
     }
 
-    public void onClick$btnAddLayer(Event event) {
-         if(treeName != null) {
-            getMapComposer().addWMSLayer(treeName,
-                            treePath,
-                            (float) 0.75, treeMetadata, treeSubType);
-
-            getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
-        
-
-            //btnOk.setDisabled(false);
-            //btnClear.setDisabled(false);
-
-
-            Radio rNewLayer;
-            rNewLayer = new Radio(treeName);
-            rNewLayer.setValue(treeName);
-            rNewLayer.setParent(rgPolygonLayers);
-
-            Radio rSelectedLayer = rgPolygonLayers.getSelectedItem();
-            rgPolygonLayers.insertBefore(rNewLayer, rSelectedLayer);
-//            if (rSelectedLayer != null) {
-//                rSelectedLayer.setChecked(false);
-//                rSelectedLayer.setSelected(false);
-//            }
-            rNewLayer.setSelected(true);
-            rNewLayer.setChecked(true);
-       
-        }
-
-    }
+ 
 
     public void onClick$btnOk(Event event) {
         this.detach();
@@ -114,26 +87,14 @@ public class AreaMapPolygon extends AreaToolComposer {
     public void onCheck$rgPolygonLayers(Event event) {
         
           Radio selectedItem = rgPolygonLayers.getSelectedItem();
-          if (selectedItem == rAddLayer) {
-              vbxLayerList.setVisible(true);
-          }
-          else {
-              vbxLayerList.setVisible(false);
-              //Add option to add extra layer if not available
-               if (rAddLayer == null) {
-                rAddLayer = new Radio("Add Other Layer ...");
-                rAddLayer.setValue("Add Other Layer ...");
-                rAddLayer.setParent(rgPolygonLayers);
-                Radio rSelectedLayer = rgPolygonLayers.getSelectedItem();
-                rgPolygonLayers.insertBefore(rAddLayer,null);
-              }
-              //Add and remove layer to set as top layer
-              String layerName = selectedItem.getValue();
-              MapComposer mc = getThisMapComposer();
-              MapLayer ml = mc.getMapLayer(layerName);
-              mc.removeLayer(layerName);
-              mc.activateLayer(ml, true);
-          }
+         
+          //Add and remove layer to set as top layer
+          String layerName = selectedItem.getValue();
+          MapComposer mc = getThisMapComposer();
+          MapLayer ml = mc.getMapLayer(layerName);
+          mc.removeLayer(layerName);
+          mc.activateLayer(ml, true);
+          
     }
 
 
@@ -143,7 +104,9 @@ public class AreaMapPolygon extends AreaToolComposer {
             Radio rSelectedLayer = (Radio) getFellowIfAny("rSelectedLayer");
 
             List<MapLayer> layers = getMapComposer().getContextualLayers();
-            if (layers.size() > 0 ) {
+            
+            if (!layers.isEmpty()) {
+            
                 for (int i = 0; i < layers.size(); i++) {
 
                     MapLayer lyr = layers.get(i);
@@ -157,82 +120,13 @@ public class AreaMapPolygon extends AreaToolComposer {
                     }
                     rgPolygonLayers.insertBefore(rAr, rSelectedLayer);
                 }
-                
-                rAddLayer = new Radio("Add Other Layer ...");
-                rAddLayer.setValue("Add Other Layer ...");
-                rAddLayer.setParent(rgPolygonLayers);
-                rgPolygonLayers.insertBefore(rAddLayer,rSelectedLayer);
                 rSelectedLayer.setSelected(true);
             }
-            else {
-                vbxLayerList.setVisible(true);
-                btnOk.setDisabled(true);
-                btnClear.setDisabled(true);
-            }
-            
         } catch (Exception e) {
             
         }
     }
 
-    public void onChange$autoCompleteLayers(Event event) {
-        treeName = null;
-        //btnOk.setDisabled(true);
-        
-        ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerswindow");
-
-        if (autoCompleteLayers.getItemCount() > 0 && autoCompleteLayers.getSelectedItem() != null) {
-            JSONObject jo = (JSONObject) autoCompleteLayers.getSelectedItem().getValue();
-            String metadata = "";
-
-            metadata = CommonData.satServer + "/alaspatial/layers/" + jo.getString("uid");
-
-            setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata, 
-                    jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
-        } else {
-            JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
-            if (!joLayer.getString("type").contentEquals("class")) {
-
-                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
-
-                setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
-                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
-            } else {
-                String classAttribute = joLayer.getString("classname");
-                String classValue = joLayer.getString("displayname");
-                String layer = joLayer.getString("layername");
-                String displaypath = joLayer.getString("displaypath") + "&cql_filter=(" + classAttribute + "='" + classValue + "');include";
-                //Filtered requests don't work on
-                displaypath = displaypath.replace("gwc/service/", "");
-                // Messagebox.show(displaypath);
-                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
-
-                setLayer(layer + " - " + classValue, displaypath, metadata,
-                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
-            }
-
-            //close parent if it is 'addlayerwindow'
-            try {
-                getRoot().getFellow("addlayerwindow").detach();
-            } catch (Exception e) {}
-        }
-    }
-
-    public void setLayer(String name, String displaypath, String metadata, int subType) {
-        treeName = name;
-        treePath = displaypath;
-        treeMetadata = metadata;
-        treeSubType = subType;
-
-        //fill autocomplete text
-        autoCompleteLayers.setText(name);
-
-        //clear selection on tree
-         ContextualLayerListComposer llc = (ContextualLayerListComposer) getFellow("layerTree").getFellow("contextuallayerswindow");
-        llc.tree.clearSelection();
-
-       // btnOk.setDisabled(false);
-    }
 
     /**
      * Searches the gazetter at a given point and then maps the polygon feature
