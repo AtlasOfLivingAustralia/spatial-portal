@@ -48,20 +48,22 @@ public class MaxentProgressWCController extends UtilityComposer {
         //get status
 
         String status = get("status");
-        if(status.length() > 0) {
+        if (status.length() > 0) {
             jobstatus.setValue(status);
         }
 
         String s = get("state");
-        if(s.equals("job does not exist")){
+        if (s.equals("job does not exist")) {
             timer.stop();
-            getMapComposer().showMessage("Prediction request does not exist","");//get("error"));
+            getMapComposer().showMessage("Prediction request does not exist", "");//get("error"));
             this.detach();
             return;
         }
 
+        System.out.println("**************** STATE: " + s);
+
         String p = get("progress");
-        
+
         try {
             double d = Double.parseDouble(p);
             jobprogress.setValue((int) (d * 100));
@@ -69,15 +71,23 @@ public class MaxentProgressWCController extends UtilityComposer {
         }
 
         if (s.equals("SUCCESSFUL")) {
-            timer.stop();            
+            timer.stop();
             //Events.echoEvent("loadMap", parent, null);
             parent.loadMap(null);
             this.detach();
-        } else if(s.equals("FAILED")) {
+        } else if (s.startsWith("FAILED")) {
             timer.stop();
-            getMapComposer().showMessage("Prediction failed");
+            //String error_info = (s.contains(";")?"\n"+s.substring(s.indexOf(";")+1):"");
+            String error_info = get("message");
+            if (!error_info.equals("job does not exist")) {
+                error_info = " with: \n" + error_info;
+            } else {
+                error_info = "";
+            }
+            getMapComposer().showMessage("Prediction failed" + error_info);
             this.detach();
-        } else if(s.equals("CANCELLED")){
+            this.parent.detach();
+        } else if (s.equals("CANCELLED")) {
             timer.stop();
             getMapComposer().showMessage("Prediction cancelled by user");
             this.detach();
@@ -88,7 +98,7 @@ public class MaxentProgressWCController extends UtilityComposer {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
-            
+
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 
@@ -109,12 +119,12 @@ public class MaxentProgressWCController extends UtilityComposer {
         this.detach();
     }
 
-    public void onClick$btnHide(Event e){
+    public void onClick$btnHide(Event e) {
         showReferenceNumber();
         this.detach();
     }
 
-    void showReferenceNumber(){
+    void showReferenceNumber() {
         //getMapComposer().showMessage("Reference number to retrieve results: " + pid);
     }
 }
