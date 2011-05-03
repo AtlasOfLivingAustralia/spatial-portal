@@ -30,6 +30,7 @@ public class AnalysisJob extends Thread implements Serializable {
     String currentState;        //state of job; WAITING, RUNNING, SUCCESSFUL, FAILED
     long [] estimatePairs = null;//pairs of time requested of time remaining
     String inputs;              //input name:value; pairs
+    String message;
 
     public AnalysisJob(String pid){
         this.setName(pid);
@@ -37,6 +38,7 @@ public class AnalysisJob extends Thread implements Serializable {
         log = new StringBuffer();
         stage = -1;
         progress = new Double(0);
+        message = ""; 
         setCurrentState(WAITING);
     }
 
@@ -173,6 +175,14 @@ public class AnalysisJob extends Thread implements Serializable {
 
     public void setInputs(String inputs_){
         inputs = inputs_;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getImage(){
