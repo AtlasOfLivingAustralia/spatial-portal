@@ -15,7 +15,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
         <a sclass="fancybox-close" onClick="areamappolygonwindow.onClick$btnCancel(null)" style="display: inline" />
 
-        <caption label="Select Polygon From Mapped Layer" />
+        <caption label="Select single polygon from mapped layer" />
         <vbox sclass="embedWindowsContent">
             <div>
                 <hbox width="100%">
@@ -25,7 +25,7 @@
             </div>
             <separator />
             <label sclass="wordwrap" value="1. Choose layer to select polygon from." />
-            <label sclass="wordwrap" value="2. Identify the polygon of interest by a (left) mouse click within that polygon." />
+            <label sclass="wordwrap" value="2. Left mouse click within the desired polygon on the map." />
             <label sclass="wordwrap" value="3. The area selected will be highlighted red." /> 
             <separator />
             

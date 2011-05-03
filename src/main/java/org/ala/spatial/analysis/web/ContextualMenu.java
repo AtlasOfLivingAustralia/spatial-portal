@@ -44,7 +44,7 @@ public class ContextualMenu extends UtilityComposer {
         ul.setStyle("margin:0px");
         ul.setParent(contents);
 
-        for(int i=0;i<actions.size() && i < 5;i++) {
+        for(int i=0;i<actions.size();i++) {
             Li li = new Li();
             li.setParent(ul);
             A a = new A(actions.get(i).label);

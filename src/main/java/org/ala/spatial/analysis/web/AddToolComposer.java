@@ -91,13 +91,14 @@ public class AddToolComposer extends UtilityComposer {
         }
 
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        if(currentDiv.getZclass().contains("download")) {
-            btnOk.setLabel("Download");
-        } else if (currentDiv.getZclass().contains("last")) {
-            btnOk.setLabel("Finish");
-        } else {
-            btnOk.setLabel("Next >");
-        }
+//        if(currentDiv.getZclass().contains("download")) {
+//            btnOk.setLabel("Download");
+//        } else if (currentDiv.getZclass().contains("last")) {
+//            btnOk.setLabel("Finish");
+//        } else {
+//            btnOk.setLabel("Next >");
+//        }
+        btnOk.setLabel("Next >");
     }
 
     public void updateWindowTitle() {
@@ -569,13 +570,14 @@ public class AddToolComposer extends UtilityComposer {
                         onLastPanel();
                     }
 
-                    if(nextDiv.getZclass().contains("download")) {
-                        btnOk.setLabel("Download");
-                    } else if (currentDiv.getZclass().contains("last")) {
-                        btnOk.setLabel("Finish");
-                    } else {
-                        btnOk.setLabel("Next >");
-                    }
+//                    if(nextDiv.getZclass().contains("download")) {
+//                        btnOk.setLabel("Download");
+//                    } else if (currentDiv.getZclass().contains("last")) {
+//                        btnOk.setLabel("Finish");
+//                    } else {
+//                        btnOk.setLabel("Next >");
+//                    }
+                    btnOk.setLabel("Next >");
                 }
 
                 currentStep++;

@@ -17,34 +17,37 @@
 
         <vbox width="100%">
             <separator />
-            <label sclass="wLabel" value="Select a method to defining an area."/>
+            <label sclass="wLabel" value="Select method to define area."/>
             <div style="margin-left:20px" >
                 <radiogroup id="cbAreaSelection" orient="vertical" onCheck="btnOk.setDisabled(false)">
                     <vbox>
                     <separator />
-                    <label value="Interact with the map" />
+                    <label value="Interact with the map" style="font-weight:bold"  />
                     <radio label="Draw bounding box" id="ciBoundingBox" />
                     <radio label="Draw polygon" id="ciPolygon" />
                     <radio label="Draw point and radius" id="ciPointAndRadius" />
-                    <radio label="Select polygon from mapped layer" id="ciMapPolygon" />
+                    <radio label="Select single polygon from mapped layer" id="ciMapPolygon" />
 
                     <separator />
-                    <label value="Searching" />
-                    <radio label="Use radius based on street address" id="ciAddressRadiusSelection"/>
-                    <radio label="Select gazetteer region" id="ciRegionSelection" />                    
+                    <label value="Searching" style="font-weight:bold"  />
+                    <radio label="Radius centered on street address" id="ciAddressRadiusSelection"/>
+                    <radio label="Gazetteer polygon" id="ciRegionSelection" />
 
                     <separator />
-                    <label value="Preset areas" />
+                    <label value="Preset areas" style="font-weight:bold" />
                     <radio label="Box - Australia" id="ciBoxAustralia" />
                     <radio label="Box - World" id="ciBoxWorld" />
                     <radio label="Box - Current View" id="ciBoxCurrentView" />
 
                     <separator />
-                    <label value="Others" />
-                    <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
-                    <radio label="Upload WKT" id="ciWKT" />
+                    <label value="Upload"  style="font-weight:bold" />
                     <radio label="Upload Shapefile" id="ciUploadShapefile" />
                     <radio label="Upload KML" id="ciUploadKML" />
+
+                    <separator />
+                    <label value="Other" style="font-weight:bold"  />
+                    <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
+                    <radio label="Paste Well Known Text (WKT)" id="ciWKT" />
                     </vbox>
                 </radiogroup>
             </div>

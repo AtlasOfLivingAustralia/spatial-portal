@@ -3783,12 +3783,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void refreshContextualMenu() {
         ((ContextualMenu) contextualMenu.getFellow("contextualMenuWindow")).refresh();
-        MapLayer selectedLayer = getActiveLayersSelection(false);
-        if(selectedLayer != null && selectedLayer.isGridLayer()) {
-            Clients.evalJavaScript("mapFrame.showActiveHover();");
-        } else {
-            Clients.evalJavaScript("mapFrame.hideActiveHover();");
-        }
+//        MapLayer selectedLayer = getActiveLayersSelection(false);
+//        if(selectedLayer != null && selectedLayer.isGridLayer()) {
+//            Clients.evalJavaScript("mapFrame.showActiveHover();");
+//        } else {
+//            Clients.evalJavaScript("mapFrame.hideActiveHover();");
+//        }
     }
 
     /**

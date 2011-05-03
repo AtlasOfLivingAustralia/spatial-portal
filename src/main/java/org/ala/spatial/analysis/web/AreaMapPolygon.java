@@ -65,8 +65,8 @@ public class AreaMapPolygon extends AreaToolComposer {
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
         
 
-            btnOk.setDisabled(false);
-            btnClear.setDisabled(false);
+            //btnOk.setDisabled(false);
+            //btnClear.setDisabled(false);
 
 
             Radio rNewLayer;
