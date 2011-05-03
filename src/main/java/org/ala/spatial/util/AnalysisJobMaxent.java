@@ -12,14 +12,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Hashtable;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.maxent.MaxentServiceImpl;
 import org.ala.spatial.analysis.maxent.MaxentSettings;
 import org.ala.spatial.analysis.service.SamplingService;
-import org.apache.commons.io.FileUtils;
-import org.springframework.util.StringUtils;
 
 /**
  *
@@ -146,9 +145,17 @@ public class AnalysisJobMaxent extends AnalysisJob {
             if (isCancelled()) {
                 //
             } else if (exitValue == 0) {
-                // rename the env filenames to their display names
-                String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
-                String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator;
+
+                // check if there is an error
+                if (hasMaxentError(new File(msets.getOutputPath() + "maxent.log"), 2)) {
+                    System.out.println("Has error, sending maxent error message");
+                    setProgress(1, "failed: Warning: Skipping species because it has 0 test samples");
+                    setCurrentState(FAILED);
+                    setMessage("Warning: Skipping species because it has 0 test samples." + (msets.getRandomTestPercentage()>0?"\nHint: Try to set the test percetage to '0'":""));
+                } else {
+                    // rename the env filenames to their display names
+                    String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
+                    String pth = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator;
 //                for (int ei = 0; ei < envnameslist.length; ei++) {
 //                    readReplace(pth + "species.html", ".*?\\b"+envpathlist[ei]+"\\b.*?", Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + "("+envnameslist[ei]+")" );
 //                    for (int j = 0; j < imgExtensions.length; j++) {
@@ -167,35 +174,35 @@ public class AnalysisJobMaxent extends AnalysisJob {
 //                readReplace(pth + "species.html", "plots\\\\", "plots/");
 //
 //                readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
-                String input = getInputs();
-                String sciname = input.substring(input.indexOf("scientificName:") + 15, input.indexOf(";", input.indexOf("scientificName:") + 15));
-                String scirank = input.substring(input.indexOf("taxonRank:") + 10, input.indexOf(";", input.indexOf("taxonRank:") + 10));
-                readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + sciname);
+                    String input = getInputs();
+                    String sciname = input.substring(input.indexOf("scientificName:") + 15, input.indexOf(";", input.indexOf("scientificName:") + 15));
+                    String scirank = input.substring(input.indexOf("taxonRank:") + 10, input.indexOf(";", input.indexOf("taxonRank:") + 10));
+                    readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + sciname);
 
-                String paramlist = "Model reference number: " + getName()
-                        + "<br>Species: " + sciname + " (" + scirank + ")" + "<br>Layers: <ul>";
-                for (int ei = 0; ei < envnameslist.length; ei++) {
-                    paramlist += "<li>" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + " (" + envpathlist[ei] + ")</li>";
-                }
-                paramlist += "</ul>";
+                    String paramlist = "Model reference number: " + getName()
+                            + "<br>Species: " + sciname + " (" + scirank + ")" + "<br>Layers: <ul>";
+                    for (int ei = 0; ei < envnameslist.length; ei++) {
+                        paramlist += "<li>" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + " (" + envpathlist[ei] + ")</li>";
+                    }
+                    paramlist += "</ul>";
 
-                readReplace(pth + "species.html", "end of this page.<br>", "end of this page.<br><p>" + paramlist + "</p>");
-                readReplace(pth + "species.html", msets.getOutputPath(), "");
-                readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
-                readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
+                    readReplace(pth + "species.html", "end of this page.<br>", "end of this page.<br><p>" + paramlist + "</p>");
+                    readReplace(pth + "species.html", msets.getOutputPath(), "");
+                    readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
+                    readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
 
-                readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
-                readReplaceBetween(pth + "species.html", "(A link to the Explain", "additive models.)", "");
+                    readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
+                    readReplaceBetween(pth + "species.html", "(A link to the Explain", "additive models.)", "");
 
-                if (removedSpecies.length() > 0) {
-                    String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
-                    writeToFile(header + removedSpecies.toString(),
-                            currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
+                    if (removedSpecies.length() > 0) {
+                        String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
+                        writeToFile(header + removedSpecies.toString(),
+                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "maskedOutSensitiveSpecies.csv");
 
-                    String insertBefore = "<a href = \"species.asc\">The";
-                    String insertText = "<b><a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
-                    readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
-                }
+                        String insertBefore = "<a href = \"species.asc\">The";
+                        String insertText = "<b><a href = \"maskedOutSensitiveSpecies.csv\">'Sensitive species' masked out of the model</a></br></b>";
+                        readReplace(pth + "species.html", insertBefore, insertText + insertBefore);
+                    }
 
 //                //delete image
 //                FileUtils.deleteQuietly(new File(pth_plots + "species.png"));
@@ -203,49 +210,53 @@ public class AnalysisJobMaxent extends AnalysisJob {
 //                FileUtils.deleteQuietly(new File(pth + "maxent.log"));
 //                FileUtils.deleteQuietly(new File(msets.getSpeciesFilepath()));
 
-                writeProjectionFile(msets.getOutputPath());
+                    writeProjectionFile(msets.getOutputPath());
 
-                Hashtable htGeoserver = ssets.getGeoserverSettings();
+                    Hashtable htGeoserver = ssets.getGeoserverSettings();
 
-                // if generated successfully, then add it to geoserver
-                String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/file.arcgrid?coverageName=species_" + getName();
-                String extra = "";
-                String username = (String) htGeoserver.get("geoserver_username");
-                String password = (String) htGeoserver.get("geoserver_password");
+                    // if generated successfully, then add it to geoserver
+                    String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/maxent_" + getName() + "/file.arcgrid?coverageName=species_" + getName();
+                    String extra = "";
+                    String username = (String) htGeoserver.get("geoserver_username");
+                    String password = (String) htGeoserver.get("geoserver_password");
 
-                // first zip up the file as it's going to be sent as binary
-                //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
-                String[] infiles = {msets.getOutputPath() + "species.asc", msets.getOutputPath() + "species.prj"};
-                String ascZipFile = msets.getOutputPath() + "species.zip";
-                Zipper.zipFiles(infiles, ascZipFile);
+                    // first zip up the file as it's going to be sent as binary
+                    //String ascZipFile = Zipper.zipFile(msets.getOutputPath() + "species.asc");
+                    String[] infiles = {msets.getOutputPath() + "species.asc", msets.getOutputPath() + "species.prj"};
+                    String ascZipFile = msets.getOutputPath() + "species.zip";
+                    Zipper.zipFiles(infiles, ascZipFile);
 
-                // Upload the file to GeoServer using REST calls
-                System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
-                UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
+                    // Upload the file to GeoServer using REST calls
+                    System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
+                    UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
 
-                htProcess.put("status", "success"); ///
-                htProcess.put("pid", getName());
-                htProcess.put("info", "/output/maxent/" + getName() + "/species.html");
+                    htProcess.put("status", "success"); ///
+                    htProcess.put("pid", getName());
+                    htProcess.put("info", "/output/maxent/" + getName() + "/species.html");
 
-                setStage(3);
+                    setStage(3);
 
-                // generate the readme.txt file
-                CitationService.generatePredictionReadme(msets.getOutputPath(), msets.getSpeciesFilepath().substring(msets.getSpeciesFilepath().lastIndexOf("points")));
+                    // generate the readme.txt file
+                    CitationService.generatePredictionReadme(msets.getOutputPath(), msets.getSpeciesFilepath().substring(msets.getSpeciesFilepath().lastIndexOf("points")));
 
-                setProgress(1, "finished");
+                    setProgress(1, "finished");
 
-                setCurrentState(SUCCESSFUL);
+                    setCurrentState(SUCCESSFUL);
 
-                //write out infor for adjusting input parameters
-                System.out.println("MAXENT:" + cells + "," + layers.length + " " + speciesCount + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]));
+                    //write out infor for adjusting input parameters
+                    System.out.println("MAXENT:" + cells + "," + layers.length + " " + speciesCount + " " + (stageTimes[1] - stageTimes[0]) + " " + (stageTimes[2] - stageTimes[0]) + " " + (stageTimes[3] - stageTimes[2]));
+                }
             } else {
+                System.out.println("Failed 1");
                 setProgress(1, "failed");
                 setCurrentState(FAILED);
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Failed with exception: " + e.getMessage());
             setProgress(1, "failed: " + e.getMessage());
             setCurrentState(FAILED);
+            setMessage("Error processing your Prediction request. Please try again or if problem persists, contact the Administrator\nPlease quote the Prediction ID: " + getName());
         }
     }
 
@@ -525,5 +536,35 @@ public class AnalysisJobMaxent extends AnalysisJob {
         return new AnalysisJobMaxent(String.valueOf(System.currentTimeMillis()),
                 currentPath, taxon, envlist, region, envelope, layers,
                 txtTestPercentage, chkJackknife, chkResponseCurves);
+    }
+
+    private boolean hasMaxentError(File file, int count) {
+        try {
+            RandomAccessFile rf = new RandomAccessFile(file, "r");
+
+            long flen = file.length() - 1;
+            int nlcnt = -1;
+            StringBuilder lines = new StringBuilder();
+            while (nlcnt != count) {
+                rf.seek(flen--);
+                char c = (char) rf.read();
+                lines.append(c);
+                if (c == '\n') {
+                    nlcnt++;
+                }
+
+            }
+            String line = lines.reverse().toString();
+            if (line.contains("Warning: Skipping species because it has 0 test samples")) {
+                return true;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Unable to read lines");
+            e.printStackTrace(System.out);
+        }
+
+        // return false anyways
+        return false;
     }
 }

@@ -36,6 +36,23 @@ public class JobsController {
         return "job does not exist";
     }
 
+    @RequestMapping(value = "/message", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String message(HttpServletRequest req) {
+        try {
+            String pid = req.getParameter("pid");
+
+            String s = AnalysisQueue.getMessage(pid);
+            if(s != null) return s;
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return "job does not exist";
+    }
+
     @RequestMapping(value = "/status", method = RequestMethod.GET)
     public
     @ResponseBody

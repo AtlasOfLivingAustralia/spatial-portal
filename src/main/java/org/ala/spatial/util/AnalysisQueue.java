@@ -214,6 +214,16 @@ public class AnalysisQueue {
         return null;
     }
 
+    public static String getMessage(String pid) {
+        init();
+
+        AnalysisJob j = getJob(pid);
+        if (j != null) {
+            return j.getMessage();
+        }
+        return null;
+    }
+
     private static long getQueueEstimate(String pid) {
         long estimate = 0;
         for (AnalysisJob j : jobs) {
