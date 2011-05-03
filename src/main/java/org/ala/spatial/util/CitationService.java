@@ -184,19 +184,19 @@ public class CitationService {
     public static void generatePredictionReadme(File fDir, String pointsfile) {
         try {
             StringBuilder sbReadme = new StringBuilder();
-            sbReadme.append("plots\t\tFolder containing various plots for jackknifing and response curves");
-            sbReadme.append("maxent.log\t\tLog of MaxEnt actions and warnings");
-            sbReadme.append("maxentResults.csv\t\tSummary of 101 statistical values relating to the model");
-            sbReadme.append("species.html\t\tThe main output file, containing statistical analyses, plots, pictures of the model, and links to other files.Ê It also documents parameter and control settings that were used to do the run.");
-            sbReadme.append("species_sampleAverages.csv\t\tAverage values for layers in model");
-            sbReadme.append(pointsfile + "\t\tList of all point locations used in the model");
-            sbReadme.append("species.asc\t\tContains the probabilities in ESRI ASCII grid format");
-            sbReadme.append("species.lambdas\t\tContains the computed values of the constants");
-            sbReadme.append("species.prj\t\tMap projection parameters.");
-            sbReadme.append("species.zip\t\tZip of species.asc and species.prj");
-            sbReadme.append("species_omission.csv\t\tDescribes the predicted area and training and (optionally) test omission for various raw and cumulative thresholds.");
-            sbReadme.append("species_samplePredictions.csv\t\tStatus and prediction values for each point in model.");
-            sbReadme.append("species_explain.bat\t\tGenerates an explaination of the analysis results. Requires a local instance of MaxEnt.");
+            sbReadme.append("plots                           Folder containing various plots for jackknifing and response curves").append("\n");
+            sbReadme.append("maxent.log                      Log of MaxEnt actions and warnings").append("\n");
+            sbReadme.append("maxentResults.csv               Summary of 101 statistical values relating to the model").append("\n");
+            sbReadme.append("species.html                    The main output file, containing statistical analyses, plots, pictures of the model, and links to other files.Ê It also documents parameter and control settings that were used to do the run.").append("\n");
+            sbReadme.append("species_sampleAverages.csv      Average values for layers in model").append("\n");
+            sbReadme.append("species_points.csv              List of all point locations used in the model").append("\n");
+            sbReadme.append("species.asc                     Contains the probabilities in ESRI ASCII grid format").append("\n");
+            sbReadme.append("species.lambdas                 Contains the computed values of the constants").append("\n");
+            sbReadme.append("species.prj                     Map projection parameters.").append("\n");
+            sbReadme.append("species.zip                     Zip of species.asc and species.prj").append("\n");
+            sbReadme.append("species_omission.csv            Describes the predicted area and training and (optionally) test omission for various raw and cumulative thresholds.").append("\n");
+            sbReadme.append("species_samplePredictions.csv   Status and prediction values for each point in model.").append("\n");
+            sbReadme.append("species_explain.bat             Generates an explaination of the analysis results. Requires a local instance of MaxEnt.").append("\n");
 
             File temporary_file = new File(fDir, "readme.txt");
             FileWriter fw = new FileWriter(temporary_file);
@@ -215,19 +215,14 @@ public class CitationService {
     public static void generateClassificationReadme(File fDir) {
         try {
             StringBuilder sbReadme = new StringBuilder();
-//            sbReadme.append("extents.txt\t\tThe geographic extents of the area classified");
-//            sbReadme.append("img.png\t\tAn image of the classified area");
-//            sbReadme.append("legend.txt\t\tFile of group colour values and group means");
-//            sbReadme.append("metadata.html\t\tSummary of the classification run");
-
-            sbReadme.append("aloc.pgw\t\tProjection world file for the generated output image");
-            sbReadme.append("aloc.png\t\tGenerated output image");
-            sbReadme.append("extents.txt\t\tExtents for the generated image");
-            sbReadme.append("aloc.prj\t\tProjection file for the generated image");
-            sbReadme.append("classification_means.csv\t\tFile of group colour values and group means");
-            sbReadme.append("classification.html\t\tSummary of the classification run");
-            sbReadme.append("t_aloc.png\t\tTemporary classification image, PNG format");
-            sbReadme.append("t_aloc.tif\t\tTemporary classification image, GeoTIFF format");
+            sbReadme.append("aloc.pgw                   Projection world file for the generated output image").append("\n");
+            sbReadme.append("aloc.png                   Generated output image").append("\n");
+            sbReadme.append("extents.txt                Extents for the generated image").append("\n");
+            sbReadme.append("aloc.prj                   Projection file for the generated image").append("\n");
+            sbReadme.append("classification_means.csv   File of group colour values and group means").append("\n");
+            sbReadme.append("classification.html        Summary of the classification run").append("\n");
+            sbReadme.append("t_aloc.png                 Temporary classification image, PNG format").append("\n");
+            sbReadme.append("t_aloc.tif                 Temporary classification image, GeoTIFF format").append("\n");
 
             File temporary_file = new File(fDir, "readme.txt");
             FileWriter fw = new FileWriter(temporary_file);
