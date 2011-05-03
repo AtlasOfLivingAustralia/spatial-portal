@@ -459,7 +459,8 @@ public class AnalysisJobMaxent extends AnalysisJob {
             File fDir = new File(outputpath);
             fDir.mkdir();
 
-            File spFile = File.createTempFile("points_", ".csv", fDir);
+            //File spFile = File.createTempFile("points_", ".csv", fDir);
+            File spFile = new File(fDir, "species_points.csv");
             PrintWriter spWriter = new PrintWriter(new BufferedWriter(new FileWriter(spFile)));
 
             //spWriter.write("spname, longitude, latitude \n");
