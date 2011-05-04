@@ -23,7 +23,8 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
  */
 public class CitationService {
 
-    static String NEW_LINE = System.getProperty("line.separator");
+    //static String NEW_LINE = System.getProperty("line.separator");
+    static String NEW_LINE = "\r\n";
 
     public static String generateCitationDataProviders(String file) {
         String citation = "";
@@ -236,4 +237,11 @@ public class CitationService {
             e.printStackTrace(System.out);
         }
     }
+
+
+    public static void main(String[] args) {
+        System.out.println("Testing Readme");
+        generateClassificationReadme("/data/tmp/"); 
+    }
+
 }
