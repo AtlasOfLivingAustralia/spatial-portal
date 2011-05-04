@@ -80,7 +80,7 @@ public class MaxentProgressWCController extends UtilityComposer {
             //String error_info = (s.contains(";")?"\n"+s.substring(s.indexOf(";")+1):"");
             String error_info = get("message");
             if (!error_info.equals("job does not exist")) {
-                error_info = " with: \n" + error_info;
+                error_info = " with the following message: \n\n" + error_info;
             } else {
                 error_info = "";
             }
