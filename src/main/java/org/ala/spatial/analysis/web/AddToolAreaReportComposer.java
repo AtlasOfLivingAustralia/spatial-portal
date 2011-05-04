@@ -44,7 +44,7 @@ public class AddToolAreaReportComposer extends AddToolComposer {
         String area = getSelectedArea();
         String areaName = getSelectedAreaName();
         String areaDisplayName = getSelectedAreaDisplayName();
-        MapLayer ml = getMapComposer().getMapLayer(area);
+        MapLayer ml = getMapComposer().getMapLayer(areaName);
         double[] bbox = null;
         if (ml != null && ml.getMapLayerMetadata() != null
                 && ml.getMapLayerMetadata().getBbox() != null
