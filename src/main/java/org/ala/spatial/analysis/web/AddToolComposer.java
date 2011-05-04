@@ -593,10 +593,10 @@ public class AddToolComposer extends UtilityComposer {
                 winProps.put("parentname", "AddTool");
                 winProps.put("addToMap", "false");
                 usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, winProps);
-                if (rSpeciesUploadLSIDBk.isChecked()){
+                if (rSpeciesUploadLSID != null && rSpeciesUploadLSID.isChecked()){
                     usc.setTbInstructions("3. Select file (text file, one LSID per line)");
                 }
-                if (rSpeciesUploadSpeciesBk.isChecked()){
+                if (rSpeciesUploadLSID != null && rSpeciesUploadSpecies.isChecked()){
                     usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
                 }
 
@@ -614,11 +614,11 @@ public class AddToolComposer extends UtilityComposer {
                 winProps.put("parentname", "AddTool");
                 winProps.put("addToMap", "false");
                 usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, winProps);
-                if (rSpeciesUploadLSIDBk.isChecked()){
+                if (rSpeciesUploadLSIDBk != null && rSpeciesUploadLSIDBk.isChecked()){
                     usc.setTbInstructions("3. Select file (text file, one LSID per line)");
                     usc.setUploadType("bk");
                 }
-                if (rSpeciesUploadSpeciesBk.isChecked()){
+                if (rSpeciesUploadLSIDBk != null && rSpeciesUploadSpeciesBk.isChecked()){
                     usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
                     usc.setUploadType("bk");
                 }
@@ -1042,8 +1042,11 @@ public class AddToolComposer extends UtilityComposer {
         btnOk.setDisabled(true);
 
         onSelect$lbListLayers(null);
-        if ((!hasUploadSpecies && !setUploadSpecies)||(!hasUploadSpeciesBk && !setUploadSpeciesBk)){
+        if ((!hasUploadSpecies && !setUploadSpecies)){
             onCheck$rgSpecies(null);
+        }
+        if ((!hasUploadSpeciesBk && !setUploadSpeciesBk)){
+            onCheck$rgSpeciesBk(null);
         }
 
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
