@@ -26,6 +26,17 @@
             <separator/>
             <label sclass="wCaption" value='For example: "Australian Capital Territory"'/>
             <separator />
+             <hbox id="hbRadius" visible="false" width="100%">
+                <separator />
+                    <label value="Select radius" sclass="wLabel" />
+                <separator />
+                <combobox id="cbRadius" >
+                    <comboitem label="1km radius" id="ci1km" />
+                    <comboitem label="5km radius" id="ci5km" />
+                    <comboitem label="10km radius" id="ci10km" />
+                    <comboitem label="20km radius" id="ci20km" />
+                </combobox>
+            </hbox>
             <separator />
         </vbox>
         <separator />

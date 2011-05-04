@@ -5,7 +5,6 @@
 package org.ala.spatial.analysis.web;
 
 import org.zkoss.zk.ui.event.Event;
-import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -15,7 +14,10 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTWriter;
-import net.sf.json.JSONArray;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.util.CommonData;
@@ -24,9 +26,10 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.zkoss.zhtml.Messagebox;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Combobox;
 import org.zkoss.zul.Comboitem;
+import org.zkoss.zul.Hbox;
 
 /**
  *
@@ -35,11 +38,18 @@ import org.zkoss.zul.Comboitem;
 public class AreaRegionSelection extends AreaToolComposer {
 
     Button btnOk;
+    Hbox hbRadius;
     private AutoComplete gazetteerAuto;
+    Combobox cbRadius;
+    Comboitem ci1km;
+    Comboitem ci5km;
+    Comboitem ci10km;
+    Comboitem ci20km;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
+        cbRadius.setSelectedItem(ci1km);
     }
 
     public void onClick$btnOk(Event event) {
@@ -59,11 +69,28 @@ public class AreaRegionSelection extends AreaToolComposer {
         JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
         //if the layer is a point create a radius
         if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
+            
             String coords = jo.getJSONArray("geometries").getJSONObject(0).getString("coordinates").replace("[","").replace("]","");
 
-            String wkt = createCircle(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),5000);
+            double radius = 1000;
+            if (cbRadius.getSelectedItem() == ci1km) {
+                radius = 1000;
+            }
+            if (cbRadius.getSelectedItem() == ci5km) {
+                radius = 5000;
+            }
+            if (cbRadius.getSelectedItem() == ci10km) {
+                radius = 10000;
+            }
+            if (cbRadius.getSelectedItem() == ci20km) {
+                radius = 20000;
+            }
+
+            String wkt = createCircle(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),radius);
             getMapComposer().removeLayer(label);
             mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
+
+            //return;
         }
        
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
@@ -107,10 +134,21 @@ public class AreaRegionSelection extends AreaToolComposer {
             btnOk.setDisabled(true);
         } else {
             btnOk.setDisabled(false);
+            String json = readGeoJSON(CommonData.geoServer + ci.getValue().toString());
+            JSONObject jo = JSONObject.fromObject(json);
+            //if the layer is a point create a radius
+            if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point"))
+                hbRadius.setVisible(true);
+            else
+                hbRadius.setVisible(false);
+//            try {
+//                Messagebox.show(ci.getValue().toString());
+//            }
+//            catch (Exception e) {}
         }
     }
 
-     private String createCircle(double x, double y, final double RADIUS) {
+    private String createCircle(double x, double y, final double RADIUS) {
         return createCircle(x, y, RADIUS, 50);
 
     }
@@ -181,6 +219,29 @@ public class AreaRegionSelection extends AreaToolComposer {
             e.printStackTrace();
             return "none";
         }
+    }
+
+     private String readGeoJSON(String feature) {
+        StringBuffer content = new StringBuffer();
+
+        try {
+            // Construct data
+
+            // Send data
+            URL url = new URL(feature);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+
+            // Get the response
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = rd.readLine()) != null) {
+                content.append(line);
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+        }
+        return content.toString();
     }
 }
 
