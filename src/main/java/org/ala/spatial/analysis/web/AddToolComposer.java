@@ -603,8 +603,8 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onFinish() {
         try {
+            lbListLayers.clearSelection();
             this.detach();
-
             Messagebox.show("Running your analysis tool: " + selectedMethod);
 
         } catch (InterruptedException ex) {

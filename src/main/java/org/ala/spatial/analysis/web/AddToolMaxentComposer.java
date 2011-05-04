@@ -64,7 +64,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
         System.out.println("Layers: " + getSelectedLayers());
 
         runmaxent();
-
+        lbListLayers.clearSelection();
         //this.detach();
 
     }

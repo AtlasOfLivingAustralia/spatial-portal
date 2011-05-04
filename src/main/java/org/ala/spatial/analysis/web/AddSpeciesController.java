@@ -113,7 +113,7 @@ public class AddSpeciesController extends UtilityComposer {
     public void onCheck$rgAddSpecies(Event event) {
         if(rSearch.isSelected()) {
            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
-           btnOk.setLabel("OK");
+           btnOk.setLabel("Finish");
            vboxSearch.setVisible(true);
         } else {
            btnOk.setDisabled(false);
