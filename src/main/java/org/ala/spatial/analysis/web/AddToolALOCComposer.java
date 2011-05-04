@@ -63,7 +63,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         //super.onFinish();
 
         runclassification();
-
+        lbListLayers.clearSelection();
     }
 
     @Override

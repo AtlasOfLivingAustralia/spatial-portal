@@ -452,6 +452,9 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         currentStep = 1;
+        if (lbListLayers != null){
+            lbListLayers.clearSelection();
+        }
         this.detach();
     }
 
@@ -612,7 +615,6 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onFinish() {
         try {
-            lbListLayers.clearSelection();
             this.detach();
             Messagebox.show("Running your analysis tool: " + selectedMethod);
 
