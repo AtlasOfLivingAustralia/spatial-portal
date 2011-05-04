@@ -22,30 +22,30 @@
                 <radiogroup id="cbAreaSelection" orient="vertical" onCheck="btnOk.setDisabled(false)">
                     <vbox>
                     <separator />
-                    <label value="Interact with the map" style="font-weight:bold"  />
+                    <label value="Interact with the map" sclass="wSubLabel"/>
                     <radio label="Draw bounding box" id="ciBoundingBox" />
                     <radio label="Draw polygon" id="ciPolygon" />
                     <radio label="Draw point and radius" id="ciPointAndRadius" />
                     <radio label="Select area from polygonal layer" id="ciMapPolygon" />
 
                     <separator />
-                    <label value="Searching" style="font-weight:bold"  />
+                    <label value="Searching" sclass="wSubLabel" />
                     <radio label="Radius centered on street address" id="ciAddressRadiusSelection"/>
                     <radio label="Gazetteer polygon" id="ciRegionSelection" />
 
                     <separator />
-                    <label value="Preset areas" style="font-weight:bold" />
+                    <label value="Preset areas" sclass="wSubLabel" />
                     <radio label="Box - Australia" id="ciBoxAustralia" />
                     <radio label="Box - World" id="ciBoxWorld" />
                     <radio label="Box - Current View" id="ciBoxCurrentView" />
 
                     <separator />
-                    <label value="Upload"  style="font-weight:bold" />
+                    <label value="Upload"  sclass="wSubLabel"/>
                     <radio label="Upload Shapefile" id="ciUploadShapefile" />
                     <radio label="Upload KML" id="ciUploadKML" />
 
                     <separator />
-                    <label value="Other" style="font-weight:bold"  />
+                    <label value="Other" sclass="wSubLabel" />
                     <radio label="Define environmental envelope" id="ciEnvironmentalEnvelope" />
                     <radio label="Paste Well Known Text (WKT)" id="ciWKT" />
                     </vbox>
@@ -61,6 +61,5 @@
                 </hbox>
             </div>
             <separator />
-
     </window>
 </zk>

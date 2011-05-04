@@ -18,7 +18,7 @@
         <separator />
         <vbox style="padding-left: 10px" >
             <div id="atstep1" visible="true" zclass="first optional">
-                <label id="atstep1_desc" value="Apply to an area" />
+                <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
                 <separator />
                 <radiogroup id="rgArea" orient="vertical">
@@ -30,7 +30,7 @@
             </div>
 
             <div id="atstep2" visible="false" zclass="step2 species">
-                <label id="atstep2_desc" value="Select species" />
+                <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
                 <separator />
                 <radiogroup id="rgSpecies" orient="vertical">
@@ -41,7 +41,7 @@
                 <vbox width="100%">
                     <div id="divOtherSpecies" visible="false" >
                         <separator />
-                        <label sclass="wLabel" value="Enter a scientific or common name"/>
+                        <label sclass="wSubLabel" value="Enter a scientific or common name"/>
                         <separator />
                         <hbox>
                             <separator orient="vertical" />
@@ -58,7 +58,7 @@
             </div>
 
             <div id="atstep3" visible="false" zclass="step3 minlayers1">
-                <label id="atstep3_desc" value="Select one or more environmental layers" />
+                <label id="atstep3_desc" value="Select one or more environmental layers" sclass="wSubLabel"/>
                 <label id="atstep3_label" value="" />
                 <separator />
                 <vbox>
@@ -75,7 +75,7 @@
             </div>
 
             <div id="atstep4" visible="false" zclass="step4 optional">
-                <label id="atstep4_desc" value="MaxEnt options" />
+                <label id="atstep4_desc" value="MaxEnt options" sclass="wSubLabel"/>
                 <label id="atstep4_label" value="" />
                 <vbox>
                     <checkbox id="chkJackknife" label="Do jackknife to measure variable importance" />
@@ -91,7 +91,7 @@
             </div>
 
             <div id="atstep5" visible="false" zclass="last optional">
-                <label id="atstep5_desc" value="Name for prediction layer" />
+                <label id="atstep5_desc" value="Name for prediction layer" sclass="wSubLabel"/>
                 <label id="atstep5_label" value="" />
                 <separator />
                 <hbox>

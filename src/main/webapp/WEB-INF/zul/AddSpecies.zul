@@ -42,5 +42,6 @@
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
             </hbox>
         </div>
+        <separator />
     </window>
 </zk>

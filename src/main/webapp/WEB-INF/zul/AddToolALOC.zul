@@ -18,7 +18,7 @@
         <separator />
         <vbox style="padding-left: 10px" >
             <div id="atstep1" visible="true" zclass="first optional" style="padding:5px">
-                <label id="atstep1_desc" value="Apply to an area" />
+                <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
                 <separator />
                 <radiogroup id="rgArea" orient="vertical">
@@ -30,7 +30,7 @@
             </div>
 
             <div id="atstep2" visible="false" zclass="step2 minlayers2" style="padding:5px">
-                <label id="atstep2_desc" value="Select two or more environmental layers" />
+                <label id="atstep2_desc" value="Select two or more environmental layers" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
                 <separator />
                 <vbox>
@@ -47,7 +47,7 @@
             </div>
 
             <div id="atstep3" visible="false" zclass="step3 optional" style="padding:5px">
-                <label id="atstep3_desc" value="Number of groups" />
+                <label id="atstep3_desc" value="Number of groups" sclass="wSubLabel"/>
                 <label id="atstep3_label" value="" />
                 <vbox>
                     <label value="Enter number of groups to generate" />
@@ -56,7 +56,7 @@
             </div>
 
             <div id="atstep4" visible="false" zclass="last optional" style="padding:5px">
-                <label id="atstep4_desc" value="Name for classification layer" />
+                <label id="atstep4_desc" value="Name for classification layer" sclass="wSubLabel"/>
                 <label id="atstep4_label" value="" />
                 <separator />
                 <hbox>

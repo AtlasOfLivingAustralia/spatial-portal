@@ -37,6 +37,7 @@
                         </div>
                  </vbox>
              </radiogroup>
+        </vbox>
         <separator />
         <div sclass="wButtons">
             <hbox>
@@ -45,6 +46,5 @@
             </hbox>
         </div>
         <separator />
-        </vbox>
     </window>
 </zk>

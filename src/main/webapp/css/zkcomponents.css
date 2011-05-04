@@ -827,6 +827,10 @@ closebox a.helpButtonMain:hover {
     margin-left:5px;
 }
 
+.wSubLabel {
+    font-weight: bold;
+}
+
 .wCaption {
     margin-left:20px;
     font-style:italic;
