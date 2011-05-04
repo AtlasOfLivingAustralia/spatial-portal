@@ -85,6 +85,14 @@ public class AnalysisJobMaxent extends AnalysisJob {
             StringBuffer removedSpecies = new StringBuffer();
             double[] points = ss.sampleSpeciesPointsMinusSensitiveSpecies(taxon, region, null, removedSpecies);
 
+            if (points == null) {
+                setProgress(1, "failed: No occurrence points found in selection region");
+                setCurrentState(FAILED);
+                setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
+
+                return; 
+            }
+
             StringBuffer sbSpecies = new StringBuffer();
             // get the header
             sbSpecies.append("species, longitude, latitude");
@@ -147,11 +155,16 @@ public class AnalysisJobMaxent extends AnalysisJob {
             } else if (exitValue == 0) {
 
                 // check if there is an error
-                if (hasMaxentError(new File(msets.getOutputPath() + "maxent.log"), 2)) {
+                String maxentError = getMaxentError(new File(msets.getOutputPath() + "maxent.log"), 2);
+                if (maxentError != null) {
                     System.out.println("Has error, sending maxent error message");
-                    setProgress(1, "failed: Warning: Skipping species because it has 0 test samples");
+                    setProgress(1, "failed: " + maxentError);
                     setCurrentState(FAILED);
-                    setMessage("Warning: Skipping species because it has 0 test samples." + (msets.getRandomTestPercentage()>0?"\nHint: Try to set the test percetage to '0'":""));
+                    if (maxentError.equals("Warning: Skipping species because it has 0 test samples")) {
+                        setMessage("Warning: Skipping species because it has 0 test samples." + (msets.getRandomTestPercentage() > 0 ? "\nHint: Try to set the test percetage to '0'" : ""));
+                    } else if (maxentError.equals("Warning: Skipping species because it has 0 test samples")) {
+                        setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
+                    }
                 } else {
                     // rename the env filenames to their display names
                     String pth_plots = currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "plots" + File.separator;
@@ -538,9 +551,18 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 txtTestPercentage, chkJackknife, chkResponseCurves);
     }
 
-    private boolean hasMaxentError(File file, int count) {
+    private String getMaxentError(File file, int count) {
         try {
             RandomAccessFile rf = new RandomAccessFile(file, "r");
+
+
+            // first check if maxent threw a 'No species selected' error
+            String nosp = rf.readLine(); // first line: date/time
+            nosp = rf.readLine(); // second line: maxent version
+            nosp = rf.readLine(); // third line: "No species selected"
+            if (nosp.equals("No species selected")) {
+                return "No species selected";
+            }
 
             long flen = file.length() - 1;
             int nlcnt = -1;
@@ -556,7 +578,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
             }
             String line = lines.reverse().toString();
             if (line.contains("Warning: Skipping species because it has 0 test samples")) {
-                return true;
+                return "Warning: Skipping species because it has 0 test samples";
             }
 
         } catch (Exception e) {
@@ -565,6 +587,6 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
 
         // return false anyways
-        return false;
+        return null;
     }
 }
