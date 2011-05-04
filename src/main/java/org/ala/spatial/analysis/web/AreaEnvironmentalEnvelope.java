@@ -594,6 +594,11 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             activeAreaExtent = imagefilepath[1];
             activeAreaSize = imagefilepath[2];
 
+            int p = activeAreaSize.indexOf('.');
+            if(p>0) {
+                activeAreaSize = activeAreaSize.substring(0,p);
+            }
+
             //make the metadata?
             StringBuilder sb = new StringBuilder();
             sb.append("Environmental Envelope<br>");
@@ -766,6 +771,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
         MapLayer ml = mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
         ml.setWKT("ENVELOPE(" + pid + ")");
+        ml.setData("area", activeAreaSize);
 
     }
 

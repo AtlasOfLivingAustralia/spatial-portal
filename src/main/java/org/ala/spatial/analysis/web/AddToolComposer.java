@@ -986,7 +986,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public String getSelectedAreaName() {
-        String area = rgArea.getSelectedItem().getLabel();
+        String area = rAreaSelected.getLabel();
         List<MapLayer> layers = getMapComposer().getPolygonLayers();
         for (MapLayer ml : layers) {
             if (area.equals(ml.getDisplayName())) {
@@ -999,7 +999,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public String getSelectedAreaDisplayName() {
-        String areaName = rgArea.getSelectedItem().getLabel();
+        String areaName = rAreaSelected.getLabel();
 
         return areaName;
     }

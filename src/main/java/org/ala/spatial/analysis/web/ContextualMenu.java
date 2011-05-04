@@ -24,7 +24,7 @@ import org.zkoss.zul.Window;
  * @author ajay
  */
 public class ContextualMenu extends UtilityComposer {
-    
+
     SettingsSupplementary settingsSupplementary;
     Vbox contents;
 
@@ -34,17 +34,17 @@ public class ContextualMenu extends UtilityComposer {
     }
 
     public void refresh() {
-        for(int i=contents.getChildren().size()-1;i>=0;i--) {
-            ((Component)contents.getChildren().get(i)).detach();
+        for (int i = contents.getChildren().size() - 1; i >= 0; i--) {
+            ((Component) contents.getChildren().get(i)).detach();
         }
-        
+
         ArrayList<Action> actions = getActions();
 
         Ul ul = new Ul();
         ul.setStyle("margin:0px");
         ul.setParent(contents);
 
-        for(int i=0;i<actions.size();i++) {
+        for (int i = 0; i < actions.size(); i++) {
             Li li = new Li();
             li.setParent(ul);
             A a = new A(actions.get(i).label);
@@ -110,19 +110,19 @@ public class ContextualMenu extends UtilityComposer {
 //            }
 //        }
         MapLayer firstLayer = null;
-        for(int i=0;i<layers.size() && actions.size() < 5;i++) {
-            if(layers.get(i).getMapLayerMetadata() != null
+        for (int i = 0; i < layers.size() && actions.size() < 5; i++) {
+            if (layers.get(i).getMapLayerMetadata() != null
                     && layers.get(i).getMapLayerMetadata().getSpeciesLsid() != null
                     && layers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
-                if(speciesLayer == null) {
+                if (speciesLayer == null) {
                     speciesLayer = layers.get(i);
                 }
                 if (firstLayer == null) {
                     firstLayer = layers.get(i);
                 }
-            } else if(layers.get(i).isPolygonLayer()
+            } else if (layers.get(i).isPolygonLayer()
                     && layers.get(i).getSubType() != LayerUtilities.ALOC) {
-                if(polygonLayer == null) {
+                if (polygonLayer == null) {
                     polygonLayer = layers.get(i);
                 }
                 if (firstLayer == null) {
@@ -131,7 +131,7 @@ public class ContextualMenu extends UtilityComposer {
             } else if (layers.get(i).isGridLayer()
                     && layers.get(i).getSubType() != LayerUtilities.MAXENT) {
                 //TODO: grid test
-                if(gridLayer == null) {
+                if (gridLayer == null) {
                     gridLayer = layers.get(i);
                 }
                 if (firstLayer == null) {
@@ -139,60 +139,60 @@ public class ContextualMenu extends UtilityComposer {
                 }
             }
         }
-        
+
         //actions rules
-        if(polygonLayer != null) {
+        if (polygonLayer != null) {
             actions.add(new Action("View area report for \"" + polygonLayer.getDisplayName() + "\"",
-                        new AreaReportEvent(getMapComposer(), polygonLayer.getName())));
+                    new AreaReportEvent(getMapComposer(), polygonLayer.getName())));
         }
-        if(firstLayer != null) {
+        if (firstLayer != null) {
             actions.add(new Action("View metadata for \"" + firstLayer.getDisplayName() + "\"",
-                            new MetadataEvent(getMapComposer(), firstLayer.getName())));
+                    new MetadataEvent(getMapComposer(), firstLayer.getName())));
         }
         if (polygonLayer != null) {
-                actions.add(new Action("Download species list for \"" + polygonLayer.getDisplayName() + "\"",
-                        new SpeciesListEvent(getMapComposer(), polygonLayer.getName())));
+            actions.add(new Action("Download species list for \"" + polygonLayer.getDisplayName() + "\"",
+                    new SpeciesListEvent(getMapComposer(), polygonLayer.getName())));
         }
-        if(speciesLayer != null) {
+        if (speciesLayer != null) {
             actions.add(new Action("Download all records for \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"":""),
-                            new SamplingEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
-                                (polygonLayer != null)?polygonLayer.getName():null, null)));
-        } else if(polygonLayer != null) {
-            actions.add(new Action("Download all records " +
-                    ((polygonLayer != null)?" for " + "\"" + polygonLayer.getDisplayName() + "\"":""),
-                            new SamplingEvent(getMapComposer(), null, polygonLayer.getName(), null)));
-        }        
+                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
+                    new SamplingEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
+                    (polygonLayer != null) ? polygonLayer.getName() : null, null)));
+        } else if (polygonLayer != null) {
+            actions.add(new Action("Download all records "
+                    + ((polygonLayer != null) ? " for " + "\"" + polygonLayer.getDisplayName() + "\"" : ""),
+                    new SamplingEvent(getMapComposer(), null, polygonLayer.getName(), null)));
+        }
         if (polygonLayer != null) {
             actions.add(new Action("Generate classification for \"" + polygonLayer.getDisplayName() + "\"",
-                        new ClassificationEvent(getMapComposer(), polygonLayer.getName(), null)));
+                    new ClassificationEvent(getMapComposer(), polygonLayer.getName(), null)));
         }
         if (speciesLayer != null) {
             actions.add(new Action("Produce scatterplot for \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"":""),
-                        new ScatterplotEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
-                            (polygonLayer != null)?polygonLayer.getName():null, null)));
+                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
+                    new ScatterplotEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
+                    (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
         if (speciesLayer != null) {
             actions.add(new Action("Generate prediction for \"" + speciesLayer.getDisplayName() + "\""
-                    + ((polygonLayer != null)?" in \"" + polygonLayer.getDisplayName() + "\"" :""),
-                        new PredictionEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
-                            (polygonLayer != null)?polygonLayer.getName():null, null)));
+                    + ((polygonLayer != null) ? " in \"" + polygonLayer.getDisplayName() + "\"" : ""),
+                    new PredictionEvent(getMapComposer(), speciesLayer.getMapLayerMetadata().getSpeciesLsid(),
+                    (polygonLayer != null) ? polygonLayer.getName() : null, null)));
         }
 
 //        if(gridLayer != null){
 //            actions.add(new Action("Browse environmental point values for " + gridLayer.getDisplayName(), new GridLayerHoverEvent(getMapComposer(), gridLayer.getName())));
 //        }
 
-      
+
         return actions;
     }
 
     ArrayList<MapLayer> getVisibleLayers() {
         ArrayList<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
-        for(int i=0;i<allLayers.size();i++) {
-            if(allLayers.get(i).isDisplayed()) {
+        for (int i = 0; i < allLayers.size(); i++) {
+            if (allLayers.get(i).isDisplayed()) {
                 list.add(allLayers.get(i));
             }
         }
@@ -202,6 +202,7 @@ public class ContextualMenu extends UtilityComposer {
 }
 
 class Action {
+
     public String label;
     public EventListener eventListener;
 
@@ -213,6 +214,7 @@ class Action {
 }
 
 class SamplingEvent implements EventListener {
+
     String lsid;
     String polygonLayerName;
     String environmentalLayerName;
@@ -228,17 +230,17 @@ class SamplingEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         Hashtable<String, Object> params = new Hashtable<String, Object>();
-        if(lsid != null) {
+        if (lsid != null) {
             params.put("lsid", lsid);
         } else {
             params.put("lsid", "none");
         }
-        if(polygonLayerName != null) {
+        if (polygonLayerName != null) {
             params.put("polygonLayerName", polygonLayerName);
         } else {
             params.put("polygonLayerName", "none");
         }
-        if(environmentalLayerName != null) {
+        if (environmentalLayerName != null) {
             params.put("environmentalLayerName", environmentalLayerName);
         } else {
             params.put("environmentalLayerName", "none");
@@ -250,6 +252,7 @@ class SamplingEvent implements EventListener {
 }
 
 class PredictionEvent implements EventListener {
+
     String lsid;
     String polygonLayerName;
     String environmentalLayerName;
@@ -265,17 +268,17 @@ class PredictionEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         Hashtable<String, Object> params = new Hashtable<String, Object>();
-        if(lsid != null) {
+        if (lsid != null) {
             params.put("lsid", lsid);
         } else {
             params.put("lsid", "none");
         }
-        if(polygonLayerName != null) {
+        if (polygonLayerName != null) {
             params.put("polygonLayerName", polygonLayerName);
         } else {
             params.put("polygonLayerName", "none");
         }
-        if(environmentalLayerName != null) {
+        if (environmentalLayerName != null) {
             params.put("environmentalLayerName", environmentalLayerName);
         } else {
             params.put("environmentalLayerName", "none");
@@ -287,11 +290,12 @@ class PredictionEvent implements EventListener {
 }
 
 class ClassificationEvent implements EventListener {
+
     String polygonLayerName;
     String environmentalLayerName;
     MapComposer mc;
 
-    public ClassificationEvent(MapComposer mc,String polygonLayerName, String environmentalLayerName) {
+    public ClassificationEvent(MapComposer mc, String polygonLayerName, String environmentalLayerName) {
         this.mc = mc;
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
@@ -300,12 +304,12 @@ class ClassificationEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         Hashtable<String, Object> params = new Hashtable<String, Object>();
-        if(polygonLayerName != null) {
+        if (polygonLayerName != null) {
             params.put("polygonLayerName", polygonLayerName);
         } else {
             params.put("polygonLayerName", "none");
         }
-        if(environmentalLayerName != null) {
+        if (environmentalLayerName != null) {
             params.put("environmentalLayerName", environmentalLayerName);
         } else {
             params.put("environmentalLayerName", "none");
@@ -316,6 +320,7 @@ class ClassificationEvent implements EventListener {
 }
 
 class ScatterplotEvent implements EventListener {
+
     String lsid;
     String polygonLayerName;
     String environmentalLayerName;
@@ -331,17 +336,17 @@ class ScatterplotEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         Hashtable<String, Object> params = new Hashtable<String, Object>();
-        if(lsid != null) {
+        if (lsid != null) {
             params.put("lsid", lsid);
         } else {
             params.put("lsid", "none");
         }
-        if(polygonLayerName != null) {
+        if (polygonLayerName != null) {
             params.put("polygonLayerName", polygonLayerName);
         } else {
             params.put("polygonLayerName", "none");
         }
-        if(environmentalLayerName != null) {
+        if (environmentalLayerName != null) {
             params.put("environmentalLayerName", environmentalLayerName);
         } else {
             params.put("environmentalLayerName", "default");
@@ -353,10 +358,11 @@ class ScatterplotEvent implements EventListener {
 }
 
 class SpeciesListEvent implements EventListener {
+
     String polygonLayerName;
     MapComposer mc;
 
-    public SpeciesListEvent (MapComposer mc, String polygonLayerName) {
+    public SpeciesListEvent(MapComposer mc, String polygonLayerName) {
         this.mc = mc;
         this.polygonLayerName = polygonLayerName;
     }
@@ -364,7 +370,7 @@ class SpeciesListEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         Hashtable<String, Object> params = new Hashtable<String, Object>();
-        if(polygonLayerName != null) {
+        if (polygonLayerName != null) {
             params.put("polygonLayerName", polygonLayerName);
         } else {
             params.put("polygonLayerName", "none");
@@ -388,10 +394,11 @@ class SpeciesListEvent implements EventListener {
 }
 
 class MetadataEvent implements EventListener {
+
     String layerName;
     MapComposer mc;
 
-    public MetadataEvent (MapComposer mc, String layerName) {
+    public MetadataEvent(MapComposer mc, String layerName) {
         this.mc = mc;
         this.layerName = layerName;
     }
@@ -399,7 +406,7 @@ class MetadataEvent implements EventListener {
     @Override
     public void onEvent(Event event) throws Exception {
         MapLayer mapLayer = mc.getMapLayer(layerName);
-        if(mapLayer != null) {
+        if (mapLayer != null) {
             if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
@@ -411,7 +418,7 @@ class MetadataEvent implements EventListener {
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                 //logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
-                Events.echoEvent("openUrl", mc, mapLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
+                Events.echoEvent("openHTML", mc, mapLayer.getMapLayerMetadata().getMoreInfo());
             } else {
                 //logger.debug("no metadata is available for current layer");
                 mc.showMessage("Metadata currently unavailable");
@@ -421,10 +428,11 @@ class MetadataEvent implements EventListener {
 }
 
 class AreaReportEvent implements EventListener {
+
     String polygonLayerName;
     MapComposer mc;
 
-    public AreaReportEvent (MapComposer mc, String polygonLayerName) {
+    public AreaReportEvent(MapComposer mc, String polygonLayerName) {
         this.mc = mc;
         this.polygonLayerName = polygonLayerName;
     }
@@ -441,18 +449,29 @@ class AreaReportEvent implements EventListener {
 
         MapLayer ml = mc.getMapLayer(polygonLayerName);
         Window w = (Window) mc.getPage().getFellowIfAny("popup_results");
-        if(w != null) {
+        if (w != null) {
             w.detach();
         }
-        FilteringResultsWCController.open(ml.getWKT(), ml.getName(), ml.getDisplayName());
+        double[] bbox = null;
+        if (ml != null && ml.getMapLayerMetadata() != null
+                && ml.getMapLayerMetadata().getBbox() != null
+                && ml.getMapLayerMetadata().getBbox().size() == 4) {
+            bbox = new double[4];
+            bbox[0] = ml.getMapLayerMetadata().getBbox().get(0);
+            bbox[1] = ml.getMapLayerMetadata().getBbox().get(1);
+            bbox[2] = ml.getMapLayerMetadata().getBbox().get(2);
+            bbox[3] = ml.getMapLayerMetadata().getBbox().get(3);
+        }
+        FilteringResultsWCController.open(ml.getWKT(), ml.getName(), ml.getDisplayName(), (String) ml.getData("area"), bbox);
     }
 }
 
 class GridLayerHoverEvent implements EventListener {
+
     MapComposer mc;
     String layerName;
 
-    public GridLayerHoverEvent (MapComposer mc, String layerName) {
+    public GridLayerHoverEvent(MapComposer mc, String layerName) {
         this.mc = mc;
         this.layerName = layerName;
     }

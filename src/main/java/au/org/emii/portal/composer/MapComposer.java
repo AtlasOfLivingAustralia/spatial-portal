@@ -3788,7 +3788,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //            Clients.evalJavaScript("mapFrame.showActiveHover();");
 //        } else {
 //            Clients.evalJavaScript("mapFrame.hideActiveHover();");
-//        }
+//        }filter
     }
 
     /**

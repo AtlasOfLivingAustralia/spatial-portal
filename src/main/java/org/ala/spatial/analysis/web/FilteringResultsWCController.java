@@ -56,13 +56,17 @@ public class FilteringResultsWCController extends UtilityComposer {
     String reportArea = null;
     String areaName = "Area Report";
     String areaDisplayName = "Area Report";
+    String areaSqKm = null;
+    double [] boundingBox = null;
 
     HashMap<String, String> data = new HashMap<String, String>();
 
-    public void setReportArea(String wkt, String name, String displayname) {
+    public void setReportArea(String wkt, String name, String displayname, String areaSqKm, double [] boundingBox) {
         reportArea = wkt;
         areaName = name;
         areaDisplayName = displayname;
+        this.areaSqKm = areaSqKm;
+        this.boundingBox = boundingBox;
         setTitle(displayname);
 
         if (name.equals("Current extent")) {
@@ -488,13 +492,13 @@ public class FilteringResultsWCController extends UtilityComposer {
         }
     }
 
-    static public void open(String wkt, String name, String displayName) {
+    static public void open(String wkt, String name, String displayName, String areaSqKm, double [] boundingBox) {
         FilteringResultsWCController win = (FilteringResultsWCController) Executions.createComponents(
                 "/WEB-INF/zul/AnalysisFilteringResults.zul", null, null);
         try {
             win.doOverlapped();
             win.setPosition("center");
-            win.setReportArea(wkt, name, displayName);
+            win.setReportArea(wkt, name, displayName, areaSqKm, boundingBox);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -564,12 +568,25 @@ public class FilteringResultsWCController extends UtilityComposer {
             return;
         }
         try {
+            String area = shape;
+            if(area.contains("ENVELOPE") && boundingBox != null) {
+//                area = "POLYGON((" + boundingBox[0] + " " + boundingBox[1] + ","
+//                        + boundingBox[0] + " " + boundingBox[3] + ","
+//                        + boundingBox[2] + " " + boundingBox[3] + ","
+//                        + boundingBox[2] + " " + boundingBox[1] + ","
+//                        + boundingBox[0] + " " + boundingBox[1] + "))";
+                //TODO: support marine envelope
+                data.put("intersectWithSpeciesDistributions","0");
+                speciesDistributionText = null;
+                return;
+            }
+
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append("ws/intersect/shape");
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
+            get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             if (result == 200) {
@@ -627,6 +644,11 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     private void calculateArea() {
+        if (areaSqKm != null) {
+            data.put("area", areaSqKm);
+            speciesDistributionText = null;
+            return;
+        }
         if (shape.equals("none")) {
             //sdLabel.setValue("0");
             data.put("area", "0");
@@ -655,10 +677,18 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             String area = reportArea;
 
-            area = StringUtils.replace(area, "MULTIPOLYGON((", "");
-            area = StringUtils.replace(area, "POLYGON((", "");
-            area = StringUtils.replace(area, "(", "");
-            area = StringUtils.replace(area, ")", "");
+            if(area.contains("ENVELOPE") && boundingBox != null) {
+                area = boundingBox[0] + " " + boundingBox[1] + ","
+                        + boundingBox[0] + " " + boundingBox[3] + ","
+                        + boundingBox[2] + " " + boundingBox[3] + ","
+                        + boundingBox[2] + " " + boundingBox[1] + ","
+                        + boundingBox[0] + " " + boundingBox[1];
+            } else {
+                area = StringUtils.replace(area, "MULTIPOLYGON((", "");
+                area = StringUtils.replace(area, "POLYGON((", "");
+                area = StringUtils.replace(area, "(", "");
+                area = StringUtils.replace(area, ")", "");
+            }
 
             String[] areaarr = area.split(",");
 

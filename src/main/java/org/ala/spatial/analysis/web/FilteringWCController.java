@@ -752,6 +752,7 @@ public class FilteringWCController extends UtilityComposer {
 
         MapLayer ml = mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
         ml.setWKT("ENVELOPE(" + pid + ")");
+        ml.setData("area", activeAreaSize);
     }
 
     /**

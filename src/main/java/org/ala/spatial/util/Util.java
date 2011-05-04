@@ -10,6 +10,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -240,11 +241,11 @@ public class Util {
 
     static public double calculateArea(String wkt) {
         double sumarea = 0;
-        
-        try {
-            String [] areas = wkt.split("\\),\\(");
 
-            for(String area : areas) {
+        try {
+            String[] areas = wkt.split("\\),\\(");
+
+            for (String area : areas) {
                 area = StringUtils.replace(area, "MULTIPOLYGON((", "");
                 area = StringUtils.replace(area, "POLYGON((", "");
                 area = StringUtils.replace(area, ")", "");
@@ -260,6 +261,8 @@ public class Util {
 
                 sumarea += totalarea * 6378137 * 6378137;
             }
+
+            sumarea = Math.abs(sumarea);
 
         } catch (Exception e) {
             System.out.println("Error in calculateArea");
