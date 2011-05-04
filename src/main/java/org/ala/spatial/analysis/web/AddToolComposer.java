@@ -44,7 +44,7 @@ public class AddToolComposer extends UtilityComposer {
     Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
     Radio rSpeciesAll, rSpeciesMapped, rSpeciesOther;
     Radio rSpeciesNoneBk, rSpeciesAllBk, rSpeciesMappedBk, rSpeciesOtherBk;
-    Radio rAreaWorld, rAreaCustom, rAreaWorldHighlight;
+    Radio rAreaWorld, rAreaCustom, rAreaWorldHighlight, rAreaSelected;
     Button btnCancel, btnOk, btnBack, btnHelp;
     Textbox tToolName;
     SpeciesAutoComplete searchSpeciesAuto, bgSearchSpeciesAuto;
@@ -53,13 +53,10 @@ public class AddToolComposer extends UtilityComposer {
     UploadSpeciesController usc;
     EnvLayersCombobox cbLayer1;
     EnvLayersCombobox cbLayer2;
-
     String winTop = "300px";
     String winLeft = "500px";
-
     boolean setCustomArea = false;
     boolean hasCustomArea = false;
-
     MapLayer prevTopArea = null;
 
     @Override
@@ -359,6 +356,7 @@ public class AddToolComposer extends UtilityComposer {
             hasCustomArea = false;
             //this.setHeight("700px");
         }
+        rAreaSelected = rgArea.getSelectedItem(); 
     }
 
     public void onCheck$rgSpecies(Event event) {
@@ -490,23 +488,34 @@ public class AddToolComposer extends UtilityComposer {
             if (hasCustomArea) {
                 MapLayer curTopArea = null;
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                if(layers != null && layers.size() > 0) {
+                if (layers != null && layers.size() > 0) {
                     curTopArea = layers.get(0);
                 } else {
                     curTopArea = null;
                 }
-                
-                if(curTopArea != prevTopArea) {
-                    loadAreaLayers(curTopArea.getDisplayName());
+
+                if (curTopArea != prevTopArea) {
+                    //loadAreaLayers(curTopArea.getDisplayName());
+
+                    Radio rAr = new Radio(curTopArea.getDisplayName());
+                    rAr.setId(curTopArea.getDisplayName().replaceAll(" ", ""));
+                    rAr.setValue(curTopArea.getWKT());
+                    rAr.setParent(rgArea);
+                    rgArea.insertBefore(rAr, rgArea.getItemAtIndex(0));
+                    rgArea.setSelectedIndex(0);
+                    rgArea.setSelectedItem(rAr);
+
+                    rAreaSelected = rAr; 
+
                     ok = true;
-                }                
+                }
             }
             this.setTop(winTop);
             this.setLeft(winLeft);
-            
+
             this.doModal();
-            
-            if(ok) {
+
+            if (ok) {
                 onClick$btnOk(null);
             }
         } catch (InterruptedException ex) {
@@ -533,7 +542,7 @@ public class AddToolComposer extends UtilityComposer {
                 winProps.put("selectedMethod", selectedMethod);
 
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                if(layers != null && layers.size() > 0) {
+                if (layers != null && layers.size() > 0) {
                     prevTopArea = layers.get(0);
                 } else {
                     prevTopArea = null;
@@ -617,7 +626,8 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public String getSelectedArea() {
-        String area = rgArea.getSelectedItem().getValue();
+        //String area = rgArea.getSelectedItem().getValue();
+        String area = rAreaSelected.getValue(); 
 
         try {
             if (area.equals("current")) {
@@ -893,10 +903,10 @@ public class AddToolComposer extends UtilityComposer {
 
         /* set species from layer selector */
         if (species != null) {
-            if(bgSearchSpeciesAuto == null) {
+            if (bgSearchSpeciesAuto == null) {
                 bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
             }
-                        
+
             String tmpSpecies = species;
             bgSearchSpeciesAuto.setValue(tmpSpecies);
             bgSearchSpeciesAuto.refresh(tmpSpecies);
@@ -972,7 +982,7 @@ public class AddToolComposer extends UtilityComposer {
     public String getSelectedAreaName() {
         String area = rgArea.getSelectedItem().getLabel();
         List<MapLayer> layers = getMapComposer().getPolygonLayers();
-        for(MapLayer ml : layers) {
+        for (MapLayer ml : layers) {
             if (area.equals(ml.getDisplayName())) {
                 area = ml.getName();
                 break;
