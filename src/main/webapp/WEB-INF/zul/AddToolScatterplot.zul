@@ -35,30 +35,28 @@
                 <separator />
                 <radiogroup id="rgSpecies" orient="vertical">
                     <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
-                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false"/>
-                    <radio id="rSpeciesOther" value="other" label="Other species (search, upload species locations, upload lsids)" />
+                    <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
+                    <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
+                        <vbox width="100%">
+                            <div id="divSpeciesSearch" visible="false" >
+                                <separator />
+                                <label sclass="wLabel" value="Enter a scientific or common name"/>
+                                <separator />
+                                <hbox>
+                                    <separator orient="vertical" />
+                                    <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
+                                        <comboitem label=""/>
+                                    </combobox>
+                                </hbox>
+                                <separator/>
+                                <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                                <separator />
+                                <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
+                            </div>
+                        </vbox>
+                    <radio id="rSpeciesUploadSpecies" value="uploadSpecies" label="Upload coordinates" />
+                    <radio id="rSpeciesUploadLSID" value="uploadLsid" label="Upload LSIDs" />
                 </radiogroup>
-                <vbox width="100%">
-                    <div id="divOtherSpecies" visible="false" >
-                        <separator />
-                        <label sclass="wSubLabel" value="Enter a scientific or common name"/>
-                        <separator />
-                        <hbox>
-                            <separator orient="vertical" />
-                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
-                                <comboitem label=""/>
-                            </combobox>
-                        </hbox>
-                        <separator/>
-                        <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
-                        <separator />
-                        <hbox>
-                            <button sclass="goButton" label="Upload coordinates" id="btnUpload" class="float:left" />
-                            <button sclass="goButton" label="Upload LSIDs" id="btnUploadLsids" onClick="addtoolwindow.onClick$btnUpload(null)"
-                                class="float:left" />
-                        </hbox>
-                    </div>
-                </vbox>
             </div>
 
             <div id="atstep3" visible="false" zclass="step3 optional">
@@ -100,29 +98,27 @@
                     <radio id="rSpeciesNoneBk" label="No background species" value="none" visible="true" />
                     <radio id="rSpeciesAllBk" label="All species" value="allspecies" visible="false" />
                     <radio id="rSpeciesMappedBk" label="All species currently mapped" value="allmapped" visible="false"/>
-                    <radio id="rSpeciesOtherBk" value="other" label="Other species (search, upload species locations, upload lsids)" />
+                    <radio id="rSpeciesSearchBk" value="search" label="Search for species by common or scientific name" />
+                        <vbox width="100%">
+                            <div id="divSpeciesSearchBk" visible="false" >
+                                <separator />
+                                <label sclass="wLabel" value="Enter a scientific or common name"/>
+                                <separator />
+                                <hbox>
+                                    <separator orient="vertical" />
+                                    <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
+                                        <comboitem label=""/>
+                                    </combobox>
+                                </hbox>
+                                <separator/>
+                                <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                                <separator />
+                                <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
+                            </div>
+                        </vbox>
+                    <radio id="rSpeciesUploadSpeciesBk" value="uploadSpecies" label="Upload coordinates" />
+                    <radio id="rSpeciesUploadLSIDBk" value="uploadLsid" label="Upload LSIDs" />
                 </radiogroup>
-                <vbox width="100%">
-                    <div id="divOtherSpeciesBk" visible="false" >
-                        <separator />
-                        <label sclass="wSubLabel" value="Enter a scientific or common name as a background species"/>
-                        <separator />
-                        <hbox>
-                            <separator orient="vertical" />
-                            <combobox id="bgSearchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
-                                <comboitem label=""/>
-                            </combobox>
-                        </hbox>
-                        <separator/>
-                        <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
-                        <separator />
-                        <hbox>
-                            <button sclass="goButton" label="Upload coordinates" id="btnUploadBk" class="float:left" />
-                            <button sclass="goButton" label="Upload LSIDs" id="btnUploadLsidsBk" onClick="addtoolwindow.onClick$btnUploadBk(null)"
-                                class="float:left" />
-                        </hbox>
-                    </div>
-                </vbox>
             </div>
 
             <div id="atstep6" visible="false" zclass="last optional">

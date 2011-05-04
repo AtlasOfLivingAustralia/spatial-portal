@@ -42,14 +42,14 @@ public class AddToolComposer extends UtilityComposer {
     String pid = "";
     Radiogroup rgArea, rgAreaHighlight, rgSpecies, rgSpeciesBk;
     Radio rMaxent, rAloc, rScatterplot, rGdm, rTabulation;
-    Radio rSpeciesAll, rSpeciesMapped, rSpeciesOther;
-    Radio rSpeciesNoneBk, rSpeciesAllBk, rSpeciesMappedBk, rSpeciesOtherBk;
+    Radio rSpeciesAll, rSpeciesMapped, rSpeciesSearch, rSpeciesUploadLSID, rSpeciesUploadSpecies;
+    Radio rSpeciesNoneBk, rSpeciesAllBk, rSpeciesMappedBk, rSpeciesSearchBk, rSpeciesUploadLSIDBk, rSpeciesUploadSpeciesBk;
     Radio rAreaWorld, rAreaCustom, rAreaWorldHighlight, rAreaSelected;
     Button btnCancel, btnOk, btnBack, btnHelp;
     Textbox tToolName;
     SpeciesAutoComplete searchSpeciesAuto, bgSearchSpeciesAuto;
     EnvironmentalList lbListLayers;
-    Div divOtherSpecies, divOtherSpeciesBk;
+    Div divSpeciesSearch, divSpeciesSearchBk;
     UploadSpeciesController usc;
     EnvLayersCombobox cbLayer1;
     EnvLayersCombobox cbLayer2;
@@ -57,6 +57,14 @@ public class AddToolComposer extends UtilityComposer {
     String winLeft = "500px";
     boolean setCustomArea = false;
     boolean hasCustomArea = false;
+
+    boolean setUploadSpecies = false;
+    boolean hasUploadSpecies = false;
+
+    boolean setUploadSpeciesBk = false;
+    boolean hasUploadSpeciesBk = false;
+
+
     MapLayer prevTopArea = null;
 
     @Override
@@ -365,15 +373,25 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onCheck$rgSpecies(Event event) {
         try {
-            if (rgSpecies != null && rgSpecies.getSelectedItem() == rSpeciesOther) {
-                if (divOtherSpecies != null) {
-                    divOtherSpecies.setVisible(true);
+            if (rgSpecies != null && rgSpecies.getSelectedItem() == rSpeciesSearch) {
+                if (divSpeciesSearch != null) {
+                    divSpeciesSearch.setVisible(true);
                     return;
                 }
             }
-            if (divOtherSpecies != null) {
-                divOtherSpecies.setVisible(false);
+            if (divSpeciesSearch != null) {
+                divSpeciesSearch.setVisible(false);
             }
+
+            //Check to see if we are perform a normal or background upload
+            setUploadSpecies = false;
+            hasUploadSpecies = false;
+            if (rgSpecies.getSelectedItem() == rSpeciesUploadSpecies ||
+                    rgSpecies.getSelectedItem() == rSpeciesUploadLSID) {
+                setUploadSpecies = true;
+                hasUploadSpecies = false;
+            }
+
             if (event != null) {
                 toggles();
             }
@@ -384,15 +402,24 @@ public class AddToolComposer extends UtilityComposer {
     public void onCheck$rgSpeciesBk(Event event) {
         try {
             System.out.println("onCheck$rgSpeces activated");
-            if (rgSpeciesBk != null && rgSpeciesBk.getSelectedItem() == rSpeciesOtherBk) {
-                if (divOtherSpeciesBk != null) {
-                    divOtherSpeciesBk.setVisible(true);
+            if (rgSpeciesBk != null && rgSpeciesBk.getSelectedItem() == rSpeciesSearchBk) {
+                if (divSpeciesSearchBk != null) {
+                    divSpeciesSearchBk.setVisible(true);
                     return;
                 }
             }
-            if (divOtherSpeciesBk != null) {
-                divOtherSpeciesBk.setVisible(false);
+            
+            if (divSpeciesSearchBk != null) {
+                divSpeciesSearchBk.setVisible(false);
             }
+
+            setUploadSpeciesBk = false;
+            hasUploadSpeciesBk = false;
+            if (rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk || rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk){
+                setUploadSpeciesBk = true;
+                hasUploadSpeciesBk = false;
+            }
+
             if (event != null) {
                 toggles();
             }
@@ -489,6 +516,25 @@ public class AddToolComposer extends UtilityComposer {
 
     }
 
+    public void resetWindowFromSpeciesUpload(String lsid, String type) {
+        try{
+            setLsid(lsid);
+            if (type.compareTo("normal") == 0){
+                hasUploadSpecies = true;
+            }
+            if (type.compareTo("bk") == 0){
+                hasUploadSpeciesBk = true;
+            }
+            this.setTop(winTop);
+            this.setLeft(winLeft);
+            this.doModal();
+            onClick$btnOk(null);
+        }catch (Exception e){
+            System.out.println("Exception when resetting analysis window");
+            e.printStackTrace();
+        }
+    }
+
     public void resetWindow(String selectedArea) {
         try {
             boolean ok = false;
@@ -537,6 +583,49 @@ public class AddToolComposer extends UtilityComposer {
     public void onClick$btnOk(Event event) {
 
         try {
+            if (setUploadSpecies && !hasUploadSpecies) {
+                this.doOverlapped();
+                this.setTop("-9999px");
+                this.setLeft("-9999px");
+
+                HashMap<String, Object> winProps = new HashMap<String, Object>();
+                winProps.put("parent", this);
+                winProps.put("parentname", "AddTool");
+                winProps.put("addToMap", "false");
+                usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, winProps);
+                if (rSpeciesUploadLSIDBk.isChecked()){
+                    usc.setTbInstructions("3. Select file (text file, one LSID per line)");
+                }
+                if (rSpeciesUploadSpeciesBk.isChecked()){
+                    usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+                }
+
+                usc.doModal();
+                return;
+            }
+
+             if (setUploadSpeciesBk && !hasUploadSpeciesBk) {
+                this.doOverlapped();
+                this.setTop("-9999px");
+                this.setLeft("-9999px");
+
+                HashMap<String, Object> winProps = new HashMap<String, Object>();
+                winProps.put("parent", this);
+                winProps.put("parentname", "AddTool");
+                winProps.put("addToMap", "false");
+                usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, winProps);
+                if (rSpeciesUploadLSIDBk.isChecked()){
+                    usc.setTbInstructions("3. Select file (text file, one LSID per line)");
+                    usc.setUploadType("bk");
+                }
+                if (rSpeciesUploadSpeciesBk.isChecked()){
+                    usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
+                    usc.setUploadType("bk");
+                }
+                usc.doModal();
+                return;
+            }
+
 
             if (setCustomArea && !hasCustomArea) {
                 this.doOverlapped();
@@ -561,7 +650,6 @@ public class AddToolComposer extends UtilityComposer {
 
                 return;
             }
-
 
             Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
@@ -723,7 +811,7 @@ public class AddToolComposer extends UtilityComposer {
                     //TODO: error
                 }
 
-            } else if (species.equals("other")) {
+            } else if (species.equals("search")|| species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
                 }
@@ -773,7 +861,7 @@ public class AddToolComposer extends UtilityComposer {
                     //TODO: error
                 }
 
-            } else if (species.equals("other")) {
+            } else if (species.equals("search")|| species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                 if (bgSearchSpeciesAuto == null) {
                     bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
                 }
@@ -899,7 +987,7 @@ public class AddToolComposer extends UtilityComposer {
             }
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
         }
-        usc.detach();
+        //usc.detach();
     }
 
     void setLsidBk(String lsidName) {
@@ -954,7 +1042,9 @@ public class AddToolComposer extends UtilityComposer {
         btnOk.setDisabled(true);
 
         onSelect$lbListLayers(null);
-        onCheck$rgSpecies(null);
+        if ((!hasUploadSpecies && !setUploadSpecies)||(!hasUploadSpeciesBk && !setUploadSpeciesBk)){
+            onCheck$rgSpecies(null);
+        }
 
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
         if (currentDiv.getZclass().contains("layers2auto")) {
@@ -966,7 +1056,7 @@ public class AddToolComposer extends UtilityComposer {
 
         if (currentDiv.getZclass().contains("species")) {
             btnOk.setDisabled(
-                    divOtherSpecies.isVisible()
+                    divSpeciesSearch.isVisible()
                     && (searchSpeciesAuto.getSelectedItem() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));

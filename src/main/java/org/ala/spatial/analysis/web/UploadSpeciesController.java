@@ -69,6 +69,8 @@ public class UploadSpeciesController extends UtilityComposer {
     Textbox tbName;
     Fileupload fileUpload;
     Label tbInstructions;
+    String uploadLSID;
+    String uploadType = "normal";
     
     private EventListener eventListener;
     private boolean addToMap;
@@ -210,6 +212,13 @@ public class UploadSpeciesController extends UtilityComposer {
             } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 unzipFile(m.getName(), m.getStreamData());
             }
+
+            //call reset window on caller to perform refresh'
+            if (this.getParent().getId().equals("addtoolwindow")) {
+                AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+                analysisParent.resetWindowFromSpeciesUpload(uploadLSID, uploadType);
+            }
+            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -282,6 +291,7 @@ public class UploadSpeciesController extends UtilityComposer {
 
             int result = client.executeMethod(post);
             String slist = post.getResponseBodyAsString();
+            uploadLSID = slist + "\t" + ud.getName();
 
             System.out.println("uploaded points name: " + ud.getName() + " lsid: " + slist);
 
@@ -375,6 +385,8 @@ public class UploadSpeciesController extends UtilityComposer {
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             String pid = get.getResponseBodyAsString();
+
+            uploadLSID = pid + "\t" + ud.getName();
 
             System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
 
@@ -578,5 +590,9 @@ public class UploadSpeciesController extends UtilityComposer {
 
     void setTbInstructions(String instructions){
         tbInstructions.setValue(instructions);
+    }
+
+    void setUploadType(String uploadType){
+        this.uploadType = uploadType;
     }
 }
