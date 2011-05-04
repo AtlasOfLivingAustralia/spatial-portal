@@ -268,12 +268,15 @@ public class AddToolComposer extends UtilityComposer {
 
             if (rSelectedLayer != null) {
                 rSelectedLayer.setSelected(true);
+                rAreaSelected = rSelectedLayer;
             } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
                 rgArea.setSelectedItem(rAreaWorld);
+                rAreaSelected = rAreaWorld;
             } else {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible()) {
                         rgArea.getItemAtIndex(i).setSelected(true);
+                        rAreaSelected = rgArea.getItemAtIndex(i);
                         break;
                     }
                 }
@@ -283,6 +286,7 @@ public class AddToolComposer extends UtilityComposer {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible() && rgArea.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
                         rgArea.getItemAtIndex(i).setSelected(true);
+                        rAreaSelected = rgArea.getItemAtIndex(i);
                         break;
                     }
                 }
