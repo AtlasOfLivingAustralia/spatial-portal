@@ -401,7 +401,6 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onCheck$rgSpeciesBk(Event event) {
         try {
-            System.out.println("onCheck$rgSpeces activated");
             if (rgSpeciesBk != null && rgSpeciesBk.getSelectedItem() == rSpeciesSearchBk) {
                 if (divSpeciesSearchBk != null) {
                     divSpeciesSearchBk.setVisible(true);
@@ -518,12 +517,13 @@ public class AddToolComposer extends UtilityComposer {
 
     public void resetWindowFromSpeciesUpload(String lsid, String type) {
         try{
-            setLsid(lsid);
             if (type.compareTo("normal") == 0){
+                setLsid(lsid);
                 hasUploadSpecies = true;
             }
             if (type.compareTo("bk") == 0){
                 hasUploadSpeciesBk = true;
+                setLsidBk(lsid);
             }
             this.setTop(winTop);
             this.setLeft(winLeft);
@@ -618,7 +618,7 @@ public class AddToolComposer extends UtilityComposer {
                     usc.setTbInstructions("3. Select file (text file, one LSID per line)");
                     usc.setUploadType("bk");
                 }
-                if (rSpeciesUploadLSIDBk != null && rSpeciesUploadSpeciesBk.isChecked()){
+                if (rSpeciesUploadSpeciesBk != null && rSpeciesUploadSpeciesBk.isChecked()){
                     usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
                     usc.setUploadType("bk");
                 }
@@ -1022,7 +1022,7 @@ public class AddToolComposer extends UtilityComposer {
             }
             btnOk.setDisabled(bgSearchSpeciesAuto.getSelectedItem() == null);
         }
-        usc.detach();
+        //usc.detach();
     }
 
     public void onSelect$lbListLayers(Event event) {
