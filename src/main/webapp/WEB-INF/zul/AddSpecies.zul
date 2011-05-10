@@ -27,7 +27,7 @@
                             </combobox>
                         </hbox>
                         <separator/>
-                        <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                        <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
                         <separator />
                         <separator />
                     </vbox>

@@ -49,7 +49,7 @@
                                     </combobox>
                                 </hbox>
                                 <separator/>
-                                <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                                <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
                                 <separator />
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
@@ -111,7 +111,7 @@
                                     </combobox>
                                 </hbox>
                                 <separator/>
-                                <label sclass="wCaption" value='For example: "Macropus Rufus" or "Red Kangaroo"'/>
+                                <label sclass="wCaption" value='For example: "Macropus rufus" or "Red Kangaroo"'/>
                                 <separator />
                                 <!--<button sclass="goButton" label="Upload species" id="btnUpload" class="float:left" /> -->
                             </div>
