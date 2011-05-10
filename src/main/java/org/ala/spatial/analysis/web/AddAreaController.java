@@ -117,13 +117,18 @@ public class AddAreaController extends UtilityComposer {
             }
         } else if (this.getParent().getId().equals("addtoolwindow")) {
             AddToolComposer analysisParent = (AddToolComposer)this.getParent();
-            analysisParent.hasCustomArea = true;
+            //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(getMapComposer().getNextAreaLayerName("My Area"));
         }
         this.detach();
     }
 
     public void onClick$btnCancel(Event event) {
+        if (this.getParent().getId().equals("addtoolwindow")) {
+            AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+            analysisParent.resetWindow(null);
+        }
+        
         this.detach();
     }
 }

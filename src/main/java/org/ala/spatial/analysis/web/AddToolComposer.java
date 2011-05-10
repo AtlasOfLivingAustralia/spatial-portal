@@ -537,6 +537,15 @@ public class AddToolComposer extends UtilityComposer {
 
     public void resetWindow(String selectedArea) {
         try {
+
+            if (selectedArea == null) {
+                hasCustomArea = false;
+            } else if (selectedArea.trim().equals("")) {
+                hasCustomArea = false;
+            } else {
+                hasCustomArea = true; 
+            }
+
             boolean ok = false;
             if (hasCustomArea) {
                 MapLayer curTopArea = null;

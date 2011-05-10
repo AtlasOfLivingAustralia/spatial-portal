@@ -52,7 +52,7 @@ public class AreaToolComposer extends UtilityComposer {
     public void detach() {
         super.detach();
         if (isAnalysisChild) {
-            analysisParent.hasCustomArea = true;
+            //analysisParent.hasCustomArea = true;
             analysisParent.resetWindow(layerName);
         }
     }
