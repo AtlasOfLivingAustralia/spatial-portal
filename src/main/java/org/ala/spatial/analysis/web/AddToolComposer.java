@@ -20,6 +20,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
@@ -57,14 +58,10 @@ public class AddToolComposer extends UtilityComposer {
     String winLeft = "500px";
     boolean setCustomArea = false;
     boolean hasCustomArea = false;
-
     boolean setUploadSpecies = false;
     boolean hasUploadSpecies = false;
-
     boolean setUploadSpeciesBk = false;
     boolean hasUploadSpeciesBk = false;
-
-
     MapLayer prevTopArea = null;
 
     @Override
@@ -251,6 +248,7 @@ public class AddToolComposer extends UtilityComposer {
     public void loadAreaLayers() {
         loadAreaLayers(null);
     }
+
     public void loadAreaLayers(String selectedAreaName) {
         try {
 
@@ -259,6 +257,8 @@ public class AddToolComposer extends UtilityComposer {
 
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
+
+            int indexToSelect = 0;
 
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
@@ -271,6 +271,8 @@ public class AddToolComposer extends UtilityComposer {
 
                 if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
                     rSelectedLayer = rAr;
+                    rAreaSelected = rAr;
+                    indexToSelect = i;
                 }
             }
 
@@ -295,11 +297,16 @@ public class AddToolComposer extends UtilityComposer {
                     if (rgArea.getItemAtIndex(i).isVisible() && rgArea.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
                         rgArea.getItemAtIndex(i).setSelected(true);
                         rAreaSelected = rgArea.getItemAtIndex(i);
+                        System.out.println("2.resetting indexToSelect = " + i);
+                        indexToSelect = i;
                         break;
                     }
                 }
-
             }
+            
+            rgArea.setSelectedIndex(indexToSelect);
+            Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
+
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
             e.printStackTrace(System.out);
@@ -368,7 +375,7 @@ public class AddToolComposer extends UtilityComposer {
             hasCustomArea = false;
             //this.setHeight("700px");
         }
-        rAreaSelected = rgArea.getSelectedItem(); 
+        rAreaSelected = rgArea.getSelectedItem();
     }
 
     public void onCheck$rgSpecies(Event event) {
@@ -386,8 +393,8 @@ public class AddToolComposer extends UtilityComposer {
             //Check to see if we are perform a normal or background upload
             setUploadSpecies = false;
             hasUploadSpecies = false;
-            if (rgSpecies.getSelectedItem() == rSpeciesUploadSpecies ||
-                    rgSpecies.getSelectedItem() == rSpeciesUploadLSID) {
+            if (rgSpecies.getSelectedItem() == rSpeciesUploadSpecies
+                    || rgSpecies.getSelectedItem() == rSpeciesUploadLSID) {
                 setUploadSpecies = true;
                 hasUploadSpecies = false;
             }
@@ -407,14 +414,14 @@ public class AddToolComposer extends UtilityComposer {
                     return;
                 }
             }
-            
+
             if (divSpeciesSearchBk != null) {
                 divSpeciesSearchBk.setVisible(false);
             }
 
             setUploadSpeciesBk = false;
             hasUploadSpeciesBk = false;
-            if (rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk || rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk){
+            if (rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk || rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk) {
                 setUploadSpeciesBk = true;
                 hasUploadSpeciesBk = false;
             }
@@ -482,7 +489,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         currentStep = 1;
-        if (lbListLayers != null){
+        if (lbListLayers != null) {
             lbListLayers.clearSelection();
         }
         this.detach();
@@ -516,12 +523,12 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void resetWindowFromSpeciesUpload(String lsid, String type) {
-        try{
-            if (type.compareTo("normal") == 0){
+        try {
+            if (type.compareTo("normal") == 0) {
                 setLsid(lsid);
                 hasUploadSpecies = true;
             }
-            if (type.compareTo("bk") == 0){
+            if (type.compareTo("bk") == 0) {
                 hasUploadSpeciesBk = true;
                 setLsidBk(lsid);
             }
@@ -529,7 +536,7 @@ public class AddToolComposer extends UtilityComposer {
             this.setLeft(winLeft);
             this.doModal();
             onClick$btnOk(null);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Exception when resetting analysis window");
             e.printStackTrace();
         }
@@ -543,7 +550,7 @@ public class AddToolComposer extends UtilityComposer {
             } else if (selectedArea.trim().equals("")) {
                 hasCustomArea = false;
             } else {
-                hasCustomArea = true; 
+                hasCustomArea = true;
             }
 
             boolean ok = false;
@@ -557,18 +564,7 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 if (curTopArea != prevTopArea) {
-                    //loadAreaLayers(curTopArea.getDisplayName());
-
-                    Radio rAr = new Radio(curTopArea.getDisplayName());
-                    rAr.setId(curTopArea.getDisplayName().replaceAll(" ", ""));
-                    rAr.setValue(curTopArea.getWKT());
-                    rAr.setParent(rgArea);
-                    rgArea.insertBefore(rAr, rgArea.getItemAtIndex(0));
-                    rgArea.setSelectedIndex(0);
-                    rgArea.setSelectedItem(rAr);
-
-                    rAreaSelected = rAr; 
-
+                    loadAreaLayers(curTopArea.getDisplayName());
                     ok = true;
                 }
             }
@@ -578,7 +574,7 @@ public class AddToolComposer extends UtilityComposer {
             this.doModal();
 
             if (ok) {
-                onClick$btnOk(null);
+                onClick$btnOk(null);                
             }
         } catch (InterruptedException ex) {
             System.out.println("InterruptedException when resetting analysis window");
@@ -602,10 +598,10 @@ public class AddToolComposer extends UtilityComposer {
                 winProps.put("parentname", "AddTool");
                 winProps.put("addToMap", "false");
                 usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, winProps);
-                if (rSpeciesUploadLSID != null && rSpeciesUploadLSID.isChecked()){
+                if (rSpeciesUploadLSID != null && rSpeciesUploadLSID.isChecked()) {
                     usc.setTbInstructions("3. Select file (text file, one LSID per line)");
                 }
-                if (rSpeciesUploadLSID != null && rSpeciesUploadSpecies.isChecked()){
+                if (rSpeciesUploadLSID != null && rSpeciesUploadSpecies.isChecked()) {
                     usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
                 }
 
@@ -613,7 +609,7 @@ public class AddToolComposer extends UtilityComposer {
                 return;
             }
 
-             if (setUploadSpeciesBk && !hasUploadSpeciesBk) {
+            if (setUploadSpeciesBk && !hasUploadSpeciesBk) {
                 this.doOverlapped();
                 this.setTop("-9999px");
                 this.setLeft("-9999px");
@@ -623,11 +619,11 @@ public class AddToolComposer extends UtilityComposer {
                 winProps.put("parentname", "AddTool");
                 winProps.put("addToMap", "false");
                 usc = (UploadSpeciesController) Executions.createComponents("WEB-INF/zul/UploadSpecies.zul", this, winProps);
-                if (rSpeciesUploadLSIDBk != null && rSpeciesUploadLSIDBk.isChecked()){
+                if (rSpeciesUploadLSIDBk != null && rSpeciesUploadLSIDBk.isChecked()) {
                     usc.setTbInstructions("3. Select file (text file, one LSID per line)");
                     usc.setUploadType("bk");
                 }
-                if (rSpeciesUploadSpeciesBk != null && rSpeciesUploadSpeciesBk.isChecked()){
+                if (rSpeciesUploadSpeciesBk != null && rSpeciesUploadSpeciesBk.isChecked()) {
                     usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
                     usc.setUploadType("bk");
                 }
@@ -664,12 +660,6 @@ public class AddToolComposer extends UtilityComposer {
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
 
-            System.out.println("Current step: " + currentStep);
-            System.out.println("Current zclass: " + currentDiv.getZclass());
-            System.out.println("Next step zclass: " + ((nextDiv != null) ? nextDiv.getZclass() : "-na-"));
-            System.out.println("Previous step zclass: " + ((previousDiv != null) ? previousDiv.getZclass() : "-na-"));
-
-
             if (!currentDiv.getZclass().contains("last")) {
                 currentDiv.setVisible(false);
                 nextDiv.setVisible(true);
@@ -695,7 +685,6 @@ public class AddToolComposer extends UtilityComposer {
 
                 currentStep++;
             } else {
-                System.out.println("In the last step. Let's run the analytical tool!!!");
                 currentStep = 1;
                 onFinish();
             }
@@ -730,7 +719,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public String getSelectedArea() {
         //String area = rgArea.getSelectedItem().getValue();
-        String area = rAreaSelected.getValue(); 
+        String area = rAreaSelected.getValue();
 
         try {
             if (area.equals("current")) {
@@ -820,7 +809,7 @@ public class AddToolComposer extends UtilityComposer {
                     //TODO: error
                 }
 
-            } else if (species.equals("search")|| species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+            } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
                 }
@@ -870,7 +859,7 @@ public class AddToolComposer extends UtilityComposer {
                     //TODO: error
                 }
 
-            } else if (species.equals("search")|| species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+            } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                 if (bgSearchSpeciesAuto == null) {
                     bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
                 }
@@ -1051,10 +1040,10 @@ public class AddToolComposer extends UtilityComposer {
         btnOk.setDisabled(true);
 
         onSelect$lbListLayers(null);
-        if ((!hasUploadSpecies && !setUploadSpecies)){
+        if ((!hasUploadSpecies && !setUploadSpecies)) {
             onCheck$rgSpecies(null);
         }
-        if ((!hasUploadSpeciesBk && !setUploadSpeciesBk)){
+        if ((!hasUploadSpeciesBk && !setUploadSpeciesBk)) {
             onCheck$rgSpeciesBk(null);
         }
 
