@@ -17,7 +17,7 @@ DROP TABLE if exists layers;
 
 -- IMPORTANT!! YOU MUST UPDATE THIS SEQUENCE WHEN ADDING NEW LAYERS
 
-ALTER SEQUENCE layers_id_seq RESTART WITH 917;
+ALTER SEQUENCE layers_id_seq RESTART WITH 918;
 
 CREATE TABLE layers (
     id integer DEFAULT nextval('layers_id_seq'::regclass) NOT NULL,
