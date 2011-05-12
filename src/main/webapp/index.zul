@@ -58,7 +58,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <borderlayout width="100%" height="100%">
             <north id="header" height="45" visible="false"></north>
             <west title=" " size="${settingsSupplementary.values.menu_default_width}"
-                   id="menus" collapsible="false"
+                   id="menus" collapsible="true"
                    splittable="false" width="400px">
                 <div id="westChild" vflex="1">
                     <div id="westMinimised" visible="false" class="westMinimised" width="${settingsSupplementary.values.menu_minimised_width}" >

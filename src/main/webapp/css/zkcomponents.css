@@ -272,8 +272,8 @@ a[rel="external"], a.external {
     font-family: Arial,Helvetica,sans-serif;;
     padding-left: 10px;
     font-weight: bold;
-    background-color: #375c79;
-    background-image: none;
+    /*background-color: #375c79;
+    background-image: none;*/
 }
 
 .z-border-layout {
@@ -305,9 +305,6 @@ a[rel="external"], a.external {
 .westMinimised {
     background-color: #EBEBEB;
     height: 100%;
-}
-.z-west-header {
-    display: none;
 }
 
 .z-dottree {
