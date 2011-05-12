@@ -6,12 +6,15 @@ package org.ala.spatial.analysis.service;
 
 import java.util.ArrayList;
 import org.ala.spatial.analysis.index.BoundingBoxes;
-import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
-import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.TabulationSettings;
+import org.ala.spatial.analysis.index.OccurrenceRecordNumbers;
+import org.ala.spatial.analysis.index.OccurrencesCollection;
+import org.ala.spatial.analysis.index.OccurrencesFilter;
+import org.ala.spatial.analysis.index.SpeciesColourOption;
+
 
 /**
  *
@@ -110,56 +113,71 @@ public class SamplingLoadedPointsService extends SamplingService {
     @Override
     public double[] sampleSpeciesPoints(String filter, SimpleRegion region, ArrayList<OccurrenceRecordNumbers> records, ArrayList<SpeciesColourOption> extra) {
         //test on bounding box
+//        double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
+//        double[][] regionbb = region.getBoundingBox();
+//        if (bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
+//                && bb[1] <= regionbb[1][1] && bb[3] >= regionbb[0][1]) {
+//
+//            double[] points = sampleSpeciesPoints(filter, null, null);
+//
+//            // test for region absence
+//            if (region == null || points == null) {
+//                return points;
+//            }
+//
+//            //TODO: nicer 'get'
+//            //TODO: caching on 'extra' data
+//            int[] field = null;
+//            double[] field_output = null;
+//            if (extra != null) {
+//                for (int i = 0; i < extra.size(); i++) {
+//                    extra.get(i).assignMissingData(points.length / 2);
+//                }
+//            }
+//
+//            int i;
+//            int count = 0;
+//
+//            // return all valid points within the region
+//            double[] output = new double[points.length];
+//            for (i = 0; i < points.length; i += 2) {
+//
+//                //region test
+//                if (region.isWithin(points[i], points[i + 1])) {
+//                    if (field != null) {
+//                        //uncertainty
+//                        field_output[count / 2] = Double.NaN; //30000; //default 30km
+//                    }
+//
+//                    output[count] = points[i];
+//                    count++;
+//                    output[count] = points[i + 1];
+//                    count++;
+//                }
+//            }
+//
+//            if (count > 0) {
+//                if (field != null) {
+//                    //extra.set(1, java.util.Arrays.copyOf(field_output, count / 2));
+//                }
+//
+//                return java.util.Arrays.copyOf(output, count);
+//            }
+//        }
+
+        //test on bounding box
         double[] bb = BoundingBoxes.getLsidBoundingBoxDouble(filter);
+
+        if (region == null) {
+            return OccurrencesCollection.getPoints(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), extra);
+        }
+
         double[][] regionbb = region.getBoundingBox();
         if (bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
                 && bb[1] <= regionbb[1][1] && bb[3] >= regionbb[0][1]) {
 
-            double[] points = sampleSpeciesPoints(filter, region, records);
-
-            // test for region absence
-            if (region == null || points == null) {
-                return points;
-            }
-
-            //TODO: nicer 'get'
-            //TODO: caching on 'extra' data
-            int[] field = null;
-            double[] field_output = null;
-            if (extra != null) {
-                for (int i = 0; i < extra.size(); i++) {
-                    extra.get(i).assignMissingData(points.length / 2);
-                }
-            }
-
-            int i;
-            int count = 0;
-
-            // return all valid points within the region
-            double[] output = new double[points.length];
-            for (i = 0; i < points.length; i += 2) {
-
-                //region test
-                if (region.isWithin(points[i], points[i + 1])) {
-                    if (field != null) {
-                        //uncertainty
-                        field_output[count / 2] = Double.NaN; //30000; //default 30km
-                    }
-
-                    output[count] = points[i];
-                    count++;
-                    output[count] = points[i + 1];
-                    count++;
-                }
-            }
-
-            if (count > 0) {
-                if (field != null) {
-                    //extra.set(1, java.util.Arrays.copyOf(field_output, count / 2));
-                }
-
-                return java.util.Arrays.copyOf(output, count);
-            }
+            /* get points */
+            return OccurrencesCollection.getPoints(new OccurrencesFilter(filter, region, records, TabulationSettings.MAX_RECORD_COUNT_CLUSTER), extra);
         }
 
         return null;

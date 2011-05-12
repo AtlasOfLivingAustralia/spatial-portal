@@ -1575,6 +1575,26 @@
                 <environmental_data_file_display_name>Species Richness</environmental_data_file_display_name>
                 <environmental_data_file_description></environmental_data_file_description>
             </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>dlcmv1_class</environmental_data_file_name>
+                <environmental_data_file_display_name>dlcmv1_class</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>trend_evi_max</environmental_data_file_name>
+                <environmental_data_file_display_name>trend_evi_max</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>trend_evi_mean</environmental_data_file_name>
+                <environmental_data_file_display_name>trend_evi_mean</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
+            <environmental_data_file>
+                <environmental_data_file_name>trend_evi_min</environmental_data_file_name>
+                <environmental_data_file_display_name>trend_evi_min</environmental_data_file_display_name>
+                <environmental_data_file_description></environmental_data_file_description>
+            </environmental_data_file>
         </environmental_data_files>
     </environmental_data>
 
@@ -1829,4 +1849,7 @@ if not csv, then tab delimited
     <occurrences_config_path>d:\mnt\ala\data\occurrences\config\</occurrences_config_path>
 
     <shape_intersection_files>d:\shapefiles\shapefiles_for_intersection.csv</shape_intersection_files>
+
+    <!-- path to store generated object data -->
+    <file_store>d:\mnt\output\</file_store>
 </tabulation>

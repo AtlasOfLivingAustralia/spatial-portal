@@ -486,7 +486,7 @@ public class SpeciesColourOption {
         return new SpeciesColourOption("h", "Selection", 2, key, true, -1, colourMode, -1);
     }
 
-    boolean isTaxon() {
+    public boolean isTaxon() {
         return (taxon >= 0);
     }
 

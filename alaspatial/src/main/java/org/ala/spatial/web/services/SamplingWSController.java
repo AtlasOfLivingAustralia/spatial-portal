@@ -34,6 +34,7 @@ import org.ala.spatial.analysis.legend.LegendEvenInterval;
 import org.ala.spatial.analysis.legend.LegendEvenIntervalLog10;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.FilteringService;
+import org.ala.spatial.analysis.service.SamplingLoadedPointsService;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.AnalysisQueue;
 import org.ala.spatial.util.CitationService;
@@ -557,15 +558,25 @@ public class SamplingWSController {
                 sco = SpeciesColourOption.fromName(colourMode, false);
             }
 
+            boolean loadedPoints = SamplingLoadedPointsService.isLoadedPointsLSID(species);
+
             String speciesName = "";
             if(species != null) {
-                speciesName = SpeciesIndex.getScientificName(SpeciesIndex.findLSID(species));
+                if (loadedPoints) {
+                    speciesName = "Uploaded";
+                } else {
+                    speciesName = SpeciesIndex.getScientificName(SpeciesIndex.findLSID(species));
+                }
             }
 
             //last 2 columns; layer1, layer2
             for (int i = 0; i < results.length; i++) {
                 //include occurrenceID
-                sbResults.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",");
+                if(loadedPoints) {
+                    sbResults.append(results[i][0]).append(",");
+                } else {
+                    sbResults.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",");
+                }
 
                 //is there a series (colourMode) ?
                 if(sco != null) {

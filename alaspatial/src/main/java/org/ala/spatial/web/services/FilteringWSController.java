@@ -361,6 +361,11 @@ public class FilteringWSController {
                 return "";  //error
             }
 
+            if(shape.contains("ENVELOPE")) {
+                pid = shape.replace("ENVELOPE(", "").replace(")", "");
+                shape = "none";
+            }
+
             SimpleRegion region = SimpleShapeFile.parseWKT(shape);
 
             int[] counts = FilteringService.getSpeciesCount(pid, region);
