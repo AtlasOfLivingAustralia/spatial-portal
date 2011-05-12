@@ -164,7 +164,7 @@ public class SamplingService {
         }
 
         double[][] regionbb = region.getBoundingBox();
-        if (bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
+        if (bb != null && bb[0] <= regionbb[1][0] && bb[2] >= regionbb[0][0]
                 && bb[1] <= regionbb[1][1] && bb[3] >= regionbb[0][1]) {
 
             /* get points */

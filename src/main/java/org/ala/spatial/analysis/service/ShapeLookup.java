@@ -41,6 +41,8 @@ public class ShapeLookup {
         o[0] = new Long(System.currentTimeMillis());
         o[1] = region;
 
+        store(id, o);
+
         shapes.put(id, o);
     }
 
@@ -86,7 +88,7 @@ public class ShapeLookup {
 
     static void store(String key, Object [] o) {
         try {
-            File file = new File(System.getProperty("java.io.tmpdir")
+            File file = new File(TabulationSettings.file_store
                     + "shape" + key + ".dat");
             FileOutputStream fos = new FileOutputStream(file);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -101,7 +103,7 @@ public class ShapeLookup {
 
     static Object[] retrieve(String key) {
         try {
-            File file = new File(System.getProperty("java.io.tmpdir")
+            File file = new File(TabulationSettings.file_store
                     + "shape" + key + ".dat");
             if (file.exists()) {
                 FileInputStream fis = new FileInputStream(file);

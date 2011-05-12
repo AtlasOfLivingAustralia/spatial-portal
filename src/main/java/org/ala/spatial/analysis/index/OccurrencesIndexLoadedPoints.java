@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.index;
 import java.util.ArrayList;
 import java.util.Vector;
 import org.ala.spatial.analysis.cluster.Record;
+import org.ala.spatial.analysis.service.LoadedPoints;
 import org.ala.spatial.analysis.service.LoadedPointsService;
 import org.ala.spatial.analysis.service.SamplingLoadedPointsService;
 import org.ala.spatial.analysis.service.SamplingService;
@@ -135,11 +136,45 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
             return null;
         }
 
-        double[] points = LoadedPointsService.getPointsFlat(filter.searchTerm, filter.region, null);
+        double[] points = LoadedPointsService.getPointsFlat(filter.searchTerm, null, null);
+        int[] r = new int[points.length];
+        for (int i = 0; i < r.length; i++) {
+            r[i] = i;
+        }
 
         if (extra != null) {
-            for(int i=0;i<extra.size();i++) {
-                extra.get(i).assignMissingData(points.length / 2);
+            for (int j = 0; j < extra.size(); j++) {
+                if (extra.get(j).isHighlight()) {
+                    //treat lsid matches different to fake-lsid-lists
+                    if (filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
+                        //lookup with dataset hash and species offset
+                        IndexedRecord ir = filterSpeciesRecords(filter.searchTerm);
+                        extra.get(j).assignHighlightData(r, (ir == null) ? 0 : ir.record_start, getHash());
+                    } else if (filter.searchTerm != null) {
+                        //'highlight' are stored by 'searchTerm' only,
+                        //retrieve whole records and translate r to
+                        //all 'highlight' records
+                        int[] rAll = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
+                        int[] r2 = new int[r.length];
+                        int rpos = 0;
+                        for (int i = 0; i < rAll.length; i++) {
+                            if (r[rpos] == rAll[i]) {
+                                r2[rpos] = i;
+                                rpos++;
+                                if (rpos >= r.length) {
+                                    break;
+                                }
+                            }
+                        }
+                        extra.get(j).assignHighlightData(r2, 0, getHash());
+                    } //cannot get 'highlight' without searchTerm
+                } else if (extra.get(j).isTaxon()) {
+                    extra.get(j).assignTaxon(r, speciesNumberInRecordsOrder, speciesIndexLookup);
+                    //extra.get(j).assignMissingData(points.length / 2);
+                } else {
+                    extra.get(j).assignData(r, attributesMap.get(extra.get(j).getName()));
+                    //extra.get(j).assignMissingData(points.length / 2);
+                }
             }
         }
 
@@ -187,7 +222,7 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
 
         int i;
 
- //       int[] records = filter.records;
+        //       int[] records = filter.records;
         SimpleRegion region = filter.region;
         String lsid = filter.searchTerm;
         if (lsid != null) {
@@ -242,7 +277,7 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
     }
 
     @Override
-    int highlightLsid(String keyEnd, String lsid, Object [] filters) {
+    int highlightLsid(String keyEnd, String lsid, Object[] filters) {
         //String layer1, double x1, double x2, String layer2, double y1, double y2
         int[] r = getRecordNumbers(new OccurrencesFilter(lsid, PART_SIZE_MAX)); //TODO: config limited
         if (r == null || r.length == 0) {
@@ -256,108 +291,187 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
 
         byte[] highlightCount = new byte[len];
 
-        for(int j=0;j<numFilters;j++) {
-            Object [] f = (Object[]) filters[j];
-            if(f.length == 2) { //sco or contextual
-                SpeciesColourOption sco = SpeciesColourOption.fromName((String) f[0], false);
-                if(sco != null) {
-                    sco.assignData(r, attributesMap.get(sco.getName()));
-                    boolean [] h = sco.getFiltered((Object[]) f[1]);
-                    for (int i = 0; i < len; i++) {
-                        if(h[i]){
-                            highlightCount[i]++;
-                        }
-                    }
-                } else { //contextual
-                    Layer layer = Layers.getLayer((String) f[0]);
-                    String [] filteredCategories = (String []) f[1];
-                    
-                    //get data
-                    //int [] cat = ss.getRecordsInt(layer.name, r);
-                    Layer [] ls = new Layer[1];
-                    ls[0] = layer;
-                    String [] s = LoadedPointsService.getSampling(lsid,
-                            ls, null, null, PART_SIZE_MAX).split("\n");//TODO: max record count
 
-                    for (int i = 0; i < len; i++) {
-                        String [] sr = s[i+1].split(",");  //s has a header, so +1
-                        String v = sr[sr.length-1];
-                        for(int k=0;k<filteredCategories.length;k++) {                            
-                            if(filteredCategories[k].equalsIgnoreCase(v)) {
+        //do and's first
+        boolean[] highlight = new boolean[len];
+        int numAndFilters = 0;
+        for (int andOr = 0; andOr < 2; andOr++) {
+            for (int j = 0; j < numFilters; j++) {
+                Object[] f = (Object[]) filters[j];
+
+                if (((String) f[0]).equalsIgnoreCase("and") == (andOr == 0)) {
+                    numAndFilters++;
+                    if (f.length == 3) { //sco or contextual
+                        SpeciesColourOption sco = SpeciesColourOption.fromName((String) f[1], false);
+                        if (sco != null) {
+                            sco.assignData(r, attributesMap.get(sco.getName()));
+                            boolean[] h = sco.getFiltered((Object[]) f[2]);
+                            for (int i = 0; i < len; i++) {
+                                if (h[i]) {
+                                    highlightCount[i]++;
+                                }
+                            }
+                        } else { //contextual
+                            Layer layer = Layers.getLayer((String) f[1]);
+                            String[] filteredCategories = (String[]) f[2];
+
+                            //get data
+                            Layer[] ls = new Layer[1];
+                            ls[0] = layer;
+                            String[] s = LoadedPointsService.getSampling(lsid,
+                                    ls, null, null, PART_SIZE_MAX).split("\n");//TODO: max record count
+
+                            for (int i = 0; i < len; i++) {
+                                String[] sr = s[i + 1].split(",");  //s has a header, so +1
+                                String v = sr[sr.length - 1];
+                                for (int k = 0; k < filteredCategories.length; k++) {
+                                    if (filteredCategories[k].equalsIgnoreCase(v)) {
+                                        highlightCount[i]++;
+                                    }
+                                }
+                            }
+                        }
+                    } else if (f.length == 4) { //environmental
+                        double min = Math.min((Double) f[2], (Double) f[3]);
+                        double max = Math.max((Double) f[2], (Double) f[3]);
+
+                        Layer[] ls = new Layer[1];
+                        ls[0] = Layers.getLayer((String) f[1]);
+                        String[] s = LoadedPointsService.getSampling(lsid,
+                                ls, null, null, PART_SIZE_MAX).split("\n");//TODO: max record count
+
+                        for (int i = 0; i < len; i++) {
+                            String[] sr = s[i + 1].split(",");  //s has a header, so +1
+                            double d = 0;
+                            try {
+                                d = Double.parseDouble(sr[sr.length - 1]);
+                            } catch (Exception e) {
+                                d = Double.NaN;
+                            }
+
+                            if (d <= max && d >= min) {
+                                highlightCount[i]++;
+                            } else if (Double.isNaN(d) && (Double.isNaN(min) || Double.isNaN(max))) {
                                 highlightCount[i]++;
                             }
                         }
                     }
                 }
-            } else if(f.length == 3) { //environmental
-                double min = Math.min((Double)f[1], (Double)f[2]);
-                double max = Math.max((Double)f[1], (Double)f[2]);
-
-                Layer [] ls = new Layer[1];
-                ls[0] = Layers.getLayer((String) f[0]);
-                String [] s = LoadedPointsService.getSampling(lsid,
-                            ls, null, null, PART_SIZE_MAX).split("\n");//TODO: max record count
-
-                for (int i = 0; i < len; i++) {
-                    String [] sr = s[i+1].split(",");  //s has a header, so +1
-                    double d = 0;
-                    try {
-                        d = Double.parseDouble(sr[sr.length-1]);
-                    } catch (Exception e) {}
-
-                    if(d <= max && d >= min) {
-                        highlightCount[i]++;
-                    } else if(Double.isNaN(d) && max >= 0 && min <=0) {
-                        highlightCount[i]++;
+            }
+            if (andOr == 0) {
+                //AND update
+                if (numAndFilters > 0) {
+                    for (int i = 0; i < len; i++) {
+                        if (highlightCount[i] == numAndFilters) {
+                            highlight[i] = true;
+                        } else {
+                            highlightCount[i] = 0; //reset for OR test
+                        }
+                    }
+                }
+            } else {
+                //OR update
+                for (int i = 0; i < highlight.length; i++) {
+                    if (highlightCount[i] > 0) {
+                        highlight[i] = true;
+                        count++;
                     }
                 }
             }
         }
-
-        boolean[] highlight = new boolean[len];
-
-        //AND
-        for(int i=0;i<len;i++) {
-            if(highlightCount[i] == numFilters) {
-                highlight[i] = true;
-                count++;
-            }
-        }
-
-//        //OR
-//        for(int i=0;i<highlight.length;i++) {
-//            if(count[i] > 0) {
-//                highlight[i] = true;
-//                count++;
-//            }
-//        }
 
         RecordSelectionLookup.addSelection(getHash() + keyEnd, highlight);
 
         return count;
     }
 
+    @Override
     public int registerLSID(String key, String[] lsid) {
         return 0;
     }
 
+    @Override
     public int registerArea(String key, SimpleRegion region) {
         return 0;
     }
 
+    @Override
     public int registerRecords(String key, ArrayList<OccurrenceRecordNumbers> records) {
         return 0;
     }
 
-    double[] getPoints(/*SpeciesColourOption sco*/ String lookupName, String key) {
+    @Override
+    double[] getPoints(/*SpeciesColourOption sco*/String lookupName, String key) {
         return null;
     }
 
+    @Override
     String[] listLookups() {
         return null;
     }
 
+    @Override
     public int[] lookup(String lookupName, String key) {
         return null;
+    }
+
+    @Override
+    public int registerHighlight(OccurrencesFilter filter, String key, String highlightPid, boolean include) {
+        int[] r = getRecordNumbers(filter);
+        if (r != null) {            
+            boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
+            int pos = 0;
+            for (int i = 0; i < r.length; i++) {
+                if (include != highlight[r[i]]) {
+                    r[pos] = r[i];
+                    pos++;
+                }
+            }
+            r = java.util.Arrays.copyOf(r, pos);
+        }
+
+        int count = 0;
+
+        if (r != null && r.length > 0) {
+            count = r.length;
+
+            java.util.Arrays.sort(r);
+
+            RecordsLookup.addRecords(getHash() + key, r);
+
+            //create new loaded points
+            String s = LoadedPointsService.getSampling(filter.searchTerm, null, null, null, Integer.MAX_VALUE);
+            double [][] points = new double[r.length][2];
+            String [] ids = new String[r.length];
+
+            String [] slist = s.split("\r\n");
+            for(int i=0;i<r.length;i++) {
+                if (r[i] >= slist.length) {
+                    //error
+                    continue;
+                }
+                String [] row = slist[r[i] + 1].split(","); //+1 for header
+                if(row.length > 0) {
+                    ids[i] = row[0];
+                }
+                if(row.length > 1) {
+                    try {
+                        points[i][0] = Double.parseDouble(row[1]);
+                    } catch (Exception e) {
+                        points[i][0] = Double.NaN;
+                    }
+                }
+                if(row.length > 2) {
+                    try {
+                        points[i][1] = Double.parseDouble(row[2]);
+                    } catch (Exception e) {
+                        points[i][1] = Double.NaN;
+                    }
+                }
+            }
+            LoadedPointsService.addCluster(key, new LoadedPoints(points, "" , ids));
+        }
+
+        return count;
     }
 }

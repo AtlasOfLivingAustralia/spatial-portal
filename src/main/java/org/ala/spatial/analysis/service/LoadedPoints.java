@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.analysis.service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +18,7 @@ import org.ala.spatial.util.SimpleRegion;
  *
  * @author Adam
  */
-public class LoadedPoints {
+public class LoadedPoints implements Serializable {
 
     double[][] points;
     HashMap<String, Object> attributes;

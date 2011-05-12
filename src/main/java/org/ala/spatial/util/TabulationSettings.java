@@ -241,6 +241,10 @@ public class TabulationSettings {
      * shape_file_path, scientific name, [optional data, e.g. depth]
      */
     public static String shape_intersection_files;
+    /**
+     * path to store user generated data
+     */
+    public static String file_store;
 
     /**
      * loads settings form name of the appropriate xml resource file
@@ -537,6 +541,8 @@ public class TabulationSettings {
 
         occurrences_config_path = xr.getValue("occurrences_config_path");
         shape_intersection_files = xr.getValue("shape_intersection_files");
+
+        file_store = xr.getValue("file_store");
     }
 
     static public String getPath(String layerName) {

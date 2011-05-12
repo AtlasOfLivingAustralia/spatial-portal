@@ -46,6 +46,8 @@ public class LoadedPointsService {
         o[0] = new Long(System.currentTimeMillis());
         o[1] = points;
 
+        store(id, o);
+        
         clusters.put(id, o);
     }
 
@@ -72,7 +74,7 @@ public class LoadedPointsService {
 
     static void store(String key, Object[] o) {
         try {
-            File file = new File(System.getProperty("java.io.tmpdir")
+            File file = new File(TabulationSettings.file_store
                     + "points" + key + ".dat");
             FileOutputStream fos = new FileOutputStream(file);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -87,8 +89,8 @@ public class LoadedPointsService {
 
     static Object[] retrieve(String key) {
         try {
-            File file = new File(System.getProperty("java.io.tmpdir")
-                    + "cluster" + key + ".dat");
+            File file = new File(TabulationSettings.file_store
+                    + "points" + key + ".dat");
             if (file.exists()) {
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis);

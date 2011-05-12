@@ -27,6 +27,7 @@ import org.ala.spatial.analysis.index.OccurrencesFilter;
 import org.ala.spatial.analysis.index.OccurrencesSpeciesList;
 import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.service.FilteringService;
+import org.ala.spatial.analysis.service.SamplingLoadedPointsService;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.ShapeLookup;
 import org.ala.spatial.dao.SpeciesDAO;
@@ -914,9 +915,12 @@ public class SpeciesController {
             String lsid = URLDecoder.decode(req.getParameter("lsid"), "UTF-8").replaceAll("__", ".");
             String colourMode = URLDecoder.decode(req.getParameter("colourmode"), "UTF-8");
 
-            String pid = SpeciesColourOption.getColourLegend(lsid, colourMode);
+            if(!SamplingLoadedPointsService.isLoadedPointsLSID(lsid)) {
+                String pid = SpeciesColourOption.getColourLegend(lsid, colourMode);
 
-            return pid;
+                return pid;
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
