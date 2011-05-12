@@ -120,6 +120,8 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
+
+                        ok = true;
                     }
                 } else {
                     System.out.println("Unknown file type. ");
@@ -186,6 +188,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
             }
 
+            ok = true;
 
         } catch (Exception e) {
 

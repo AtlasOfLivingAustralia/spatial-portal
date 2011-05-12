@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import org.ala.spatial.util.Util;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
 import org.jfree.chart.plot.XYPlot;
 
 /**
@@ -45,10 +44,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * indicate that the default rendering style
      * should be used
      */
-    /**
-     * Log4j instance
-     */
-    protected Logger logger = Logger.getLogger(this.getClass());
     public final static int STYLE_DEFAULT = 0;
     /**
      * Delimiter used when generating map layer ids
@@ -462,8 +457,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
             }
         }
 
-        logger.debug("8888888888888888888888888888888888888888888888");
-        logger.debug(uri);
         return uri;
     }
 

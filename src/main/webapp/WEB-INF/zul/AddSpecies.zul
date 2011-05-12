@@ -18,6 +18,7 @@
         <div style="margin-left:20px" >
             <radiogroup id="rgAddSpecies">
                 <vbox height="125px">
+                    <radio id ="rAllSpecies" label="All species in an area" />
                     <radio id="rSearch" label="Search for a species by scientific or common name" />
                     <vbox id="vboxSearch">
                         <hbox>

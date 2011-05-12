@@ -103,6 +103,8 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         }
 
+        ok = true;
+
         this.detach();
     }
 

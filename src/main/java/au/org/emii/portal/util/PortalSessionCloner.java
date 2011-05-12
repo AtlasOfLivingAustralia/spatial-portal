@@ -58,10 +58,7 @@ public class PortalSessionCloner {
         // step 4: clone active layers
         if (masterPortalSession.getActiveLayers() != null) {
             for (MapLayer mapLayer : masterPortalSession.getActiveLayers()) {
-                portalSession.getActiveLayers().add(
-                        portalSessionUtilities.getMapLayerById(
-                            portalSession,
-                            mapLayer.getId()));
+                portalSession.getActiveLayers().add((MapLayer) mapLayer.clone());
             }
         }
 

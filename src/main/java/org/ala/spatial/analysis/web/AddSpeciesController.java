@@ -3,7 +3,10 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
@@ -11,20 +14,21 @@ import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Vbox;
+import org.zkoss.zul.Window;
 
 /**
  *
  * @author Adam
  */
 public class AddSpeciesController extends UtilityComposer {
-    
+
     SettingsSupplementary settingsSupplementary;
     SpeciesAutoComplete searchSpeciesAuto;
     Button btnOk;
-    private String lsid;
     Radio rSearch;
     Radio rUploadCoordinates;
     Radio rUploadLSIDs;
+    Radio rAllSpecies;
     Radiogroup rgAddSpecies;
     Vbox vboxSearch;
 
@@ -35,8 +39,17 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-        if(rSearch.isSelected()) {
+        if (rSearch.isSelected()) {
             getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto);
+        } else if(rAllSpecies.isSelected()) {
+            Window window = (Window) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+            try {
+                window.doModal();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SuspendNotAllowedException ex) {
+                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else {
             onClick$btnUpload(event);
         }
@@ -50,9 +63,7 @@ public class AddSpeciesController extends UtilityComposer {
     public void onChange$searchSpeciesAuto(Event event) {
         btnOk.setDisabled(true);
 
-        if (searchSpeciesAuto.getSelectedItem() != null) {
-            btnOk.setDisabled(false);
-        }
+        refreshBtnOkDisabled();
     }
 
     public void onClick$btnUpload(Event event) {
@@ -65,23 +76,21 @@ public class AddSpeciesController extends UtilityComposer {
 //                        setLsid((String)event.getData());
 //                    }
 //                });
-            if(rUploadCoordinates.isSelected()) {
+            if (rUploadCoordinates.isSelected()) {
                 usc.setTbInstructions("3. Select file (comma separated ID (text), longitude (decimal degrees), latitude(decimal degrees))");
-            }
-            else if(rUploadLSIDs.isSelected()){
+            } else if (rUploadLSIDs.isSelected()) {
                 usc.setTbInstructions("3. Select file (text file, one LSID per line)");
-            }
-            else{
+            } else {
                 usc.setTbInstructions("3. Select file");
             }
             usc.doModal();
-        }catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     void setLsid(String lsidName) {
-        String [] s = lsidName.split("\t");
+        String[] s = lsidName.split("\t");
         String species = s[1];
         String lsid = s[0];
 
@@ -99,33 +108,35 @@ public class AddSpeciesController extends UtilityComposer {
                     if (ci.getLabel().equalsIgnoreCase(searchSpeciesAuto.getValue())) {
                         //compare lsid
                         if (ci.getAnnotatedProperties() != null
-                                && ((String)ci.getAnnotatedProperties().get(0)).equals(lsid)){
+                                && ((String) ci.getAnnotatedProperties().get(0)).equals(lsid)) {
                             searchSpeciesAuto.setSelectedItem(ci);
                             break;
                         }
                     }
                 }
-            }
-            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
+            }            
         }
+        
+        refreshBtnOkDisabled();
     }
 
     public void onCheck$rgAddSpecies(Event event) {
-        if(rSearch.isSelected() && searchSpeciesAuto.getSelectedItem().getValue() != null) {
-           btnOk.setDisabled(false);
-           btnOk.setLabel("Finish");
-           vboxSearch.setVisible(true);
-        }
-        else if (rSearch.isSelected() && searchSpeciesAuto.getSelectedItem().getValue() == null){
-           btnOk.setDisabled(true);
-           btnOk.setLabel("Next");
+        if(rSearch.isSelected()) {  
            vboxSearch.setVisible(true);           
+        } else {
+            vboxSearch.setVisible(false);
         }
 
-        else {
-           btnOk.setDisabled(false);
-           btnOk.setLabel("Next");
-           vboxSearch.setVisible(false);
+        refreshBtnOkDisabled();
+    }
+
+    private void refreshBtnOkDisabled() {
+        if (rSearch.isSelected()) {
+            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
+//        } else if(rAllSpecies.isSelected()) {
+//            btnOk.setDisabled(false);
+        } else {
+            btnOk.setDisabled(false);
         }
     }
 }

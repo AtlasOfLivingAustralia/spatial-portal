@@ -130,7 +130,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </n:a>
                                             </n:li>
 
-                                             <n:li style="display:none" >
+                                            <n:li style="display:none" >
                                                 <n:a href='#' n:onClick="runTabulation();">
                                                     <n:span>(Tabulate)</n:span>
                                                 </n:a>
@@ -163,6 +163,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             <n:li style="display:none" >
                                                 <n:a href='#' n:onClick="runExport();">
                                                     <n:span>Export</n:span>
+                                                </n:a>
+                                            </n:li>
+
+                                            <n:li style="display:none" >
+                                                <n:a href='#' n:onClick="zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'saveSession', null));">
+                                                    <n:span>Save session</n:span>
                                                 </n:a>
                                             </n:li>
                                         </n:ul>
@@ -215,10 +221,12 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
                                         </n:ul>
                                     </n:li>
-                                </n:ul>
+                                </n:ul>                                
                             </n:div><!--close nav-->
-                        </div>                        
-                        <borderlayout>
+                            <div onClick="menus.setOpen(false);" sclass="z-west-colps z-borderlayout-icon"
+                            style="position: absolute; z-index: 201; left: 380px; top: 3px;" ></div>
+                        </div>
+                        <borderlayout style="position:absolute;top:0px;left:0px">
                             <north height="219px">
                                 <div>
                                     <!-- space for top level menu -->
@@ -255,7 +263,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </west>
 
             <center id="center">
-                <div id="mapcontainer" width="100%" height="100%" >            
+                <div id="mapcontainer" width="100%" height="100%" >
                     <div style="float:left" width="100%" height="100%" >
                         <iframe id="mapIframe" width="100%" height="100%" name="mapFrame" src="./map2.html?" />
                     </div>

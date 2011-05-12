@@ -40,7 +40,7 @@ public class AreaPolygon extends AreaToolComposer {
         //reapply layer name
         getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
         getMapComposer().redrawLayersList();
-        
+        ok = true;
         this.detach();
     }
 

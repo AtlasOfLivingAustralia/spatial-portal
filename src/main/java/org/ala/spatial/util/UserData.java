@@ -1,5 +1,6 @@
 package org.ala.spatial.util;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -9,7 +10,7 @@ import java.util.Calendar;
  *
  * @author ajay
  */
-public class UserData {
+public class UserData implements Serializable {
 
     private String name;
     private String description;

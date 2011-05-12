@@ -952,4 +952,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
             this.execute(getAdditionalScript());
         }
     }
+
+    @Override
+    public String setBaseLayer(String baseLayer) {
+        return "changeBaseLayer('" + baseLayer + "');";
+    }
 }

@@ -17,14 +17,18 @@ import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.GeoJSONUtilities;
 import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
+import au.org.emii.portal.util.PortalSessionIO;
 import au.org.emii.portal.util.PortalSessionUtilities;
 import au.org.emii.portal.util.SessionPrint;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -112,30 +116,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     private Iframe rawMessageIframeHack;
     private Div rawMessageHackHolder;
-    //private Slider opacitySlider;
-    //private Label opacityLabel;
-    //private Slider redSlider;
-    //private Slider greenSlider;
-    //private Slider blueSlider;
-    //private Slider sizeSlider;
-    //private Checkbox chkUncertaintySize;
-    //public Button btnPointsCluster;
-    //public Radiogroup pointtype;
-    //public Radio rPoint, rCluster, rGrid;
-    //private Div clusterpoints;
-    //private Label lblFupload;
-    //private Label redLabel;
-    //private Label greenLabel;
-    //private Label blueLabel;
-    //private Label sizeLabel;
     Listbox activeLayersList;
     private Div layerControls;
-    //rivate Div uncertainty;
-    //private Hbox uncertaintyLegend;
     private West menus;
     private Div westContent;
     private Div westMinimised;
-    //private LayersAutoComplete lac;
     private Textbox userparams;
     /*
      * User data object to allow for the saving of maps and searches
@@ -148,25 +133,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private PortalSessionUtilities portalSessionUtilities = null;
     private Settings settings = null;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
-    //additional controls for the ALA Species Search stuff
-    //private AutoComplete gazetteerAuto;
-    //private SpeciesAutoComplete searchSpeciesAuto;
-    //private Div colourChooser;
-    //private Div sizeChooser;
-    //private Image legendImg;
-    //private Image legendImgUri;
-    //private Div legendHtml;
-    //private Label legendLabel;
-    //private HtmlMacroComponent leftMenuAnalysis;
+
     HtmlMacroComponent contextualMenu;
     public String tbxPrintHack;
     int mapZoomLevel = 4;
     Hashtable activeLayerMapProperties;
-    //Div divUserColours;
-    //Combobox cbColour;
-    //Comboitem ciColourUser; //User selected colour
-    Label lblSelectedLayer;
-    String baseMap = "normal";
+    Label lblSelectedLayer;    
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -3926,11 +3898,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
     public void onBaseMap(Event event) {
         String newBaseMap = (String) event.getData();
-        baseMap = newBaseMap;
+        getPortalSession().setBaseLayer(newBaseMap);
+
     }
 
     public String getBaseMap() {
-        return baseMap;
+        return getPortalSession().getBaseLayer();
     }
 
     void adjustActiveLayersList() {
@@ -3943,5 +3916,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
             }
         }
+    }
+
+    public void saveSession() {
+        String id = PortalSessionIO.writePortalSession(getPortalSession(), settingsSupplementary.getValue("session_path"), null);
+        showMessage("Saved session: " + settingsSupplementary.getValue("print_server_url")
+                + "?session=" + id);
     }
 }

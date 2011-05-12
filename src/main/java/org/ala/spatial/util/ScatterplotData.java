@@ -5,12 +5,13 @@
 package org.ala.spatial.util;
 
 import java.awt.geom.Rectangle2D;
+import java.io.Serializable;
 
 /**
  *
  * @author Adam
  */
-public class ScatterplotData {
+public class ScatterplotData implements Serializable {
 
     String layer1;
     String layer1name;

@@ -3,15 +3,18 @@ package au.org.emii.portal.web;
 import au.org.emii.portal.javascript.OpenLayersJavascript;
 import au.org.emii.portal.session.PortalSession;
 import au.org.emii.portal.config.ConfigurationLoaderStage1Impl;
+import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.PortalSessionCloner;
+import au.org.emii.portal.util.PortalSessionIO;
 import au.org.emii.portal.util.PortalSessionUtilities;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.logging.Level;
+import java.io.ObjectInputStream;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.zkoss.zk.ui.Desktop;
@@ -126,12 +129,25 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
     public void init(Desktop desktop, Object request) throws Exception {
         logger.debug("* INIT Desktop");
         Session session = desktop.getSession();
+        
         if (session == null) {
             logger.info(
                     "user has a null session - no idea why (system coming up/going down - "
                     + "concurrency ?) will redirect to error page");
             redirectAndInvalidateSession(desktop.getSession(), ERROR_PAGE);
         } else {
+            
+            //copy existing session
+            String qs = desktop.getQueryString();
+            if (qs != null &&
+                qs.toLowerCase().contains("session=")) {
+                String s = qs.substring(qs.indexOf("session=") + "session=".length());
+                if (s.indexOf('&') > 0) {
+                    s = s.substring(0,s.indexOf('&'));
+                }
+                loadSession(desktop.getSession(), s);
+            }
+            
             // user has a session...
 
             // Sesssion is OK - do things we want to do before we start
@@ -142,7 +158,7 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
             String script =
                     openLayersJavascript.initialiseMap()
                     + openLayersJavascript.iFrameReferences
-                    //+ openLayersJavascript.activateMapLayer(portalSession.getCurrentBaseLayer())
+                    + openLayersJavascript.setBaseLayer(portalSession.getBaseLayer())
                     + openLayersJavascript.activateMapLayers(portalSession.getActiveLayers())
                     + openLayersJavascript.zoomToBoundingBox(portalSessionUtilities.getCurrentBoundingBox(portalSession));
 
@@ -152,5 +168,19 @@ public class SessionInitImpl implements SessionInit, DesktopInit {
             logger.debug("onIframeMapFullyLoaded set to: " + script);
         }
         logger.debug("...session init complete");
+    }
+
+    void loadSession(Session session, String sessionId) {
+        SettingsSupplementary settingsSupplementary = getApplicationContext(session).getBean(SettingsSupplementary.class);
+        PortalSession ps = PortalSessionIO.readPortalSession(settingsSupplementary.getValue("session_path"), sessionId);
+        
+        try {
+            PortalSessionCloner cloner = getPortalSessionCloner(session);
+            PortalSession portalSession = cloner.clone(ps);
+            session.setAttribute(PORTAL_SESSION_ATTRIBUTE, portalSession);
+            logger.debug("* SESSION LOAD OK");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

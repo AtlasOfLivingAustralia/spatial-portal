@@ -250,4 +250,6 @@ public interface OpenLayersJavascript {
      */
     public void addGeoJsonLayer(String url);
 
+    public String setBaseLayer(String baseLayer);
+
 }

@@ -401,6 +401,11 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 
         if (currentSelection != null) {
             if (currentSelection.isDynamicStyle()) {
+                if (m.getColourMode().equals("grid")) {
+                    pointtype.setSelectedItem(rGrid);
+                } else {
+                    pointtype.setSelectedItem(rPoint);
+                }
 
                 updateComboBoxesColour(currentSelection);
 
@@ -435,15 +440,6 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 } else {
                     legendImg.setVisible(true);
                     legendHtml.setVisible(false);
-                }
-
-                //if (m.isClustered()) {
-                //    pointtype.setSelectedItem(rCluster);
-                //} else
-                if (m.getColourMode().equals("grid")) {
-                    pointtype.setSelectedItem(rGrid);
-                } else {
-                    pointtype.setSelectedItem(rPoint);
                 }
             } else if (currentSelection.getSelectedStyle() != null) {
                 /* 1. classification legend has uri with ".zul" content
@@ -546,9 +542,13 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         return txtLayerName.getValue();
     }
 
-//    public void onChange$txtLayerName(Event event) {
+//    public void onChanging$txtLayerName(Event event) {
 //        refreshLayer();
 //    }
+    
+    public void onChange$txtLayerName(Event event) {
+        refreshLayer();
+    }
 
     public void onOK$txtLayerName(Event event) {
         refreshLayer();

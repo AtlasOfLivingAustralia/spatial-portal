@@ -582,6 +582,8 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     }
 
     public void onClick$filter_done(Event event) {
+        ok = true;
+
         applyFilterEvented();
 
         try {

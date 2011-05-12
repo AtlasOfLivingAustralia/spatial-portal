@@ -61,6 +61,7 @@ public class AreaMapPolygon extends AreaToolComposer {
  
 
     public void onClick$btnOk(Event event) {
+        ok = true;
         this.detach();
     }
 

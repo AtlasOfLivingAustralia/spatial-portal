@@ -61,6 +61,7 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
 
     public void onClick$btnOk(Event event) {
         createRadiusFromAddress();
+        ok = true;
         this.detach();
     }
 

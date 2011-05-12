@@ -38,6 +38,7 @@ public class AreaBoundingBox extends AreaToolComposer {
         getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
         getMapComposer().redrawLayersList();
 
+        ok = true;
         this.detach();
     }
 

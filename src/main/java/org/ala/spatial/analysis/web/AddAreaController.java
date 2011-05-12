@@ -6,6 +6,7 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
+import java.util.Map;
 import org.ala.spatial.util.LayersUtil;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -22,11 +23,12 @@ public class AddAreaController extends UtilityComposer {
     SettingsSupplementary settingsSupplementary;
     Radiogroup cbAreaSelection;
     Radio ciWKT, ciUploadKML, ciRegionSelection, ciBoundingBox, ciPolygon, ciPointAndRadius, ciAddressRadiusSelection, ciMapPolygon, ciEnvironmentalEnvelope, ciUploadShapefile, ciBoxAustralia, ciBoxWorld, ciBoxCurrentView;
+    private Map args;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
+        args = Executions.getCurrent().getArg();
     }
 
     public void onClick$btnOk(Event event) {
@@ -105,7 +107,7 @@ public class AddAreaController extends UtilityComposer {
         }
         if (!windowName.contentEquals("")) {
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
-            Window window = (Window) Executions.createComponents(windowName, this.getParent(), Executions.getCurrent().getArg());
+            Window window = (Window) Executions.createComponents(windowName, this.getParent(), args);
             try {
                 if (overlapped) {
                     window.doOverlapped();

@@ -1030,15 +1030,16 @@ tr.z-listitem-over, tr.z-listitem-over span, tr.z-listitem-over div {
 
 .menudiv {
     font-size: 62.5%;
-    background-color:#efefef;
-    background-image: -moz-linear-gradient(top, #ffffff, #efefef); /* FF3.6 */
-    background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #ffffff),color-stop(1, #efefef)); /* Saf4+, Chrome */
-    filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#efefef'); /* IE6,IE7 */
-    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#efefef')"; /* IE8 */
+/*    background-color:#efefef;
+    background-image: -moz-linear-gradient(top, #ffffff, #efefef);  FF3.6 
+    background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #ffffff),color-stop(1, #efefef));  Saf4+, Chrome 
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#efefef');  IE6,IE7 
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#ffffff', EndColorStr='#efefef')";  IE8 
     height:40px;
-    background-repeat:no-repeat;
+    background-repeat:no-repeat;*/
 
-    position: absolute;
+    position: block;
+    z-index: 200;
 }
 
 
@@ -1319,4 +1320,8 @@ div.z-window-modal-header, div.z-window-overlapped-header {
 
  .underline {
      text-decoration: underline;
+}
+
+.z-west-header {
+    display: none;
 }
