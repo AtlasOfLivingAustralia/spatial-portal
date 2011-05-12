@@ -112,7 +112,6 @@ public class AddSpeciesController extends UtilityComposer {
 
     public void onCheck$rgAddSpecies(Event event) {
         if(rSearch.isSelected() && searchSpeciesAuto.getSelectedItem().getValue() != null) {
-           System.out.println("### Selected item is " + searchSpeciesAuto.getSelectedItem().getValue());
            btnOk.setDisabled(false);
            btnOk.setLabel("Finish");
            vboxSearch.setVisible(true);

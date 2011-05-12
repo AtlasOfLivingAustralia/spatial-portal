@@ -380,9 +380,16 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onCheck$rgSpecies(Event event) {
         try {
+            //Check to see if we are perform a normal or background upload
+            setUploadSpecies = false;
+            hasUploadSpecies = false;
+            
             if (rgSpecies != null && rgSpecies.getSelectedItem() == rSpeciesSearch) {
                 if (divSpeciesSearch != null) {
                     divSpeciesSearch.setVisible(true);
+                    if (event != null) {
+                        toggles();
+                    }
                     return;
                 }
             }
@@ -390,9 +397,7 @@ public class AddToolComposer extends UtilityComposer {
                 divSpeciesSearch.setVisible(false);
             }
 
-            //Check to see if we are perform a normal or background upload
-            setUploadSpecies = false;
-            hasUploadSpecies = false;
+
             if (rgSpecies.getSelectedItem() == rSpeciesUploadSpecies
                     || rgSpecies.getSelectedItem() == rSpeciesUploadLSID) {
                 setUploadSpecies = true;
@@ -408,9 +413,15 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onCheck$rgSpeciesBk(Event event) {
         try {
+            setUploadSpeciesBk = false;
+            hasUploadSpeciesBk = false;
+
             if (rgSpeciesBk != null && rgSpeciesBk.getSelectedItem() == rSpeciesSearchBk) {
                 if (divSpeciesSearchBk != null) {
                     divSpeciesSearchBk.setVisible(true);
+                    if (event != null) {
+                        toggles();
+                    }
                     return;
                 }
             }
@@ -419,8 +430,7 @@ public class AddToolComposer extends UtilityComposer {
                 divSpeciesSearchBk.setVisible(false);
             }
 
-            setUploadSpeciesBk = false;
-            hasUploadSpeciesBk = false;
+
             if (rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk || rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk) {
                 setUploadSpeciesBk = true;
                 hasUploadSpeciesBk = false;
@@ -1055,17 +1065,19 @@ public class AddToolComposer extends UtilityComposer {
                     || cbLayer1.getSelectedItem() == null);
         }
 
+        if (currentDiv.getZclass().contains("optional")) {
+            btnOk.setDisabled(false);
+        }
+
         if (currentDiv.getZclass().contains("species")) {
+        //if (divSpeciesSearch != null && divSpeciesSearch.isVisible()){
             btnOk.setDisabled(
                     divSpeciesSearch.isVisible()
-                    && (searchSpeciesAuto.getSelectedItem() == null
+                    && (searchSpeciesAuto.getSelectedItem().getValue() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
                     || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0));
         }
 
-        if (currentDiv.getZclass().contains("optional")) {
-            btnOk.setDisabled(false);
-        }
     }
 
     public void onChange$cbLayer2(Event event) {
