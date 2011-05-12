@@ -111,11 +111,19 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onCheck$rgAddSpecies(Event event) {
-        if(rSearch.isSelected()) {
-           btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
+        if(rSearch.isSelected() && searchSpeciesAuto.getSelectedItem().getValue() != null) {
+           System.out.println("### Selected item is " + searchSpeciesAuto.getSelectedItem().getValue());
+           btnOk.setDisabled(false);
            btnOk.setLabel("Finish");
            vboxSearch.setVisible(true);
-        } else {
+        }
+        else if (rSearch.isSelected() && searchSpeciesAuto.getSelectedItem().getValue() == null){
+           btnOk.setDisabled(true);
+           btnOk.setLabel("Next");
+           vboxSearch.setVisible(true);           
+        }
+
+        else {
            btnOk.setDisabled(false);
            btnOk.setLabel("Next");
            vboxSearch.setVisible(false);
