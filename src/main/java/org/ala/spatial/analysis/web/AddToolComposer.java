@@ -534,6 +534,12 @@ public class AddToolComposer extends UtilityComposer {
 
     public void resetWindowFromSpeciesUpload(String lsid, String type) {
         try {
+            if (type.compareTo("cancel") == 0) {
+                this.setTop(winTop);
+                this.setLeft(winLeft);
+                this.doModal();
+                return;
+            }
             if (type.compareTo("normal") == 0) {
                 setLsid(lsid);
                 hasUploadSpecies = true;
@@ -551,6 +557,8 @@ public class AddToolComposer extends UtilityComposer {
             e.printStackTrace();
         }
     }
+
+
 
     public void resetWindow(String selectedArea) {
         try {

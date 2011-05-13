@@ -125,6 +125,10 @@ public class UploadSpeciesController extends UtilityComposer {
     }
 
     public void onClick$btnCancel(Event event) {
+        if (this.getParent().getId().equals("addtoolwindow")) {
+            AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+            analysisParent.resetWindowFromSpeciesUpload("", "cancel");
+        }
         this.detach();
     }
 
