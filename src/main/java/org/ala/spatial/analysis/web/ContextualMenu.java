@@ -11,6 +11,7 @@ import java.util.List;
 import org.zkoss.zhtml.Li;
 import org.zkoss.zhtml.Ul;
 import org.zkoss.zk.ui.Component;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -375,21 +376,21 @@ class SpeciesListEvent implements EventListener {
         } else {
             params.put("polygonLayerName", "none");
         }
-        AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
-        window.onClick$btnOk(event);
+//        AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
+//        window.onClick$btnOk(event);
 
-//        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
-//        MapLayer ml = mc.getMapLayer(polygonLayerName);
-//        if(ml != null) {
-//            window.wkt = ml.getWKT();
-//        } else {
-//            window.wkt = mc.getViewArea();
-//        }
-//        try {
-//            window.doModal();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
+        MapLayer ml = mc.getMapLayer(polygonLayerName);
+        if(ml != null) {
+            window.wkt = ml.getWKT();
+        } else {
+            window.wkt = mc.getViewArea();
+        }
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 
