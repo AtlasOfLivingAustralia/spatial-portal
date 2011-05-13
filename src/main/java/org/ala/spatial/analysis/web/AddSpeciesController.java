@@ -121,7 +121,7 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onCheck$rgAddSpecies(Event event) {
-        if(rSearch.isSelected()) {  
+        if(rSearch.isSelected()) {
            vboxSearch.setVisible(true);           
         } else {
             vboxSearch.setVisible(false);
@@ -132,9 +132,7 @@ public class AddSpeciesController extends UtilityComposer {
 
     private void refreshBtnOkDisabled() {
         if (rSearch.isSelected()) {
-            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
-//        } else if(rAllSpecies.isSelected()) {
-//            btnOk.setDisabled(false);
+            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem().getValue() == null);
         } else {
             btnOk.setDisabled(false);
         }

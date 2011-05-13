@@ -2,7 +2,7 @@
 <?component name="uploadSpecies" macro-uri="/WEB-INF/zul/UploadSpecies.zul"?>
 <zk>
     <window id="addspecieswindow" use="org.ala.spatial.analysis.web.AddSpeciesController"
-    apply="org.ala.spatial.analysis.web.AddSpeciesController" width="400px" height="200px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+    apply="org.ala.spatial.analysis.web.AddSpeciesController" width="400px" height="220px" xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
         <n:div class="fancybox-bg" id="fancybox-bg-sw" />
@@ -17,7 +17,7 @@
         <separator/>
         <div style="margin-left:20px" >
             <radiogroup id="rgAddSpecies">
-                <vbox height="125px">
+                <vbox height="143px">
                     <radio id ="rAllSpecies" label="All species in an area" />
                     <radio id="rSearch" label="Search for a species by scientific or common name" />
                     <vbox id="vboxSearch">
