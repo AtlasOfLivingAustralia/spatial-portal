@@ -8,10 +8,12 @@ package org.ala.spatial.analysis.web;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zul.Filedownload;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.zkoss.zk.ui.Executions;
 
 /**
  *
@@ -48,17 +50,17 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
         String area = getSelectedArea();
 
         try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/filtering/apply");
-            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-            sbProcessUrl.append("/species/list");
-
-            String out = postInfo(sbProcessUrl.toString());
-            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
-                out = out.substring(0, out.length() - 1);
-            }
-            results = out.split("\\|");
-            java.util.Arrays.sort(results);
+//            StringBuffer sbProcessUrl = new StringBuffer();
+//            sbProcessUrl.append("/filtering/apply");
+//            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+//            sbProcessUrl.append("/species/list");
+//
+//            String out = postInfo(sbProcessUrl.toString());
+//            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
+//                out = out.substring(0, out.length() - 1);
+//            }
+//            results = out.split("\\|");
+//            java.util.Arrays.sort(results);
 
             onClick$btnDownload();
 
@@ -68,24 +70,34 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
     }
 
     public void onClick$btnDownload() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("Family Name,Scientific Name,Common name/s,Taxon rank,Scientific Name LSID,Number of Occurrences\r\n");
-        for (String s : results) {
-            sb.append("\"");
-            sb.append(s.replaceAll("\\*", "\",\""));
-            sb.append("\"");
-            sb.append("\r\n");
+        String wkt = getSelectedArea();
+        HashMap<String, Object> hm = new HashMap<String, Object>();
+        hm.put("wkt",wkt);
+        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", getMapComposer(), hm);
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        String spid = pid;
-        if (spid == null || spid.equals("none")) {
-            spid = String.valueOf(System.currentTimeMillis());
-        }
-
-        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
-        String sdate = date.format(new Date());
-
-        Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
+        
+//        StringBuffer sb = new StringBuffer();
+//        sb.append("Family Name,Scientific Name,Common name/s,Taxon rank,Scientific Name LSID,Number of Occurrences\r\n");
+//        for (String s : results) {
+//            sb.append("\"");
+//            sb.append(s.replaceAll("\\*", "\",\""));
+//            sb.append("\"");
+//            sb.append("\r\n");
+//        }
+//
+//        String spid = pid;
+//        if (spid == null || spid.equals("none")) {
+//            spid = String.valueOf(System.currentTimeMillis());
+//        }
+//
+//        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+//        String sdate = date.format(new Date());
+//
+//        Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
 
 //        if(wkt == null) {
 //            wkt = getMapComposer().getViewArea();

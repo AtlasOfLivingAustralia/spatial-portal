@@ -9,6 +9,7 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Filedownload;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
@@ -40,6 +41,8 @@ public class SpeciesListResults extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        wkt = (String) Executions.getCurrent().getArg().get("wkt");
 
         populateList();
     }
