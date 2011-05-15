@@ -5,6 +5,7 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -260,12 +261,16 @@ public class AddToolComposer extends UtilityComposer {
 
             int indexToSelect = 0;
 
+            String allWKT = "";
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
+                if (!allWKT.isEmpty())
+                    allWKT+=",";
+                allWKT += lyr.getWKT();
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
 
@@ -275,7 +280,13 @@ public class AddToolComposer extends UtilityComposer {
                     indexToSelect = i;
                 }
             }
-
+            if (!layers.isEmpty()) {
+                 Radio rAr = new Radio("All Active Areas");
+                rAr.setId("AllActiveAreas");
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+                rAr.setParent(rgArea);
+                rgArea.insertBefore(rAr, rAreaCurrent);
+            }
             if (rSelectedLayer != null) {
                 rSelectedLayer.setSelected(true);
                 rAreaSelected = rSelectedLayer;
