@@ -355,11 +355,11 @@ public class AddToolComposer extends UtilityComposer {
         }
     }
 
-    public void loadGridLayers(boolean fullList) {
+    public void loadGridLayers(boolean environmentalOnly, boolean fullList) {
         try {
 
             if (fullList) {
-                lbListLayers.init(getMapComposer(), CommonData.satServer, true);
+                lbListLayers.init(getMapComposer(), CommonData.satServer, environmentalOnly);
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (int i = 0; i < layers.size(); i++) {

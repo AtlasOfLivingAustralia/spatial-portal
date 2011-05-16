@@ -244,6 +244,33 @@ public class RemoteMapImpl implements RemoteMap {
         return geoJSON;
     }
 
+    public MapLayer createKMLLayer(String label, String name, String uri) {
+        MapLayer kml = new MapLayer();
+        kml.setPolygonLayer(true);
+
+        kml.setName(label);
+
+        if (uri.indexOf("?") == -1) {
+            kml.setUri(uri);
+        } else {
+            kml.setUri(uri.substring(0, uri.lastIndexOf("?")));
+        }
+
+        kml.setId(uri);
+        kml.setLayer(label);
+
+        logger.debug(uri);
+        kml.setType(layerUtilities.KML);
+        System.out.println("getting json .... " + uri);
+
+        if (kml.getMapLayerMetadata() == null) {
+            kml.setMapLayerMetadata(new MapLayerMetadata());
+        }
+
+        return kml;
+    }
+
+
     /**
      * Create a MapLayer instance and test that an image can be read from
      * the URI.

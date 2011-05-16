@@ -44,7 +44,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         this.totalSteps = 4;
 
         this.loadAreaLayers();
-        this.loadGridLayers(true);
+        this.loadGridLayers(true,true);
         this.updateWindowTitle();
         //this.updateName("Classification #" + generation_count + " - " + groupCount.getValue() + " groups");
         //this.updateName("My Classification #" + generation_count);

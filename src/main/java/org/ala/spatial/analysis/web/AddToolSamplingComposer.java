@@ -34,7 +34,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
-        this.loadGridLayers(true);
+        this.loadGridLayers(false,true);
         this.updateWindowTitle();
         
     }

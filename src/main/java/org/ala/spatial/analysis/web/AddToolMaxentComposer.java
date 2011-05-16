@@ -42,7 +42,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
-        this.loadGridLayers(true);
+        this.loadGridLayers(true,true);
         this.updateWindowTitle();
 
     }
