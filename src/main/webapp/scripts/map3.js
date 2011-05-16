@@ -2842,6 +2842,7 @@ function getEnvLayerValue(layername, latitude, longitude) {
     $.ajax({
         url: proxy_script + URLEncode(url),
         success: function(data){
+            console.info("env layer data is " + data);
             ret = data;
         },
         async: false
@@ -2855,12 +2856,16 @@ function getEnvLayerValue(layername, latitude, longitude) {
 //test code for env layer intersection
 var last_env_name = null;
 var last_env_valid = false;
+var last_contextual_name = null;
+var last_contextual_valid = false;
+
 function envLayerInspection(e) {
     try {
         var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
         //find first valid layer, if any
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
+            console.info("Looking at layer: " + layer.url);
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
@@ -2869,13 +2874,14 @@ function envLayerInspection(e) {
             }
             if(p2 < 0) p2 = layer.url.length;
             var name = layer.url.substring(p1+4,p2);
-            //console.log("A:" + name);
-            //console.log("B:" + layer.url);
+            console.log("A:" + name);
+            console.log("B:" + layer.url);
             if(last_env_name != name) {
                 last_env_valid = isEnvLayer(name);
                 last_env_name = name;
             }
             if(last_env_valid) {
+                console.info("environmental load ...");
                 var pt = map.getLonLatFromViewPortPx(new
                     OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
@@ -2910,12 +2916,102 @@ function envLayerInspection(e) {
                 } else {
                     onPopupClose();
                 }
+                return;
+            }
+            if(last_contextual_name != name) {
+                last_contextual_valid = isContextualLayer(name);
+                last_contextual_name = name;
+            }
+            if(last_contextual_valid) {
+                console.info("contextual load ...");
+                var pt = map.getLonLatFromViewPortPx(new
+                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
+
+                popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                    pt,
+                    new OpenLayers.Size(20,20),
+                    "<div id='sppopup' style='width: 250px; height: 50px;'>" + "Loading..." + "</div>"
+                    ,
+                    null, true, onPopupClose);
+
+                var feature = popup;
+                feature.popup = popup;
+                popup.feature = feature;
+                map.addPopup(popup, true);
+
+                pt = pt.transform(map.projection, map.displayProjection);
+
+                var data = getContextualLayerValue(name, pt.lat, pt.lon);
+                console.info(data);
+                if(data != null && data != "") {
+                    var d = data.split("\t");
+                    //alert("Layer: " + d[0] + "\n\nPoint: " + pt.lon.toPrecision(5) + "," + pt.lat.toPrecision(5) + "\n\nValue: " + d[1]);
+
+                    var infohtml = "<div id='sppopup'> <h2>" + name + "</h2>" +
+                    " Longitude: <b>"+pt.lon.toPrecision(5) + "</b> , Latitude: <b>" + pt.lat.toPrecision(5)  + "</b><br/>" +
+                    " Layer value: <b>" + d[0] + "</b> <br />";
+
+                    if (document.getElementById("sppopup") != null) {
+                        document.getElementById("sppopup").innerHTML = infohtml;
+                    } else {
+                        onPopupClose();
+                    }
+                } else {
+                    onPopupClose();
+                }
+                return;
             }
         }
     }catch(err){
         alert(err);
     }
 }
+
+function isContextualLayer(layerName){
+    var validLayer = false;
+    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/" + layerName + ".xml";
+    console.info("URL is " + url);
+
+    $.ajax({
+        type: "GET",
+        dataType: "xml",
+        url: proxy_script + URLEncode(url),
+        success: function(xml){
+            //now we need to ensure that the layer_name tag is present
+            $(xml).find('layer_name').each(function(){
+                validLayer = true;
+            }); //close each(
+
+            gazdata = xml;
+        },
+        error: function(){
+            gazdata = "failure";
+        },
+        async:false
+    });
+    return validLayer;
+}
+
+function getContextualLayerValue(layerName, latitude, longitude) {
+    var gazdata = "empty";
+    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/search.xml?lat=" + latitude + "&lon=" + longitude + "&layer=" + layerName;
+    console.info("url is " + url);
+    $.ajax({
+        type: "GET",
+        dataType: "xml",
+        url: proxy_script + URLEncode(url),
+        success: function(xml){
+            gazdata = $(xml).find("name").text();
+            console.info(gazdata);
+        },
+        error: function(){
+            gazdata = "failure";
+        },
+        async:false
+    });
+    return gazdata;
+}
+
 function isEnvLayer(name) {
     var data = getEnvLayerValue(name, -23, 133);
     return data != null && data != "" && data.indexOf("no data") < 0;
@@ -2927,6 +3023,7 @@ function envLayerHover(e) {
         //find first valid layer, if any
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
+            console.info("Checking " + layer.url);
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
@@ -2940,6 +3037,7 @@ function envLayerHover(e) {
                 last_env_name = name;
             }
             if(last_env_valid) {
+                console.info("Checking environmental");
                 var pt = map.getLonLatFromViewPortPx(new
                     OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
@@ -2950,8 +3048,26 @@ function envLayerHover(e) {
                     return data;
                 }
             }
+            if(last_contextual_name != name) {
+                last_contextual_valid = isContextualLayer(name);
+                last_contextual_name = name;
+            }
+            if(last_contextual_valid){
+                console.info("Checking contextual");
+                var pt = map.getLonLatFromViewPortPx(new
+                OpenLayers.Pixel(e.xy.x, e.xy.y) );
+                pt = pt.transform(map.projection, map.displayProjection);
+                var txt = getContextualLayerValue(name, pt.lat, pt.lon);
+                if(txt != null && txt != "") {
+                    return name + "\t" + txt;
+                }
+                else{
+                    console.error("txt is null!");
+                }
+            }
         }
     }catch(err){
+        console.error("an error has occurred!");
     }
     return null;
 }
@@ -2972,7 +3088,7 @@ function initHover() {
                 var d = data.split("\t");
                 output.value = "Layer: " + d[0] + "\nPoint: " + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "\nValue: " + d[1];
             } else {
-                output.value = "No environmental layer found";
+                output.value = "No valid data to display";
             }
         },
         'delay': 200
