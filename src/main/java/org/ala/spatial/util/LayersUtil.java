@@ -29,8 +29,9 @@ import org.apache.commons.lang.StringUtils;
  * @author adam
  *
  */
-public class LayersUtil {
+    public class LayersUtil {
 
+    public static final String LAYER_TYPE_PLAIN = "text/plain";
     public static final String LAYER_TYPE_CSV = "text/csv";
     public static final String LAYER_TYPE_KML = "application/vnd.google-earth.kml+xml";
     public static final String LAYER_TYPE_CSV_EXCEL = "text/x-comma-separated-values";

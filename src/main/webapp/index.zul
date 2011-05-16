@@ -160,7 +160,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                 </n:a>
                                             </n:li>
 
-                                            <n:li style="display:none" >
+                                            <n:li style="display:block" >
                                                 <n:a href='#' n:onClick="runExport();">
                                                     <n:span>Export</n:span>
                                                 </n:a>
@@ -221,10 +221,11 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
                                         </n:ul>
                                     </n:li>
-                                </n:ul>                                
+                                </n:ul>
                             </n:div><!--close nav-->
                             <div onClick="menus.setOpen(false);" sclass="z-west-colps z-borderlayout-icon"
-                            style="position: absolute; z-index: 201; left: 380px; top: 3px;" ></div>
+                            style="position: absolute; z-index: 201; left: 380px; top: 3px;" >
+                            </div>
                         </div>
                         <borderlayout style="position:absolute;top:0px;left:0px">
                             <north height="219px">

@@ -24,11 +24,10 @@ import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
 import java.awt.Color;
-import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -44,14 +43,10 @@ import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONObject;
-import org.ala.spatial.analysis.web.AddToolComposer;
-import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
-import org.ala.spatial.analysis.web.FilteringResultsWCController;
 import org.ala.spatial.analysis.web.HasMapLayer;
 import org.ala.spatial.analysis.web.SpeciesPointsProgress;
-import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
@@ -72,7 +67,6 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.ForwardEvent;
-import org.zkoss.zk.ui.metainfo.ZScript;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zk.ui.util.SessionInit;
 import org.zkoss.zul.Caption;
@@ -113,7 +107,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /*
      * Autowired controls
      */
-
     private Iframe rawMessageIframeHack;
     private Div rawMessageHackHolder;
     Listbox activeLayersList;
@@ -133,12 +126,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private PortalSessionUtilities portalSessionUtilities = null;
     private Settings settings = null;
     private GenericServiceAndBaseLayerSupport genericServiceAndBaseLayerSupport = null;
-
     HtmlMacroComponent contextualMenu;
     public String tbxPrintHack;
     int mapZoomLevel = 4;
     Hashtable activeLayerMapProperties;
-    Label lblSelectedLayer;    
+    Label lblSelectedLayer;
 
     /*
      * for capturing layer loaded events signaling listeners
@@ -493,7 +485,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void activateLink(String uri, String label, boolean isExternal, String downloadPid) {
-        Window externalContentWindow = (Window)Executions.createComponents("WEB-INF/zul/ExternalContent.zul", layerControls, null);
+        Window externalContentWindow = (Window) Executions.createComponents("WEB-INF/zul/ExternalContent.zul", layerControls, null);
 
         if (isExternal) {
             // change browsers current location
@@ -585,7 +577,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
              * it a new ListModelList instance based on live data
              */
             activeLayersList.setModel(new ListModelList(activeLayers, true));
-            
+
         }
 
         if (!activeLayers.contains(mapLayer) && mapLayer.isDisplayable()) {
@@ -911,7 +903,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         activeLayersList.setModel(activeLayerModel);
         adjustActiveLayersList();
         activeLayersList.setItemRenderer(activeLayerRenderer);
-        activeLayersList.setSelectedIndex(activeLayerModel.size()-1);
+        activeLayersList.setSelectedIndex(activeLayerModel.size() - 1);
 
         updateLayerControls();
 
@@ -1108,7 +1100,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public MapLayer addImageLayer(String id, String label, String uri, float opacity, List<Double> bbox, int subType) {
-         // check if layer already present
+        // check if layer already present
         MapLayer imageLayer = getMapLayer(label);
 
         if (safeToPerformMapAction()) {
@@ -1899,6 +1891,87 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             String label = (String) component.getAttribute("label");
             this.activateLink(uri, label, false);
         }
+    }
+
+    public MapLayer addKMLLayer(String label, String name, String uri) {
+        return addKMLLayer(label, name, uri, false);
+    }
+
+    public MapLayer addKMLLayer(String label, String name, String uri, boolean forceReload) {
+        MapLayer mapLayer = null;
+
+        if (safeToPerformMapAction()) {
+            MapLayer gjLayer = getMapLayer(label);
+            if (forceReload) {
+                if (gjLayer != null) {
+                    System.out.println("removing existing layer: " + gjLayer.getName());
+                    openLayersJavascript.setAdditionalScript(
+                            openLayersJavascript.removeMapLayer(gjLayer));
+                } //else {
+                mapLayer = remoteMap.createKMLLayer(label, name, uri);
+                if (mapLayer == null) {
+                    // fail
+                    //hide error, might be clustering zoom in; showMessage("No mappable features available");
+                    logger.info("adding KML layer failed ");
+                } else {
+                    mapLayer.setDisplayable(true);
+                    mapLayer.setOpacity((float) 0.6);
+                    mapLayer.setQueryable(true);
+                    mapLayer.setDynamicStyle(true);
+
+                    activateLayer(mapLayer, true, true);
+
+                    // we must tell any future tree menus that the map layer is already
+                    // displayed as we didn't use changeSelection()
+                    mapLayer.setListedInActiveLayers(true);
+                }
+                //}
+            } else {
+                //if (portalSessionUtilities.getUserDefinedById(getPortalSession(), uri) == null) {
+                boolean okToAdd = false;
+                MapLayer mlExisting = getMapLayer(label);
+                if (mlExisting == null) {
+                    okToAdd = true;
+                } else if (!mlExisting.getUri().equals(uri)) {
+                    // check if it's a different url
+                    // if it is, then it is ok to add
+                    // and assume the previous is removed.
+                    okToAdd = true;
+                } else {
+                }
+
+                if (okToAdd) {
+                    mapLayer = remoteMap.createKMLLayer(label, name, uri);
+                    if (mapLayer == null) {
+                        // fail
+                        //hide error, might be clustering zoom in; showMessage("No mappable features available");
+                        logger.info("adding KML layer failed ");
+                    } else {
+                        mapLayer.setDisplayable(true);
+                        mapLayer.setOpacity((float) 0.6);
+                        mapLayer.setQueryable(true);
+                        mapLayer.setDynamicStyle(true);
+
+                        activateLayer(mapLayer, true, true);
+
+                        // we must tell any future tree menus that the map layer is already
+                        // displayed as we didn't use changeSelection()
+                        mapLayer.setListedInActiveLayers(true);
+                    }
+                } else {
+                    //need to cleanup any additional scripts outstanding
+                    openLayersJavascript.useAdditionalScript();
+
+                    // fail
+                    //showMessage("GeoJSON layer already exists");
+                    logger.info(
+                            "refusing to add a new layer with URI " + uri
+                            + " because it already exists in the menu");
+                }
+            }
+        }
+
+        return mapLayer;
     }
 
     public MapLayer addGeoJSON(String labelValue, String uriValue) {
@@ -3289,7 +3362,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //            applyChange();
 //        }
 //    }
-
     public void loadScatterplot(ScatterplotData data, String lyrName) {
         MapLayer ml = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT);
         ml.setDisplayName(lyrName);
@@ -3301,6 +3373,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     /*
      * remove it + map it
      */
+
     public MapLayer activateLayerForScatterplot(ScatterplotData data, String rank) {
         List udl = getMapComposer().getPortalSession().getActiveLayers();
         Iterator iudl = udl.iterator();
@@ -3424,12 +3497,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //        }
 //        return isUserUploadedCoordinates;
 //    }
-
     public String getNextAreaLayerName(String layerPrefix) {
         layerPrefix += " ";
         int i = 1;
         while (getMapLayer(layerPrefix + i) != null
-                || getMapLayerDisplayName(layerPrefix + i) != null ) {
+                || getMapLayerDisplayName(layerPrefix + i) != null) {
             i++;
         }
         return layerPrefix + i;
@@ -3500,12 +3572,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         openModal("WEB-INF/zul/AddToolAreaReport.zul", null);
     }
 
-     public void onClick$btnSpeciesList(Event event) {
+    public void onClick$btnSpeciesList(Event event) {
         openModal("WEB-INF/zul/AddToolSpeciesList.zul", null);
     }
 
     public Window openModal(String page, Hashtable<String, Object> params) {
-        Window window = (Window) Executions.createComponents(page, this, params);       
+        Window window = (Window) Executions.createComponents(page, this, params);
 
         try {
             window.doModal();
@@ -3571,7 +3643,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 page = "WEB-INF/zul/AnalysisTabulation.zul";
                 break;
             default:
-                if(selectedLayer.getSubType() == LayerUtilities.SCATTERPLOT) {
+                if (selectedLayer.getSubType() == LayerUtilities.SCATTERPLOT) {
                     page = "WEB-INF/zul/Scatterplot.zul";
                 } else {
                     showLayerDefault(selectedLayer);
@@ -3594,11 +3666,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public MapLayer llc2MapLayer;
 
     void showLayerDefault(MapLayer ml) {
-        if(ml.getType() == LayerUtilities.MAP) {
-            Window window = (Window)Executions.createComponents("WEB-INF/zul/MapOptions.zul", layerControls, null);
+        if (ml.getType() == LayerUtilities.MAP) {
+            Window window = (Window) Executions.createComponents("WEB-INF/zul/MapOptions.zul", layerControls, null);
             try {
                 window.doEmbedded();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return;
@@ -3680,7 +3752,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //            }
         }
     }
-
 
     public void redrawLayersList() {
         int idx = activeLayersList.getSelectedIndex();
@@ -3872,24 +3943,98 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
         Clients.evalJavaScript(response);
     }
-    
+
     public void exportArea(Event event) {
+        openModal("WEB-INF/zul/ExportLayer.zul", null);
+    }
+
+    public void exportAreaAs(String type) {
+        System.out.println("Exporting layer as: " + type);
         try {
             MapLayer ml = llc2MapLayer;
             if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
 
                 String id = String.valueOf(System.currentTimeMillis());
 
-                File shpDir = new File("/data/ala/runtime/output/layers/"+id+"/");
+                File shpDir = new File("/data/ala/runtime/output/layers/" + id + "/");
                 shpDir.mkdirs();
-                File shpfile = new File("/data/ala/runtime/output/layers/"+id+"/ActiveArea.shp");
-                ShapefileUtils.saveShapefile(shpfile,ml.getWKT());
+
+                String contentType = LayersUtil.LAYER_TYPE_ZIP;
+                String outfile = ml.getDisplayName().replaceAll(" ", "_")+".zip";
+                if ("shp".equals(type)) {
+                    File shpfile = new File("/data/ala/runtime/output/layers/" + id + "/ActiveArea.shp");
+                    ShapefileUtils.saveShapefile(shpfile, ml.getWKT());
+                    //contentType = LayersUtil.LAYER_TYPE_ZIP;
+                    //outfile += ".zip";
+                } else if ("kml".equals(type)) {
+                    
+                    StringBuffer sbKml = new StringBuffer(); 
+                    sbKml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("\r");
+                    sbKml.append("<kml xmlns=\"http://earth.google.com/kml/2.2\">").append("\r");
+                    sbKml.append("<Document>").append("\r");
+                    sbKml.append("  <name>Spatial Portal Active Area</name>").append("\r");
+                    sbKml.append("  <description><![CDATA[Active area saved from the ALA Spatial Portal: http://spatial.ala.org.au/]]></description>").append("\r");
+                    sbKml.append("  <Style id=\"style1\">").append("\r");
+                    sbKml.append("    <LineStyle>").append("\r");
+                    sbKml.append("      <color>40000000</color>").append("\r");
+                    sbKml.append("      <width>3</width>").append("\r");
+                    sbKml.append("    </LineStyle>").append("\r");
+                    sbKml.append("    <PolyStyle>").append("\r");
+                    sbKml.append("      <color>73FF0000</color>").append("\r");
+                    sbKml.append("      <fill>1</fill>").append("\r");
+                    sbKml.append("      <outline>1</outline>").append("\r");
+                    sbKml.append("    </PolyStyle>").append("\r");
+                    sbKml.append("  </Style>").append("\r");
+                    sbKml.append("  <Placemark>").append("\r");
+                    sbKml.append("    <name>").append(ml.getDisplayName()).append("</name>").append("\r");
+                    sbKml.append("    <description><![CDATA[<div dir=\"ltr\">").append(ml.getDisplayName()).append("<br></div>]]></description>").append("\r");
+                    sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
+                    sbKml.append("    <Polygon>").append("\r");
+                    sbKml.append("      <outerBoundaryIs>").append("\r");
+                    sbKml.append("        <LinearRing>").append("\r");
+                    sbKml.append("          <tessellate>1</tessellate>").append("\r");
+                    sbKml.append("          <coordinates>").append("\r");
+
+                    String wkt = ml.getWKT();
+                    System.out.println("transforming wkt from \n\t"+wkt);
+                    wkt = wkt.replaceAll("POLYGON", "").replace("((", "").replace("))", "");
+                    System.out.println("to:\n\t"+wkt);
+                    String[] awkt = wkt.split(",");
+                    for (String w : awkt) {
+                        sbKml.append(w.replaceAll(" ", ",")).append(",0").append("\n");
+                    }
+
+                    sbKml.append("          </coordinates>").append("\r");
+                    sbKml.append("        </LinearRing>").append("\r");
+                    sbKml.append("      </outerBoundaryIs>").append("\r");
+                    sbKml.append("    </Polygon>").append("\r");
+                    sbKml.append("  </Placemark>").append("\r");
+                    sbKml.append("</Document>").append("\r");
+                    sbKml.append("</kml>").append("\r");
+
+                    File shpfile = new File("/data/ala/runtime/output/layers/" + id + "/ActiveArea.kml");
+                    BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
+                    wout.write(sbKml.toString());
+                    wout.close();
+                    //contentType = LayersUtil.LAYER_TYPE_KML;
+                    //outfile += ".kml";
+                } else if ("wkt".equals(type)) {
+                    File shpfile = new File("/data/ala/runtime/output/layers/" + id + "/ActiveArea.txt");
+                    BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
+                    wout.write(ml.getWKT());
+                    wout.close();
+                    //contentType = LayersUtil.LAYER_TYPE_PLAIN;
+                    //outfile += ".txt";
+                }
+
+                System.out.println("Written to: /data/ala/runtime/output/layers/" + id + "/");
 
                 String downloadUrl = CommonData.satServer;
-                downloadUrl += "/alaspatial/ws/download/"+id;
-                Filedownload.save(new URL(downloadUrl).openStream(), "application/zip",ml.getDisplayName().replaceAll(" ", "_") + ".zip");
+                downloadUrl += "/alaspatial/ws/download/" + id;
+                Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
 
             }
+
         } catch (Exception e) {
             System.out.println("Unable to export user area");
             e.printStackTrace(System.out);
@@ -3907,10 +4052,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     void adjustActiveLayersList() {
-        if(activeLayersList != null && activeLayersList.getItems() != null) {
-            for(Listitem li : (List<Listitem>) activeLayersList.getItems()) {
-                if(li.getValue() != null
-                        && ((MapLayer)li.getValue()).getName().equals("Map options")) {
+        if (activeLayersList != null && activeLayersList.getItems() != null) {
+            for (Listitem li : (List<Listitem>) activeLayersList.getItems()) {
+                if (li.getValue() != null
+                        && ((MapLayer) li.getValue()).getName().equals("Map options")) {
                     li.setDraggable("false");
                     li.setDroppable("false");
                 }
