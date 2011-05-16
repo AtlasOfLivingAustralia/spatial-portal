@@ -205,7 +205,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     readReplaceBetween(pth + "species.html", "Command line", "<br>", "");
 
                     // replace the summary
-                    readReplace(pth + "species.html", "This page contains some analysis of the Maxent model for", "This Maxent v3.3.3a predictive model (see http://www.cs.princeton.edu/~schapire/maxent/) for");
+                    readReplace(pth + "species.html", "This page contains some analysis of the Maxent model for", "This <a href='http://www.cs.princeton.edu/~schapire/maxent/'>Maxent</a> v3.3.3a predictive model for");
                     readReplace(pth + "species.html", ", created", " was created");
                     readReplace(pth + "species.html", " using Maxent version 3.3.3a.", ".");
                     readReplace(pth + "species.html", "If you would like to do further analyses, the raw data used here is linked to at the end of this page", "Links at the bottom of this page to the raw data may be used for further analysis");
