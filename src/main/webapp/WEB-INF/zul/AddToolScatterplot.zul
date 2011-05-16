@@ -64,8 +64,8 @@
                 <label id="atstep3_label" value="" />
                 <separator />
                 <radiogroup id="rgAreaHighlight" orient="vertical">
-                    <radio id="rAreaNoneHighlight" label="No highlight" value="none" />
-                    <radio id="rAreaCurrentHighlight" label="Current extent" value="current" />
+                    <radio id="rAreaNoneHighlight" label="No highlight" value="none" checked="true"/>
+                    <radio id="rAreaCurrentHighlight" label="Current extent" value="current"/>
                     <radio id="rAreaAustraliaHighlight" label="Australia" value="australia" />
                     <radio id="rAreaWorldHighlight" label="World" value="world" />
                 </radiogroup>
@@ -95,8 +95,8 @@
                 <label id="atstep5_label" value="" />
                 <separator />
                 <radiogroup id="rgSpeciesBk" orient="vertical">
-                    <radio id="rSpeciesNoneBk" label="No background species" value="none" visible="true" />
-                    <radio id="rSpeciesAllBk" label="All species" value="allspecies" visible="false" />
+                    <radio id="rSpeciesNoneBk" label="No background species" value="none" visible="true" checked="true"/>
+                    <radio id="rSpeciesAllBk" label="All species" value="allspecies" visible="false"/>
                     <radio id="rSpeciesMappedBk" label="All species currently mapped" value="allmapped" visible="false"/>
                     <radio id="rSpeciesSearchBk" value="search" label="Search for species by common or scientific name" />
                         <vbox width="100%">
