@@ -4032,7 +4032,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 String downloadUrl = CommonData.satServer;
                 downloadUrl += "/alaspatial/ws/download/" + id;
                 Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
-
+            } else {
+                Messagebox.show("The selected layer is not a polygon layer. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
             }
 
         } catch (Exception e) {
