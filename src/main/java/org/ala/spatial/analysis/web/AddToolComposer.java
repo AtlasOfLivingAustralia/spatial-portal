@@ -905,7 +905,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public String getSelectedSpeciesName() {
-        String species = rgSpecies.getSelectedItem().getValue();
+        String species = rgSpecies.getSelectedItem().getLabel(); 
         try {
             if (species.equals("allspecies")) {
             } else if (species.equals("allmapped")) {
@@ -922,6 +922,8 @@ public class AddToolComposer extends UtilityComposer {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getText());
                 }
+            } else {
+                species = species.substring(0,species.lastIndexOf(" ")); 
             }
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected species");
