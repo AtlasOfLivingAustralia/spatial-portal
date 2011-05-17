@@ -2842,7 +2842,7 @@ function getEnvLayerValue(layername, latitude, longitude) {
     $.ajax({
         url: proxy_script + URLEncode(url),
         success: function(data){
-            console.info("env layer data is " + data);
+            //console.info("env layer data is " + data);
             ret = data;
         },
         async: false
@@ -2881,7 +2881,7 @@ function envLayerInspection(e) {
 
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
-            console.info("Looking at layer: " + layer.url);
+            //console.info("Looking at layer: " + layer.url);
             
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
@@ -2895,7 +2895,7 @@ function envLayerInspection(e) {
                 last_env_name = name;
             }
             if(last_env_valid) {
-                console.info("environmental load ...");
+                //console.info("environmental load ...");
                 var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
                 pt = pt.transform(map.projection, map.displayProjection);
 
@@ -2911,7 +2911,7 @@ function envLayerInspection(e) {
                 last_contextual_name = name;
             }
             if(last_contextual_valid) {
-                console.info("contextual load ...");
+                //console.info("contextual load ...");
                 var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
                 pt = pt.transform(map.projection, map.displayProjection);
 
@@ -2972,7 +2972,7 @@ function getContextualLayerAlias(layerName){
             layerAlias = $(xml).find('alias').text();
         },
         error: function(){
-            console.error("A problem occurred searching for layer alias");
+            //console.error("A problem occurred searching for layer alias");
         },
         async:false
     });
@@ -2982,14 +2982,14 @@ function getContextualLayerAlias(layerName){
 function getContextualLayerValue(layerName, latitude, longitude) {
     var gazdata = "empty";
     var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/search.xml?lat=" + latitude + "&lon=" + longitude + "&layer=" + layerName;
-    console.info("url is " + url);
+    //console.info("url is " + url);
     $.ajax({
         type: "GET",
         dataType: "xml",
         url: proxy_script + URLEncode(url),
         success: function(xml){
             gazdata = $(xml).find("name").text();
-            console.info(gazdata);
+            //console.info(gazdata);
         },
         error: function(){
             gazdata = "failure";
@@ -3013,7 +3013,7 @@ function envLayerHover(e) {
         //find first valid layer, if any
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
-            console.info("Checking " + layer.url);
+            //console.info("Checking " + layer.url);
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
@@ -3027,7 +3027,7 @@ function envLayerHover(e) {
                 last_env_name = name;
             }
             if(last_env_valid) {
-                console.info("Checking environmental");
+                //console.info("Checking environmental");
                 var pt = map.getLonLatFromViewPortPx(new
                     OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
@@ -3046,24 +3046,24 @@ function envLayerHover(e) {
                 last_contextual_name = name;
             }
             if(last_contextual_valid){
-                console.info("Checking contextual");
+                //console.info("Checking contextual");
                 var pt = map.getLonLatFromViewPortPx(new
                 OpenLayers.Pixel(e.xy.x, e.xy.y) );
                 pt = pt.transform(map.projection, map.displayProjection);
                 var txt = getContextualLayerValue(name, pt.lat, pt.lon);
                 if(txt != null && txt != "") {
-                    console.info("txt is " + txt);
+                    //console.info("txt is " + txt);
                     body = body + getContextualLayerAlias(name).capitalize() + ": " + txt + "\n";
                 }
                 else{
-                    console.error("txt is null!");
+                    //console.error("txt is null!");
                 }
             }
         }
         return body;
         
     }catch(err){
-        console.error("an error has occurred!");
+        //console.error("an error has occurred!");
     }
     return null;
 }
