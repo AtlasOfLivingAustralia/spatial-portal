@@ -32,6 +32,7 @@ import org.zkoss.zul.Textbox;
  * @author Adam
  */
 public class AreaUploadShapefile extends AreaToolComposer {
+
     Fileupload fileUpload;
     Textbox txtLayerName;
 
@@ -41,10 +42,10 @@ public class AreaUploadShapefile extends AreaToolComposer {
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
         fileUpload.addEventListener("onUpload", new EventListener() {
 
-                public void onEvent(Event event) throws Exception {
-                    onClick$btnOk(event);
-                }
-            });
+            public void onEvent(Event event) throws Exception {
+                onClick$btnOk(event);
+            }
+        });
     }
 
     public void onClick$btnOk(Event event) {
@@ -116,7 +117,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
                         System.out.println("Got shapefile wkt...");
                         //String layerName = getMapComposer().getNextAreaLayerName(txtLayerName.getValue());
-                        layerName = txtLayerName.getValue(); 
+                        layerName = txtLayerName.getValue();
                         MapLayer mapLayer = getMapComposer().addWKTLayer(wkt, layerName, layerName);
                         mapLayer.setMapLayerMetadata(new MapLayerMetadata());
                         mapLayer.getMapLayerMetadata().setMoreInfo("User uploaded shapefile. \n Used polygon: " + shape.get("id"));
@@ -165,7 +166,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
         }
     }
 
-     public void loadUserLayerKML(String name, byte[] kmldata) {
+    public void loadUserLayerKML(String name, byte[] kmldata) {
         try {
 
             String id = String.valueOf(System.currentTimeMillis());
@@ -186,6 +187,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 logger.debug("The layer " + name + " couldnt be created");
                 getMapComposer().showMessage(getMapComposer().getLanguagePack().getLang("ext_layer_creation_failure"));
             } else {
+                mapLayer.setWKT(getKMLPolygonAsWKT(kmlstr));
                 getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
             }
 
@@ -198,5 +200,36 @@ public class AreaUploadShapefile extends AreaToolComposer {
             System.out.println("unable to load user kml: ");
             e.printStackTrace(System.out);
         }
+    }
+
+    private static String getKMLPolygonAsWKT(String kmldata) {
+        try {
+
+            int pos1 = kmldata.indexOf("<coordinates>") + 13;
+            int pos2 = kmldata.indexOf("</coordinates>");
+            String kcoords = kmldata.substring(pos1, pos2);
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("POLYGON((");
+            String[] coords = kcoords.split(" ");
+            System.out.println(coords.length);
+            if (coords.length == 1) {
+                coords = kmldata.split("\n");
+                System.out.println(coords.length);
+            }
+            for (String c : coords) {
+                String[] cs = c.split(",");
+                if (cs.length > 1) {
+                    sb.append(cs[0] + " " + cs[1] + ",");
+                }
+            }
+            sb.append("))");
+            return sb.toString().replace(",)", ")");
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
+        return null;
     }
 }

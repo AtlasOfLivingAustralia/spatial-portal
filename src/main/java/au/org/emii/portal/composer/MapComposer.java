@@ -3949,23 +3949,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void exportAreaAs(String type) {
-        System.out.println("Exporting layer as: " + type);
+        String EXPORT_BASE_DIR = "/data/ala/runtime/output/export/";
         try {
             MapLayer ml = llc2MapLayer;
             if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
 
                 String id = String.valueOf(System.currentTimeMillis());
 
-                File shpDir = new File("/data/ala/runtime/output/layers/" + id + "/");
+                File shpDir = new File(EXPORT_BASE_DIR + id + "/");
                 shpDir.mkdirs();
 
                 String contentType = LayersUtil.LAYER_TYPE_ZIP;
-                String outfile = ml.getDisplayName().replaceAll(" ", "_")+".zip";
+                //String outfile = ml.getDisplayName().replaceAll(" ", "_")+("shp".equals(type)?"Shapefile":type.toUpperCase())+".zip";
+                String outfile = ml.getDisplayName().replaceAll(" ", "_");
                 if ("shp".equals(type)) {
-                    File shpfile = new File("/data/ala/runtime/output/layers/" + id + "/ActiveArea.shp");
+                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + ".shp");
                     ShapefileUtils.saveShapefile(shpfile, ml.getWKT());
                     //contentType = LayersUtil.LAYER_TYPE_ZIP;
-                    //outfile += ".zip";
+                    outfile += "_Shapefile.zip";
                 } else if ("kml".equals(type)) {
                     
                     StringBuffer sbKml = new StringBuffer(); 
@@ -4012,28 +4013,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbKml.append("</Document>").append("\r");
                     sbKml.append("</kml>").append("\r");
 
-                    File shpfile = new File("/data/ala/runtime/output/layers/" + id + "/ActiveArea.kml");
+                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + ".kml");
                     BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
                     wout.write(sbKml.toString());
                     wout.close();
                     //contentType = LayersUtil.LAYER_TYPE_KML;
-                    //outfile += ".kml";
+                    outfile += "_KML.zip";
                 } else if ("wkt".equals(type)) {
-                    File shpfile = new File("/data/ala/runtime/output/layers/" + id + "/ActiveArea.txt");
+                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + ".txt");
                     BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
                     wout.write(ml.getWKT());
                     wout.close();
                     //contentType = LayersUtil.LAYER_TYPE_PLAIN;
-                    //outfile += ".txt";
+                    outfile += "_WKT.zip";
                 }
-
-                System.out.println("Written to: /data/ala/runtime/output/layers/" + id + "/");
 
                 String downloadUrl = CommonData.satServer;
                 downloadUrl += "/alaspatial/ws/download/" + id;
                 Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
             } else {
-                Messagebox.show("The selected layer is not a polygon layer. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
+                Messagebox.show("The selected layer is not an area. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
             }
 
         } catch (Exception e) {

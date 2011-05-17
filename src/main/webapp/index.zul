@@ -162,7 +162,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                             <n:li style="display:block" >
                                                 <n:a href='#' n:onClick="runExport();">
-                                                    <n:span>Export</n:span>
+                                                    <n:span>Export area</n:span>
                                                 </n:a>
                                             </n:li>
 
