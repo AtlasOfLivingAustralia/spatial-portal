@@ -3963,7 +3963,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 //String outfile = ml.getDisplayName().replaceAll(" ", "_")+("shp".equals(type)?"Shapefile":type.toUpperCase())+".zip";
                 String outfile = ml.getDisplayName().replaceAll(" ", "_");
                 if ("shp".equals(type)) {
-                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + ".shp");
+                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_Shapefile.shp");
                     ShapefileUtils.saveShapefile(shpfile, ml.getWKT());
                     //contentType = LayersUtil.LAYER_TYPE_ZIP;
                     outfile += "_Shapefile.zip";
@@ -3997,9 +3997,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbKml.append("          <coordinates>").append("\r");
 
                     String wkt = ml.getWKT();
-                    System.out.println("transforming wkt from \n\t"+wkt);
                     wkt = wkt.replaceAll("POLYGON", "").replace("((", "").replace("))", "");
-                    System.out.println("to:\n\t"+wkt);
                     String[] awkt = wkt.split(",");
                     for (String w : awkt) {
                         sbKml.append(w.replaceAll(" ", ",")).append(",0").append("\n");
@@ -4013,14 +4011,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbKml.append("</Document>").append("\r");
                     sbKml.append("</kml>").append("\r");
 
-                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + ".kml");
+                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_KML.kml");
                     BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
                     wout.write(sbKml.toString());
                     wout.close();
                     //contentType = LayersUtil.LAYER_TYPE_KML;
                     outfile += "_KML.zip";
                 } else if ("wkt".equals(type)) {
-                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + ".txt");
+                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_WKT.txt");
                     BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
                     wout.write(ml.getWKT());
                     wout.close();
