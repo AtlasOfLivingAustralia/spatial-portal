@@ -714,20 +714,51 @@ public class SimpleShapeFile extends Object implements Serializable {
             return ShapeLookup.getShape(s);
         }
 
+        //GEOMETRYCOLLECTION
+        ArrayList<String> stringsList = new ArrayList<String>();
+        if (pointsString.startsWith("GEOMETRYCOLLECTION")) {
+            //split out polygons and multipolygons
+            pointsString.replace("GEOMETRYCOLLECTION(","");
 
-        pointsString = convertGeoToPoints(pointsString);
-
-        String[] polygons = pointsString.split("S");
-
-        //String[] fixedPolygons = fixStringPolygons(polygons);
-
-        //System.out.println("$" + pointsString);
-
-        if (polygons.length == 1) {
-            return SimpleRegion.parseSimpleRegion(polygons[0]);
+            int posStart = 10; //skip the beginning of the first POLYGON and MULTIPOLYGON
+            int posEnd;
+            while((posEnd = pointsString.indexOf("POLYGON", posStart + 1)) >= 0) {
+                stringsList.add(pointsString.substring(posStart, posEnd));
+                posStart = posEnd;
+            }
+            stringsList.add(pointsString.substring(posStart, pointsString.length()));
         } else {
-            return ComplexRegion.parseComplexRegion(polygons);
+            stringsList.add(pointsString);
         }
+
+        ArrayList<SimpleRegion> regions = new ArrayList<SimpleRegion>();
+        for(String ps : stringsList) {
+            pointsString = convertGeoToPoints(pointsString);
+
+            String[] polygons = pointsString.split("S");
+
+            //String[] fixedPolygons = fixStringPolygons(polygons);
+
+            //System.out.println("$" + pointsString);
+
+            if(stringsList.size() == 1) {
+                if (polygons.length == 1) {
+                    return SimpleRegion.parseSimpleRegion(polygons[0]);
+                } else {
+                    return ComplexRegion.parseComplexRegion(polygons);
+                }
+            } else {
+                if (polygons.length == 1) {
+                    regions.add(SimpleRegion.parseSimpleRegion(polygons[0]));
+                } else {
+                    regions.add(ComplexRegion.parseComplexRegion(polygons));
+                }
+            }
+        }
+
+        OrRegion orRegion = new OrRegion();
+        orRegion.setSimpleRegions(regions);
+        return orRegion;
     }
 
     private static ArrayList<double[]> fixStringPolygons(String[] polygons) {

@@ -916,9 +916,12 @@ public class SpeciesController {
             String colourMode = URLDecoder.decode(req.getParameter("colourmode"), "UTF-8");
 
             if(!SamplingLoadedPointsService.isLoadedPointsLSID(lsid)) {
-                String pid = SpeciesColourOption.getColourLegend(lsid, colourMode);
+                try {
+                    String pid = SpeciesColourOption.getColourLegend(lsid, colourMode);
+                    return pid;
+                } catch (Exception e) {
 
-                return pid;
+                }
             }
             
         } catch (Exception e) {
