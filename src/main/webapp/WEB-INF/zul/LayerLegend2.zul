@@ -84,8 +84,8 @@
                             <comboitem label="Year" value="y" visible="false" />
                             <comboitem label="Collection" value="c" />
                             <comboitem label="Basis of Record" value="b" />
-                            <comboitem label="Altitude" value="a" />
-                            <comboitem label="Depth" value="d" />
+                            <comboitem label="Altitude" value="a" visible="false" />
+                            <comboitem label="Depth" value="d" visible="false" />
                         </combobox>
                     </hbox>
                     <div id="divUserColours" >

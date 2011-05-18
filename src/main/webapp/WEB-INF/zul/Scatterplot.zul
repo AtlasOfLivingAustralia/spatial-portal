@@ -122,7 +122,7 @@
                 <label id="tbxMissingCount" />
             </hbox>
             <div width="100%" >
-                <label id="lblMissing" value="No valid records" visible="false" style="float:left;"/>
+                <label id="lblMissing" value="No records available for the scatterplot" visible="false" style="float:left;"/>
             </div>
         </vbox>
         

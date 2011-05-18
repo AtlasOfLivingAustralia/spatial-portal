@@ -132,7 +132,7 @@ public class AddSpeciesController extends UtilityComposer {
 
     private void refreshBtnOkDisabled() {
         if (rSearch.isSelected()) {
-            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem().getValue() == null);
+            btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null || searchSpeciesAuto.getSelectedItem().getValue() == null);
         } else {
             btnOk.setDisabled(false);
         }

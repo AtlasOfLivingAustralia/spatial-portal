@@ -1457,44 +1457,48 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private void retrieve() {
-        if (mapLayer != null) {
-            //data = (ScatterplotData) mapLayer.getData("scatterplotData");
-            jChart = (JFreeChart) mapLayer.getData("jChart");
-            plot = (XYPlot) mapLayer.getData("plot");
-            chartRenderingInfo = (ChartRenderingInfo) mapLayer.getData("chartRenderingInfo");
-            //mapLayer = (MapLayer) mapLayer.getData("mapLayer");
-            //mapLayer = mapLayer.getData("mapLayer");
-            annotation = (XYBoxAnnotation) mapLayer.getData("annotation");
-            xyzDataset = (DefaultXYZDataset) mapLayer.getData("xyzDataset");
-            aaDataset = (DefaultXYZDataset) mapLayer.getData("aaDataset");
-            selectionCount = (Integer) mapLayer.getData("selectionCount");
-            results = (String) mapLayer.getData("results");
-            missingCount = (Integer) mapLayer.getData("missingCount");
-            prevSelection = (double[]) mapLayer.getData("prevSelection");
-            zmin = (Double) mapLayer.getData("zmin");
-            zmax = (Double) mapLayer.getData("zmax");
-            seriesColours = (int[]) mapLayer.getData("seriesColours");
-            seriesNames = (String[]) mapLayer.getData("seriesNames");
-            backgroundXyzDataset = (DefaultXYZDataset) mapLayer.getData("backgroundXyzDataset");
+            try {
+            if (mapLayer != null) {
+                //data = (ScatterplotData) mapLayer.getData("scatterplotData");
+                jChart = (JFreeChart) mapLayer.getData("jChart");
+                plot = (XYPlot) mapLayer.getData("plot");
+                chartRenderingInfo = (ChartRenderingInfo) mapLayer.getData("chartRenderingInfo");
+                //mapLayer = (MapLayer) mapLayer.getData("mapLayer");
+                //mapLayer = mapLayer.getData("mapLayer");
+                annotation = (XYBoxAnnotation) mapLayer.getData("annotation");
+                xyzDataset = (DefaultXYZDataset) mapLayer.getData("xyzDataset");
+                aaDataset = (DefaultXYZDataset) mapLayer.getData("aaDataset");
+                selectionCount = (Integer) mapLayer.getData("selectionCount");
+                results = (String) mapLayer.getData("results");
+                missingCount = (Integer) mapLayer.getData("missingCount");
+                prevSelection = (double[]) mapLayer.getData("prevSelection");
+                zmin = (Double) mapLayer.getData("zmin");
+                zmax = (Double) mapLayer.getData("zmax");
+                seriesColours = (int[]) mapLayer.getData("seriesColours");
+                seriesNames = (String[]) mapLayer.getData("seriesNames");
+                backgroundXyzDataset = (DefaultXYZDataset) mapLayer.getData("backgroundXyzDataset");
 
-            //interface
-            tbxChartSelection.setValue((String) mapLayer.getData("tbxChartSelection"));
-            tbxSelectionCount.setValue((String) mapLayer.getData("tbxSelectionCount"));
-            tbxRange.setValue((String) mapLayer.getData("tbxRange"));
-            tbxDomain.setValue((String) mapLayer.getData("tbxDomain"));
-            tbxMissingCount.setValue((String) mapLayer.getData("tbxMissingCount"));
+                //interface
+                tbxChartSelection.setValue((String) mapLayer.getData("tbxChartSelection"));
+                tbxSelectionCount.setValue((String) mapLayer.getData("tbxSelectionCount"));
+                tbxRange.setValue((String) mapLayer.getData("tbxRange"));
+                tbxDomain.setValue((String) mapLayer.getData("tbxDomain"));
+                tbxMissingCount.setValue((String) mapLayer.getData("tbxMissingCount"));
 
-            scatterplotButtons.setVisible((Boolean) mapLayer.getData("scatterplotButtons"));
-            scatterplotDownloads.setVisible((Boolean) mapLayer.getData("scatterplotDownloads"));
-            envLegend.setVisible((Boolean) mapLayer.getData("envLegend"));
+                scatterplotButtons.setVisible((Boolean) mapLayer.getData("scatterplotButtons"));
+                scatterplotDownloads.setVisible((Boolean) mapLayer.getData("scatterplotDownloads"));
+                envLegend.setVisible((Boolean) mapLayer.getData("envLegend"));
 
-            chkSelectMissingRecords.setChecked((Boolean) mapLayer.getData("chkSelectMissingRecords"));
-            chkRestrictOccurrencesToActiveArea.setChecked((Boolean) mapLayer.getData("chkRestrictOccurrencesToActiveArea"));
-            chkHighlightActiveAreaOccurrences.setChecked((Boolean) mapLayer.getData("chkHighlightActiveAreaOccurrences"));
-            chkShowEnvIntersection.setChecked((Boolean) mapLayer.getData("chkShowEnvIntersection"));
+                chkSelectMissingRecords.setChecked((Boolean) mapLayer.getData("chkSelectMissingRecords"));
+                chkRestrictOccurrencesToActiveArea.setChecked((Boolean) mapLayer.getData("chkRestrictOccurrencesToActiveArea"));
+                chkHighlightActiveAreaOccurrences.setChecked((Boolean) mapLayer.getData("chkHighlightActiveAreaOccurrences"));
+                chkShowEnvIntersection.setChecked((Boolean) mapLayer.getData("chkShowEnvIntersection"));
 
-            imagePath = (String) mapLayer.getData("imagePath");
-            missing_data = (Boolean) mapLayer.getData("missing_data");
+                imagePath = (String) mapLayer.getData("imagePath");
+                missing_data = (Boolean) mapLayer.getData("missing_data");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

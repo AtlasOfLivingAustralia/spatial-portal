@@ -406,13 +406,11 @@ public class FilteringResultsWCController extends UtilityComposer {
     public void onMapSpecies(Event event) {
         try {
             String area = null;
-            if (getMapComposer().getPolygonLayers().size() > 0) {
-                area = getMapComposer().getPolygonLayers().get(0).getWKT();
+            if (!areaName.equalsIgnoreCase("Current extent")) {
+                area = this.reportArea;
             } else {
-                //TODO: not view area
                 area = getMapComposer().getViewArea();
             }
-            //String polygon = getMapComposer().getSelectionAreaPolygon();
 
             StringBuffer sbProcessUrl = new StringBuffer();
 
