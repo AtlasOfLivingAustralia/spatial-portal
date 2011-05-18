@@ -341,15 +341,15 @@ function buildMapReal() {
     loadBaseMap();
 
     // create a new event handler for single click query
-        clickEventHandler = new OpenLayers.Handler.Click({
-            'map': map
-        }, {
-            'click': function(e) {
-                envLayerInspection(e);
-            }
-        });
-        clickEventHandler.activate();
-        clickEventHandler.fallThrough = true;
+    //    clickEventHandler = new OpenLayers.Handler.Click({
+    //        'map': map
+    //    }, {
+    //        'click': function(e) {
+    //            envLayerInspection(e);
+    //        }
+    //    });
+    //    clickEventHandler.activate();
+    //    clickEventHandler.fallThrough = true;
         
     // cursor mods
     map.div.style.cursor="pointer";
