@@ -312,36 +312,3 @@ function loadHelp(page){
     }
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'openUrl', help_base_url + "/" + page));
 }
-
-//string extensions
-
-if(typeof(String.prototype.capitalize) === "undefined"){
-String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-}
-}
-
-if(typeof(String.prototype.trim) === "undefined"){
-String.prototype.trim = function()
-{
-    return String(this).replace(/^\s+|\s+$/g, '');
-};
-}
-
-//backwards-compatible console logging
-
-if (window['loadFirebugConsole']) {
-    window.loadFirebugConsole();
-} else {
-    if (!window['console']) {
-        window.console = {};
-        window.console.info = function(msg){
-            return;
-        }
-        window.console.log = function(msg){
-            return;
-        }
-        window.console.warn = alert;
-        window.console.error = alert;
-    }
-}
