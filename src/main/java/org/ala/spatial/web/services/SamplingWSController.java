@@ -562,10 +562,10 @@ public class SamplingWSController {
 
             String speciesName = "";
             if(species != null) {
-                if (loadedPoints) {
-                    speciesName = "Uploaded";
-                } else {
+                try {
                     speciesName = SpeciesIndex.getScientificName(SpeciesIndex.findLSID(species));
+                } catch (Exception e) {
+                    speciesName = "Uploaded";
                 }
             }
 
