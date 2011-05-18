@@ -3022,7 +3022,7 @@ function envLayerHover(e) {
         //find first valid layer, if any
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
-            //console.info("Checking " + layer.url);
+            console.info("Checking " + layer.url);
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
@@ -3115,4 +3115,35 @@ function toggleActiveHover() {
     }
 }
 
+//string extensions - put back in here - didn't seem to work when I added this code to index.js
 
+if(typeof(String.prototype.capitalize) === "undefined"){
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+}
+
+if(typeof(String.prototype.trim) === "undefined"){
+String.prototype.trim = function()
+{
+    return String(this).replace(/^\s+|\s+$/g, '');
+};
+}
+
+//backwards-compatible console logging
+
+if (window['loadFirebugConsole']) {
+    window.loadFirebugConsole();
+} else {
+    if (!window['console']) {
+        window.console = {};
+        window.console.info = function(msg){
+            return;
+        }
+        window.console.log = function(msg){
+            return;
+        }
+        window.console.warn = alert;
+        window.console.error = alert;
+    }
+}
