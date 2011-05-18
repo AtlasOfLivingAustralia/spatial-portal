@@ -1,11 +1,9 @@
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.ContextualLayerListComposer;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
-import au.org.emii.portal.util.LayerUtilities;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -19,15 +17,14 @@ import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Vbox;
-import org.zkoss.zul.Window;
 
 /**
  *
@@ -56,12 +53,12 @@ public class AreaMapPolygon extends AreaToolComposer {
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
          btnOk.setDisabled(true);
         btnClear.setDisabled(true);
+        Clients.evalJavaScript("mapFrame.toggleClickHandler(false);");
     }
-
- 
 
     public void onClick$btnOk(Event event) {
         ok = true;
+        Clients.evalJavaScript("mapFrame.toggleClickHandler(true);");
         this.detach();
     }
 
@@ -82,6 +79,7 @@ public class AreaMapPolygon extends AreaToolComposer {
         if(layerName != null && mc.getMapLayer(layerName) != null) {
             mc.removeLayer(layerName);
         }
+        Clients.evalJavaScript("mapFrame.toggleClickHandler(true);");
         this.detach();
     }
 

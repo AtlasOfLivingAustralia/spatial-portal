@@ -3022,7 +3022,7 @@ function envLayerHover(e) {
         //find first valid layer, if any
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
-            console.info("Checking " + layer.url);
+            //console.info("Checking " + layer.url);
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
@@ -3115,6 +3115,17 @@ function toggleActiveHover() {
     }
 }
 
+//Function to enable and disable the clickEventHandler
+function toggleClickHandler(state){
+    //console.info("toggleClickHandler has been called.");
+    if (state == false){
+        clickEventHandler.deactivate();
+    }
+    else{
+        clickEventHandler.activate();
+    }
+}
+
 //string extensions - put back in here - didn't seem to work when I added this code to index.js
 
 if(typeof(String.prototype.capitalize) === "undefined"){
@@ -3143,7 +3154,11 @@ if (window['loadFirebugConsole']) {
         window.console.log = function(msg){
             return;
         }
-        window.console.warn = alert;
-        window.console.error = alert;
+        window.console.warn = function(msg){
+            alert("Console warning: " + msg);
+        }
+        window.console.error = function(msg){
+            alert("Console error: " + msg);
+        }
     }
 }
