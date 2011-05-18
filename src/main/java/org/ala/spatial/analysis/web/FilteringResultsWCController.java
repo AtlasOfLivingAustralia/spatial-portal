@@ -659,7 +659,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             double totalarea = Util.calculateArea(reportArea);
 
             //lblArea.setValue(String.format("%,d", (int) (totalarea / 1000 / 1000)));
-            data.put("area",String.format("%,d", (int) (totalarea / 1000 / 1000)));
+            data.put("area",String.format("%,f", (totalarea / 1000 / 1000)));
 
         } catch (Exception e) {
             System.out.println("Error in calculateArea");
