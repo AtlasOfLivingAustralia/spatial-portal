@@ -3600,7 +3600,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return genericServiceAndBaseLayerSupport;
     }
 
-    void updateLayerControls() {
+    public void updateLayerControls() {
         //remove children
         for (int i = layerControls.getChildren().size() - 1; i >= 0; i--) {
             try {

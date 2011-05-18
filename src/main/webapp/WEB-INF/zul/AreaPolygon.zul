@@ -29,9 +29,9 @@
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
             <div sclass="embedWindowsButtons">
                 <hbox>
-                    <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>
-                    <button sclass="goButton" label="Ok" id="btnNext" disabled="true" />
+                    <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnNext" disabled="true" />
                 </hbox>
             </div>
             <separator />

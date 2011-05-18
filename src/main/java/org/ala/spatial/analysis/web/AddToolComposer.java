@@ -57,7 +57,7 @@ public class AddToolComposer extends UtilityComposer {
     EnvLayersCombobox cbLayer2;
     String winTop = "300px";
     String winLeft = "500px";
-    boolean setCustomArea = false;
+    //boolean setCustomArea = false;
     boolean hasCustomArea = false;
     boolean setUploadSpecies = false;
     boolean hasUploadSpecies = false;
@@ -252,8 +252,17 @@ public class AddToolComposer extends UtilityComposer {
 
     public void loadAreaLayers(String selectedAreaName) {
         try {
-
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgArea");
+            //remove all radio buttons that don't have an id
+            for (int i=rgArea.getItemCount()-1;i>=0;i--) {
+                String id = ((Radio)rgArea.getItems().get(i)).getId();
+                if(id == null || id.length() == 0) {
+                    rgArea.removeItemAt(i);
+                } else {
+                    rgArea.getItemAtIndex(i).setSelected(false);
+                }
+            }
+
             Radio rAreaCurrent = (Radio) getFellowIfAny("rAreaCurrent");
 
             String selectedLayerName = (String) params.get("polygonLayerName");
@@ -266,7 +275,7 @@ public class AddToolComposer extends UtilityComposer {
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
-                rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
                 if (!allWKT.isEmpty())
                     allWKT+=",";
@@ -280,42 +289,48 @@ public class AddToolComposer extends UtilityComposer {
                     indexToSelect = i;
                 }
             }
-            if (!layers.isEmpty()) {
-                 Radio rAr = new Radio("All Active Areas");
-                rAr.setId("AllActiveAreas");
+            if (!layers.isEmpty() && layers.size() > 1) {
+                 Radio rAr = new Radio("All area layers");
+                //rAr.setId("AllActiveAreas");
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
-            }
-            if (rSelectedLayer != null) {
-                rSelectedLayer.setSelected(true);
-                rAreaSelected = rSelectedLayer;
-            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
-                rgArea.setSelectedItem(rAreaWorld);
-                rAreaSelected = rAreaWorld;
-            } else {
-                for (int i = 0; i < rgArea.getItemCount(); i++) {
-                    if (rgArea.getItemAtIndex(i).isVisible()) {
-                        rgArea.getItemAtIndex(i).setSelected(true);
-                        rAreaSelected = rgArea.getItemAtIndex(i);
-                        break;
-                    }
-                }
             }
 
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible() && rgArea.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
-                        rgArea.getItemAtIndex(i).setSelected(true);
+                        //rgArea.getItemAtIndex(i).setSelected(true);
                         rAreaSelected = rgArea.getItemAtIndex(i);
                         System.out.println("2.resetting indexToSelect = " + i);
                         indexToSelect = i;
+                        rgArea.setSelectedItem(rAreaSelected);
+                        break;
+                    }
+                }
+            }else if (rSelectedLayer != null) {
+                //rSelectedLayer.setSelected(true);
+                rAreaSelected = rSelectedLayer;
+                //rAreaSelected.setSelected(true);
+                rgArea.setSelectedItem(rAreaSelected);
+            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+                rgArea.setSelectedItem(rAreaWorld);
+                rAreaSelected = rAreaWorld;
+                //rAreaSelected.setSelected(true);
+                rgArea.setSelectedItem(rAreaSelected);
+            } else {
+                for (int i = 0; i < rgArea.getItemCount(); i++) {
+                    if (rgArea.getItemAtIndex(i).isVisible()) {
+                        //rgArea.getItemAtIndex(i).setSelected(true);
+                        rAreaSelected = rgArea.getItemAtIndex(i);
+                        rgArea.setSelectedItem(rAreaSelected);
                         break;
                     }
                 }
             }
             
-            rgArea.setSelectedIndex(indexToSelect);
+            
+            //rgArea.setSelectedIndex(indexToSelect);
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
 
         } catch (Exception e) {
@@ -379,23 +394,37 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onCheck$rgArea(Event event) {
-        setCustomArea = false;
-        hasCustomArea = false;
-        if (rgArea.getSelectedItem() == rAreaCustom) {
-            setCustomArea = true;
-            hasCustomArea = false;
-            //this.setHeight("700px");
+        if (rgArea == null) {
+            return;
         }
+        //setCustomArea = false;
+        hasCustomArea = false;
         rAreaSelected = rgArea.getSelectedItem();
+        try {
+            rAreaSelected = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+        } catch (Exception e) {
+        }
+        if(rAreaSelected == rAreaCustom) {
+            //setCustomArea = true;
+            hasCustomArea = false;
+        }
     }
 
     public void onCheck$rgSpecies(Event event) {
+        if (rgSpecies == null) {
+            return;
+        }
+        Radio selectedItem = rgSpecies.getSelectedItem();
+        try {
+            selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+        } catch (Exception e) {
+        }
         try {
             //Check to see if we are perform a normal or background upload
             setUploadSpecies = false;
             hasUploadSpecies = false;
             
-            if (rgSpecies != null && rgSpecies.getSelectedItem() == rSpeciesSearch) {
+            if (rgSpecies != null && selectedItem == rSpeciesSearch) {
                 if (divSpeciesSearch != null) {
                     divSpeciesSearch.setVisible(true);
                     if (event != null) {
@@ -409,8 +438,8 @@ public class AddToolComposer extends UtilityComposer {
             }
 
 
-            if (rgSpecies.getSelectedItem() == rSpeciesUploadSpecies
-                    || rgSpecies.getSelectedItem() == rSpeciesUploadLSID) {
+            if (selectedItem == rSpeciesUploadSpecies
+                    || selectedItem == rSpeciesUploadLSID) {
                 setUploadSpecies = true;
                 hasUploadSpecies = false;
             }
@@ -423,11 +452,19 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public void onCheck$rgSpeciesBk(Event event) {
+        if (rgSpeciesBk == null) {
+            return;
+        }
+        Radio selectedItem = rgSpeciesBk.getSelectedItem();
+        try {
+            selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+        } catch (Exception e) {
+        }
         try {
             setUploadSpeciesBk = false;
             hasUploadSpeciesBk = false;
 
-            if (rgSpeciesBk != null && rgSpeciesBk.getSelectedItem() == rSpeciesSearchBk) {
+            if (rgSpeciesBk != null && selectedItem == rSpeciesSearchBk) {
                 if (divSpeciesSearchBk != null) {
                     divSpeciesSearchBk.setVisible(true);
                     if (event != null) {
@@ -442,7 +479,7 @@ public class AddToolComposer extends UtilityComposer {
             }
 
 
-            if (rgSpeciesBk.getSelectedItem() == rSpeciesUploadSpeciesBk || rgSpeciesBk.getSelectedItem() == rSpeciesUploadLSIDBk) {
+            if (selectedItem == rSpeciesUploadSpeciesBk || selectedItem == rSpeciesUploadLSIDBk) {
                 setUploadSpeciesBk = true;
                 hasUploadSpeciesBk = false;
             }
@@ -603,7 +640,9 @@ public class AddToolComposer extends UtilityComposer {
             this.doModal();
 
             if (ok) {
-                onClick$btnOk(null);                
+                onClick$btnOk(null);
+                hasCustomArea = false;
+                //setCustomArea = false;
             }
         } catch (InterruptedException ex) {
             System.out.println("InterruptedException when resetting analysis window");
@@ -661,7 +700,7 @@ public class AddToolComposer extends UtilityComposer {
             }
 
 
-            if (setCustomArea && !hasCustomArea) {
+            if (/*setCustomArea*/ rAreaCustom.isSelected() && !hasCustomArea) {
                 this.doOverlapped();
                 this.setTop("-9999px");
                 this.setLeft("-9999px");
@@ -681,7 +720,7 @@ public class AddToolComposer extends UtilityComposer {
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/AddArea.zul", this, winProps);
                 window.setAttribute("winProps", winProps, true);
                 window.doModal();
-
+               
                 return;
             }
 
@@ -905,7 +944,7 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public String getSelectedSpeciesName() {
-        String species = rgSpecies.getSelectedItem().getLabel(); 
+        String species = rgSpecies.getSelectedItem().getValue();
         try {
             if (species.equals("allspecies")) {
             } else if (species.equals("allmapped")) {
@@ -918,7 +957,7 @@ public class AddToolComposer extends UtilityComposer {
                     species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
                 }
                 species = species.substring(0, species.length() - 1);
-            } else if (species.equals("other")) {
+            } else if (species.equals("search")) {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getText());
                 }

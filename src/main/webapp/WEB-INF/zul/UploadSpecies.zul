@@ -11,7 +11,7 @@
         <n:div class="fancybox-bg" id="fancybox-bg-e" />
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
-        <a sclass="fancybox-close" onClick="addspecieswindow.detach()" style="display: inline" />
+        <a sclass="fancybox-close" onClick="uploadspecieswindow.onClick$btnCancel(null)" style="display: inline" />
 
         <caption label="Upload Species" />
 
@@ -26,9 +26,9 @@
             <label id="tbInstructions" style="white-space: normal; padding: 5px" />
             <separator />
             <div style="float:right;margin-right:5px">
-                <hbox>
-                    <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
+                <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
                 </hbox>
             </div>
             <separator />

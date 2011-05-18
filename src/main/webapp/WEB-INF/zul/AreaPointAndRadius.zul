@@ -31,9 +31,9 @@
             <textbox id="displayGeom" readonly="true" width="100%" visible="true" multiline="true" height="100px" style="color: red" />
             <div style="float:right;margin-right:5px">
                 <hbox>
-                    <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>
-                    <button sclass="goButton" label="OK" id="btnNext" disabled="true"/>
+                    <button sclass="goButton" label="Clear" id="btnClear" disabled="true"/>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnNext" disabled="true"/>
                 </hbox>
             </div>
             <separator />

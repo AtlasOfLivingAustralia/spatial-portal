@@ -46,9 +46,9 @@
                 </combobox>
             </hbox>
             <div style="float:right;margin-right:5px">
-                <hbox>
-                    <button sclass="goButton" label="OK" id="btnOk"/>
+                <hbox>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnOk"/>
                 </hbox>
             </div>
         </vbox>

@@ -75,6 +75,8 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     MapLayer mapLayer;
     boolean inInit = false;
     Textbox txtLayerName;
+    String sLayerName;
+    Button btnLayerName;
 
     @Override
     public void afterCompose() {
@@ -222,6 +224,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
         inInit = true;
 
         txtLayerName.setValue(ml.getDisplayName());
+        sLayerName = ml.getDisplayName();
 
         this.lsid = lsid;
 
@@ -380,12 +383,20 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
     }
 
     public void onCheck$pointtype(Event event) {
+        Radio selectedItem = pointtype.getSelectedItem();
+        try {
+            selectedItem = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+            pointtype.setSelectedItem(selectedItem);
+        } catch (Exception e) {
+        }
+
         refreshLayer();
 
         setupLayerControls(mapLayer);
     }
 
     void refreshLayer() {
+        sLayerName = txtLayerName.getValue();
         if (listener != null && !inInit) {
             try {
                 listener.onEvent(null);
@@ -432,7 +443,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                 if ((cbColour.getSelectedItem() != ciColourUser || pointtype.getSelectedItem() == rGrid)
                         && m.getMapLayerMetadata() != null
                         && m.getMapLayerMetadata().getSpeciesLsid() != null
-                        && !m.isClustered()) {
+                        /*&& !m.isClustered()*/) {
                     legendHtml.setVisible(true);
                     legendImg.setVisible(false);
 
@@ -546,11 +557,18 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
 //        refreshLayer();
 //    }
     
-    public void onChange$txtLayerName(Event event) {
-        refreshLayer();
-    }
+//    public void onChange$txtLayerName(Event event) {
+//        refreshLayer();
+//    }
 
     public void onOK$txtLayerName(Event event) {
         refreshLayer();
+        btnLayerName.setDisabled(true);
+    }
+
+    public void onBlur$txtLayerName(Event event) {
+        if(sLayerName.equals(txtLayerName.getValue())) {
+            btnLayerName.setDisabled(true);
+        }
     }
 }

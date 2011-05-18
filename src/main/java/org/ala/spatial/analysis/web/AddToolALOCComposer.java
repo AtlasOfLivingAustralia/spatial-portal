@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.menu.MapLayer;
@@ -33,7 +32,7 @@ public class AddToolALOCComposer extends AddToolComposer {
     private Intbox groupCount;
     String selectedLayers = "";
     int generation_count = 1;
-    String layerLabel = ""; 
+    String layerLabel = "";
     String legendPath = "";
 
     @Override
@@ -44,7 +43,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         this.totalSteps = 4;
 
         this.loadAreaLayers();
-        this.loadGridLayers(true,true);
+        this.loadGridLayers(true, true);
         this.updateWindowTitle();
         //this.updateName("Classification #" + generation_count + " - " + groupCount.getValue() + " groups");
         //this.updateName("My Classification #" + generation_count);
@@ -122,23 +121,25 @@ public class AddToolALOCComposer extends AddToolComposer {
                 md = new MapLayerMetadata();
             }
 
-            String infoUrl = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:"+pid;
+            String infoUrl = CommonData.satServer + "/alaspatial/output/layers/" + pid + "/metadata.html" + "\nClassification output\npid:" + pid;
             md.setMoreInfo(infoUrl);
             md.setId(Long.valueOf(pid));
 
-        try {
-            // set off the download as well
-            String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip",tToolName.getValue().replaceAll(" ", "_")+".zip"); // "ALA_Prediction_"+pid+".zip"
-        } catch (Exception ex) {
-            System.out.println("Error generating download for classification model:");
-            ex.printStackTrace(System.out);
-        }
+            getMapComposer().updateLayerControls();
+
+            try {
+                // set off the download as well
+                String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
+                Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
+            } catch (Exception ex) {
+                System.out.println("Error generating download for classification model:");
+                ex.printStackTrace(System.out);
+            }
 
 
             //Events.echoEvent("openUrl", this.getMapComposer(), infoUrl);
         }
-        
+
         this.detach();
     }
 
@@ -239,5 +240,4 @@ public class AddToolALOCComposer extends AddToolComposer {
             ex.printStackTrace(System.out);
         }
     }
-
 }

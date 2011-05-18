@@ -10,8 +10,8 @@
                     <div style="padding-top:0px" width="65px">
                         <label value="Layer name" sclass="h3" />
                     </div>
-                    <textbox id="txtLayerName" width="250px" />
-                    <button id="btnLayerName" sclass="goButton" label="apply" forward="onOK$txtLayerName" visible="false" />
+                    <textbox id="txtLayerName" width="250px" onFocus="btnLayerName.setDisabled(false)" />
+                    <button id="btnLayerName" sclass="goButton" label="Rename" forward="onOK$txtLayerName" disabled="true" />
                 </hbox>
             </div>
             <separator />

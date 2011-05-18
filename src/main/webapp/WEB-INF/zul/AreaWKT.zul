@@ -30,9 +30,9 @@
             <label id="invalidWKT" width="100%" style="color: red" visible="false"/>
             <div style="float:right;margin-right:5px">
                 <hbox>
-                    <button sclass="goButton" label="Clear" id="btnClear" disabled="false"/>
-                    <button sclass="goButton" label="OK" id="btnOk" disabled="false" />
+                    <button sclass="goButton" label="Clear" id="btnClear" disabled="false"/>                    
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnOk" disabled="false" />
                 </hbox>
             </div>
             <separator />

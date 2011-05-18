@@ -82,9 +82,9 @@
                 <separator />
             </vbox>
         <div style="float:right;margin-right:5px">
-            <hbox>
-                <button label="OK" id="filter_done" sclass="goButton" disabled="true"/>
+            <hbox>                
                 <button sclass="goButton" label="Cancel" id="btnCancel" onClick="areaenvironmentalenvelopewindow.detach()"/>
+                <button label="Next" id="filter_done" sclass="goButton" disabled="true"/>
             </hbox>
         </div>
 

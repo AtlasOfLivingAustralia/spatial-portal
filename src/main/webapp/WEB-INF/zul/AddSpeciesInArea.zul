@@ -28,9 +28,9 @@
         </vbox>
 
        <div sclass="wButtons">
-            <hbox>
-                <button sclass="goButton" label="Next" id="btnOk" />
+            <hbox>                
                 <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                <button sclass="goButton" label="Next" id="btnOk" />
             </hbox>
         </div>
     </window>

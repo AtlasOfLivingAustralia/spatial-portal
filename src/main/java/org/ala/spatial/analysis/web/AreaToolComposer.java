@@ -86,13 +86,13 @@ public class AreaToolComposer extends UtilityComposer {
         String parentname = (String) winProps.get("parentname");
         if (isAnalysisChild) {
             //analysisParent.hasCustomArea = true;
-            analysisParent.resetWindow(layerName);
+            analysisParent.resetWindow(ok?layerName:null);
         } else if (parentname != null && parentname.equals("AddSpeciesInArea")) {
             //was OK clicked?
             if (ok) {
                 //map
                 mapSpeciesInArea();
-            }
+            } //else cancel clicked, don't return to mapspeciesinarea popup
         }
     }
 
