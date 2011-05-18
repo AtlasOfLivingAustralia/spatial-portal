@@ -341,15 +341,15 @@ function buildMapReal() {
     loadBaseMap();
 
     // create a new event handler for single click query
-    //    clickEventHandler = new OpenLayers.Handler.Click({
-    //        'map': map
-    //    }, {
-    //        'click': function(e) {
-    //            envLayerInspection(e);
-    //        }
-    //    });
-    //    clickEventHandler.activate();
-    //    clickEventHandler.fallThrough = true;
+    clickEventHandler = new OpenLayers.Handler.Click({
+        'map': map
+    }, {
+        'click': function(e) {
+            envLayerInspection(e);
+        }
+    });
+    clickEventHandler.activate();
+    clickEventHandler.fallThrough = true;
         
     // cursor mods
     map.div.style.cursor="pointer";
@@ -1256,7 +1256,6 @@ function onFeatureUnselect(feature) {
 }
 
 function onPopupClose(evt) {
-    
     try {
 
         map.removePopup(this.feature.popup);
@@ -2862,27 +2861,13 @@ var last_contextual_valid = false;
 function envLayerInspection(e) {
     try {
         var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
-
         var infoHtml = "";
-        var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
-        popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-            pt, new OpenLayers.Size(20,20),
-            "<div id='sppopup' style='width: 250px; height: 50px;'>" + "Loading..." + "</div>",
-            null, true, onPopupClose);
-
-        var feature = popup;
-        feature.popup = popup;
-        popup.feature = feature;
-        map.addPopup(popup, true);
-        
-        pt = pt.transform(map.projection, map.displayProjection);
-        infoHtml = "Longitude: <b>"+pt.lon.toPrecision(5) + "</b> , Latitude: <b>" + pt.lat.toPrecision(5)  + "</b><br/>";
-
+        //go through all layers and build window content based on environmental and contextual point values
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
             //console.info("Looking at layer: " + layer.url);
-            
+
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
@@ -2903,6 +2888,9 @@ function envLayerInspection(e) {
 
                 if(data != null && data != "") {
                     var d = data.split("\t");
+                    if (d[1].trim() == "no data"){
+                        continue;
+                    }
                     infoHtml = infoHtml + " <h2>" + d[0] + "</h2>" + " Layer value: <b>" + d[1] + "</b> <br />";
                 }
             }
@@ -2922,16 +2910,37 @@ function envLayerInspection(e) {
                     infoHtml = infoHtml + "<h2>" + getContextualLayerAlias(name).capitalize() + "</h2>" + "Layer value: <b>" + d[0] + "</b> <br />";
                 }
             }
-        }
-        if (document.getElementById("sppopup") != null) {
-            document.getElementById("sppopup").innerHTML = "<div id='sppopup'>" + infoHtml + "</div>";
-        } else {
-            onPopupClose();
+
+            if(infoHtml != "") {
+                var pt = map.getLonLatFromViewPortPx(new
+                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
+
+                popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                    pt,
+                    new OpenLayers.Size(20,20),
+                    "<div id='sppopup' style='width: 250px; height: 50px;'>" + "Loading..." + "</div>"
+                    ,
+                    null, true, onPopupClose);
+
+                var feature = popup;
+                feature.popup = popup;
+                popup.feature = feature;
+                map.addPopup(popup, true);
+
+                pt = pt.transform(map.projection, map.displayProjection);
+
+                infohtml = "<div id='sppopup'> Longitude: <b>"+pt.lon.toPrecision(5) + "</b> , Latitude: <b>" + pt.lat.toPrecision(5)  + "</b><br/>" + infoHtml + "</div>";
+
+                if (document.getElementById("sppopup") != null) {
+                    document.getElementById("sppopup").innerHTML = infohtml;
+                }
+            }
         }
     }catch(err){
         alert(err);
     }
 }
+
 
 function isContextualLayer(layerName){
     var validLayer = false;
@@ -3106,6 +3115,35 @@ function toggleActiveHover() {
     }
 }
 
+//string extensions
+
+if(typeof(String.prototype.capitalize) === "undefined"){
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
+}
+}
+
+if(typeof(String.prototype.trim) === "undefined"){
+String.prototype.trim = function()
+{
+    return String(this).replace(/^\s+|\s+$/g, '');
+};
+}
+
+//backwards-compatible console logging
+
+if (window['loadFirebugConsole']) {
+    window.loadFirebugConsole();
+} else {
+    if (!window['console']) {
+        window.console = {};
+        window.console.info = function(msg){
+            return;
+        }
+        window.console.log = function(msg){
+            return;
+        }
+        window.console.warn = alert;
+        window.console.error = alert;
+    }
 }
