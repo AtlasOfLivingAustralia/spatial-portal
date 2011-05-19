@@ -428,6 +428,10 @@ public class UploadSpeciesController extends UtilityComposer {
             htUserSpecies.put(pid, ud);
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
 
+            if (eventListener != null) {
+                eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
+            }
+            
             // close the reader and data streams
             reader.close();
             data.close();
