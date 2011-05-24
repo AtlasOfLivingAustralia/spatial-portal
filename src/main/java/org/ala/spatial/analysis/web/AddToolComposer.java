@@ -8,7 +8,6 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -23,6 +22,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.util.media.Media;
+import org.zkoss.zhtml.Fileupload;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
@@ -33,7 +33,8 @@ import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
-import org.zkoss.zul.Fileupload;
+import org.zkoss.zul.Image;
+import org.zkoss.zul.Label;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -520,6 +521,8 @@ public class AddToolComposer extends UtilityComposer {
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
         Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
         Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep - 1))) : null;
+        
+      
 
         if (currentDiv.getZclass().contains("first")) {
             //currentStep = 1;
@@ -528,6 +531,16 @@ public class AddToolComposer extends UtilityComposer {
         } else {
             currentDiv.setVisible(false);
             previousDiv.setVisible(true);
+
+            Image currentStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep - 1));
+            currentStepCompletedImg.setVisible(false);
+
+            Label nextStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
+            nextStepLabel.setStyle("font-weight:normal");
+
+            Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep - 1));
+            currentStepLabel.setStyle("font-weight:bold");
+
             currentStep--;
 
             if (previousDiv != null) {
@@ -643,11 +656,21 @@ public class AddToolComposer extends UtilityComposer {
             Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
+           
+           
 
             if (!currentDiv.getZclass().contains("last")) {
                 currentDiv.setVisible(false);
                 nextDiv.setVisible(true);
 
+                 Image previousStepCompletedImg = (Image) getFellowIfAny("imgCompletedStep" + (currentStep));
+            previousStepCompletedImg.setVisible(true);
+
+            Label previousStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep));
+            previousStepLabel.setStyle("font-weight:normal");
+
+            Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep + 1));
+            currentStepLabel.setStyle("font-weight:bold");
 
                 // now include the extra options for step 4 
                 if (nextDiv != null) {

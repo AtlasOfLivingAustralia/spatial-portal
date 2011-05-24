@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolSamplingComposer"
-    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="500px" height="300px"
+    apply="org.ala.spatial.analysis.web.AddToolSamplingComposer" width="600px" height="300px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -16,6 +16,35 @@
         <n:a class="fancybox-help" n:onClick="loadHelp('sampling-tools')" style="display: inline" />
 
         <separator />
+<hbox>
+         <vbox style="padding-left: 10px">
+            <grid width="150px">
+<columns>
+ <column width="120px"/>
+        <column />
+</columns>
+    <rows>
+            <row>
+
+                <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
+                <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+            </row>
+            <row>
+
+                <label id="lblStep2" value="2. Select species"/>
+                <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+            </row>
+            <row>
+
+                <label id="lblStep3" value="3. Select layers"/>
+                <image id="imgCompletedStep3" visible="false" src="img/accept.png"/>
+
+           </row>
+          
+</rows>
+
+             </grid>
+        </vbox>
         <vbox style="padding-left: 10px" >
 
             <div id="atstep1" visible="true" zclass="first optional">
@@ -90,6 +119,6 @@
             </div>
 
         </vbox>
-
+</hbox>
     </window>
 </zk>
