@@ -187,7 +187,9 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 logger.debug("The layer " + name + " couldnt be created");
                 getMapComposer().showMessage(getMapComposer().getLanguagePack().getLang("ext_layer_creation_failure"));
             } else {
-                mapLayer.setWKT(getKMLPolygonAsWKT(kmlstr));
+                String kmlwkt = getKMLPolygonAsWKT(kmlstr);
+                System.out.println("kmlwkt: " + kmlwkt);
+                mapLayer.setWKT(kmlwkt);
                 getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
             }
 
@@ -205,8 +207,8 @@ public class AreaUploadShapefile extends AreaToolComposer {
     private static String getKMLPolygonAsWKT(String kmldata) {
         try {
 
-            int pos1 = kmldata.indexOf("<coordinates>") + 13;
-            int pos2 = kmldata.indexOf("</coordinates>");
+            int pos1 = kmldata.indexOf("coordinates") + 11;
+            int pos2 = kmldata.indexOf("/coordinates");
             String kcoords = kmldata.substring(pos1, pos2);
 
 
