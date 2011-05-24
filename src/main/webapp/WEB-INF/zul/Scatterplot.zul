@@ -44,7 +44,7 @@
                 <groupbox >
                     <caption label="Enter a scientific or common name" />
                     <hbox>
-                        <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="240px" >
+                        <combobox id="sac" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
                             <comboitem label=""/>
                         </combobox>
                         <separator orient="vertical" />
@@ -57,7 +57,7 @@
                     <separator />
                     <label>Background</label>
                     <hbox>
-                        <combobox id="sacBackground" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="240px" >
+                        <combobox id="sacBackground" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true" width="320px" >
                             <comboitem label=""/>
                         </combobox>
                         <separator orient="vertical" />

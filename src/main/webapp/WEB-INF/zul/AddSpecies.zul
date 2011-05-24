@@ -23,7 +23,7 @@
                     <vbox id="vboxSearch">
                         <hbox>
                             <separator orient="vertical" />
-                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="250px" >
+                            <combobox id="searchSpeciesAuto" use="org.ala.spatial.analysis.web.SpeciesAutoComplete" autodrop="true"  width="330px" >
                                 <comboitem label=""/>
                             </combobox>
                         </hbox>

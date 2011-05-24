@@ -223,7 +223,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             for (String c : coords) {
                 String[] cs = c.split(",");
                 if (cs.length > 1) {
-                    sb.append(cs[0] + " " + cs[1] + ",");
+                    sb.append(cs[0]).append(" ").append(cs[1]).append(",");
                 }
             }
             sb.append("))");
