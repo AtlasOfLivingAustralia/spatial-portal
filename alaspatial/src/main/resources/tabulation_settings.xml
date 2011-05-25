@@ -1655,6 +1655,8 @@
         need to send data_resource_uid
     -->
     <occurrences_dr_uid>data_resource_uid</occurrences_dr_uid>
+    <occurrences_dr_list_wsurl>http://collections.ala.org.au/ws/dataResource.json</occurrences_dr_list_wsurl>
+    <occurrences_dr_public_url>http://collections.ala.org.au/public/show/_uid_</occurrences_dr_public_url>
 
     <citation_url_data_provider>http://collections.ala.org.au/lookup/citation</citation_url_data_provider>
     <citation_url_layer_provider>http://spatial.ala.org.au/alaspatial/layers/citation</citation_url_layer_provider>
@@ -1703,12 +1705,12 @@
     <geojson_id>8</geojson_id>
     <geojson_longitude>36</geojson_longitude>
     <geojson_latitude>37</geojson_latitude>
-    <geojson_property_names>u,p,in,y,c,a,d</geojson_property_names>
-    <geojson_property_display_names>Uncertainty,Data Provider,Institution,Year,Collection,Altitude,Depth</geojson_property_display_names>
-    <geojson_property_fields>29,18,23,32,25,30,31</geojson_property_fields>
-    <geojson_property_types>int,string,string,int,string,double,double</geojson_property_types>
-    <geojson_property_catagory>distance,,,year,,altitude,depth</geojson_property_catagory>
-    <geojson_property_units>m,,,,,m,cm</geojson_property_units>
+    <geojson_property_names>u,p,dr,in,y,c,a,d</geojson_property_names>
+    <geojson_property_display_names>Uncertainty,Data Provider,Data Resource,Institution,Year,Collection,Altitude,Depth</geojson_property_display_names>
+    <geojson_property_fields>29,18,20,23,32,25,30,31</geojson_property_fields>
+    <geojson_property_types>int,string,string,string,int,string,double,double</geojson_property_types>
+    <geojson_property_catagory>distance,,,,year,,altitude,depth</geojson_property_catagory>
+    <geojson_property_units>m,,,,,,m,cm</geojson_property_units>
 
 
 
