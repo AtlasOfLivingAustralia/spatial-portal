@@ -1,7 +1,13 @@
 package org.ala.spatial.util;
 
 import java.io.File;
-import java.io.RandomAccessFile;
+import java.util.Hashtable;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * home of all relevant tabulation settings as loaded from
@@ -245,6 +251,13 @@ public class TabulationSettings {
      * path to store user generated data
      */
     public static String file_store;
+
+    /**
+     * list of data resources and their codes
+     */
+    public static String occurrences_dr_list_wsurl;
+    public static String occurrences_dr_public_url;
+    public static Hashtable<String, String> dataResources;
 
     /**
      * loads settings form name of the appropriate xml resource file
@@ -543,6 +556,10 @@ public class TabulationSettings {
         shape_intersection_files = xr.getValue("shape_intersection_files");
 
         file_store = xr.getValue("file_store");
+
+        occurrences_dr_list_wsurl = xr.getValue("occurrences_dr_list_wsurl");
+        occurrences_dr_public_url = xr.getValue("occurrences_dr_public_url");
+        loadDataResources(); 
     }
 
     static public String getPath(String layerName) {
@@ -557,4 +574,35 @@ public class TabulationSettings {
             return environmental_data_path + layerName;
         }
     }
+
+    private static void loadDataResources() {
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod post = new GetMethod(occurrences_dr_list_wsurl);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(post);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonFactory factory = mapper.getJsonFactory();
+            JsonParser jp = factory.createJsonParser(post.getResponseBodyAsString());
+            JsonNode root = mapper.readTree(jp);
+
+            if (root != null) {
+                if (dataResources == null) {
+                    dataResources = new Hashtable<String, String>(); 
+                }
+                if (root.isArray()) {
+                    for (int i=0; i<root.size(); i++) {
+                        JsonNode jdr = root.get(i);
+                        dataResources.put(jdr.get("uid").getTextValue(), jdr.get("name").getTextValue());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to load data resources");
+            e.printStackTrace(System.out);
+        }
+    }
+
 }

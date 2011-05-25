@@ -7,6 +7,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -1044,15 +1045,38 @@ public class SpeciesController {
 //            }
 //            modelMap.addAttribute("institutions", institutions);
 
-            Map institutions = new TreeMap();
-            String legend = SpeciesColourOption.getColourLegend(lsid, "in", false);
+            // institutions
+//            Map institutions = new TreeMap();
+//            String legend = SpeciesColourOption.getColourLegend(lsid, "in", false);
+//            String[] lines = legend.split("\n");
+//            for (String l : lines) {
+//                String[] in = l.split(",");
+//                if (in.length < 5) continue;
+//                institutions.put((("".equals(in[0])) ? "Unknown" : in[0]), in[4]);
+//            }
+//            modelMap.addAttribute("institutions", institutions);
+
+            // 4. add data resources
+            Map dataresources = new TreeMap();
+            String legend = SpeciesColourOption.getColourLegend(lsid, "dr", false);
             String[] lines = legend.split("\n");
             for (String l : lines) {
-                String[] in = l.split(",");
-                if (in.length < 5) continue;
-                institutions.put((("".equals(in[0])) ? "Unknown" : in[0]), in[4]);
+                String[] dr = l.split(",");
+                if (dr.length < 5) continue;
+                //dataresources.put((("".equals(dr[0])) ? "Unknown" : dr[0]), dr[4]);
+                String name = dr[0];
+                Iterator<String> it = TabulationSettings.dataResources.keySet().iterator();
+                while (it.hasNext()) {
+                    String uid = it.next();
+                    String value = TabulationSettings.dataResources.get(uid);
+                    if (value.equalsIgnoreCase(name)) {
+                        name = "<a href='"+TabulationSettings.occurrences_dr_public_url.replace("_uid_", uid)+"' target='_blank'>"+value+"</a>";
+                    }
+                }
+                dataresources.put(name,dr[4]);
             }
-            modelMap.addAttribute("institutions", institutions);
+            modelMap.addAttribute("dataresources", dataresources);
+
 
         } catch (Exception e) {
             System.out.println("Error loading species metadata from biocache");
@@ -1116,15 +1140,38 @@ public class SpeciesController {
             modelMap.addAttribute("geoOccCount", geoOccCount);
             modelMap.addAttribute("geoSpCount", geoSpCount);
 
-            Map institutions = new TreeMap();
-            String legend = SpeciesColourOption.getColourLegend(lsid, "in", false);
+//            // 4. add institutions
+//            Map institutions = new TreeMap();
+//            String legend = SpeciesColourOption.getColourLegend(lsid, "in", false);
+//            String[] lines = legend.split("\n");
+//            for (String l : lines) {
+//                String[] in = l.split(",");
+//                if (in.length < 5) continue;
+//                institutions.put((("".equals(in[0])) ? "Unknown" : in[0]), in[4]);
+//            }
+//            modelMap.addAttribute("institutions", institutions);
+
+            // 4. add data resources
+            Map dataresources = new TreeMap();
+            String legend = SpeciesColourOption.getColourLegend(lsid, "dr", false);
             String[] lines = legend.split("\n");
             for (String l : lines) {
-                String[] in = l.split(",");
-                if (in.length < 5) continue;
-                institutions.put((("".equals(in[0])) ? "Unknown" : in[0]), in[4]);
+                String[] dr = l.split(",");
+                if (dr.length < 5) continue;
+                //dataresources.put((("".equals(dr[0])) ? "Unknown" : dr[0]), dr[4]);
+                String name = dr[0];
+                Iterator<String> it = TabulationSettings.dataResources.keySet().iterator();
+                while (it.hasNext()) {
+                    String uid = it.next();
+                    String value = TabulationSettings.dataResources.get(uid);
+                    if (value.equalsIgnoreCase(name)) {
+                        name = "<a href='"+TabulationSettings.occurrences_dr_public_url.replace("_uid_", uid)+"' target='_blank'>"+value+"</a>";
+                    }
+                }
+                dataresources.put(name,dr[4]);
             }
-            modelMap.addAttribute("institutions", institutions);
+            modelMap.addAttribute("dataresources", dataresources);
+
 
         } catch (Exception e) {
             System.out.println("Unable to generate metadata for species in active area");

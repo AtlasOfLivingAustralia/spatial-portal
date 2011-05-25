@@ -36,10 +36,10 @@
                             <td class="md_value">${geoSpCount}</td>
                         </tr>
                         <tr class="md_grey-bg">
-                            <td class="md_th">Institutions</td>
+                            <td class="md_th">Data resources</td>
                             <td class="md_spacer"/>
                             <td class="md_value">
-                                <c:forEach var="i" items="${institutions}" varStatus="curr">
+                                <c:forEach var="i" items="${dataresources}" varStatus="curr">
                                     ${i.key}: ${i.value} records <br />
                                 </c:forEach>
                             </td>
@@ -81,10 +81,10 @@
                             <td class="md_value">${geoOccCount}</td>
                         </tr>
                         <tr>
-                            <td class="md_th">Institutions</td>
+                            <td class="md_th">Data resources</td>
                             <td class="md_spacer"/>
                             <td class="md_value">
-                                <c:forEach var="i" items="${institutions}" varStatus="curr">
+                                <c:forEach var="i" items="${dataresources}" varStatus="curr">
                                     ${i.key}: ${i.value} records <br />
                                 </c:forEach>
                             </td>
