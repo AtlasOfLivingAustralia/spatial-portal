@@ -257,7 +257,8 @@ function buildMapReal() {
     }),
     new OpenLayers.Control.LayerSwitcher(),
     new OpenLayers.Control.ScaleLine({
-        div: document.getElementById('mapscale')
+        div: document.getElementById('mapscale'),
+        geodesic: true
     }),
     /*
         new OpenLayers.Control.OverviewMap({
