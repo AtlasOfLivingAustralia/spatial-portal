@@ -936,7 +936,7 @@ public class SpeciesController {
     }
 
     @RequestMapping(value = "/metadata/{lsid:.+}", method = RequestMethod.GET)
-    public ModelAndView speciesMetadata(@PathVariable("lsid") String lsid) {
+    public ModelAndView speciesMetadata(@PathVariable("lsid") String lsid, HttpServletRequest req) {
         ModelMap modelMap = null;
         try {
 
@@ -958,6 +958,11 @@ public class SpeciesController {
             } else {
                 System.out.println("Loading metadata from disk");
                 modelMap = loadActiveAreaSpeciesMetadata(lsid);
+            }
+
+            String[] dparams = req.getParameterValues("dparam");
+            if (dparams != null) {
+                modelMap.addAttribute("dparams", dparams);
             }
 
         } catch (Exception e) {

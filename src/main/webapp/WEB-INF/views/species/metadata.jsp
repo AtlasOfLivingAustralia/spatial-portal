@@ -89,7 +89,17 @@
                                 </c:forEach>
                             </td>
                         </tr>
-                        <tr class="md_grey-bg">
+                        <c:if test="${dparams != null}">
+                            <c:forEach var="cl" items="${dparams}" varStatus="curr">
+                                <c:set var="c" value="${fn:split(cl, ':')}" />
+                                <tr class="md_grey-bg">
+                                    <td class="md_th">${c[0]}</td>
+                                    <td class="md_spacer"/>
+                                    <td class="md_value">${c[1]}</td>
+                                </tr>
+                            </c:forEach>
+                        </c:if>
+                        <tr>
                             <td class="md_value" colspan="3">More information for <a href="http://bie.ala.org.au/species/${lsid}" target="_blank">${speciesname}</a></td>
                         </tr>
                     </tbody>
