@@ -414,4 +414,33 @@ public class ComplexRegion extends SimpleRegion {
 
         return cells;
     }
+
+    @Override
+    public int[][] getOverlapGridCells_EPSG900913(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
+             int i, j;
+
+        int[][] output = null;
+
+        byte[][] mask = three_state_map;
+
+        // if no threestate map exists, create one
+        if (mask == null) {
+            mask = new byte[height][width];
+            //set initial values
+            for (i = 0; i < height; i++) {
+                for (j = 0; j < width; j++) {
+                    mask[i][j] = SimpleRegion.GI_UNDEFINED;
+                }
+            }
+            three_state_map = mask;
+        }
+
+        for (SimpleRegion sr : simpleregions) {
+            sr.getOverlapGridCells_Acc_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, mask);
+        }
+
+        int[][] cells = fillAccMask(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, noCellsReturned);
+
+        return cells;
+    }
 }

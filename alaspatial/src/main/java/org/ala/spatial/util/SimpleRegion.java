@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
+import org.ala.spatial.analysis.cluster.SpatialCluster3;
 
 /**
  * SimpleRegion enables point to shape intersections, where the shape
@@ -378,6 +379,27 @@ public class SimpleRegion extends Object implements Serializable {
         return false;
     }
 
+    public boolean isWithin_EPSG900913(double longitude, double latitude) {
+        switch (type) {
+            case 0:
+                /* no region defined, must be within this absence of a boundary */
+                return true;
+            case 1:
+                /* return for bounding box */
+                return (longitude <= points[1][0] && longitude >= points[0][0]
+                        && latitude <= points[1][1] && latitude >= points[0][1]);
+            case 2:
+                /* TODO: fix to use radius units m not degrees */
+                double x = longitude - points[0][0];
+                double y = latitude - points[0][1];
+                return Math.sqrt(x * x + y * y) <= radius;
+            case 3:
+                /* determine for Polygon */
+                return isWithinPolygon_EPSG900913(longitude, latitude);
+        }
+        return false;
+    }
+
     /**
      * returns true when point is within the polygon
      *
@@ -421,6 +443,48 @@ public class SimpleRegion extends Object implements Serializable {
                     if (y > latitude) {
                         score++;
                     } else if (y == latitude) {
+                        //line crossing
+                        return true;
+                    }
+
+                    segment = !segment;
+                } else if (points[i][0] == longitude && points[i][1] == latitude) {
+                    //point on point
+                    return true;
+                }
+            }
+            return (score % 2 != 0);
+        }
+        return false;		//not within bounding box
+    }
+
+    private boolean isWithinPolygon_EPSG900913(double longitude, double latitude) {
+        SpatialCluster3 sc = new SpatialCluster3();
+
+        // bounding box test
+        if (longitude <= bounding_box[1][0] && longitude >= bounding_box[0][0]
+                && latitude <= bounding_box[1][1] && latitude >= bounding_box[0][1]) {
+
+            //initial segment
+            int longitudePx = sc.convertLngToPixel(longitude);
+            boolean segment = sc.convertLngToPixel(points[0][0]) > longitudePx;
+
+            int y;
+            int i;
+            int len = points.length;
+            int score = 0;
+
+            for (i = 1; i < len; i++) {
+                // is it in a new segment?
+                if ((sc.convertLngToPixel(points[i][0]) > longitudePx) != segment) {
+                    //lat value at line crossing > target point
+                    y = (int)((longitudePx - sc.convertLngToPixel(points[i][0]))
+                            * ((sc.convertLatToPixel(points[i][1]) - sc.convertLatToPixel(points[i - 1][1]))
+                            / (double) (sc.convertLngToPixel(points[i][0]) - sc.convertLngToPixel(points[i - 1][0])))
+                            + sc.convertLatToPixel(points[i][1]));
+                    if (y > sc.convertLatToPixel(latitude)) {
+                        score++;
+                    } else if (y == sc.convertLatToPixel(latitude)) {
                         //line crossing
                         return true;
                     }
@@ -745,7 +809,6 @@ public class SimpleRegion extends Object implements Serializable {
         }
     }
 
-
     /**
      * determines overlap with a grid for POLYGON
      *
@@ -811,7 +874,7 @@ public class SimpleRegion extends Object implements Serializable {
 
             slope = (dy1 - dy2) / (dx1 - dx2);
             intercept = dy1 - slope * dx1;
-            
+
             if (x == xend) {
                 //vertical line
                 while (y != yend) {
@@ -1073,6 +1136,467 @@ public class SimpleRegion extends Object implements Serializable {
             for (i = xstart; i < xend; i++) {
                 three_state_map[ystart][i] = SimpleRegion.GI_PARTIALLY_PRESENT;
                 three_state_map[yend - 1][i] = SimpleRegion.GI_PARTIALLY_PRESENT;
+            }
+        }
+    }
+
+    public int[][] getOverlapGridCells_EPSG900913(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
+        int[][] cells = null;
+        switch (type) {
+            case 0:
+                break;
+            case 1:
+                cells = getOverlapGridCells_Box(longitude1, latitude1, longitude2, latitude2, width, height, bounding_box, three_state_map, noCellsReturned);
+                break;
+            case 2:
+                break; /* TODO: circle grid */
+            case 3:
+                cells = getOverlapGridCells_Polygon_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, noCellsReturned);
+        }
+
+        return cells;
+    }
+
+    /**
+     * stacks PARTIALLY_PRESENT shape outline onto three_state_map
+     *
+     * @param longitude1
+     * @param latitude1
+     * @param longitude2
+     * @param latitude2
+     * @param width
+     * @param height
+     * @param three_state_map
+     * @param noCellsReturned
+     */
+    public void getOverlapGridCells_Acc_EPSG900913(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
+        switch (type) {
+            case 0:
+                break;
+            case 1:
+                getOverlapGridCells_Box_Acc(longitude1, latitude1, longitude2, latitude2, width, height, bounding_box, three_state_map);
+                break;
+            case 2:
+                break; /* TODO: circle grid */
+            case 3:
+                getOverlapGridCells_Polygon_Acc_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map);
+        }
+    }
+
+    public int[][] getOverlapGridCells_EPSG900913(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
+        return getOverlapGridCells_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, false);
+    }
+
+    public int[][] getOverlapGridCells_Polygon_EPSG900913(double olongitude1, double olatitude1, double olongitude2, double olatitude2, int owidth, int oheight, byte[][] three_state_map, boolean noCellsReturned) {
+        int i, j;
+        if (three_state_map == null) {
+            three_state_map = new byte[oheight][owidth];
+        }
+
+        SpatialCluster3 sc = new SpatialCluster3();
+
+        int longitude1 = sc.convertLngToPixel(olongitude1);
+        int longitude2 = sc.convertLngToPixel(olongitude2);
+        int latitude1 = sc.convertLatToPixel(olatitude2);
+        int latitude2 = sc.convertLatToPixel(olatitude1);
+        int scale = 100; //if it is too small the 'fill' operation is messed up
+        int width = owidth * scale;
+        int height = oheight * scale;
+
+        double divx = (longitude2 - longitude1) / width;
+        double divy = (latitude2 - latitude1) / height;
+        double odivx = (olongitude2 - olongitude1) / owidth;
+        double odivy = (olatitude2 - olatitude1) / oheight;
+
+        int oy, ox;
+
+        //to cells
+        int x, y, xend, yend, xDirection, icross;
+        double slope, intercept;
+        int xcross, endlat, dx1, dx2, dy1, dy2;
+        for (j = 1; j < points.length; j++) {
+            if (points[j][1] > points[j - 1][1]) {
+                dx1 = sc.convertLngToPixel(points[j][0]);
+                dy1 = sc.convertLatToPixel(points[j][1]);
+                dx2 = sc.convertLngToPixel(points[j - 1][0]);
+                dy2 = sc.convertLatToPixel(points[j - 1][1]);
+            } else {
+                dx2 = sc.convertLngToPixel(points[j][0]);
+                dy2 = sc.convertLatToPixel(points[j][1]);
+                dx1 = sc.convertLngToPixel(points[j - 1][0]);
+                dy1 = sc.convertLatToPixel(points[j - 1][1]);
+            }
+            x = (int) ((dx1 - longitude1) / divx);
+            y = (int) ((dy1 - latitude1) / divy);
+            xend = (int) ((dx2 - longitude1) / divx);
+            yend = (int) ((dy2 - latitude1) / divy);
+
+            if (y >= 0 && y < height && x >= 0 && x < width) {
+                oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                if (oy >= oheight) {
+                    oy = oheight - 1;
+                }
+                if (ox >= owidth) {
+                    ox = owidth - 1;
+                }
+                if (oy < 0) {
+                    oy = 0;
+                }
+                if (ox < 0) {
+                    ox = 0;
+                }
+                three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+            }
+
+            if (x == xend && y == yend) {
+                continue;
+            }
+
+            xDirection = (x < xend) ? 1 : -1;
+
+            slope = (dy1 - dy2) / (double) (dx1 - dx2);
+            intercept = (double) (dy1 - slope * dx1);
+
+            if (x == xend) {
+                //vertical line
+                while (y != yend) {
+                    y++;
+                    if (y >= 0 && y < height && x >= 0 && x < width) {
+                        oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                        ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                        if (oy >= oheight) {
+                            oy = oheight - 1;
+                        }
+                        if (ox >= owidth) {
+                            ox = owidth - 1;
+                        }
+                        if (oy < 0) {
+                            oy = 0;
+                        }
+                        if (ox < 0) {
+                            ox = 0;
+                        }
+                        three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                    }
+                }
+            } else if (y == yend) {
+                //horizontal line
+                while (x != xend) {
+                    x += xDirection;
+                    if (y >= 0 && y < height && x >= 0 && x < width) {
+                        oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                        ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                        if (oy >= oheight) {
+                            oy = oheight - 1;
+                        }
+                        if (ox >= owidth) {
+                            ox = owidth - 1;
+                        }
+                        if (oy < 0) {
+                            oy = 0;
+                        }
+                        if (ox < 0) {
+                            ox = 0;
+                        }
+                        three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                    }
+                }
+            } else { //sloped line
+                endlat = dy2;
+                for (int k = (int) ((y + 1) * divy + latitude1); k < endlat; k += divy) {
+                    //move in yDirection to get x
+                    xcross = (int) ((k - intercept) / slope);
+                    icross = (int) ((xcross - longitude1) / divx);
+
+                    while (x != icross && x != xend) {
+                        x += xDirection;
+                        if (y >= 0 && y < height && x >= 0 && x < width) {
+                            oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                            ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                            if (oy >= oheight) {
+                                oy = oheight - 1;
+                            }
+                            if (ox >= owidth) {
+                                ox = owidth - 1;
+                            }
+                            if (oy < 0) {
+                                oy = 0;
+                            }
+                            if (ox < 0) {
+                                ox = 0;
+                            }
+                            three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                        }
+                    }
+
+                    if (y != yend) {
+                        y++;
+                        if (y >= 0 && y < height && x >= 0 && x < width) {
+                            oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                            ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                            if (oy >= oheight) {
+                                oy = oheight - 1;
+                            }
+                            if (ox >= owidth) {
+                                ox = owidth - 1;
+                            }
+                            if (oy < 0) {
+                                oy = 0;
+                            }
+                            if (ox < 0) {
+                                ox = 0;
+                            }
+                            three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                        }
+                    }
+                }
+
+                //finish horizontal line
+                while (x != xend) {
+                    x += xDirection;
+                    if (y >= 0 && y < height && x >= 0 && x < width) {
+                        oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                        ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                        if (oy >= oheight) {
+                            oy = oheight - 1;
+                        }
+                        if (ox >= owidth) {
+                            ox = owidth - 1;
+                        }
+                        if (oy < 0) {
+                            oy = 0;
+                        }
+                        if (ox < 0) {
+                            ox = 0;
+                        }
+                        three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                    }
+                }
+            }
+        }
+
+        //do raster check
+        int[][] data = new int[owidth * oheight][2];
+        boolean cellsReturned = !noCellsReturned;
+        int p = 0;
+        for (j = 0; j < three_state_map[0].length; j++) {
+            for (i = 0; i < three_state_map.length; i++) {
+                if (three_state_map[i][j] == GI_PARTIALLY_PRESENT) {
+                    //if it is partially present, do nothing
+                } else if ((j == 0 || three_state_map[i][j - 1] == GI_PARTIALLY_PRESENT)) {
+                    if (i > 0
+                            && (three_state_map[i - 1][j] == GI_FULLY_PRESENT
+                            || three_state_map[i - 1][j] == GI_ABSENCE)) {
+                        //use same as LHS
+                        three_state_map[i][j] = three_state_map[i - 1][j];
+                    } else if (isWithin_EPSG900913(j * odivx + odivx / 2 + olongitude1, i * odivy + odivy / 2 + olatitude1)) {
+                        //if the previous was partially present, test
+                        three_state_map[i][j] = GI_FULLY_PRESENT;
+                    } //else absent
+                } else {
+                    //if the previous was fully present, repeat
+                    //if the previous was absent, repeat
+                    three_state_map[i][j] = three_state_map[i][j - 1];
+                }
+
+                //apply to cells;
+                if (cellsReturned && three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
+                    data[p][0] = j;
+                    data[p][1] = i;
+                    p++;
+                }
+            }
+        }
+        return java.util.Arrays.copyOfRange(data, 0, p);
+    }
+
+    public void getOverlapGridCells_Polygon_Acc_EPSG900913(double olongitude1, double olatitude1, double olongitude2, double olatitude2, int owidth, int oheight, byte[][] three_state_map) {
+        int i, j;
+        if (three_state_map == null) {
+            three_state_map = new byte[oheight][owidth];
+        }
+
+        SpatialCluster3 sc = new SpatialCluster3();
+
+        int longitude1 = sc.convertLngToPixel(olongitude1);
+        int longitude2 = sc.convertLngToPixel(olongitude2);
+        int latitude1 = sc.convertLatToPixel(olatitude2);
+        int latitude2 = sc.convertLatToPixel(olatitude1);
+        int scale = 16; //if it is too small the 'fill' operation is messed up
+        int width = owidth * scale;
+        int height = oheight * scale;
+
+        double divx = (longitude2 - longitude1) / width;
+        double divy = (latitude2 - latitude1) / height;
+        double odivx = (olongitude2 - olongitude1) / owidth;
+        double odivy = (olatitude2 - olatitude1) / oheight;
+
+        int oy, ox;
+
+        //to cells
+        int x, y, xend, yend, xDirection, icross;
+        double slope, intercept;
+        int xcross, endlat, dx1, dx2, dy1, dy2;
+        for (j = 1; j < points.length; j++) {
+            if (points[j][1] > points[j - 1][1]) {
+                dx1 = sc.convertLngToPixel(points[j][0]);
+                dy1 = sc.convertLatToPixel(points[j][1]);
+                dx2 = sc.convertLngToPixel(points[j - 1][0]);
+                dy2 = sc.convertLatToPixel(points[j - 1][1]);
+            } else {
+                dx2 = sc.convertLngToPixel(points[j][0]);
+                dy2 = sc.convertLatToPixel(points[j][1]);
+                dx1 = sc.convertLngToPixel(points[j - 1][0]);
+                dy1 = sc.convertLatToPixel(points[j - 1][1]);
+            }
+            x = (int) ((dx1 - longitude1) / divx);
+            y = (int) ((dy1 - latitude1) / divy);
+            xend = (int) ((dx2 - longitude1) / divx);
+            yend = (int) ((dy2 - latitude1) / divy);
+
+            if (y >= 0 && y < height && x >= 0 && x < width) {
+                oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                if (oy >= oheight) {
+                    oy = oheight - 1;
+                }
+                if (ox >= owidth) {
+                    ox = owidth - 1;
+                }
+                if (oy < 0) {
+                    oy = 0;
+                }
+                if (ox < 0) {
+                    ox = 0;
+                }
+                three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+            }
+
+            if (x == xend && y == yend) {
+                continue;
+            }
+
+            xDirection = (x < xend) ? 1 : -1;
+
+            slope = (dy1 - dy2) / (double) (dx1 - dx2);
+            intercept = (double) (dy1 - slope * dx1);
+
+            if (x == xend) {
+                //vertical line
+                while (y != yend) {
+                    y++;
+                    if (y >= 0 && y < height && x >= 0 && x < width) {
+                        oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                        ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                        if (oy >= oheight) {
+                            oy = oheight - 1;
+                        }
+                        if (ox >= owidth) {
+                            ox = owidth - 1;
+                        }
+                        if (oy < 0) {
+                            oy = 0;
+                        }
+                        if (ox < 0) {
+                            ox = 0;
+                        }
+                        three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                    }
+                }
+            } else if (y == yend) {
+                //horizontal line
+                while (x != xend) {
+                    x += xDirection;
+                    if (y >= 0 && y < height && x >= 0 && x < width) {
+                        oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                        ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                        if (oy >= oheight) {
+                            oy = oheight - 1;
+                        }
+                        if (ox >= owidth) {
+                            ox = owidth - 1;
+                        }
+                        if (oy < 0) {
+                            oy = 0;
+                        }
+                        if (ox < 0) {
+                            ox = 0;
+                        }
+                        three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                    }
+                }
+            } else { //sloped line
+                endlat = dy2;
+                for (int k = (int) ((y + 1) * divy + latitude1); k < endlat; k += divy) {
+                    //move in yDirection to get x
+                    xcross = (int) ((k - intercept) / slope);
+                    icross = (int) ((xcross - longitude1) / divx);
+
+                    while (x != icross && x != xend) {
+                        x += xDirection;
+                        if (y >= 0 && y < height && x >= 0 && x < width) {
+                            oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                            ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                            if (oy >= oheight) {
+                                oy = oheight - 1;
+                            }
+                            if (ox >= owidth) {
+                                ox = owidth - 1;
+                            }
+                            if (oy < 0) {
+                                oy = 0;
+                            }
+                            if (ox < 0) {
+                                ox = 0;
+                            }
+                            three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                        }
+                    }
+
+                    if (y != yend) {
+                        y++;
+                        if (y >= 0 && y < height && x >= 0 && x < width) {
+                            oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                            ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                            if (oy >= oheight) {
+                                oy = oheight - 1;
+                            }
+                            if (ox >= owidth) {
+                                ox = owidth - 1;
+                            }
+                            if (oy < 0) {
+                                oy = 0;
+                            }
+                            if (ox < 0) {
+                                ox = 0;
+                            }
+                            three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                        }
+                    }
+                }
+
+                //finish horizontal line
+                while (x != xend) {
+                    x += xDirection;
+                    if (y >= 0 && y < height && x >= 0 && x < width) {
+                        oy = (int) ((sc.convertPixelToLat((int) (y * divy + latitude1)) - olatitude1) / odivy);
+                        ox = (int) ((sc.convertPixelToLng((int) (x * divx + longitude1)) - olongitude1) / odivx);
+                        if (oy >= oheight) {
+                            oy = oheight - 1;
+                        }
+                        if (ox >= owidth) {
+                            ox = owidth - 1;
+                        }
+                        if (oy < 0) {
+                            oy = 0;
+                        }
+                        if (ox < 0) {
+                            ox = 0;
+                        }
+                        three_state_map[oy][ox] = GI_PARTIALLY_PRESENT;
+                    }
+                }
             }
         }
     }

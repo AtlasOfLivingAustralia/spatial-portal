@@ -64,7 +64,7 @@ public class GridCutter {
         if (envelopes == null) {
             cells = (int[][]) region.getAttribute("cells");
             if(cells == null){
-                cells = region.getOverlapGridCells(
+                cells = region.getOverlapGridCells_EPSG900913(
                         TabulationSettings.grd_xmin, TabulationSettings.grd_ymin,
                         TabulationSettings.grd_xmax, TabulationSettings.grd_ymax,
                         TabulationSettings.grd_ncols, TabulationSettings.grd_nrows,
@@ -395,7 +395,7 @@ public class GridCutter {
         if(envelopes == null){
             cells = (int[][]) region.getAttribute("cells");
             if(cells == null){
-                cells = region.getOverlapGridCells(xmin, ymin, xmax, ymax,
+                cells = region.getOverlapGridCells_EPSG900913(xmin, ymin, xmax, ymax,
                     width, height, null);
             } else {
                 //translate to xmin, ymin ,xmax, ymax, width, height
@@ -600,7 +600,7 @@ public class GridCutter {
         
         int[][] cells;
         if(envelopes == null){
-            cells = region.getOverlapGridCells(xmin, ymin, xmax, ymax,
+            cells = region.getOverlapGridCells_EPSG900913(xmin, ymin, xmax, ymax,
                 width, height, null);
         } else {
             cells = getOverlapGridCells(envelopes,xmin, ymin, xmax, ymax);
