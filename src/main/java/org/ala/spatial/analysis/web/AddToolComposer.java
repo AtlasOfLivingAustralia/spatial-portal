@@ -292,13 +292,14 @@ public class AddToolComposer extends UtilityComposer {
                     indexToSelect = i;
                 }
             }
-            if (!layers.isEmpty() && layers.size() > 1) {
-                 Radio rAr = new Radio("All area layers");
-                //rAr.setId("AllActiveAreas");
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
-                rAr.setParent(rgArea);
-                rgArea.insertBefore(rAr, rAreaCurrent);
-            }
+            //TODO: Put this back in when GEOMETRYCOLLECTION is working
+//            if (!layers.isEmpty() && layers.size() > 1) {
+//                 Radio rAr = new Radio("All area layers");
+//                //rAr.setId("AllActiveAreas");
+//                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+//                rAr.setParent(rgArea);
+//                rgArea.insertBefore(rAr, rAreaCurrent);
+//            }
 
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
