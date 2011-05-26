@@ -172,6 +172,50 @@ public class AndRegion extends SimpleRegion implements Serializable {
         return cells;
     }
 
+     @Override
+    public int[][] getOverlapGridCells_EPSG900913(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
+        if(getWidth() <= 0 || getHeight() <= 0){
+            return null;
+        }
+        int [][] cells = null;
+        for(SimpleRegion sr : andRegions) {
+            byte [][] map = null;
+            if(three_state_map != null){
+                map = new byte[three_state_map.length][three_state_map[0].length];
+            }
+            int [][] new_cells = sr.getOverlapGridCells_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, map);
+            if(map != null) {
+                //if first time through cells == null
+                if(cells == null){
+                    for(int i=0;i<map.length;i++){
+                        for(int j=0;j<map[i].length;j++){
+                            three_state_map[i][j] = map[i][j];
+                        }
+                    }
+                } else {
+                    for(int i=0;i<map.length;i++){
+                        for(int j=0;j<map[i].length;j++){
+                            if(map[i][j] == GI_ABSENCE || map[i][j] == GI_UNDEFINED) {
+                                three_state_map[i][j] = GI_ABSENCE;
+                            } else if(map[i][j] == GI_PARTIALLY_PRESENT && (three_state_map[i][j] == GI_PARTIALLY_PRESENT || three_state_map[i][j] == GI_FULLY_PRESENT)){
+                                three_state_map[i][j] = GI_PARTIALLY_PRESENT;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(cells == null) {
+                cells = new_cells;
+            } else {
+                //TODO: cells + new_cells merge with AND, it will still work without this
+            }
+        }
+
+        return cells;
+    }
+
+
     /**
      * defines a region by a points string, POLYGON only
      *
