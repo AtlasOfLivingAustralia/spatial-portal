@@ -8,6 +8,7 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import org.ala.spatial.util.ScatterplotData;
 import org.zkoss.zhtml.Li;
 import org.zkoss.zhtml.Ul;
 import org.zkoss.zk.ui.Component;
@@ -411,9 +412,17 @@ class MetadataEvent implements EventListener {
             if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
+                    String infourl = mapLayer.getMapLayerMetadata().getMoreInfo().replace("__", ".");
+                    if (mapLayer.getSubType()==LayerUtilities.SCATTERPLOT) {
+                        ScatterplotData data = (ScatterplotData) mapLayer.getData("scatterplotData");
+                        infourl += "?dparam=X-Layer:"+data.getLayer1Name();
+                        infourl += "&dparam=Y-Layer:"+data.getLayer2Name();
+                    }
+                    // send the user to the BIE page for the species
+                    Events.echoEvent("openUrl", mc, infourl);
                 // send the user to the BIE page for the species
-                //logger.debug("opening the following url " + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
-                Events.echoEvent("openUrl", mc, mapLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
+                //logger.debug("opening the following url " + infourl);
+                Events.echoEvent("openUrl", mc, infourl);
 
             } else if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
