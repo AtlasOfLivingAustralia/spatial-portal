@@ -795,7 +795,11 @@ public class SpeciesController {
                 if (i > 0) {
                     sbInfo.append(",");
                 }
-                sbInfo.append(r.getId());
+                if(Long.MIN_VALUE == r.getId()) {
+                    sbInfo.append(r.getName()); //for loaded points
+                } else {
+                    sbInfo.append(r.getId());
+                }
             }
 
             System.out.println("species info at location: " + spcount);

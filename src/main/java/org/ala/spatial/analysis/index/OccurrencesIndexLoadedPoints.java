@@ -227,12 +227,13 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
         String lsid = filter.searchTerm;
         if (lsid != null) {
             double[][] points = LoadedPointsService.getPoints(lsid, null, null);
+            String [] ids = LoadedPointsService.getIds(lsid);
             if (points != null) {
                 Vector<Record> vr = new Vector<Record>(points.length);
 
                 for (i = 0; i < points.length && vr.size() < filter.maxRecords; i++) {
                     if (region == null || region.isWithin(points[i][0], points[i][1])) {
-                        vr.add(new Record(i, null, points[i][0], points[i][1], Integer.MIN_VALUE));
+                        vr.add(new Record(Long.MIN_VALUE, 'u' + ids[i], points[i][0], points[i][1], Integer.MIN_VALUE));
                     }
                 }
 
