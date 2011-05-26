@@ -321,15 +321,22 @@ function buildMapReal() {
         wrapDateLine: false,
         'sphericalMercator': true
     });
-//    bLayer3 = new OpenLayers.Layer.WMS("Minimal",
-//        "http://www2.demis.nl/WMS/wms.asp?WMS=WorldMap&WMTVER=1.0.0", // "http://vmap0.tiles.osgeo.org/wms/vmap0"
-//        {
-//            layers: 'basic'
-//        });
+    //    bLayer3 = new OpenLayers.Layer.WMS("Minimal",
+    //        "http://www2.demis.nl/WMS/wms.asp?WMS=WorldMap&WMTVER=1.0.0", // "http://vmap0.tiles.osgeo.org/wms/vmap0"
+    //        {
+    //            layers: 'basic'
+    //        });
     bLayer3 = new OpenLayers.Layer.OSM();
 
-//    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
-    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{layers:"ALA:ne_world"},{isBaseLayer: true,projection: new OpenLayers.Projection("EPSG:900913"),'sphericalMercator': true,'maxExtent': new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34)});
+    //    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
+    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{
+        layers:"ALA:ne_world"
+    },{
+        isBaseLayer: true,
+        projection: new OpenLayers.Projection("EPSG:900913"),
+        'sphericalMercator': true,
+        'maxExtent': new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34)
+    });
     map.addLayers([bLayer2,bLayer,bLayer3,bLayer4]);
     parent.bLayer = bLayer;
     parent.bLayer2 = bLayer2;
@@ -453,12 +460,50 @@ function iterateSpeciesInfo(curr) {
     } catch (err) {}
 
     var occ_id = occlist[curr];
-    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
-        displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
-    });
+    //    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
+    //        displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
+    //    });
+    
+    if (occ_id.indexOf("uuser")==0) {
+        var ulyr = occ_id.substring(5,occ_id.indexOf("-"));
+        var ulyr_occ_id = occ_id.substring(occ_id.indexOf("-")+1);
+        for (var i=0;i<uploadSpeciesMetadata.length;i++) {
+            if (uploadSpeciesMetadata[i][0]==ulyr) {
+                var data = (uploadSpeciesMetadata[i][1]).replace(/_n_/g,"<br />");
+
+                var heading = "<h2>Occurrence information (" + (curr+1) + " of " + occlist.length + ")</h2>";
+                if (occlist.length==1) {
+                    heading = "<h2>Occurrence information (1 occurrence)</h2>";
+                }
+
+                var infohtml = "<div id='sppopup'> " +
+                heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
+                "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+                setTimeout(function(){
+                    if (document.getElementById("sppopup") != null) {
+                        document.getElementById("sppopup").innerHTML = infohtml;
+                    }
+                }, 2000);
+            }
+        }
+    } else {
+        $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
+            displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
+        });
+    }
+     
 }
 
-
+var uploadSpeciesMetadata = null;
+function appendUploadSpeciesMetadata(name,metadata) {
+    if (uploadSpeciesMetadata==null) {
+        uploadSpeciesMetadata = new Array(1);
+        uploadSpeciesMetadata[0] = new Array(name,metadata);
+    } else {
+        uploadSpeciesMetadata.push(new Array(name,metadata));
+    }
+}
 
 
 
@@ -1117,10 +1162,10 @@ function setupPopup(count, centerlonlat) {
 function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     var occinfo = data.occurrence;
 
-//    var species = occinfo.species;
-//    if (occinfo.speciesLsid != null) {
-//        species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
-//    }
+    //    var species = occinfo.species;
+    //    if (occinfo.speciesLsid != null) {
+    //        species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
+    //    }
 
     var rank = occinfo.rank;
     var speciesname = eval("occinfo."+occinfo.rank);
@@ -1275,9 +1320,9 @@ function onPopupClose(evt) {
 function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
     //    alert(name);
     var in_options = {
-                'internalProjection': map.baseLayer.projection,
+        'internalProjection': map.baseLayer.projection,
         'externalProjection': new OpenLayers.Projection("EPSG:4326")
-            };
+    };
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -2808,7 +2853,7 @@ function loadKmlFile(name, kmlurl) {
 }
 
 function displayBiostorRecords() {
-    //parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
+//parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
 //    parent.displayHTMLInformation("biostormsg",'updating...');
 //
 //    var currBounds = map.getExtent().transform(map.projection, map.displayProjection);
@@ -2982,7 +3027,7 @@ function getContextualLayerAlias(layerName){
             layerAlias = $(xml).find('alias').text();
         },
         error: function(){
-            //console.error("A problem occurred searching for layer alias");
+        //console.error("A problem occurred searching for layer alias");
         },
         async:false
     });
@@ -2999,7 +3044,7 @@ function getContextualLayerValue(layerName, latitude, longitude) {
         url: proxy_script + URLEncode(url),
         success: function(xml){
             gazdata = $(xml).find("name").text();
-            //console.info(gazdata);
+        //console.info(gazdata);
         },
         error: function(){
             gazdata = "failure";
@@ -3058,7 +3103,7 @@ function envLayerHover(e) {
             if(last_contextual_valid){
                 //console.info("Checking contextual");
                 var pt = map.getLonLatFromViewPortPx(new
-                OpenLayers.Pixel(e.xy.x, e.xy.y) );
+                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
                 pt = pt.transform(map.projection, map.displayProjection);
                 var txt = getContextualLayerValue(name, pt.lat, pt.lon);
                 if(txt != null && txt != "") {
@@ -3066,14 +3111,14 @@ function envLayerHover(e) {
                     body = body + getContextualLayerAlias(name).capitalize() + ": " + txt + "\n";
                 }
                 else{
-                    //console.error("txt is null!");
-                }
+            //console.error("txt is null!");
+            }
             }
         }
         return body;
         
     }catch(err){
-        //console.error("an error has occurred!");
+    //console.error("an error has occurred!");
     }
     return null;
 }
@@ -3130,16 +3175,16 @@ function toggleClickHandler(state){
 //string extensions - put back in here - didn't seem to work when I added this code to index.js
 
 if(typeof(String.prototype.capitalize) === "undefined"){
-String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-}
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
 }
 
 if(typeof(String.prototype.trim) === "undefined"){
-String.prototype.trim = function()
-{
-    return String(this).replace(/^\s+|\s+$/g, '');
-};
+    String.prototype.trim = function()
+    {
+        return String(this).replace(/^\s+|\s+$/g, '');
+    };
 }
 
 //backwards-compatible console logging

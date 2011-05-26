@@ -50,6 +50,7 @@ import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.ForwardEvent;
 import org.zkoss.zk.ui.event.UploadEvent;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Constraint;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Label;
@@ -273,17 +274,14 @@ public class UploadSpeciesController extends UtilityComposer {
             for (int i = 0; i < userPoints.size(); i++) {
                 String[] up = (String[]) userPoints.get(i);
                 if (up.length > 2) {
-                    sbUIds.append(up[0] + "\n");
-                    sbUPoints.append(up[1] + "," + up[2] + "\n");
+                    sbUIds.append("user").append(ud.getName()).append("-").append(up[0]).append("\n");
+                    sbUPoints.append(up[1]).append(",").append(up[2]).append("\n");
                 } else if (up.length > 1) {
-                    sbUIds.append(counter + "\n");
-                    sbUPoints.append(up[0] + "," + up[1] + "\n");
+                    sbUIds.append("user").append(ud.getName()).append("-").append(counter).append("\n");
+                    sbUPoints.append(up[0]).append(",").append(up[1]).append("\n");
                     counter++;
                 }
             }
-
-            System.out.println("Loading points into alaspatial");
-            System.out.println(sbUPoints.toString());
 
             // Post it to alaspatial app
             HttpClient client = new HttpClient();
@@ -347,6 +345,8 @@ public class UploadSpeciesController extends UtilityComposer {
             // close the reader and data streams
             reader.close();
             data.close();
+
+            Clients.evalJavaScript("appendUploadSpeciesMetadata('"+ud.getName()+"','"+metadata.replaceAll("\n", "_n_")+"');");
 
         } catch (Exception e) {
 

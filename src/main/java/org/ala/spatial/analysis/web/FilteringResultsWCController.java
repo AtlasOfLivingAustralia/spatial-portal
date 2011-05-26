@@ -28,6 +28,7 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 import org.apache.log4j.Logger;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Window;
 
@@ -254,7 +255,8 @@ public class FilteringResultsWCController extends UtilityComposer {
         //terminate wait on biostor if still active
         if (biostorThread.isAlive()) {
             biostorThread.interrupt();
-            data.put("biostor", "");
+            data.put("biostor", "na");
+            Clients.evalJavaScript("displayBioStorCount('biostorrow','na');");
         }
 
         //set labels

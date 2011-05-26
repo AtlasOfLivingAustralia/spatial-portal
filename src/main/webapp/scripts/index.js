@@ -191,6 +191,9 @@ function showSpeciesInfo(occids, lon, lat) {
     window.mapFrame.showSpeciesInfo(occids, lon, lat);
 }
 
+function appendUploadSpeciesMetadata(name,metadata) {
+    window.mapFrame.appendUploadSpeciesMetadata(name,metadata);
+}
 
 function goToUserLocation() {
     if (navigator.geolocation) {
@@ -202,6 +205,17 @@ function goToUserLocation() {
     }
 }
 
+function displayBioStorCount(comp,val) {
+    console.log("displayBioStorCount");
+    console.log(comp);
+    console.log(val);
+    if (isNaN(val)) {
+        $("#biostorrow").css('display','none');
+    } else {
+        $("#biostorrow").css('display','block');
+        $("#"+comp).html(val);
+    }
+}
 function displayHTMLInformation(element, info) {
     $('#'+element).html(info);
 }
