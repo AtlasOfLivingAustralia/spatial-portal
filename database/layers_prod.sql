@@ -17,7 +17,7 @@ DROP TABLE if exists layers;
 
 -- IMPORTANT!! YOU MUST UPDATE THIS SEQUENCE WHEN ADDING NEW LAYERS
 
-ALTER SEQUENCE layers_id_seq RESTART WITH 916;
+ALTER SEQUENCE layers_id_seq RESTART WITH 918;
 
 CREATE TABLE layers (
     id integer DEFAULT nextval('layers_id_seq'::regclass) NOT NULL,
@@ -856,7 +856,9 @@ description = 'Interim Biogeographic Regionalisation for Australia (IBRA), Versi
 
 where name = 'ibra_sub_merged';
 
---INSERT INTO layers VALUES (915, 'ramsar', 'RAMSAR wetland regions', 'Contextual', 'RAMSAR wetlands', '/data/ala/shapefiles/ramsar', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'RAMSAR wetland regions', 'http://spatial.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ramsar&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Area Management', 'Biodiversity', '915', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
+INSERT INTO layers VALUES (915, 'ramsar', 'RAMSAR wetland regions', 'Contextual', 'RAMSAR wetlands', '/data/ala/shapefiles/ramsar', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'RAMSAR wetland regions', 'http://spatial.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:ramsar&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Area Management', 'Biodiversity', '915', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
+INSERT INTO layers VALUES (916, 'nrm_regions_2010', 'National Resource Management (NRM) Regions', 'Contextual', 'NRM Regions', '/data/ala/shapefiles/nrm2010', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'NRM Regions', 'http://spatial.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:nrm_regions_2010&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Area Management', 'Biodiversity', '916', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
+INSERT INTO layers VALUES (917, 'australian_coral_ecoregions', 'Australian Coral Ecoregions', 'Contextual', 'Australian Coral Ecoregions', '/data/ala/shapefiles/coral_ecoregions', NULL, -44.37221, 109.50300, -8.19402, 157.28139, '', true, 'Australian Coral Ecoregions', 'http://spatial.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:australian_coral_ecoregions&format=image/png&styles=', NULL, '0', '99', 'class', '', '', 'Area Management', 'Biodiversity', '917', '2009-08', '2006', 'eng', NULL, 'distributor', 2, '', 'Copyright info', '');
 
 
 
