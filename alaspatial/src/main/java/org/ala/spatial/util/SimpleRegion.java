@@ -1600,4 +1600,50 @@ public class SimpleRegion extends Object implements Serializable {
             }
         }
     }
+
+    public int[][] fillAccMask_EPSG900913(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map, boolean noCellsReturned) {
+        double divx = (longitude2 - longitude1) / width;
+        double divy = (latitude2 - latitude1) / height;
+
+        int i, j;
+        //do raster check
+        int[][] data = null;
+        boolean cellsReturned = !noCellsReturned;
+        if (cellsReturned) {
+            data = new int[width * height][2];
+        }
+        int p = 0;
+        for (j = 0; j < three_state_map[0].length; j++) {
+            for (i = 0; i < three_state_map.length; i++) {
+                if (three_state_map[i][j] == GI_PARTIALLY_PRESENT) {
+                    //if it is partially present, do nothing
+                } else if ((j == 0 || three_state_map[i][j - 1] == GI_PARTIALLY_PRESENT)) {
+                    if (i > 0
+                            && (three_state_map[i - 1][j] == GI_FULLY_PRESENT
+                            || three_state_map[i - 1][j] == GI_ABSENCE)) {
+                        //use same as LHS
+                        three_state_map[i][j] = three_state_map[i - 1][j];
+                    } else if (isWithin_EPSG900913(j * divx + divx / 2 + longitude1, i * divy + divy / 2 + latitude1)) {
+                        //if the previous was partially present, test
+                        three_state_map[i][j] = GI_FULLY_PRESENT;
+                    } //else absent
+                } else {
+                    //if the previous was fully present, repeat
+                    //if the previous was absent, repeat
+                    three_state_map[i][j] = three_state_map[i][j - 1];
+                }
+
+                //apply to cells;
+                if (cellsReturned && three_state_map[i][j] != GI_UNDEFINED) {   //undefined == absence
+                    data[p][0] = j;
+                    data[p][1] = i;
+                    p++;
+                }
+            }
+        }
+        if (data != null) {
+            data = java.util.Arrays.copyOf(data, p);
+        }
+        return data;
+    }
 }

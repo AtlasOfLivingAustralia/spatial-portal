@@ -439,7 +439,7 @@ public class ComplexRegion extends SimpleRegion {
             sr.getOverlapGridCells_Acc_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, mask);
         }
 
-        int[][] cells = fillAccMask(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, noCellsReturned);
+        int[][] cells = fillAccMask_EPSG900913(longitude1, latitude1, longitude2, latitude2, width, height, three_state_map, noCellsReturned);
 
         return cells;
     }
