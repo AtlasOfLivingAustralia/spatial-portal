@@ -248,8 +248,8 @@ class SamplingEvent implements EventListener {
             params.put("environmentalLayerName", "none");
         }
         AddToolSamplingComposer window = (AddToolSamplingComposer) mc.openModal("WEB-INF/zul/AddToolSampling.zul", params);
-        window.onClick$btnOk(event);
-        window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
     }
 }
 
@@ -317,7 +317,7 @@ class ClassificationEvent implements EventListener {
             params.put("environmentalLayerName", "none");
         }
         AddToolALOCComposer window = (AddToolALOCComposer) mc.openModal("WEB-INF/zul/AddToolALOC.zul", params);
-        window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
     }
 }
 
@@ -354,8 +354,8 @@ class ScatterplotEvent implements EventListener {
             params.put("environmentalLayerName", "default");
         }
         AddToolComposer window = (AddToolComposer) mc.openModal("WEB-INF/zul/AddToolScatterplot.zul", params);
-        window.onClick$btnOk(event);
-        window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
     }
 }
 
@@ -378,7 +378,7 @@ class SpeciesListEvent implements EventListener {
             params.put("polygonLayerName", "none");
         }
         AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
-        window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
 
 //        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
 //        MapLayer ml = mc.getMapLayer(polygonLayerName);
