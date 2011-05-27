@@ -677,12 +677,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
     public void onClick$addSelectedRecords(Event event) {
         String id = addSelectedRecords(false);
-        addUserLayer(id, "Scatterplot Selected " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
+        addUserLayer(id, "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
         String id = addSelectedRecords(true);
-        addUserLayer(id, "Scatterplot Unselected " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
+        addUserLayer(id, "OUT " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
     }
 
     void addUserLayer(String id, String layername, String description, int numRecords) {
@@ -1498,7 +1498,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 missing_data = (Boolean) mapLayer.getData("missing_data");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
