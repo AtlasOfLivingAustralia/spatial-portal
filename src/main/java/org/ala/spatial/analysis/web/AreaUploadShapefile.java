@@ -207,27 +207,34 @@ public class AreaUploadShapefile extends AreaToolComposer {
     private static String getKMLPolygonAsWKT(String kmldata) {
         try {
 
-            int pos1 = kmldata.indexOf("coordinates") + 11;
-            int pos2 = kmldata.indexOf("/coordinates");
+            int pos1 = kmldata.indexOf("coordinates") + 12;
+            int pos2 = kmldata.indexOf("/coordinates")-1;
             String kcoords = kmldata.substring(pos1, pos2);
 
-
+            String[] coords = kcoords.split(" ");
+            if (coords.length == 1) {
+                coords = kcoords.split("\n");
+            }
             StringBuilder sb = new StringBuilder();
             sb.append("POLYGON((");
-            String[] coords = kcoords.split(" ");
-            System.out.println(coords.length);
-            if (coords.length == 1) {
-                coords = kmldata.split("\n");
-                System.out.println(coords.length);
-            }
-            for (String c : coords) {
+            String kmlwkt = "POLYGON((";
+            //for (String c : coords) {
+            for (int i=0;i<coords.length;i++) {
+                String c = coords[i]; 
                 String[] cs = c.split(",");
                 if (cs.length > 1) {
-                    sb.append(cs[0]).append(" ").append(cs[1]).append(",");
+                    if (i>0) {
+                        sb.append(",");
+                        kmlwkt += ",";
+                    }
+                    sb.append(cs[0]).append(" ").append(cs[1]);
+                    kmlwkt += cs[0] + " " + cs[1];
                 }
             }
             sb.append("))");
-            return sb.toString().replace(",)", ")");
+            kmlwkt += "))"; 
+            //return sb.toString().replace(",)", ")");
+            return kmlwkt; 
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

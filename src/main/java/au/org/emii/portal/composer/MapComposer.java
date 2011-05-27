@@ -183,7 +183,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             logger.debug("zooming to extent " + selectedLayer.getId());
             if (selectedLayer.getType() == LayerUtilities.GEOJSON
-                    || selectedLayer.getType() == LayerUtilities.WKT) {
+                    || selectedLayer.getType() == LayerUtilities.WKT
+                    || selectedLayer.getType() == LayerUtilities.KML) {
                 openLayersJavascript.zoomGeoJsonExtentNow(selectedLayer);
             } else {
                 openLayersJavascript.zoomLayerExtent(selectedLayer);
