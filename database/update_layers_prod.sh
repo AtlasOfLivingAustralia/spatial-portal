@@ -13,3 +13,8 @@ fi
 
 # run layers create/update script
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod.sql
+
+# add updates here ...
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/001_ger_updates_12052011.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/002_ger_updates_19052011.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/003_ne_world_25052011.sql
