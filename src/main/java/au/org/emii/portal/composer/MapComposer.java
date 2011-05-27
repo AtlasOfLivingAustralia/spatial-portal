@@ -3514,11 +3514,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             areaName = "Active area";
         } 
         String layerPrefix = "Occurrences in " + areaName + " ";
-        int i = 1;
-        while (getMapLayer(layerPrefix + i) != null) {
-            i++;
-        }
-        return layerPrefix + i;
+//        int i = 1;
+//        while (getMapLayer(layerPrefix + i) != null) {
+//            i++;
+//        }
+//        return layerPrefix + i;
+
+        return layerPrefix;
     }
 
     public Iterable<MapLayer> getActiveAreaLayers() {
