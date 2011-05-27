@@ -286,8 +286,8 @@ class PredictionEvent implements EventListener {
             params.put("environmentalLayerName", "none");
         }
         AddToolMaxentComposer window = (AddToolMaxentComposer) mc.openModal("WEB-INF/zul/AddToolMaxent.zul", params);
-        window.onClick$btnOk(event);
-        window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
+        //window.onClick$btnOk(event);
     }
 }
 
