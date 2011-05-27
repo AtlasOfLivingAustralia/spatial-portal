@@ -418,7 +418,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             //register points with a new id for mapping
             String lsid = registerPointsInArea(area);
-            String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName();
+            String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
             getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES);
 
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");

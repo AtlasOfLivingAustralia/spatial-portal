@@ -3507,8 +3507,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return layerPrefix + i;
     }
 
-    public String getNextActiveAreaLayerName() {
-        String layerPrefix = "Occurrences in Active area ";
+    public String getNextActiveAreaLayerName(String areaName) {
+        if (areaName == null) {
+            areaName = "Active area";
+        } else if (areaName.trim().equals("")) {
+            areaName = "Active area";
+        } 
+        String layerPrefix = "Occurrences in " + areaName + " ";
         int i = 1;
         while (getMapLayer(layerPrefix + i) != null) {
             i++;
