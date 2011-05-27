@@ -337,7 +337,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$results_label2_species() {
-        SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName);
+        SpeciesListEvent sle = new SpeciesListEvent(getMapComposer(), areaName, 1);
         try {
             sle.onEvent(null);
         } catch (Exception e) {
@@ -371,7 +371,7 @@ public class FilteringResultsWCController extends UtilityComposer {
     }
 
     public void onClick$results_label2_occurrences() {      
-        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null);
+        SamplingEvent sle = new SamplingEvent(getMapComposer(), null, areaName, null, 2);
         try {
             sle.onEvent(null);
         } catch (Exception e) {

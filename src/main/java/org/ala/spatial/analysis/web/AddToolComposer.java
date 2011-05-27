@@ -207,7 +207,8 @@ public class AddToolComposer extends UtilityComposer {
                 rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(1));
             } else {
                 for (int i = 0; i < rgSpecies.getItemCount(); i++) {
-                    if (rgSpecies.getItemAtIndex(i).isVisible()) {
+                    if (rgSpecies.getItemAtIndex(i).isVisible()
+                            && rgSpecies.getItemAtIndex(i) != rSpeciesAll) {
                         rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(i));
                         break;
                     }

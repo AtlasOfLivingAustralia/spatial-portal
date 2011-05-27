@@ -64,7 +64,7 @@
                 <label id="atstep2_label" value="" />
                 <separator />
                 <radiogroup id="rgSpecies" orient="vertical">
-                    <radio id="rSpeciesAll" label="All species" value="allspecies" visible="false" />
+                    <radio id="rSpeciesAll" label="All species" value="allspecies" />
                     <radio id="rSpeciesMapped" label="All species currently mapped" value="allmapped" visible="false" />
                     <radio id="rSpeciesSearch" value="search" label="Search for species by common or scientific name" />
                         <vbox width="100%">

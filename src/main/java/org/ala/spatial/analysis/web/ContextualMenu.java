@@ -221,12 +221,22 @@ class SamplingEvent implements EventListener {
     String polygonLayerName;
     String environmentalLayerName;
     MapComposer mc;
+    int steps_to_skip;
 
     public SamplingEvent(MapComposer mc, String lsid, String polygonLayerName, String environmentalLayerName) {
         this.mc = mc;
         this.lsid = lsid;
         this.polygonLayerName = polygonLayerName;
         this.environmentalLayerName = environmentalLayerName;
+        this.steps_to_skip = 0;
+    }
+
+    public SamplingEvent(MapComposer mc, String lsid, String polygonLayerName, String environmentalLayerName, int steps_to_skip) {
+        this.mc = mc;
+        this.lsid = lsid;
+        this.polygonLayerName = polygonLayerName;
+        this.environmentalLayerName = environmentalLayerName;
+        this.steps_to_skip = steps_to_skip;
     }
 
     @Override
@@ -248,6 +258,12 @@ class SamplingEvent implements EventListener {
             params.put("environmentalLayerName", "none");
         }
         AddToolSamplingComposer window = (AddToolSamplingComposer) mc.openModal("WEB-INF/zul/AddToolSampling.zul", params);
+
+        int skip = steps_to_skip;
+        while(skip > 0) {
+            window.onClick$btnOk(event);
+            skip--;
+        }
         //window.onClick$btnOk(event);
         //window.onClick$btnOk(event);
     }
@@ -363,10 +379,18 @@ class SpeciesListEvent implements EventListener {
 
     String polygonLayerName;
     MapComposer mc;
+    int steps_to_skip;
 
     public SpeciesListEvent(MapComposer mc, String polygonLayerName) {
         this.mc = mc;
         this.polygonLayerName = polygonLayerName;
+        this.steps_to_skip = 0;
+    }
+
+    public SpeciesListEvent(MapComposer mc, String polygonLayerName, int steps_to_skip) {
+        this.mc = mc;
+        this.polygonLayerName = polygonLayerName;
+        this.steps_to_skip = steps_to_skip;
     }
 
     @Override
@@ -378,6 +402,13 @@ class SpeciesListEvent implements EventListener {
             params.put("polygonLayerName", "none");
         }
         AddToolSpeciesListComposer window = (AddToolSpeciesListComposer) mc.openModal("WEB-INF/zul/AddToolSpeciesList.zul", params);
+
+        int skip = steps_to_skip;
+        while(skip > 0) {
+            window.onClick$btnOk(event);
+            skip--;
+        }
+
         //window.onClick$btnOk(event);
 
 //        SpeciesListResults window = (SpeciesListResults) Executions.createComponents("WEB-INF/zul/AnalysisSpeciesListResults.zul", mc, null);
@@ -419,7 +450,7 @@ class MetadataEvent implements EventListener {
                         infourl += "&dparam=Y-Layer:"+data.getLayer2Name();
                     }
                     // send the user to the BIE page for the species
-                    Events.echoEvent("openUrl", mc, infourl);
+                   // Events.echoEvent("openUrl", mc, infourl);
 
             } else if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
