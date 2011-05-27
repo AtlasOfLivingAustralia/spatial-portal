@@ -201,24 +201,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                                     <n:span>Tools</n:span>
                                                 </n:a>
                                             </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('layers-arealist');">
-                                                    <n:span>Layers Area/List</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('display-area');">
-                                                    <n:span>Display Area</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('hints-area');">
-                                                    <n:span>Hint Area</n:span>
-                                                </n:a>
-                                            </n:li>
                                         </n:ul>
                                     </n:li>
                                 </n:ul>
