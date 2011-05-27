@@ -477,30 +477,30 @@ class AreaReportEvent implements EventListener {
 
     @Override
     public void onEvent(Event event) throws Exception {
-//        Hashtable<String, Object> params = new Hashtable<String, Object>();
-//        if(polygonLayerName != null) {
-//            params.put("polygonLayerName", polygonLayerName);
-//        } else {
-//            params.put("polygonLayerName", "none");
-//        }
-//        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params);
+        Hashtable<String, Object> params = new Hashtable<String, Object>();
+        if(polygonLayerName != null) {
+            params.put("polygonLayerName", polygonLayerName);
+        } else {
+            params.put("polygonLayerName", "none");
+        }
+        AddToolAreaReportComposer window = (AddToolAreaReportComposer) mc.openModal("WEB-INF/zul/AddToolAreaReport.zul", params);
 
-        MapLayer ml = mc.getMapLayer(polygonLayerName);
-        Window w = (Window) mc.getPage().getFellowIfAny("popup_results");
-        if (w != null) {
-            w.detach();
-        }
-        double[] bbox = null;
-        if (ml != null && ml.getMapLayerMetadata() != null
-                && ml.getMapLayerMetadata().getBbox() != null
-                && ml.getMapLayerMetadata().getBbox().size() == 4) {
-            bbox = new double[4];
-            bbox[0] = ml.getMapLayerMetadata().getBbox().get(0);
-            bbox[1] = ml.getMapLayerMetadata().getBbox().get(1);
-            bbox[2] = ml.getMapLayerMetadata().getBbox().get(2);
-            bbox[3] = ml.getMapLayerMetadata().getBbox().get(3);
-        }
-        FilteringResultsWCController.open(ml.getWKT(), ml.getName(), ml.getDisplayName(), (String) ml.getData("area"), bbox);
+//        MapLayer ml = mc.getMapLayer(polygonLayerName);
+//        Window w = (Window) mc.getPage().getFellowIfAny("popup_results");
+//        if (w != null) {
+//            w.detach();
+//        }
+//        double[] bbox = null;
+//        if (ml != null && ml.getMapLayerMetadata() != null
+//                && ml.getMapLayerMetadata().getBbox() != null
+//                && ml.getMapLayerMetadata().getBbox().size() == 4) {
+//            bbox = new double[4];
+//            bbox[0] = ml.getMapLayerMetadata().getBbox().get(0);
+//            bbox[1] = ml.getMapLayerMetadata().getBbox().get(1);
+//            bbox[2] = ml.getMapLayerMetadata().getBbox().get(2);
+//            bbox[3] = ml.getMapLayerMetadata().getBbox().get(3);
+//        }
+//        FilteringResultsWCController.open(ml.getWKT(), ml.getName(), ml.getDisplayName(), (String) ml.getData("area"), bbox);
     }
 }
 
