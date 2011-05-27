@@ -518,7 +518,7 @@ public class SpeciesIndex {
      */
     static public String getLSID(int pos) {
         if (pos < 0 || pos >= singleIndexOrder.length) {
-            return "";
+            return null;
         } else {
             return singleIndex[singleIndexOrder[pos]].lsid;
         }
@@ -539,7 +539,7 @@ public class SpeciesIndex {
                 return getLSID(pos);
             }
         }
-        return "";
+        return null;
     }
 
     /**

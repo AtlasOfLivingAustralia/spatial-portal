@@ -756,13 +756,13 @@ public class SpeciesColourOption {
                     if (iList[i] >= 0) {
                         label = SpeciesIndex.getScientificName(iList[i]);
                     } else {
-                        label = "unknown";
+                        label = "Unknown";
                     }
                 } else {
                     if (iList[i] >= 0) {
                         label = SpeciesIndex.getScientificNameLevel10(iList[i]);
                     } else {
-                        label = "unknown";
+                        label = "99Unknown";
                     }
                 }
 
@@ -948,18 +948,27 @@ public class SpeciesColourOption {
                 counts[iList[i] + 1]++;   //unknown has value -1
             }
             labels = new String[max + 2];
-            for (int i = 0; i < counts.length; i++) {
-                if (counts[i] > 0) {
-                    counts[pos] = counts[i];
-                    if (i == 0) { //unknown
-                        labels[pos] = "unknown";
+            for (int i = 0; i < iList.length; i++) {
+                if (iList[i] < 0) { //unknown
+                    if (taxon < 10) {
+                        labels[iList[i] + 1] = "Unknown";
                     } else {
-                        if (taxon < 10) {
-                            labels[pos] = SpeciesIndex.getScientificName(i - 1);
-                        } else {
-                            labels[pos] = SpeciesIndex.getScientificNameLevel10(i - 1);
-                        }
+                        labels[iList[i] + 1] = "99Unknown";
                     }
+                } else {
+                    if (taxon < 10) {
+                        labels[iList[i] + 1] = SpeciesIndex.getScientificName(iList[i]);
+                    } else {
+                        labels[iList[i] + 1] = SpeciesIndex.getScientificNameLevel10(iList[i]);
+                    }
+                }
+            }
+            //roll up
+            pos = 0;
+            for(int i=0;i<counts.length;i++) {
+                if(counts[i] > 0) {
+                    counts[pos] = counts[i];
+                    labels[pos] = labels[i];
                     pos++;
                 }
             }
