@@ -902,7 +902,8 @@ public class AddToolComposer extends UtilityComposer {
                     species = (String) (searchSpeciesAuto.getText());
                 }
             } else {
-                //species = species.substring(0,species.lastIndexOf(" "));
+                species = rgSpecies.getSelectedItem().getLabel();
+//                    species = species.substring(0,species.lastIndexOf(" "));
             }
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected species");
