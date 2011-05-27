@@ -420,9 +420,6 @@ class MetadataEvent implements EventListener {
                     }
                     // send the user to the BIE page for the species
                     Events.echoEvent("openUrl", mc, infourl);
-                // send the user to the BIE page for the species
-                //logger.debug("opening the following url " + infourl);
-                Events.echoEvent("openUrl", mc, infourl);
 
             } else if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null
