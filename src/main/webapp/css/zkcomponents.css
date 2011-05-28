@@ -1327,3 +1327,9 @@ div.z-window-modal-header, div.z-window-overlapped-header {
 .z-west-header {
     display: none;
 }
+
+.atstep {
+    height:180px;
+    width:400px;
+    overflow:auto;
+}

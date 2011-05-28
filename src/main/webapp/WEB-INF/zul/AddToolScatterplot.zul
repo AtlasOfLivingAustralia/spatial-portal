@@ -53,7 +53,7 @@
         </vbox>
 
         <vbox style="padding-left: 10px" >
-            <div id="atstep1" visible="true" zclass="first optional">
+            <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
                 <separator />
@@ -65,7 +65,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep2" visible="false" zclass="step2 species">
+            <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep">
                 <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
                 <separator />
@@ -95,7 +95,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep3" visible="false" zclass="step3 optional">
+            <div id="atstep3" visible="false" zclass="step3 optional" sclass="atstep">
                 <label id="atstep3_desc" value="Highlight occurrences on the scatterplot that are in an area" sclass="wSubLabel"/>
                 <label id="atstep3_label" value="" />
                 <separator />
@@ -107,7 +107,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep4" visible="false" zclass="step4 layers2auto">
+            <div id="atstep4" visible="false" zclass="step4 layers2auto" sclass="atstep">
                 <label id="atstep4_desc" value="Select two environmental layers" sclass="wSubLabel"/>
                 <label id="atstep4_label" value="" />
                 <separator />
@@ -126,7 +126,7 @@
                 </groupbox>
             </div>
             
-            <div id="atstep5" visible="false" zclass="step5 optional">
+            <div id="atstep5" visible="false" zclass="step5 optional" sclass="atstep">
                 <label id="atstep5_desc" value="Select background species" sclass="wSubLabel"/>
                 <label id="atstep5_label" value="" />
                 <separator />
@@ -157,7 +157,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep6" visible="false" zclass="last optional">
+            <div id="atstep6" visible="false" zclass="last optional" sclass="atstep">
                 <label id="atstep6_desc" value="Name for scatterplot layer" sclass="wSubLabel"/>
                 <label id="atstep6_label" value="" />
                 <separator />

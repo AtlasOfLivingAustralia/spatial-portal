@@ -17,7 +17,7 @@
 
         <separator />
         <vbox style="padding-left: 10px" >
-            <div id="atstep1" visible="true" zclass="first optional last" style="padding:5px">
+            <div id="atstep1" visible="true" zclass="first optional last" sclass="atstep" style="padding:5px;">
                 <label id="atstep1_desc" value="Select area" />
                 <label id="atstep1_label" value="" />
                 <separator />

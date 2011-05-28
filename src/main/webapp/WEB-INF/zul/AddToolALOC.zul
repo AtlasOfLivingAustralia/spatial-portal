@@ -44,7 +44,7 @@
               </grid>
         </vbox>
         <vbox style="padding-left: 10px" >
-            <div id="atstep1" visible="true" zclass="first optional" style="padding:5px">
+            <div id="atstep1" visible="true" zclass="first optional" sclass="atstep" style="padding:5px;">
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
                 <separator />

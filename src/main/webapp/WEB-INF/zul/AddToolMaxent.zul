@@ -55,7 +55,7 @@
              </grid>
         </vbox>
         <vbox style="padding-left: 10px" >
-            <div id="atstep1" visible="true" zclass="first optional">
+            <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
                 <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
                 <label id="atstep1_label" value="" />
                 <separator />
@@ -67,7 +67,7 @@
                 </radiogroup>
             </div>
 
-            <div id="atstep2" visible="false" zclass="step2 species">
+            <div id="atstep2" visible="false" zclass="step2 species" sclass="atstep">
                 <label id="atstep2_desc" value="Select species" sclass="wSubLabel"/>
                 <label id="atstep2_label" value="" />
                 <separator />
