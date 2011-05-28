@@ -22,7 +22,7 @@
                     <radio id="rSearch" label="Enter a layer name or keyword" />
                         <div id="divSearch" >
                             <separator />
-                            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="250px">
+                            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="350px">
                                 <comboitem label=""/>
                             </combobox>
                             <separator/>
