@@ -94,6 +94,8 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     loadUserLayerKML(m.getName(), m.getStreamData());
                 }
 
+                ok = true;
+
             } else if (m.getFormat().equalsIgnoreCase("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 // "/data/ala/runtime/output/layers/"
                 // "/Users/ajay/projects/tmp/useruploads/"
