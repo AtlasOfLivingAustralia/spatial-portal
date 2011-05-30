@@ -369,6 +369,28 @@ public class OccurrencesCollection {
         return count;
     }
 
+    public static int registerLSIDArea(String id, String lsid, SimpleRegion region) {
+        int count = 0;
+
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                count += d.getOccurrencesIndex().registerLSIDArea(id, lsid, region);
+            }
+        }
+        return count;
+    }
+
+    public static int registerLSIDRecords(String id, String lsid, ArrayList<OccurrenceRecordNumbers> records) {
+        int count = 0;
+
+        for (Dataset d : datasets) {
+            if (d.isEnabled() && d.isReady()) {
+                count += d.getOccurrencesIndex().registerLSIDRecords(id, lsid, records);
+            }
+        }
+        return count;
+    }
+
     public static int registerLSID(String id, String[] lsids) {
         int count = 0;
 

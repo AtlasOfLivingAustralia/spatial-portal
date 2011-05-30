@@ -718,13 +718,34 @@ public class SimpleShapeFile extends Object implements Serializable {
         ArrayList<String> stringsList = new ArrayList<String>();
         if (pointsString.startsWith("GEOMETRYCOLLECTION")) {
             //split out polygons and multipolygons
-            pointsString.replace("GEOMETRYCOLLECTION(","");
+            pointsString = pointsString.replace("GEOMETRYCOLLECTION", "");
 
-            int posStart = 10; //skip the beginning of the first POLYGON and MULTIPOLYGON
-            int posEnd;
-            while((posEnd = pointsString.indexOf("POLYGON", posStart + 1)) >= 0) {
-                stringsList.add(pointsString.substring(posStart, posEnd));
+            int posStart, posEnd, p1, p2;;
+            p1 = pointsString.indexOf("POLYGON", 0);
+            p2 = pointsString.indexOf("MULTIPOLYGON", 0);
+            if (p1 < 0) {
+                posStart = p2;
+            } else if (p2 < 0) {
+                posStart = p1;
+            } else {
+                posStart = Math.min(p1, p2);
+            }
+            
+            p1 = pointsString.indexOf("POLYGON", posStart + 10);
+            p2 = pointsString.indexOf("MULTIPOLYGON", posStart + 10);
+            while (p1 > 0 || p2 > 0) {
+                if (p1 < 0) {
+                    posEnd = p2;
+                } else if (p2 < 0) {
+                    posEnd = p1;
+                } else {
+                    posEnd = Math.min(p1, p2);
+                }
+
+                stringsList.add(pointsString.substring(posStart, posEnd-1));
                 posStart = posEnd;
+                p1 = pointsString.indexOf("POLYGON", posStart + 10);
+                p2 = pointsString.indexOf("MULTIPOLYGON", posStart + 10);
             }
             stringsList.add(pointsString.substring(posStart, pointsString.length()));
         } else {
@@ -732,16 +753,16 @@ public class SimpleShapeFile extends Object implements Serializable {
         }
 
         ArrayList<SimpleRegion> regions = new ArrayList<SimpleRegion>();
-        for(String ps : stringsList) {
-            pointsString = convertGeoToPoints(pointsString);
+        for (String ps : stringsList) {
+            ps = convertGeoToPoints(ps);
 
-            String[] polygons = pointsString.split("S");
+            String[] polygons = ps.split("S");
 
             //String[] fixedPolygons = fixStringPolygons(polygons);
 
             //System.out.println("$" + pointsString);
 
-            if(stringsList.size() == 1) {
+            if (stringsList.size() == 1) {
                 if (polygons.length == 1) {
                     return SimpleRegion.parseSimpleRegion(polygons[0]);
                 } else {

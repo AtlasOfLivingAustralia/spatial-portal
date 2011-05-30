@@ -387,17 +387,27 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
     }
 
     @Override
+    public int registerLSIDArea(String key, String lsid, SimpleRegion region) {
+        return registerHighlight(new OccurrencesFilter(lsid, region, null, Integer.MAX_VALUE), key, null, true);
+    }
+
+    @Override
     public int registerLSID(String key, String[] lsid) {
         return 0;
     }
 
     @Override
     public int registerArea(String key, SimpleRegion region) {
-        return 0;
+        return registerHighlight(new OccurrencesFilter(region, Integer.MAX_VALUE), key, null, true);
     }
 
     @Override
     public int registerRecords(String key, ArrayList<OccurrenceRecordNumbers> records) {
+        return 0;
+    }
+
+    @Override
+    public int registerLSIDRecords(String key, String lsid, ArrayList<OccurrenceRecordNumbers> records) {
         return 0;
     }
 
@@ -419,7 +429,7 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
     @Override
     public int registerHighlight(OccurrencesFilter filter, String key, String highlightPid, boolean include) {
         int[] r = getRecordNumbers(filter);
-        if (r != null) {            
+        if (r != null && highlightPid != null) {
             boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
             int pos = 0;
             for (int i = 0; i < r.length; i++) {
@@ -438,7 +448,9 @@ public class OccurrencesIndexLoadedPoints extends OccurrencesIndex {
 
             java.util.Arrays.sort(r);
 
-            RecordsLookup.addRecords(getHash() + key, r);
+            if(highlightPid != null) {
+                RecordsLookup.addRecords(getHash() + key, r);
+            }
 
             //create new loaded points
             String s = LoadedPointsService.getSampling(filter.searchTerm, null, null, null, Integer.MAX_VALUE);
