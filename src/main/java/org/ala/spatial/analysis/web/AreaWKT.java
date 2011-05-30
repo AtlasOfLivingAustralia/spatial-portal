@@ -51,6 +51,8 @@ public class AreaWKT extends AreaToolComposer {
             getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
             getMapComposer().redrawLayersList();
 
+            ok = true;
+
             this.detach();
         }
         else {

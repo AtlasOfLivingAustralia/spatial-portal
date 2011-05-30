@@ -65,7 +65,8 @@ public class AreaRegionSelection extends AreaToolComposer {
 
         //add feature to the map as a new layer
         MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.geoServer + link);
-        
+        this.layerName= mapLayer.getName();
+
         JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
         //if the layer is a point create a radius
         if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {

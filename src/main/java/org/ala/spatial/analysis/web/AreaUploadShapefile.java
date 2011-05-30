@@ -93,9 +93,6 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 } else {
                     loadUserLayerKML(m.getName(), m.getStreamData());
                 }
-
-                ok = true;
-
             } else if (m.getFormat().equalsIgnoreCase("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 // "/data/ala/runtime/output/layers/"
                 // "/Users/ajay/projects/tmp/useruploads/"
@@ -189,14 +186,13 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 logger.debug("The layer " + name + " couldnt be created");
                 getMapComposer().showMessage(getMapComposer().getLanguagePack().getLang("ext_layer_creation_failure"));
             } else {
+                this.layerName = mapLayer.getName();
+                ok = true;
                 String kmlwkt = getKMLPolygonAsWKT(kmlstr);
                 System.out.println("kmlwkt: " + kmlwkt);
                 mapLayer.setWKT(kmlwkt);
                 getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
             }
-
-            ok = true;
-
         } catch (Exception e) {
 
             getMapComposer().showMessage("Unable to load your file. Please try again.");

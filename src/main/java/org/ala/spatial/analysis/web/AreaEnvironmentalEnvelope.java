@@ -627,6 +627,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             if (ml.getMapLayerMetadata() == null) {
                 ml.setMapLayerMetadata(new MapLayerMetadata());
             }
+            this.layerName = ml.getName();
             List<Double> bb = new ArrayList<Double>(4);
             String[] bs = activeAreaExtent.split(",");
             for (int i = 0; i < 4; i++) {
