@@ -3093,7 +3093,7 @@ function envLayerHover(e) {
                     var d = data.split("\t");
                     var lName = d[0];
                     var lValue = d[1];
-                    body = body + lName + ": " + lValue;
+                    body = body + "<tr><td>" + lName + "</td><td><b>" + lValue + "</b></td></tr>";
                 }
             }
             if(last_contextual_name != name) {
@@ -3108,11 +3108,11 @@ function envLayerHover(e) {
                 var txt = getContextualLayerValue(name, pt.lat, pt.lon);
                 if(txt != null && txt != "") {
                     //console.info("txt is " + txt);
-                    body = body + getContextualLayerAlias(name).capitalize() + ": " + txt + "\n";
+                    body = body + "<tr><td>" + getContextualLayerAlias(name).capitalize() + "</td><td><b>" + txt + "</b></td></tr>";
                 }
                 else{
             //console.error("txt is null!");
-            }
+                }
             }
         }
         return body;
@@ -3133,13 +3133,13 @@ function initHover() {
 
             pt = pt.transform(map.projection, map.displayProjection);
     
-            var output = document.getElementById('hoverOutput');
+            var output = parent.document.getElementById('hoverOutput');
             var data = envLayerHover(e);
             if(data != null && data != "") {
                 //var d = data.split("\t");
-                output.value = "Point: " + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "\n" + data;
+                output.innerHTML = "<table><tr><td>Point</td><td><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr>" + data + "</table>";
             } else {
-                output.value = "No values to display";
+                output.innerHTML = "No values to display";
             }
         },
         'delay': 200
@@ -3151,12 +3151,12 @@ function toggleActiveHover() {
     if(hovercontrol != null) {
         hovercontrol.deactivate();
         hovercontrol = null;
-        document.getElementById("hoverOutput").style.display="none"
+        parent.jq('$hovertool')[0].style.display="none"
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement_off.gif')";
     } else {
         initHover();
-        document.getElementById('hoverOutput').value = "Hover cursor over map to view layer values";
-        document.getElementById("hoverOutput").style.display=""
+        parent.document.getElementById('hoverOutput').innerHTML = "Hover cursor over map to view layer values";
+        parent.jq('$hovertool')[0].style.display=""
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement.gif')";
     }
 }

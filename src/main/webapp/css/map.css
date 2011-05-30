@@ -640,7 +640,7 @@ div.olControlScaleLineTop, div.olControlScaleLineBottom {
 
 #hoverOutput {
     position: absolute;
-    width: 300px! important;
+    width: 500px! important;
     height: 80px! important;
     cursor: pointer;
 
