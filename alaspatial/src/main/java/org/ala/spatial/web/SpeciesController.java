@@ -867,6 +867,42 @@ public class SpeciesController {
         return null;
     }
 
+    @RequestMapping(value = "/lsidarea/register", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String lsidAreaRecords(HttpServletRequest req) {
+        try {
+            String id = String.valueOf(System.currentTimeMillis());
+
+            String lsid = req.getParameter("lsid").replaceAll("__", ".");
+
+            String areaParam = req.getParameter("area");
+
+            SimpleRegion region = null;
+            areaParam = URLDecoder.decode(areaParam, "UTF-8");
+
+            int count = 0;
+            if (areaParam != null && areaParam.startsWith("ENVELOPE")) {
+                if(SamplingLoadedPointsService.isLoadedPointsLSID(lsid)) {
+                    count = SamplingLoadedPointsService.registerEnvelope(id, lsid, areaParam);
+                } else {
+                    ArrayList<OccurrenceRecordNumbers> records = FilteringService.getRecords(areaParam);
+                    count = OccurrencesCollection.registerLSIDRecords(id, lsid, records);
+                }
+            } else {
+                region = SimpleShapeFile.parseWKT(areaParam);
+                count = OccurrencesCollection.registerLSIDArea(id, lsid, region);
+            }
+
+            System.out.println("successfully registered records in area: " + count);
+
+            return id;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @RequestMapping(value = "/highlight/register", method = RequestMethod.GET)
     public
     @ResponseBody

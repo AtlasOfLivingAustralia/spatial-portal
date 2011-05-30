@@ -6,6 +6,7 @@ package org.ala.spatial.analysis.service;
 
 import java.util.ArrayList;
 import org.ala.spatial.analysis.index.BoundingBoxes;
+import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.util.AnalysisJobSampling;
 import org.ala.spatial.util.Layers;
 import org.ala.spatial.util.SimpleRegion;
@@ -24,6 +25,71 @@ public class SamplingLoadedPointsService extends SamplingService {
 
     public static boolean isLoadedPointsLSID(String lsid) {
         return LoadedPointsService.getLoadedPoints(lsid) != null;
+    }
+
+    public static int registerEnvelope(String key, String lsid, String areaParam) {
+        //get envelope info
+        LayerFilter[] lf = FilteringService.getFilters(areaParam);
+
+        //sample for these additional columns/filters
+        String [] layers = new String[lf.length];
+        for(int i=0;i<layers.length;i++) {
+            layers[i] = lf[i].layername;
+        }
+        String s = LoadedPointsService.getSampling(lsid, Layers.getLayers(layers), null, null, Integer.MAX_VALUE);
+        
+        //parse to new input file
+        String [] slist = s.split("\r\n");
+        double [][] points = new double[slist.length - 1][2];   //-1 for header
+        String [] ids = new String[slist.length - 1];           //-1 for header
+
+        int pos = 0;
+        for(int i=1;i<slist.length;i++) {   //+1 for header
+            String [] row = slist[i].split(",");
+            if(row.length > 0) {
+                ids[pos] = row[0];
+            }
+            if(row.length > 1) {
+                try {
+                    points[pos][0] = Double.parseDouble(row[1]);
+                } catch (Exception e) {
+                    points[pos][0] = Double.NaN;
+                }
+            }
+            if(row.length > 2) {
+                try {
+                    points[pos][1] = Double.parseDouble(row[2]);
+                } catch (Exception e) {
+                    points[pos][1] = Double.NaN;
+                }
+            }
+
+            //apply envelope, only environmentals
+            //TODO: contextuals
+            boolean ok = true;
+            for(int j=3;ok = true && j<row.length;j++) {
+                try {
+                    double d = Double.parseDouble(row[j]);
+                    ok = lf[j-3].minimum_value <= d
+                            && lf[j-3].maximum_value >= d;
+                } catch (Exception e) {
+                }
+            }
+
+            if(ok) {
+                pos++;
+            }
+        }
+
+        if(pos > 0) {
+            double [][] pointsTrim = new double[pos][2];
+            String [] idsTrim = new String[pos];
+            System.arraycopy(points, 0, pointsTrim, 0, pos);
+            System.arraycopy(ids, 0, idsTrim, 0, pos);
+            LoadedPointsService.addCluster(key, new LoadedPoints(pointsTrim, "" , idsTrim));
+        }
+
+        return pos;
     }
 
     /**

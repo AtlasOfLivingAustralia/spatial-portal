@@ -54,13 +54,17 @@ public class OrRegion extends SimpleRegion implements Serializable {
             for(SimpleRegion sr : orRegions) {
                 double [][] bb = sr.getBoundingBox();
                 if(bounding_box == null) {
-                    bounding_box = bb.clone();
+                    bounding_box = new double[2][2];
+                    bounding_box[0][0] = bb[0][0];
+                    bounding_box[0][1] = bb[0][1];
+                    bounding_box[1][0] = bb[1][0];
+                    bounding_box[1][1] = bb[1][1];
                 } else {
                     //limit bounding box to interior limits
-                    bounding_box[0][0] = Math.max(bounding_box[0][0],bb[0][0]);
-                    bounding_box[0][1] = Math.max(bounding_box[0][1],bb[0][1]);
-                    bounding_box[1][0] = Math.min(bounding_box[1][0],bb[1][0]);
-                    bounding_box[1][1] = Math.min(bounding_box[1][1],bb[1][1]);
+                    bounding_box[0][0] = Math.min(bounding_box[0][0],bb[0][0]);
+                    bounding_box[0][1] = Math.min(bounding_box[0][1],bb[0][1]);
+                    bounding_box[1][0] = Math.max(bounding_box[1][0],bb[1][0]);
+                    bounding_box[1][1] = Math.max(bounding_box[1][1],bb[1][1]);
                 }
             }
         }
@@ -134,6 +138,9 @@ public class OrRegion extends SimpleRegion implements Serializable {
         if(getWidth() <= 0 || getHeight() <= 0){
             return null;
         }
+        if (three_state_map == null) {
+            three_state_map = new byte[height][width];
+        }
         int [][] cells = null;
         for(SimpleRegion sr : orRegions) {
             byte [][] map = null;
@@ -169,6 +176,27 @@ public class OrRegion extends SimpleRegion implements Serializable {
             }
         }
 
+        //build cells from three_state_map
+        int count = 0;
+        for(int i=0;i<three_state_map.length;i++){
+           for(int j=0;j<three_state_map[i].length;j++){
+               if(three_state_map[i][j] != 0) {
+                   count++;
+               }
+           }
+        }
+        cells = new int[count][2];
+        int pos = 0;
+        for(int i=0;i<three_state_map.length;i++){
+           for(int j=0;j<three_state_map[i].length;j++){
+               if(three_state_map[i][j] != 0) {
+                   cells[pos][0] = j;
+                   cells[pos][1] = i;
+                   pos++;
+               }
+           }
+        }
+
         return cells;
     }
 
@@ -176,6 +204,9 @@ public class OrRegion extends SimpleRegion implements Serializable {
     public int[][] getOverlapGridCells_EPSG900913(double longitude1, double latitude1, double longitude2, double latitude2, int width, int height, byte[][] three_state_map) {
         if(getWidth() <= 0 || getHeight() <= 0){
             return null;
+        }
+        if (three_state_map == null) {
+            three_state_map = new byte[height][width];
         }
         int [][] cells = null;
         for(SimpleRegion sr : orRegions) {
@@ -208,8 +239,29 @@ public class OrRegion extends SimpleRegion implements Serializable {
             if(cells == null) {
                 cells = new_cells;
             } else {
-                //TODO: cells + new_cells merge with OR, it will still work without this
+                //add, if absent
             }
+        }
+
+        //build cells from three_state_map
+        int count = 0;
+        for(int i=0;i<three_state_map.length;i++){
+           for(int j=0;j<three_state_map[i].length;j++){
+               if(three_state_map[i][j] != 0) {
+                   count++;
+               }
+           }
+        }
+        cells = new int[count][2];
+        int pos = 0;
+        for(int i=0;i<three_state_map.length;i++){
+           for(int j=0;j<three_state_map[i].length;j++){
+               if(three_state_map[i][j] != 0) {
+                   cells[pos][0] = j;
+                   cells[pos][1] = i;
+                   pos++;
+               }
+           }
         }
 
         return cells;

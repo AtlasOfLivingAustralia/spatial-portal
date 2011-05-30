@@ -54,7 +54,11 @@ public class AndRegion extends SimpleRegion implements Serializable {
             for(SimpleRegion sr : andRegions) {
                 double [][] bb = sr.getBoundingBox();
                 if(bounding_box == null) {
-                    bounding_box = bb.clone();
+                    bounding_box = new double[2][2];
+                    bounding_box[0][0] = bb[0][0];
+                    bounding_box[0][1] = bb[0][1];
+                    bounding_box[1][0] = bb[1][0];
+                    bounding_box[1][1] = bb[1][1];
                 } else {
                     //limit bounding box to interior limits
                     bounding_box[0][0] = Math.max(bounding_box[0][0],bb[0][0]);

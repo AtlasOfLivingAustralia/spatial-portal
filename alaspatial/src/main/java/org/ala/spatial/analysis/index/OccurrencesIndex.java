@@ -2735,6 +2735,22 @@ public class OccurrencesIndex {
         return count;
     }
 
+    public int registerLSIDArea(String key, String lsid, SimpleRegion region) {
+        int[] r = getRecordNumbers(new OccurrencesFilter(lsid, region, null, 10000000));
+
+        int count = 0;
+
+        if (r != null && r.length > 0) {
+            count = r.length;
+
+            java.util.Arrays.sort(r);
+
+            RecordsLookup.addRecords(getHash() + key, r);
+        }
+
+        return count;
+    }
+
     public int registerArea(String key, SimpleRegion region) {
         int[] r = getRecordNumbers(new OccurrencesFilter(region, 10000000));
 
@@ -2753,6 +2769,22 @@ public class OccurrencesIndex {
 
     public int registerRecords(String key, ArrayList<OccurrenceRecordNumbers> records) {
         int[] r = getRecordNumbers(new OccurrencesFilter(records, 10000000));
+
+        int count = 0;
+
+        if (r != null && r.length > 0) {
+            count = r.length;
+
+            java.util.Arrays.sort(r);
+
+            RecordsLookup.addRecords(getHash() + key, r);
+        }
+
+        return count;
+    }
+
+    public int registerLSIDRecords(String key, String lsid, ArrayList<OccurrenceRecordNumbers> records) {
+        int[] r = getRecordNumbers(new OccurrencesFilter(lsid, null, records, 10000000));
 
         int count = 0;
 
