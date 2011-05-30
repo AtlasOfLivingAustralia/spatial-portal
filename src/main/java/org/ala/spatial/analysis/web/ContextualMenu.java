@@ -450,7 +450,7 @@ class MetadataEvent implements EventListener {
                         infourl += "&dparam=Y-Layer:"+data.getLayer2Name();
                     }
                     // send the user to the BIE page for the species
-                   // Events.echoEvent("openUrl", mc, infourl);
+                    Events.echoEvent("openUrl", mc, infourl);
 
             } else if (mapLayer.getMapLayerMetadata() != null
                     && mapLayer.getMapLayerMetadata().getMoreInfo() != null

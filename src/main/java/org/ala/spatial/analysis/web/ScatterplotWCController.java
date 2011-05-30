@@ -57,6 +57,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
@@ -110,13 +111,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     Div envLegend;
     Boolean missing_data = false;
     Label lblMissing;
+    Button addNewLayers;
 
     @Override
     public void afterCompose() {
-
-        System.out.println("******************in SP.aftercompose.1");
         super.afterCompose();
-        System.out.println("******************in SP.aftercompose.2");
 
         layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
 
@@ -574,10 +573,14 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     void updateCount(String txt) {
-        selectionCount = Integer.parseInt(txt);
-        tbxSelectionCount.setValue("Records selected: " + txt);
-
         try {
+            selectionCount = Integer.parseInt(txt);
+            tbxSelectionCount.setValue("Records selected: " + txt);
+            if (selectionCount > 0) {
+                addNewLayers.setVisible(true);
+            } else {
+                addNewLayers.setVisible(false);
+            }
             scatterplotButtons.setVisible(true);
         } catch (Exception e) {
         }
@@ -585,6 +588,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
     void clearSelection() {
         tbxSelectionCount.setValue("");
+        addNewLayers.setVisible(false);
         tbxRange.setValue("");
         tbxDomain.setValue("");
 
@@ -1457,7 +1461,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     }
 
     private void retrieve() {
-            try {
+        try {
             if (mapLayer != null) {
                 //data = (ScatterplotData) mapLayer.getData("scatterplotData");
                 jChart = (JFreeChart) mapLayer.getData("jChart");
@@ -1469,6 +1473,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 xyzDataset = (DefaultXYZDataset) mapLayer.getData("xyzDataset");
                 aaDataset = (DefaultXYZDataset) mapLayer.getData("aaDataset");
                 selectionCount = (Integer) mapLayer.getData("selectionCount");
+
+                if (selectionCount > 0) {
+                    addNewLayers.setVisible(true);
+                } else {
+                    addNewLayers.setVisible(false);
+                }
                 results = (String) mapLayer.getData("results");
                 missingCount = (Integer) mapLayer.getData("missingCount");
                 prevSelection = (double[]) mapLayer.getData("prevSelection");

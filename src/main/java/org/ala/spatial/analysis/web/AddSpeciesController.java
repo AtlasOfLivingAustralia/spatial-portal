@@ -5,11 +5,13 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zul.Button;
+import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -31,6 +33,11 @@ public class AddSpeciesController extends UtilityComposer {
     Radio rAllSpecies;
     Radiogroup rgAddSpecies;
     Vbox vboxSearch;
+    Checkbox chkArea;
+    
+    String lsid;
+    String rank;
+    String taxon;
 
     @Override
     public void afterCompose() {
@@ -39,19 +46,37 @@ public class AddSpeciesController extends UtilityComposer {
     }
 
     public void onClick$btnOk(Event event) {
-        if (rSearch.isSelected()) {
-            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto);
-        } else if(rAllSpecies.isSelected()) {
-            Window window = (Window) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-            try {
-                window.doModal();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SuspendNotAllowedException ex) {
-                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+        if(chkArea.isChecked() && !rAllSpecies.isSelected()) {
+            getFromAutocomplete();
+
+            if (rSearch.isSelected()) {
+                AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+                window.setSpeciesParams(lsid, rank, taxon);
+                try {
+                    window.doModal();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SuspendNotAllowedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                onClick$btnUpload(event);
             }
         } else {
-            onClick$btnUpload(event);
+            if (rSearch.isSelected()) {
+                getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, null);
+            } else if(rAllSpecies.isSelected()) {
+                Window window = (Window) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+                try {
+                    window.doModal();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SuspendNotAllowedException ex) {
+                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                onClick$btnUpload(event);
+            }
         }
         this.detach();
     }
@@ -83,6 +108,7 @@ public class AddSpeciesController extends UtilityComposer {
             } else {
                 usc.setTbInstructions("3. Select file");
             }
+            usc.setDefineArea(chkArea.isChecked());
             usc.doModal();
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,6 +152,11 @@ public class AddSpeciesController extends UtilityComposer {
         } else {
             vboxSearch.setVisible(false);
         }
+        if(rAllSpecies.isSelected()) {
+            chkArea.setDisabled(true);
+        } else {
+            chkArea.setDisabled(false);
+        }
 
         refreshBtnOkDisabled();
     }
@@ -136,5 +167,37 @@ public class AddSpeciesController extends UtilityComposer {
         } else {
             btnOk.setDisabled(false);
         }
+    }
+
+
+
+    void getFromAutocomplete() {
+        // check if the species name is not valid
+        // this might happen as we are automatically mapping
+        // species without the user pressing a button
+        if (searchSpeciesAuto.getSelectedItem() == null
+                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties() == null
+                || searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() == 0) {
+            return;
+        }
+
+        //btnSearchSpecies.setVisible(true);
+        taxon = searchSpeciesAuto.getValue();
+        rank = "";
+
+        String spVal = searchSpeciesAuto.getSelectedItem().getDescription();
+        if (spVal.trim().contains(": ")) {
+            taxon = spVal.trim().substring(spVal.trim().indexOf(":") + 1, spVal.trim().indexOf("-")).trim() + " (" + taxon + ")";
+            rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
+
+        } else {
+            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+            System.out.println("mapping rank and species: " + rank + " - " + taxon);
+        }
+        if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {
+            rank = "taxon";
+        }
+
+        lsid = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
     }
 }

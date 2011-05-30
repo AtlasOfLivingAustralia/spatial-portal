@@ -16,6 +16,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -242,31 +244,75 @@ public class Util {
     static public double calculateArea(String wkt) {
         double sumarea = 0;
 
-        try {
-            String[] areas = wkt.split("\\),\\(");
+        //GEOMETRYCOLLECTION
+        String areaWorking = wkt;
+        ArrayList<String> stringsList = new ArrayList<String>();
+        if (areaWorking.startsWith("GEOMETRYCOLLECTION")) {
+            //split out polygons and multipolygons
+            areaWorking = areaWorking.replace("GEOMETRYCOLLECTION", "");
 
-            for (String area : areas) {
-                area = StringUtils.replace(area, "MULTIPOLYGON((", "");
-                area = StringUtils.replace(area, "POLYGON((", "");
-                area = StringUtils.replace(area, ")", "");
-                area = StringUtils.replace(area, "(", "");
-
-                String[] areaarr = area.split(",");
-
-                double totalarea = 0.0;
-                String d = areaarr[0];
-                for (int f = 1; f < areaarr.length - 2; ++f) {
-                    totalarea += Mh(d, areaarr[f], areaarr[f + 1]);
+            int posStart, posEnd, p1, p2;;
+            p1 = areaWorking.indexOf("POLYGON", 0);
+            p2 = areaWorking.indexOf("MULTIPOLYGON", 0);
+            if (p1 < 0) {
+                posStart = p2;
+            } else if (p2 < 0) {
+                posStart = p1;
+            } else {
+                posStart = Math.min(p1, p2);
+            }
+            p1 = areaWorking.indexOf("POLYGON", posStart + 10);
+            p2 = areaWorking.indexOf("MULTIPOLYGON", posStart + 10);
+            while (p1 > 0 || p2 > 0) {
+                if (p1 < 0) {
+                    posEnd = p2;
+                } else if (p2 < 0) {
+                    posEnd = p1;
+                } else {
+                    posEnd = Math.min(p1, p2);
                 }
 
-                sumarea += totalarea * 6378137 * 6378137;
+                stringsList.add(areaWorking.substring(posStart, posEnd-1));
+                posStart = posEnd;
+                p1 = areaWorking.indexOf("POLYGON", posStart + 10);
+                p2 = areaWorking.indexOf("MULTIPOLYGON", posStart + 10);
             }
+            stringsList.add(areaWorking.substring(posStart, areaWorking.length()));
+        } else {
+            stringsList.add(areaWorking);
+        }
 
-            sumarea = Math.abs(sumarea);
+        for(String w : stringsList) {
+            if(w.contains("ENVELOPE")) {
+                continue;
+            }
+            try {
+                String[] areas = w.split("\\),\\(");
+                double shapearea = 0;
 
-        } catch (Exception e) {
-            System.out.println("Error in calculateArea");
-            e.printStackTrace(System.out);
+                for (String area : areas) {
+                    area = StringUtils.replace(area, "MULTIPOLYGON((", "");
+                    area = StringUtils.replace(area, "POLYGON((", "");
+                    area = StringUtils.replace(area, ")", "");
+                    area = StringUtils.replace(area, "(", "");
+
+                    String[] areaarr = area.split(",");
+
+                    double totalarea = 0.0;
+                    String d = areaarr[0];
+                    for (int f = 1; f < areaarr.length - 2; ++f) {
+                        totalarea += Mh(d, areaarr[f], areaarr[f + 1]);
+                    }
+
+                    shapearea += totalarea * 6378137 * 6378137;
+                }
+
+                sumarea += Math.abs(shapearea);
+
+            } catch (Exception e) {
+                System.out.println("Error in calculateArea");
+                e.printStackTrace(System.out);
+            }
         }
 
         return sumarea;
@@ -331,5 +377,24 @@ public class Util {
 
     static private double Uc(double a) {
         return a * (Math.PI / 180);
+    }
+
+    public static String newLsidArea(String lsid, String wkt) {
+        try {
+            //get lsid to match
+            StringBuilder sbProcessUrl = new StringBuilder();
+            sbProcessUrl.append("/species/lsidarea/register");
+            sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            get.addParameter("area", wkt);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            String pid = get.getResponseBodyAsString();
+            return pid;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

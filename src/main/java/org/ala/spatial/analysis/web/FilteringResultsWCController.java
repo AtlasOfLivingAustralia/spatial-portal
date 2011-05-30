@@ -7,6 +7,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -677,41 +678,84 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             String area = reportArea;
 
-            if(area.contains("ENVELOPE") && boundingBox != null) {
-                area = boundingBox[0] + " " + boundingBox[1] + ","
-                        + boundingBox[0] + " " + boundingBox[3] + ","
-                        + boundingBox[2] + " " + boundingBox[3] + ","
-                        + boundingBox[2] + " " + boundingBox[1] + ","
-                        + boundingBox[0] + " " + boundingBox[1];
+            //GEOMETRYCOLLECTION
+            ArrayList<String> stringsList = new ArrayList<String>();
+            if (area.startsWith("GEOMETRYCOLLECTION")) {
+                //split out polygons and multipolygons
+                area = area.replace("GEOMETRYCOLLECTION", "");
+
+                int posStart, posEnd, p1, p2;;
+                p1 = area.indexOf("POLYGON", 0);
+                p2 = area.indexOf("MULTIPOLYGON", 0);
+                if (p1 < 0) {
+                    posStart = p2;
+                } else if (p2 < 0) {
+                    posStart = p1;
+                } else {
+                    posStart = Math.min(p1, p2);
+                }
+                p1 = area.indexOf("POLYGON", posStart + 10);
+                p2 = area.indexOf("MULTIPOLYGON", posStart + 10);
+                while (p1 > 0 || p2 > 0) {
+                    if (p1 < 0) {
+                        posEnd = p2;
+                    } else if (p2 < 0) {
+                        posEnd = p1;
+                    } else {
+                        posEnd = Math.min(p1, p2);
+                    }
+
+                    stringsList.add(area.substring(posStart, posEnd-1));
+                    posStart = posEnd;
+                    p1 = area.indexOf("POLYGON", posStart + 10);
+                    p2 = area.indexOf("MULTIPOLYGON", posStart + 10);
+                }
+                stringsList.add(area.substring(posStart, area.length()));
             } else {
-                area = StringUtils.replace(area, "MULTIPOLYGON((", "");
-                area = StringUtils.replace(area, "POLYGON((", "");
-                area = StringUtils.replace(area, "(", "");
-                area = StringUtils.replace(area, ")", "");
+                stringsList.add(area);
             }
 
-            String[] areaarr = area.split(",");
-
+            boolean start = true;
             double lat1 = 0;
             double lat2 = 0;
             double long1 = 0;
             double long2 = 0;
-            for (int f = 0; f < areaarr.length; ++f) {
-                String[] s = areaarr[f].split(" ");
-                double long0 = Double.parseDouble(s[0]);
-                double lat0 = Double.parseDouble(s[1]);
 
-                if (f == 0 || long0 < long1) {
-                    long1 = long0;
+            for(String a : stringsList) {
+                if(a.contains("ENVELOPE") && boundingBox != null) {
+                    a = boundingBox[0] + " " + boundingBox[1] + ","
+                            + boundingBox[0] + " " + boundingBox[3] + ","
+                            + boundingBox[2] + " " + boundingBox[3] + ","
+                            + boundingBox[2] + " " + boundingBox[1] + ","
+                            + boundingBox[0] + " " + boundingBox[1];
+                } else {
+                    a = StringUtils.replace(a, "MULTIPOLYGON((", "");
+                    a = StringUtils.replace(a, "POLYGON((", "");
+                    a = StringUtils.replace(a, "(", "");
+                    a = StringUtils.replace(a, ")", "");
                 }
-                if (f == 0 || long0 > long2) {
-                    long2 = long0;
-                }
-                if (f == 0 || lat0 < lat1) {
-                    lat1 = lat0;
-                }
-                if (f == 0 || lat0 > lat2) {
-                    lat2 = lat0;
+
+                String[] areaarr = a.split(",");
+
+                for (int f = 0; f < areaarr.length; ++f) {
+                    String[] s = areaarr[f].split(" ");
+                    double long0 = Double.parseDouble(s[0]);
+                    double lat0 = Double.parseDouble(s[1]);
+
+                    if (start || long0 < long1) {
+                        long1 = long0;
+                    }
+                    if (start || long0 > long2) {
+                        long2 = long0;
+                    }
+                    if (start || lat0 < lat1) {
+                        lat1 = lat0;
+                    }
+                    if (start || lat0 > lat2) {
+                        lat2 = lat0;
+                    }
+                    
+                    start = false;
                 }
             }
 

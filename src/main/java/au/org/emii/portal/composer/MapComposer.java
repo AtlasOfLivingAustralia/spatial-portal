@@ -54,6 +54,7 @@ import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
@@ -376,7 +377,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //    public void onChange$searchSpeciesAuto() {
 //        mapSpeciesFromAutocomplete(searchSpeciesAuto);
 //    }
-    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac) {
+    public void mapSpeciesFromAutocomplete(SpeciesAutoComplete sac, String wkt) {
         // check if the species name is not valid
         // this might happen as we are automatically mapping
         // species without the user pressing a button
@@ -404,21 +405,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
 
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
-        //are there any distribution maps to map first?
-        //Heptranchias
-        String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
-        if (wmsNames != null && wmsNames.length > 0) {
-            if (wmsNames.length > 1) {
-                for (int i = 0; i < wmsNames.length; i++) {
-                    addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f, "", LayerUtilities.SPECIES);
-                }
-            } else {
-                addWMSLayer(taxon + " map", wmsNames[0], 0.75f, "", LayerUtilities.SPECIES);
-            }
-        }
 
-        //map species
-        mapSpeciesByLsid(lsid, taxon, rank, 0, LayerUtilities.SPECIES);
+        if(wkt == null) {
+            //are there any distribution maps to map first?
+            //Heptranchias
+            String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
+            if (wmsNames != null && wmsNames.length > 0) {
+                if (wmsNames.length > 1) {
+                    for (int i = 0; i < wmsNames.length; i++) {
+                        addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f, "", LayerUtilities.SPECIES);
+                    }
+                } else {
+                    addWMSLayer(taxon + " map", wmsNames[0], 0.75f, "", LayerUtilities.SPECIES);
+                }
+            }
+
+            //map species
+            mapSpeciesByLsid(lsid, taxon, rank, 0, LayerUtilities.SPECIES);
+        } else {
+            mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), taxon, rank, 0, LayerUtilities.SPECIES);
+        }
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
@@ -3364,7 +3370,27 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //        }
 //    }
     public void loadScatterplot(ScatterplotData data, String lyrName) {
-        MapLayer ml = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT);
+        //register area?
+        String lsid = data.getLsid();
+        if(data.getFilterWkt() != null) {
+            try {
+                 //get lsid to match
+                StringBuilder sbProcessUrl = new StringBuilder();
+                sbProcessUrl.append("/species/lsidarea/register");
+                sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
+                HttpClient client = new HttpClient();
+                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+                get.addParameter("area", data.getFilterWkt());
+                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+                int result = client.executeMethod(get);
+                String pid = get.getResponseBodyAsString();
+                lsid = pid;
+                data.setLsid(pid);
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        MapLayer ml = mapSpeciesByLsidFilter(lsid, data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT);
         ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
         ml.setData("scatterplotData", data);

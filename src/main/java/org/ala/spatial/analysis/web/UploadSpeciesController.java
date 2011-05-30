@@ -76,6 +76,8 @@ public class UploadSpeciesController extends UtilityComposer {
     private EventListener eventListener;
     private boolean addToMap;
 
+    boolean defineArea;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
@@ -196,8 +198,6 @@ public class UploadSpeciesController extends UtilityComposer {
                 ud.setDescription(m.getName());
             }
 
-            String name = ud.getName();
-
             System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
 
             // check the content-type
@@ -207,23 +207,13 @@ public class UploadSpeciesController extends UtilityComposer {
             } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
                 byte[] csvdata = m.getByteData();
                 loadUserPoints(ud, new StringReader(new String(csvdata)));
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {
-                if (m.inMemory()) {
-                    loadUserLayerKML(name, m.getByteData());
-                } else {
-                    loadUserLayerKML(name, m.getStreamData());
-                }
-
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
-                unzipFile(m.getName(), m.getStreamData());
             }
 
             //call reset window on caller to perform refresh'
             if (this.getParent().getId().equals("addtoolwindow")) {
                 AddToolComposer analysisParent = (AddToolComposer)this.getParent();
                 analysisParent.resetWindowFromSpeciesUpload(uploadLSID, uploadType);
-            }
-            
+            }            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -313,17 +303,27 @@ public class UploadSpeciesController extends UtilityComposer {
                 MapLayer ml = null;
                 if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
                     //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-                    ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                    if(defineArea) {
+                        mapFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                    } else {
+                        ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                    }
                 } else {
-                    ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                    if(defineArea) {
+                        mapFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                    } else {
+                        ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                    }
                 }
-                MapLayerMetadata md = ml.getMapLayerMetadata();
-                if (md == null) {
-                    md = new MapLayerMetadata();
-                    ml.setMapLayerMetadata(md);
+                if(ml != null) {
+                    MapLayerMetadata md = ml.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        ml.setMapLayerMetadata(md);
+                    }
+                    md.setMoreInfo(metadata);
+                    md.setSpeciesRank("User");
                 }
-                md.setMoreInfo(metadata);
-                md.setSpeciesRank("User");
             }
 
             ud.setMetadata(metadata);
@@ -407,13 +407,17 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
 
             if (addToMap) {
-                MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES);
-                MapLayerMetadata md = ml.getMapLayerMetadata();
-                if (md == null) {
-                    md = new MapLayerMetadata();
-                    ml.setMapLayerMetadata(md);
-                }
-                md.setMoreInfo(metadata);
+                if(defineArea) {
+                    mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
+                } else {
+                    MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES);
+                    MapLayerMetadata md = ml.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        ml.setMapLayerMetadata(md);
+                    }
+                    md.setMoreInfo(metadata);
+                }                
             }
 
             ud.setMetadata(metadata);
@@ -443,155 +447,6 @@ public class UploadSpeciesController extends UtilityComposer {
         }
     }
 
-    public void loadUserLayerKML(String name, InputStream data) {
-        try {
-            String kmlData = "";
-
-            if (data != null) {
-                Writer writer = new StringWriter();
-
-                char[] buffer = new char[1024];
-                try {
-                    Reader reader = new BufferedReader(
-                            new InputStreamReader(data));
-                    int n;
-                    while ((n = reader.read(buffer)) != -1) {
-                        writer.write(buffer, 0, n);
-                    }
-                } finally {
-                    data.close();
-                }
-                kmlData = writer.toString();
-            }
-
-            loadUserLayerKML(name, kmlData.getBytes());
-
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user kml: ");
-            e.printStackTrace(System.out);
-        }
-    }
-
-    public void loadUserLayerKML(String name, byte[] kmldata) {
-        try {
-
-            String id = String.valueOf(System.currentTimeMillis());
-            String kmlpath = "/data/ala/runtime/output/layers/" + id + "/";
-            File kmlfilepath = new File(kmlpath);
-            kmlfilepath.mkdirs();
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(kmlfilepath.getAbsolutePath() + "/" + name)));
-            String kmlstr = new String(kmldata);
-            out.write(kmlstr);
-            out.close();
-
-            String kmlurl = "http://spatial-dev.ala.org.au/output/layers/" + id + "/" + name;
-
-            MapLayer mapLayer = getMapComposer().getGenericServiceAndBaseLayerSupport().createMapLayer("User-defined kml layer", "User-defined layer", "KML", kmlurl);
-
-            if (mapLayer == null) {
-                logger.debug("The layer " + name + " couldnt be created");
-                getMapComposer().showMessage(getMapComposer().getLanguagePack().getLang("ext_layer_creation_failure"));
-            } else {
-                getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
-            }
-
-
-        } catch (Exception e) {
-
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user kml: ");
-            e.printStackTrace(System.out);
-        }
-    }
-
-    private void unzipFile(String name, InputStream data) {
-        try {
-            String id = String.valueOf(System.currentTimeMillis());
-            String outputpath = "/data/ala/runtime/output/layers/" + id + "/";
-            //String outputpath = "/Users/ajay/projects/tmp/useruploads/" + id + "/";
-
-            String zipfilename = name.substring(0, name.lastIndexOf("."));
-            outputpath += zipfilename + "/";
-            File outputDir = new File(outputpath);
-            outputDir.mkdirs();
-
-            ZipInputStream zis = new ZipInputStream(data);
-            ZipEntry ze = null;
-            String shpfile = "";
-            String type = "";
-
-            while ((ze = zis.getNextEntry()) != null) {
-                System.out.println("ze.file: " + ze.getName());
-                if (ze.getName().endsWith(".shp")) {
-                    shpfile = ze.getName();
-                    type = "shp";
-                }
-                String fname = outputpath + ze.getName();
-                copyInputStream(zis, new BufferedOutputStream(new FileOutputStream(fname)));
-                zis.closeEntry();
-            }
-            zis.close();
-
-            if (type.equalsIgnoreCase("shp")) {
-                System.out.println("Uploaded file is a shapefile. Loading...");
-                loadUserShapefile(new File(outputpath + shpfile));
-            } else {
-                System.out.println("Unknown file type. ");
-                getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
-            }
-
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user kml: ");
-            e.printStackTrace(System.out);
-
-        }
-    }
-
-    private void copyInputStream(InputStream in, OutputStream out) throws IOException, Exception {
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = in.read(buffer)) > -1) {
-            out.write(buffer, 0, len);
-        }
-
-        // no need to close the input stream as it gets closed
-        // in the caller function.
-        // just close the output stream.
-        out.close();
-    }
-
-    private void loadUserShapefile(File shpfile) {
-        try {
-            FileDataStore store = FileDataStoreFinder.getDataStore(shpfile);
-
-            System.out.println("Loading shapefile. Reading content:");
-            System.out.println(store.getTypeNames()[0]);
-
-            FeatureSource featureSource = store.getFeatureSource(store.getTypeNames()[0]);
-
-            FeatureCollection featureCollection = featureSource.getFeatures();
-            FeatureIterator it = featureCollection.features();
-            while (it.hasNext()) {
-                SimpleFeature feature = (SimpleFeature) it.next();
-                Geometry geom = (Geometry) feature.getDefaultGeometry();
-                WKTWriter wkt = new WKTWriter();
-                getMapComposer().addWKTLayer(wkt.write(geom), feature.getID(), feature.getID());
-                break;
-            }
-            featureCollection.close(it);
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-
-            System.out.println("unable to load user shapefile: ");
-            e.printStackTrace(System.out);
-        }
-    }
-
     void setEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
     }
@@ -602,5 +457,49 @@ public class UploadSpeciesController extends UtilityComposer {
 
     void setUploadType(String uploadType){
         this.uploadType = uploadType;
+    }
+
+    void setDefineArea(boolean defineArea) {
+        this.defineArea = defineArea;
+    }
+
+    void map(String lsid, String rank, String taxon) {
+        AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+        window.setSpeciesParams(lsid, rank, taxon);
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void mapFilterGrid(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
+        AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+        window.setSpeciesFilterGridParams(lsid, name, s, featureCount, type, metadata, rank);
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void mapFilter(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
+        AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+        window.setSpeciesFilterParams(lsid, name, s, featureCount, type, metadata, rank);
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void mapSpeciesByLsid(String lsid, String name, String s, int featureCount, int type, String metadata) {
+        AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+        window.setSpeciesByLsidParams(lsid, name, s, featureCount, type, metadata);
+        try {
+            window.doModal();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

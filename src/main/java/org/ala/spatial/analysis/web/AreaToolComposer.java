@@ -15,6 +15,7 @@ import org.zkoss.zul.Button;
 import org.zkoss.zul.Textbox;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
+import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
@@ -91,7 +93,41 @@ public class AreaToolComposer extends UtilityComposer {
             //was OK clicked?
             if (ok) {
                 //map
-                mapSpeciesInArea();
+                if(winProps.get("lsid") == null) {
+                    mapSpeciesInArea();
+                } else if (winProps.get("filter") != null && (Boolean) winProps.get("filter")) {
+                    MapLayer ml = getMapComposer().mapSpeciesByLsidFilter(getLsidArea((String) winProps.get("lsid")), (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"));
+                    MapLayerMetadata md = ml.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        ml.setMapLayerMetadata(md);
+                    }
+                    md.setMoreInfo((String) winProps.get("metadata"));
+                    md.setSpeciesRank((String) winProps.get("rank"));
+                } else if (winProps.get("filterGrid") != null && (Boolean) winProps.get("filterGrid")) {
+                    MapLayer ml = getMapComposer().mapSpeciesByLsidFilterGrid(getLsidArea((String) winProps.get("lsid")), (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"));
+                    MapLayerMetadata md = ml.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        ml.setMapLayerMetadata(md);
+                    }
+                    md.setMoreInfo((String) winProps.get("metadata"));
+                    md.setSpeciesRank((String) winProps.get("rank"));
+                } else if (winProps.get("byLsid") != null && (Boolean) winProps.get("byLsid")) {
+                    MapLayer ml = getMapComposer().mapSpeciesByLsid(getLsidArea((String) winProps.get("lsid")),(String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"));
+                    MapLayerMetadata md = ml.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        ml.setMapLayerMetadata(md);
+                    }
+                    md.setMoreInfo((String) winProps.get("metadata"));
+                } else {              
+                    getMapComposer().mapSpeciesByLsid(
+                            getLsidArea((String) winProps.get("lsid")),
+                            (String) winProps.get("taxon"),
+                            (String) winProps.get("rank"),
+                            0, LayerUtilities.SPECIES);
+                }
             } //else cancel clicked, don't return to mapspeciesinarea popup
         }
     }
@@ -177,5 +213,9 @@ public class AreaToolComposer extends UtilityComposer {
             ex.printStackTrace(System.out);
         }
         return null;
+    }
+
+    String getLsidArea(String lsid) {
+        return Util.newLsidArea(lsid, getMapComposer().getMapLayer(layerName).getWKT());
     }
 }

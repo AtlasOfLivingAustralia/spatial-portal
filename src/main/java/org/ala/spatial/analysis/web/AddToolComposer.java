@@ -272,35 +272,39 @@ public class AddToolComposer extends UtilityComposer {
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
 
-            int indexToSelect = 0;
-
             String allWKT = "";
+            int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
                 MapLayer lyr = layers.get(i);
                 Radio rAr = new Radio(lyr.getDisplayName());
                 //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
-                if (!allWKT.isEmpty())
-                    allWKT+=",";
-                allWKT += lyr.getWKT();
+
+                if(!allWKT.contains("ENVELOPE")) {
+                    if (!allWKT.isEmpty())
+                        allWKT+=",";
+                    count_not_envelopes ++;
+                    allWKT += lyr.getWKT();
+                }
+
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
 
                 if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
                     rSelectedLayer = rAr;
                     rAreaSelected = rAr;
-                    indexToSelect = i;
                 }
             }
-            //TODO: Put this back in when GEOMETRYCOLLECTION is working
-//            if (!layers.isEmpty() && layers.size() > 1) {
-//                 Radio rAr = new Radio("All area layers");
-//                //rAr.setId("AllActiveAreas");
-//                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
-//                rAr.setParent(rgArea);
-//                rgArea.insertBefore(rAr, rAreaCurrent);
-//            }
+            
+            if (!layers.isEmpty() && count_not_envelopes > 1) {
+                 Radio rAr = new Radio("All area layers" 
+                         + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
+                //rAr.setId("AllActiveAreas");
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+                rAr.setParent(rgArea);
+                rgArea.insertBefore(rAr, rAreaCurrent);
+            }
 
             if (selectedAreaName != null && !selectedAreaName.equals("")) {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
@@ -308,34 +312,26 @@ public class AddToolComposer extends UtilityComposer {
                         //rgArea.getItemAtIndex(i).setSelected(true);
                         rAreaSelected = rgArea.getItemAtIndex(i);
                         System.out.println("2.resetting indexToSelect = " + i);
-                        indexToSelect = i;
                         rgArea.setSelectedItem(rAreaSelected);
                         break;
                     }
                 }
             }else if (rSelectedLayer != null) {
-                //rSelectedLayer.setSelected(true);
                 rAreaSelected = rSelectedLayer;
-                //rAreaSelected.setSelected(true);
                 rgArea.setSelectedItem(rAreaSelected);
             } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
                 rgArea.setSelectedItem(rAreaWorld);
                 rAreaSelected = rAreaWorld;
-                //rAreaSelected.setSelected(true);
                 rgArea.setSelectedItem(rAreaSelected);
             } else {
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible()) {
-                        //rgArea.getItemAtIndex(i).setSelected(true);
                         rAreaSelected = rgArea.getItemAtIndex(i);
                         rgArea.setSelectedItem(rAreaSelected);
                         break;
                     }
                 }
-            }
-            
-            
-            //rgArea.setSelectedIndex(indexToSelect);
+            }            
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
 
         } catch (Exception e) {
