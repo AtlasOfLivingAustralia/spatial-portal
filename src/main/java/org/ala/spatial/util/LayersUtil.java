@@ -290,7 +290,7 @@ import org.apache.commons.lang.StringUtils;
             String slist = get.getResponseBodyAsString();
 
             JSONObject jo = JSONObject.fromObject(slist);
-            JSONArray pestStatuses = jo.getJSONObject("extendedTaxonConceptDTO").getJSONArray("pestStatuses");
+            JSONArray pestStatuses = jo.getJSONArray("pestStatuses");
             JSONObject pstatus = pestStatuses.getJSONObject(0);
 
 
@@ -322,7 +322,7 @@ import org.apache.commons.lang.StringUtils;
             String slist = get.getResponseBodyAsString();
 
             JSONObject jo = JSONObject.fromObject(slist);
-            String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
+            String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
             return scientficName;
         } catch (Exception e) {
             System.out.println("Error getting scientific name");
@@ -336,6 +336,7 @@ import org.apache.commons.lang.StringUtils;
     static public String getScientificNameRank(String lsid) {
 
         String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
+        System.out.println(snUrl);
 
         try {
             HttpClient client = new HttpClient();
@@ -346,8 +347,8 @@ import org.apache.commons.lang.StringUtils;
             String slist = get.getResponseBodyAsString();
 
             JSONObject jo = JSONObject.fromObject(slist);
-            String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
-            String rank = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("rankString");
+            String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
+            String rank = jo.getJSONObject("taxonConcept").getString("rankString");
 
             System.out.println("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank));
             if (Arrays.binarySearch(commonTaxonRanks, rank) > -1) {
