@@ -39,14 +39,26 @@ public class AddSpeciesController extends UtilityComposer {
     String rank;
     String taxon;
 
+    boolean prevAreaState = true;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
         rSearch.setSelected(true);
+        chkArea.setChecked(true);
     }
 
     public void onClick$btnOk(Event event) {
-        if(chkArea.isChecked() && !rAllSpecies.isSelected()) {
+        if(rAllSpecies.isSelected()) {
+            Window window = (Window) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+            try {
+                window.doModal();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SuspendNotAllowedException ex) {
+                Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else if(chkArea.isChecked()) {
             getFromAutocomplete();
 
             if (rSearch.isSelected()) {
@@ -65,15 +77,6 @@ public class AddSpeciesController extends UtilityComposer {
         } else {
             if (rSearch.isSelected()) {
                 getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, null);
-            } else if(rAllSpecies.isSelected()) {
-                Window window = (Window) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-                try {
-                    window.doModal();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SuspendNotAllowedException ex) {
-                    Logger.getLogger(AddSpeciesController.class.getName()).log(Level.SEVERE, null, ex);
-                }
             } else {
                 onClick$btnUpload(event);
             }
@@ -152,11 +155,14 @@ public class AddSpeciesController extends UtilityComposer {
         } else {
             vboxSearch.setVisible(false);
         }
-        if(rAllSpecies.isSelected()) {
-            chkArea.setDisabled(true);
-        } else {
-            chkArea.setDisabled(false);
-        }
+//        if(rAllSpecies.isSelected()) {
+//            chkArea.setDisabled(true);
+//            prevAreaState = chkArea.isChecked();
+//            chkArea.setChecked(true);
+//        } else {
+//            chkArea.setDisabled(false);
+//            chkArea.setChecked(prevAreaState);
+//        }
 
         refreshBtnOkDisabled();
     }

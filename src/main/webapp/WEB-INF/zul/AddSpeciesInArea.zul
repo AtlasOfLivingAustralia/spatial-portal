@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="addspeciesinareawindow" title="Map species in an area" use="org.ala.spatial.analysis.web.AddSpeciesInArea"
+    <window id="addspeciesinareawindow" title="Restrict mapped species to an area" use="org.ala.spatial.analysis.web.AddSpeciesInArea"
     apply="org.ala.spatial.analysis.web.AddSpeciesInArea" width="500px" height="300px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
@@ -22,7 +22,7 @@
             <radiogroup id="rgArea" orient="vertical">
                 <radio id="rAreaCurrent" label="Current extent" value="current" />
                 <radio id="rAreaAustralia" label="Australia" value="australia" />
-                <radio id="rAreaWorld" label="World" value="world" />
+                <radio id="rAreaWorld" label="World" value="world" checked="true"/>
                 <radio id="rAreaCustom" label="Define new area" value="custom" />
             </radiogroup>
         </vbox>

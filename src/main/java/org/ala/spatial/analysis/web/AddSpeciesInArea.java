@@ -85,21 +85,21 @@ public class AddSpeciesInArea extends UtilityComposer {
                 }
             }
 
-            if (rSelectedLayer != null) {
-                rSelectedLayer.setSelected(true);
-                rAreaSelected = rSelectedLayer;
-            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+//            if (rSelectedLayer != null) {
+//                rSelectedLayer.setSelected(true);
+//                rAreaSelected = rSelectedLayer;
+//            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
                 rgArea.setSelectedItem(rAreaWorld);
                 rAreaSelected = rAreaWorld;
-            } else {
-                for (int i = 0; i < rgArea.getItemCount(); i++) {
-                    if (rgArea.getItemAtIndex(i).isVisible()) {
-                        rgArea.getItemAtIndex(i).setSelected(true);
-                        rAreaSelected = rgArea.getItemAtIndex(i);
-                        break;
-                    }
-                }
-            }
+//            } else {
+//                for (int i = 0; i < rgArea.getItemCount(); i++) {
+//                    if (rgArea.getItemAtIndex(i).isVisible()) {
+//                        rgArea.getItemAtIndex(i).setSelected(true);
+//                        rAreaSelected = rgArea.getItemAtIndex(i);
+//                        break;
+//                    }
+//                }
+//            }
 
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
@@ -174,6 +174,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 winProps.put("lsid", lsid);
                 winProps.put("rank", rank);
                 winProps.put("taxon", taxon);
+                winProps.put("name", name);
                 winProps.put("s", s);
                 winProps.put("featureCount", featureCount);
                 winProps.put("filter", filter);
@@ -234,7 +235,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 md.setMoreInfo(metadata);
                 md.setSpeciesRank(rank);
             } else if (rank != null && taxon != null && lsid != null) {
-                getMapComposer().mapSpeciesByLsid(lsid, taxon, rank, 0, LayerUtilities.SPECIES);
+                getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), taxon, rank, 0, LayerUtilities.SPECIES);
             } else {
                 StringBuffer sbProcessUrl = new StringBuffer();
                 sbProcessUrl.append("/filtering/apply");
