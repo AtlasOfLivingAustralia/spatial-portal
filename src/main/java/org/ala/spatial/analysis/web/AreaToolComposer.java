@@ -70,7 +70,7 @@ public class AreaToolComposer extends UtilityComposer {
         //txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
 
         Component parent = this.getParent();
-        System.out.println("Parent: " + parent.getId() + " - " + parent.getWidgetClass());
+  //      System.out.println("Parent: " + parent.getId() + " - " + parent.getWidgetClass());
 
         winProps = Executions.getCurrent().getArg();
 
