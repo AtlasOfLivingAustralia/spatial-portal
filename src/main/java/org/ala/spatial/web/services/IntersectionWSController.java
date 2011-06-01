@@ -167,7 +167,7 @@ public class IntersectionWSController {
                             if(Float.isNaN(value[0])) {
                                 sb.append("Classification").append("\t").append("no data").append("\n");
                             } else {
-                                sb.append("Classification").append("\t").append(value[0]).append("\n");
+                                sb.append("Classification").append("\t").append(String.format("Group %d", (int) value[0])).append("\n");
                             }
                         }
                     }
