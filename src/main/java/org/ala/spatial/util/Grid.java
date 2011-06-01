@@ -22,7 +22,7 @@ public class Grid { //  implements Serializable
 
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
     final double noDataValueDefault = -3.4E38;
-    public Boolean byteorderLSB; // true if file is LSB (Intel)
+    public Boolean byteorderLSB = true; // true if file is LSB (Intel)
     public int ncols, nrows;
     public double nodatavalue;
     public Boolean valid;
@@ -389,7 +389,7 @@ public class Grid { //  implements Serializable
      * @param newfilename
      * @param dfiltered
      */
-    void writeGrid(String newfilename, int[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
+    public void writeGrid(String newfilename, int[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
         int size, i, length = dfiltered.length;
         double maxvalue = Integer.MAX_VALUE * -1;
         double minvalue = Integer.MAX_VALUE;
@@ -435,7 +435,7 @@ public class Grid { //  implements Serializable
      * @param newfilename
      * @param dfiltered
      */
-    void writeGrid(String newfilename, double[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
+    public void writeGrid(String newfilename, double[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
         int size, i, length = dfiltered.length;
         double maxvalue = Double.MAX_VALUE * -1;
         double minvalue = Double.MAX_VALUE;
@@ -476,11 +476,11 @@ public class Grid { //  implements Serializable
         }
 
 
-        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue);
+        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
 
     }
 
-    void writeGrid(String newfilename, float[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
+    public void writeGrid(String newfilename, float[] dfiltered, double xmin, double ymin, double xmax, double ymax, double xres, double yres, int nrows, int ncols) {
         int size, i, length = dfiltered.length;
         double maxvalue = Double.MAX_VALUE * -1;
         double minvalue = Double.MAX_VALUE;
@@ -520,7 +520,7 @@ public class Grid { //  implements Serializable
             e.printStackTrace();
         }
 
-        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue);
+        writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
 
     }
 

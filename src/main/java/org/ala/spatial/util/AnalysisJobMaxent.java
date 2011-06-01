@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -252,6 +253,9 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     htProcess.put("status", "success"); ///
                     htProcess.put("pid", getName());
                     htProcess.put("info", "/output/maxent/" + getName() + "/species.html");
+
+                    //convert .asc to .grd/.gri
+                    convertAscToDiva(msets.getOutputPath() + "species.asc", msets.getOutputPath() + getName());
 
                     setStage(3);
 
@@ -594,5 +598,58 @@ public class AnalysisJobMaxent extends AnalysisJob {
 
         // return false anyways
         return null;
+    }
+
+    private void convertAscToDiva(String asc, String grd) {
+        try {
+            //read asc
+            BufferedReader br = new BufferedReader(new FileReader(asc));
+            String s;
+
+            //maxent output grid is:
+            s = br.readLine();
+            int ncols = Integer.parseInt(s.replace("ncols","").trim());
+
+            s = br.readLine();
+            int nrows = Integer.parseInt(s.replace("nrows","").trim());
+
+            s = br.readLine();
+            double lng1 = Double.parseDouble(s.replace("xllcorner","").trim());
+
+            s = br.readLine();
+            double lat1 = Double.parseDouble(s.replace("yllcorner","").trim());
+
+            s = br.readLine();
+            double div = Double.parseDouble(s.replace("cellsize","").trim());
+
+            s = br.readLine();
+            double nodata = Double.parseDouble(s.replace("NODATA_value","").trim());
+
+            double [] data = new double[ncols * nrows];
+            for(int i=0;i<ncols * nrows;i++) {
+                data[i] = Double.NaN;
+            }
+            int r = 0;
+            while((s = br.readLine()) != null) {
+                String [] row = s.split(" ");
+                for(int i=0;i<row.length && i < ncols;i++) {
+                    double v = Double.parseDouble(row[i]);
+                    if(v != nodata) {
+                        data[r * ncols + i] = v;
+                    }
+                }
+                r ++;
+                if(r == nrows) {
+                    break;
+                }
+            }
+            br.close();
+
+            Grid g = new Grid(null);
+            g.writeGrid(grd, data, lng1, lat1, lng1 + ncols * div, lat1 + nrows * div, div, div, nrows, ncols);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

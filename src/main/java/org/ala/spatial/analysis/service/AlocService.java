@@ -1,20 +1,27 @@
 package org.ala.spatial.analysis.service;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import javax.imageio.ImageIO;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
 import org.ala.spatial.util.AnalysisJobAloc;
+import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.GridCutter;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SpatialLogger;
+import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
+import org.ala.spatial.util.UploadSpatialResource;
+import org.ala.spatial.util.Zipper;
 
 /**
  * entry into running Aloc
@@ -201,7 +208,7 @@ public class AlocService {
                 while (s.length() < 6) {
                     s = "0" + s;
                 }
-                sld.append("<ColorMapEntry color=\"#" + s + "\" quantity=\"" + (i + 1) + ".0\" label=\"group " + (i + 1) + "\" opacity=\"1\"/>\r\n");
+                sld.append("<ColorMapEntry color=\"#" + s + "\" quantity=\"" + i + ".0\" label=\"group " + (i + 1) + "\" opacity=\"1\"/>\r\n");
             }
 
             /* footer */
@@ -393,6 +400,113 @@ public class AlocService {
             job.log("finished ALOC");
         }
 
+        //write grid file
+        double [] grid_data = new double[height * width];
+        for(i=0;i<grid_data.length;i++) {
+            grid_data[i] = Double.NaN;
+        }
+        for (i = 0; i < groups.length; i++) {
+            for (j = 0; j < colour.length; j++) {
+                colour[j] = (int) (colours[groups[i]][j]);
+            }
+            grid_data[cells[i][0] + (height - cells[i][1] - 1) * width] = groups[i];
+        }
+        Grid g = new Grid(null);
+        g.writeGrid(filename.replace("aloc.png",name), grid_data, extents[2], extents[3], extents[4], extents[5],
+                TabulationSettings.grd_xdiv, TabulationSettings.grd_ydiv,
+                height, width);
+
+        //export sld
+        exportSLD(filename.replace("aloc.png",name + ".sld"), group_means, colours, layers, "0");
+
+        //export ASCGRID
+        try {
+            FileWriter fw = new FileWriter(filename.replace("aloc.png",name + ".asc"));
+            fw.append("ncols\t").append(String.valueOf(width)).append("\n");
+            fw.append("nrows\t").append(String.valueOf(height)).append("\n");
+            fw.append("xllcorner\t").append(String.valueOf(extents[2])).append("\n");
+            fw.append("yllcorner\t").append(String.valueOf(extents[3])).append("\n");
+            fw.append("cellsize\t").append(String.valueOf(TabulationSettings.grd_xdiv)).append("\n");
+
+            fw.append("NODATA_value\t").append(String.valueOf(-1));
+
+            for(i=0;i<height;i++) {
+                fw.append("\n");
+                for(j=0;j<width;j++) {
+                    if(j > 0) {
+                        fw.append(" ");
+                    }
+                    if(Double.isNaN(grid_data[i * width + j])) {
+                        fw.append("-1");
+                    } else {
+                        fw.append(String.valueOf(grid_data[i * width + j]));
+                    }
+                }
+            }
+
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //projection file
+        writeProjectionFile(filename.replace("aloc.png",name + ".prj"));
+
+        //publish layer
+        Hashtable htGeoserver = new SpatialSettings().getGeoserverSettings();
+        // if generated successfully, then add it to geoserver
+        String url = (String) htGeoserver.get("geoserver_url") + "/rest/workspaces/ALA/coveragestores/aloc_" + name + "/file.arcgrid?coverageName=aloc_" + name;
+        String extra = "";
+        String username = (String) htGeoserver.get("geoserver_username");
+        String password = (String) htGeoserver.get("geoserver_password");
+        String[] infiles = {filename.replace("aloc.png",name + ".asc"), filename.replace("aloc.png",name + ".prj")};
+        String ascZipFile = filename.replace("aloc.png",name + ".asc.zip");
+        Zipper.zipFiles(infiles, ascZipFile);
+
+        // Upload the file to GeoServer using REST calls
+        System.out.println("Uploading file: " + ascZipFile + " to \n" + url);
+        UploadSpatialResource.loadResource(url, extra, username, password, ascZipFile);
+
+        //Create style
+        url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/";
+        UploadSpatialResource.loadCreateStyle(url, extra, username, password, "aloc_" + name);
+
+        //Upload sld
+        url = (String) htGeoserver.get("geoserver_url") + "/rest/styles/aloc_" + name;
+        UploadSpatialResource.loadSld(url, extra, username, password, filename.replace("aloc.png",name + ".sld"));
+
+        //Apply style
+        String data = "<layer><defaultStyle><name>aloc_" + name + "</name></defaultStyle></layer>";
+        url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:aloc_" + name;
+        UploadSpatialResource.assignSld(url, extra, username, password, data);
+
         return groups;
+    }
+
+    private static void writeProjectionFile(String filename) {
+        try {
+            PrintWriter spWriter = new PrintWriter(new BufferedWriter(new FileWriter(filename)));
+
+            StringBuffer sbProjection = new StringBuffer();
+            sbProjection.append("GEOGCS[\"WGS 84\", ").append("\n");
+            sbProjection.append("    DATUM[\"WGS_1984\", ").append("\n");
+            sbProjection.append("        SPHEROID[\"WGS 84\",6378137,298.257223563, ").append("\n");
+            sbProjection.append("            AUTHORITY[\"EPSG\",\"7030\"]], ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"6326\"]], ").append("\n");
+            sbProjection.append("    PRIMEM[\"Greenwich\",0, ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"8901\"]], ").append("\n");
+            sbProjection.append("    UNIT[\"degree\",0.01745329251994328, ").append("\n");
+            sbProjection.append("        AUTHORITY[\"EPSG\",\"9122\"]], ").append("\n");
+            sbProjection.append("    AUTHORITY[\"EPSG\",\"4326\"]] ").append("\n");
+
+            //spWriter.write("spname, longitude, latitude \n");
+            spWriter.write(sbProjection.toString());
+            spWriter.close();
+
+        } catch (IOException ex) {
+            //Logger.getLogger(MaxentServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("error writing species file:");
+            ex.printStackTrace(System.out);
+        }
     }
 }
