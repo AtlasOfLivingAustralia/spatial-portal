@@ -131,7 +131,8 @@ public class ContextualMenu extends UtilityComposer {
                     firstLayer = layers.get(i);
                 }
             } else if (layers.get(i).isGridLayer()
-                    && layers.get(i).getSubType() != LayerUtilities.MAXENT) {
+                    && layers.get(i).getSubType() != LayerUtilities.MAXENT
+                    && layers.get(i).getSubType() != LayerUtilities.ALOC) {
                 //TODO: grid test
                 if (gridLayer == null) {
                     gridLayer = layers.get(i);

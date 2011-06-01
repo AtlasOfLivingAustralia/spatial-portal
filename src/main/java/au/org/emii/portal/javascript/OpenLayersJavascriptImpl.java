@@ -704,7 +704,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + "		'" + layer.getNameJS() + "', "
                 + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', "
                 + "		{"
-                + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
+                + ((layer.getSelectedStyleNameJS().equals("Default"))?"":"			styles: '" + layer.getSelectedStyleNameJS() + "', ")
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
                 + "                     srs: 'epsg:900913', "

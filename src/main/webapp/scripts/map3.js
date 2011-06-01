@@ -3056,7 +3056,7 @@ function getContextualLayerValue(layerName, latitude, longitude) {
 
 function isEnvLayer(name) {
     var data = getEnvLayerValue(name, -23, 133);
-    return data != null && data != "" && data.indexOf("no data") < 0;
+    return data != null && data != ""; /* && data.indexOf("no data") < 0*/
 }
 
 function envLayerHover(e) {

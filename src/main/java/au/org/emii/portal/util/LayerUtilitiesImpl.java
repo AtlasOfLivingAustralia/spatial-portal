@@ -586,7 +586,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
                 + queryConjunction(mapLayer.getUri())
                 + "TRANSPARENT=true"
                 + //			"&ELEVATION=" + mapLayer.getAnimationParameters().getElevation() +
-                "&STYLES=" + mapLayer.getSelectedStyleName()
+                ((mapLayer.getSelectedStyleName().equals("Default"))?"":"&STYLES=" + mapLayer.getSelectedStyleName())
                 + "&CRS=EPSG%3A4326"
                 + //			"&COLORSCALERANGE=9.405405%2C29.66159" +
                 //			"&NUMCOLORBANDS=254" +

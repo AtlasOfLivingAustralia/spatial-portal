@@ -102,8 +102,15 @@ public class AddToolALOCComposer extends AddToolComposer {
         } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
+        
+        String mapurl = CommonData.geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
+        String legendurl = CommonData.geoServer
+                + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "&LAYER=ALA:aloc_" + pid;
+        System.out.println(legendurl);   
+        getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, "", legendurl, LayerUtilities.ALOC);
 
-        getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
+        //getMapComposer().addImageLayer(pid, layerLabel, uri, opacity, bbox, LayerUtilities.ALOC);
         MapLayer mapLayer = getMapComposer().getMapLayer(layerLabel);
         if (mapLayer != null) {
             WMSStyle style = new WMSStyle();

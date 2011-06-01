@@ -3832,7 +3832,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
             if (allLayers.get(i).isGridLayer()
-                    && allLayers.get(i).getSubType() != LayerUtilities.MAXENT) {
+                    && allLayers.get(i).getSubType() != LayerUtilities.MAXENT
+                    && allLayers.get(i).getSubType() != LayerUtilities.ALOC) {
                 list.add(allLayers.get(i));
             }
         }
