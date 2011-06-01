@@ -1,5 +1,6 @@
 package org.ala.spatial.web.services;
 
+import java.io.File;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.spatial.analysis.index.LayerFilter;
@@ -114,7 +115,8 @@ public class IntersectionWSController {
             double [][] point = {{ Double.parseDouble(latlong[1]), Double.parseDouble(latlong[0]) }};
 
             StringBuilder sb = new StringBuilder();
-            for(Layer l : layers) {
+            for(int i=0;i<layers.length;i++) {
+                Layer l = layers[i];
                 if(l != null && l.type.equalsIgnoreCase("environmental")) {
                     Grid grid;
                     if(useCached != null && useCached.equals("1")) {
@@ -131,6 +133,42 @@ public class IntersectionWSController {
                             sb.append(l.display_name).append("\t").append("no data").append("\n");
                         } else {
                             sb.append(l.display_name).append("\t").append(value[0]).append("\n");
+                        }
+                    }
+                } else if(envlist[i].startsWith("species_")) {
+                    //maxent layer
+                    String id = envlist[i].substring(8);
+
+                    String filename = TabulationSettings.base_output_dir + "output/maxent/" + id + "/" + id;
+
+                    Grid grid = new Grid(filename);
+
+                    if(grid != null && (new File(filename + ".grd").exists()) ) {
+                        float [] value = grid.getValues(point);
+                        if(value != null) {
+                            if(Float.isNaN(value[0])) {
+                                sb.append("Prediction").append("\t").append("no data").append("\n");
+                            } else {
+                                sb.append("Prediction").append("\t").append(value[0]).append("\n");
+                            }
+                        }
+                    }
+                } else if(envlist[i].startsWith("aloc_")) {
+                    //aloc layer
+                    String id = envlist[i].substring(5);
+
+                    String filename = TabulationSettings.base_output_dir + "output/aloc/" + id + "/" + id;
+
+                    Grid grid = new Grid(filename);
+
+                    if(grid != null && (new File(filename + ".grd").exists()) ) {
+                        float [] value = grid.getValues(point);
+                        if(value != null) {
+                            if(Float.isNaN(value[0])) {
+                                sb.append("Classification").append("\t").append("no data").append("\n");
+                            } else {
+                                sb.append("Classification").append("\t").append(value[0]).append("\n");
+                            }
                         }
                     }
                 }

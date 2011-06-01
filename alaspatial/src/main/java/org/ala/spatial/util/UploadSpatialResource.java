@@ -1,6 +1,7 @@
 package org.ala.spatial.util;
 
 import java.io.File;
+import java.io.FileWriter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -10,6 +11,7 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.FileRequestEntity;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.ala.spatial.util.SpatialLogger;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 /**
  * UploadSpatialResource helps with loading any dynamically generated
@@ -82,8 +84,146 @@ public class UploadSpatialResource {
         return output;
 
 
-    }        
-    
+    }
+
+    public static String loadSld(String url, String extra, String username, String password, String resourcepath) {
+        System.out.println("loadSld url:" + url);
+        System.out.println("path:" + resourcepath);
+
+        String output = "";
+
+        HttpClient client = new HttpClient();
+
+        client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+
+        File input = new File(resourcepath);
+
+        PutMethod put = new PutMethod(url);
+        put.setDoAuthentication(true);
+
+        // Request content will be retrieved directly
+        // from the input stream
+        RequestEntity entity = new FileRequestEntity(input, "application/vnd.ogc.sld+xml");
+        put.setRequestEntity(entity);
+
+        // Execute the request
+        try {
+            int result = client.executeMethod(put);
+
+            // get the status code
+            System.out.println("Response status code: " + result);
+
+            // Display response
+            System.out.println("Response body: ");
+            System.out.println(put.getResponseBodyAsString());
+
+            output += result;
+
+        } catch (Exception e) {
+            System.out.println("Something went wrong with UploadSpatialResource");
+            e.printStackTrace(System.out);
+        } finally {
+            // Release current connection to the connection pool once you are done
+            put.releaseConnection();
+        }
+
+        return output;
+    }
+
+    public static String loadCreateStyle(String url, String extra, String username, String password, String name) {
+        System.out.println("loadCreateStyle url:" + url);
+        System.out.println("name:" + name);
+
+        String output = "";
+
+        HttpClient client = new HttpClient();
+
+        client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+
+        PostMethod post = new PostMethod(url);
+        post.setDoAuthentication(true);
+
+        // Execute the request
+        try {
+            // Request content will be retrieved directly
+            // from the input stream
+            File file = File.createTempFile("sld", "xml");
+            System.out.println("file:" + file.getPath());
+            FileWriter fw = new FileWriter(file);
+            fw.append("<style><name>" + name + "</name><filename>" + name + "</filename></style>");
+            fw.close();
+            RequestEntity entity = new FileRequestEntity(file, "text/xml");
+            post.setRequestEntity(entity);
+
+            int result = client.executeMethod(post);
+
+            // get the status code
+            System.out.println("Response status code: " + result);
+
+            // Display response
+            System.out.println("Response body: ");
+            System.out.println(post.getResponseBodyAsString());
+
+            output += result;
+
+        } catch (Exception e) {
+            System.out.println("Something went wrong with UploadSpatialResource");
+            e.printStackTrace(System.out);
+        } finally {
+            // Release current connection to the connection pool once you are done
+            post.releaseConnection();
+        }
+
+        return output;
+    }
+
+    public static String assignSld(String url, String extra, String username, String password, String data) {
+        System.out.println("assignSld url:" + url);
+        System.out.println("data:" + data);
+
+        String output = "";
+
+        HttpClient client = new HttpClient();
+
+        client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+
+        PutMethod put = new PutMethod(url);
+        put.setDoAuthentication(true);
+
+        // Execute the request
+        try {
+            // Request content will be retrieved directly
+            // from the input stream
+            File file = File.createTempFile("sld", "xml");
+            System.out.println("file:" + file.getPath());
+            FileWriter fw = new FileWriter(file);
+            fw.append(data);
+            fw.close();
+            RequestEntity entity = new FileRequestEntity(file, "text/xml");
+            put.setRequestEntity(entity);
+
+            int result = client.executeMethod(put);
+
+            // get the status code
+            System.out.println("Response status code: " + result);
+
+            // Display response
+            System.out.println("Response body: ");
+            System.out.println(put.getResponseBodyAsString());
+
+            output += result;
+
+        } catch (Exception e) {
+            System.out.println("Something went wrong with UploadSpatialResource");
+            e.printStackTrace(System.out);
+        } finally {
+            // Release current connection to the connection pool once you are done
+            put.releaseConnection();
+        }
+
+        return output;
+    }
+
     /**
      * sends a PUT or POST call to a URL using authentication and including a file upload
      * 
