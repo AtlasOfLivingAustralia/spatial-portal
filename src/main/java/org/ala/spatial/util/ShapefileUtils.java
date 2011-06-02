@@ -1,6 +1,8 @@
 package org.ala.spatial.util;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
@@ -73,7 +75,11 @@ public class ShapefileUtils {
 
     public static void saveShapefile(File shpfile, String wktString) {
         try {
-            final SimpleFeatureType TYPE = createFeatureType(); 
+            String wkttype = "POLYGON";
+            if (wktString.contains("GEOMETRYCOLLECTION")) {
+                wkttype = "GEOMETRYCOLLECTION"; 
+            }
+            final SimpleFeatureType TYPE = createFeatureType(wkttype);
 
             FeatureCollection collection = FeatureCollections.newCollection();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
@@ -126,7 +132,7 @@ public class ShapefileUtils {
         }
     }
 
-    private static SimpleFeatureType createFeatureType() {
+    private static SimpleFeatureType createFeatureType(String type) {
 
         // DataUtilities.createType("ActiveArea", "area:Polygon:srid=4326", "name:String");
 
@@ -135,7 +141,11 @@ public class ShapefileUtils {
         builder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
 
         // add attributes in order
-        builder.add("area", Polygon.class);
+        if ("GEOMETRYCOLLECTION".equalsIgnoreCase(type)) {
+            builder.add("area", MultiPolygon.class);
+        } else {
+            builder.add("area", Polygon.class);
+        }        
         builder.length(15).add("name", String.class); // <- 15 chars width for name field
 
         // build the type
