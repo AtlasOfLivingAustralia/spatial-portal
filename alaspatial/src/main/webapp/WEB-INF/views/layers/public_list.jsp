@@ -217,7 +217,10 @@
                 <div class="section">
                     <c:choose>
                         <c:when test="${fn:length(layerList) > 0}">
-                            <a href="/layers.csv">Download as CSV</a>
+                            <ul>
+                                <li>Click on layer name to link to the metadata summary and links to full metadata record.</li>
+                                <li><a href="/layers.csv">Download as CSV</a></li>
+                            </ul>
                             <table border="1">
                                 <tr>
                                     <th>Classification 1</th>
@@ -239,7 +242,7 @@
                                         <td>${layer.source}</td>
                                         <td>
                                             <!--<img src="/output/layerthumbs/ALA:${layer.name}.jpeg" />-->
-                                            <img src="http://spatial-dev.ala.org.au/geoserver/wms/reflect?layers=ALA:${layer.name}&width=200" />
+                                            <img src="/geoserver/wms/reflect?layers=ALA:${layer.name}&width=200" />
                                             <br />
                                             <!--<a href="/geoserver/wms/kml?layers=ALA:${layer.name}">KML</a>-->
                                         </td>
