@@ -3984,11 +3984,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void exportAreaAs(String type) {
-        String EXPORT_BASE_DIR = "/data/ala/runtime/output/export/";
-        try {
             MapLayer ml = llc2MapLayer;
             if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
+                exportAreaAs(type, "", "");
+            } else {
+                //Messagebox.show("The selected layer is not an area. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
+            }
 
+    }
+
+    public void exportAreaAs(String type, String name, String wkt) {
+        String EXPORT_BASE_DIR = "/data/ala/runtime/output/export/";
+        try {
                 String id = String.valueOf(System.currentTimeMillis());
 
                 File shpDir = new File(EXPORT_BASE_DIR + id + "/");
@@ -3996,10 +4003,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 String contentType = LayersUtil.LAYER_TYPE_ZIP;
                 //String outfile = ml.getDisplayName().replaceAll(" ", "_")+("shp".equals(type)?"Shapefile":type.toUpperCase())+".zip";
-                String outfile = ml.getDisplayName().replaceAll(" ", "_");
+                String outfile = name.replaceAll(" ", "_");
                 if ("shp".equals(type)) {
                     File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_Shapefile.shp");
-                    ShapefileUtils.saveShapefile(shpfile, ml.getWKT());
+                    ShapefileUtils.saveShapefile(shpfile, wkt);
                     //contentType = LayersUtil.LAYER_TYPE_ZIP;
                     outfile += "_Shapefile.zip";
                 } else if ("kml".equals(type)) {
@@ -4022,8 +4029,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbKml.append("    </PolyStyle>").append("\r");
                     sbKml.append("  </Style>").append("\r");
                     sbKml.append("  <Placemark>").append("\r");
-                    sbKml.append("    <name>").append(ml.getDisplayName()).append("</name>").append("\r");
-                    sbKml.append("    <description><![CDATA[<div dir=\"ltr\">").append(ml.getDisplayName()).append("<br></div>]]></description>").append("\r");
+                    sbKml.append("    <name>").append(name).append("</name>").append("\r");
+                    sbKml.append("    <description><![CDATA[<div dir=\"ltr\">").append(name).append("<br></div>]]></description>").append("\r");
                     sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
                     sbKml.append("    <Polygon>").append("\r");
                     sbKml.append("      <outerBoundaryIs>").append("\r");
@@ -4031,8 +4038,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbKml.append("          <tessellate>1</tessellate>").append("\r");
                     sbKml.append("          <coordinates>").append("\r");
 
-                    String wkt = ml.getWKT();
-                    wkt = wkt.replaceAll("POLYGON", "").replace("((", "").replace("))", "");
+                    //String wkt = ml.getWKT();
+                    wkt = wkt.replaceAll("POLYGON", "").replaceAll("ENVELOPE", "").replaceAll("GEOMETRYCOLLECTION", "").replace("(", "").replace(")", "");
                     String[] awkt = wkt.split(",");
                     for (String w : awkt) {
                         sbKml.append(w.replaceAll(" ", ",")).append(",0").append("\n");
@@ -4055,7 +4062,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 } else if ("wkt".equals(type)) {
                     File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_WKT.txt");
                     BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
-                    wout.write(ml.getWKT());
+                    wout.write(wkt);
                     wout.close();
                     //contentType = LayersUtil.LAYER_TYPE_PLAIN;
                     outfile += "_WKT.zip";
@@ -4064,10 +4071,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 String downloadUrl = CommonData.satServer;
                 downloadUrl += "/alaspatial/ws/download/" + id;
                 Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
-            } else {
-                Messagebox.show("The selected layer is not an area. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
-            }
-
         } catch (Exception e) {
             System.out.println("Unable to export user area");
             e.printStackTrace(System.out);

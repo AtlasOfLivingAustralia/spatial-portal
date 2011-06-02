@@ -69,6 +69,7 @@ public class AddToolComposer extends UtilityComposer {
     String winLeft = "500px";
     //boolean setCustomArea = false;
     boolean hasCustomArea = false;
+    boolean isHighlightArea = false;
     MapLayer prevTopArea = null;
     Fileupload fileUpload;
 
@@ -222,7 +223,7 @@ public class AddToolComposer extends UtilityComposer {
 
     public void loadSpeciesLayersBk() {
         try {
-            Radiogroup rgSpecies = (Radiogroup) getFellowIfAny("rgSpeciesBk");  
+            Radiogroup rgSpecies = (Radiogroup) getFellowIfAny("rgSpeciesBk");
 
             List<MapLayer> layers = getMapComposer().getSpeciesLayers();
             int speciesLayersCount = 0;
@@ -296,9 +297,9 @@ public class AddToolComposer extends UtilityComposer {
                     rAreaSelected = rAr;
                 }
             }
-            
+
             if (!layers.isEmpty() && count_not_envelopes > 1) {
-                 Radio rAr = new Radio("All area layers" 
+                 Radio rAr = new Radio("All area layers"
                          + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
                 //rAr.setId("AllActiveAreas");
                 rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
@@ -331,8 +332,94 @@ public class AddToolComposer extends UtilityComposer {
                         break;
                     }
                 }
-            }            
+            }
             Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
+
+        } catch (Exception e) {
+            System.out.println("Unable to load active area layers:");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public void loadAreaHighlightLayers(String selectedAreaName) {
+        try {
+            Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgAreaHighlight");
+            //remove all radio buttons that don't have an id
+            for (int i=rgArea.getItemCount()-1;i>=0;i--) {
+                String id = ((Radio)rgArea.getItems().get(i)).getId();
+                if(id == null || id.length() == 0) {
+                    rgArea.removeItemAt(i);
+                } else {
+                    rgArea.getItemAtIndex(i).setSelected(false);
+                }
+            }
+
+            Radio rAreaCurrentHighlight = (Radio) getFellowIfAny("rAreaCurrentHighlight");
+
+            String selectedLayerName = (String) params.get("polygonLayerName");
+            Radio rSelectedLayer = null;
+
+            String allWKT = "";
+            int count_not_envelopes = 0;
+            List<MapLayer> layers = getMapComposer().getPolygonLayers();
+            for (int i = 0; i < layers.size(); i++) {
+                MapLayer lyr = layers.get(i);
+                Radio rAr = new Radio(lyr.getDisplayName());
+                //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
+                rAr.setValue(lyr.getWKT());
+
+                if(!allWKT.contains("ENVELOPE")) {
+                    if (!allWKT.isEmpty())
+                        allWKT+=",";
+                    count_not_envelopes ++;
+                    allWKT += lyr.getWKT();
+                }
+
+                rAr.setParent(rgArea);
+                rgArea.insertBefore(rAr, rAreaCurrentHighlight);
+
+                if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
+                    rSelectedLayer = rAr;
+                    //rAreaSelected = rAr;
+                }
+            }
+
+            if (!layers.isEmpty() && count_not_envelopes > 1) {
+                 Radio rAr = new Radio("All area layers"
+                         + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
+                //rAr.setId("AllActiveAreas");
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+                rAr.setParent(rgArea);
+                rgArea.insertBefore(rAr, rAreaCurrentHighlight);
+            }
+
+            if (selectedAreaName != null && !selectedAreaName.equals("")) {
+                for (int i = 0; i < rgArea.getItemCount(); i++) {
+                    if (rgArea.getItemAtIndex(i).isVisible() && rgArea.getItemAtIndex(i).getLabel().equals(selectedAreaName)) {
+                        //rgArea.getItemAtIndex(i).setSelected(true);
+                        //rAreaSelected = rgArea.getItemAtIndex(i);
+                        System.out.println("2.resetting indexToSelect = " + i);
+                        rgArea.setSelectedItem(rgArea.getItemAtIndex(i));
+                        break;
+                    }
+                }
+            }else if (rSelectedLayer != null) {
+                //rAreaSelected = rSelectedLayer;
+                rgArea.setSelectedItem(rAreaSelected);
+            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+                rgArea.setSelectedItem(rAreaWorld);
+                //rAreaSelected = rAreaWorld;
+                //rgArea.setSelectedItem(rAreaSelected);
+            } else {
+                for (int i = 0; i < rgArea.getItemCount(); i++) {
+                    if (rgArea.getItemAtIndex(i).isVisible()) {
+                        //rAreaSelected = rgArea.getItemAtIndex(i);
+                        rgArea.setSelectedItem(rgArea.getItemAtIndex(i));
+                        break;
+                    }
+                }
+            }
+            Clients.evalJavaScript("jq('#" + rgArea.getSelectedItem().getUuid() + "-real').attr('checked', true);");
 
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
@@ -406,6 +493,19 @@ public class AddToolComposer extends UtilityComposer {
         } catch (Exception e) {
         }
         if(rAreaSelected == rAreaCustom) {
+            //setCustomArea = true;
+            hasCustomArea = false;
+        }
+    }
+
+    public void onCheck$rgAreaHighlight(Event event) {
+        if (rgAreaHighlight == null) {
+            return;
+        }
+        //setCustomArea = false;
+        hasCustomArea = false;
+        isHighlightArea = true;
+        if(rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight")) {
             //setCustomArea = true;
             hasCustomArea = false;
         }
@@ -519,8 +619,8 @@ public class AddToolComposer extends UtilityComposer {
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
         Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
         Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep - 1))) : null;
-        
-      
+
+
 
         if (currentDiv.getZclass().contains("first")) {
             //currentStep = 1;
@@ -601,9 +701,15 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 if (curTopArea != prevTopArea) {
-                    loadAreaLayers(curTopArea.getDisplayName());
+                    if (isHighlightArea) {
+
+                    } else {
+                        loadAreaLayers(curTopArea.getDisplayName());
+                    }
+
                     ok = true;
                 }
+                isHighlightArea = false;
             }
             this.setTop(winTop);
             this.setLeft(winLeft);
@@ -627,7 +733,8 @@ public class AddToolComposer extends UtilityComposer {
     public void onClick$btnOk(Event event) {
 
         try {
-            if (/*setCustomArea*/ rAreaCustom != null && rAreaCustom.isSelected() && !hasCustomArea) {
+            if (/*setCustomArea*/ rAreaCustom != null && rAreaCustom.isSelected() && !hasCustomArea
+                    || (isHighlightArea && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight"))) {
                 this.doOverlapped();
                 this.setTop("-9999px");
                 this.setLeft("-9999px");
@@ -647,15 +754,15 @@ public class AddToolComposer extends UtilityComposer {
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/AddArea.zul", this, winProps);
                 window.setAttribute("winProps", winProps, true);
                 window.doModal();
-               
+
                 return;
             }
 
             Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
             Div nextDiv = (Div) getFellowIfAny("atstep" + (currentStep + 1));
             Div previousDiv = (currentStep > 1) ? ((Div) getFellowIfAny("atstep" + (currentStep + 1))) : null;
-           
-           
+
+
 
             if (!currentDiv.getZclass().contains("last")) {
                 currentDiv.setVisible(false);
@@ -670,7 +777,7 @@ public class AddToolComposer extends UtilityComposer {
             Label currentStepLabel = (Label) getFellowIfAny("lblStep" + (currentStep + 1));
             currentStepLabel.setStyle("font-weight:bold");
 
-                // now include the extra options for step 4 
+                // now include the extra options for step 4
                 if (nextDiv != null) {
 
                     if (nextDiv.getZclass().contains("last")) {
@@ -956,7 +1063,7 @@ public class AddToolComposer extends UtilityComposer {
                 }
             }
             btnOk.setDisabled(searchSpeciesAuto.getSelectedItem() == null);
-            
+
             if(!btnOk.isDisabled()) {
                 rgSpecies.setSelectedItem(rSpeciesSearch);
                 Clients.evalJavaScript("jq('#" + rSpeciesSearch.getUuid() + "-real').attr('checked', true);");

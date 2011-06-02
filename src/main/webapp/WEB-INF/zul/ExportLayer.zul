@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window id="exportlayerwindow" use="org.ala.spatial.analysis.web.ExportLayerComposer"
-    apply="org.ala.spatial.analysis.web.ExportLayerComposer" width="300px" height="200px"
+    <window id="addtoolwindow" use="org.ala.spatial.analysis.web.ExportLayerComposer"
+    apply="org.ala.spatial.analysis.web.ExportLayerComposer" width="600px" height="300px"
     xmlns:n="http://www.zkoss.org/2005/zk/native" title="Export area">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
@@ -12,27 +12,66 @@
         <n:div class="fancybox-bg" id="fancybox-bg-e" />
         <n:div class="fancybox-bg" id="fancybox-bg-s" />
         <n:div class="fancybox-bg" id="fancybox-bg-w" />
-        <a sclass="fancybox-close" onClick="exportlayerwindow.onClick$btnExportCancel(null)" style="display: inline" />
+        <a sclass="fancybox-close" onClick="addtoolwindow.onClick$btnCancel(null)" style="display: inline" />
         <n:a class="fancybox-help" n:onClick="loadHelp('export-tools')" style="display: inline" />
 
         <separator />
-        <vbox style="padding-left: 10px" >
-            <label id="exportLayername" />
-            <label value="Select an export format for your selected layer:" />
+        <hbox>
+            <vbox style="padding-left: 10px">
+                <grid width="150px">
+                    <columns>
+                        <column width="120px"/>
+                        <column />
+                    </columns>
+                    <rows>
+                        <row>
+                            <label id="lblStep1" style="font-weight:bold" value="1. Apply to an area"/>
+                            <image id="imgCompletedStep1" visible="false" src="img/accept.png"/>
+                        </row>
+                        <row>
+                            <label id="lblStep2" value="2. Select export type"/>
+                            <image id="imgCompletedStep2" visible="false" src="img/accept.png"/>
+                        </row>
+                    </rows>
+                </grid>
+            </vbox>
 
-            <radiogroup id="exportFormat" orient="vertical">
-                <radio id="exportShape" value="shp" label="Shapefile" />
-                <radio id="exportKml" value="kml" label="KML" />
-                <radio id="exportWkt" value="wkt" label="Well Known Text (WKT)" />
-            </radiogroup>
+            <vbox style="padding-left: 10px" >
+                <div id="atstep1" visible="true" zclass="first optional" sclass="atstep">
+                    <label id="atstep1_desc" value="Apply to an area" sclass="wSubLabel"/>
+                    <label id="atstep1_label" value="" />
+                    <separator />
+                    <radiogroup id="rgArea" orient="vertical">
+                        <radio id="rAreaCurrent" label="Current extent" value="current" />
+                        <radio id="rAreaAustralia" label="Australia" value="australia" />
+                        <radio id="rAreaWorld" label="World" value="world" />
+                    </radiogroup>
+                        <!--
+                    <radio id="rAreaAll" label="All areas" value="allareas" />
+                    <div id="areachks"></div>
+                        -->
+                </div>
 
-            <div sclass="wizButtonContainer">
-                <hbox>
-                <button sclass="goButton" label="Cancel" id="btnExportCancel" />
-                <button sclass="goButton" label="Next >" id="btnExportOk" disabled="true" />
-                </hbox>
-            </div>
-        </vbox>
+                <div id="atstep2" visible="false" zclass="last" sclass="atstep">
+                    <label id="exportLayername" />
+                    <label value="Select an export format for your selected layer:" />
+                    <separator />
+                    <radiogroup id="exportFormat" orient="vertical">
+                        <radio id="exportShape" value="shp" label="Shapefile" />
+                        <radio id="exportKml" value="kml" label="KML" />
+                        <radio id="exportWkt" value="wkt" label="Well Known Text (WKT)" />
+                    </radiogroup>
+                </div>
 
+                <div sclass="wizButtonContainer">
+                    <hbox>
+                    <button sclass="goButton" label="Help" id="btnHelp" visible="false" />
+                    <button sclass="goButton" label="Cancel" id="btnCancel" />
+                    <button sclass="goButton" label="&lt; Back" id="btnBack" disabled="true" />
+                    <button sclass="goButton" label="Next &gt;" id="btnOk" />
+                    </hbox>
+                </div>
+            </vbox>
+        </hbox>
     </window>
 </zk>
