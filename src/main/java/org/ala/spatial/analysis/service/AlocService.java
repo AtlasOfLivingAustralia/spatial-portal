@@ -422,13 +422,13 @@ public class AlocService {
         //export ASCGRID
         try {
             FileWriter fw = new FileWriter(filename.replace("aloc.png",name + ".asc"));
-            fw.append("ncols\t").append(String.valueOf(width)).append("\n");
-            fw.append("nrows\t").append(String.valueOf(height)).append("\n");
-            fw.append("xllcorner\t").append(String.valueOf(extents[2])).append("\n");
-            fw.append("yllcorner\t").append(String.valueOf(extents[3])).append("\n");
-            fw.append("cellsize\t").append(String.valueOf(TabulationSettings.grd_xdiv)).append("\n");
+            fw.append("ncols ").append(String.valueOf(width)).append("\n");
+            fw.append("nrows ").append(String.valueOf(height)).append("\n");
+            fw.append("xllcorner ").append(String.valueOf(extents[2])).append("\n");
+            fw.append("yllcorner ").append(String.valueOf(extents[3])).append("\n");
+            fw.append("cellsize ").append(String.valueOf(TabulationSettings.grd_xdiv)).append("\n");
 
-            fw.append("NODATA_value\t").append(String.valueOf(-1));
+            fw.append("NODATA_value ").append(String.valueOf(-1));
 
             for(i=0;i<height;i++) {
                 fw.append("\n");
@@ -476,7 +476,7 @@ public class AlocService {
         UploadSpatialResource.loadSld(url, extra, username, password, filename.replace("aloc.png",name + ".sld"));
 
         //Apply style
-        String data = "<layer><defaultStyle><name>aloc_" + name + "</name></defaultStyle></layer>";
+        String data = "<layer><enabled>true</enabled><defaultStyle><name>aloc_" + name + "</name></defaultStyle></layer>";
         url = (String) htGeoserver.get("geoserver_url") + "/rest/layers/ALA:aloc_" + name;
         UploadSpatialResource.assignSld(url, extra, username, password, data);
 
