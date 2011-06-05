@@ -702,7 +702,7 @@ public class AddToolComposer extends UtilityComposer {
 
                 if (curTopArea != prevTopArea) {
                     if (isHighlightArea) {
-
+                        loadAreaHighlightLayers(curTopArea.getDisplayName());
                     } else {
                         loadAreaLayers(curTopArea.getDisplayName());
                     }
