@@ -52,6 +52,7 @@ public class AddSpeciesController extends UtilityComposer {
         if(rAllSpecies.isSelected()) {
             AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
             window.setAllSpecies(true);
+            window.loadAreaLayers();
             try {
                 window.doModal();
             } catch (InterruptedException ex) {
@@ -65,6 +66,7 @@ public class AddSpeciesController extends UtilityComposer {
             if (rSearch.isSelected()) {
                 AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
                 window.setSpeciesParams(lsid, rank, taxon);
+                window.loadAreaLayers();
                 try {
                     window.doModal();
                 } catch (InterruptedException ex) {

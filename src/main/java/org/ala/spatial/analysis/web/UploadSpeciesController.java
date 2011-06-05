@@ -450,6 +450,7 @@ public class UploadSpeciesController extends UtilityComposer {
     private void mapFilterGrid(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
         window.setSpeciesFilterGridParams(lsid, name, s, featureCount, type, metadata, rank);
+        window.loadAreaLayers();
         try {
             window.doModal();
         } catch (Exception e) {
@@ -460,6 +461,7 @@ public class UploadSpeciesController extends UtilityComposer {
     private void mapFilter(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
         window.setSpeciesFilterParams(lsid, name, s, featureCount, type, metadata, rank);
+        window.loadAreaLayers();
         try {
             window.doModal();
         } catch (Exception e) {
@@ -470,6 +472,7 @@ public class UploadSpeciesController extends UtilityComposer {
     private void mapSpeciesByLsid(String lsid, String name, String s, int featureCount, int type, String metadata) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
         window.setSpeciesByLsidParams(lsid, name, s, featureCount, type, metadata);
+        window.loadAreaLayers();
         try {
             window.doModal();
         } catch (Exception e) {
