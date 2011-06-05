@@ -354,7 +354,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
                                 String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
-
+                                initALC();
                                 contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 
 //                                mc.addWMSLayer(layer + " - " + classValue,
