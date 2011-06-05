@@ -19,6 +19,7 @@ import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Radio;
 import org.zkoss.zul.Radiogroup;
@@ -35,7 +36,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     String selectedMethod = "";
     String pid = "";
     Radiogroup rgArea;
-    Radio rAreaWorld, rAreaCustom, rAreaSelected;
+    Radio rAreaWorld, rAreaCustom, rAreaSelected, rAreaAustralia;
     Button btnCancel, btnOk;
     Textbox tToolName;
     boolean setCustomArea = false;
@@ -54,12 +55,13 @@ public class AddSpeciesInArea extends UtilityComposer {
     boolean filter = false;
     boolean byLsid = false;
     private String metadata;
+    private boolean allSpecies = false;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        loadAreaLayers();
+        //loadAreaLayers();
     }
 
     public void loadAreaLayers() {
@@ -67,9 +69,6 @@ public class AddSpeciesInArea extends UtilityComposer {
 
             Radiogroup rgArea = (Radiogroup) getFellowIfAny("rgArea");
             Radio rAreaCurrent = (Radio) getFellowIfAny("rAreaCurrent");
-
-            String selectedLayerName = null;
-            Radio rSelectedLayer = null;
 
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
@@ -79,27 +78,24 @@ public class AddSpeciesInArea extends UtilityComposer {
                 rAr.setValue(lyr.getWKT());
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
-
-                if (selectedLayerName != null && lyr.getName().equals(selectedLayerName)) {
-                    rSelectedLayer = rAr;
-                }
             }
 
-//            if (rSelectedLayer != null) {
-//                rSelectedLayer.setSelected(true);
-//                rAreaSelected = rSelectedLayer;
-//            } else if (selectedLayerName != null && selectedLayerName.equals("none")) {
+            if(!allSpecies) {
                 rgArea.setSelectedItem(rAreaWorld);
                 rAreaSelected = rAreaWorld;
-//            } else {
-//                for (int i = 0; i < rgArea.getItemCount(); i++) {
-//                    if (rgArea.getItemAtIndex(i).isVisible()) {
-//                        rgArea.getItemAtIndex(i).setSelected(true);
-//                        rAreaSelected = rgArea.getItemAtIndex(i);
-//                        break;
-//                    }
-//                }
-//            }
+            } else {
+                rAreaWorld.setVisible(false);
+                rAreaAustralia.setVisible(false);
+
+                for (int i = 0; i < rgArea.getItemCount(); i++) {
+                    if (rgArea.getItemAtIndex(i).isVisible()) {
+                        rgArea.getItemAtIndex(i).setSelected(true);
+                        rAreaSelected = rgArea.getItemAtIndex(i);
+                        Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
+                        break;
+                    }
+                }
+            }
 
         } catch (Exception e) {
             System.out.println("Unable to load active area layers:");
@@ -392,5 +388,9 @@ public class AddSpeciesInArea extends UtilityComposer {
         this.type = type;
         this.byLsid = true;
         this.metadata = metadata;
+    }
+
+    void setAllSpecies(boolean isAllSpecies) {
+        this.allSpecies = isAllSpecies;
     }
 }

@@ -69,7 +69,6 @@ public class AddToolComposer extends UtilityComposer {
     String winLeft = "500px";
     //boolean setCustomArea = false;
     boolean hasCustomArea = false;
-    boolean isHighlightArea = false;
     MapLayer prevTopArea = null;
     Fileupload fileUpload;
 
@@ -504,7 +503,6 @@ public class AddToolComposer extends UtilityComposer {
         }
         //setCustomArea = false;
         hasCustomArea = false;
-        isHighlightArea = true;
         if(rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight")) {
             //setCustomArea = true;
             hasCustomArea = false;
@@ -701,15 +699,14 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 if (curTopArea != prevTopArea) {
-                    if (isHighlightArea) {
+                    if (isAreaHighlightTab()) {
                         loadAreaHighlightLayers(curTopArea.getDisplayName());
-                    } else {
+                    } else if (isAreaTab()) {
                         loadAreaLayers(curTopArea.getDisplayName());
                     }
 
                     ok = true;
                 }
-                isHighlightArea = false;
             }
             this.setTop(winTop);
             this.setLeft(winLeft);
@@ -733,8 +730,7 @@ public class AddToolComposer extends UtilityComposer {
     public void onClick$btnOk(Event event) {
 
         try {
-            if (/*setCustomArea*/ rAreaCustom != null && rAreaCustom.isSelected() && !hasCustomArea
-                    || (isHighlightArea && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight"))) {
+            if (!hasCustomArea &&(isAreaCustom() || isAreaHighlightCustom())){
                 this.doOverlapped();
                 this.setTop("-9999px");
                 this.setLeft("-9999px");
@@ -1430,5 +1426,22 @@ public class AddToolComposer extends UtilityComposer {
             getMapComposer().showMessage("Unable to load your file. Please try again.");
             e.printStackTrace(System.out);
         }
+    }
+
+    private boolean isAreaHighlightTab() {
+        return rgAreaHighlight != null && rgAreaHighlight.getParent().isVisible();
+    }
+
+    boolean isAreaTab() {
+        return rgArea != null && rgArea.getParent().isVisible();
+    }
+
+    boolean isAreaCustom() {
+        return isAreaTab() && rAreaCustom != null && rAreaCustom.isSelected();
+    }
+
+    boolean isAreaHighlightCustom() {
+        return isAreaHighlightTab() && rgAreaHighlight != null
+                && rgAreaHighlight.getSelectedItem().getId().equals("rAreaCustomHighlight");
     }
 }

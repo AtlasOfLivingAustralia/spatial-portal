@@ -50,7 +50,8 @@ public class AddSpeciesController extends UtilityComposer {
 
     public void onClick$btnOk(Event event) {
         if(rAllSpecies.isSelected()) {
-            Window window = (Window) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+            AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
+            window.setAllSpecies(true);
             try {
                 window.doModal();
             } catch (InterruptedException ex) {
