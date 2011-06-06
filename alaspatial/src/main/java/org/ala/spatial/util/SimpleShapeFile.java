@@ -225,7 +225,7 @@ public class SimpleShapeFile extends Object implements Serializable {
                 ois.close();
                 return true;
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
         return false;
