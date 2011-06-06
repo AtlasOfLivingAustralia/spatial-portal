@@ -1070,6 +1070,9 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     void setLsidBk(String lsidName) {
+        if(lsidName == null) {
+            return;
+        }
         String[] s = lsidName.split("\t");
         String species = s[1];
         String lsid = s[0];
@@ -1234,9 +1237,6 @@ public class AddToolComposer extends UtilityComposer {
                 byte[] csvdata = m.getByteData();
                 loadUserPoints(ud, new StringReader(new String(csvdata)));
             }
-
-            //call reset window on caller to perform refresh'
-            resetWindowFromSpeciesUpload(null, (rSpeciesUploadSpecies.isSelected() || rSpeciesUploadLSID.isSelected())?"normal":"bk");
         } catch (Exception ex) {
             ex.printStackTrace();
         }

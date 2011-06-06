@@ -76,7 +76,11 @@ public class AddToolSamplingComposer extends AddToolComposer {
             } else {
                 sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
             }
-            sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+            String envlist = URLEncoder.encode(sbenvsel.toString(), "UTF-8");
+            if(envlist == null || envlist.trim().length() == 0) {
+                envlist = "none";
+            }
+            sbProcessUrl.append("&envlist=" + envlist);
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
@@ -224,7 +228,12 @@ public class AddToolSamplingComposer extends AddToolComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/download?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
-            sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
+
+            String envlist = URLEncoder.encode(sbenvsel.toString(), "UTF-8");
+            if(envlist == null || envlist.trim().length() == 0) {
+                envlist = "none";
+            }
+            sbProcessUrl.append("&envlist=" + envlist);
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());

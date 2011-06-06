@@ -2,7 +2,7 @@
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
     <window id="addtoolwindow" title="Add tool" use="org.ala.spatial.analysis.web.AddToolALOCComposer"
-    apply="org.ala.spatial.analysis.web.AddToolALOCComposer" width="660px" height="300px"
+    apply="org.ala.spatial.analysis.web.AddToolALOCComposer" width="700px" height="300px"
     xmlns:n="http://www.zkoss.org/2005/zk/native">
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
         <n:div class="fancybox-bg" id="fancybox-bg-se" />
