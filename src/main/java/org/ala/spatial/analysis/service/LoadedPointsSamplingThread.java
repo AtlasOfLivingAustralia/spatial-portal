@@ -73,8 +73,16 @@ class LoadedPointsSamplingThread extends Thread {
     }
 
     private String[] shapeFileSampling(Layer l) {
-        SimpleShapeFile ssf = new SimpleShapeFile(TabulationSettings.index_path
+        SimpleShapeFile ssf = null;
+        boolean indexed = false;
+        try {
+            ssf = new SimpleShapeFile(TabulationSettings.index_path
                 + l.name);
+            if(ssf != null) {
+                indexed = true;
+            }
+        } catch (Exception e) {
+        }
         if (ssf == null) {
             ssf = new SimpleShapeFile(TabulationSettings.environmental_data_path
                     + l.name);
@@ -87,11 +95,23 @@ class LoadedPointsSamplingThread extends Thread {
         } else if (thread_count == 0) {
             thread_count = 1;
         }
-        int[] intersection = ssf.intersect(points, thread_count);
+        int[] intersection = null;
+        String[] nonIndexedLookup = null;
+        if(indexed) {
+            intersection = ssf.intersect(points, thread_count);
+        } else {
+            int column = ssf.getColumnIdx(l.fields[0].name);
+            nonIndexedLookup = ssf.getColumnLookup(column);
+            intersection = ssf.intersect(points, ssf.getColumnLookup(column), column);
+        }
         String[] output = new String[intersection.length];
         for (int i = 0; i < intersection.length; i++) {
             if(intersection[i] >= 0) {
-                output[i] = ssf.getValueString(intersection[i]);
+                if(indexed) {
+                    output[i] = ssf.getValueString(intersection[i]);
+                } else {
+                    output[i] = nonIndexedLookup[intersection[i]];
+                }
                 if(output[i] != null) {
                     output[i] = output[i].replace(",",".");
                 }
