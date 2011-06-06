@@ -3,8 +3,10 @@ package org.ala.spatial.analysis.service;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -421,7 +423,10 @@ public class AlocService {
 
         //export ASCGRID
         try {
-            FileWriter fw = new FileWriter(filename.replace("aloc.png",name + ".asc"));
+            BufferedWriter fw = new BufferedWriter(
+                    new OutputStreamWriter(
+                        new FileOutputStream(filename.replace("aloc.png",name + ".asc"))
+                        , "US-ASCII"));
             fw.append("ncols ").append(String.valueOf(width)).append("\n");
             fw.append("nrows ").append(String.valueOf(height)).append("\n");
             fw.append("xllcorner ").append(String.valueOf(extents[2])).append("\n");
@@ -443,6 +448,8 @@ public class AlocService {
                     }
                 }
             }
+
+            fw.append("\n");
 
             fw.close();
         } catch (Exception e) {
