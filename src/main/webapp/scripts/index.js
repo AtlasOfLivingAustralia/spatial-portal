@@ -311,6 +311,10 @@ function runImport(){
     alert("Run Import");
 }
 
+function runImportAnalysis() {
+    zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'importAnalysis', null));
+}
+
 function runExport(){
     zAu.send(new zk.Event(zk.Widget.$(jq('$mapPortalPage')[0]), 'exportArea', null));
 }

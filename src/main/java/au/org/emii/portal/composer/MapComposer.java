@@ -4104,4 +4104,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         showMessage("Saved session: " + settingsSupplementary.getValue("print_server_url")
                 + "?session=" + id);
     }
+
+    public void importAnalysis(Event event) {
+        openModal("WEB-INF/zul/ImportAnalysis.zul", null);
+    }
 }

@@ -15,6 +15,7 @@ import org.zkoss.zul.Label;
 import org.zkoss.zul.Progressmeter;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Timer;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -28,7 +29,7 @@ public class ALOCProgressWCController extends UtilityComposer {
     Textbox tbPid;
     public String pid = null;
 //    public ALOCWCController parent = null;
-    public AddToolComposer parent = null;
+    public Window parent = null;
 
     @Override
     public void afterCompose() {
@@ -47,6 +48,9 @@ public class ALOCProgressWCController extends UtilityComposer {
 
     public void onTimer$timer(Event e) {
         //get status
+        if(parent == null) {
+            parent = (Window) this.getParent();
+        }
 
         String status = get("status");
         if(status.length() > 0) {

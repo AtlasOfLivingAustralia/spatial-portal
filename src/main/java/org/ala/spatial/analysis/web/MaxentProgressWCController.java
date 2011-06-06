@@ -10,10 +10,12 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Progressmeter;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Timer;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -27,7 +29,7 @@ public class MaxentProgressWCController extends UtilityComposer {
     Textbox tbPid;
     public String pid = null;
     //public MaxentWCController parent = null;
-    public AddToolMaxentComposer parent = null;
+    public Window parent = null;
 
     @Override
     public void afterCompose() {
@@ -45,8 +47,11 @@ public class MaxentProgressWCController extends UtilityComposer {
     }
 
     public void onTimer$timer(Event e) {
-        //get status
+        if(parent == null) {
+            parent = (Window) this.getParent();
+        }
 
+        //get status
         String status = get("status");
         if (status.length() > 0) {
             jobstatus.setValue(status);
@@ -72,8 +77,8 @@ public class MaxentProgressWCController extends UtilityComposer {
 
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
-            //Events.echoEvent("loadMap", parent, null);
-            parent.loadMap(null);
+            Events.echoEvent("loadMap", parent, null);
+            //parent.loadMap(null);
             this.detach();
         } else if (s.startsWith("FAILED")) {
             timer.stop();
