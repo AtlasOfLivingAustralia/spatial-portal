@@ -236,7 +236,7 @@
                                     <tr>
                                         <td>${layer.classification1}</td>
                                         <td>${layer.classification2}</td>
-                                        <td><a href="layers/more/${layer.name}">${layer.displayname}</a></td>
+                                        <td><a href="/layers/more/${layer.name}">${layer.displayname}</a></td>
                                         <td>${layer.description}</td>
                                         <td>${layer.type}</td>
                                         <td>${layer.source}</td>
