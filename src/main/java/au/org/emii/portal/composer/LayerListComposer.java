@@ -254,9 +254,19 @@ public class LayerListComposer extends UtilityComposer {
                 String displayname = joLayer.getString("displayname");
                 displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
                 Treecell tcName = new Treecell();
+                String scale = "";
                 if (!joLayer.getString("type").equals("node")) {
+                    logger.debug("joLayer is " + joLayer.toString(1));
                     Image img = new Image();
-                    img.setSrc("/img/information.png");
+                    if (joLayer.getString("type").equals("Contextual")){
+                        img.setSrc("/img/icon_contextual-layer.png");
+                    }
+                    else if (joLayer.getString("type").equals("Environmental")){
+                        img.setSrc("/img/icon_grid-layer.png");
+                    }
+                    else{
+                        img.setSrc("/img/information.png");
+                    }
                     img.addEventListener("onClick", new EventListener() {
 
                         @Override
@@ -271,8 +281,12 @@ public class LayerListComposer extends UtilityComposer {
 
                     Space sp = new Space();
                     sp.setParent(tcName);
+                    
+                    if (joLayer.getString("scale").compareTo("null") != 0){
+                        scale = " (" + joLayer.getString("scale") + " deg)";
+                    }
                 }
-                Label lbl = new Label(displayname);
+                Label lbl = new Label(displayname + scale);
                 lbl.setParent(tcName);
 
                 //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
