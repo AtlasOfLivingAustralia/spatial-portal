@@ -62,7 +62,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
      */
     @Override
     public List<LayerInfo> getLayersByName(String name) {
-        return hibernateTemplate.find("from LayerInfo where lower(name) = ? order by  classification1, classification2, displayname ", name);
+        return hibernateTemplate.find("from LayerInfo where lower(name) = ? order by  classification1, classification2, displayname ", name.toLowerCase());
     }
 
     /**
