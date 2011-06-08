@@ -251,7 +251,8 @@ public class Util {
             //split out polygons and multipolygons
             areaWorking = areaWorking.replace("GEOMETRYCOLLECTION", "");
 
-            int posStart, posEnd, p1, p2;;
+            int posStart, posEnd, p1, p2;
+            ;
             p1 = areaWorking.indexOf("POLYGON", 0);
             p2 = areaWorking.indexOf("MULTIPOLYGON", 0);
             if (p1 < 0) {
@@ -272,7 +273,7 @@ public class Util {
                     posEnd = Math.min(p1, p2);
                 }
 
-                stringsList.add(areaWorking.substring(posStart, posEnd-1));
+                stringsList.add(areaWorking.substring(posStart, posEnd - 1));
                 posStart = posEnd;
                 p1 = areaWorking.indexOf("POLYGON", posStart + 10);
                 p2 = areaWorking.indexOf("MULTIPOLYGON", posStart + 10);
@@ -282,8 +283,8 @@ public class Util {
             stringsList.add(areaWorking);
         }
 
-        for(String w : stringsList) {
-            if(w.contains("ENVELOPE")) {
+        for (String w : stringsList) {
+            if (w.contains("ENVELOPE")) {
                 continue;
             }
             try {
@@ -297,6 +298,26 @@ public class Util {
                     area = StringUtils.replace(area, "(", "");
 
                     String[] areaarr = area.split(",");
+
+                    // check if it's the 'world' bbox
+                    boolean isWorld = true;
+                    for (int i = 0; i < areaarr.length - 1; i++) {
+                        String[] darea = areaarr[i].split(" ");
+                        if ((Double.parseDouble(darea[0]) < -174
+                                && Double.parseDouble(darea[1]) < -84)
+                                || (Double.parseDouble(darea[0]) < -174
+                                && Double.parseDouble(darea[1]) > 84)
+                                || (Double.parseDouble(darea[0]) > 174
+                                && Double.parseDouble(darea[1]) > 84)
+                                || (Double.parseDouble(darea[0]) > 174
+                                && Double.parseDouble(darea[1]) < -84)) {
+                            //return 510000000;
+                        } else {
+                            isWorld = false;
+                        }
+                    }
+                    //if (isWorld) return (510000000 * 1000 * 1000 * 1L);
+                    if (isWorld) return 510000000000000L;
 
                     double totalarea = 0.0;
                     String d = areaarr[0];
@@ -379,11 +400,9 @@ public class Util {
         return a * (Math.PI / 180);
     }
 
-
-
     static public String createCircleJs(double longitude, double latitude, double radius) {
         boolean belowMinus180 = false;
-        double [][] points = new double[360][];
+        double[][] points = new double[360][];
         for (int i = 0; i < 360; i++) {
             points[i] = computeOffset(latitude, 0, radius, i);
             if (points[i][0] + longitude < -180) {
@@ -392,11 +411,11 @@ public class Util {
         }
 
         //longitude translation
-        double dist = ((belowMinus180)?360:0) + longitude;
+        double dist = ((belowMinus180) ? 360 : 0) + longitude;
 
         StringBuilder s = new StringBuilder();
         s.append("POLYGON((");
-        for(int i=0;i<360;i++) {
+        for (int i = 0; i < 360; i++) {
             s.append(points[i][0] + dist).append(" ").append(points[i][1]);
             if (i < 359) {
                 s.append(",");

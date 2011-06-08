@@ -6,6 +6,7 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -658,9 +659,11 @@ public class FilteringResultsWCController extends UtilityComposer {
 
         try {
             double totalarea = Util.calculateArea(reportArea);
+            DecimalFormat df = new DecimalFormat( "###,###.##" );
 
             //lblArea.setValue(String.format("%,d", (int) (totalarea / 1000 / 1000)));
-            data.put("area",String.format("%,f", (totalarea / 1000 / 1000)));
+            //data.put("area",String.format("%,f", (totalarea / 1000 / 1000)));
+            data.put("area",df.format(totalarea / 1000 / 1000));
 
         } catch (Exception e) {
             System.out.println("Error in calculateArea");

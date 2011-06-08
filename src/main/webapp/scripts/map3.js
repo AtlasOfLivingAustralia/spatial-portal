@@ -993,7 +993,7 @@ function showInfo(curr) {
 
             var occurrencedate = occinfo.occurrenceDate;
             var uncertainty = occinfo.coordinatePrecision;
-            var uncertaintyText = uncertainty + " meters";
+            var uncertaintyText = uncertainty + " metres";
             if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
                 uncertaintyText = "<b>Undefined!</b>";
                 uncertainty = 10000;
@@ -1007,7 +1007,7 @@ function showInfo(curr) {
             " Occ-id: " + data.id + "</a> <br />" +
             " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
             " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
-            " Spatial uncertainty in meters: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
+            " Spatial uncertainty in metres: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
             " Occurrence date: " + occurrencedate + " <br />" +
             "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
             "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
@@ -1072,7 +1072,7 @@ function showInfoOne() {
 
         var occurrencedate = occinfo.occurrenceDate;
         var uncertainty = occinfo.coordinatePrecision;
-        var uncertaintyText = uncertainty + " meters";
+        var uncertaintyText = uncertainty + " metres";
         if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
             uncertaintyText = "<b>Undefined! </b>";
             uncertainty = 10000;
@@ -1086,7 +1086,7 @@ function showInfoOne() {
         " Occ-id: " + data.id + "</a> <br />" +
         " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
         " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
-        " Spatial uncertainty in meters: " + uncertaintyText + "<br />" + // (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
+        " Spatial uncertainty in metres: " + uncertaintyText + "<br />" + // (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
         " Occurrence date: " + occurrencedate + " <br />" +
         "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.attributes["oi"] + "' target='_blank'>View details</a> <br /> <br />";
 
@@ -1189,7 +1189,7 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
 
     var occurrencedate = occinfo.occurrenceDate;
     var uncertainty = occinfo.coordinatePrecision;
-    var uncertaintyText = uncertainty + " meters";
+    var uncertaintyText = uncertainty + " metres";
     if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
         uncertaintyText = "<b>Undefined! </b>"; // setting to 10km
         uncertainty = 10000;
@@ -1210,7 +1210,7 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     //" Occ-id: " + data.id + "</a> <br />" +
     " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
     " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
-    " Spatial uncertainty in meters: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
+    " Spatial uncertainty in metres: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
     " Occurrence date: " + occurrencedate + " <br />" +
     "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occinfo.id + "' target='_blank'>View details</a> <br /> <br />" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
@@ -2743,7 +2743,7 @@ var precisionLayer = null;
 function showPrecision(precision) {
     // constructor params:
     // 1. The point where circlecenter must be at
-    // 2. The radius in unit's of the map (in this case, precision in meters)
+    // 2. The radius in unit's of the map (in this case, precision in metres)
     // 3. The number of sides (50 makes a nice circle)
     // 4. The angle to start drawing
 

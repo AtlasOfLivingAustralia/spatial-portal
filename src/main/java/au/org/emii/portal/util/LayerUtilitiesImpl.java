@@ -80,10 +80,14 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         versions.add(GEOJSON, "GEOJSON");
 
         worldBBox = new ArrayList<Double>(4);
-        worldBBox.add(-180.0);
-        worldBBox.add(-90.0);
-        worldBBox.add(180.0);
-        worldBBox.add(90.0);
+//        worldBBox.add(-180.0);
+//        worldBBox.add(-90.0);
+//        worldBBox.add(180.0);
+//        worldBBox.add(90.0);
+        worldBBox.add(-179.999);
+        worldBBox.add(-89.999);
+        worldBBox.add(179.999);
+        worldBBox.add(89.999);
     }
 
     /**

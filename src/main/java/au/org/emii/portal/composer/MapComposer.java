@@ -406,7 +406,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
 
-        if(wkt == null) {
+        if (wkt == null) {
             //are there any distribution maps to map first?
             //Heptranchias
             String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
@@ -3372,9 +3372,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void loadScatterplot(ScatterplotData data, String lyrName) {
         //register area?
         String lsid = data.getLsid();
-        if(data.getFilterWkt() != null) {
+        if (data.getFilterWkt() != null) {
             try {
-                 //get lsid to match
+                //get lsid to match
                 StringBuilder sbProcessUrl = new StringBuilder();
                 sbProcessUrl.append("/species/lsidarea/register");
                 sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
@@ -3386,7 +3386,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 String pid = get.getResponseBodyAsString();
                 lsid = pid;
                 data.setLsid(pid);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -3539,7 +3539,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             areaName = "Active area";
         } else if (areaName.trim().equals("")) {
             areaName = "Active area";
-        } 
+        }
         String layerPrefix = "Occurrences in " + areaName + " ";
 //        int i = 1;
 //        while (getMapLayer(layerPrefix + i) != null) {
@@ -3984,63 +3984,73 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void exportAreaAs(String type) {
-            MapLayer ml = llc2MapLayer;
-            if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
-                exportAreaAs(type, "", "");
-            } else {
-                //Messagebox.show("The selected layer is not an area. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
-            }
+        MapLayer ml = llc2MapLayer;
+        if (ml.isPolygonLayer() && ml.getSubType() != LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
+            exportAreaAs(type, "", "");
+        } else {
+            //Messagebox.show("The selected layer is not an area. Please select an appropriate layer to export", "Export layer", Messagebox.OK, Messagebox.EXCLAMATION);
+        }
 
     }
 
     public void exportAreaAs(String type, String name, String wkt) {
         String EXPORT_BASE_DIR = "/data/ala/runtime/output/export/";
         try {
-                String id = String.valueOf(System.currentTimeMillis());
+            String id = String.valueOf(System.currentTimeMillis());
 
-                File shpDir = new File(EXPORT_BASE_DIR + id + "/");
-                shpDir.mkdirs();
+            File shpDir = new File(EXPORT_BASE_DIR + id + "/");
+            shpDir.mkdirs();
 
-                String contentType = LayersUtil.LAYER_TYPE_ZIP;
-                //String outfile = ml.getDisplayName().replaceAll(" ", "_")+("shp".equals(type)?"Shapefile":type.toUpperCase())+".zip";
-                String outfile = name.replaceAll(" ", "_");
-                if ("shp".equals(type)) {
-                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_Shapefile.shp");
-                    ShapefileUtils.saveShapefile(shpfile, wkt);
-                    //contentType = LayersUtil.LAYER_TYPE_ZIP;
-                    outfile += "_Shapefile.zip";
-                } else if ("kml".equals(type)) {
-                    
-                    StringBuffer sbKml = new StringBuffer(); 
-                    sbKml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("\r");
-                    sbKml.append("<kml xmlns=\"http://earth.google.com/kml/2.2\">").append("\r");
-                    sbKml.append("<Document>").append("\r");
-                    sbKml.append("  <name>Spatial Portal Active Area</name>").append("\r");
-                    sbKml.append("  <description><![CDATA[Active area saved from the ALA Spatial Portal: http://spatial.ala.org.au/]]></description>").append("\r");
-                    sbKml.append("  <Style id=\"style1\">").append("\r");
-                    sbKml.append("    <LineStyle>").append("\r");
-                    sbKml.append("      <color>40000000</color>").append("\r");
-                    sbKml.append("      <width>3</width>").append("\r");
-                    sbKml.append("    </LineStyle>").append("\r");
-                    sbKml.append("    <PolyStyle>").append("\r");
-                    sbKml.append("      <color>73FF0000</color>").append("\r");
-                    sbKml.append("      <fill>1</fill>").append("\r");
-                    sbKml.append("      <outline>1</outline>").append("\r");
-                    sbKml.append("    </PolyStyle>").append("\r");
-                    sbKml.append("  </Style>").append("\r");
-                    sbKml.append("  <Placemark>").append("\r");
-                    sbKml.append("    <name>").append(name).append("</name>").append("\r");
-                    sbKml.append("    <description><![CDATA[<div dir=\"ltr\">").append(name).append("<br></div>]]></description>").append("\r");
-                    sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
+            String contentType = LayersUtil.LAYER_TYPE_ZIP;
+            //String outfile = ml.getDisplayName().replaceAll(" ", "_")+("shp".equals(type)?"Shapefile":type.toUpperCase())+".zip";
+            String outfile = name.replaceAll(" ", "_");
+            if ("shp".equals(type)) {
+                File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_Shapefile.shp");
+                ShapefileUtils.saveShapefile(shpfile, wkt);
+                //contentType = LayersUtil.LAYER_TYPE_ZIP;
+                outfile += "_Shapefile.zip";
+            } else if ("kml".equals(type)) {
+
+                StringBuffer sbKml = new StringBuffer();
+                sbKml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("\r");
+                sbKml.append("<kml xmlns=\"http://earth.google.com/kml/2.2\">").append("\r");
+                sbKml.append("<Document>").append("\r");
+                sbKml.append("  <name>Spatial Portal Active Area</name>").append("\r");
+                sbKml.append("  <description><![CDATA[Active area saved from the ALA Spatial Portal: http://spatial.ala.org.au/]]></description>").append("\r");
+                sbKml.append("  <Style id=\"style1\">").append("\r");
+                sbKml.append("    <LineStyle>").append("\r");
+                sbKml.append("      <color>40000000</color>").append("\r");
+                sbKml.append("      <width>3</width>").append("\r");
+                sbKml.append("    </LineStyle>").append("\r");
+                sbKml.append("    <PolyStyle>").append("\r");
+                sbKml.append("      <color>73FF0000</color>").append("\r");
+                sbKml.append("      <fill>1</fill>").append("\r");
+                sbKml.append("      <outline>1</outline>").append("\r");
+                sbKml.append("    </PolyStyle>").append("\r");
+                sbKml.append("  </Style>").append("\r");
+                sbKml.append("  <Placemark>").append("\r");
+                sbKml.append("    <name>").append(name).append("</name>").append("\r");
+                sbKml.append("    <description><![CDATA[<div dir=\"ltr\">").append(name).append("<br></div>]]></description>").append("\r");
+                sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
+
+                //String wkt = ml.getWKT();
+                wkt = wkt.replace("GEOMETRYCOLLECTION(", "").replace(")))", "))");
+                String[] pwkt = wkt.split("POLYGON");
+                if (pwkt.length > 1) {
+                    sbKml.append("    <MultiGeometry>").append("\r");
+                }
+                for (String pw : pwkt) {
+
+                    if (pw.trim().equals("")) continue;
+
                     sbKml.append("    <Polygon>").append("\r");
                     sbKml.append("      <outerBoundaryIs>").append("\r");
                     sbKml.append("        <LinearRing>").append("\r");
                     sbKml.append("          <tessellate>1</tessellate>").append("\r");
                     sbKml.append("          <coordinates>").append("\r");
 
-                    //String wkt = ml.getWKT();
-                    wkt = wkt.replaceAll("POLYGON", "").replaceAll("ENVELOPE", "").replaceAll("GEOMETRYCOLLECTION", "").replace("(", "").replace(")", "");
-                    String[] awkt = wkt.split(",");
+                    pw = pw.replaceAll("POLYGON", "").replace("(", "").replace(")", "");
+                    String[] awkt = pw.split(",");
                     for (String w : awkt) {
                         sbKml.append(w.replaceAll(" ", ",")).append(",0").append("\n");
                     }
@@ -4049,28 +4059,33 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     sbKml.append("        </LinearRing>").append("\r");
                     sbKml.append("      </outerBoundaryIs>").append("\r");
                     sbKml.append("    </Polygon>").append("\r");
-                    sbKml.append("  </Placemark>").append("\r");
-                    sbKml.append("</Document>").append("\r");
-                    sbKml.append("</kml>").append("\r");
-
-                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_KML.kml");
-                    BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
-                    wout.write(sbKml.toString());
-                    wout.close();
-                    //contentType = LayersUtil.LAYER_TYPE_KML;
-                    outfile += "_KML.zip";
-                } else if ("wkt".equals(type)) {
-                    File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_WKT.txt");
-                    BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
-                    wout.write(wkt);
-                    wout.close();
-                    //contentType = LayersUtil.LAYER_TYPE_PLAIN;
-                    outfile += "_WKT.zip";
+                }
+                if (pwkt.length > 1) {
+                    sbKml.append("    </MultiGeometry>").append("\r");
                 }
 
-                String downloadUrl = CommonData.satServer;
-                downloadUrl += "/alaspatial/ws/download/" + id;
-                Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
+                sbKml.append("  </Placemark>").append("\r");
+                sbKml.append("</Document>").append("\r");
+                sbKml.append("</kml>").append("\r");
+
+                File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_KML.kml");
+                BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
+                wout.write(sbKml.toString());
+                wout.close();
+                //contentType = LayersUtil.LAYER_TYPE_KML;
+                outfile += "_KML.zip";
+            } else if ("wkt".equals(type)) {
+                File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_WKT.txt");
+                BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
+                wout.write(wkt);
+                wout.close();
+                //contentType = LayersUtil.LAYER_TYPE_PLAIN;
+                outfile += "_WKT.zip";
+            }
+
+            String downloadUrl = CommonData.satServer;
+            downloadUrl += "/alaspatial/ws/download/" + id;
+            Filedownload.save(new URL(downloadUrl).openStream(), contentType, outfile);
         } catch (Exception e) {
             System.out.println("Unable to export user area");
             e.printStackTrace(System.out);

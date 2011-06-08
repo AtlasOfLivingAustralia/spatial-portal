@@ -84,7 +84,8 @@ public class AddAreaController extends UtilityComposer {
             }
             md.setMoreInfo(LayersUtil.getMetadata("Australia " + wkt));
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
-            String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
+            //String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
+            String wkt = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
             String layerName = mc.getNextAreaLayerName("World Bounding Box");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
@@ -107,7 +108,9 @@ public class AddAreaController extends UtilityComposer {
             windowName = "WEB-INF/zul/AreaWKT.zul";
         }
         if (!windowName.contentEquals("")) {
+            System.out.println("Executing JS");
             mc.getOpenLayersJavascript().execute(mc.getOpenLayersJavascript().iFrameReferences + script);
+            System.out.println("Opening window");
             Window window = (Window) Executions.createComponents(windowName, this.getParent(), args);
             try {
                 if (overlapped) {

@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.apache.commons.lang.StringUtils;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FileDataStore;
@@ -47,7 +48,7 @@ public class ShapefileUtils {
 
             FeatureCollection featureCollection = featureSource.getFeatures();
             FeatureIterator it = featureCollection.features();
-            Map shape = new HashMap(); 
+            Map shape = new HashMap();
             while (it.hasNext()) {
                 //System.out.println("======================================");
                 //System.out.println("Feature: ");
@@ -55,29 +56,40 @@ public class ShapefileUtils {
                 //System.out.println(feature.getID());
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
                 WKTWriter wkt = new WKTWriter();
+
+                String wktString = wkt.write(geom);
+                wktString = wktString.replaceAll(", ", ",").replace(",(", ",POLYGON(").replace("),", "),");
+
+                if (wktString.indexOf(",POLYGON") > -1) {
+                    wktString = wktString.replace("MULTIPOLYGON (((", "GEOMETRYCOLLECTION(POLYGON((");
+                } else {
+                    wktString = wktString.replace("MULTIPOLYGON (((", "POLYGON((").replace(")))", "))");
+                }
+
                 //System.out.println(wkt.writeFormatted(geom));
                 //addWKTLayer(wkt.write(geom), feature.getID());
                 shape.put("id", feature.getID());
-                shape.put("wkt", wkt.write(geom));
+                shape.put("wkt", wktString);
+
                 break;
             }
             featureCollection.close(it);
 
-            return shape; 
+            return shape;
 
         } catch (Exception e) {
             System.out.println("Unable to load shapefile: ");
             e.printStackTrace(System.out);
         }
 
-        return null; 
+        return null;
     }
 
     public static void saveShapefile(File shpfile, String wktString) {
         try {
             String wkttype = "POLYGON";
             if (wktString.contains("GEOMETRYCOLLECTION")) {
-                wkttype = "GEOMETRYCOLLECTION"; 
+                wkttype = "GEOMETRYCOLLECTION";
             }
             final SimpleFeatureType TYPE = createFeatureType(wkttype);
 
@@ -145,7 +157,7 @@ public class ShapefileUtils {
             builder.add("area", MultiPolygon.class);
         } else {
             builder.add("area", Polygon.class);
-        }        
+        }
         builder.length(15).add("name", String.class); // <- 15 chars width for name field
 
         // build the type
@@ -155,15 +167,15 @@ public class ShapefileUtils {
     }
 
     public static void main(String[] args) {
-        //System.out.println("Loading shapefile");
+        System.out.println("Loading shapefile");
         //File shpfile = new File("/Users/ajay/projects/tmp/uploads/SinglePolygon/SinglePolygon.shp");
-        //loadShapefile(shpfile);
+        File shpfile = new File("/Users/ajay/Downloads/My_Area_1_Shapefile/My_Area_1_Shapefile.shp");
+        loadShapefile(shpfile);
 
-        System.out.println("Saving shapefile");
-        File shpfile = new File("/Users/ajay/projects/tmp/uploads/ActiveArea.shp");
-        String wktString = "POLYGON((128.63867187521 -23.275665408794,128.63867187521 -29.031198581005,137.25195312487 -28.56908637161,138.8339843748 -24.561114535569,134.61523437497 -20.83211850342,130.83593750012 -21.160338084068,128.63867187521 -23.275665408794))";
-        saveShapefile(shpfile,wktString);
+//        System.out.println("Saving shapefile");
+//        File shpfile = new File("/Users/ajay/projects/tmp/uploads/ActiveArea.shp");
+//        String wktString = "POLYGON((128.63867187521 -23.275665408794,128.63867187521 -29.031198581005,137.25195312487 -28.56908637161,138.8339843748 -24.561114535569,134.61523437497 -20.83211850342,130.83593750012 -21.160338084068,128.63867187521 -23.275665408794))";
+//        saveShapefile(shpfile,wktString);
 
     }
-
 }
