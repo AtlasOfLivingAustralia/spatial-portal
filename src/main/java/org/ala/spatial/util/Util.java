@@ -379,6 +379,52 @@ public class Util {
         return a * (Math.PI / 180);
     }
 
+
+
+    static public String createCircleJs(double longitude, double latitude, double radius) {
+        boolean belowMinus180 = false;
+        double [][] points = new double[360][];
+        for (int i = 0; i < 360; i++) {
+            points[i] = computeOffset(latitude, 0, radius, i);
+            if (points[i][0] + longitude < -180) {
+                belowMinus180 = true;
+            }
+        }
+
+        //longitude translation
+        double dist = ((belowMinus180)?360:0) + longitude;
+
+        StringBuilder s = new StringBuilder();
+        s.append("POLYGON((");
+        for(int i=0;i<360;i++) {
+            s.append(points[i][0] + dist).append(" ").append(points[i][1]);
+            if (i < 359) {
+                s.append(",");
+            }
+        }
+        s.append("))");
+
+        return s.toString();
+    }
+
+    static double[] computeOffset(double lat, double lng, double radius, int angle) {
+        double b = radius / 6378137.0;
+        double c = angle * (Math.PI / 180.0);
+        double e = lat * (Math.PI / 180.0);
+        double d = Math.cos(b);
+        b = Math.sin(b);
+        double f = Math.sin(e);
+        e = Math.cos(e);
+        double g = d * f + b * e * Math.cos(c);
+
+        double x = (lng * (Math.PI / 180.0) + Math.atan2(b * e * Math.sin(c), d - f * g)) / (Math.PI / 180.0);
+        double y = Math.asin(g) / (Math.PI / 180.0);
+
+        double[] pt = {x, y};
+
+        return pt;
+    }
+
     public static String newLsidArea(String lsid, String wkt) {
         try {
             //get lsid to match

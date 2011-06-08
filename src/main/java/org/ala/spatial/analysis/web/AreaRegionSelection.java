@@ -23,6 +23,7 @@ import javax.measure.unit.Unit;
 import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.AutoComplete;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.Util;
 import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -93,7 +94,8 @@ public class AreaRegionSelection extends AreaToolComposer {
                 radius = 20000;
             }
 
-            String wkt = createCircle(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),radius);
+            //String wkt = createCircle(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),radius);
+            String wkt = Util.createCircleJs(Double.parseDouble(coords.split(",")[0]),Double.parseDouble(coords.split(",")[1]),radius);
             getMapComposer().removeLayer(label);
             mapLayer = getMapComposer().addWKTLayer(wkt, label, label);
 

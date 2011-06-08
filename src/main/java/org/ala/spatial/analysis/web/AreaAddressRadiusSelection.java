@@ -16,6 +16,7 @@ import java.util.List;
 import javax.measure.converter.UnitConverter;
 import javax.measure.unit.Unit;
 import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.Util;
 import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.GeodeticCalculator;
@@ -136,7 +137,8 @@ public class AreaAddressRadiusSelection extends AreaToolComposer {
             }
             longitude = gco.getLongitude();
             latitude = gco.getLatitude();
-            return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
+            //return createCircle(gco.getLongitude(), gco.getLatitude(), radius);
+            return Util.createCircleJs(gco.getLongitude(), gco.getLatitude(), radius);
 
         } catch (geo.google.GeoException ge) {
             return "none";
