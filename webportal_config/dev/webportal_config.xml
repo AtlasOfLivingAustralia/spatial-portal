@@ -193,7 +193,7 @@
       <sat_url>http://spatial-dev.ala.org.au</sat_url>
       <points_cluster_threshold>15000</points_cluster_threshold>
       <max_record_count_download>15000</max_record_count_download>
-      <max_record_count_map>15000</max_record_count_map>
+      <max_record_count_map>2000000</max_record_count_map>
       <max_record_count_upload>15000</max_record_count_upload>
       <max_record_count_upload_message>You can only upload a maximum of 15000 records.</max_record_count_upload_message>
       <!-- Common Name search url -->
