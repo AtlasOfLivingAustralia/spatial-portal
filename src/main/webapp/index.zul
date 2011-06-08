@@ -156,7 +156,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
                                             <n:li>
                                                 <n:a href='#' n:onClick="runImportAnalysis();">
-                                                    <n:span>Import previous analysis</n:span>
+                                                    <n:span>Restore prior analysis</n:span>
                                                 </n:a>
                                             </n:li>
 
