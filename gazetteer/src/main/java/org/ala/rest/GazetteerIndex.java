@@ -122,7 +122,7 @@ class IndexThread extends Thread {
                 Set uniqueFeatureIds = new HashSet();
                 Map featureMap = new HashMap();
                 if (dataStore == null) {
-                    throw new Exception("Could not find datastore for this layer");
+                    throw new Exception("Could not find datastore for this layer: " + layerName);
                 } else {
                     logger.info("Indexing " + layerName);
                     FeatureSource layer = dataStore.getFeatureSource(layerName);
