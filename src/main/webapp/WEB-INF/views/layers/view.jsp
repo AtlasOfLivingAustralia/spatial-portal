@@ -73,7 +73,7 @@
 		        <tr class="md_grey-bg">
 		            <th class="md_th">Type</th>
 					<td class="md_spacer"/>
-		            <td class="md_value">${layer.type}</td>
+		            <td class="md_value">${layer.type} ${layer.scale}</td>
 		        </tr>
 
 
