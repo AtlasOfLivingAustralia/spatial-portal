@@ -203,6 +203,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     public void onFinish() {
         try {            
             String wkt = getSelectedArea();
+            wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
 
             if (byLsid) {
                 MapLayer ml = getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt),name, s, featureCount, type);

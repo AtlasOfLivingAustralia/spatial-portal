@@ -224,7 +224,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 }
 
                 if (j>1) {
-                    sbKml.append(",\n\n");
+                    sbKml.append(",");
                 }
 
                 sbKml.append("POLYGON((");

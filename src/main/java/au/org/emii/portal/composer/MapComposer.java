@@ -4077,6 +4077,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } else if ("wkt".equals(type)) {
                 File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_WKT.txt");
                 BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
+                wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
                 wout.write(wkt);
                 wout.close();
                 //contentType = LayersUtil.LAYER_TYPE_PLAIN;

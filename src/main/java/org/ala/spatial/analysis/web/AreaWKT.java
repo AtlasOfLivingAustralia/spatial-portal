@@ -1,16 +1,15 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.MapComposer;
-import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-import org.geotools.geometry.GeometryBuilder;
 
 
 
-import org.geotools.referencing.crs.DefaultGeographicCRS;
+import java.io.File;
+import org.apache.commons.io.FileUtils;
 
 import org.zkoss.zk.ui.Page;
 
@@ -39,13 +38,15 @@ public class AreaWKT extends AreaToolComposer {
         txtLayerName.setValue(getMapComposer().getNextAreaLayerName("My Area"));
     }
 
-    public void onClick$btnOk(Event event) { 
-        if (validWKT(displayGeom.getText())) {
-
+    public void onClick$btnOk(Event event) {
+        String wkt = displayGeom.getText();
+        if (validWKT(wkt)) {
+            wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
+            
             MapComposer mc = getThisMapComposer();
 
             layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
-            MapLayer mapLayer = mc.addWKTLayer(displayGeom.getText(), layerName, txtLayerName.getValue());
+            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
             //reapply layer name
             getMapComposer().getMapLayer(layerName).setDisplayName(txtLayerName.getValue());
@@ -74,7 +75,7 @@ public class AreaWKT extends AreaToolComposer {
         catch(ParseException parseException) {
             invalidWKT.setValue("WKT is Invalid");
             return false;
-        }
+        } 
     }
 
     public void onClick$btnClear(Event event) {
