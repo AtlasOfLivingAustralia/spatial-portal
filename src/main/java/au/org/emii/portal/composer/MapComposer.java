@@ -4034,7 +4034,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
 
                 //String wkt = ml.getWKT();
-                wkt = wkt.replace("GEOMETRYCOLLECTION(", "").replace(")))", "))");
+                wkt = wkt.replace("GEOMETRYCOLLECTION(", "").replace("MULTIPOLYGON(", "").replace(")))", "))").replace("),(", "),POLYGON(");
                 String[] pwkt = wkt.split("POLYGON");
                 if (pwkt.length > 1) {
                     sbKml.append("    <MultiGeometry>").append("\r");
