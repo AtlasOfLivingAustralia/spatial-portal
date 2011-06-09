@@ -238,7 +238,7 @@
                                         <td>${layer.classification2}</td>
                                         <td><a href="/layers/more/${layer.name}">${layer.displayname}</a></td>
                                         <td>${layer.description}</td>
-                                        <td>${layer.type}</td>
+                                        <td>${layer.type} ${layer.scale}</td>
                                         <td>${layer.source}</td>
                                         <td>
                                             <!--<img src="/output/layerthumbs/ALA:${layer.name}.jpeg" />-->
