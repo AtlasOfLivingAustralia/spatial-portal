@@ -248,9 +248,9 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + " 		new OpenLayers.Bounds(";
 
         if (mapLayer.getSubType() == LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
-            script +=  "112.9" + ","
-                + "-43.8" + ","
-                + "153.64" + ","
+            script +=  "112" + ","
+                + "-44" + ","
+                + "154" + ","
                 + "-9";
         } else {
             script += bbox.get(0) + ","
