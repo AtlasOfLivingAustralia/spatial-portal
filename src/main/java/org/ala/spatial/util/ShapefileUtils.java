@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
@@ -88,7 +89,7 @@ public class ShapefileUtils {
     public static void saveShapefile(File shpfile, String wktString) {
         try {
             String wkttype = "POLYGON";
-            if (wktString.contains("GEOMETRYCOLLECTION")) {
+            if (wktString.contains("GEOMETRYCOLLECTION") || wktString.contains("MULTIPOLYGON")) {
                 wkttype = "GEOMETRYCOLLECTION";
             }
             final SimpleFeatureType TYPE = createFeatureType(wkttype);
@@ -167,15 +168,22 @@ public class ShapefileUtils {
     }
 
     public static void main(String[] args) {
-        System.out.println("Loading shapefile");
-        //File shpfile = new File("/Users/ajay/projects/tmp/uploads/SinglePolygon/SinglePolygon.shp");
-        File shpfile = new File("/Users/ajay/Downloads/My_Area_1_Shapefile/My_Area_1_Shapefile.shp");
-        loadShapefile(shpfile);
+//        System.out.println("Loading shapefile");
+//        //File shpfile = new File("/Users/ajay/projects/tmp/uploads/SinglePolygon/SinglePolygon.shp");
+//        File shpfile = new File("/Users/ajay/Downloads/My_Area_1_Shapefile/My_Area_1_Shapefile.shp");
+//        loadShapefile(shpfile);
 
-//        System.out.println("Saving shapefile");
-//        File shpfile = new File("/Users/ajay/projects/tmp/uploads/ActiveArea.shp");
-//        String wktString = "POLYGON((128.63867187521 -23.275665408794,128.63867187521 -29.031198581005,137.25195312487 -28.56908637161,138.8339843748 -24.561114535569,134.61523437497 -20.83211850342,130.83593750012 -21.160338084068,128.63867187521 -23.275665408794))";
-//        saveShapefile(shpfile,wktString);
+//        try {
+//            System.out.println("Saving shapefile");
+//            File shpfile = new File("/Users/ajay/projects/tmp/uploads/ActiveArea/ActiveArea.shp");
+//            //String wktString = "POLYGON((128.63867187521 -23.275665408794,128.63867187521 -29.031198581005,137.25195312487 -28.56908637161,138.8339843748 -24.561114535569,134.61523437497 -20.83211850342,130.83593750012 -21.160338084068,128.63867187521 -23.275665408794))";
+//            String wktfile = "/Users/ajay/Downloads/Australian_Capital_Territory_WKT.txt";
+//            String wktString = FileUtils.readFileToString(new File(wktfile));
+//            saveShapefile(shpfile, wktString.toString());
+//        } catch (Exception e) {
+//            System.out.println("Error reading wkt file");
+//            e.printStackTrace(System.out);
+//        }
 
     }
 }
