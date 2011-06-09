@@ -66,7 +66,7 @@
                         <div style="padding-top:0px" width="65px">
                             <label value="Colour" sclass="h3" />
                         </div>
-                        <combobox id="cbColour" >
+                        <combobox id="cbColour" width="150px" >
                             <comboitem label="User defined" id="ciColourUser" value="-1" />
                                                         <!-- comboitem label="Density Grid" value="grid" /-->
                             <comboitem label="Lifeform" value="10" />
