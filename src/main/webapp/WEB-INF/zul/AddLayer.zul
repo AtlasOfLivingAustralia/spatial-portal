@@ -28,7 +28,7 @@
                             <separator/>
                             <label sclass="wCaption" value='For example: "Temperature"'/>
                         </div>
-                    <radio id="rTree" label="Browse by classification tree" />
+                    <radio id="rTree" label="Browse by category" />
                         <div id="divTree" visible="false">
                             <separator />
                             <div height="300px" style="margin-left:5px;overflow: auto">
