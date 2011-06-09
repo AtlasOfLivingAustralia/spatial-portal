@@ -1,3 +1,4 @@
+begin;
 --
 -- ALA layers table create script 
 -- Update this script with changes to the layers table and use it to update dev and prod
@@ -877,4 +878,4 @@ ALTER TABLE ONLY layers
 --
 -- PostgreSQL database dump complete
 --
-
+commit;

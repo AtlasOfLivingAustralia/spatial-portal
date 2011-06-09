@@ -1,3 +1,4 @@
+begin;
 --
 -- ALA layers table create script 
 -- Update this script with changes to the layers table and use it to update dev and prod
@@ -23,7 +24,7 @@ CREATE TABLE layers (
     id integer DEFAULT nextval('layers_id_seq'::regclass) NOT NULL,
     name character varying(150),
     description text,
-    type character varying(20),
+    type character varying(19),
     source character varying(150),
     path character varying(500),
     extents character varying(100),
@@ -876,4 +877,5 @@ ALTER TABLE ONLY layers
 --
 -- PostgreSQL database dump complete
 --
+commit;
 

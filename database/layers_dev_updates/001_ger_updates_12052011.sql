@@ -91,16 +91,16 @@ set
 classification2 = 'Partnerships: Slopes to Summit'
 where id in (910, 911);
 
-SELECT id, "name", description, "type", source, path, extents, minlatitude, 
-       minlongitude, maxlatitude, maxlongitude, notes, enabled, displayname, 
-       displaypath, scale, environmentalvaluemin, environmentalvaluemax, 
-       environmentalvalueunits, lookuptablepath, metadatapath, classification1, 
-       classification2, uid, mddatest, citation_date, datalang, mdhrlv, 
-       respparty_role, licence_level, licence_link, licence_notes, source_link
-  FROM layers
+--SELECT id, "name", description, "type", source, path, extents, minlatitude, 
+--       minlongitude, maxlatitude, maxlongitude, notes, enabled, displayname, 
+--       displaypath, scale, environmentalvaluemin, environmentalvaluemax, 
+--       environmentalvalueunits, lookuptablepath, metadatapath, classification1, 
+--       classification2, uid, mddatest, citation_date, datalang, mdhrlv, 
+--       respparty_role, licence_level, licence_link, licence_notes, source_link
+--  FROM layers
 
-where name like 'ger_%'
+--where name like 'ger_%'
 --description like '%land%' or displayname like 'Mining%'
 
-order by classification2 asc, displayname asc, classification1 asc;
+--order by classification2 asc, displayname asc, classification1 asc;
 
