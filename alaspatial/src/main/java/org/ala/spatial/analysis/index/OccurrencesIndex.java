@@ -2818,6 +2818,15 @@ public class OccurrencesIndex {
                 //'highlight' are stored by 'searchTerm' only,
                 //retrieve whole records already produced
                 r = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
+                boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
+                int pos = 0;
+                for (int i = 0; i < r.length; i++) {
+                    if (include != highlight[i]) {
+                        r[pos] = r[i];
+                        pos++;
+                    }
+                }
+                r = java.util.Arrays.copyOf(r, pos);
             } //cannot get 'highlight' without searchTerm
         }
 
