@@ -1,22 +1,22 @@
 /* update to other tables for gazeteer area selection */
 
-//ALTER TABLE ger_analysis_boundary_v01
-//ADD COLUMN ala_id character varying(150) DEFAULT 'GERI Analysis Boundary v01';
+--ALTER TABLE ger_analysis_boundary_v01
+--ADD COLUMN ala_id character varying(150) DEFAULT 'GERI Analysis Boundary v01';
 
-//ALTER TABLE ger_geri_boundary_v102_australia
-//ADD COLUMN ala_id character varying(150) DEFAULT 'GERI Boundary v102';
+--ALTER TABLE ger_geri_boundary_v102_australia
+--ADD COLUMN ala_id character varying(150) DEFAULT 'GERI Boundary v102';
 
-//ALTER TABLE ger_hunter
-//ADD COLUMN ala_id character varying(150) DEFAULT 'GER Hunter';
+--ALTER TABLE ger_hunter
+--ADD COLUMN ala_id character varying(150) DEFAULT 'GER Hunter';
 
-//ALTER TABLE ger_hunter_analysis_mask
-//ADD COLUMN ala_id character varying(150) DEFAULT 'GER Hunter Analysis Mask';
+--ALTER TABLE ger_hunter_analysis_mask
+--ADD COLUMN ala_id character varying(150) DEFAULT 'GER Hunter Analysis Mask';
 
-//ALTER TABLE ger_upper_hunter_focus_area_v2
-//ADD COLUMN ala_id character varying(150) DEFAULT 'GER Upper Hunter Focus Area';
+--ALTER TABLE ger_upper_hunter_focus_area_v2
+--ADD COLUMN ala_id character varying(150) DEFAULT 'GER Upper Hunter Focus Area';
 
-//ALTER TABLE ger_kosciuszko_to_coast
-//ADD COLUMN ala_id character varying(150) DEFAULT 'GER Kosciuszko to Coast';
+--ALTER TABLE ger_kosciuszko_to_coast
+--ADD COLUMN ala_id character varying(150) DEFAULT 'GER Kosciuszko to Coast';
 
 /* update to layers metadata table */
 
