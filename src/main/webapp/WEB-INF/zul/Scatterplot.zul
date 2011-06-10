@@ -153,6 +153,7 @@ var resizing = false;
 
 function doMouseDown(event) {
  $('#rband').offset($('#chartDivBack').offset());
+        setPageXY(event);
         startx = event.pageX;
         starty = event.pageY;
         resizing = true;
@@ -163,9 +164,19 @@ function doMouseDown(event) {
         return false;
 }
 
+function setPageXY(event) {
+if (event.pageX || event.pageY) {
+} else if (event.clientX || event.clientY) {
+event.pageX = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+event.pageY = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+}
+}
+
 function doMouseDrag(event) {
     if(resizing){
         var left, top, width, height;
+
+        setPageXY(event);
 
         endx = event.pageX;
         endy = event.pageY;
