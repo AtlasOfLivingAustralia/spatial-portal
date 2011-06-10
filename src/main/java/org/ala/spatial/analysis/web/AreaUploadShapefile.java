@@ -1,6 +1,6 @@
 package org.ala.spatial.analysis.web;
 
-import au.org.emii.portal.composer.UtilityComposer;
+import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import java.io.BufferedReader;
@@ -11,12 +11,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Zipper;
 import org.zkoss.util.media.Media;
@@ -226,17 +224,21 @@ public class AreaUploadShapefile extends AreaToolComposer {
             String kmlurl = CommonData.satServer + "/output/layers/" + id + "/" + name;
 
             //MapLayer mapLayer = getMapComposer().getGenericServiceAndBaseLayerSupport().createMapLayer("User-defined kml layer", txtLayerName.getValue(), "KML", kmlurl);
-            MapLayer mapLayer = getMapComposer().addKMLLayer(txtLayerName.getValue(), txtLayerName.getValue(), kmlurl);
+            //MapLayer mapLayer = getMapComposer().addKMLLayer(txtLayerName.getValue(), txtLayerName.getValue(), kmlurl);
+            MapComposer mc = getMapComposer();
+            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+            String wkt = getKMLPolygonAsWKT(kmlstr);
+            MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
             if (mapLayer == null) {
                 logger.debug("The layer " + name + " couldnt be created");
-                getMapComposer().showMessage(getMapComposer().getLanguagePack().getLang("ext_layer_creation_failure"));
+                mc.showMessage(mc.getLanguagePack().getLang("ext_layer_creation_failure"));
             } else {
-                this.layerName = mapLayer.getName();
                 ok = true;
-                String kmlwkt = getKMLPolygonAsWKT(kmlstr);
-                mapLayer.setWKT(kmlwkt);
-                getMapComposer().addUserDefinedLayerToMenu(mapLayer, true);
+                //this.layerName = mapLayer.getName();
+                //String kmlwkt = getKMLPolygonAsWKT(kmlstr);
+                //mapLayer.setWKT(kmlwkt);
+                mc.addUserDefinedLayerToMenu(mapLayer, true);
             }
         } catch (Exception e) {
 
