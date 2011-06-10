@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <zk xmlns="http://www.zkoss.org/2005/zul">
-    <window style="text-align: left" use="au.org.emii.portal.composer.LayerListComposer" apply="au.org.emii.portal.composer.LayerListComposer">
+    <window id="layerswindow" style="text-align: left" 
+    use="au.org.emii.portal.composer.LayerListComposer"
+    apply="au.org.emii.portal.composer.LayerListComposer">
         <vbox>
             <label value="Browse layers via categories" style="font-weight: bold;" />
-            <label value="Click on the name to add the layer" style="color: gray" />
         </vbox>
         <tree id="tree" multiple="false" checkmark="false">
             <treecols>

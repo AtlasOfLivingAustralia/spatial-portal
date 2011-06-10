@@ -9,7 +9,7 @@
             <label id="distributionLabel" value=""/>
             <separator />
             <separator />
-            <listbox id="distributionListbox" sizedByContent="true" height="400px">
+            <listbox id="distributionListbox" height="400px">
             </listbox>
 
             <hbox>

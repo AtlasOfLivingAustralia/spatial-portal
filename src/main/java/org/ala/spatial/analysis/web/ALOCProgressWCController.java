@@ -15,6 +15,7 @@ import org.zkoss.zul.Label;
 import org.zkoss.zul.Progressmeter;
 import org.zkoss.zul.Textbox;
 import org.zkoss.zul.Timer;
+import org.zkoss.zul.Window;
 
 /**
  *
@@ -27,18 +28,12 @@ public class ALOCProgressWCController extends UtilityComposer {
     Timer timer;
     Textbox tbPid;
     public String pid = null;
-    private String satServer = "";
-    private SettingsSupplementary settingsSupplementary = null;
-    public ALOCWCController parent = null;
+//    public ALOCWCController parent = null;
+    public Window parent = null;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
         timer.stop();
     }
 
@@ -53,8 +48,14 @@ public class ALOCProgressWCController extends UtilityComposer {
 
     public void onTimer$timer(Event e) {
         //get status
+        if(parent == null) {
+            parent = (Window) this.getParent();
+        }
 
-        jobstatus.setValue(get("status"));
+        String status = get("status");
+        if(status.length() > 0) {
+            jobstatus.setValue(status);
+        }
 
         String s = get("state");
         if(s.equals("job does not exist")){
@@ -73,6 +74,7 @@ public class ALOCProgressWCController extends UtilityComposer {
 
         if (s.equals("SUCCESSFUL")) {
             timer.stop();
+            System.out.println("ALOC DONE. Calling loadMap");
             Events.echoEvent("loadMap",parent, null);
             //showReferenceNumber();
             this.detach();
@@ -91,8 +93,10 @@ public class ALOCProgressWCController extends UtilityComposer {
     String get(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
+            System.out.println("checking status every '"+timer.getDelay()+"' sec: " + sbProcessUrl.toString());
+            
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());
 

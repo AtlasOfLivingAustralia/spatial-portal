@@ -1,5 +1,6 @@
 package au.org.emii.portal.composer;
 
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
@@ -18,13 +19,7 @@ public class ExternalContentComposer extends Window {
         this.getFellow("hide").addEventListener("onClick", new EventListener() {
 
             public void onEvent(Event event) throws Exception {
-                ((Iframe)event.getTarget() //toolbarbutton
-                        .getParent() //control
-                        .getParent().getFellow("externalContentIframe")).setSrc("/img/loading_small.gif");
-
-                event.getTarget() //toolbarbutton
-                        .getParent() //control
-                        .getParent().setVisible(false); //window
+                close();
             }
         });
         
@@ -34,9 +29,51 @@ public class ExternalContentComposer extends Window {
                 Events.echoEvent("setSrc", event.getTarget().getParent().getParent(), null);
             }
         });
+
+        this.getFellow("breakout").addEventListener("onClick", new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                close();
+            }
+        });
+    }
+
+    @Override
+    public void doModal() throws InterruptedException, SuspendNotAllowedException  {
+        super.doModal();
+
+        this.getFellow("hide").addEventListener("onClick", new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                close();
+            }
+        });
+
+        this.getFellow("reset").addEventListener("onClick", new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                Events.echoEvent("setSrc", event.getTarget().getParent().getParent(), null);
+            }
+        });
+
+        this.getFellow("breakout").addEventListener("onClick", new EventListener() {
+
+            public void onEvent(Event event) throws Exception {
+                close();
+            }
+        });
     }
 
     public void setSrc(Event event) {
-        ((Iframe)getFellow("externalContentIframe")).setSrc(src);
+        if(event.getData() == null) {
+            ((Iframe)getFellow("externalContentIframe")).setSrc("");
+            Events.echoEvent("setSrc", event.getTarget(), src);
+        } else {
+            ((Iframe)getFellow("externalContentIframe")).setSrc(src);
+        }
+    }
+
+    void close() {
+        detach();
     }
 }

@@ -48,6 +48,7 @@ public class RemoteMapImpl implements RemoteMap {
     public MapLayer createWKTLayer(String wkt, String label) {
         MapLayer wktLayer = new MapLayer();
 
+        wktLayer.setPolygonLayer(true);
 
         logger.debug("adding WKT feature layer " + label);
         wktLayer.setName(label);
@@ -77,6 +78,7 @@ public class RemoteMapImpl implements RemoteMap {
 
     public MapLayer createGeoJSONLayer(String label, String uri, boolean points_type, Hashtable properties) {
         MapLayer geoJSON = new MapLayer();
+        geoJSON.setPolygonLayer(true);
 
         // just check if properties is null,
         // if so, just create an empty object
@@ -242,6 +244,33 @@ public class RemoteMapImpl implements RemoteMap {
         return geoJSON;
     }
 
+    public MapLayer createKMLLayer(String label, String name, String uri) {
+        MapLayer kml = new MapLayer();
+        kml.setPolygonLayer(true);
+
+        kml.setName(label);
+
+        if (uri.indexOf("?") == -1) {
+            kml.setUri(uri);
+        } else {
+            kml.setUri(uri.substring(0, uri.lastIndexOf("?")));
+        }
+
+        kml.setId(uri);
+        kml.setLayer(label);
+
+        logger.debug(uri);
+        kml.setType(layerUtilities.KML);
+        System.out.println("getting json .... " + uri);
+
+        if (kml.getMapLayerMetadata() == null) {
+            kml.setMapLayerMetadata(new MapLayerMetadata());
+        }
+
+        return kml;
+    }
+
+
     /**
      * Create a MapLayer instance and test that an image can be read from
      * the URI.
@@ -367,5 +396,30 @@ public class RemoteMapImpl implements RemoteMap {
     public void setLayerUtilities(LayerUtilities layerUtilities) {
         this.layerUtilities = layerUtilities;
     }
-   
+
+    public MapLayer createLocalLayer(int type, String label) {
+        MapLayer layer = new MapLayer();
+
+        layer.setName(label);
+        layer.setLayer(label);
+        layer.setId(label);
+
+        layer.setEnvColour("red");
+
+        int r = 255;
+        int g = 0;
+        int b = 0;
+
+        layer.setBlueVal(b);
+        layer.setGreenVal(g);
+        layer.setRedVal(r);
+
+        layer.setType(type);
+        layer.setSubType(type);
+
+        layer.setDisplayable(true);
+
+        return layer;
+
+    }
 }

@@ -1,0 +1,50 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<?component name="layerList" macro-uri="/WEB-INF/zul/layers.zul"?>
+<zk>
+    <window id="addlayerwindow" use="org.ala.spatial.analysis.web.AddLayerController"
+    apply="org.ala.spatial.analysis.web.AddLayerController" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="addlayerwindow.onClick$btnCancel(null)" style="display: inline" />
+        <n:a class="fancybox-help" n:onClick="loadHelp('layers-add-to-map')" style="display: inline" />
+        <caption label="Add layer" />
+
+        <vbox width="100%">
+            <separator />
+            <radiogroup id="rgAddLayer" >
+                <vbox>
+                    <radio id="rSearch" label="Enter a layer name or keyword" />
+                        <div id="divSearch" >
+                            <separator />
+                            <combobox id="lac" use="org.ala.spatial.analysis.web.LayersAutoComplete" autodrop="true" width="350px">
+                                <comboitem label=""/>
+                            </combobox>
+                            <separator/>
+                            <label sclass="wCaption" value='For example: "Temperature"'/>
+                        </div>
+                    <radio id="rTree" label="Browse by category" />
+                        <div id="divTree" visible="false">
+                            <separator />
+                            <div height="300px" style="margin-left:5px;overflow: auto">
+                                <layerList id="layerList" height="400px"/>
+                            </div>
+                        </div>
+                 </vbox>
+             </radiogroup>
+        </vbox>
+        <separator />
+        <div sclass="wButtons">
+            <hbox>
+                <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                <button sclass="goButton" label="Next" id="btnOk" disabled="true" />
+            </hbox>
+        </div>
+        <separator />
+    </window>
+</zk>

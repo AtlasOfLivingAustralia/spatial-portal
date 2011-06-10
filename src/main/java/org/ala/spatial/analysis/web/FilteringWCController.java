@@ -6,6 +6,7 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -66,8 +67,6 @@ public class FilteringWCController extends UtilityComposer {
     private Map<String, SPLFilter> selectedSPLFilterLayers;
     private String pid = "";
     private MapComposer mc;
-    private String satServer = "";
-    private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
     /**
      * for functions in popup box
@@ -86,15 +85,10 @@ public class FilteringWCController extends UtilityComposer {
 
         //get the current MapComposer instance
         mc = getThisMapComposer();
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        } else {
-            //TODO: error message
-        }
 
         //cbEnvLayers.setSettingsSupplementary(settingsSupplementary);
 
-        layersUtil = new LayersUtil(mc, satServer);
+        layersUtil = new LayersUtil(mc, CommonData.satServer);
 
         selectedLayers = new Vector<String>();
         selectedLayersUrl = new Vector<String>();
@@ -253,7 +247,7 @@ public class FilteringWCController extends UtilityComposer {
     private String getInfo(String value, String type) {
         try {
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/ws/spatial/settings/layer/" + URLEncoder.encode(value, "UTF-8") + "/" + type); // testurl
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/ws/spatial/settings/layer/" + URLEncoder.encode(value, "UTF-8") + "/" + type); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, * /*");
 
             int result = client.executeMethod(get);
@@ -275,7 +269,7 @@ public class FilteringWCController extends UtilityComposer {
     private String getInfo(String urlPart) {
         try {
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
             int result = client.executeMethod(get);
@@ -625,13 +619,13 @@ public class FilteringWCController extends UtilityComposer {
 
     void updateActiveArea(boolean hide) {
         //trigger update to 'active area'
-        Component c = getParent().getParent();
-        while (c != null && !c.getId().equals("selectionwindow")) {
-            c = c.getParent();
-        }
-        if (c != null) {
-            ((SelectionController) c).onEnvelopeDone(hide);
-        }
+//        Component c = getParent().getParent();
+//        while (c != null && !c.getId().equals("selectionwindow")) {
+//            c = c.getParent();
+//        }
+//        if (c != null) {
+//            ((SelectionController) c).onEnvelopeDone(hide);
+//        }
     }
 
     public void onClick$apply_continous(Event event) {
@@ -712,36 +706,16 @@ public class FilteringWCController extends UtilityComposer {
         try {
             popup_filter.count = Integer.parseInt(strCount.split("\n")[0]);
             ((Listcell) popup_item.getChildren().get(2)).setLabel(strCount.split("\n")[0]);
-
-            //update Species List analysis tab
-            updateSpeciesList(popup_filter.count, Integer.parseInt(strCount.split("\n")[1]));
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * updates species list analysis tab with refreshCount
-     *
-     * similar function in SelectionController.java
-     */
-    void updateSpeciesList(int newCount, int newOccurrencesCount) {
-        try {
-            FilteringResultsWCController win =
-                    (FilteringResultsWCController) getMapComposer().getFellow("leftMenuAnalysis").getFellow("analysiswindow").getFellow("sf") //AnalysisSelection
-                    .getFellow("speciesListForm").getFellow("popup_results");
-            win.refreshCount(newCount, newOccurrencesCount);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     private String postInfo(String urlPart) {
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod get = new PostMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             //get.addParameter("area", URLEncoder.encode("none", "UTF-8"));
@@ -763,7 +737,7 @@ public class FilteringWCController extends UtilityComposer {
     private void loadMap(String filename, String layername) {
         //String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
         //label = selectedLayers.get(selectedLayers.size() - 1);
-        String uri = satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
+        String uri = CommonData.satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();
@@ -776,8 +750,9 @@ public class FilteringWCController extends UtilityComposer {
         //bbox.add(17143201.58216413);
         //bbox.add(-1006021.0627551343);
 
-        mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox);
-
+        MapLayer ml = mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
+        ml.setWKT("ENVELOPE(" + pid + ")");
+        ml.setData("area", activeAreaSize);
     }
 
     /**

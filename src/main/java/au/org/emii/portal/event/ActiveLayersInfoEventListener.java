@@ -2,6 +2,8 @@ package au.org.emii.portal.event;
 
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.composer.MapComposer;
+import au.org.emii.portal.util.LayerUtilities;
+import org.ala.spatial.util.ScatterplotData;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -22,15 +24,22 @@ public class ActiveLayersInfoEventListener extends PortalEvent implements EventL
                 if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().startsWith("http://")) {
+                    String infourl = activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", ".");
+                    if (activeLayer.getSubType()==LayerUtilities.SCATTERPLOT) {
+                        ScatterplotData data = (ScatterplotData) activeLayer.getData("scatterplotData");
+                        infourl += "?dparam=X-Layer:"+data.getLayer1Name();
+                        infourl += "&dparam=Y-Layer:"+data.getLayer2Name();
+                    }
                     // send the user to the BIE page for the species
-                    logger.debug("opening the following url " + activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
+                    logger.debug("opening the following url " + infourl);
                     Events.echoEvent("openUrl", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo().replace("__", "."));
 
                 } else if (activeLayer.getMapLayerMetadata() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo() != null
                         && activeLayer.getMapLayerMetadata().getMoreInfo().length() > 0) {
                     logger.debug("performing a MapComposer.showMessage for following content " + activeLayer.getMapLayerMetadata().getMoreInfo());
-                    mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
+                    //mapComposer.showMessage(activeLayer.getMapLayerMetadata().getMoreInfo());
+                    Events.echoEvent("openHTML", mapComposer, activeLayer.getMapLayerMetadata().getMoreInfo());
                 } else {
                     logger.debug("no metadata is available for current layer");
                     mapComposer.showMessage("Metadata currently unavailable");

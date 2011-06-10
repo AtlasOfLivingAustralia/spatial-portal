@@ -24,7 +24,6 @@ import org.zkoss.zul.Comboitem;
  */
 public class LayersAutoComplete extends Combobox {
 
-    private static String SAT_SERVER = null;
     SettingsSupplementary settingsSupplementary = null;
 
     ;
@@ -61,12 +60,11 @@ public class LayersAutoComplete extends Combobox {
         } else if (this.getParent() != null) {
             settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
             System.out.println("LAC got SS: " + settingsSupplementary);
-            SAT_SERVER = settingsSupplementary.getValue(CommonData.SAT_URL);
         } else {
             return;
         }
 
-        String baseUrl = SAT_SERVER + "/alaspatial/ws/layers/";
+        String baseUrl = CommonData.satServer + "/alaspatial/ws/layers/";
         try {
 
             //System.out.println("bringing in layers:");

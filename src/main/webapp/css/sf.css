@@ -1,0 +1,109 @@
+/*
+original at http://www.ala.org.au/wp-content/themes/ala/css/sf.css
+*/
+#nav {
+	float:left;
+	position:relative;
+	height:36px;
+	display:inline;
+	padding-left:17px;
+	z-index:1000;
+}
+
+#nav ul li {
+	display:inline;
+}
+#nav li a {
+	float: left;
+	padding: 36px 0 0 0;
+	overflow: hidden;
+	height: 0px !important;
+	border: none;
+}
+/*** ESSENTIAL STYLES ***/
+.sf, .sf * {
+	margin:0;
+	padding:0;
+	list-style:none;
+}
+
+/*.sf ul {*/
+.sf li ul {
+	position:absolute;
+	top:-999em;
+	width:100%; /* left offset of submenus need to match (see below) */
+}
+.sf ul li { width:100%; }
+.sf li:hover { visibility:inherit; /* fixes IE7 'sticky bug' */ }
+.sf li { float:left; position:relative; }
+.sf a { display:block; position:relative; }
+
+.sf li:hover ul,
+.sf li.sfHover ul {
+	left:-15px;
+	top:31px;    /* where to start sub menu (match height of button image) */
+	width:16em;  /* how wide the sub-menus should be when javascript is disabled. don't forget left margin for level 3! */
+	z-index:50;
+}
+.sf li:hover ul.log-in,
+.sf li.sfHover ul.log-in {
+	left:-.5em!important;
+}
+ul.sf li:hover li ul,
+ul.sf li.sfHover li ul {
+	top:-999em;
+}
+
+/*** CUSTOM SKIN ***/
+
+/* top */
+.sf a {text-decoration:none}
+
+.nav-myprofile.nav-right a{position:absolute;right:-196px;}
+
+.nav-login.nav-right a, .nav-logout.nav-right a {position:absolute;right:-263px;}
+
+.nav-add a{width:92px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:0 0;}
+.nav-tools a{width:52px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-92px 0;}
+.nav-help a{width:56px;background:transparent url(../img/nav_spatial-portal.png) no-repeat 0 0; background-position:-144px 0;}
+
+.nav-add a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:0px -51px;z-index:100;}
+.nav-tools a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-92px -51px;z-index:100;}
+.nav-help a:hover,.nav-support a, .nav-support.sfHover a, .nav-support:hover{background-position:-144px -51px;z-index:100;}
+
+/* end of image replace */
+
+/* subs */
+.sf li li {
+	height:100%;
+	line-height:1.6em;
+}
+
+.sf li li a, .sf li li a:visited {
+	padding:.4em .5em 2em .5em!important;
+	width:15.5em;
+	color:			#fff;
+	background-image:none
+}
+
+.sf li ul {
+	padding: 1em 0;
+	background-color:#f37e2c;
+	background-image: -moz-linear-gradient(top, #fc9f2a, #e8572f);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #fc9f2a),color-stop(1, #e8572f));
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fc9f2a', EndColorStr='#e8572f');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fc9f2a', EndColorStr='#e8572f')";
+	border:1px #e8572f solid;
+	-moz-border-radius: 7px; /* FF1+ */
+	-webkit-border-radius: 7px; /* Saf3+, Chrome */
+	-o-border-radius: 7px;
+	-icab-border-radius: 7px;
+	-khtml-border-radius: 7px;
+	border-radius: 7px; /* Opera 7.7, IE 9 */
+	z-index:50;
+	overflow:hidden;
+}
+
+/* hover for subs */
+.sf li li:hover, .sf li li.sfHover,.sf li li a:focus, .sf li li a:hover, .sf li li a:active { background-color:#dd3102;color:#fff!important; outline:0;}
+

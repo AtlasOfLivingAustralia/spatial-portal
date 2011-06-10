@@ -20,7 +20,7 @@ public class ActiveLayersLegendEventListener extends PortalEvent implements Even
                         listItem.setSelected(true);
 
 			if (activeLayer != null) {
-                            mapComposer.toggleLayerControls();
+//                            mapComposer.toggleLayerControls();
 			} else {
 				//logger.debug("nothing selected in active layers list will do nothing");
                             System.out.println("LEGEND: active layer is null"); 

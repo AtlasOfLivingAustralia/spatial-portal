@@ -3,12 +3,16 @@ package au.org.emii.portal.menu;
 import au.org.emii.portal.util.LayerUtilitiesImpl;
 import au.org.emii.portal.value.AbstractIdentifierImpl;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import au.org.emii.portal.wms.WMSStyle;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import org.ala.spatial.util.Util;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.jfree.chart.plot.XYPlot;
 
 /**
  * Representation of a map layer - used for both rendering map layers
@@ -40,10 +44,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * indicate that the default rendering style
      * should be used
      */
-    /**
-     * Log4j instance
-     */
-    protected Logger logger = Logger.getLogger(this.getClass());
     public final static int STYLE_DEFAULT = 0;
     /**
      * Delimiter used when generating map layer ids
@@ -126,6 +126,22 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
      * alaspatial ref number for species record highlight flag
      */
     String highlight = null;
+    /*
+     * data for 'dummy' layers
+     */
+    HashMap<String, Object> data = new HashMap<String, Object>();
+    /*
+     * display name
+     */
+    String displayName = null;
+    /*
+     * flag to determine if this is a polygon layer
+     */
+    private boolean polygonLayer = false;
+    /*
+     * layer sub type.  e.g. source
+     */
+    protected int subType = LayerUtilitiesImpl.UNSUPPORTED;
 
     public void setDefaultStyleLegendUriSet(boolean defaultStyleLegendUriSet) {
         this.defaultStyleLegendUriSet = defaultStyleLegendUriSet;
@@ -146,7 +162,18 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     protected String geometryWKT = null;
 
     public String getWKT() {
-        return geometryWKT;
+        if(isPolygonLayer()
+                && getType() != LayerUtilities.WKT
+                && geometryWKT == null
+                && geoJSON == null) {
+            //TODO: query for non-wkt layer geometry
+            return null;
+        } else {
+            if(geometryWKT == null) {
+                geometryWKT = Util.wktFromJSON(geoJSON);
+            }
+            return geometryWKT;
+        }
     }
 
     public void setWKT(String wkt) {
@@ -430,8 +457,6 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
             }
         }
 
-        logger.debug("8888888888888888888888888888888888888888888888");
-        logger.debug(uri);
         return uri;
     }
 
@@ -725,6 +750,15 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
             mapLayer.mapLayerMetadata =
                     (MapLayerMetadata) mapLayerMetadata;
         }
+
+        // copy data objects
+        mapLayer.data = new HashMap<String, Object>();
+        if(data != null) {
+            for(Entry<String, Object> entry : mapLayer.data.entrySet()) {
+                mapLayer.data.put(entry.getKey(), entry.getValue());
+            }
+        }
+        
         return mapLayer;
     }
 
@@ -893,5 +927,55 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
 
     public String getColourMode() {
         return colourMode;
+    }
+
+    public Object getData(String key) {
+        return data.get(key);
+    }
+
+    public void setData(String key, Object value) {
+        data.put(key, value);
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String name) {
+        displayName = name;
+    }
+
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        setDisplayName(name);
+    }
+
+    public void setPolygonLayer(boolean isPolygon) {
+        polygonLayer = isPolygon;
+    }
+
+    public boolean isPolygonLayer() {
+        return polygonLayer || subType == LayerUtilities.ENVIRONMENTAL_ENVELOPE;
+    }
+
+    public boolean isSpeciesLayer() {
+        return (mapLayerMetadata != null && mapLayerMetadata.getSpeciesLsid() != null);
+    }
+
+    public boolean isGridLayer() {
+        return subType == LayerUtilities.GRID;
+    }
+
+    public boolean isContextualLayer() {
+        return subType == LayerUtilities.CONTEXTUAL;
+    }
+
+    public int getSubType() {
+        return subType;
+    }
+
+    public void setSubType(int type) {
+        subType = type;
     }
 }

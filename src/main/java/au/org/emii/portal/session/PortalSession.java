@@ -86,10 +86,13 @@ public class PortalSession implements Cloneable, Serializable {
      * Are we hiding the left menu?
      */
     private boolean maximised = false;
+    /**
+     * Baselayer name
+     */
+    private String baseLayer = "normal";
 
     public PortalSession() {
         reset();
-
     }
 
     public int getCurrentNavigationTab() {
@@ -205,5 +208,13 @@ public class PortalSession implements Cloneable, Serializable {
         mapLayers = new ArrayList<MapLayer>();
         activeLayers = new ArrayList<MapLayer>();
         userDefinedLayers = new ArrayList<MapLayer>();
+    }
+
+    public String getBaseLayer() {
+        return baseLayer;
+    }
+
+    public void setBaseLayer(String baseLayer) {
+        this.baseLayer = baseLayer;
     }
 }

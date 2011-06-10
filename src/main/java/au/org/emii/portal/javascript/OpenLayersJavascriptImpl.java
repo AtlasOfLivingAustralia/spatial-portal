@@ -245,12 +245,21 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 "	mapLayers['" + mapLayer.getUniqueIdJS() + "'] = new OpenLayers.Layer.Image("
                 + "		'" + mapLayer.getNameJS() + "', "
                 + "		'" + mapLayer.getUriJS() + "', "
-                + " 		new OpenLayers.Bounds("
-                + bbox.get(0) + ","
+                + " 		new OpenLayers.Bounds(";
+
+        if (mapLayer.getSubType() == LayerUtilities.ENVIRONMENTAL_ENVELOPE) {
+            script +=  "112" + ","
+                + "-44" + ","
+                + "154" + ","
+                + "-9";
+        } else {
+            script += bbox.get(0) + ","
                 + bbox.get(1) + ","
                 + bbox.get(2) + ","
-                + bbox.get(3)
-                + "		).transform(map.displayProjection, map.projection), "
+                + bbox.get(3);
+        }
+        
+        script += "		).transform(map.displayProjection, map.projection), "
                 //+ "             map.baseLayer.getExtent(),       "
                 + " 		new OpenLayers.Size("
                 + settingsSupplementary.getValue("animation_width") + ","
@@ -695,7 +704,7 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
                 + "		'" + layer.getNameJS() + "', "
                 + "		'" + layer.getUriJS().replace("wms?service=WMS&version=1.1.0&request=GetMap&", "wms\\/reflect?") + "', "
                 + "		{"
-                + "			styles: '" + layer.getSelectedStyleNameJS() + "', "
+                + ((layer.getSelectedStyleNameJS().equals("Default"))?"":"			styles: '" + layer.getSelectedStyleNameJS() + "', ")
                 + "			layers: '" + layer.getLayerJS() + "', "
                 + "			format: '" + layer.getImageFormat() + "', "
                 + "                     srs: 'epsg:900913', "
@@ -942,5 +951,10 @@ public class OpenLayersJavascriptImpl implements OpenLayersJavascript {
         if (additionalScript != null && additionalScript.length() > 0) {
             this.execute(getAdditionalScript());
         }
+    }
+
+    @Override
+    public String setBaseLayer(String baseLayer) {
+        return "changeBaseLayer('" + baseLayer + "');";
     }
 }

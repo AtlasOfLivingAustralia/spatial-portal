@@ -4,27 +4,6 @@
     <window id="alocwindow" use="org.ala.spatial.analysis.web.ALOCWCController" 
     apply="org.ala.spatial.analysis.web.ALOCWCController"  width="100%">
 
-        <style>
-         .envlist .z-listheader-cnt input, .z-list-group-inner div input, .z-listheader-img  {
-         display: none;
-         }
-
-         .envlist div.z-listcell-cnt {
-         font-size: 10px;
-         }
-
-         .lcRed {
-         background: #bb2222;
-         }
-         .lcYellow {
-         background: #ffff22;
-         }
-         .lcGreen {
-         background: #22aa22;
-         }
-
-        </style>
-
         <tabbox id="tabboxclassification">
             <tabs>
                 <tab label="1*" />

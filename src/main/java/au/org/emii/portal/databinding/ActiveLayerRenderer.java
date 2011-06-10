@@ -13,6 +13,7 @@ import au.org.emii.portal.lang.LanguagePack;
 import org.springframework.beans.factory.annotation.Required;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Checkbox;
+import org.zkoss.zul.Div;
 import org.zkoss.zul.Image;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listcell;
@@ -43,9 +44,11 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		checkbox.setParent(listcell);
 		checkbox.setTooltiptext("Hide");
 		
-		Label label = new Label(layerUtilities.chompLayerName(layer.getName()));
-		label.setParent(listcell);
+		Label label = new Label(layerUtilities.chompLayerName(layer.getDisplayName()));
+		//do after legend
+                //label.setParent(listcell);
 		listcell.setParent(item);
+                listcell.setStyle("padding:5px;");
 
 		// dnd list reordering support
 		item.addEventListener("onDrop", new ActiveLayerDNDEventListener());
@@ -56,94 +59,64 @@ public class ActiveLayerRenderer implements ListitemRenderer {
 		item.setValue(layer);
 	
 		// simple description for tooltip
-		label.setTooltiptext(layerUtilities.getTooltip(layer.getName(),layer.getDescription()));
+		label.setTooltiptext(layerUtilities.getTooltip(layer.getDisplayName(),layer.getDescription()));
 		
-                label.addEventListener("onClick", new ActiveLayersInfoEventListener());
+                //label.addEventListener("onClick", new ActiveLayersInfoEventListener());
 		label.setStyle("float:left;");
 		checkbox.setStyle("float:left;");
-		
 
 		
 		/* show the legend graphic when the user hovers over the pallette icon
 		 * if 
 		 */
-		Image remove = new Image(languagePack.getLang("layer_remove_icon"));
-		remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
-		remove.setParent(listcell);
-		remove.setStyle("float:right;");
-		remove.setTooltiptext("remove layer");
+                if(layer.getType() != LayerUtilities.MAP) {
+                    Image remove = new Image(languagePack.getLang("layer_remove_icon"));
+                    remove.addEventListener("onClick", new ActiveLayersRemoveEventListener());
+                    remove.setParent(listcell);
+                    remove.setStyle("float:right;");
+                    remove.setTooltiptext("remove layer");
 
-                Image info = new Image(languagePack.getLang("layer_info_icon"));
-                info.setParent(listcell);
-                info.setStyle("float:right;");
-                info.setTooltiptext("metadata");
-                info.addEventListener("onClick", new ActiveLayersInfoEventListener());
-
-
-                Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
-                zoomextent.setParent(listcell);
-                zoomextent.setStyle("float:right");
-                zoomextent.setTooltiptext("zoom to extent");
-                zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+                    Image info = new Image(languagePack.getLang("layer_info_icon"));
+                    info.setParent(listcell);
+                    info.setStyle("float:right;");
+                    info.setTooltiptext("metadata");
+                    info.addEventListener("onClick", new ActiveLayersInfoEventListener());
 
 
-                
-
-		
-		if (layer.isDefaultStyleLegendUriSet()) {
-			/* animated layers get a "special" key icon
-			 * Since setting this icon will only happen if style 
-			 * legends are available, it is an assumption that
-			 * only layers with legends will be animatable, so 
-			 * if you have a layer with no legend that doesn't 
-			 * display the special animation key icon, that's 
-			 * why
-			 */
-			Image legend;
-			if (layer.isCurrentlyAnimated()) {
-				// layer is currently being animated (implies supports animation)
-				legend = new Image(languagePack.getLang("map_legend_animated_icon"));
-			}
-			else if (layer.isSupportsAnimation()) {
-				// layer is supports animation but is not currently animated
-				legend = new Image(languagePack.getLang("map_legend_animatable_icon"));
-			}
-			else {
-				// just a plain layer
-				legend = new Image(languagePack.getLang("layer_legend_icon"));
-			}
-			
-			/* hack to get things to align properly - want everything
-			 * floating left except the image which floats right 
-			 */
-
-			legend.setStyle("float:right;");
-			
-			legend.setParent(listcell);
-			
-
-
-			// hover a tooltip image over the icon
-			Popup popup = (Popup) Executions.createComponents("/WEB-INF/zul/LegendPopup.zul", legend.getRoot(), null);	
-			popup.addEventListener("onOpen", new LegendTooltipOpenEventListener(layer));
-			legend.setTooltip(popup);
-                        legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
-                        legend.setTooltiptext("View/edit the legend");
-
-		} else {
-                    Image legend;
-                    legend = new Image(languagePack.getLang("layer_legend_icon"));
-                    legend.setStyle("float:right;");
-		    legend.setParent(listcell);
-                    legend.setTooltiptext("View/edit the legend");
-                    legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
+                    Image zoomextent = new Image(languagePack.getLang("layer_zoomextent_icon"));
+                    zoomextent.setParent(listcell);
+                    zoomextent.setStyle("float:right");
+                    zoomextent.setTooltiptext("zoom to extent");
+                    zoomextent.addEventListener("onClick", new ActiveLayersZoomExtentEventListener());
+                } else {
+                    checkbox.setDisabled(true);
                 }
 
-                
+                //Set the legend graphic based on the layer type
+                Image legend;
+                legend = new Image();
+                if (layer.isGridLayer()) {
+                    legend = new Image(languagePack.getLang("icon_grid"));
+                } else if (layer.isSpeciesLayer()) {
+                    legend = new Image(languagePack.getLang("icon_species"));
+                } else if (layer.isPolygonLayer()) {
+                    legend = new Image(languagePack.getLang("icon_polygon"));
+                } else if (layer.isContextualLayer()) {
+                    legend = new Image(languagePack.getLang("icon_contextual"));
+                } else {
+                    //just a plain layer
+                    legend = new Image(languagePack.getLang("layer_legend_icon"));
+                }
 
-                //Image legend = new Image(languagePack.getLang("layer_le_icon"));
-                //info.setParent(listcell);
+                //todo: support analysis layers (languagePack.getLang("icon_analysis"))
 
+                legend.setStyle("float:left;");
+                legend.setParent(listcell);
+                legend.setTooltiptext("View/edit the legend");
+                legend.addEventListener("onClick", new ActiveLayersLegendEventListener());
+
+
+                label.setParent(listcell);
 
 	}
 
