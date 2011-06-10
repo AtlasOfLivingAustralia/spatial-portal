@@ -282,9 +282,6 @@ public class LayerListComposer extends UtilityComposer {
                     Space sp = new Space();
                     sp.setParent(tcName);
                     
-                    if (joLayer.getString("scale").compareTo("null") != 0){
-                        scale = " (" + joLayer.getString("scale") + " deg)";
-                    }
                 }
                 Label lbl = new Label(displayname + scale);
                 lbl.setParent(tcName);
