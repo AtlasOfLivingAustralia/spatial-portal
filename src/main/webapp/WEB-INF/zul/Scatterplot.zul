@@ -152,6 +152,10 @@ var endy = 0;
 var resizing = false;
 
 function doMouseDown(event) {
+document.getElementById('chartDiv').UNSELECTABLE="on"
+document.getElementById('rband').UNSELECTABLE="on"
+document.getElementById('chartDivBack').UNSELECTABLE="on"
+
  $('#rband').offset($('#chartDivBack').offset());
         setPageXY(event);
         startx = event.pageX;
