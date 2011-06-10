@@ -846,6 +846,7 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
             }
+            area = area.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected area");
             e.printStackTrace(System.out);

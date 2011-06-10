@@ -85,14 +85,19 @@ public class AreaUploadShapefile extends AreaToolComposer {
 //                byte[] csvdata = m.getByteData();
 //                loadUserPoints(m.getName(), new StringReader(new String(csvdata)));
 //            } else
-            if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {
-                System.out.println("isBin: " + m.isBinary());
-                System.out.println("inMem: " + m.inMemory());
-                if (m.inMemory()) {
-                    loadUserLayerKML(m.getName(), m.getByteData());
-                } else {
-                    loadUserLayerKML(m.getName(), m.getStreamData());
-                }
+
+//            if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_KML)) {
+//                System.out.println("isBin: " + m.isBinary());
+//                System.out.println("inMem: " + m.inMemory());
+//                if (m.inMemory()) {
+//                    loadUserLayerKML(m.getName(), m.getByteData());
+//                } else {
+//                    loadUserLayerKML(m.getName(), m.getStreamData());
+//                }
+//              }
+            byte[] kmldata = loadKml(m);
+            if (kmldata != null) {
+                loadUserLayerKML(m.getName(), kmldata);
             } else if (m.getFormat().equalsIgnoreCase("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
                 // "/data/ala/runtime/output/layers/"
                 // "/Users/ajay/projects/tmp/useruploads/"
@@ -127,11 +132,52 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     System.out.println("Unknown file type. ");
                     getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
                 }
+            } else {
+                System.out.println("Unknown file type. ");
+                getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
             }
         } catch (Exception ex) {
             getMapComposer().showMessage("Unable to load file. Please try again. ");
             ex.printStackTrace();
         }
+    }
+
+    private byte[] loadKml(Media m) {
+        try {
+            String kmlData = "";
+
+            if (m.inMemory()) {
+                kmlData = new String(m.getByteData());
+            } else {
+                InputStream data = m.getStreamData();
+                if (data != null) {
+                    Writer writer = new StringWriter();
+
+                    char[] buffer = new char[1024];
+                    try {
+                        Reader reader = new BufferedReader(
+                                new InputStreamReader(data));
+                        int n;
+                        while ((n = reader.read(buffer)) != -1) {
+                            writer.write(buffer, 0, n);
+                        }
+                    } finally {
+                        data.close();
+                    }
+                    kmlData = writer.toString();
+                }
+            }
+
+            if (kmlData.contains("xml") && kmlData.contains("kml") && kmlData.contains("Document")) {
+                return kmlData.getBytes();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("Exception checking if kml file");
+            e.printStackTrace(System.out);
+        }
+        return null;
     }
 
     public void loadUserLayerKML(String name, InputStream data) {
@@ -205,15 +251,17 @@ public class AreaUploadShapefile extends AreaToolComposer {
         try {
 
             String[] kml = kmldata.toLowerCase().split("polygon");
-            int trueLength = (kml.length-1)/2;
+            int trueLength = (kml.length - 1) / 2;
 
             StringBuilder sbKml = new StringBuilder();
             if (trueLength > 1) {
                 sbKml.append("GEOMETRYCOLLECTION(");
             }
-            for (int j=1; j<kml.length; j+=2) {
+            for (int j = 1; j < kml.length; j += 2) {
                 String k = kml[j];
-                if (k.trim().equals("")) continue;
+                if (k.trim().equals("")) {
+                    continue;
+                }
                 int pos1 = k.indexOf("coordinates") + 12;
                 int pos2 = k.indexOf("/coordinates") - 1;
                 String kcoords = k.substring(pos1, pos2);
@@ -223,7 +271,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     coords = kcoords.split("\n");
                 }
 
-                if (j>1) {
+                if (j > 1) {
                     sbKml.append(",");
                 }
 
@@ -245,7 +293,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                 sbKml.append(")");
             }
 
-            return sbKml.toString(); 
+            return sbKml.toString();
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
