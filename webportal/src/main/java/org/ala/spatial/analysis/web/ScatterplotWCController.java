@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -33,6 +34,7 @@ import org.zkoss.zul.Textbox;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilterWriter;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -55,6 +57,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.util.Clients;
+import org.zkoss.zul.Button;
 import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Comboitem;
 import org.zkoss.zul.Div;
@@ -65,14 +68,11 @@ import org.zkoss.zul.Label;
  *
  * @author Adam
  */
-public class ScatterplotWCController extends UtilityComposer {
+public class ScatterplotWCController extends UtilityComposer implements HasMapLayer {
 
     private static final String NUMBER_SERIES = "Number series";
     private static final String ACTIVE_AREA_SERIES = "In Active Area";
     private SettingsSupplementary settingsSupplementary = null;
-    String satServer;
-    Chart chart;
-    //Div chartImg;
     SpeciesAutoComplete sac;
     SpeciesAutoComplete sacBackground;
     EnvLayersCombobox cbLayer1;
@@ -106,19 +106,18 @@ public class ScatterplotWCController extends UtilityComposer {
     int[] seriesColours;
     String[] seriesNames;
     private DefaultXYZDataset backgroundXyzDataset;
-    String backgroundLSID;
-    private String backgroundName;
+    //String backgroundLSID;
+    //private String backgroundName;
     Div envLegend;
+    Boolean missing_data = false;
+    Label lblMissing;
+    Button addNewLayers;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
 
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
-
-        layersUtil = new LayersUtil(getMapComposer(), satServer);
+        layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
 
         this.addEventListener("onSize", new EventListener() {
 
@@ -185,7 +184,7 @@ public class ScatterplotWCController extends UtilityComposer {
     }
 
     public void onChange$sacBackground(Event event) {
-        backgroundLSID = null;
+        data.setBackgroundLsid(null);
 
         if (sacBackground.getSelectedItem() == null) {
             return;
@@ -208,11 +207,10 @@ public class ScatterplotWCController extends UtilityComposer {
         }
         System.out.println("mapping rank and species: " + rank + " - " + taxon);
 
-        backgroundLSID = (String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0);
-        backgroundName = taxon;
+        data.setBackgroundLsid((String) sacBackground.getSelectedItem().getAnnotatedProperties().get(0));
 
         //only add it to the map if this was signaled from an event
-        clearSelection();
+        //clearSelection();
 
         if (event != null) {
             Events.echoEvent("doSpeciesChange", this, null);
@@ -222,7 +220,7 @@ public class ScatterplotWCController extends UtilityComposer {
     }
 
     public void doSpeciesChange(Event event) {
-        getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
+        //getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
 
         Events.echoEvent("updateScatterplot", this, null);
     }
@@ -267,7 +265,11 @@ public class ScatterplotWCController extends UtilityComposer {
 
     public ScatterplotData getScatterplotData() {
         if (data == null) {
-            data = new ScatterplotData();
+            if (mapLayer == null) {
+                data = new ScatterplotData();
+            } else {
+                data = (ScatterplotData) mapLayer.getData("scatterplotData");
+            }
         }
         return data;
     }
@@ -342,11 +344,12 @@ public class ScatterplotWCController extends UtilityComposer {
 
             annotation = new XYBoxAnnotation(y1, x1, y2, x2);
 
+            imagePath = null;
             redraw();
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
 
@@ -360,7 +363,7 @@ public class ScatterplotWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
 
@@ -369,117 +372,143 @@ public class ScatterplotWCController extends UtilityComposer {
 
         resample();
 
-        if (data.getLsid() != null && data.getLsid().length() > 0
+        if (data != null && data.getLsid() != null && data.getLsid().length() > 0
                 && data.getLayer1() != null && data.getLayer1().length() > 0
                 && data.getLayer2() != null && data.getLayer2().length() > 0
                 && xyzDataset != null) {
-            try {
-                //active area must be drawn first
-                if (chkHighlightActiveAreaOccurrences.isChecked() && aaDataset != null) {
-                    jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
-                } else {
-                    jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
-                }
-                jChart.setBackgroundPaint(Color.white);
-                plot = (XYPlot) jChart.getPlot();
-                if (annotation != null) {
-                    plot.addAnnotation(annotation);
-                }
-
-                Font axisfont = new Font("Arial", Font.PLAIN, 10);
-                Font titlefont = new Font("Arial", Font.BOLD, 11);
-                plot.getDomainAxis().setLabelFont(axisfont);
-                plot.getDomainAxis().setTickLabelFont(axisfont);
-                plot.getRangeAxis().setLabelFont(axisfont);
-                plot.getRangeAxis().setTickLabelFont(axisfont);
-                plot.setBackgroundPaint(new Color(160, 220, 220));
-
-                plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
-
-                jChart.getTitle().setFont(titlefont);
-
-                //active area must be drawn first
-                if (chkHighlightActiveAreaOccurrences.isChecked() && aaDataset != null) {
-                    plot.setRenderer(getActiveAreaRenderer());
-
-                    int datasetCount = plot.getDatasetCount();
-                    plot.setDataset(datasetCount, xyzDataset);
-                    plot.setRenderer(datasetCount, getRenderer(zmin, zmax, seriesColours, seriesNames));
-                } else {
-                    plot.setRenderer(getRenderer(zmin, zmax, seriesColours, seriesNames));
-                }
-
-                //add points background
-                if (backgroundLSID != null) {
-                    resampleBackground();
-
-                    if (backgroundXyzDataset != null) {
-                        int datasetCount = plot.getDatasetCount();
-                        plot.setDataset(datasetCount, backgroundXyzDataset);
-                        plot.setRenderer(datasetCount, getBackgroundRenderer());
-                    }
-                }
-
-                //add block background
-                if (chkShowEnvIntersection.isChecked()) {
-                    NumberAxis x = (NumberAxis) plot.getDomainAxis();
-                    NumberAxis y = (NumberAxis) plot.getRangeAxis();
-                    addBlockPlot(plot,
-                            data.getLayer1(),
-                            data.getLayer1Name(),
-                            x.getLowerBound(),
-                            x.getUpperBound(),
-                            data.getLayer2(),
-                            data.getLayer2Name(),
-                            y.getLowerBound(),
-                            y.getUpperBound());
-                }
-
-                chartRenderingInfo = new ChartRenderingInfo();
-
-                int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
-                int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
-                if (height > width) {
-                    height = width;
-                } else {
-                    width = height;
-                }
-                BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
-                byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
-
-                //save to file
-                String uid = String.valueOf(System.currentTimeMillis());
-                String pth = this.settingsSupplementary.getValue("print_output_path");
-                String htmlurl = settingsSupplementary.getValue("print_output_url");
-
-                imagePath = pth + uid + ".png";
-
+            if (missing_data) {
+                lblMissing.setVisible(true);
+            } else {
+                lblMissing.setVisible(false);
                 try {
-                    FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
-                    fos.write(bytes);
-                    fos.close();
+                    //only permits redrawing if imagePath has been defined
+                    if (imagePath != null) {
+                        int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
+                        int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
+                        if (height > width) {
+                            height = width;
+                        } else {
+                            width = height;
+                        }
+
+                        //save to file
+                        String pth = this.settingsSupplementary.getValue("print_output_path");
+                        String htmlurl = settingsSupplementary.getValue("print_output_url");
+
+                        String script = "updateScatterplot(" + width + "," + height + ",'url("
+                                + imagePath.replace(pth, htmlurl) + ")')";
+                        Clients.evalJavaScript(script);
+                        scatterplotDownloads.setVisible(true);
+                    } else {
+                        //active area must be drawn first
+                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                            jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), aaDataset, PlotOrientation.HORIZONTAL, false, false, false);
+                        } else {
+                            jChart = ChartFactory.createScatterPlot(data.getSpeciesName(), data.getLayer1Name(), data.getLayer2Name(), xyzDataset, PlotOrientation.HORIZONTAL, false, false, false);
+                        }
+                        jChart.setBackgroundPaint(Color.white);
+                        plot = (XYPlot) jChart.getPlot();
+                        if (annotation != null) {
+                            plot.addAnnotation(annotation);
+                        }
+
+                        Font axisfont = new Font("Arial", Font.PLAIN, 10);
+                        Font titlefont = new Font("Arial", Font.BOLD, 11);
+                        plot.getDomainAxis().setLabelFont(axisfont);
+                        plot.getDomainAxis().setTickLabelFont(axisfont);
+                        plot.getRangeAxis().setLabelFont(axisfont);
+                        plot.getRangeAxis().setTickLabelFont(axisfont);
+                        plot.setBackgroundPaint(new Color(160, 220, 220));
+
+                        plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
+
+                        jChart.getTitle().setFont(titlefont);
+
+                        //active area must be drawn first
+                        if (data.getHighlightWkt() != null && aaDataset != null) {
+                            plot.setRenderer(getActiveAreaRenderer());
+
+                            int datasetCount = plot.getDatasetCount();
+                            plot.setDataset(datasetCount, xyzDataset);
+                            plot.setRenderer(datasetCount, getRenderer(zmin, zmax, seriesColours, seriesNames));
+                        } else {
+                            plot.setRenderer(getRenderer(zmin, zmax, seriesColours, seriesNames));
+                        }
+
+                        //add points background
+                        if (data.getBackgroundLsid() != null) {
+                            resampleBackground();
+
+                            if (backgroundXyzDataset != null) {
+                                int datasetCount = plot.getDatasetCount();
+                                plot.setDataset(datasetCount, backgroundXyzDataset);
+                                plot.setRenderer(datasetCount, getBackgroundRenderer());
+                            }
+                        }
+
+                        //add block background
+                        if (data.isEnvGrid()) {
+                            NumberAxis x = (NumberAxis) plot.getDomainAxis();
+                            NumberAxis y = (NumberAxis) plot.getRangeAxis();
+                            addBlockPlot(plot,
+                                    data.getLayer1(),
+                                    data.getLayer1Name(),
+                                    x.getLowerBound(),
+                                    x.getUpperBound(),
+                                    data.getLayer2(),
+                                    data.getLayer2Name(),
+                                    y.getLowerBound(),
+                                    y.getUpperBound());
+                        }
+
+                        chartRenderingInfo = new ChartRenderingInfo();
+
+                        int width = Integer.parseInt(this.getWidth().replace("px", "")) - 20;
+                        int height = Integer.parseInt(this.getHeight().replace("px", "")) - Integer.parseInt(tbxChartSelection.getHeight().replace("px", ""));
+                        if (height > width) {
+                            height = width;
+                        } else {
+                            width = height;
+                        }
+                        BufferedImage bi = jChart.createBufferedImage(width, height, BufferedImage.TRANSLUCENT, chartRenderingInfo);
+                        byte[] bytes = EncoderUtil.encode(bi, ImageFormat.PNG, true);
+
+                        //save to file
+                        String uid = String.valueOf(System.currentTimeMillis());
+                        String pth = this.settingsSupplementary.getValue("print_output_path");
+                        String htmlurl = settingsSupplementary.getValue("print_output_url");
+
+                        imagePath = pth + uid + ".png";
+
+                        try {
+                            FileOutputStream fos = new FileOutputStream(pth + uid + ".png");
+                            fos.write(bytes);
+                            fos.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        //chartImg.setWidth(width + "px");
+                        //chartImg.setHeight(height + "px");
+                        String script = "updateScatterplot(" + width + "," + height + ",'url(" + htmlurl + uid + ".png)')";
+                        Clients.evalJavaScript(script);
+                        //chartImg.setVisible(true);
+                        scatterplotDownloads.setVisible(true);
+
+                        if (missingCount > 0) {
+                            tbxMissingCount.setValue("(" + missingCount + ")");
+                            chkSelectMissingRecords.setVisible(true);
+                        } else {
+                            tbxMissingCount.setValue("");
+                            chkSelectMissingRecords.setVisible(false);
+                        }
+                        store();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    clearSelection();
+                    getMapComposer().applyChange(mapLayer);
                 }
-
-                //chartImg.setWidth(width + "px");
-                //chartImg.setHeight(height + "px");
-                String script = "updateScatterplot(" + width + "," + height + ",'url(" + htmlurl + uid + ".png)')";
-                Clients.evalJavaScript(script);
-                //chartImg.setVisible(true);
-                scatterplotDownloads.setVisible(true);
-
-                if (missingCount > 0) {
-                    tbxMissingCount.setValue("(" + missingCount + ")");
-                    chkSelectMissingRecords.setVisible(true);
-                } else {
-                    tbxMissingCount.setValue("");
-                    chkSelectMissingRecords.setVisible(false);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                clearSelection();
-                getMapComposer().applyChange();
             }
         } else {
             tbxMissingCount.setValue("");
@@ -503,7 +532,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(satServer).append("/alaspatial/ws/sampling/scatterplot/register?");
+                sbProcessUrl.append(CommonData.satServer).append("/alaspatial/ws/sampling/scatterplot/register?");
                 sbProcessUrl.append("lsid=").append(URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
 
                 int pos = 0;
@@ -539,15 +568,19 @@ public class ScatterplotWCController extends UtilityComposer {
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
 
     void updateCount(String txt) {
-        selectionCount = Integer.parseInt(txt);
-        tbxSelectionCount.setValue("Records selected: " + txt);
-
         try {
+            selectionCount = Integer.parseInt(txt);
+            tbxSelectionCount.setValue("Records selected: " + txt);
+            if (selectionCount > 0) {
+                addNewLayers.setVisible(true);
+            } else {
+                addNewLayers.setVisible(false);
+            }
             scatterplotButtons.setVisible(true);
         } catch (Exception e) {
         }
@@ -555,6 +588,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
     void clearSelection() {
         tbxSelectionCount.setValue("");
+        addNewLayers.setVisible(false);
         tbxRange.setValue("");
         tbxDomain.setValue("");
 
@@ -567,9 +601,7 @@ public class ScatterplotWCController extends UtilityComposer {
         //chartImg.setVisible(false);
         scatterplotDownloads.setVisible(false);
 
-        mapLayer = null;
-
-        getMapComposer().getOpenLayersJavascript().execute("clearSelection()");
+        annotation = null;
 
         scatterplotButtons.setVisible(false);
     }
@@ -649,21 +681,24 @@ public class ScatterplotWCController extends UtilityComposer {
 
     public void onClick$addSelectedRecords(Event event) {
         String id = addSelectedRecords(false);
-        addUserLayer(id, "Scatterplot Selected " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
+        addUserLayer(id, "IN " + data.getSpeciesName(), "from scatterplot in group", selectionCount);
     }
 
     public void onClick$addUnSelectedRecords(Event event) {
         String id = addSelectedRecords(true);
-        addUserLayer(id, "Scatterplot Unselected " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
+        addUserLayer(id, "OUT " + data.getSpeciesName(), "from scatterplot out group", results.split("\n").length - selectionCount - 1);   //-1 for header
     }
 
     void addUserLayer(String id, String layername, String description, int numRecords) {
         layername = StringUtils.capitalize(layername);
 
-        getMapComposer().mapSpeciesByLsid(id, layername);
+        getMapComposer().mapSpeciesByLsid(id, layername, LayerUtilities.SPECIES);
 
         UserData ud = new UserData(layername, description, "scatterplot");
         ud.setFeatureCount(numRecords);
+        ud.setLsid(id);
+        ud.setMetadata(id + ", " + layername + ", " + description);
+        ud.setSubType(LayerUtilities.SPECIES);
 
         // add it to the user session
         Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
@@ -689,15 +724,15 @@ public class ScatterplotWCController extends UtilityComposer {
 
     public void onClick$scatterplotDataDownload(Event event) {
         //preview species list
-        ScatterplotResults window = (ScatterplotResults) Executions.createComponents("WEB-INF/zul/AnalysisScatterplotResults.zul", this, null);
-        window.populateList(data.getLayer1Name(), data.getLayer2Name(), results);
-        try {
-            window.doModal();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        ScatterplotResults window = (ScatterplotResults) Executions.createComponents("WEB-INF/zul/AnalysisScatterplotResults.zul", this, null);
+//        window.populateList(data.getLayer1Name(), data.getLayer2Name(), results);
+//        try {
+//            window.doModal();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
-        //Filedownload.save(results, "text/plain", data.getSpeciesName() + "_" + data.getLayer1Name() + "_" + data.getLayer2Name() + ".csv");
+        Filedownload.save(results, "text/plain", data.getSpeciesName() + "_" + data.getLayer1Name() + "_" + data.getLayer2Name() + ".csv");
     }
 
     String addSelectedRecords(boolean include) {
@@ -712,7 +747,7 @@ public class ScatterplotWCController extends UtilityComposer {
             }
 
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/" + sbProcessUrl.toString());
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
@@ -727,10 +762,11 @@ public class ScatterplotWCController extends UtilityComposer {
     }
 
     void refreshMapLayer() {
-        mapLayer = getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
+        //mapLayer = getMapComposer().activateLayerForScatterplot(getScatterplotData(), "species");
     }
 
     public void onCheck$chkHighlightActiveAreaOccurrences(Event event) {
+        imagePath = null;
         redraw();
     }
 
@@ -742,12 +778,13 @@ public class ScatterplotWCController extends UtilityComposer {
             chkHighlightActiveAreaOccurrences.setDisabled(false);
         }
 
+        imagePath = null;
         redraw();
     }
 
     public void onCheck$chkShowEnvIntersection(Event event) {
         //envLegend.setVisible(chkShowEnvIntersection.isChecked());
-
+        imagePath = null;
         redraw();
     }
 
@@ -767,11 +804,12 @@ public class ScatterplotWCController extends UtilityComposer {
 
             tbxChartSelection.setText("");
 
+            imagePath = null;
             redraw();
         } catch (Exception e) {
             e.printStackTrace();
             clearSelection();
-            getMapComposer().applyChange();
+            getMapComposer().applyChange(mapLayer);
         }
     }
     String prevBlockPlot = null;
@@ -788,7 +826,7 @@ public class ScatterplotWCController extends UtilityComposer {
             int countNonZero = 0;
             try {
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(satServer).append("/alaspatial/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
+                sbProcessUrl.append(CommonData.satServer).append("/alaspatial/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
 
                 sbProcessUrl.append("&xaxis=").append(URLEncoder.encode(env1, "UTF-8")).append(",").append(min1).append(",").append(max1);
                 sbProcessUrl.append("&yaxis=").append(URLEncoder.encode(env2, "UTF-8")).append(",").append(min2).append(",").append(max2);
@@ -933,7 +971,9 @@ public class ScatterplotWCController extends UtilityComposer {
     private DefaultXYZDataset createDataset(int pos, double[][] dblTmp, HashMap<String, Integer> ts, String[] series, double[] seriesDbl, String[] seriesNames) {
         DefaultXYZDataset xyzDataset = new DefaultXYZDataset();
         double[][] dbl = {{0.0}, {0.0}, {0.0}};
-        if (dblTmp != null && dblTmp.length > 0 && dblTmp[0].length > 0) {
+        missing_data = false;
+        if (dblTmp != null && dblTmp.length > 0 && dblTmp[0].length > 0
+                && series != null && series.length > 0) {
             //add series
             if (ts.size() > 1) {
                 if (seriesNames == null) {
@@ -980,7 +1020,9 @@ public class ScatterplotWCController extends UtilityComposer {
             }
         } else {
             xyzDataset.addSeries("lsid", dbl);
+            missing_data = true;
         }
+
         return xyzDataset;
     }
 
@@ -1099,15 +1141,14 @@ public class ScatterplotWCController extends UtilityComposer {
         data.size = size;
         data.colourMode = colourMode;
 
+        imagePath = null;
         redraw();
     }
 
     String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
         try {
-            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/species/colourlegend?lsid="
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
                     + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
                     + "&colourmode="
                     + URLEncoder.encode(colourmode, "UTF-8")); // testurl
@@ -1146,7 +1187,7 @@ public class ScatterplotWCController extends UtilityComposer {
 
                 // call get
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(satServer + "/alaspatial/ws/layer/get?");
+                sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/get?");
                 sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
 
                 HttpClient client = new HttpClient();
@@ -1161,7 +1202,7 @@ public class ScatterplotWCController extends UtilityComposer {
                 String[] slista = slist.split("\n");
 
                 client = new HttpClient();
-                get = new GetMethod(satServer + "/alaspatial/" + slista[1]);
+                get = new GetMethod(CommonData.satServer + "/alaspatial/" + slista[1]);
                 get.addRequestHeader("Accept", "text/plain");
                 result = client.executeMethod(get);
                 slist = get.getResponseBodyAsString();
@@ -1208,28 +1249,28 @@ public class ScatterplotWCController extends UtilityComposer {
 
     private void resample() {
         try {
-            if (data.getLsid() != null && data.getLsid().length() > 0
+            if (data != null && data.getLsid() != null && data.getLsid().length() > 0
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
 
                 String thisResample = data.getLsid() + "*" + data.getLayer1() + "*" + data.getLayer2() + "*" + data.colourMode
-                        + "*" + ((chkHighlightActiveAreaOccurrences.isChecked()) ? "Y" : "N")
-                        + "*" + ((chkRestrictOccurrencesToActiveArea.isChecked()) ? "Y" : "N");
+                        + "*" + ((data.getHighlightWkt() != null) ? "Y" : "N")
+                        + "*" + ((data.getFilterWkt() != null) ? "Y" : "N");
 
                 if (prevResample == null || !prevResample.equals(thisResample)) {
                     prevResample = thisResample;
 
                     StringBuffer sbProcessUrl = new StringBuffer();
-                    sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/scatterplot?");
+                    sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/scatterplot?");
                     sbProcessUrl.append("taxonid=" + URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
                     String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
 
-                    if (chkHighlightActiveAreaOccurrences.isChecked()) {
-                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
+                    if (data.getHighlightWkt() != null) {
+                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
                     }
-                    if (chkRestrictOccurrencesToActiveArea.isChecked()) {
-                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
+                    if (data.getFilterWkt() != null) {
+                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
                     }
 
                     sbProcessUrl.append("&colourmode=").append(data.colourMode);
@@ -1290,23 +1331,23 @@ public class ScatterplotWCController extends UtilityComposer {
 
     private void resampleBackground() {
         try {
-            if (backgroundLSID != null && backgroundLSID.length() > 0
+            if (data.getBackgroundLsid() != null && data.getBackgroundLsid().length() > 0
                     && data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
 
-                String thisResampleBackground = backgroundLSID + "*" + data.getLayer1() + "*" + data.getLayer2();
+                String thisResampleBackground = data.getBackgroundLsid() + "*" + data.getLayer1() + "*" + data.getLayer2();
                 if (prevResampleBackground == null || !prevResampleBackground.equals(thisResampleBackground)) {
                     StringBuffer sbProcessUrl = new StringBuffer();
-                    sbProcessUrl.append(satServer + "/alaspatial/ws/sampling/scatterplot?");
-                    sbProcessUrl.append("taxonid=" + URLEncoder.encode(backgroundLSID.replace(".", "__"), "UTF-8"));
+                    sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/scatterplot?");
+                    sbProcessUrl.append("taxonid=" + URLEncoder.encode(data.getBackgroundLsid().replace(".", "__"), "UTF-8"));
                     String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
 
-                    //                if (chkHighlightActiveAreaOccurrences.isChecked()) {
-                    //                    sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
-                    //                }
-                    if (chkRestrictOccurrencesToActiveArea.isChecked()) {
-                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8"));
+//                    if (data.getHighlightWkt() != null) {
+//                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
+//                    }
+                    if (data.getFilterWkt() != null) {
+                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
                     }
 
                     //sbProcessUrl.append("&colourmode=").append(data.colourMode);
@@ -1317,7 +1358,7 @@ public class ScatterplotWCController extends UtilityComposer {
                     get.addRequestHeader("Accept", "text/plain");
 
                     int result = client.executeMethod(get);
-                    String slist = get.getResponseBodyAsString();                    
+                    String slist = get.getResponseBodyAsString();
 
                     String[] lines = slist.split("\n");
 
@@ -1365,10 +1406,11 @@ public class ScatterplotWCController extends UtilityComposer {
     }
 
     public void onClick$btnClear(Event event) {
-        backgroundLSID = null;
+        data.setBackgroundLsid(null);
 
         sacBackground.setValue("");
 
+        imagePath = null;
         redraw();
     }
 
@@ -1407,5 +1449,107 @@ public class ScatterplotWCController extends UtilityComposer {
         renderer.setDrawOutlines(true);
 
         return renderer;
+    }
+
+    @Override
+    public void setMapLayer(MapLayer mapLayer) {
+        this.mapLayer = mapLayer;
+        data = (ScatterplotData) mapLayer.getData("scatterplotData");
+        retrieve();
+
+        redraw();
+    }
+
+    private void retrieve() {
+        try {
+            if (mapLayer != null) {
+                //data = (ScatterplotData) mapLayer.getData("scatterplotData");
+                jChart = (JFreeChart) mapLayer.getData("jChart");
+                plot = (XYPlot) mapLayer.getData("plot");
+                chartRenderingInfo = (ChartRenderingInfo) mapLayer.getData("chartRenderingInfo");
+                //mapLayer = (MapLayer) mapLayer.getData("mapLayer");
+                //mapLayer = mapLayer.getData("mapLayer");
+                annotation = (XYBoxAnnotation) mapLayer.getData("annotation");
+                xyzDataset = (DefaultXYZDataset) mapLayer.getData("xyzDataset");
+                aaDataset = (DefaultXYZDataset) mapLayer.getData("aaDataset");
+                selectionCount = (Integer) mapLayer.getData("selectionCount");
+
+                if (selectionCount > 0) {
+                    addNewLayers.setVisible(true);
+                } else {
+                    addNewLayers.setVisible(false);
+                }
+                results = (String) mapLayer.getData("results");
+                missingCount = (Integer) mapLayer.getData("missingCount");
+                prevSelection = (double[]) mapLayer.getData("prevSelection");
+                zmin = (Double) mapLayer.getData("zmin");
+                zmax = (Double) mapLayer.getData("zmax");
+                seriesColours = (int[]) mapLayer.getData("seriesColours");
+                seriesNames = (String[]) mapLayer.getData("seriesNames");
+                backgroundXyzDataset = (DefaultXYZDataset) mapLayer.getData("backgroundXyzDataset");
+
+                //interface
+                tbxChartSelection.setValue((String) mapLayer.getData("tbxChartSelection"));
+                tbxSelectionCount.setValue((String) mapLayer.getData("tbxSelectionCount"));
+                tbxRange.setValue((String) mapLayer.getData("tbxRange"));
+                tbxDomain.setValue((String) mapLayer.getData("tbxDomain"));
+                tbxMissingCount.setValue((String) mapLayer.getData("tbxMissingCount"));
+
+                scatterplotButtons.setVisible((Boolean) mapLayer.getData("scatterplotButtons"));
+                scatterplotDownloads.setVisible((Boolean) mapLayer.getData("scatterplotDownloads"));
+                envLegend.setVisible((Boolean) mapLayer.getData("envLegend"));
+
+                chkSelectMissingRecords.setChecked((Boolean) mapLayer.getData("chkSelectMissingRecords"));
+                chkRestrictOccurrencesToActiveArea.setChecked((Boolean) mapLayer.getData("chkRestrictOccurrencesToActiveArea"));
+                chkHighlightActiveAreaOccurrences.setChecked((Boolean) mapLayer.getData("chkHighlightActiveAreaOccurrences"));
+                chkShowEnvIntersection.setChecked((Boolean) mapLayer.getData("chkShowEnvIntersection"));
+
+                imagePath = (String) mapLayer.getData("imagePath");
+                missing_data = (Boolean) mapLayer.getData("missing_data");
+            }
+        } catch (Exception e) {
+            //e.printStackTrace();
+        }
+    }
+
+    private void store() {
+        if (mapLayer != null) {
+            mapLayer.setData("scatterplotData", data);
+            mapLayer.setData("jChart", jChart);
+            mapLayer.setData("plot", plot);
+            mapLayer.setData("chartRenderingInfo", chartRenderingInfo);
+            mapLayer.setData("mapLayer", mapLayer);
+            mapLayer.setData("mapLayer", mapLayer);
+            mapLayer.setData("annotation", annotation);
+            mapLayer.setData("xyzDataset", xyzDataset);
+            mapLayer.setData("aaDataset", aaDataset);
+            mapLayer.setData("selectionCount", new Integer(selectionCount));
+            mapLayer.setData("results", results);
+            mapLayer.setData("missingCount", new Integer(missingCount));
+            mapLayer.setData("prevSelection", prevSelection);
+            mapLayer.setData("zmin", new Double(zmin));
+            mapLayer.setData("zmax", new Double(zmax));
+            mapLayer.setData("seriesColours", seriesColours);
+            mapLayer.setData("seriesNames", seriesNames);
+            mapLayer.setData("backgroundXyzDataset", backgroundXyzDataset);
+
+            mapLayer.setData("tbxChartSelection", tbxChartSelection.getValue());
+            mapLayer.setData("tbxSelectionCount", tbxSelectionCount.getValue());
+            mapLayer.setData("tbxRange", tbxRange.getValue());
+            mapLayer.setData("tbxDomain", tbxDomain.getValue());
+            mapLayer.setData("tbxMissingCount", tbxMissingCount.getValue());
+
+            mapLayer.setData("scatterplotButtons", new Boolean(scatterplotButtons.isVisible()));
+            mapLayer.setData("scatterplotDownloads", new Boolean(scatterplotDownloads.isVisible()));
+            mapLayer.setData("envLegend", new Boolean(envLegend.isVisible()));
+
+            mapLayer.setData("chkSelectMissingRecords", new Boolean(chkSelectMissingRecords.isChecked()));
+            mapLayer.setData("chkRestrictOccurrencesToActiveArea", new Boolean(chkRestrictOccurrencesToActiveArea.isChecked()));
+            mapLayer.setData("chkHighlightActiveAreaOccurrences", new Boolean(chkHighlightActiveAreaOccurrences.isChecked()));
+            mapLayer.setData("chkShowEnvIntersection", new Boolean(chkShowEnvIntersection.isChecked()));
+
+            mapLayer.setData("imagePath", imagePath);
+            mapLayer.setData("missing_data", new Boolean(missing_data));
+        }
     }
 }

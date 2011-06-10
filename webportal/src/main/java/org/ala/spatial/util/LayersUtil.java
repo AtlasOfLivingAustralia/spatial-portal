@@ -3,8 +3,10 @@ package org.ala.spatial.util;
 import java.net.URLEncoder;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
@@ -27,13 +29,42 @@ import org.apache.commons.lang.StringUtils;
  * @author adam
  *
  */
-public class LayersUtil {
+    public class LayersUtil {
 
+    public static final String LAYER_TYPE_PLAIN = "text/plain";
     public static final String LAYER_TYPE_CSV = "text/csv";
     public static final String LAYER_TYPE_KML = "application/vnd.google-earth.kml+xml";
     public static final String LAYER_TYPE_CSV_EXCEL = "text/x-comma-separated-values";
     public static final String LAYER_TYPE_EXCEL = "application/vnd.ms-excel";
     public static final String LAYER_TYPE_ZIP = "application/zip";
+
+    /**
+     * generate basic HTML for metadata of a WKT layer.
+     * 
+     * @param wkt as String
+     * @return html as String
+     */
+    public static String getMetadataForWKT(String method, String wkt) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        String date = sdf.format(new Date());
+        String area = String.format("%,d", (int) Util.calculateArea(wkt));
+        String shortWkt = (wkt.length() > 300)? wkt.substring(0,300) + "...": wkt;
+
+        return "Area metadata\n" + method + "<br>" + date + "<br>" + area + " sq km<br>" + shortWkt;
+    }
+
+    /**
+     * generate basic HTML for metadata of a layer with a description.
+     *
+     * @param wkt as String
+     * @return html as String
+     */
+    public static String getMetadata(String description) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        String date = sdf.format(new Date());
+        return "Area metadata\n" + description + "<br>" + date;
+    }
+
     /**
      * MapComposer for retrieving active layer names
      */
@@ -259,7 +290,7 @@ public class LayersUtil {
             String slist = get.getResponseBodyAsString();
 
             JSONObject jo = JSONObject.fromObject(slist);
-            JSONArray pestStatuses = jo.getJSONObject("extendedTaxonConceptDTO").getJSONArray("pestStatuses");
+            JSONArray pestStatuses = jo.getJSONArray("pestStatuses");
             JSONObject pstatus = pestStatuses.getJSONObject(0);
 
 
@@ -291,7 +322,7 @@ public class LayersUtil {
             String slist = get.getResponseBodyAsString();
 
             JSONObject jo = JSONObject.fromObject(slist);
-            String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
+            String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
             return scientficName;
         } catch (Exception e) {
             System.out.println("Error getting scientific name");
@@ -305,6 +336,7 @@ public class LayersUtil {
     static public String getScientificNameRank(String lsid) {
 
         String snUrl = "http://bie.ala.org.au/species/" + lsid + ".json";
+        System.out.println(snUrl);
 
         try {
             HttpClient client = new HttpClient();
@@ -315,8 +347,8 @@ public class LayersUtil {
             String slist = get.getResponseBodyAsString();
 
             JSONObject jo = JSONObject.fromObject(slist);
-            String scientficName = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("nameString");
-            String rank = jo.getJSONObject("extendedTaxonConceptDTO").getJSONObject("taxonConcept").getString("rankString");
+            String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
+            String rank = jo.getJSONObject("taxonConcept").getString("rankString");
 
             System.out.println("Arrays.binarySearch(commonTaxonRanks, rank): " + Arrays.binarySearch(commonTaxonRanks, rank));
             if (Arrays.binarySearch(commonTaxonRanks, rank) > -1) {

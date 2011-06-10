@@ -48,10 +48,10 @@ public class GazetteerPointSearch {
            
             String uri = geoserver + "/gazetteer/" + layer + "/latlon/" + lat + "," + lon;
             System.out.println(uri);
-	    HttpGet get = new HttpGet(uri);
-	    HttpClient httpclient = new DefaultHttpClient();
-	    HttpResponse response = httpclient.execute(get);
-	    HttpEntity entity = response.getEntity();
+            HttpGet get = new HttpGet(uri);
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpResponse response = httpclient.execute(get);
+            HttpEntity entity = response.getEntity();
 
             Document resultDoc = builder.parse(entity.getContent());
 

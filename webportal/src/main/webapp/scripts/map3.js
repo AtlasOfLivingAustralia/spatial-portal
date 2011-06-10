@@ -156,7 +156,7 @@ function checkLibraryLoaded() {
 
 }
 
-var bLayer,bLayer2,bLayer3;
+var bLayer,bLayer2,bLayer3,bLayer4;
 function loadBaseMap() {
 
     goToLocation(134, -25, 4);
@@ -186,6 +186,8 @@ function changeBaseLayer(type) {
         map.setBaseLayer(bLayer);
     } else if (type == 'minimal') {
         map.setBaseLayer(bLayer3);
+    } else if (type == 'outline') {
+        map.setBaseLayer(bLayer4);
     }
 }
 
@@ -255,7 +257,8 @@ function buildMapReal() {
     }),
     new OpenLayers.Control.LayerSwitcher(),
     new OpenLayers.Control.ScaleLine({
-        div: document.getElementById('mapscale')
+        div: document.getElementById('mapscale'),
+        geodesic: true
     }),
     /*
         new OpenLayers.Control.OverviewMap({
@@ -318,17 +321,27 @@ function buildMapReal() {
         wrapDateLine: false,
         'sphericalMercator': true
     });
-//    bLayer3 = new OpenLayers.Layer.WMS("Minimal",
-//        "http://www2.demis.nl/WMS/wms.asp?WMS=WorldMap&WMTVER=1.0.0", // "http://vmap0.tiles.osgeo.org/wms/vmap0"
-//        {
-//            layers: 'basic'
-//        });
+    //    bLayer3 = new OpenLayers.Layer.WMS("Minimal",
+    //        "http://www2.demis.nl/WMS/wms.asp?WMS=WorldMap&WMTVER=1.0.0", // "http://vmap0.tiles.osgeo.org/wms/vmap0"
+    //        {
+    //            layers: 'basic'
+    //        });
     bLayer3 = new OpenLayers.Layer.OSM();
 
-    map.addLayers([bLayer2,bLayer,bLayer3]);
+    //    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
+    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{
+        layers:"ALA:ne_world"
+    },{
+        isBaseLayer: true,
+        projection: new OpenLayers.Projection("EPSG:900913"),
+        'sphericalMercator': true,
+        'maxExtent': new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34)
+    });
+    map.addLayers([bLayer2,bLayer,bLayer3,bLayer4]);
     parent.bLayer = bLayer;
     parent.bLayer2 = bLayer2;
     parent.bLayer3 = bLayer3;
+    parent.bLayer4 = bLayer4;
 
 
 
@@ -336,15 +349,15 @@ function buildMapReal() {
     loadBaseMap();
 
     // create a new event handler for single click query
-        clickEventHandler = new OpenLayers.Handler.Click({
-            'map': map
-        }, {
-            'click': function(e) {
-                envLayerInspection(e);
-            }
-        });
-        clickEventHandler.activate();
-        clickEventHandler.fallThrough = true;
+    clickEventHandler = new OpenLayers.Handler.Click({
+        'map': map
+    }, {
+        'click': function(e) {
+            envLayerInspection(e);
+        }
+    });
+    clickEventHandler.activate();
+    clickEventHandler.fallThrough = true;
         
     // cursor mods
     map.div.style.cursor="pointer";
@@ -447,12 +460,50 @@ function iterateSpeciesInfo(curr) {
     } catch (err) {}
 
     var occ_id = occlist[curr];
-    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
-        displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
-    });
+    //    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
+    //        displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
+    //    });
+    
+    if (occ_id.indexOf("uuser")==0) {
+        var ulyr = occ_id.substring(5,occ_id.indexOf("-"));
+        var ulyr_occ_id = occ_id.substring(occ_id.indexOf("-")+1);
+        for (var i=0;i<uploadSpeciesMetadata.length;i++) {
+            if (uploadSpeciesMetadata[i][0]==ulyr) {
+                var data = (uploadSpeciesMetadata[i][1]).replace(/_n_/g,"<br />");
+
+                var heading = "<h2>Occurrence information (" + (curr+1) + " of " + occlist.length + ")</h2>";
+                if (occlist.length==1) {
+                    heading = "<h2>Occurrence information (1 occurrence)</h2>";
+                }
+
+                var infohtml = "<div id='sppopup'> " +
+                heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
+                "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+                setTimeout(function(){
+                    if (document.getElementById("sppopup") != null) {
+                        document.getElementById("sppopup").innerHTML = infohtml;
+                    }
+                }, 2000);
+            }
+        }
+    } else {
+        $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
+            displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
+        });
+    }
+     
 }
 
-
+var uploadSpeciesMetadata = null;
+function appendUploadSpeciesMetadata(name,metadata) {
+    if (uploadSpeciesMetadata==null) {
+        uploadSpeciesMetadata = new Array(1);
+        uploadSpeciesMetadata[0] = new Array(name,metadata);
+    } else {
+        uploadSpeciesMetadata.push(new Array(name,metadata));
+    }
+}
 
 
 
@@ -496,39 +547,9 @@ function navigateToAreaTab() {
 
 var defaultSelectFeatureStyle = null;
 function addFeatureSelectionTool() {
-    //    areaSelectControl = new OpenLayers.Control.SelectFeature(
-    //        selectionLayers,
-    //        {
-    //            //            clickout: true,
-    //            //            toggle: false,
-    //            //            multiple: false,
-    //            //            hover: false,
-    //            //            toggleKey: "ctrlKey", // ctrl key removes from selection
-    //            //            multipleKey: "shiftKey" // shift key adds to selection
-    //            'onSelect': featureSelected
-    //        }
-    //        );
-    //
-    //    map.addControl(areaSelectControl);
-    //    selectControl.deactivate();
-    //    clickEventHandler.deactivate();
-    //    areaSelectControl.activate();
     removeAreaSelection();
     areaSelectOn = true;
     mapClickControl = null;
-    
-    //    clickEventHandler = new OpenLayers.Handler.Click({
-    //        'map': map
-    //    }, {
-    //        'click': function(e) {
-    //            getpointInfo(e);
-    //            mkpopup(e);
-    //        }
-    //    });
-    //    clickEventHandler.activate();
-    //    clickEventHandler.fallThrough = false;
-    //    alert("here");
-
 
     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
         defaultHandlerOptions: {
@@ -557,20 +578,6 @@ function addFeatureSelectionTool() {
     mapClickControl.fallThrough = true;
     map.addControl(mapClickControl);
     mapClickControl.activate();
-
-///////////////////
-//    //  setVectorLayersSelectable();
-//    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-//    layer_style.fillColor = "red";
-//    layer_style.strokeColor = "red";
-
-//    featureSelectLayer = new OpenLayers.Layer.Vector("Selected Feature Layer", {
-//        style: layer_style
-//    });
-//    featureSelectLayer.setVisibility(true);
-//    map.addLayer(featureSelectLayer);
-
-    
 }
 
 
@@ -986,7 +993,7 @@ function showInfo(curr) {
 
             var occurrencedate = occinfo.occurrenceDate;
             var uncertainty = occinfo.coordinatePrecision;
-            var uncertaintyText = uncertainty + " meters";
+            var uncertaintyText = uncertainty + " metres";
             if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
                 uncertaintyText = "<b>Undefined!</b>";
                 uncertainty = 10000;
@@ -1000,7 +1007,7 @@ function showInfo(curr) {
             " Occ-id: " + data.id + "</a> <br />" +
             " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
             " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
-            " Spatial uncertainty in meters: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
+            " Spatial uncertainty in metres: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
             " Occurrence date: " + occurrencedate + " <br />" +
             "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.id + "' target='_blank'>View details</a> <br /> <br />" +
             "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
@@ -1065,7 +1072,7 @@ function showInfoOne() {
 
         var occurrencedate = occinfo.occurrenceDate;
         var uncertainty = occinfo.coordinatePrecision;
-        var uncertaintyText = uncertainty + " meters";
+        var uncertaintyText = uncertainty + " metres";
         if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
             uncertaintyText = "<b>Undefined! </b>";
             uncertainty = 10000;
@@ -1079,7 +1086,7 @@ function showInfoOne() {
         " Occ-id: " + data.id + "</a> <br />" +
         " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
         " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
-        " Spatial uncertainty in meters: " + uncertaintyText + "<br />" + // (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
+        " Spatial uncertainty in metres: " + uncertaintyText + "<br />" + // (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
         " Occurrence date: " + occurrencedate + " <br />" +
         "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + info.attributes["oi"] + "' target='_blank'>View details</a> <br /> <br />";
 
@@ -1155,9 +1162,19 @@ function setupPopup(count, centerlonlat) {
 function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     var occinfo = data.occurrence;
 
-    var species = occinfo.species;
-    if (occinfo.speciesLsid != null) {
-        species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
+    //    var species = occinfo.species;
+    //    if (occinfo.speciesLsid != null) {
+    //        species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
+    //    }
+
+    var rank = occinfo.rank;
+    var speciesname = eval("occinfo."+occinfo.rank);
+    var specieslsid = eval("occinfo."+occinfo.rank+"Lsid");
+    species = (speciesname!=null)?speciesname:"";
+    if (specieslsid != null) {
+        species = '<a href="http://bie.ala.org.au/species/'+specieslsid+'" target="_blank">'+species+'</a>';
+    } else {
+        species = species + ' (<i>Supplied as: "' + data.rawOccurrence.scientificName + '"</i>) ';
     }
 
     var family = occinfo.family;
@@ -1172,7 +1189,7 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
 
     var occurrencedate = occinfo.occurrenceDate;
     var uncertainty = occinfo.coordinatePrecision;
-    var uncertaintyText = uncertainty + " meters";
+    var uncertaintyText = uncertainty + " metres";
     if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
         uncertaintyText = "<b>Undefined! </b>"; // setting to 10km
         uncertainty = 10000;
@@ -1193,7 +1210,7 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     //" Occ-id: " + data.id + "</a> <br />" +
     " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
     " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
-    " Spatial uncertainty in meters: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
+    " Spatial uncertainty in metres: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
     " Occurrence date: " + occurrencedate + " <br />" +
     "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occinfo.id + "' target='_blank'>View details</a> <br /> <br />" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
@@ -1285,7 +1302,6 @@ function onFeatureUnselect(feature) {
 }
 
 function onPopupClose(evt) {
-    
     try {
 
         map.removePopup(this.feature.popup);
@@ -1304,9 +1320,9 @@ function onPopupClose(evt) {
 function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
     //    alert(name);
     var in_options = {
-                'internalProjection': map.baseLayer.projection,
+        'internalProjection': map.baseLayer.projection,
         'externalProjection': new OpenLayers.Projection("EPSG:4326")
-            };
+    };
     var styleMap = new OpenLayers.StyleMap(OpenLayers.Util.applyDefaults(
     {
         fillColor: hexColour,
@@ -2727,7 +2743,7 @@ var precisionLayer = null;
 function showPrecision(precision) {
     // constructor params:
     // 1. The point where circlecenter must be at
-    // 2. The radius in unit's of the map (in this case, precision in meters)
+    // 2. The radius in unit's of the map (in this case, precision in metres)
     // 3. The number of sides (50 makes a nice circle)
     // 4. The angle to start drawing
 
@@ -2837,22 +2853,22 @@ function loadKmlFile(name, kmlurl) {
 }
 
 function displayBiostorRecords() {
-    //parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
-    parent.displayHTMLInformation("biostormsg",'updating...');
-
-    var currBounds = map.getExtent().transform(map.projection, map.displayProjection);
-
-    var biostorurl = "http://biostor.org/bounds.php?";
-    biostorurl += "bounds=" + currBounds.left + "," + currBounds.bottom + "," + currBounds.right + "," + currBounds.top;
-    $.getJSON(proxy_script + biostorurl, function(data){
-        var html = '<ol>';
-        for(var i=0, item; item=data.list[i]; i++) {
-            html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
-        }
-        html += '</ol>';
-        parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
-        parent.displayHTMLInformation('biostorlist',html);
-    });
+//parent.displayHTMLInformation("biostormsg",'<img src="http://biocache.ala.org.au/static/css/images/wait.gif" /> Loading BHL documents...');
+//    parent.displayHTMLInformation("biostormsg",'updating...');
+//
+//    var currBounds = map.getExtent().transform(map.projection, map.displayProjection);
+//
+//    var biostorurl = "http://biostor.org/bounds.php?";
+//    biostorurl += "bounds=" + currBounds.left + "," + currBounds.bottom + "," + currBounds.right + "," + currBounds.top;
+//    $.getJSON(proxy_script + biostorurl, function(data){
+//        var html = '<ol>';
+//        for(var i=0, item; item=data.list[i]; i++) {
+//            html += '<li>' + '<a href="http://biostor.org/reference/' + item.id + '" target="_blank">' + item.title + '</a></li>';
+//        }
+//        html += '</ol>';
+//        parent.displayHTMLInformation("biostormsg","<u>" + data.list.length + "</u>");
+//        parent.displayHTMLInformation('biostorlist',html);
+//    });
 
 }
 
@@ -2871,6 +2887,7 @@ function getEnvLayerValue(layername, latitude, longitude) {
     $.ajax({
         url: proxy_script + URLEncode(url),
         success: function(data){
+            //console.info("env layer data is " + data);
             ret = data;
         },
         async: false
@@ -2884,27 +2901,63 @@ function getEnvLayerValue(layername, latitude, longitude) {
 //test code for env layer intersection
 var last_env_name = null;
 var last_env_valid = false;
+var last_contextual_name = null;
+var last_contextual_valid = false;
+
 function envLayerInspection(e) {
     try {
         var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
-        //find first valid layer, if any
+        var infoHtml = "";
+
+        //go through all layers and build window content based on environmental and contextual point values
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
+            //console.info("Looking at layer: " + layer.url);
+
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
-            if(p0 == 0 || p1 == 0) {
-                continue;
-            }
+
             if(p2 < 0) p2 = layer.url.length;
+
             var name = layer.url.substring(p1+4,p2);
-            //console.log("A:" + name);
-            //console.log("B:" + layer.url);
             if(last_env_name != name) {
                 last_env_valid = isEnvLayer(name);
                 last_env_name = name;
             }
             if(last_env_valid) {
+                //console.info("environmental load ...");
+                var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
+                pt = pt.transform(map.projection, map.displayProjection);
+
+                var data = getEnvLayerValue(name, pt.lat, pt.lon);
+
+                if(data != null && data != "") {
+                    var d = data.split("\t");
+                    if (d[1].trim() == "no data"){
+                        continue;
+                    }
+                    infoHtml = infoHtml + " <h2>" + d[0] + "</h2>" + " Layer value: <b>" + d[1] + "</b> <br />";
+                }
+            }
+            if(last_contextual_name != name) {
+                last_contextual_valid = isContextualLayer(name);
+                last_contextual_name = name;
+            }
+            if(last_contextual_valid) {
+                //console.info("contextual load ...");
+                var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
+                pt = pt.transform(map.projection, map.displayProjection);
+
+                var data = getContextualLayerValue(name, pt.lat, pt.lon);
+
+                if(data != null && data != "") {
+                    var d = data.split("\t");
+                    infoHtml = infoHtml + "<h2>" + getContextualLayerAlias(name).capitalize() + "</h2>" + "Layer value: <b>" + d[0] + "</b> <br />";
+                }
+            }
+
+            if(infoHtml != "") {
                 var pt = map.getLonLatFromViewPortPx(new
                     OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
@@ -2922,22 +2975,10 @@ function envLayerInspection(e) {
 
                 pt = pt.transform(map.projection, map.displayProjection);
 
-                var data = getEnvLayerValue(name, pt.lat, pt.lon);
-                if(data != null && data != "") {
-                    var d = data.split("\t");
-                    //alert("Layer: " + d[0] + "\n\nPoint: " + pt.lon.toPrecision(5) + "," + pt.lat.toPrecision(5) + "\n\nValue: " + d[1]);
+                infohtml = "<div id='sppopup'> Longitude: <b>"+pt.lon.toPrecision(5) + "</b> , Latitude: <b>" + pt.lat.toPrecision(5)  + "</b><br/>" + infoHtml + "</div>";
 
-                    var infohtml = "<div id='sppopup'> <h2>" + d[0] + "</h2>" +
-                    " Longitude: <b>"+pt.lon.toPrecision(5) + "</b> , Latitude: <b>" + pt.lat.toPrecision(5)  + "</b><br/>" +
-                    " Layer value: <b>" + d[1] + "</b> <br />";
-
-                    if (document.getElementById("sppopup") != null) {
-                        document.getElementById("sppopup").innerHTML = infohtml;
-                    } else {
-                        onPopupClose();
-                    }
-                } else {
-                    onPopupClose();
+                if (document.getElementById("sppopup") != null) {
+                    document.getElementById("sppopup").innerHTML = infohtml;
                 }
             }
         }
@@ -2945,17 +2986,89 @@ function envLayerInspection(e) {
         alert(err);
     }
 }
+
+
+function isContextualLayer(layerName){
+    var validLayer = false;
+    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/" + layerName + ".xml";
+    $.ajax({
+        type: "GET",
+        dataType: "xml",
+        url: proxy_script + URLEncode(url),
+        success: function(xml){
+            //now we need to ensure that the layer_name tag is present
+            $(xml).find('layer_name').each(function(){
+                validLayer = true;
+            }); //close each(
+
+            gazdata = xml;
+        },
+        error: function(){
+            gazdata = "failure";
+        },
+        async:false
+    });
+    return validLayer;
+}
+
+/*
+ * This function performs a gazetteer layer alias lookup for display purposes
+ */
+function getContextualLayerAlias(layerName){
+    var layerAlias = layerName;
+    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/" + layerName + ".xml";
+
+    $.ajax({
+        type: "GET",
+        dataType: "xml",
+        url: proxy_script + URLEncode(url),
+        success: function(xml){
+            //now we need to ensure that the layer_name tag is present
+            layerAlias = $(xml).find('alias').text();
+        },
+        error: function(){
+        //console.error("A problem occurred searching for layer alias");
+        },
+        async:false
+    });
+    return layerAlias;
+}
+
+function getContextualLayerValue(layerName, latitude, longitude) {
+    var gazdata = "empty";
+    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/search.xml?lat=" + latitude + "&lon=" + longitude + "&layer=" + layerName;
+    //console.info("url is " + url);
+    $.ajax({
+        type: "GET",
+        dataType: "xml",
+        url: proxy_script + URLEncode(url),
+        success: function(xml){
+            gazdata = $(xml).find("name").text();
+        //console.info(gazdata);
+        },
+        error: function(){
+            gazdata = "failure";
+        },
+        async:false
+    });
+    return gazdata;
+}
+
 function isEnvLayer(name) {
     var data = getEnvLayerValue(name, -23, 133);
-    return data != null && data != "" && data.indexOf("no data") < 0;
+    return data != null && data != ""; /* && data.indexOf("no data") < 0*/
 }
 
 function envLayerHover(e) {
+    //This variable will contain the body text to be displayed in the popup.
+    var body = "";
+
     try {
         var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
         //find first valid layer, if any
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
+            //console.info("Checking " + layer.url);
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
@@ -2969,6 +3082,7 @@ function envLayerHover(e) {
                 last_env_name = name;
             }
             if(last_env_valid) {
+                //console.info("Checking environmental");
                 var pt = map.getLonLatFromViewPortPx(new
                     OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
@@ -2976,11 +3090,35 @@ function envLayerHover(e) {
 
                 var data = getEnvLayerValue(name, pt.lat, pt.lon);
                 if(data != null && data != "") {
-                    return data;
+                    var d = data.split("\t");
+                    var lName = d[0];
+                    var lValue = d[1];
+                    body = body + "<tr><td>" + lName + "</td><td><b>" + lValue + "</b></td></tr>";
+                }
+            }
+            if(last_contextual_name != name) {
+                last_contextual_valid = isContextualLayer(name);
+                last_contextual_name = name;
+            }
+            if(last_contextual_valid){
+                //console.info("Checking contextual");
+                var pt = map.getLonLatFromViewPortPx(new
+                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
+                pt = pt.transform(map.projection, map.displayProjection);
+                var txt = getContextualLayerValue(name, pt.lat, pt.lon);
+                if(txt != null && txt != "") {
+                    //console.info("txt is " + txt);
+                    body = body + "<tr><td>" + getContextualLayerAlias(name).capitalize() + "</td><td><b>" + txt + "</b></td></tr>";
+                }
+                else{
+            //console.error("txt is null!");
                 }
             }
         }
+        return body;
+        
     }catch(err){
+    //console.error("an error has occurred!");
     }
     return null;
 }
@@ -2995,13 +3133,13 @@ function initHover() {
 
             pt = pt.transform(map.projection, map.displayProjection);
     
-            var output = document.getElementById('hoverOutput');
+            var output = parent.document.getElementById('hoverOutput');
             var data = envLayerHover(e);
             if(data != null && data != "") {
-                var d = data.split("\t");
-                output.value = "Layer: " + d[0] + "\nPoint: " + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "\nValue: " + d[1];
+                //var d = data.split("\t");
+                output.innerHTML = "<table><tr><td>Point</td><td><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr>" + data + "</table>";
             } else {
-                output.value = "No environmental layer found";
+                output.innerHTML = "No values to display";
             }
         },
         'delay': 200
@@ -3013,12 +3151,60 @@ function toggleActiveHover() {
     if(hovercontrol != null) {
         hovercontrol.deactivate();
         hovercontrol = null;
-        document.getElementById("hoverOutput").style.display="none"
+        parent.jq('$hovertool')[0].style.display="none"
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement_off.gif')";
     } else {
         initHover();
-        document.getElementById('hoverOutput').value = "hover cursor over environmental layer";
-        document.getElementById("hoverOutput").style.display=""
+        parent.document.getElementById('hoverOutput').innerHTML = "Hover cursor over map to view layer values";
+        parent.jq('$hovertool')[0].style.display=""
         document.getElementById("hoverTool").style.backgroundImage = "url('img/overview_replacement.gif')";
+    }
+}
+
+//Function to enable and disable the clickEventHandler
+function toggleClickHandler(state){
+    //console.info("toggleClickHandler has been called.");
+    if (state == false){
+        clickEventHandler.deactivate();
+    }
+    else{
+        clickEventHandler.activate();
+    }
+}
+
+//string extensions - put back in here - didn't seem to work when I added this code to index.js
+
+if(typeof(String.prototype.capitalize) === "undefined"){
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+}
+
+if(typeof(String.prototype.trim) === "undefined"){
+    String.prototype.trim = function()
+    {
+        return String(this).replace(/^\s+|\s+$/g, '');
+    };
+}
+
+//backwards-compatible console logging
+
+if (window['loadFirebugConsole']) {
+    window.loadFirebugConsole();
+} else {
+    if (!window['console']) {
+        window.console = {};
+        window.console.info = function(msg){
+            return;
+        }
+        window.console.log = function(msg){
+            return;
+        }
+        window.console.warn = function(msg){
+            alert("Console warning: " + msg);
+        }
+        window.console.error = function(msg){
+            alert("Console error: " + msg);
+        }
     }
 }

@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -40,9 +41,6 @@ public class MaxentWCController extends UtilityComposer {
     private Checkbox chkJackknife;
     private Checkbox chkRCurves;
     private Textbox txtTestPercentage;
-    private String geoServer = null;
-    private String satServer = null;
-    private SettingsSupplementary settingsSupplementary = null;
     LayersUtil layersUtil;
     private String pid;
     String taxon;    
@@ -65,14 +63,9 @@ public class MaxentWCController extends UtilityComposer {
         super.afterCompose();
 
         try {
-            if (settingsSupplementary != null) {
-                geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
-                satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-            }
-
-            layersUtil = new LayersUtil(getMapComposer(), satServer);
+            layersUtil = new LayersUtil(getMapComposer(), CommonData.satServer);
             
-            lbListLayers.init(getMapComposer(), satServer, true);
+            lbListLayers.init(getMapComposer(), CommonData.satServer, true);
         } catch (Exception e) {
             System.out.println("opps in after compose");
         }
@@ -135,7 +128,7 @@ public class MaxentWCController extends UtilityComposer {
             System.out.println("Test per: " + txtTestPercentage.getValue());
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/maxent/processgeoq?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/maxent/processgeoq?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
@@ -147,7 +140,7 @@ public class MaxentWCController extends UtilityComposer {
             sbProcessUrl.append("&txtTestPercentage=" + txtTestPercentage.getValue());
 
             /* user selected region support */
-            String area = getMapComposer().getSelectionArea();
+            String area = null;//getMapComposer().getSelectionArea();
             if (area == null || area.length() == 0) {                
                 area = "none";
             }
@@ -181,7 +174,7 @@ public class MaxentWCController extends UtilityComposer {
             attrs.put("method", "maxent");
             attrs.put("params", sbParams.toString());
             attrs.put("downloadfile", "");
-            getMapComposer().updateUserLog(attrs, "analysis result: " + satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html");
+            getMapComposer().updateUserLog(attrs, "analysis result: " + CommonData.satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html");
         } catch (Exception e) {
             System.out.println("Maxent error: ");
             e.printStackTrace(System.out);
@@ -225,7 +218,7 @@ public class MaxentWCController extends UtilityComposer {
 
     void openProgressBar() {
         MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
-        window.parent = this;
+        //window.parent = this;
         window.start(pid);
         try {
             window.doModal();
@@ -237,7 +230,7 @@ public class MaxentWCController extends UtilityComposer {
     String getJob(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
@@ -257,9 +250,9 @@ public class MaxentWCController extends UtilityComposer {
 
     public void loadMap(Event event) {
 
-        String mapurl = geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+        String mapurl = CommonData.geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
-        String legendurl = geoServer
+        String legendurl = CommonData.geoServer
                 + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
                 + "&LAYER=ALA:species_" + pid
                 + "&STYLE=alastyles";
@@ -287,9 +280,9 @@ public class MaxentWCController extends UtilityComposer {
         }
 
         String layername = "Maxent model for " + speciesName;
-        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl);
+        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl, LayerUtilities.MAXENT);
         MapLayer ml = getMapComposer().getMapLayer(layername);
-        String infoUrl = satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
+        String infoUrl = CommonData.satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         if (md == null) {
             md = new MapLayerMetadata();
@@ -308,7 +301,7 @@ public class MaxentWCController extends UtilityComposer {
     }
 
     private void showInfoWindow(String url) {
-        String infoUrl = satServer + "/alaspatial" + url;
+        String infoUrl = CommonData.satServer + "/alaspatial" + url;
         Events.echoEvent("openUrl", this.getMapComposer(), infoUrl + "\nMaxent output\npid:"+pid);
     }
    
@@ -338,7 +331,7 @@ public class MaxentWCController extends UtilityComposer {
         String lsid = (String) sac.getSelectedItem().getAnnotatedProperties().get(0);
         if (!isSensitiveSpecies(lsid)) {
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
-            getMapComposer().mapSpeciesByLsid(lsid, taxon, rank, 0);
+            getMapComposer().mapSpeciesByLsid(lsid, taxon, rank, 0, LayerUtilities.SPECIES);
         }
     }
 
@@ -497,7 +490,7 @@ public class MaxentWCController extends UtilityComposer {
     String get(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(sbProcessUrl.toString());

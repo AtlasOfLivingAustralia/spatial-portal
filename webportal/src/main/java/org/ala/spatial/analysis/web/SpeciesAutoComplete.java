@@ -222,9 +222,9 @@ public class SpeciesAutoComplete extends Combobox {
         String userPoints = "";
 
         for(MapLayer ml : getThisMapComposer().getActiveAreaLayers()) {
-            if(ml.getName().contains(layerPrefix) && ml.getName().toLowerCase().contains(val.toLowerCase())) {
+            if(ml.getName().contains(layerPrefix) && ml.getDisplayName().toLowerCase().contains(val.toLowerCase())) {
                 try {
-                    userPoints = ml.getName()
+                    userPoints = ml.getDisplayName()
                             + " / "
                             + ml.getMapLayerMetadata().getSpeciesLsid()
                             + " / Active Area / "

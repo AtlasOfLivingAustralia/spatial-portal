@@ -9,6 +9,7 @@ import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Filedownload;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zul.Button;
 import org.zkoss.zul.Label;
 import org.zkoss.zul.Listbox;
@@ -30,16 +31,18 @@ public class SpeciesListResults extends UtilityComposer {
     public Button download;
     public Listbox popup_listbox_results;
     public Label results_label;
-    private String satServer;
-    private SettingsSupplementary settingsSupplementary = null;
     Row rowUpdating;
     Row rowCounts;
     int results_count = 0;
     int results_count_occurrences = 0;
 
+    public String wkt;
+
     @Override
     public void afterCompose() {
         super.afterCompose();
+
+        wkt = (String) Executions.getCurrent().getArg().get("wkt");
 
         populateList();
     }
@@ -142,24 +145,24 @@ public class SpeciesListResults extends UtilityComposer {
 
         Filedownload.save(sb.toString(), "text/plain", "Species_list_" + sdate + "_" + spid + ".csv");
 
-        getMapComposer().updateUserLogAnalysis("species list", getMapComposer().getSelectionArea(), "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
+        if(wkt == null) {
+            wkt = getMapComposer().getViewArea();
+        }
+        getMapComposer().updateUserLogAnalysis("species list", wkt/*getMapComposer().getSelectionArea()*/, "", "Species_list_" + sdate + "_" + spid + ".csv", pid, "species list download");
 
         detach();
     }
 
     private String postInfo(String urlPart) {
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod get = new PostMethod(satServer + "/alaspatial/ws" + urlPart); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
 
-            System.out.println("satServer:" + satServer + " ** postInfo:" + urlPart + " ** " + shape);
+            System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
 
             int result = client.executeMethod(get);
 
@@ -177,8 +180,11 @@ public class SpeciesListResults extends UtilityComposer {
 
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
-        String area = getMapComposer().getSelectionArea();
-
+        String area = wkt;//getMapComposer().getSelectionArea();
+        if(area == null) {
+            wkt = getMapComposer().getViewArea();
+            area = wkt;
+        }
         if (area.contains("ENVELOPE(")) {
             shape = "none";
             pid = area.substring(9, area.length() - 1);

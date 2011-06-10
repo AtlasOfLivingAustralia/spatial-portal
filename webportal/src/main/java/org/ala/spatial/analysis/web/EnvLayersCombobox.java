@@ -27,11 +27,7 @@ import org.zkoss.zul.Comboitem;
  */
 public class EnvLayersCombobox extends Combobox {
 
-    private static String SAT_SERVER = null;
-    SettingsSupplementary settingsSupplementary = null;
     String[] validLayers = null;
-
-    ;
 
     public EnvLayersCombobox() {
         refresh(""); //init the child comboitems
@@ -58,17 +54,8 @@ public class EnvLayersCombobox extends Combobox {
         if (validLayers == null) {
             makeValidLayers();
         }
-        if (settingsSupplementary != null) {
-            //System.out.println("setting ss.val");
-        } else if (this.getParent() != null) {
-            settingsSupplementary = settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
-            System.out.println("LAC got SS: " + settingsSupplementary);
-            SAT_SERVER = settingsSupplementary.getValue(CommonData.SAT_URL);
-        } else {
-            return;
-        }
 
-        String baseUrl = SAT_SERVER + "/alaspatial/ws/layers/";
+        String baseUrl = CommonData.satServer + "/alaspatial/ws/layers/";
         try {
             Iterator it = getItems().iterator();
 

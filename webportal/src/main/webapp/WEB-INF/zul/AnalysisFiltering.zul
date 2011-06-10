@@ -4,17 +4,16 @@
         <div>
             <vbox>
                 <label value="Add a layer: Enter a layer name or a keyword" />
-                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="250px" >
+                <combobox id="cbEnvLayers" use="org.ala.spatial.analysis.web.EnvLayersCombobox" autodrop="true" width="350px" >
                     <comboitem label=""/>
                 </combobox>
                 <label sclass="exampleText">e.g. Annual Mean Temperature</label>
             </vbox>
         </div>
         <separator />
-        <div width="50px" > <button id="btnClearSelection" label="Clear layers"  sclass="goButton" /> </div>
-        <div>           
-            <listbox id="lbSelLayers" multiple="false" checkmark="false" visible="true" height="300px" >
-                <listhead sizable="true">
+        <button id="btnClearSelection" label="Clear layer" sclass="goButton" />
+            <listbox id="lbSelLayers" multiple="false" checkmark="false" vflex="true" >
+                <listhead>
                     <listheader label="Layer" width="40%" ></listheader>
                     <listheader>
                         <label value="Envelope extent" width="40%"></label>
@@ -26,10 +25,9 @@
                         </vbox>
                     </listheader>
                 </listhead>
-
                 <listfoot>
                     <listfooter span="3">
-                        <div id="popup_continous" visible="false" width="100%" >
+                        <div id="popup_continous" visible="true" width="100%" >
 
                             <label sclass="word-wrap"
                                    style="white-space: normal; font-weight:bold"
@@ -62,7 +60,12 @@
             </listbox>
             <separator />
             <separator />
-            <div align="left"><button label="Use this envelope as the Active Area" id="filter_done" sclass="goButton"/></div>
-        </div>        
+            <div align="left"><button label="Use this envelope as the Active Area" id="filter_done" sclass="goButton"/></div>  
+        <div style="float:right;margin-right:5px">
+            <hbox>
+                <button sclass="goButton" label="OK" id="btnOk"/>
+                <button sclass="goButton" label="Cancel" id="btnCancel" onClick="filteringwindow.detach()"/>
+            </hbox>
+        </div>
     </window>
 </zk>

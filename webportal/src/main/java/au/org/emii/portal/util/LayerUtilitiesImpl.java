@@ -80,10 +80,14 @@ public class LayerUtilitiesImpl implements LayerUtilities {
         versions.add(GEOJSON, "GEOJSON");
 
         worldBBox = new ArrayList<Double>(4);
-        worldBBox.add(-180.0);
-        worldBBox.add(-90.0);
-        worldBBox.add(180.0);
-        worldBBox.add(90.0);
+//        worldBBox.add(-180.0);
+//        worldBBox.add(-90.0);
+//        worldBBox.add(180.0);
+//        worldBBox.add(90.0);
+        worldBBox.add(-179.999);
+        worldBBox.add(-89.999);
+        worldBBox.add(179.999);
+        worldBBox.add(89.999);
     }
 
     /**
@@ -586,7 +590,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
                 + queryConjunction(mapLayer.getUri())
                 + "TRANSPARENT=true"
                 + //			"&ELEVATION=" + mapLayer.getAnimationParameters().getElevation() +
-                "&STYLES=" + mapLayer.getSelectedStyleName()
+                ((mapLayer.getSelectedStyleName().equals("Default"))?"":"&STYLES=" + mapLayer.getSelectedStyleName())
                 + "&CRS=EPSG%3A4326"
                 + //			"&COLORSCALERANGE=9.405405%2C29.66159" +
                 //			"&NUMCOLORBANDS=254" +

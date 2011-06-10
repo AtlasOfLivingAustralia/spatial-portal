@@ -1,5 +1,6 @@
 package org.ala.spatial.util;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -9,7 +10,7 @@ import java.util.Calendar;
  *
  * @author ajay
  */
-public class UserData {
+public class UserData implements Serializable {
 
     private String name;
     private String description;
@@ -17,6 +18,9 @@ public class UserData {
     private String filename; 
     private int featureCount;
     private long uploadedTimeInMs;
+    private String metadata;
+    private int subType;
+    private String lsid;
 
     public UserData(String name) {
         this.name = name;
@@ -94,4 +98,30 @@ public class UserData {
         return formatter.format(calendar.getTime());
 
     }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
+    public void setSubType(int subType) {
+        this.subType = subType;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public int getSubType() {
+        return subType;
+    }
+
+    public void setLsid(String lsid) {
+        this.lsid = lsid;
+    }
+
+    public String getLsid() {
+        return lsid;
+    }
+
+
 }

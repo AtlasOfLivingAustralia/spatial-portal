@@ -4,6 +4,7 @@ import au.org.emii.portal.composer.MapComposer;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -33,11 +34,9 @@ import org.zkoss.zul.Listheader;
 
 public class ClassificationLegend extends UtilityComposer {
 
-    private SettingsSupplementary settingsSupplementary = null;
     String pid = "";
     String layerLabel = "";
     String imagePath = "";
-    private String satServer = "";
     public Slider redSlider;
     public Slider greenSlider;
     public Slider blueSlider;
@@ -55,9 +54,6 @@ public class ClassificationLegend extends UtilityComposer {
     @Override
     public void afterCompose() {
         super.afterCompose();
-        if (settingsSupplementary != null) {
-            satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        }
 
         pid = (String) (Executions.getCurrent().getArg().get("pid"));
         System.out.println("PID:" + pid);
@@ -82,7 +78,7 @@ public class ClassificationLegend extends UtilityComposer {
         try {
             // call get
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/layer/get?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/get?");
             sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
 
             HttpClient client = new HttpClient();
@@ -97,7 +93,7 @@ public class ClassificationLegend extends UtilityComposer {
             String[] slista = slist.split("\n");
 
             client = new HttpClient();
-            get = new GetMethod(satServer + "/alaspatial/" + slista[1]);
+            get = new GetMethod(CommonData.satServer + "/alaspatial/" + slista[1]);
             get.addRequestHeader("Accept", "text/plain");
             result = client.executeMethod(get);
             slist = get.getResponseBodyAsString();
@@ -143,13 +139,22 @@ public class ClassificationLegend extends UtilityComposer {
                     lc.setParent(li);
 
                     //count
-                    if (ss.length > 4) {
+                    try {
+                        int count = Integer.parseInt(ss[4]);
                         countheader.setVisible(true);
                         lc = new Listcell(ss[4]);
                         lc.setParent(li);
-                    } else {
+                    } catch (Exception e) {
                         countheader.setVisible(false);
                     }
+
+//                    if (ss.length > 4) {
+//                        countheader.setVisible(true);
+//                        lc = new Listcell(ss[4]);
+//                        lc.setParent(li);
+//                    } else {
+//                        countheader.setVisible(false);
+//                    }
 
                     if (!readonly) {
                         lc.addEventListener("onClick", new EventListener() {
@@ -229,7 +234,7 @@ public class ClassificationLegend extends UtilityComposer {
         try {
             // call get
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/ws/layer/set?");
+            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/set?");
             sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
             sbProcessUrl.append("&idx="
                     + URLEncoder.encode("" + colours_index, "UTF-8"));
@@ -247,7 +252,7 @@ public class ClassificationLegend extends UtilityComposer {
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
             System.out.println("updated layer image:" + slist);
-            imagePath = satServer + "/alaspatial/" + slist.split("\r\n")[0];
+            imagePath = CommonData.satServer + "/alaspatial/" + slist.split("\r\n")[0];
             loadMap();
         } catch (Exception e) {
             e.printStackTrace();
@@ -299,7 +304,7 @@ public class ClassificationLegend extends UtilityComposer {
         bbox.add(154.00000000084);
         bbox.add(-9.0);
 
-        getMapComposer().addImageLayer(pid, layerLabel, imagePath, opacity, bbox);
+        getMapComposer().addImageLayer(pid, layerLabel, imagePath, opacity, bbox, LayerUtilities.ALOC);
 
     }
 }

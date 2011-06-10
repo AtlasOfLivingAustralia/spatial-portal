@@ -23,7 +23,7 @@
                 </hbox>
                 <separator/>
                 <separator/>
-                <div align="right"><button label="Close" onClick="samplingresults.detach()" sclass="goButton" /> </div>
+                <div align="right"><button label="Close" id="btnClose" sclass="goButton" /> </div>
             </hbox>
     </window>
 </zk>

@@ -9,12 +9,12 @@
 
 <?page title="Analysis" contentType="text/html;charset=UTF-8" id="AnalysisPage"?>
 <zk>
-    <window id="analysiswindow" use="org.ala.spatial.analysis.web.AnalysisController" apply="org.ala.spatial.analysis.web.AnalysisController" >       
+    <window id="analysiswindow" use="org.ala.spatial.analysis.web.AnalysisController" apply="org.ala.spatial.analysis.web.AnalysisController"  width="390px">
        
         <selectionForm id="sf" />
         <separator />
         <separator />
-        <separator />
+        <separator />       
         <tabbox id="analysisOptsTabbox" zindex="600" style="border:0px!important; border: solid 0px white;" width="95%"> <!-- mold="accordion-lite"  zclass="menuswitch"  -->
             <tabs>
                 <!-- species list -->

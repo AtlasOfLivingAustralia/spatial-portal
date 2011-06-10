@@ -1,0 +1,38 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="uploadspecieswindow" use="org.ala.spatial.analysis.web.UploadSpeciesController"
+    apply="org.ala.spatial.analysis.web.UploadSpeciesController" width="400px"
+    xmlns:n="http://www.zkoss.org/2005/zk/native">
+        <n:div class="fancybox-bg" id="fancybox-bg-ne" />
+        <n:div class="fancybox-bg" id="fancybox-bg-se" />
+        <n:div class="fancybox-bg" id="fancybox-bg-sw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-nw" />
+        <n:div class="fancybox-bg" id="fancybox-bg-n" />
+        <n:div class="fancybox-bg" id="fancybox-bg-e" />
+        <n:div class="fancybox-bg" id="fancybox-bg-s" />
+        <n:div class="fancybox-bg" id="fancybox-bg-w" />
+        <a sclass="fancybox-close" onClick="uploadspecieswindow.onClick$btnCancel(null)" style="display: inline" />
+
+        <caption label="Upload Species" />
+
+        <vbox width="100%">
+            <separator />
+            <label value="1. Enter a name for the new layer" sclass="word-wrap" style="white-space: normal; padding: 5px" />
+            <textbox id="tbName" />
+             <separator />
+            <label value="2. Enter a description for the dataset" sclass="word-wrap" style="white-space: normal; padding: 5px"/>
+            <textbox id="tbDesc" />
+            <separator />
+            <label id="tbInstructions" style="white-space: normal; padding: 5px" />
+            <separator />
+            <div style="float:right;margin-right:5px">
+                <hbox>                    
+                    <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <fileupload sclass="fUploadButton" id="fileUpload" label="Next" upload="true" />
+                </hbox>
+            </div>
+            <separator />
+        </vbox>
+
+    </window>
+</zk>

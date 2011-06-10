@@ -37,7 +37,6 @@ public class MapLayerMetadata implements Serializable {
     private long id;
     private long maplayerid;
     private boolean isSpeciesLayer = false;
-    private JSONObject speciesInformation;
     private String speciesLsid;
     private String speciesRank;
     private String speciesDisplayName;
@@ -51,14 +50,6 @@ public class MapLayerMetadata implements Serializable {
 
     public void setIsSpeciesLayer(boolean isSpeciesLayer) {
         this.isSpeciesLayer = isSpeciesLayer;
-    }
-
-    public JSONObject getSpeciesInformation() {
-        return speciesInformation;
-    }
-
-    public void setSpeciesInformation(JSONObject speciesInformation) {
-        this.speciesInformation = speciesInformation;
     }
 
     public String getSpeciesLsid() {

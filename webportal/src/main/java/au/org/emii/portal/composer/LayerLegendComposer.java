@@ -176,10 +176,8 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
 
     String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
         try {
-            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(satServer + "/alaspatial/species/colourlegend?lsid="
+            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
                     + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
                     + "&colourmode="
                     + URLEncoder.encode(colourmode, "UTF-8")); // testurl

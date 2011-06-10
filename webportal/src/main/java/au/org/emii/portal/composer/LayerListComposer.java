@@ -1,7 +1,9 @@
 package au.org.emii.portal.composer;
 
+import org.ala.spatial.analysis.web.AddLayerController;
 import au.org.emii.portal.settings.Settings;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import au.org.emii.portal.util.LayerUtilities;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -32,22 +34,18 @@ import org.zkoss.zul.Treerow;
  */
 public class LayerListComposer extends UtilityComposer {
 
-    private Tree tree;
+    public Tree tree;
     private Popup pupLayerAction;
     private Toolbarbutton llAdd;
     private Toolbarbutton llInfo;
     private ArrayList empty = new ArrayList();
     private MapComposer mc;
-    private String satServer = null;
-    private String geoServer = "";
+    public AddLayerController alc;
     SettingsSupplementary settingsSupplementary;
 
     @Override
     public void afterCompose() {
         super.afterCompose();
-
-        satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-        geoServer = settingsSupplementary.getValue(CommonData.GEOSERVER_URL);
 
         if (tree == null) {
             System.out.println("tree is null");
@@ -57,30 +55,8 @@ public class LayerListComposer extends UtilityComposer {
 
         mc = getThisMapComposer();
 
-        System.out.print("Settings.Suppl:");
-        SettingsSupplementary settingsSupplementary = mc.getSettingsSupplementary();
-        if (settingsSupplementary == null) {
-            System.out.println(" is bad");
-        } else {
-            System.out.println(" is good");
-        }
-        System.out.print("mc.geoserver:" + mc.geoServer);
-
-        System.out.print("Settings.Global:");
-        Settings settings = mc.getSettings();
-        if (settingsSupplementary == null) {
-            System.out.println(" is bad");
-        } else {
-            System.out.println(" is good");
-        }
-
-
         System.out.println("Loading the LayerListComposer");
         iterateAndLoad2();
-
-
-        //System.out.println("with:\n" + layerlist);
-
     }
 
     private MapComposer getThisMapComposer() {
@@ -119,14 +95,15 @@ public class LayerListComposer extends UtilityComposer {
                 } else {
                     stn = new SimpleTreeNode(jo, classNodes);
                 }
+                //System.out.println("=========== classification 1: " + jo.getString("classification1") + " classification 2: " + jo.getString("classification2") + " layer display name:" + jo.getString("displayname"));
                 addToMap2(htCat1, htCat2, jo.getString("classification1"), jo.getString("classification2"), stn);
-
+                //System.out.println(jo.toString(4));
             }
 
             Iterator it1 = htCat1.keySet().iterator();
             while (it1.hasNext()) {
                 String catKey = (String) it1.next();
-                JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node'}");
+                JSONObject joCat = JSONObject.fromObject("{displayname:'" + catKey + "',type:'node',subtype:" + LayerUtilities.CONTEXTUAL + "}");
 
                 //sort 2nd level branches
                 ArrayList sorted = (ArrayList) htCat1.get(catKey);
@@ -154,7 +131,7 @@ public class LayerListComposer extends UtilityComposer {
             SimpleTreeNode root = new SimpleTreeNode("ROOT", top);
             SimpleTreeModel stm = new SimpleTreeModel(root);
             tree.setModel(stm);
-
+            tree.setHflex("min");
             renderTree();
         } catch (Exception e) {
             //FIXME:
@@ -204,19 +181,24 @@ public class LayerListComposer extends UtilityComposer {
                 alCat1 = new ArrayList();
             }
             //System.out.println("\tAdding new cat2");
-            JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2_full + "',type:'node'}");
+            String subtype = ((JSONObject)treeNode.getData()).getString("type");
+            JSONObject joCat2 = JSONObject.fromObject("{displayname:'" + cat2_full + "',type:'node',subtype:" 
+                    +((subtype.equalsIgnoreCase("environmental"))?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL)
+                    + "}");
             SimpleTreeNode stnCat2 = new SimpleTreeNode(joCat2, alCat2);
-            //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
+            System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
             //System.out.println("\t=======================" + stnCat2);
             boolean found = false;
             for (int i = 0; i < alCat1.size(); i++) {
-                // System.out.print("\t\t " + alCat1.get(i));
-                if (stnCat2.toString().equals(alCat1.get(i).toString())) {
-                    //      System.out.println(": found");
+                System.out.print("\t\t " + alCat1.get(i));
+                //System.out.println("comparing " + stnCat2.toString() + " to " + alCat1.get(i).toString());
+                //if (stnCat2.toString().equals(alCat1.get(i).toString())) {
+                if (alCat1.get(i).toString().indexOf(cat2) != -1){
+                    System.out.println(": found");
                     found = true;
                     break;
                 } else {
-                    //      System.out.println(": not this");
+                    System.out.println(": not this");
                 }
             }
             if (!found) {
@@ -234,16 +216,27 @@ public class LayerListComposer extends UtilityComposer {
 
     }
 
+    void initALC() {
+        if(alc == null) {
+            try {
+                alc = (AddLayerController) getMapComposer().getFellow("addlayerwindow");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void renderTree() {
+
         tree.setTreeitemRenderer(new TreeitemRenderer() {
 
             @Override
             public void render(Treeitem item, Object data) throws Exception {
-
                 SimpleTreeNode t = (SimpleTreeNode) data;
 
                 JSONObject joLayer = JSONObject.fromObject(t.getData());
-
+                //System.out.println("Rendering tree item: " + joLayer.getString("displayName"));
+                
                 Treerow tr = null;
                 /*
                  * Since only one treerow is allowed, if treerow is not null,
@@ -261,16 +254,26 @@ public class LayerListComposer extends UtilityComposer {
                 String displayname = joLayer.getString("displayname");
                 displayname = (displayname.contains(">")) ? displayname.split(">")[1] : displayname;
                 Treecell tcName = new Treecell();
+                String scale = "";
                 if (!joLayer.getString("type").equals("node")) {
+                    logger.debug("joLayer is " + joLayer.toString(1));
                     Image img = new Image();
-                    img.setSrc("/img/information.png");
+                    if (joLayer.getString("type").equals("Contextual")){
+                        img.setSrc("/img/icon_contextual-layer.png");
+                    }
+                    else if (joLayer.getString("type").equals("Environmental")){
+                        img.setSrc("/img/icon_grid-layer.png");
+                    }
+                    else{
+                        img.setSrc("/img/information.png");
+                    }
                     img.addEventListener("onClick", new EventListener() {
 
                         @Override
                         public void onEvent(Event event) throws Exception {                            
                             JSONObject jo = JSONObject.fromObject(event.getTarget().getParent().getParent().getAttribute("lyr"));
                             String s = jo.getString("uid");
-                            String metadata = satServer + "/layers/" + s;
+                            String metadata = CommonData.satServer + "/layers/" + s;
                             mc.activateLink(metadata, "Metadata", false);
                         }
                     });
@@ -278,8 +281,9 @@ public class LayerListComposer extends UtilityComposer {
 
                     Space sp = new Space();
                     sp.setParent(tcName);
+                    
                 }
-                Label lbl = new Label(displayname);
+                Label lbl = new Label(displayname + scale);
                 lbl.setParent(tcName);
 
                 //Treecell  tcDesc = new Treecell(joLayer.getString("displayname"));
@@ -346,11 +350,15 @@ public class LayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
                             if (!joLayer.getString("type").contentEquals("class")) {
 
-                                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                                mc.addWMSLayer(joLayer.getString("displayname"),
-                                        joLayer.getString("displaypath"),
-                                        (float) 0.75, metadata);
+                                initALC();
+                                alc.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata, 
+                                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+
+//                                mc.addWMSLayer(joLayer.getString("displayname"),
+//                                        joLayer.getString("displaypath"),
+//                                        (float) 0.75, metadata);
                             } else {
                                 String classAttribute = joLayer.getString("classname");
                                 String classValue = joLayer.getString("displayname");
@@ -359,19 +367,22 @@ public class LayerListComposer extends UtilityComposer {
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
 
-                                mc.addWMSLayer(layer + " - " + classValue,
-                                        displaypath,
-                                        (float) 0.75, metadata);
+                                initALC();
+                                alc.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
+
+//                                mc.addWMSLayer(layer + " - " + classValue,
+//                                        displaypath,
+//                                        (float) 0.75, metadata);
                             }
 
-                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
+//                            mc.updateUserLogMapLayer("env - tree - add", joLayer.getString("uid")+"|"+joLayer.getString("displayname"));
 
                             //close parent if it is 'addlayerwindow'
-                            try {
-                                getRoot().getFellow("addlayerwindow").detach();
-                            } catch (Exception e) {}
+//                            try {
+//                                getRoot().getFellow("addlayerwindow").detach();
+//                            } catch (Exception e) {}
                         }
                     });
 
@@ -385,7 +396,7 @@ public class LayerListComposer extends UtilityComposer {
                             Treecell tc = (Treecell) event.getTarget();
                             JSONObject joLayer = JSONObject.fromObject(tc.getParent().getAttribute("lyr"));
 
-                            String metadata = satServer + "/layers/" + joLayer.getString("uid");
+                            String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                             mc.activateLink(metadata, "Metadata", false);
 
