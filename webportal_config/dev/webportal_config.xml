@@ -191,7 +191,7 @@
       <geoserver_password>password</geoserver_password>
       <!-- ALA Spatial Analysis Toolkit -->
       <sat_url>http://spatial-dev.ala.org.au</sat_url>
-      <points_cluster_threshold>15000</points_cluster_threshold>
+      <points_cluster_threshold>2000000</points_cluster_threshold>
       <max_record_count_download>15000</max_record_count_download>
       <max_record_count_map>2000000</max_record_count_map>
       <max_record_count_upload>15000</max_record_count_upload>
