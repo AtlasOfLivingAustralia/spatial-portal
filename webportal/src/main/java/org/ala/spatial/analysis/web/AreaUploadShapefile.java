@@ -11,12 +11,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.ShapefileUtils;
 import org.ala.spatial.util.Zipper;
+import org.apache.commons.io.FileUtils;
 import org.zkoss.util.media.Media;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -93,7 +95,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
 //                    loadUserLayerKML(m.getName(), m.getStreamData());
 //                }
 //              }
-            byte[] kmldata = loadKml(m);
+            byte[] kmldata = getKml(m);
             if (kmldata != null) {
                 loadUserLayerKML(m.getName(), kmldata);
             } else if (m.getFormat().equalsIgnoreCase("zip")) { //else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_ZIP)) {
@@ -128,11 +130,11 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     }
                 } else {
                     System.out.println("Unknown file type. ");
-                    getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
+                    getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, \nKML or Shapefile. ");
                 }
             } else {
                 System.out.println("Unknown file type. ");
-                getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, KML or Shapefile. ");
+                getMapComposer().showMessage("Unknown file type. Please upload a valid CSV, \nKML or Shapefile. ");
             }
         } catch (Exception ex) {
             getMapComposer().showMessage("Unable to load file. Please try again. ");
@@ -140,13 +142,13 @@ public class AreaUploadShapefile extends AreaToolComposer {
         }
     }
 
-    private byte[] loadKml(Media m) {
+    private byte[] getKml(Media m) {
         try {
             String kmlData = "";
 
             if (m.inMemory()) {
                 kmlData = new String(m.getByteData());
-            } else {
+            } else if (m.isBinary()) {
                 InputStream data = m.getStreamData();
                 if (data != null) {
                     Writer writer = new StringWriter();
@@ -164,9 +166,22 @@ public class AreaUploadShapefile extends AreaToolComposer {
                     }
                     kmlData = writer.toString();
                 }
+            } else if ("txt".equals(m.getFormat())) {
+                Writer writer = new StringWriter();
+                char[] buffer = new char[1024];
+                try {
+                    Reader reader = m.getReaderData();
+                    int n;
+                    while ((n = reader.read(buffer)) != -1) {
+                        writer.write(buffer, 0, n);
+                    }
+                } finally {
+
+                }
+                kmlData = writer.toString();
             }
 
-            if (kmlData.contains("xml") && kmlData.contains("kml") && kmlData.contains("Document")) {
+            if (kmlData.contains("xml") && kmlData.contains("Document")) { // kmlData.contains("kml") && 
                 return kmlData.getBytes();
             } else {
                 return null;
@@ -226,7 +241,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             //MapLayer mapLayer = getMapComposer().getGenericServiceAndBaseLayerSupport().createMapLayer("User-defined kml layer", txtLayerName.getValue(), "KML", kmlurl);
             //MapLayer mapLayer = getMapComposer().addKMLLayer(txtLayerName.getValue(), txtLayerName.getValue(), kmlurl);
             MapComposer mc = getMapComposer();
-            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null)?txtLayerName.getValue():mc.getNextAreaLayerName(txtLayerName.getValue());
+            layerName = (mc.getMapLayer(txtLayerName.getValue()) == null) ? txtLayerName.getValue() : mc.getNextAreaLayerName(txtLayerName.getValue());
             String wkt = getKMLPolygonAsWKT(kmlstr);
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, txtLayerName.getValue());
 
