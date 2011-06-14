@@ -239,15 +239,15 @@
                                         <td><a href="/layers/more/${layer.name}">${layer.displayname}</a></td>
                                         <td>${layer.description}</td>
 					
-					<c:when test="${layer.scale eq 'Environmental'}">
+					<!--<c:when test="${layer.type eq 'Environmental'}">
 						<td>Environmental (gridded) ${scale}</td>
 					</c:when>
-					<c:when test="${layer.scale eq 'Contextual'}">
+					<c:when test="${layer.type eq 'Contextual'}">
 						<td>Contextual (polygonal) ${scale}</td>
 					</c:when>
-					<c:otherwise>
+					<c:otherwise>-->
                                         	<td>${layer.type} ${layer.scale}</td>
-					</c:otherwise>
+					<!--</c:otherwise>-->
 
                                         <td>${layer.source}</td>
                                         <td>
