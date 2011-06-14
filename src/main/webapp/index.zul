@@ -191,12 +191,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
                                             </n:li>
 
                                             <n:li>
-                                                <n:a href='#' n:onClick="loadHelp('the-map-window');">
-                                                    <n:span>The Map Window</n:span>
-                                                </n:a>
-                                            </n:li>
-
-                                            <n:li>
                                                 <n:a href='#' n:onClick="loadHelp('add-to-map');">
                                                     <n:span>Add to map</n:span>
                                                 </n:a>
