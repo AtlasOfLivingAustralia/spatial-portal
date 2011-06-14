@@ -238,7 +238,17 @@
                                         <td>${layer.classification2}</td>
                                         <td><a href="/layers/more/${layer.name}">${layer.displayname}</a></td>
                                         <td>${layer.description}</td>
-                                        <td>${layer.type} ${layer.scale}</td>
+					
+					<c:when test="${layer.scale eq 'Environmental'}">
+						<td>Environmental (gridded) ${scale}</td>
+					</c:when>
+					<c:when test="${layer.scale eq 'Contextual'}">
+						<td>Contextual (polygonal) ${scale}</td>
+					</c:when>
+					<c:otherwise>
+                                        	<td>${layer.type} ${layer.scale}</td>
+					</c:otherwise>
+
                                         <td>${layer.source}</td>
                                         <td>
                                             <!--<img src="/output/layerthumbs/ALA:${layer.name}.jpeg" />-->

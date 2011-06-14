@@ -73,7 +73,15 @@
 		        <tr class="md_grey-bg">
 		            <th class="md_th">Type</th>
 					<td class="md_spacer"/>
-		            <td class="md_value">${layer.type} ${layer.scale}</td>
+					<c:when test="${layer.scale eq 'Environmental'}">
+                                                <td class="md_value">Environmental (gridded) ${scale}</td>
+                                        </c:when>
+                                        <c:when test="${layer.scale eq 'Contextual'}">
+                                                <td class="md_value">Contextual (polygonal) ${scale}</td>
+                                        </c:when>
+                                        <c:otherwise>
+                                                <td class="md_value">${layer.type} ${layer.scale}</td>
+                                        </c:otherwise>
 		        </tr>
 
 
