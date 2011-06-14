@@ -1506,6 +1506,14 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                 imagePath = (String) mapLayer.getData("imagePath");
                 missing_data = (Boolean) mapLayer.getData("missing_data");
+
+                if (missingCount > 0) {
+                    tbxMissingCount.setValue("(" + missingCount + ")");
+                    chkSelectMissingRecords.setVisible(true);
+                } else {
+                    tbxMissingCount.setValue("");
+                    chkSelectMissingRecords.setVisible(false);
+                }
             }
         } catch (Exception e) {
             //e.printStackTrace();

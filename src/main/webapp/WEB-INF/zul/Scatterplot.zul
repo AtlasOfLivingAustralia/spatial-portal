@@ -117,10 +117,12 @@
             </hbox>
             <label id="tbxRange" />
             <label id="tbxDomain" />
+            <separator />
             <hbox>
-                <checkbox id="chkSelectMissingRecords" label="select records with missing values " visible="false" />
+                <checkbox id="chkSelectMissingRecords" style="font-weight: bold" label="SELECT records with missing values " visible="false" />
                 <label id="tbxMissingCount" />
             </hbox>
+            <separator />
             <div width="100%" >
                 <label id="lblMissing" value="No records available for the scatterplot" visible="false" style="float:left;"/>
             </div>
