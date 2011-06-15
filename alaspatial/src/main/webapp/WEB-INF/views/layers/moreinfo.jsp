@@ -263,17 +263,17 @@
 
                             <p>
                                 <span class="title">Type:</span> <br />
-								<c:choose>
-								<c:when test="${layer.type eq 'Environmental'}">
+                                <c:choose>
+                                    <c:when test="${layer.type eq 'Environmental'}">
 									Environmental (gridded) ${scale}
-								</c:when>
-								<c:when test="${layer.type eq 'Contextual'}">
+                                    </c:when>
+                                    <c:when test="${layer.type eq 'Contextual'}">
 									Contextual (polygonal) ${scale}
-								</c:when>
-								<c:otherwise>
-                                	${layer.type} ${layer.scale}
-								</c:otherwise>
-								</c:choose>
+                                    </c:when>
+                                    <c:otherwise>
+                                        ${layer.type} ${layer.scale}
+                                    </c:otherwise>
+                                </c:choose>
                             </p>
 
                             <p>
