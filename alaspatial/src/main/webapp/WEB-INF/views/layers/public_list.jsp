@@ -240,10 +240,10 @@
                                         <td>${layer.description}</td>
                                         <c:choose>
                                             <c:when test="${layer.type eq 'Environmental'}">
-                                                <td>Environmental (gridded) ${scale}</td>
+                                                <td>Environmental (gridded) ${layer.scale}</td>
                                             </c:when>
                                             <c:when test="${layer.type eq 'Contextual'}">
-                                                <td>Contextual (polygonal) ${scale}</td>
+                                                <td>Contextual (polygonal) ${layer.scale}</td>
                                             </c:when>
                                             <c:otherwise>
                                                 <td>${layer.type} ${layer.scale}</td>
