@@ -75,10 +75,10 @@
                             <td class="md_spacer"/>
                             <c:choose>
                                 <c:when test="${layer.type eq 'Environmental'}">
-                                    <td class="md_value">Environmental (gridded) ${scale}</td>
+                                    <td class="md_value">Environmental (gridded) ${layer.scale}</td>
                                 </c:when>
                                 <c:when test="${layer.type eq 'Contextual'}">
-                                    <td class="md_value">Contextual (polygonal) ${scale}</td>
+                                    <td class="md_value">Contextual (polygonal) ${layer.scale}</td>
                                 </c:when>
                                 <c:otherwise>
                                     <td class="md_value">${layer.type} ${layer.scale}</td>

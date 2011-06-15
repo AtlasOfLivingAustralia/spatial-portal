@@ -265,10 +265,10 @@
                                 <span class="title">Type:</span> <br />
                                 <c:choose>
                                     <c:when test="${layer.type eq 'Environmental'}">
-									Environmental (gridded) ${scale}
+									Environmental (gridded) ${layer.scale}
                                     </c:when>
                                     <c:when test="${layer.type eq 'Contextual'}">
-									Contextual (polygonal) ${scale}
+									Contextual (polygonal) ${layer.scale}
                                     </c:when>
                                     <c:otherwise>
                                         ${layer.type} ${layer.scale}
