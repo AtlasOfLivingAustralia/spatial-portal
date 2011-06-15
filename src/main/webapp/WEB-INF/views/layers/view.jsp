@@ -28,93 +28,93 @@
 
                 <table class="md_table">
 
-		    <tbody>
-		        <tr class="md_grey-bg">
-		            <th class="md_th">Description</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">
-		               ${layer.description}
-					</td>
-		        </tr>
+                    <tbody>
+                        <tr class="md_grey-bg">
+                            <th class="md_th">Description</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">
+                                ${layer.description}
+                            </td>
+                        </tr>
 
 
-		        <tr>
-		            <th class="md_th">Metadata contact organisation</th>
-					<td class="md_spacer"/>
-		            <td class="md_value"><a class="md_a" href="${layer.sourcelink}" target="_blank">${layer.source}</a></td>
-		        </tr>
+                        <tr>
+                            <th class="md_th">Metadata contact organisation</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value"><a class="md_a" href="${layer.sourcelink}" target="_blank">${layer.source}</a></td>
+                        </tr>
 
-		        <tr class="md_grey-bg">
-		            <th class="md_th">Metadata date</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">${layer.mddatest}</td>
-		        </tr>
-
-
-		        <tr>
-		            <th class="md_th">Reference date</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">${layer.citationdate}</td>
-		        </tr>
-
-		        <tr class="md_grey-bg">
-		            <th class="md_th">Resource constraints</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">${layer.licencelevel}: <a class="md_a" href="${layer.licence_link}" target="_blank">Resource constraints</a></td>
-		        </tr>
+                        <tr class="md_grey-bg">
+                            <th class="md_th">Metadata date</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.mddatest}</td>
+                        </tr>
 
 
-		        <tr>
-		            <th class="md_th">Licence notes</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">${layer.licence_notes}</td>
-		        </tr>
+                        <tr>
+                            <th class="md_th">Reference date</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.citationdate}</td>
+                        </tr>
 
-		        <tr class="md_grey-bg">
-		            <th class="md_th">Type</th>
-					<td class="md_spacer"/>
-					<c:choose>
-					<c:when test="${layer.type eq 'Environmental'}">
-                    	<td class="md_value">Environmental (gridded) ${scale}</td>
-                    </c:when>
-                    <c:when test="${layer.type eq 'Contextual'}">
-                        <td class="md_value">Contextual (polygonal) ${scale}</td>
-                    </c:when>
-                    <c:otherwise>
-                        <td class="md_value">${layer.type} ${layer.scale}</td>
-                    </c:otherwise>
-					</c:choose>
-		        </tr>
+                        <tr class="md_grey-bg">
+                            <th class="md_th">Resource constraints</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.licencelevel}: <a class="md_a" href="${layer.licence_link}" target="_blank">Resource constraints</a></td>
+                        </tr>
 
 
-		        <tr>
-		            <th class="md_th">Classification</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">${layer.classification1}
+                        <tr>
+                            <th class="md_th">Licence notes</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.licence_notes}</td>
+                        </tr>
+
+                        <tr class="md_grey-bg">
+                            <th class="md_th">Type</th>
+                            <td class="md_spacer"/>
+                            <c:choose>
+                                <c:when test="${layer.type eq 'Environmental'}">
+                                    <td class="md_value">Environmental (gridded) ${scale}</td>
+                                </c:when>
+                                <c:when test="${layer.type eq 'Contextual'}">
+                                    <td class="md_value">Contextual (polygonal) ${scale}</td>
+                                </c:when>
+                                <c:otherwise>
+                                    <td class="md_value">${layer.type} ${layer.scale}</td>
+                                </c:otherwise>
+                            </c:choose>
+                        </tr>
+
+
+                        <tr>
+                            <th class="md_th">Classification</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.classification1}
                                 <c:if test="${fn:length(layer.classification2) > 0}">
                                     &rArr; ${layer.classification2}
                                 </c:if>
                             </td>
-		        </tr>
+                        </tr>
 
-		        <tr class="md_grey-bg">
-		            <th class="md_th">Notes (used for search index)</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">${layer.notes}</td>
-		        </tr>
+                        <tr class="md_grey-bg">
+                            <th class="md_th">Notes (used for search index)</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.notes}</td>
+                        </tr>
 
-		        <tr>
-		            <th class="md_th">More information</th>
-					<td class="md_spacer"/>
-		            <td class="md_value">
+                        <tr>
+                            <th class="md_th">More information</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">
                                 <c:forEach var="u" items="${fn:split(layer.metadatapath, '|')}">
                                     <a class="md_a" href="${u}">${u}</a><br />
                                 </c:forEach>
                             </td>
-		        </tr>
+                        </tr>
 
-		    </tbody>
-		</table>
+                    </tbody>
+                </table>
 
             </c:when>
             <c:otherwise>
