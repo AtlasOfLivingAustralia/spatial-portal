@@ -70,13 +70,21 @@ public class EnvironmentalList extends Listbox {
                         lc.setValue(((ListEntry) data).uid);
                         Image img = new Image();
                         img.setSrc("/img/information.png");
+
                         img.addEventListener("onClick", new EventListener() {
 
                             @Override
                             public void onEvent(Event event) throws Exception {
+                                //re-toggle the checked flag (issue 572)
+                                Listitem li = (Listitem) event.getTarget().getParent().getParent();
+                                li.getListbox().toggleItemSelection(li);
+                                EnvironmentalList el = (EnvironmentalList) li.getParent();
+                                el.updateDistances();
+
                                 String s = (String) ((Listcell) event.getTarget().getParent()).getValue();
                                 String metadata = satServer + "/layers/" + s;
                                 mapComposer.activateLink(metadata, "Metadata", false);
+
                             }
                         });
                         img.setParent(lc);

@@ -25,6 +25,9 @@
                 <n:td width="80px">
                     <label id="lblArea" />
                 </n:td>
+                <n:td>
+                    <n:a class="underline" n:onClick="loadHelp('note-area-sq-km')">Info</n:a>
+                </n:td>
             </n:tr>
             <n:tr height="18px" >
                 <n:td>
