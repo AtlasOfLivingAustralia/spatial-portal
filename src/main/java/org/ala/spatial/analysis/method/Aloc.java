@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobAloc;
+import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SpatialLogger;
 import org.ala.spatial.util.TabulationSettings;
 
@@ -34,7 +36,7 @@ public class Aloc {
      * @param job
      * @return
      */
-    public static int[] runGowerMetricThreadedMemory(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, AnalysisJobAloc job) {
+    public static int[] runGowerMetricThreadedMemory(ArrayList<Object> data_pieces, int nNoOfGroups, int nCols, int pieces, Layer [] layers, AnalysisJobAloc job) {
 
         if(job != null) job.setStage(1);    //seeding stage
         if(job != null && job.isCancelled()) return null;
@@ -63,7 +65,7 @@ public class Aloc {
         int i, j, k;
         for (i = 0; i < nCols; i++) {
             col_min[i] = Float.MAX_VALUE;
-            col_max[i] = Float.MIN_VALUE;
+            col_max[i] = Float.MAX_VALUE*-1;
         }
         for (k = 0; k < pieces; k++) {
             float[] data = (float[]) data_pieces.get(k);
@@ -82,6 +84,15 @@ public class Aloc {
         }
         for (i = 0; i < nCols; i++) {
             col_range[i] = col_max[i] - col_min[i];
+            if(col_range[i] <= 0) {
+                //error
+                SpatialLogger.log("column '" + i + "' has zero range.");
+                if(job != null) {
+                    job.setCurrentState(AnalysisJob.FAILED);
+                    job.setMessage("Layer '" + layers[i].display_name + "' cannot be included since it has no variation for the area specified.");
+                }
+                return null;
+            }
         }
         for (k = 0; k < pieces; k++) {
             float[] data = (float[]) data_pieces.get(k);
