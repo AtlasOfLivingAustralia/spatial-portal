@@ -78,10 +78,18 @@ public class ALOCProgressWCController extends UtilityComposer {
             Events.echoEvent("loadMap",parent, null);
             //showReferenceNumber();
             this.detach();
-        } else if(s.equals("FAILED")) {
+        } else if (s.startsWith("FAILED")) {
             timer.stop();
-            getMapComposer().showMessage("Classification failed");//get("error"));
+            //String error_info = (s.contains(";")?"\n"+s.substring(s.indexOf(";")+1):"");
+            String error_info = get("message");
+            if (!error_info.equals("job does not exist")) {
+                error_info = " with the following message: \n\n" + error_info;
+            } else {
+                error_info = "";
+            }
+            getMapComposer().showMessage("Classification failed" + error_info);
             this.detach();
+            this.parent.detach();
         } else if(s.equals("CANCELLED")){
             timer.stop();
             getMapComposer().showMessage("Classification cancelled by user");
