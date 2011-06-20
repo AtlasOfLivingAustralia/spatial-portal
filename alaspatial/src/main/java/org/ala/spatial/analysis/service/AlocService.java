@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import org.ala.spatial.analysis.index.LayerFilter;
 import org.ala.spatial.analysis.method.Aloc;
 import org.ala.spatial.analysis.method.Pca;
+import org.ala.spatial.util.AnalysisJob;
 import org.ala.spatial.util.AnalysisJobAloc;
 import org.ala.spatial.util.Grid;
 import org.ala.spatial.util.GridCutter;
@@ -278,7 +279,13 @@ public class AlocService {
         /* run aloc
          * Note: requested number of groups may not always equal request
          */      
-        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, job);
+        int[] groups = Aloc.runGowerMetricThreadedMemory(data_pieces, numberOfGroups, layers.length, pieces, layers, job);
+        if(groups == null || getGroupRange(groups) < 2) {
+            if(job != null && job.getCurrentState() != null && !job.getCurrentState().equals(AnalysisJob.FAILED)) {
+                job.setCurrentState(AnalysisJobAloc.FAILED);
+                job.setMessage("Classification failed to generate groups");
+            }
+        }
         if (job != null && job.isCancelled()) {
             return null;
         }
@@ -515,5 +522,22 @@ public class AlocService {
             System.out.println("error writing species file:");
             ex.printStackTrace(System.out);
         }
+    }
+
+    private static int getGroupRange(int[] groups) {
+        if(groups == null) {
+            return 0;
+        }
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for(int i=0;i<groups.length;i++) {
+            if(groups[i] < min) min = groups[i];
+            if(groups[i] > max) max = groups[i];
+        }
+        if(min > max) {
+            min = 0;
+            max = 0;
+        }
+        return max - min;
     }
 }
