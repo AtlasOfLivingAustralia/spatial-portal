@@ -462,4 +462,41 @@ public class Util {
         }
         return null;
     }
+    
+     /**
+     * Util function to add line breaks to a string - it breaks on whole word
+     * @param message The text to perform the break on
+     * @param length The interval to add a line break to
+     * @return 
+     */
+    public static String breakString(String message, int length){
+        StringBuffer newMessage = new StringBuffer();
+        //buffer of last word (used to split lines by whole word
+        StringBuffer lastWord = new StringBuffer();
+        for (int i = 0; i < message.length(); i++){
+            if (i%length == 0 && i != 0){
+                if (lastWord.length() > 0){
+                    newMessage.delete(newMessage.length() - lastWord.length(), newMessage.length());
+                    newMessage.append("\n");
+                    newMessage.append(lastWord);
+                    newMessage.append(message.charAt(i));
+                    lastWord = new StringBuffer();
+                }
+                else{
+                    newMessage.append("\n");
+                }
+            }
+            else{
+                //reset lastWord stringbuffer when in hits a space
+                if (message.charAt(i) == ' '){
+                    lastWord = new StringBuffer();
+                }
+                else{
+                    lastWord.append(message.charAt(i));
+                }
+                newMessage.append(message.charAt(i));
+            }
+        }
+        return newMessage.toString();
+    }
 }

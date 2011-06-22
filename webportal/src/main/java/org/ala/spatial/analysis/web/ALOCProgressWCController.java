@@ -5,8 +5,8 @@
 package org.ala.spatial.analysis.web;
 
 import au.org.emii.portal.composer.UtilityComposer;
-import au.org.emii.portal.settings.SettingsSupplementary;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.zkoss.zk.ui.event.Event;
@@ -83,7 +83,7 @@ public class ALOCProgressWCController extends UtilityComposer {
             //String error_info = (s.contains(";")?"\n"+s.substring(s.indexOf(";")+1):"");
             String error_info = get("message");
             if (!error_info.equals("job does not exist")) {
-                error_info = " with the following message: \n\n" + error_info;
+                error_info = " with the following message: \n\n" + Util.breakString(error_info, 64);
             } else {
                 error_info = "";
             }
