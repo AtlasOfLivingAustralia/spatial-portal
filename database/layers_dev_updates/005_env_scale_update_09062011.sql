@@ -1,3 +1,3 @@
 begin;
-update layers set scale = '0.1 deg' where type = 'Environmental';
+update layers set scale = '0.01 degree (~1km)' where type = 'Environmental';
 commit;
