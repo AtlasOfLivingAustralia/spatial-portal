@@ -1,0 +1,70 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+
+<zk>
+    <window
+     border="none"
+     apply="org.ala.spatial.analysis.web.ClassificationLegend"
+     use="org.ala.spatial.analysis.web.ClassificationLegend" mode="embedded" width="98%" >
+        <style>
+            .legendlist div.z-listitem-cnt {
+                font-size: 10px;
+                /*border-top: 1px solid grey;*/
+                border: 2px solid red; 
+             }
+        </style>
+
+            <label id="lblEdit" value="Click colour to edit" />
+            <listbox sclass="legendlist" id="legend" multiple="false" checkmark="false" width="100%" vflex="true"  >
+                <listhead>
+                    <listheader label="group" width="210px"></listheader>
+                    <listheader label="colour" width="50px"></listheader>
+                    <listheader id="countheader" label="count" width="60px" align="right"></listheader>
+                </listhead>
+            </listbox>
+            <div id="colourChooser" visible="false">
+                <vbox>
+                    <hbox>
+                        <div style="padding-top:0px" width="60px">
+                            <label value="Red: " sclass="h3" />
+                        </div>
+                        <div width="250px">
+                            <slider id="redSlider" maxpos="255" width="95%" />
+                        </div>
+                        <div align="right" style="padding-top:0px">
+                            <label id="redLabel" />
+                        </div>
+                    </hbox>
+                    <hbox>
+                        <div style="padding-top:0px" width="60px">
+                            <label value="Green: " sclass="h3" />
+                        </div>
+                        <div  width="250px">
+                            <slider id="greenSlider" maxpos="255" width="95%" />
+                        </div>
+                        <div align="right" style="padding-top:0px">
+                            <label id="greenLabel" />
+                        </div>
+                    </hbox>
+                    <hbox>
+                        <div style="padding-top:0px" width="60px">
+                            <label value="Blue: " sclass="h3" />
+                        </div>
+                        <div  width="250px">
+                            <slider id="blueSlider" maxpos="255" width="95%" />
+                        </div>
+                        <div align="right" style="padding-top:0px">
+                            <label id="blueLabel" />
+                        </div>
+                    </hbox>
+                    <separator />
+                    <image id="sampleColour" style="padding-top:4px" width="90%" height="20px" />
+                </vbox>
+                <separator />
+                <div align="right" width="90%">
+                    <button id="applyChange" label="Apply" />
+                </div>
+       
+        </div>
+    </window>
+
+</zk>

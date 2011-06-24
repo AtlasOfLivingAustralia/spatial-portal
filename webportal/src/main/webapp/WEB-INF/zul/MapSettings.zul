@@ -1,0 +1,26 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>
+    <window id="mapoptionswindow" xmlns:n="http://www.zkoss.org/2005/zk/native"
+    use="org.ala.spatial.analysis.web.MapOptions"
+    apply="org.ala.spatial.analysis.web.MapOptions" >
+        <vbox width="100%">
+            <hbox width="100%">
+                <div style="padding-top:0px" width="65px">
+                    <label value="Base map" sclass="h3" />
+                </div>
+                <radiogroup id="rgBaseMap">
+                    <radio value="outline" onCheck='Clients.evalJavaScript("changeBaseLayer(\"outline\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Outline" />
+                    <radio value="minimal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"minimal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Minimal" />
+                    <radio value="normal" onCheck='Clients.evalJavaScript("changeBaseLayer(\"normal\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Normal" />
+                    <radio value="hybrid" onCheck='Clients.evalJavaScript("changeBaseLayer(\"hybrid\");window.mapFrame.baseLayerSwitchStatus=1;")' label="Satellite" />
+                </radiogroup>
+            </hbox>
+            <separator />
+           <hbox style="float: right">
+           <button sclass="goButton" label="Download map" onClick='Clients.evalJavaScript("printHack(\"\");")' />
+           <separator />
+           <button sclass="goButton" label="Reset map" onClick='Clients.evalJavaScript("resetMap();")' />
+           </hbox>
+        </vbox>
+    </window>
+</zk>

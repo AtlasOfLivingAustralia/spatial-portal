@@ -1,0 +1,25 @@
+<!-- 
+	This is the error page that a user will see when an unhandled exception
+	occurs during normal operation.
+	
+	When we have BIG problems and can't setup the applicaiton or session 
+	correctly, we forward control to a JSP page at:
+		src/main/webapp/WEB-INF/jsp/Error.jsp
+	The reason for this separate page is that displaying an error page with
+	ZK (eg this one) requires a valid session exists 
+ -->
+<window zclass="z-window-popup" title="Internal Error" width="400px" border="normal"
+		mode="overlapped" use="au.org.emii.portal.composer.ZkErrorComposer"
+		apply="au.org.emii.portal.composer.ZkErrorComposer" position="center,center">
+    <caption image="/img/error.png"/>
+    <vbox style="padding:10px">
+   
+		The ALA Spatial Portal encountered a serious error.  It is recommended
+		to reload the portal but it may be possible to continue.  We have recorded
+		the error and will investigate a fix.
+        <hbox style="margin-left:auto; margin-right:auto; padding-top:10px">
+            <button id="continueButton" label="Continue" />
+            <button id="reloadButton" label="Reload" href="./"/>            
+        </hbox>        
+    </vbox>    
+</window>

@@ -1,0 +1,535 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>au.org.emii</groupId>
+    <artifactId>webportal</artifactId>
+    <packaging>war</packaging>
+    <version>2.0.0</version>
+
+
+    <name>ZK5 ALA Spatial Portal </name>
+    <description>The ALA Spatial Portal aims to provide a data discovery, visualisation and delivery system for ALA data.  The project is built upon Open Source technologies,  the ZK Ajax frameowrk and OpenLayers toolkit.</description>
+    <url>http://www.ala.org.au</url>
+    <dependencies>
+        <!-- alaspatial styles -->        
+        <!--dependency>
+            <groupId>org.ala.spatial</groupId>
+            <artifactId>alaspatial</artifactId>
+            <version>1.00</version>
+        </dependency-->
+        <dependency>
+            <groupId>jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.13</version>
+        </dependency>
+
+        <dependency>
+            <groupId>geoGoogle</groupId>
+            <artifactId>geoGoogle</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-api</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opengis</groupId>
+            <artifactId>geoapi</artifactId>
+            <version>2.3-M1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opengis</groupId>
+            <artifactId>geoapi-pending</artifactId>
+            <version>2.3-M1</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.simpleframework</groupId>
+            <artifactId>simple</artifactId>
+            <version>4.1.15</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jerseyVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-apache-client</artifactId>
+            <version>${jerseyVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectJVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectJVersion}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <version>2.2.3</version>
+            <classifier>jdk15</classifier>
+        </dependency>
+
+        <!-- csv -->
+        <dependency>
+            <groupId>net.sf.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.beanshell</groupId>
+            <artifactId>bsh</artifactId>
+            <version>2.0b4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zhtml</artifactId>
+            <version>${zkVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zk</artifactId>
+            <version>${zkVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zkplus</artifactId>
+            <version>${zkVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zkspring-core</artifactId>
+            <version>3.0</version>
+            <!--<version>3.0RC-FL-2010-08-10</version>-->
+        </dependency>
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zkspring-security</artifactId>
+            <version>3.0</version>
+            <!--<version>3.0RC-FL-2010-08-10</version>-->
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.zkoss.zk</groupId>
+            <artifactId>zul</artifactId>
+            <version>${zkVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jhlabs</groupId>
+            <artifactId>filters</artifactId>
+            <version>2.0.235</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <!--
+        http client 3.1
+        -->
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+        <!--
+
+        Http client 4.0.1 doesn't work with proxies without reworking stage2
+        proxyHack() - sergey was right!
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        -->
+
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>oro</groupId>
+            <artifactId>oro</artifactId>
+            <version>2.0.8</version>
+        </dependency>
+        <dependency>
+            <groupId>au.org.emii</groupId>
+            <artifactId>webportal_configuration_xmlbeans</artifactId>
+            <version>3.0.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlbeans</groupId>
+            <artifactId>xmlbeans</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+            <version>3.8</version>
+        </dependency>
+        <dependency>
+            <groupId>au.org.emii</groupId>
+            <artifactId>wms_getcapabilities_xmlbeans</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>au.org.emii</groupId>
+            <artifactId>zkdateboxplus</artifactId>
+            <version>1.0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.umd.cs.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>1.3.9</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.umd.cs.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>1.3.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate</artifactId>
+            <version>3.2.5.ga</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>3.3.2.GA</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.sql</groupId>
+            <artifactId>jdbc-stdext</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.transaction</groupId>
+            <artifactId>jta</artifactId>
+            <version>1.0.1B</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>ejb3-persistence</artifactId>
+            <version>1.0.1.GA</version>
+        </dependency>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>8.4-701.jdbc4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.1-alpha1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+            <version>1.11</version>
+        </dependency>
+	<dependency>
+	    <groupId>org.zkoss.theme</groupId>
+	    <artifactId>silvertail</artifactId>
+	    <version>5.0.6.1</version>
+	</dependency>
+    </dependencies>
+    <issueManagement>
+        <system>Google Code</system>
+        <url>http://code.google.com/p/alageospatialportal/issues/list</url>
+    </issueManagement>
+    <developers>
+        <developer>
+            <id>LB</id>
+            <name>Lee Belbin</name>
+            <email>lee@blatantfabrications.com</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <roles>
+                <role>Team Leader</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>AR</id>
+            <name>Ajay Ranipeta</name>
+            <email>ajay.ranipeta@gmail.com</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <roles>
+                <role>Software Engineer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>AC</id>
+            <name>Adam Collins</name>
+            <email>adam_collins@tpg.com.au</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <roles>
+                <role>Software Engineer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>AM</id>
+            <name>Angus Macaulay</name>
+            <email>angus.i.macaulay@gmail.com</email>
+            <organization>ALA</organization>
+            <organizationUrl>http://www.ala.org.au</organizationUrl>
+            <roles>
+                <role>Software Engineer</role>
+            </roles>
+        </developer>
+    </developers>
+    <scm>
+        <url>http://code.google.com/p/alageospatialportal/source/checkout</url>
+    </scm>
+    <organization>
+        <name>ALA</name>
+        <url>http://www.ala.org.au</url>
+    </organization>
+
+    <build>
+        <finalName>webportal</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <compilerArgument>-g:lines,vars,source</compilerArgument>
+                    <showDeprecation>true</showDeprecation>
+                </configuration>
+            </plugin>
+
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>tomcat-maven-plugin</artifactId>
+                <version>1.0-beta-1</version>
+                <configuration>
+                    <url>${local.tomcat.deployment.url}</url>
+                    <server>local-tomcat</server>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.4.2</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*Abstract*</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+    <repositories>
+         <repository>
+           <id>ala-repository</id>
+           <name>ala-repository</name>
+           <url>http://maven.ala.org.au/repository</url>
+         </repository>
+
+        <repository>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+                <enabled>true</enabled>
+            </releases>
+            <id>geogoogle</id>
+            <name>geogoogle repo</name>
+            <url>http://www.cs.drexel.edu/~zl25/maven2/repo</url>
+        </repository>
+        <repository>
+            <url>http://download.java.net/maven/2</url>
+            <id>hibernate-support</id>
+            <layout>default</layout>
+            <name>Repository for library Library[hibernate-support]</name>
+        </repository>
+        <repository>
+            <url>http://mavensync.zkoss.org/maven2/</url>
+            <id>zkoss</id>
+            <name>Repository for ZK5</name>
+        </repository>
+        <repository>
+            <id>osgeo</id>
+            <name>OpenGeo GeoTools Repository</name>
+            <url>http://repo.opengeo.org/</url>
+        </repository>
+        <!--
+        <repository>
+            <id>jboss</id>
+            <name>jboss</name>
+            <url>http://repository.jboss.org/maven2/</url>
+        </repository>
+        -->
+        <repository>
+            <id>unknown-jars-temp-repo</id>
+            <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please replace the dependencies in this repository with correct ones and delete this repository.</name>
+            <url>file:${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <doclet>
+                        gr.spinellis.umlgraph.doclet.UmlGraphDoc
+                    </doclet>
+                    <docletArtifact>
+                        <groupId>gr.spinellis</groupId>
+                        <artifactId>UmlGraph</artifactId>
+                        <version>4.4</version>
+                    </docletArtifact>
+                    <additionalparam>
+                        -inferrel -inferdep -quiet -hide java.*
+                        -collpackages java.util.* -qualify
+                        -postfixpackage -nodefontsize 9
+                        -nodefontpackagesize 7 -attributes -operations
+                        -enumerations -enumconstants -visibility
+                        -link "http://java.sun.com/j2se/1.6/docs/api/"
+                    </additionalparam>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>2.1</version>
+            </plugin>
+
+        </plugins>
+    </reporting>
+    <properties>
+        <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
+        <springVersion>3.0.1.RELEASE</springVersion>
+        <zkVersion>5.0.6</zkVersion>
+        <jerseyVersion>1.1.4.1</jerseyVersion>
+        <aspectJVersion>1.6.8</aspectJVersion>
+        <geotools.version>2.7-SNAPSHOT</geotools.version>
+    </properties>
+</project>

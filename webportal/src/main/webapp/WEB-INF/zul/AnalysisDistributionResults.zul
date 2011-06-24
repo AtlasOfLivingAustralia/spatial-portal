@@ -1,0 +1,26 @@
+<?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
+<zk>   
+    <window id="distributionresults" title="Expert Distributions" border="normal"
+    use="org.ala.spatial.analysis.web.DistributionsWCController"
+            apply="org.ala.spatial.analysis.web.DistributionsWCController"
+            closable="true" mode="embedded" width="90%">
+                
+            <separator />
+            <label id="distributionLabel" value=""/>
+            <separator />
+            <separator />
+            <listbox id="distributionListbox" height="400px">
+            </listbox>
+
+            <hbox>
+                <hbox>
+                    <separator/>
+                    <separator/>
+                    <button id="btnDownload" label="Download" sclass="goButton" />
+                </hbox>
+                <separator/>
+                <separator/>
+                <div align="right"><button label="Close" onClick="distributionresults.detach()" sclass="goButton" /> </div>
+            </hbox>
+    </window>
+</zk>

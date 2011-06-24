@@ -1,0 +1,19 @@
+<?page title="Message" contentType="text/html;charset=UTF-8"?>
+<!-- 
+A simple error message dialogue - this is used to replace
+the default zk popup error from the MessageBox class which
+is a window and block the processing thread until the 
+user clicks ok - not acceptable in production
+ -->
+<zk>
+<window title="Message" border="normal" mode="overlapped" 
+	position="center,center" use="au.org.emii.portal.composer.ErrorMessageComposer"
+	apply="au.org.emii.portal.composer.ErrorMessageComposer"
+	closable="true" width="350px">
+	<label pre="true" multiline="true" id="message" />
+	<separator height="20px" />
+	<div align="center">
+		<button id="ok" label="Ok" />
+	</div>
+</window>
+</zk>
