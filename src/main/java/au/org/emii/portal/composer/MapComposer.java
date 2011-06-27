@@ -3928,7 +3928,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             List udl = getMapComposer().getPortalSession().getActiveLayers();
             Iterator iudl = udl.iterator();
             MapLayer mapLayer = null;
-            int gridSize = 256 / 8;   //size of grids in pixels
+            int gridSize = 256 / 16;   //size of grids in pixels
             while (iudl.hasNext()) {
                 MapLayer ml = (MapLayer) iudl.next();
                 MapLayerMetadata md = ml.getMapLayerMetadata();
