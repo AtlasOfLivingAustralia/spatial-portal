@@ -1,13 +1,7 @@
 package org.ala.spatial.web.services;
 
 import java.awt.Color;
-import java.awt.PaintContext;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.io.File;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -17,7 +11,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.Vector;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +24,6 @@ import org.ala.spatial.analysis.index.SpeciesColourOption;
 import org.ala.spatial.analysis.index.SpeciesIndex;
 import org.ala.spatial.analysis.legend.Legend;
 import org.ala.spatial.analysis.legend.LegendEvenInterval;
-import org.ala.spatial.analysis.legend.LegendEvenIntervalLog10;
 import org.ala.spatial.analysis.service.SamplingService;
 import org.ala.spatial.analysis.service.FilteringService;
 import org.ala.spatial.analysis.service.SamplingLoadedPointsService;
@@ -47,9 +39,6 @@ import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.SpatialSettings;
 import org.ala.spatial.util.TabulationSettings;
 import org.ala.spatial.util.Zipper;
-import org.jfree.data.DomainOrder;
-import org.jfree.data.general.DatasetChangeListener;
-import org.jfree.data.general.DatasetGroup;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -63,13 +52,10 @@ import org.jfree.chart.encoders.EncoderUtil;
 import org.jfree.chart.encoders.ImageFormat;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.GrayPaintScale;
 import org.jfree.chart.renderer.LookupPaintScale;
-import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.DefaultXYZDataset;
-import org.jfree.data.xy.XYZDataset;
 import org.jfree.ui.RectangleAnchor;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -82,7 +68,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SamplingWSController {
 
     private SpatialSettings ssets;
-    private List alllayers;
 
     @RequestMapping(value = "/process/download", method = RequestMethod.POST)
     public
@@ -92,8 +77,8 @@ public class SamplingWSController {
         try {
             ssets = new SpatialSettings();
 
-            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
-            
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
+
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
@@ -108,18 +93,18 @@ public class SamplingWSController {
                 records = FilteringService.getRecords(req.getParameter("area"));
             } else {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
-            } 
+            }
 
-            String [] n = OccurrencesCollection.getFirstName(species);
+            String[] n = OccurrencesCollection.getFirstName(species);
             String speciesName;
-            if(n != null){
+            if (n != null) {
                 speciesName = n[0];
             } else {
                 speciesName = "";
             }
-            
+
             SamplingService ss = SamplingService.newForLSID(species);
-            if(species.length() == 0 || species.equals("null") || species.equals("none")) {
+            if (species.length() == 0 || species.equals("null") || species.equals("none")) {
                 species = null;
             }
             String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"));
@@ -127,13 +112,12 @@ public class SamplingWSController {
             String citationpath = null;
             try {
                 citationpath = CitationService.generateCitationDataProviders(datafile);
-            }catch (Exception e) {
-
+            } catch (Exception e) {
             }
 
             Vector<String> vFiles = new Vector<String>();
             vFiles.add(datafile);
-            if(citationpath != null){
+            if (citationpath != null) {
                 vFiles.add(citationpath);
             }
 
@@ -141,10 +125,10 @@ public class SamplingWSController {
 
             String[] filenames = new String[vFiles.size()];
             filenames[0] = "samples.csv";
-            if(citationpath != null){
+            if (citationpath != null) {
                 filenames[1] = "citation.csv";
             }
-            
+
             //String[] files = new String[vFiles.size()];
             Iterator it = vFiles.iterator();
             while (it.hasNext()) {
@@ -176,11 +160,10 @@ public class SamplingWSController {
     public
     @ResponseBody
     String processq(HttpServletRequest req) {
-
         try {
             ssets = new SpatialSettings();
 
-            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
 
             System.out.println("species: " + species);
             System.out.println("envlist: " + req.getParameter("envlist"));
@@ -189,16 +172,6 @@ public class SamplingWSController {
 
             String area = req.getParameter("area");
 
-           /* String[] layers = getLayerFiles();
-            int [] records = null;
-            SimpleRegion region = null;
-            if (area != null && area.startsWith("ENVELOPE")) {
-                records = FilteringService.getRecords(req.getParameter("area"));
-            } else {
-                region = SimpleShapeFile.parseWKT(req.getParameter("area"));
-            } */
-
-            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
             String currentPath = TabulationSettings.base_output_dir;
 
             String pid = Long.toString(System.currentTimeMillis());
@@ -207,9 +180,9 @@ public class SamplingWSController {
             inputs.append("pid:").append(pid);
             inputs.append(";taxonid:").append(species);
 
-            String [] n = OccurrencesCollection.getFirstName(species);
+            String[] n = OccurrencesCollection.getFirstName(species);
             String speciesName;
-            if(n != null){
+            if (n != null) {
                 speciesName = n[0];
                 inputs.append(";scientificName:").append(n[0]);
                 inputs.append(";taxonRank:").append(n[1]);
@@ -224,34 +197,6 @@ public class SamplingWSController {
             AnalysisQueue.addJob(ajs);
 
             return pid;
-
-            /*
-            SamplingService ss = new SamplingService();
-            String datafile = ss.sampleSpeciesAsCSV(species, layers, region, records, ssets.getInt("max_record_count_download"));
-
-            Vector<String> vFiles = new Vector<String>();
-            vFiles.add(datafile);
-
-            String[] files = (String[]) vFiles.toArray(new String[vFiles.size()]);
-
-            //String[] files = new String[vFiles.size()];
-            Iterator it = vFiles.iterator();
-            while (it.hasNext()) {
-                System.out.println("Adding to download: " + it.next());
-            }
-
-            //String currentPath = req.getSession().getServletContext().getRealPath(File.separator);
-            //TabulationSettings.load();
-            String currentPath = TabulationSettings.base_output_dir;
-            long currTime = System.currentTimeMillis();
-            String outputpath = currentPath + File.separator + "output" + File.separator + "sampling" + File.separator;
-            File fDir = new File(outputpath);
-            fDir.mkdir();
-            String outfile = fDir.getAbsolutePath() + File.separator + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";
-            Zipper.zipFiles(files, outfile);
-
-            return "/output/sampling/" + species.replaceAll(" ", "_") + "_sample_" + currTime + ".zip";*/
-
         } catch (Exception e) {
             System.out.println("Error processing Sampling request:");
             e.printStackTrace(System.out);
@@ -265,12 +210,10 @@ public class SamplingWSController {
     public
     @ResponseBody
     String preview(HttpServletRequest req) {
-
         try {
-
             ssets = new SpatialSettings();
 
-            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
             String[] layers = getLayerFiles(req.getParameter("envlist"));
 
             System.out.println("species: " + species);
@@ -278,7 +221,7 @@ public class SamplingWSController {
             System.out.println("envlist.count: " + req.getParameter("envlist").split(":").length);
             System.out.println("layers:" + layers);
             System.out.println("area: " + req.getParameter("area"));
-            
+
             String area = req.getParameter("area");
             ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
@@ -293,10 +236,8 @@ public class SamplingWSController {
 
             List rList = new Vector();
             StringBuilder sbResults = new StringBuilder();
-            
+
             for (int i = 0; i < results.length; i++) {
-                //System.out.println(results[i]);
-                //System.out.println("");
                 Hashtable htRecs = new Hashtable();
                 for (int j = 0; j < results[i].length; j++) {
                     System.out.print("|" + results[i][j]);
@@ -321,14 +262,12 @@ public class SamplingWSController {
         }
 
         return null;
-
     }
 
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     public
     @ResponseBody
     Map test(HttpServletRequest req) {
-
         Map list = null;
 
         try {
@@ -348,9 +287,9 @@ public class SamplingWSController {
     }
 
     private String[] getLayerFiles(String envNames) {
-    	if(envNames.equals("none")){
-    		return null;
-    	}
+        if (envNames.equals("none")) {
+            return null;
+        }
         String[] nameslist = envNames.split(":");
         String[] pathlist = new String[nameslist.length];
 
@@ -358,7 +297,7 @@ public class SamplingWSController {
 
         for (int j = 0; j < nameslist.length; j++) {
 
-            pathlist[j] = Layers.layerDisplayNameToName(nameslist[j]); 
+            pathlist[j] = Layers.layerDisplayNameToName(nameslist[j]);
         }
 
         return pathlist;
@@ -372,12 +311,12 @@ public class SamplingWSController {
         try {
             ssets = new SpatialSettings();
 
-            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
-            
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
+
             System.out.println("species: " + species);
 
             SamplingService ss = SamplingService.newForLSID(species);
-            
+
             String area = req.getParameter("area");
             ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
@@ -386,15 +325,15 @@ public class SamplingWSController {
             } else {
                 region = SimpleShapeFile.parseWKT(req.getParameter("area"));
             }
-            double [] points = null;//ss.sampleSpeciesPoints(species, region, records);
+            double[] points = null;//ss.sampleSpeciesPoints(species, region, records);
             StringBuffer sb = new StringBuffer();
-            for(int i=0;i<points.length;i+=2){
-            	sb.append(points[i]);
-            	sb.append(":");
-            	sb.append(points[i+1]);
-            	if(i < points.length-1){
-            		sb.append(",");
-            	}
+            for (int i = 0; i < points.length; i += 2) {
+                sb.append(points[i]);
+                sb.append(":");
+                sb.append(points[i + 1]);
+                if (i < points.length - 1) {
+                    sb.append(",");
+                }
             }
 
             return sb.toString();
@@ -407,7 +346,6 @@ public class SamplingWSController {
         return "";
 
     }
-
 
     /**
      * histogram:
@@ -444,7 +382,7 @@ public class SamplingWSController {
         try {
             ssets = new SpatialSettings();
 
-            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
             String[] layers = getLayerFiles(req.getParameter("envlist"));
 
             System.out.println("species: " + species);
@@ -469,8 +407,6 @@ public class SamplingWSController {
             StringBuilder sbResults = new StringBuilder();
 
             for (int i = 0; i < results.length; i++) {
-                //System.out.println(results[i]);
-                //System.out.println("");
                 Hashtable htRecs = new Hashtable();
                 for (int j = 0; j < results[i].length; j++) {
                     System.out.print("|" + results[i][j]);
@@ -509,7 +445,7 @@ public class SamplingWSController {
     @ResponseBody
     String scatterplot(HttpServletRequest req) {
         try {
-            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String species = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__", ".");
             String[] layers = getLayerFiles(req.getParameter("envlist"));
 
             String colourMode = req.getParameter("colourmode");
@@ -517,18 +453,19 @@ public class SamplingWSController {
             String areaRestrict = req.getParameter("arearestrict");
             ArrayList<OccurrenceRecordNumbers> recordsR = null;
             SimpleRegion regionR = null;
-            if(areaRestrict != null) {
-                if (areaRestrict != null && areaRestrict.startsWith("ENVELOPE")) {
+            if (areaRestrict != null) {
+                areaRestrict = URLDecoder.decode(areaRestrict, "UTF-8");
+                if (areaRestrict.startsWith("ENVELOPE")) {
                     recordsR = FilteringService.getRecords(areaRestrict);
                 } else {
-                    regionR= SimpleShapeFile.parseWKT(areaRestrict);
+                    regionR = SimpleShapeFile.parseWKT(areaRestrict);
                 }
             }
 
             String areaHighlight = req.getParameter("areahighlight");
             ArrayList<OccurrenceRecordNumbers> recordsH = null;
             SimpleRegion regionH = null;
-            if(areaHighlight != null) {
+            if (areaHighlight != null) {
                 if (areaHighlight != null && areaHighlight.startsWith("ENVELOPE")) {
                     recordsH = FilteringService.getRecords(areaHighlight);
                 } else {
@@ -539,12 +476,12 @@ public class SamplingWSController {
             SamplingService ss = SamplingService.newForLSID(species);
             String[][] results = ss.sampleSpecies(species, layers, regionR, recordsR, 10000000);
 
-            long [] recordsHids = null;
-            if(recordsH != null) {
+            long[] recordsHids = null;
+            if (recordsH != null) {
                 //get occurrenceID
                 Vector v = OccurrencesCollection.getRecords(new OccurrencesFilter(species, regionR, recordsH, 10000000));
                 recordsHids = new long[v.size()];
-                for(int i=0;i<v.size();i++) {
+                for (int i = 0; i < v.size(); i++) {
                     recordsHids[i] = ((Record) v.get(i)).getId();
                 }
                 java.util.Arrays.sort(recordsHids);
@@ -554,55 +491,52 @@ public class SamplingWSController {
             StringBuilder sbResultsHighlight = new StringBuilder();
 
             SpeciesColourOption sco = null;
-            if(colourMode != null) {
+            if (colourMode != null) {
                 sco = SpeciesColourOption.fromName(colourMode, false);
             }
 
             boolean loadedPoints = SamplingLoadedPointsService.isLoadedPointsLSID(species);
 
-            String speciesName = "";
-            if(species != null) {
-                try {
-                    speciesName = SpeciesIndex.getScientificName(SpeciesIndex.findLSID(species));
-                } catch (Exception e) {
-                    speciesName = "Uploaded";
-                }
-            }
+            SpeciesColourOption defaultSco = SpeciesColourOption.fromName("taxon_name", false);
 
             //last 2 columns; layer1, layer2
             for (int i = 0; i < results.length; i++) {
                 //include occurrenceID
-                if(loadedPoints) {
+                if (loadedPoints) {
                     sbResults.append(results[i][0]).append(",");
                 } else {
                     sbResults.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",");
                 }
 
                 //is there a series (colourMode) ?
-                if(sco != null) {
-                    sbResults.append(results[i][sco.getPos()]).append(",");
+                if (i == 0) {
+                    //header
+                    sbResults.append("Series").append(",");
                 } else {
-                    if(i == 0) {
-                        //header
-                        sbResults.append("scientific name").append(",");
+                    if (sco != null) {
+                        sbResults.append(results[i][sco.getPos()]).append(",");
                     } else {
                         //body
-                        sbResults.append(speciesName).append(",");
+                        if (loadedPoints) {
+                            sbResults.append("User uploaded").append(",");
+                        } else {
+                            sbResults.append(results[i][defaultSco.getPos()]).append(",");
+                        }
                     }
                 }
 
                 //is there an area highlight?
                 boolean highlightRecord = false;
-                if(i > 0) {
-                    if(regionH != null) {
+                if (i > 0) {
+                    if (regionH != null) {
                         double longitude = Double.parseDouble(results[i][results[i].length - 4]);
                         double latitude = Double.parseDouble(results[i][results[i].length - 3]);
-                        if(regionH.isWithin(longitude, latitude)) {
+                        if (regionH.isWithin(longitude, latitude)) {
                             sbResultsHighlight.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",In Active Area,");
                             highlightRecord = true;
                         }
-                    } else if(recordsH != null) {
-                        if(java.util.Arrays.binarySearch(recordsHids, Long.parseLong((results[i][TabulationSettings.occurrences_csv_twos_names.length]))) >= 0) {
+                    } else if (recordsH != null) {
+                        if (java.util.Arrays.binarySearch(recordsHids, Long.parseLong((results[i][TabulationSettings.occurrences_csv_twos_names.length]))) >= 0) {
                             sbResultsHighlight.append(results[i][TabulationSettings.occurrences_csv_twos_names.length]).append(",In Active Area,");
                             highlightRecord = true;
                         }
@@ -612,19 +546,19 @@ public class SamplingWSController {
                 for (int j = results[i].length - 2; j < results[i].length; j++) {
                     if (results[i][j] != null) {
                         sbResults.append(results[i][j]);
-                        if(highlightRecord) {
+                        if (highlightRecord) {
                             sbResultsHighlight.append(results[i][j]);
                         }
                     }
                     if (j < results[i].length - 1) {
                         sbResults.append(",");
-                        if(highlightRecord) {
+                        if (highlightRecord) {
                             sbResultsHighlight.append(",");
                         }
                     }
                 }
                 sbResults.append("\n");
-                if(highlightRecord) {
+                if (highlightRecord) {
                     sbResultsHighlight.append("\n");
                 }
             }
@@ -633,13 +567,12 @@ public class SamplingWSController {
 
             return sbResults.toString();
 
-        }catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         return null;
     }
-
 
     @RequestMapping(value = "/scatterplot/register", method = RequestMethod.POST)
     public
@@ -650,37 +583,37 @@ public class SamplingWSController {
 
             String pid = String.valueOf(System.currentTimeMillis());
 
-            String species = URLDecoder.decode(req.getParameter("lsid"), "UTF-8").replace("__",".");
+            String species = URLDecoder.decode(req.getParameter("lsid"), "UTF-8").replace("__", ".");
 
             //count parameters
             int paramCount = 0;
-            while(req.getParameter("param" + (paramCount)) != null) {
+            while (req.getParameter("param" + (paramCount)) != null) {
                 paramCount++;
             }
-            Object [] filters = new Object[paramCount];
-            for(int i=0;i<paramCount;i++) {
-                String param = URLDecoder.decode(req.getParameter("param" + i),"UTF-8");
-                String [] parts = param.split(",");
-                Object [] o = null;
+            Object[] filters = new Object[paramCount];
+            for (int i = 0; i < paramCount; i++) {
+                String param = URLDecoder.decode(req.getParameter("param" + i), "UTF-8");
+                String[] parts = param.split(",");
+                Object[] o = null;
                 SpeciesColourOption sco = null;
 
                 //type is first, then name, then any values
-                if(parts[1].equalsIgnoreCase("string")) {
+                if (parts[1].equalsIgnoreCase("string")) {
                     o = new Object[3];
                     o[0] = parts[0];
                     o[1] = parts[1];
                     o[2] = java.util.Arrays.copyOfRange(parts, 2, parts.length);
-                } else if(parts[1].equalsIgnoreCase("integer")) {
+                } else if (parts[1].equalsIgnoreCase("integer")) {
                     o = new Object[4];
                     o[0] = parts[0];
                     o[1] = parts[2];
                     try {
-                        if(parts[3].equalsIgnoreCase("NaN")) {
+                        if (parts[3].equalsIgnoreCase("NaN")) {
                             o[2] = Integer.MIN_VALUE;
                         } else {
                             o[2] = Integer.parseInt(parts[3]);
                         }
-                        if(parts[4].equalsIgnoreCase("NaN")) {
+                        if (parts[4].equalsIgnoreCase("NaN")) {
                             o[3] = Integer.MIN_VALUE;
                         } else {
                             o[3] = Integer.parseInt(parts[4]);
@@ -688,17 +621,17 @@ public class SamplingWSController {
                     } catch (Exception e) {
                         o = null;
                     }
-                } else if(parts[1].equalsIgnoreCase("double")) {
+                } else if (parts[1].equalsIgnoreCase("double")) {
                     o = new Object[4];
                     o[0] = parts[0];
                     o[1] = parts[2];
                     try {
-                        if(parts[3].equalsIgnoreCase("NaN")) {
+                        if (parts[3].equalsIgnoreCase("NaN")) {
                             o[2] = Double.NaN;
                         } else {
                             o[2] = Double.parseDouble(parts[3]);
                         }
-                        if(parts[4].equalsIgnoreCase("NaN")) {
+                        if (parts[4].equalsIgnoreCase("NaN")) {
                             o[3] = Double.NaN;
                         } else {
                             o[3] = Double.parseDouble(parts[4]);
@@ -706,7 +639,7 @@ public class SamplingWSController {
                     } catch (Exception e) {
                         o = null;
                     }
-                } else if(parts[1].equalsIgnoreCase("boolean")) {
+                } else if (parts[1].equalsIgnoreCase("boolean")) {
                     o = new Object[3];
                     o[0] = parts[0];
                     o[1] = parts[2];
@@ -715,25 +648,25 @@ public class SamplingWSController {
                     } catch (Exception e) {
                         o = null;
                     }
-                } else if((sco = SpeciesColourOption.fromName(parts[1], false)) != null) {
+                } else if ((sco = SpeciesColourOption.fromName(parts[1], false)) != null) {
                     o = new Object[3];
                     o[0] = parts[0];
                     o[1] = parts[1];
                     o[2] = sco.parseFilter(parts[2]);
                 }
 
-                if(o == null) {
-                    System.out.println("invalid scatterplot param" + (i+1) + ": " + param);
+                if (o == null) {
+                    System.out.println("invalid scatterplot param" + (i + 1) + ": " + param);
                     return null;
                 } else {
                     filters[i] = o;
                 }
             }
-            
+
             int count = OccurrencesCollection.highlightLsid(pid, species, filters);
 
             return pid + "\n" + String.valueOf(count);
-        }catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -814,7 +747,7 @@ public class SamplingWSController {
         try {
             String basis = URLDecoder.decode(req.getParameter("basis"), "UTF-8");
             String filter = URLDecoder.decode(req.getParameter("filter"), "UTF-8");
-            String [] fetch = new String[4];
+            String[] fetch = new String[4];
             try {
                 fetch[0] = URLDecoder.decode(req.getParameter("series"), "UTF-8");
             } catch (Exception e) {
@@ -826,12 +759,12 @@ public class SamplingWSController {
                 fetch[3] = URLDecoder.decode(req.getParameter("zaxis"), "UTF-8");
             } catch (Exception e) {
                 fetch[3] = "";
-            }            
+            }
 
             String filterLsid = getParam("lsid", filter).replace("__", ".");
             String filterArea = getParam("area", filter);
             String filterArea2 = getParam("area2", filter);
-            
+
             ArrayList<OccurrenceRecordNumbers> records = null;
             SimpleRegion region = null;
             if (filterArea != null && filterArea.startsWith("ENVELOPE")) {
@@ -853,26 +786,26 @@ public class SamplingWSController {
             boolean countOccurrences = false;
             boolean countSpecies = false;
             boolean sumArea = false;
-            for(int i=0;i<fetch.length;i++) {
-                if(fetch[i].equalsIgnoreCase("countOccurrences")) {
+            for (int i = 0; i < fetch.length; i++) {
+                if (fetch[i].equalsIgnoreCase("countOccurrences")) {
                     countOccurrences = true;
-                } else if(fetch[i].equalsIgnoreCase("countSpecies")) {
+                } else if (fetch[i].equalsIgnoreCase("countSpecies")) {
                     countSpecies = true;
-                } else if(fetch[i].equalsIgnoreCase("sumArea")) {
+                } else if (fetch[i].equalsIgnoreCase("sumArea")) {
                     sumArea = true;
                 }
             }
-            
-            if(basis.equalsIgnoreCase("occurrence")) {
+
+            if (basis.equalsIgnoreCase("occurrence")) {
                 //bA
 
                 //add series and axis info as layers
-                String [] layers = new String[4];
+                String[] layers = new String[4];
                 int layerCount = 0;
                 Layer layer;
-                String [] fetchFullNames = new String[4];
-                for(int i=0;i<fetch.length;i++) {
-                    if(fetch[i] != null && (layer = Layers.getLayer(fetch[i])) != null) {
+                String[] fetchFullNames = new String[4];
+                for (int i = 0; i < fetch.length; i++) {
+                    if (fetch[i] != null && (layer = Layers.getLayer(fetch[i])) != null) {
                         layers[layerCount] = layer.name;
                         fetchFullNames[i] = layer.display_name;
                         layerCount++;
@@ -883,19 +816,19 @@ public class SamplingWSController {
                 String[][] results = ss.sampleSpecies(filterLsid, layers, region, records, 1000000);
 
                 //first record in return results is a header
-                if(results == null || results.length <= 1) {
+                if (results == null || results.length <= 1) {
                     return null;
                 }
 
                 //identify columns to keep
-                int [] fetchColumns = new int[fetch.length];
+                int[] fetchColumns = new int[fetch.length];
                 int fetchColumnsCount = 0;
-                for(int i=0;i<results[0].length;i++) {
+                for (int i = 0; i < results[0].length; i++) {
                     //test layers
-                    if(fetchColumnsCount < fetch.length) {
-                        for(int j=0;j<fetch.length;j++) {
-                            if((fetch[j] != null && fetch[j].equalsIgnoreCase(results[0][i]))
-                                ||    (fetchFullNames[j] != null && fetchFullNames[j].equalsIgnoreCase(results[0][i]))) {
+                    if (fetchColumnsCount < fetch.length) {
+                        for (int j = 0; j < fetch.length; j++) {
+                            if ((fetch[j] != null && fetch[j].equalsIgnoreCase(results[0][i]))
+                                    || (fetchFullNames[j] != null && fetchFullNames[j].equalsIgnoreCase(results[0][i]))) {
                                 fetchColumns[fetchColumnsCount] = i;
                                 fetchColumnsCount++;
                                 break;
@@ -905,57 +838,58 @@ public class SamplingWSController {
                 }
 
                 //clean up null to emptystring from columns to keep
-                for(int i=0;i<results.length;i++){
-                    for(int j=0;j<fetchColumnsCount;j++) {
-                        if(results[i][fetchColumns[j]] == null) {
+                for (int i = 0; i < results.length; i++) {
+                    for (int j = 0; j < fetchColumnsCount; j++) {
+                        if (results[i][fetchColumns[j]] == null) {
                             results[i][fetchColumns[j]] = "";
                         }
                     }
                 }
 
                 //generate countSpecies column
-                int [] countSpeciesUniqueValue = null;
-                if(countSpecies) {
+                int[] countSpeciesUniqueValue = null;
+                if (countSpecies) {
                     OccurrencesFieldsUtil ofu = new OccurrencesFieldsUtil();
-                    ofu.load();                   
-                    
+                    ofu.load();
+
                     countSpeciesUniqueValue = new int[results.length];
-                    String [] names = new String[results.length];
+                    String[] names = new String[results.length];
                     //make species names list
-                    for(int i=0;i<results.length;i++) {
+                    for (int i = 0; i < results.length; i++) {
                         StringBuilder sb = new StringBuilder();
-                        for(int j=0;j<ofu.onetwoCount;j++) {
+                        for (int j = 0; j < ofu.onetwoCount; j++) {
                             sb.append(results[i][j]);
                         }
                         names[i] = sb.toString();
                     }
 
                     //get unique list
-                    String [] namesCopy = names.clone();
+                    String[] namesCopy = names.clone();
                     java.util.Arrays.sort(namesCopy);
                     int numberOfUnique = 1;
-                    for(int i=1;i<namesCopy.length;i++) {
-                        if(!namesCopy[i].equals(namesCopy[i-1])) {
+                    for (int i = 1; i < namesCopy.length; i++) {
+                        if (!namesCopy[i].equals(namesCopy[i - 1])) {
                             namesCopy[numberOfUnique] = namesCopy[i];
                             numberOfUnique++;
                         }
                     }
                     namesCopy = java.util.Arrays.copyOf(namesCopy, numberOfUnique);
-                        
+
                     //position in unique list is indicated of species number
-                    for(int i=1;i<results.length;i++) {
+                    for (int i = 1; i < results.length; i++) {
                         countSpeciesUniqueValue[i] = java.util.Arrays.binarySearch(namesCopy, names[i]);
                     }
                 }
 
                 //sort by fetch column values
                 class ReorderedColumns implements Comparator<String[]> {
-                    public int [] colOrder;
-                    
-                    public int compare(String [] s1, String [] s2) {
+
+                    public int[] colOrder;
+
+                    public int compare(String[] s1, String[] s2) {
                         int c;
-                        for(int i=0;i<colOrder.length;i++) {
-                            if(s1[colOrder[i]] == null && s2[colOrder[i]] == null) {
+                        for (int i = 0; i < colOrder.length; i++) {
+                            if (s1[colOrder[i]] == null && s2[colOrder[i]] == null) {
                                 return 0;
                             } else if (s1[colOrder[i]] == null) {
                                 return "".compareTo(s2[colOrder[i]]);
@@ -963,15 +897,17 @@ public class SamplingWSController {
                                 return s1[colOrder[i]].compareTo("");
                             }
                             c = s1[colOrder[i]].compareTo(s2[colOrder[i]]);
-                            if(c != 0) {
+                            if (c != 0) {
                                 return c;
-                            }                            
+                            }
                         }
                         return 0;
                     }
-                };             
-                ReorderedColumns c = new ReorderedColumns();                
-                c.colOrder = java.util.Arrays.copyOf(fetchColumns, fetchColumnsCount);;
+                }
+                ;
+                ReorderedColumns c = new ReorderedColumns();
+                c.colOrder = java.util.Arrays.copyOf(fetchColumns, fetchColumnsCount);
+                ;
                 //remove header
                 results = java.util.Arrays.copyOfRange(results, 1, results.length);
                 java.util.Arrays.sort(results, c);
@@ -983,30 +919,30 @@ public class SamplingWSController {
                 BitSet countSpeciesValue = new BitSet();
                 int countOccurrencesValue = 0;
                 String currentLine;
-                for(int i=0;i<results.length;i++) {
+                for (int i = 0; i < results.length; i++) {
                     //form current line
                     currentLine = results[i][fetchColumns[0]];
-                    for(int j=1;j<fetchColumnsCount;j++) {
+                    for (int j = 1; j < fetchColumnsCount; j++) {
                         currentLine += "," + results[i][fetchColumns[j]];
                     }
-                    if(i == 0){
+                    if (i == 0) {
                         nextLine = currentLine;
                     }
 
-                    if(i > 0 && !currentLine.equals(nextLine)) {
+                    if (i > 0 && !currentLine.equals(nextLine)) {
                         //if this is a new line, append nextLine to csv
 
                         //new line
-                        if(csv.length() > 0) {
+                        if (csv.length() > 0) {
                             csv.append("\n");
                         }
 
                         //append
                         csv.append(nextLine);
-                        if(countSpecies) {
+                        if (countSpecies) {
                             csv.append(",").append(countBitSetFlags(countSpeciesValue));
                         }
-                        if(countOccurrences) {
+                        if (countOccurrences) {
                             csv.append(",").append(countOccurrencesValue);
                         }
 
@@ -1017,61 +953,61 @@ public class SamplingWSController {
                     }
 
                     //same line, inc counters
-                    if(countSpecies) {
+                    if (countSpecies) {
                         countSpeciesValue.set(countSpeciesUniqueValue[i]);
                     }
-                    if(countOccurrences) {
+                    if (countOccurrences) {
                         countOccurrencesValue++;
                     }
                 }
                 //add last line
-                if(csv.length() > 0) {
+                if (csv.length() > 0) {
                     csv.append("\n");
                 }
                 //append
                 csv.append(nextLine);
-                if(countSpecies) {
+                if (countSpecies) {
                     csv.append(",").append(countBitSetFlags(countSpeciesValue));
                 }
-                if(countOccurrences) {
+                if (countOccurrences) {
                     csv.append(",").append(countOccurrencesValue);
                 }
 
-                return csv.toString();                
+                return csv.toString();
             } else {
                 //bB
 
                 //TODO: more than env layers
-                Layer [] layers = new Layer[2];
-                double [][] extents = new double[2][];
-                for(int i=1;i<3;i++) {
-                    String [] s = fetch[i].split(",");
-                    layers[i-1] = Layers.getLayer(s[0]);
-                    if(s.length > 2) {
-                        double [] e = new double[2];
+                Layer[] layers = new Layer[2];
+                double[][] extents = new double[2][];
+                for (int i = 1; i < 3; i++) {
+                    String[] s = fetch[i].split(",");
+                    layers[i - 1] = Layers.getLayer(s[0]);
+                    if (s.length > 2) {
+                        double[] e = new double[2];
                         e[0] = Double.parseDouble(s[1]);
                         e[1] = Double.parseDouble(s[2]);
-                        extents[i-1] = e;
+                        extents[i - 1] = e;
                     }
                 }
-                
-                Legend [] legends = new Legend[2];
 
-                float [][] data = new float[2][];
-                float [][] cutoffs = new float[2][];
-               
+                Legend[] legends = new Legend[2];
+
+                float[][] data = new float[2][];
+                float[][] cutoffs = new float[2][];
+
                 //determine scales
                 Grid g = null;
 
-                for(int i=0;i<layers.length;i++) {
+                for (int i = 0; i < layers.length; i++) {
                     g = Grid.getGrid(TabulationSettings.environmental_data_path + layers[i].name);
 
-                    float [] f = g.getGrid().clone();   //Aligned grid
+                    float[] f = g.getGrid().clone();   //Aligned grid
 
                     //are extents present?
-                    if(extents[i] != null) {
-                        for(int j=0;j<f.length;j++) {
-                            if(Float.isNaN(f[j]) || f[j] < extents[i][0] || f[j] > extents[i][1]) {
+                    if (extents[i] != null) {
+                        for (int j = 0; j < f.length; j++) {
+                            if (Float.isNaN(f[j]) || f[j] < extents[i][0] || f[j] > extents[i][1]) {
                                 f[j] = Float.NaN;
                             }
                         }
@@ -1097,14 +1033,14 @@ public class SamplingWSController {
                 //build
                 int len = data[0].length;
                 int divs = 20;  //same as number of cutpoints in Legend
-                double [][] area = new double[divs][divs];
+                double[][] area = new double[divs][divs];
 
-                for(int i=0;i<cutoffs[0].length;i++) {
+                for (int i = 0; i < cutoffs[0].length; i++) {
                     System.out.println(cutoffs[0][i] + "," + cutoffs[1][i]);
                 }
 
-                for(int i=0;i<len;i++) {
-                    if(Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
+                for (int i = 0; i < len; i++) {
+                    if (Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
                         continue;
                     }
                     int x = getPos(data[0][i], cutoffs[0]);
@@ -1112,16 +1048,16 @@ public class SamplingWSController {
 
                     area[x][y] += cellArea(g.nrows - 1 - (i / g.ncols));
                 }
-                
+
                 //to csv
                 StringBuilder sb = new StringBuilder();
                 sb.append(",").append(layers[1].display_name).append("\n").append(layers[0].display_name);
-                for(int j=0;j<divs;j++) {
+                for (int j = 0; j < divs; j++) {
                     sb.append(",").append(cutoffs[1][j]);
                 }
-                for(int i=0;i<divs;i++) {
+                for (int i = 0; i < divs; i++) {
                     sb.append("\n").append(cutoffs[0][i]);
-                    for(int j=0;j<divs;j++) {
+                    for (int j = 0; j < divs; j++) {
                         sb.append(",").append(area[i][j]);
                     }
                 }
@@ -1137,19 +1073,19 @@ public class SamplingWSController {
 
     int getPos(float d, float[] cutoffs) {
         int pos = java.util.Arrays.binarySearch(cutoffs, d);
-        if(pos < 0) {
+        if (pos < 0) {
             pos = (pos * -1) - 1;
         }
 
         return pos;
     }
+    static double[] commonGridLatitudeArea = null;
 
-    static double [] commonGridLatitudeArea = null;
     double cellArea(int commonGridY) {
-        if(commonGridLatitudeArea == null) {
+        if (commonGridLatitudeArea == null) {
             commonGridLatitudeArea = FilteringIndex.getCommonGridLatitudeArea();
         }
-        if(commonGridY == commonGridLatitudeArea.length) {
+        if (commonGridY == commonGridLatitudeArea.length) {
             commonGridY--;
         }
         return commonGridLatitudeArea[commonGridY];
@@ -1170,21 +1106,21 @@ public class SamplingWSController {
     private String getParam(String get, String list) {
         //get name pos
         int p1 = 0;
-        
-        while(p1 >= 0 && p1 < list.length()) {
+
+        while (p1 >= 0 && p1 < list.length()) {
             p1 = list.indexOf(get + ":", p1);
             //failed to find it if -1
-            if(p1 < 0) {
+            if (p1 < 0) {
                 return null;
-            } else if(p1 == 0 || list.charAt(p1-1) == ';'){
+            } else if (p1 == 0 || list.charAt(p1 - 1) == ';') {
                 //found it, extract value
                 int start = p1 + get.length() + 1;
                 int end = list.indexOf(';', start);
-                if(end < 0) {
+                if (end < 0) {
                     end = list.length();
                 }
-                if(start >= 0 && start < list.length()
-                        && end >= start && end <= list.length() ){
+                if (start >= 0 && start < list.length()
+                        && end >= start && end <= list.length()) {
                     return list.substring(start, end);
                 }
             } else {
@@ -1198,13 +1134,11 @@ public class SamplingWSController {
 
     int countBitSetFlags(BitSet bs) {
         int count = 0;
-        for(int i=0;i<bs.length();i++) {
-            count += bs.get(i)?1:0;
+        for (int i = 0; i < bs.length(); i++) {
+            count += bs.get(i) ? 1 : 0;
         }
         return count;
     }
-
-
 
     @RequestMapping(value = "/wms/scatterplot", method = RequestMethod.GET)
     public void getScatterplotImage(
@@ -1220,10 +1154,10 @@ public class SamplingWSController {
         response.setContentType("image/png"); //only png images generated
 
         try {
-            species = species.replace("__",".");
+            species = species.replace("__", ".");
             int width = Integer.parseInt(widthString);
             int height = Integer.parseInt(heightString);
-            
+
             //get data
             String[] layers = getLayerFiles(envlist);
 
@@ -1231,8 +1165,8 @@ public class SamplingWSController {
             String[][] results = ss.sampleSpecies(species, layers, null, null, 1000000);
 
             DefaultXYDataset xyDataset = new DefaultXYDataset();
-            int p1 = results[0].length-2;
-            int p2 = results[0].length-1;
+            int p1 = results[0].length - 2;
+            int p2 = results[0].length - 1;
             double[][] dbl = new double[2][results.length - 1];
             for (int i = 1; i < results.length; i++) {   //skip header
                 try {
@@ -1250,10 +1184,7 @@ public class SamplingWSController {
             ChartRenderingInfo chartRenderingInfo;
 
             jChart = ChartFactory.createScatterPlot(
-                    SpeciesIndex.getScientificName(SpeciesIndex.findLSID(species))
-                    , Layers.layerNameToDisplayName(layers[0])
-                    , Layers.layerNameToDisplayName(layers[1])
-                    , xyDataset, PlotOrientation.HORIZONTAL, false, false, false);
+                    SpeciesIndex.getScientificName(SpeciesIndex.findLSID(species)), Layers.layerNameToDisplayName(layers[0]), Layers.layerNameToDisplayName(layers[1]), xyDataset, PlotOrientation.HORIZONTAL, false, false, false);
             plot = (XYPlot) jChart.getPlot();
             plot.setForegroundAlpha(0.5f);
             chartRenderingInfo = new ChartRenderingInfo();
@@ -1270,7 +1201,7 @@ public class SamplingWSController {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }     
+        }
     }
 
     @RequestMapping(value = "/wms/block", method = RequestMethod.GET)
@@ -1294,97 +1225,97 @@ public class SamplingWSController {
             //get data
             String[] fetch = envlist.split(":");
 
-                Layer [] layers = new Layer[2];
-                double [][] extents = new double[2][];
-                for(int i=0;i<2;i++) {
-                    String [] s = fetch[i].split(",");
-                    layers[i] = Layers.getLayer(s[0]);
-                    if(s.length > 2) {
-                        double [] e = new double[2];
-                        e[0] = Double.parseDouble(s[1]);
-                        e[1] = Double.parseDouble(s[2]);
-                        extents[i] = e;
-                    }
+            Layer[] layers = new Layer[2];
+            double[][] extents = new double[2][];
+            for (int i = 0; i < 2; i++) {
+                String[] s = fetch[i].split(",");
+                layers[i] = Layers.getLayer(s[0]);
+                if (s.length > 2) {
+                    double[] e = new double[2];
+                    e[0] = Double.parseDouble(s[1]);
+                    e[1] = Double.parseDouble(s[2]);
+                    extents[i] = e;
                 }
+            }
 
-                Legend [] legends = new Legend[2];
+            Legend[] legends = new Legend[2];
 
-                float [][] data = new float[2][];
-                float [][] cutoffs = new float[2][];
+            float[][] data = new float[2][];
+            float[][] cutoffs = new float[2][];
 
-                //determine scales
-                Grid g = null;
+            //determine scales
+            Grid g = null;
 
-                for(int i=0;i<layers.length;i++) {
-                    g = Grid.getGrid(TabulationSettings.environmental_data_path + layers[i].name);
+            for (int i = 0; i < layers.length; i++) {
+                g = Grid.getGrid(TabulationSettings.environmental_data_path + layers[i].name);
 
-                    float [] f = g.getGrid().clone();   //Aligned grid
+                float[] f = g.getGrid().clone();   //Aligned grid
 
-                    //are extents present?
-                    if(extents[i] != null) {
-                        for(int j=0;j<f.length;j++) {
-                            if(Float.isNaN(f[j]) || f[j] < extents[i][0] || f[j] > extents[i][1]) {
-                                f[j] = Float.NaN;
-                            }
-                        }
-                    }
-                    data[i] = f.clone();
-                    java.util.Arrays.sort(f);
-
-                    Legend lei = new LegendEvenInterval();
-                    lei.generate(f);
-
-                    legends[i] = lei;
-
-                    //cutoffs[i] = legends[i].getCutoffFloats();
-                    float min = legends[i].getMinMax()[0];
-                    float max = legends[i].getMinMax()[1];
-                    cutoffs[i] = new float[divs];
-                    for(int j=1;j<=divs;j++) {
-                        if(j == divs) {
-                            cutoffs[i][j-1] = max;
-                        } else {
-                            cutoffs[i][j-1] = (float) ((j/(float)divs * (max-min)) + min);
+                //are extents present?
+                if (extents[i] != null) {
+                    for (int j = 0; j < f.length; j++) {
+                        if (Float.isNaN(f[j]) || f[j] < extents[i][0] || f[j] > extents[i][1]) {
+                            f[j] = Float.NaN;
                         }
                     }
                 }
+                data[i] = f.clone();
+                java.util.Arrays.sort(f);
 
-                //build
-                int len = data[0].length;
-                double [][] area = new double[divs][divs];
+                Legend lei = new LegendEvenInterval();
+                lei.generate(f);
 
-                for(int i=0;i<len;i++) {
-                    if(Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
-                        continue;
-                    }
-                    int x = getPos(data[0][i], cutoffs[0]);
-                    int y = getPos(data[1][i], cutoffs[1]);
+                legends[i] = lei;
 
-                    area[x][y] += cellArea(g.nrows - 1 - (i / g.ncols));
-                }
-
-                //normalize
-                double min, max;
-                min = max = area[0][0];
-                for(int i=0;i<divs;i++) {
-                    for(int j=0;j<divs;j++) {
-                        if(min > area[i][j]) {
-                            min = area[i][j];
-                        }
-                        if(max < area[i][j]) {
-                            max = area[i][j];
-                        }
+                //cutoffs[i] = legends[i].getCutoffFloats();
+                float min = legends[i].getMinMax()[0];
+                float max = legends[i].getMinMax()[1];
+                cutoffs[i] = new float[divs];
+                for (int j = 1; j <= divs; j++) {
+                    if (j == divs) {
+                        cutoffs[i][j - 1] = max;
+                    } else {
+                        cutoffs[i][j - 1] = (float) ((j / (float) divs * (max - min)) + min);
                     }
                 }
-                for(int i=0;i<divs;i++) {
-                    for(int j=0;j<divs;j++) {
-                        if(max != min) {
-                            area[i][j] /= (max - min);
-                        } else {
-                            area[i][j] = 1;
-                        }
+            }
+
+            //build
+            int len = data[0].length;
+            double[][] area = new double[divs][divs];
+
+            for (int i = 0; i < len; i++) {
+                if (Float.isNaN(data[0][i]) || Float.isNaN(data[1][i])) {
+                    continue;
+                }
+                int x = getPos(data[0][i], cutoffs[0]);
+                int y = getPos(data[1][i], cutoffs[1]);
+
+                area[x][y] += cellArea(g.nrows - 1 - (i / g.ncols));
+            }
+
+            //normalize
+            double min, max;
+            min = max = area[0][0];
+            for (int i = 0; i < divs; i++) {
+                for (int j = 0; j < divs; j++) {
+                    if (min > area[i][j]) {
+                        min = area[i][j];
+                    }
+                    if (max < area[i][j]) {
+                        max = area[i][j];
                     }
                 }
+            }
+            for (int i = 0; i < divs; i++) {
+                for (int j = 0; j < divs; j++) {
+                    if (max != min) {
+                        area[i][j] /= (max - min);
+                    } else {
+                        area[i][j] = 1;
+                    }
+                }
+            }
 
             double xdiv = (cutoffs[0][1] - cutoffs[0][0]);
             double ydiv = (cutoffs[1][1] - cutoffs[1][0]);
@@ -1392,19 +1323,19 @@ public class SamplingWSController {
             NumberAxis x = new NumberAxis(layers[0].display_name);
             x.setUpperBound(legends[0].getMinMax()[1]);
             x.setLowerBound(legends[0].getMinMax()[0]);
-            x.setTickUnit(new NumberTickUnit(xdiv*20));
+            x.setTickUnit(new NumberTickUnit(xdiv * 20));
             NumberAxis y = new NumberAxis(layers[1].display_name);
             y.setUpperBound(legends[1].getMinMax()[1]);
             y.setLowerBound(legends[1].getMinMax()[0]);
-            y.setTickUnit(new NumberTickUnit(ydiv*20));
+            y.setTickUnit(new NumberTickUnit(ydiv * 20));
             DefaultXYZDataset defaultXYZDataset = new DefaultXYZDataset();
 
-            double [][] dat = new double[3][area.length * area.length];
+            double[][] dat = new double[3][area.length * area.length];
             int pos = 0;
-            
-            for(int i=0;i<area.length;i++) {
-                for(int j=0;j<area.length;j++) {
-                    if(area[i][j] > 0) {
+
+            for (int i = 0; i < area.length; i++) {
+                for (int j = 0; j < area.length; j++) {
+                    if (area[i][j] > 0) {
                         dat[0][pos] = cutoffs[0][i] - xdiv;
                         dat[1][pos] = cutoffs[1][j] - ydiv;
                         dat[2][pos] = area[i][j];
@@ -1412,17 +1343,17 @@ public class SamplingWSController {
                     }
                 }
             }
-            defaultXYZDataset.addSeries("",dat);
+            defaultXYZDataset.addSeries("", dat);
             XYBlockRenderer xyBlockRenderer = new XYBlockRenderer();
             LookupPaintScale ramp = new LookupPaintScale();
-            for(int i=0;i<=10;i++) {
-                ramp.add(i/10.0,new Color(Legend.colours[i]));
+            for (int i = 0; i <= 10; i++) {
+                ramp.add(i / 10.0, new Color(Legend.colours[i]));
             }
             xyBlockRenderer.setPaintScale(ramp);
             xyBlockRenderer.setBlockHeight(ydiv);
             xyBlockRenderer.setBlockWidth(xdiv);
             xyBlockRenderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
-            XYPlot plot = new XYPlot(defaultXYZDataset,x,y, xyBlockRenderer);
+            XYPlot plot = new XYPlot(defaultXYZDataset, x, y, xyBlockRenderer);
             JFreeChart jChart = new JFreeChart("Intersecting Area", plot);
 
             plot = (XYPlot) jChart.getPlot();
