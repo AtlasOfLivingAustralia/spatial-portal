@@ -1260,23 +1260,27 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                 if (prevResample == null || !prevResample.equals(thisResample)) {
                     prevResample = thisResample;
 
+                    HttpClient client = new HttpClient();
+
                     StringBuffer sbProcessUrl = new StringBuffer();
                     sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/scatterplot?");
                     sbProcessUrl.append("taxonid=" + URLEncoder.encode(data.getLsid().replace(".", "__"), "UTF-8"));
                     String sbenvsel = data.getLayer1() + ":" + data.getLayer2();
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
 
-                    if (data.getHighlightWkt() != null) {
-                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
-                    }
-                    if (data.getFilterWkt() != null) {
-                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
-                    }
-
                     sbProcessUrl.append("&colourmode=").append(data.colourMode);
 
-                    HttpClient client = new HttpClient();
                     PostMethod get = new PostMethod(sbProcessUrl.toString());
+
+                    if (data.getHighlightWkt() != null) {
+                        get.addParameter("areahighlight", URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
+                    }
+                    
+                    if (data.getFilterWkt() != null) {
+                        //Now done in AddToolScatterplotComposer
+                        //get.addParameter("arearestrict", URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
+                    }
+                    
                     get.addRequestHeader("Accept", "text/plain");
 
                     int result = client.executeMethod(get);
@@ -1347,7 +1351,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 //                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
 //                    }
                     if (data.getFilterWkt() != null) {
-                        sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
+                        //Now done in AddToolScatterplotComposer
+                        //sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
                     }
 
                     //sbProcessUrl.append("&colourmode=").append(data.colourMode);
@@ -1514,6 +1519,10 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     tbxMissingCount.setValue("");
                     chkSelectMissingRecords.setVisible(false);
                 }
+
+                prevResample = (String) mapLayer.getData("prevResample");
+                prevResampleBackground = (String) mapLayer.getData("prevResampleBackground");
+                prevLegendColours = (String) mapLayer.getData("prevLegendColours");
             }
         } catch (Exception e) {
             //e.printStackTrace();
@@ -1558,6 +1567,10 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             mapLayer.setData("imagePath", imagePath);
             mapLayer.setData("missing_data", new Boolean(missing_data));
+
+            mapLayer.setData("prevResample", prevResample);
+            mapLayer.setData("prevResampleBackground", prevResampleBackground);
+            mapLayer.setData("prevLegendColours", prevLegendColours);
         }
     }
 }
