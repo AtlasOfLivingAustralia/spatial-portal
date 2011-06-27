@@ -2801,7 +2801,9 @@ public class OccurrencesIndex {
 
     public int registerHighlight(OccurrencesFilter filter, String key, String highlightPid, boolean include) {
         int[] r = getRecordNumbers(filter);
+        int[] nr = null;
         if (r != null) {
+            nr = new int[r.length];
             if (filter.searchTerm != null && SpeciesIndex.findLSID(filter.searchTerm) >= 0) {
                 //lookup by replacing 'h' with dataset hash
                 IndexedRecord ir = filterSpeciesRecords(filter.searchTerm); //TODO: more than just species searches
@@ -2809,35 +2811,34 @@ public class OccurrencesIndex {
                 int pos = 0;
                 for (int i = 0; i < r.length; i++) {
                     if (include != highlight[r[i] - ir.record_start]) {
-                        r[pos] = r[i];
+                        nr[pos] = r[i];
                         pos++;
                     }
                 }
-                r = java.util.Arrays.copyOf(r, pos);
+                nr = java.util.Arrays.copyOf(nr, pos);
             } else if (filter.searchTerm != null) {
                 //'highlight' are stored by 'searchTerm' only,
                 //retrieve whole records already produced
-                r = getRecordNumbers(new OccurrencesFilter(filter.searchTerm, filter.maxRecords));
                 boolean[] highlight = RecordSelectionLookup.getSelection(getHash() + highlightPid);
                 int pos = 0;
                 for (int i = 0; i < r.length; i++) {
                     if (include != highlight[i]) {
-                        r[pos] = r[i];
+                        nr[pos] = r[i];
                         pos++;
                     }
                 }
-                r = java.util.Arrays.copyOf(r, pos);
+                nr = java.util.Arrays.copyOf(nr, pos);
             } //cannot get 'highlight' without searchTerm
         }
 
         int count = 0;
 
-        if (r != null && r.length > 0) {
-            count = r.length;
+        if (nr != null && nr.length > 0) {
+            count = nr.length;
 
-            java.util.Arrays.sort(r);
+            java.util.Arrays.sort(nr);
 
-            RecordsLookup.addRecords(getHash() + key, r);
+            RecordsLookup.addRecords(getHash() + key, nr);
         }
 
         return count;
