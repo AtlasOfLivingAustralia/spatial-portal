@@ -1662,6 +1662,32 @@ public class OccurrencesIndex {
             try {
                 Object data = SpeciesColourOption.loadData(index_path, j);
                 attributesMap.put(TabulationSettings.geojson_property_names[j], data);
+
+                //lookup uid to name, instituion and dataResource
+                if(TabulationSettings.institution_property == TabulationSettings.geojson_property_fields[j]) {
+                    Object [] d = (Object []) data;
+                    String [] s = (String []) d[0];
+                    for(int k=0;k<s.length;k++) {
+                        String value = TabulationSettings.institutions.get(s[k]);
+                        if(value != null) {
+                            s[k] = value;
+                        } else {
+                            s[k] = "";
+                        }
+                    }
+                }
+                if(TabulationSettings.dataresource_property == TabulationSettings.geojson_property_fields[j]) {
+                    Object [] d = (Object []) data;
+                    String [] s = (String []) d[0];
+                    for(int k=0;k<s.length;k++) {
+                        String value = TabulationSettings.dataResources.get(s[k]);
+                        if(value != null) {
+                            s[k] = value;
+                        } else {
+                            s[k] = "";
+                        }
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
