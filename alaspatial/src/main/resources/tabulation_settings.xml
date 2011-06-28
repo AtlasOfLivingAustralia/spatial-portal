@@ -1707,11 +1707,16 @@
     <geojson_latitude>37</geojson_latitude>
     <geojson_property_names>u,p,dr,in,y,c,a,d</geojson_property_names>
     <geojson_property_display_names>Uncertainty,Data Provider,Data Resource,Institution,Year,Collection,Altitude,Depth</geojson_property_display_names>
-    <geojson_property_fields>29,18,20,23,32,25,30,31</geojson_property_fields>
+    <geojson_property_fields>29,18,19,21,32,25,30,31</geojson_property_fields>
     <geojson_property_types>int,string,string,string,int,string,double,double</geojson_property_types>
     <geojson_property_catagory>distance,,,,year,,altitude,depth</geojson_property_catagory>
     <geojson_property_units>m,,,,,,m,cm</geojson_property_units>
 
+    <institution_list_url>http://collections.ala.org.au/ws/institution.json</institution_list_url>
+    <institution_property>21</institution_property>
+
+    <dataresource_list_url>http://collections.ala.org.au/ws/dataResource.json</dataresource_list_url>
+    <dataresource_property>19</dataresource_property>
 
 
     <!--
