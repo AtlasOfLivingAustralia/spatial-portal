@@ -355,7 +355,7 @@ public class FilteringWSController {
             if (shape == null) {
                 shape = "none";
             } else {
-                shape = URLDecoder.decode(shape, "UTF-8");
+                //shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
                 return "";  //error
@@ -400,7 +400,7 @@ public class FilteringWSController {
             if (shape == null) {
                 shape = "none";
             } else {
-                shape = URLDecoder.decode(shape, "UTF-8");
+                //shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
                 return;// "";  //error
@@ -449,7 +449,7 @@ public class FilteringWSController {
             if (shape == null) {
                 shape = "none";
             } else {
-                shape = URLDecoder.decode(shape, "UTF-8");
+                //shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
                 return "";  //error
@@ -510,7 +510,7 @@ public class FilteringWSController {
             if (shape == null) {
                 shape = "none";
             } else {
-                shape = URLDecoder.decode(shape, "UTF-8");
+                //shape = URLDecoder.decode(shape, "UTF-8");
             }
             if (shape.equals("none") && pid.equals("none")) {
                 return "";  //error

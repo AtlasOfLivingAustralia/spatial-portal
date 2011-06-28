@@ -34,7 +34,7 @@ public class IntersectionWSController {
     @ResponseBody
     String intersect(HttpServletRequest req) {
         try {
-            String area = URLDecoder.decode(req.getParameter("area"),"UTF-8");
+            String area = req.getParameter("area");
 
             LayerFilter[] filter = null;
             SimpleRegion region = null;
@@ -62,7 +62,7 @@ public class IntersectionWSController {
     @ResponseBody
     String intersectCount(HttpServletRequest req) {
         try {
-            String area = URLDecoder.decode(req.getParameter("area"),"UTF-8");
+            String area = req.getParameter("area");
 
             LayerFilter[] filter = null;
             SimpleRegion region = null;
