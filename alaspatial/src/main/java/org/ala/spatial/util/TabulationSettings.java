@@ -260,6 +260,15 @@ public class TabulationSettings {
     public static Hashtable<String, String> dataResources;
 
     /**
+     * work around for missing or changed geojson_property data
+     */
+    public static String institution_list_url;
+    public static int institution_property;
+    //public static String dataresource_list_url;
+    public static int dataresource_property;
+    public static Hashtable<String, String> institutions;
+
+    /**
      * loads settings form name of the appropriate xml resource file
      *
      * @param filename name xml resource file to load
@@ -559,7 +568,13 @@ public class TabulationSettings {
 
         occurrences_dr_list_wsurl = xr.getValue("occurrences_dr_list_wsurl");
         occurrences_dr_public_url = xr.getValue("occurrences_dr_public_url");
-        loadDataResources(); 
+        loadDataResources();
+
+        institution_list_url = xr.getValue("institution_list_url");
+        institution_property = Integer.parseInt(xr.getValue("institution_property"));
+        //dataresource_list_url = xr.getValue("dataresource_list_url");
+        dataresource_property = Integer.parseInt(xr.getValue("dataresource_property"));
+        loadInstitutions();
     }
 
     static public String getPath(String layerName) {
@@ -596,6 +611,36 @@ public class TabulationSettings {
                     for (int i=0; i<root.size(); i++) {
                         JsonNode jdr = root.get(i);
                         dataResources.put(jdr.get("uid").getTextValue(), jdr.get("name").getTextValue());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to load data resources");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    private static void loadInstitutions() {
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod post = new GetMethod(institution_list_url);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+            int result = client.executeMethod(post);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonFactory factory = mapper.getJsonFactory();
+            JsonParser jp = factory.createJsonParser(post.getResponseBodyAsString());
+            JsonNode root = mapper.readTree(jp);
+
+            if (root != null) {
+                if (institutions == null) {
+                    institutions = new Hashtable<String, String>();
+                }
+                if (root.isArray()) {
+                    for (int i=0; i<root.size(); i++) {
+                        JsonNode jdr = root.get(i);
+                        institutions.put(jdr.get("uid").getTextValue(), jdr.get("name").getTextValue());
                     }
                 }
             }
