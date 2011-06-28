@@ -145,10 +145,12 @@ public class AreaRegionSelection extends AreaToolComposer {
             btnOk.setDisabled(true);
         } else {
             btnOk.setDisabled(false);
-            String json = readGeoJSON(CommonData.geoServer + ci.getValue().toString());
-            JSONObject jo = JSONObject.fromObject(json);
+            //String json = readGeoJSON(CommonData.geoServer + ci.getValue().toString());
+            //JSONObject jo = JSONObject.fromObject(json);
             //if the layer is a point create a radius
-            if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point"))
+            //if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point"))
+            //if(json.contains("\"type\":\"Point\""))
+            if(ci.getDescription() != null && ci.getDescription().contains(" Point)"))
                 hbRadius.setVisible(true);
             else
                 hbRadius.setVisible(false);

@@ -209,6 +209,8 @@ public class Util {
     /**
      * transform json string with geometries into wkt.
      *
+     * only MULTIPOLYGON output.
+     *
      * extracts 'shape_area' if available and assigns it to storedSize.
      *
      * @param json
@@ -216,22 +218,56 @@ public class Util {
      */
     static public String wktFromJSON(String json) {
         try {
-            JSONObject obj = JSONObject.fromObject(json);
-            JSONArray geometries = obj.getJSONArray("geometries");
-            String wkt = "";
-            for (int i = 0; i < geometries.size(); i++) {
-                String coords = geometries.getJSONObject(i).getString("coordinates");
+//            JSONObject obj = JSONObject.fromObject(json);
+//            JSONArray geometries = obj.getJSONArray("geometries");
+//            String wkt = "";
+//            for (int i = 0; i < geometries.size(); i++) {
+//                String coords = geometries.getJSONObject(i).getString("coordinates");
+//
+//                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
+//                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
+//
+//                } else {
+//                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
+//                }
+//
+//                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
+//            }
+//            return wkt;
 
-                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
-                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-
+            StringBuilder sb = new StringBuilder();
+            sb.append("MULTIPOLYGON(");
+            int pos = json.indexOf("coordinates") + "coordinates".length() + 3;
+            int end = json.indexOf("}", pos);
+            char c = json.charAt(pos);
+            char prev_c = ' ';
+            char next_c;
+            pos++;
+            while (pos < end) {
+                next_c = json.charAt(pos);
+                //lbrace to lbracket, next character is not a number
+                if(c == '[') {
+                    if(next_c != '-' && (next_c < '0' || next_c > '9')) {
+                        sb.append('(');
+                    }
+                //rbrace to rbracket, prev character was not a number
+                } else if(c == ']') {
+                    if (prev_c < '0' || prev_c > '9') {
+                        sb.append(')');
+                    }
+                //comma to space, prev character was a number
+                } else if(c == ',' && prev_c >= '0' && prev_c <= '9') {
+                    sb.append(' ');
+                //keep the original value
                 } else {
-                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
+                    sb.append(c);
                 }
-
-                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
+                prev_c = c;
+                c = next_c;
+                pos++;
             }
-            return wkt;
+            sb.append(")");
+            return sb.toString();
         } catch (JSONException e) {
             return "none";
         }
@@ -451,11 +487,11 @@ public class Util {
             sbProcessUrl.append("/species/lsidarea/register");
             sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addParameter("area", wkt);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String pid = get.getResponseBodyAsString();
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            post.addParameter("area", wkt);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
+            String pid = post.getResponseBodyAsString();
             return pid;
         } catch (Exception e) {
             e.printStackTrace();

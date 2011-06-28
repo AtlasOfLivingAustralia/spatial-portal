@@ -186,19 +186,19 @@ public class LayerListComposer extends UtilityComposer {
                     +((subtype.equalsIgnoreCase("environmental"))?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL)
                     + "}");
             SimpleTreeNode stnCat2 = new SimpleTreeNode(joCat2, alCat2);
-            System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
+            //System.out.println("\tadding cat2.stn (" + cat2 + ") to " + cat1 + " :: " + alCat1.contains(stnCat2) + " ::: " + alCat1.indexOf(stnCat2));
             //System.out.println("\t=======================" + stnCat2);
             boolean found = false;
             for (int i = 0; i < alCat1.size(); i++) {
-                System.out.print("\t\t " + alCat1.get(i));
+                //System.out.print("\t\t " + alCat1.get(i));
                 //System.out.println("comparing " + stnCat2.toString() + " to " + alCat1.get(i).toString());
                 //if (stnCat2.toString().equals(alCat1.get(i).toString())) {
                 if (alCat1.get(i).toString().indexOf(cat2) != -1){
-                    System.out.println(": found");
+                    //System.out.println(": found");
                     found = true;
                     break;
                 } else {
-                    System.out.println(": not this");
+                    //System.out.println(": not this");
                 }
             }
             if (!found) {

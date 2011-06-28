@@ -183,12 +183,12 @@ public class AreaToolComposer extends UtilityComposer {
             sbProcessUrl.append("species/area/register");
 
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
-            get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
+            post.addParameter("area", area);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
 
             return slist;
         } catch (Exception e) {
@@ -201,15 +201,15 @@ public class AreaToolComposer extends UtilityComposer {
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            get.addParameter("area", URLEncoder.encode(wkt, "UTF-8"));
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            post.addParameter("area", wkt);
 
-            int result = client.executeMethod(get);
+            int result = client.executeMethod(post);
 
             //TODO: confirm result
-            String slist = get.getResponseBodyAsString();
+            String slist = post.getResponseBodyAsString();
 
             return slist;
         } catch (Exception ex) {

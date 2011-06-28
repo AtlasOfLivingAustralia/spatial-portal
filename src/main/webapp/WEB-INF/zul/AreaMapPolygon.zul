@@ -2,7 +2,7 @@
 <?component name="ContextualLayersTree" macro-uri="/WEB-INF/zul/ContextualLayersTree.zul"?>
 <zk>
     <window id="areamappolygonwindow" use="org.ala.spatial.analysis.web.AreaMapPolygon"
-    apply="org.ala.spatial.analysis.web.AreaMapPolygon" width="360px" xmlns:n="http://www.zkoss.org/2005/zk/native"
+    apply="org.ala.spatial.analysis.web.AreaMapPolygon" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
     style="position:absolute;left:20px;top:20px" draggable="false">
         <n:div class="left-cover" />
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />
@@ -35,7 +35,7 @@
                 </radiogroup>
             <vbox id="vbxLayerList" visible="false" sclass="embedWindowsContent">
                 <hbox width="100%">
-                    <combobox id="autoCompleteLayers" use="org.ala.spatial.analysis.web.ContextualLayersAutoComplete" autodrop="true" width="250px">
+                    <combobox id="autoCompleteLayers" use="org.ala.spatial.analysis.web.ContextualLayersAutoComplete" autodrop="true" width="320px">
                         <comboitem label=""/>
                     </combobox>
                     

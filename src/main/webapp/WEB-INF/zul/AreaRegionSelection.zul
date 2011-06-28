@@ -19,7 +19,7 @@
             <separator />
             <hbox>
                 <separator orient="vertical" />
-                <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true"  width="250px" >
+                <combobox id="gazetteerAuto" use="org.ala.spatial.gazetteer.AutoComplete" autodrop="true"  width="320px" >
                     <comboitem label=""/>
                 </combobox>
             </hbox>

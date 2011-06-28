@@ -2694,12 +2694,12 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     private void loadDistributionMap(String lsid, String taxon, String wkt) {
         try {
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws/intersect/shape"); // testurl
-            get.addParameter("area", URLEncoder.encode(wkt, "UTF-8"));
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/intersect/shape"); // testurl
+            post.addParameter("area", wkt);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
             if (result == 200) {
-                String txt = get.getResponseBodyAsString();
+                String txt = post.getResponseBodyAsString();
                 if (txt.contains(lsid)) {
                     String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
                     if (wmsNames != null && wmsNames.length > 0) {
@@ -3386,53 +3386,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     String getLayerGeoJsonAsWkt(String layer) {
         try {
             //class_name is same as layer name
-            return wktFromJSON(getMapLayer(layer).getGeoJSON());
+            return Util.wktFromJSON(getMapLayer(layer).getGeoJSON());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return getViewArea();
     }
 
-    private String wktFromJSON(String json) {
-        try {
-            JSONObject obj = JSONObject.fromObject(json);
-
-            String coords = obj.getJSONArray("geometries").getJSONObject(0).getString("coordinates");
-
-            if (obj.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("multipolygon")) {
-                String wkt = coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-                return wkt;
-            } else {
-                String wkt = coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "POLYGON((").replace("]]]]", "))").replace("],[", "),(");
-                return wkt;
-            }
-        } catch (Exception e) {
-            return "none";
-        }
-    }
-
-//    public void selectColour(Object obj) {
-//        Div div = (Div) obj;
-//        String style = div.getStyle();
-//        String background_color = "background-color";
-//        int a = style.indexOf(background_color);
-//        if (a >= 0) {
-//            String colour = style.substring(a + background_color.length() + 2, a + background_color.length() + 8);
-//            int r = Integer.parseInt(colour.substring(0, 2), 16);
-//            int g = Integer.parseInt(colour.substring(2, 4), 16);
-//            int b = Integer.parseInt(colour.substring(4, 6), 16);
-//
-//            redSlider.setCurpos(r);
-//            greenSlider.setCurpos(g);
-//            blueSlider.setCurpos(b);
-//            redLabel.setValue(String.valueOf(r));
-//            greenLabel.setValue(String.valueOf(g));
-//            blueLabel.setValue(String.valueOf(b));
-//
-//            updateLegendImage();
-//            applyChange();
-//        }
-//    }
     public void loadScatterplot(ScatterplotData data, String lyrName) {
         //register area?
         String lsid = data.getLsid();
@@ -3443,11 +3403,13 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 sbProcessUrl.append("/species/lsidarea/register");
                 sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
                 HttpClient client = new HttpClient();
-                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-                get.addParameter("area", data.getFilterWkt());
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-                int result = client.executeMethod(get);
-                String pid = get.getResponseBodyAsString();
+                PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+                post.addParameter("area", data.getFilterWkt());
+                post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+                int result = client.executeMethod(post);
+                System.out.println("area=" + data.getFilterWkt());
+                System.out.println("result=" + result);
+                String pid = post.getResponseBodyAsString();
                 lsid = pid;
                 data.setLsid(pid);
             } catch (Exception e) {
@@ -4031,11 +3993,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             System.out.println("locfeat calling: " + reqUri);
 
             HttpClient client = new HttpClient();
-            GetMethod post = new GetMethod(reqUri);
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            GetMethod get = new GetMethod(reqUri);
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
-            int result = client.executeMethod(post);
-            String slist = post.getResponseBodyAsString();
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
             response = slist;
             System.out.println("locfeat data: " + slist);
         } catch (Exception e) {

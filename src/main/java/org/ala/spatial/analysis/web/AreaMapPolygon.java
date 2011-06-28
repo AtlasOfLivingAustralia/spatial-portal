@@ -15,6 +15,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
@@ -188,7 +189,7 @@ public class AreaMapPolygon extends AreaToolComposer {
                         String feature_text = getWktFromURI(featureURI, true);
 
                         String json = readGeoJSON(featureURI);
-                        String wkt = wktFromJSON(json);
+                        String wkt = Util.wktFromJSON(json);
                         if (wkt.contentEquals("none")) {
                             continue;
                           //  break;
@@ -230,40 +231,7 @@ public class AreaMapPolygon extends AreaToolComposer {
         return mapComposer;
     }
 
-  
-
-      /**
-     * transform json string with geometries into wkt.
-     *
-     * extracts 'shape_area' if available and assigns it to storedSize.
-     *
-     * @param json
-     * @return
-     */
-    private String wktFromJSON(String json) {
-        try {
-            JSONObject obj = JSONObject.fromObject(json);
-            JSONArray geometries = obj.getJSONArray("geometries");
-            String wkt = "";
-            for (int i = 0; i < geometries.size(); i++) {
-                String coords = geometries.getJSONObject(i).getString("coordinates");
-
-                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
-                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-
-                } else {
-                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
-                }
-
-                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
-            }
-            return wkt;
-        } catch (JSONException e) {
-            return "none";
-        }
-    }
-
-       /**
+    /**
      * get Active Area as WKT string, from a layer name and feature class
      *
      * @param layer name of layer as String
@@ -276,7 +244,7 @@ public class AreaMapPolygon extends AreaToolComposer {
 
         if (!register_shape) {
             String json = readGeoJSON(layer);
-            return feature_text = wktFromJSON(json);
+            return feature_text = Util.wktFromJSON(json);
         }
 
         try {
@@ -309,7 +277,7 @@ public class AreaMapPolygon extends AreaToolComposer {
         try {
             //class_name is same as layer name
             String json = readGeoJSON(layer);
-            feature_text = wktFromJSON(json);
+            feature_text = Util.wktFromJSON(json);
 
             if (!register_shape) {
                 return feature_text;
