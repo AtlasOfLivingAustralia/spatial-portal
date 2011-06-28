@@ -409,21 +409,21 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         if (wkt == null) {
             //are there any distribution maps to map first?
             //Heptranchias
-            String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
-            if (wmsNames != null && wmsNames.length > 0) {
-                if (wmsNames.length > 1) {
-                    for (int i = 0; i < wmsNames.length; i++) {
-                        addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f, "", LayerUtilities.SPECIES);
-                    }
-                } else {
-                    addWMSLayer(taxon + " map", wmsNames[0], 0.75f, "", LayerUtilities.SPECIES);
-                }
-            }
+//            String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
+//            if (wmsNames != null && wmsNames.length > 0) {
+//                if (wmsNames.length > 1) {
+//                    for (int i = 0; i < wmsNames.length; i++) {
+//                        addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f, "", LayerUtilities.SPECIES);
+//                    }
+//                } else {
+//                    addWMSLayer(taxon + " map", wmsNames[0], 0.75f, "", LayerUtilities.SPECIES);
+//                }
+//            }
 
             //map species
-            mapSpeciesByLsid(lsid, taxon, rank, 0, LayerUtilities.SPECIES);
+            mapSpeciesByLsid(lsid, taxon, rank, 0, LayerUtilities.SPECIES, wkt);
         } else {
-            mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), taxon, rank, 0, LayerUtilities.SPECIES);
+            mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), taxon, rank, 0, LayerUtilities.SPECIES, wkt);
         }
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
@@ -1086,6 +1086,24 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             MapLayer ml = (MapLayer) iudl.next();
             System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
             if (ml.getDisplayName().equals(label)) {
+                return ml;
+            }
+        }
+
+        return null;
+    }
+
+    public MapLayer getMapLayerSpeciesLSID(String lsid) {
+        // check if layer already present
+        List udl = getPortalSession().getActiveLayers();
+        Iterator iudl = udl.iterator();
+        System.out.println("session active layers: " + udl.size() + " looking for: " + lsid);
+        while (iudl.hasNext()) {
+            MapLayer ml = (MapLayer) iudl.next();
+            System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
+            MapLayerMetadata md = ml.getMapLayerMetadata();
+            if (md != null && md.getSpeciesLsid() != null
+                    && md.getSpeciesLsid().equalsIgnoreCase(lsid)) {
                 return ml;
             }
         }
@@ -1832,7 +1850,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void echoMapSpeciesByLSID(Event event) {
         String lsid = (String) event.getData();
         try {
-            mapSpeciesByLsid(lsid, lsid, LayerUtilities.SPECIES);
+            mapSpeciesByLsid(lsid, lsid, LayerUtilities.SPECIES, null);
         } catch (Exception e) {
             //try again
             Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
@@ -2487,11 +2505,11 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         menus.setSplittable(!maximise);
     }
 
-    public MapLayer mapSpeciesByLsid(String lsid, String species, int subType) {
-        return mapSpeciesByLsid(lsid, species, "species", 0, subType);
+    public MapLayer mapSpeciesByLsid(String lsid, String species, int subType, String wkt) {
+        return mapSpeciesByLsid(lsid, species, "species", 0, subType, wkt);
     }
 
-    public MapLayer mapSpeciesByLsid(String lsid, String species, String rank, int count, int subType) {
+    public MapLayer mapSpeciesByLsid(String lsid, String species, String rank, int count, int subType, String wkt) {
         if (species == null || (lsid != null && species.equalsIgnoreCase(lsid))) {
             String speciesrank = LayersUtil.getScientificNameRank(lsid);
             species = speciesrank.split(",")[0];
@@ -2506,10 +2524,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         MapLayer ml = null;
         if (countOfLsid(lsid) > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD) || (Executions.getCurrent().isExplorer() && countOfLsid(lsid) > 200)) {
             //ml = mapSpeciesByLsidCluster(lsid, species, rank);
-            ml = mapSpeciesByLsidFilterGrid(lsid, species, rank, count, subType);
+            ml = mapSpeciesByLsidFilterGrid(lsid, species, rank, count, subType, wkt);
         } else {
             //return mapSpeciesByLsidPoints(lsid,species);
-            ml = mapSpeciesByLsidFilter(lsid, species, rank, count, subType);
+            ml = mapSpeciesByLsidFilter(lsid, species, rank, count, subType, wkt);
         }
 
         if (ml != null) {
@@ -2673,15 +2691,51 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
-    public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank, int count, int subType) {
+    private void loadDistributionMap(String lsid, String taxon, String wkt) {
+        try {
+            HttpClient client = new HttpClient();
+            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws/intersect/shape"); // testurl
+            get.addParameter("area", URLEncoder.encode(wkt, "UTF-8"));
+            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(get);
+            if (result == 200) {
+                String txt = get.getResponseBodyAsString();
+                if (txt.contains(lsid)) {
+                    String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
+                    if (wmsNames != null && wmsNames.length > 0) {
+                        if (wmsNames.length > 1) {
+                            for (int i = 0; i < wmsNames.length; i++) {
+                                addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f, "", LayerUtilities.SPECIES);
+                            }
+                        } else {
+                            addWMSLayer(taxon + " map", wmsNames[0], 0.75f, "", LayerUtilities.SPECIES);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    public MapLayer mapSpeciesByLsidFilter(String lsid, String species, String rank, int count, int subType, String wkt) {
         String filter = rank + "conceptid='" + lsid + "'";
 
+        String[] splsid = species.split(";");
+        String trueLsid = lsid;
+        String wmsfilter = filter;
+        if (splsid.length > 1) {
+            species = splsid[0];
+            trueLsid = splsid[1];
+            wmsfilter = rank + "conceptid='" + trueLsid + "'";
+        }
+
         MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType);
+        loadDistributionMap(trueLsid,species,wkt); 
 
         if (ml != null) {
-            addToSession(species, filter);
+            addToSession(ml.getName(), filter);
 
-            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", lsid);
+            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", trueLsid);
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
@@ -2713,15 +2767,25 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ml;
     }
 
-    public MapLayer mapSpeciesByLsidFilterGrid(String lsid, String species, String rank, int count, int subType) {
+    public MapLayer mapSpeciesByLsidFilterGrid(String lsid, String species, String rank, int count, int subType, String wkt) {
         String filter = rank + "conceptid='" + lsid + "';colormode:grid";
 
+        String[] splsid = species.split(";");
+        String trueLsid = lsid;
+        String wmsfilter = filter;
+        if (splsid.length > 1) {
+            trueLsid = species.split(";")[1];
+            species = species.split(";")[0];
+            wmsfilter = rank + "conceptid='" + trueLsid + "'";
+        }
+
         MapLayer ml = mapSpeciesWMSByFilter(species, filter, subType);
+        loadDistributionMap(trueLsid,species,wkt); 
 
         if (ml != null) {
-            addToSession(species, filter);
+            addToSession(ml.getName(), filter);
 
-            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", lsid);
+            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", trueLsid);
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
@@ -3390,7 +3454,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 e.printStackTrace();
             }
         }
-        MapLayer ml = mapSpeciesByLsidFilter(lsid, data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT);
+        MapLayer ml = mapSpeciesByLsidFilter(lsid, data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null);
         ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
         ml.setData("scatterplotData", data);
@@ -3443,7 +3507,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             mapLayer = mapSpeciesByLsidFilter(data.getLsid(), data.getSpeciesName(),
                     (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getSpeciesRank() : "species",
                     (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getOccurrencesCount() : 0,
-                    LayerUtilities.SPECIES);
+                    LayerUtilities.SPECIES, null);
             if (mapLayer != null) {
                 MapLayerMetadata md = mapLayer.getMapLayerMetadata();
                 if (md == null) {
@@ -3907,6 +3971,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     li = li.substring(0, li.indexOf(";color"));
                 }
 
+                if (!getMapLayerSpeciesLSID(li).isDisplayed()) {
+                    continue;
+                }
+
                 lsidtypes += "type=" + lt;
                 if (li.equalsIgnoreCase("aa")) {
                     hasActiveArea = true;
@@ -4041,7 +4109,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 }
                 for (String pw : pwkt) {
 
-                    if (pw.trim().equals("")) continue;
+                    if (pw.trim().equals("")) {
+                        continue;
+                    }
 
                     sbKml.append("    <Polygon>").append("\r");
                     sbKml.append("      <outerBoundaryIs>").append("\r");

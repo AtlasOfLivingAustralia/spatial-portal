@@ -389,7 +389,7 @@ public class SamplingWCController extends UtilityComposer {
             }
         }
 
-        getMapComposer().mapSpeciesByLsid(lsid, taxon, rank, 0, subType);
+        getMapComposer().mapSpeciesByLsid(lsid, taxon, rank, 0, subType, null);
     }
 
     /**

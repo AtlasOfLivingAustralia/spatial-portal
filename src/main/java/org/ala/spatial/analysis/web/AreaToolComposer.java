@@ -93,10 +93,15 @@ public class AreaToolComposer extends UtilityComposer {
             //was OK clicked?
             if (ok) {
                 //map
+                String wkt = null;
+                try {
+                    wkt = getMapComposer().getMapLayer(layerName).getWKT();
+                } catch (Exception e) {}
+
                 if(winProps.get("lsid") == null) {
                     mapSpeciesInArea();
                 } else if (winProps.get("filter") != null && (Boolean) winProps.get("filter")) {
-                    MapLayer ml = getMapComposer().mapSpeciesByLsidFilter(getLsidArea((String) winProps.get("lsid")), (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"));
+                    MapLayer ml = getMapComposer().mapSpeciesByLsidFilter(getLsidArea((String) winProps.get("lsid")), (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"), wkt);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -105,7 +110,7 @@ public class AreaToolComposer extends UtilityComposer {
                     md.setMoreInfo((String) winProps.get("metadata"));
                     md.setSpeciesRank((String) winProps.get("rank"));
                 } else if (winProps.get("filterGrid") != null && (Boolean) winProps.get("filterGrid")) {
-                    MapLayer ml = getMapComposer().mapSpeciesByLsidFilterGrid(getLsidArea((String) winProps.get("lsid")), (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"));
+                    MapLayer ml = getMapComposer().mapSpeciesByLsidFilterGrid(getLsidArea((String) winProps.get("lsid")), (String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"), wkt);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -114,7 +119,7 @@ public class AreaToolComposer extends UtilityComposer {
                     md.setMoreInfo((String) winProps.get("metadata"));
                     md.setSpeciesRank((String) winProps.get("rank"));
                 } else if (winProps.get("byLsid") != null && (Boolean) winProps.get("byLsid")) {
-                    MapLayer ml = getMapComposer().mapSpeciesByLsid(getLsidArea((String) winProps.get("lsid")),(String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"));
+                    MapLayer ml = getMapComposer().mapSpeciesByLsid(getLsidArea((String) winProps.get("lsid")),(String) winProps.get("name"), (String) winProps.get("s"), (Integer) winProps.get("featureCount"), (Integer) winProps.get("type"), wkt);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -126,7 +131,7 @@ public class AreaToolComposer extends UtilityComposer {
                             getLsidArea((String) winProps.get("lsid")),
                             (String) winProps.get("taxon"),
                             (String) winProps.get("rank"),
-                            0, LayerUtilities.SPECIES);
+                            0, LayerUtilities.SPECIES, wkt);
                 }
             } //else cancel clicked, don't return to mapspeciesinarea popup
         }
@@ -157,7 +162,7 @@ public class AreaToolComposer extends UtilityComposer {
                 String lsid = registerPointsInArea(wkt);
                 sbProcessUrl = new StringBuffer();
                 String activeAreaLayerName = layers.get(0).getDisplayName();
-                getMapComposer().mapSpeciesByLsid(lsid, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES);
+                getMapComposer().mapSpeciesByLsid(lsid, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt);
 
                 //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
             } else {
