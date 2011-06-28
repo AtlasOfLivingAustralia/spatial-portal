@@ -421,7 +421,7 @@ public class FilteringResultsWCController extends UtilityComposer {
             //register points with a new id for mapping
             String lsid = registerPointsInArea(area);
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
-            getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES);
+            getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, null);
 
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
@@ -553,7 +553,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             System.out.println("btnAddLSIDs:" + pid);
 
-            getMapComposer().mapSpeciesByLsid(pid, "User entered LSIDs", LayerUtilities.SPECIES);
+            getMapComposer().mapSpeciesByLsid(pid, "User entered LSIDs", LayerUtilities.SPECIES, null);
 
             //getMapComposer().updateUserLogAnalysis("Sampling", "", "", u.getFile(), pid, "Sampling download");
         } catch (Exception e) {

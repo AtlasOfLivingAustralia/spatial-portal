@@ -692,7 +692,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
     void addUserLayer(String id, String layername, String description, int numRecords) {
         layername = StringUtils.capitalize(layername);
 
-        getMapComposer().mapSpeciesByLsid(id, layername, LayerUtilities.SPECIES);
+        getMapComposer().mapSpeciesByLsid(id, layername, LayerUtilities.SPECIES, null);
 
         UserData ud = new UserData(layername, description, "scatterplot");
         ud.setFeatureCount(numRecords);
