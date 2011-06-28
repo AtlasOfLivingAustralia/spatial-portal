@@ -160,7 +160,7 @@ public class SpeciesListResults extends UtilityComposer {
             PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
+            get.addParameter("area", shape);
 
             System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
 

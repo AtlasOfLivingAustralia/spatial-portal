@@ -1273,12 +1273,12 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     PostMethod get = new PostMethod(sbProcessUrl.toString());
 
                     if (data.getHighlightWkt() != null) {
-                        get.addParameter("areahighlight", URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
+                        get.addParameter("areahighlight", data.getHighlightWkt());
                     }
                     
                     if (data.getFilterWkt() != null) {
                         //Now done in AddToolScatterplotComposer
-                        //get.addParameter("arearestrict", URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
+                        //get.addParameter("arearestrict", data.getFilterWkt());
                     }
                     
                     get.addRequestHeader("Accept", "text/plain");
@@ -1348,22 +1348,22 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                     sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel, "UTF-8"));
 
 //                    if (data.getHighlightWkt() != null) {
-//                        sbProcessUrl.append("&areahighlight=").append(URLEncoder.encode(data.getHighlightWkt(), "UTF-8"));
+//                        sbProcessUrl.append("&areahighlight=").append(data.getHighlightWkt());
 //                    }
                     if (data.getFilterWkt() != null) {
                         //Now done in AddToolScatterplotComposer
-                        //sbProcessUrl.append("&arearestrict=").append(URLEncoder.encode(data.getFilterWkt(), "UTF-8"));
+                        //sbProcessUrl.append("&arearestrict=").append(data.getFilterWkt());
                     }
 
                     //sbProcessUrl.append("&colourmode=").append(data.colourMode);
                     sbProcessUrl.append("&colourmode=").append("-1");   //default
 
                     HttpClient client = new HttpClient();
-                    PostMethod get = new PostMethod(sbProcessUrl.toString());
-                    get.addRequestHeader("Accept", "text/plain");
+                    PostMethod post = new PostMethod(sbProcessUrl.toString());
+                    post.addRequestHeader("Accept", "text/plain");
 
-                    int result = client.executeMethod(get);
-                    String slist = get.getResponseBodyAsString();
+                    int result = client.executeMethod(post);
+                    String slist = post.getResponseBodyAsString();
 
                     String[] lines = slist.split("\n");
 

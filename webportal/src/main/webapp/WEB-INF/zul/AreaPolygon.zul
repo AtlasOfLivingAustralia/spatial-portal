@@ -1,7 +1,7 @@
 <?variable-resolver class="org.zkoss.spring.DelegatingVariableResolver"?>
 <zk>
     <window id="areapolygonwindow" use="org.ala.spatial.analysis.web.AreaPolygon"
-    apply="org.ala.spatial.analysis.web.AreaPolygon" width="360px" xmlns:n="http://www.zkoss.org/2005/zk/native"
+    apply="org.ala.spatial.analysis.web.AreaPolygon" width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
     style="position:absolute;left:20px;top:20px" draggable="false">
         <n:div class="left-cover" />
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />

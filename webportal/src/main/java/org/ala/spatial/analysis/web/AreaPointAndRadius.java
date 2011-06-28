@@ -9,6 +9,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
@@ -149,7 +150,7 @@ public class AreaPointAndRadius extends AreaToolComposer {
         String wkt = ""; //DEFAULT_AREA;
 
         if (!register_shape) {
-            return wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
+            return Util.wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
         }
 
         try {
@@ -182,7 +183,7 @@ public class AreaPointAndRadius extends AreaToolComposer {
         }
         try {
             //class_name is same as layer name
-            wkt = wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
+            wkt = Util.wktFromJSON(getMapComposer().getMapLayer(layer).getGeoJSON());
 
             if (!register_shape) {
                 return wkt;
@@ -204,36 +205,5 @@ public class AreaPointAndRadius extends AreaToolComposer {
         }
         System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + wkt);
         return wkt;
-    }
-
-      /**
-     * transform json string with geometries into wkt.
-     *
-     * extracts 'shape_area' if available and assigns it to storedSize.
-     *
-     * @param json
-     * @return
-     */
-    private String wktFromJSON(String json) {
-        try {
-            JSONObject obj = JSONObject.fromObject(json);
-            JSONArray geometries = obj.getJSONArray("geometries");
-            String wkt = "";
-            for (int i = 0; i < geometries.size(); i++) {
-                String coords = geometries.getJSONObject(i).getString("coordinates");
-
-                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
-                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-
-                } else {
-                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
-                }
-
-                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
-            }
-            return wkt;
-        } catch (JSONException e) {
-            return "none";
-        }
     }
 }
