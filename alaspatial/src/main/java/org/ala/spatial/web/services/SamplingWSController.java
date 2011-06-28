@@ -454,7 +454,7 @@ public class SamplingWSController {
             ArrayList<OccurrenceRecordNumbers> recordsR = null;
             SimpleRegion regionR = null;
             if (areaRestrict != null) {
-                areaRestrict = URLDecoder.decode(areaRestrict, "UTF-8");
+                areaRestrict = areaRestrict;
                 if (areaRestrict.startsWith("ENVELOPE")) {
                     recordsR = FilteringService.getRecords(areaRestrict);
                 } else {
@@ -474,6 +474,7 @@ public class SamplingWSController {
             }
 
             SamplingService ss = SamplingService.newForLSID(species);
+            System.out.println("Scatterplot: species=" + species + " layers=" + req.getParameter("envlist") + " areahighlight=" + areaHighlight + " arearestrict=" + areaRestrict);
             String[][] results = ss.sampleSpecies(species, layers, regionR, recordsR, 10000000);
 
             long[] recordsHids = null;
