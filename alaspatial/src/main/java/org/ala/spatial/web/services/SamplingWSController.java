@@ -515,7 +515,16 @@ public class SamplingWSController {
                     sbResults.append("Series").append(",");
                 } else {
                     if (sco != null) {
-                        sbResults.append(results[i][sco.getPos()]).append(",");
+                        String value = results[i][sco.getPos()];
+                        if(sco.getPos() == TabulationSettings.institution_property
+                                && (value = TabulationSettings.institutions.get(value)) == null) {
+                            value = "";
+                        }
+                        if(sco.getPos() == TabulationSettings.dataresource_property
+                                && (value = TabulationSettings.dataResources.get(value)) == null) {
+                            value = "";
+                        }
+                        sbResults.append(value).append(",");
                     } else {
                         //body
                         if (loadedPoints) {
