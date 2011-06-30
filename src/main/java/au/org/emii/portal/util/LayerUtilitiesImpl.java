@@ -888,17 +888,17 @@ public class LayerUtilitiesImpl implements LayerUtilities {
             }
 
             //don't use gwc/service/ because it is returning the wrong boundingbox
-            server = server.replace("gwc/service/","");
-
+         //   server = server.replace("gwc/service/","");
+            server = server.replace("spatial-dev","spatial");
             //make getcapabilities uri
-            String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wms", WMS_1_0_0);
+            String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wms", WMS_1_1_0);
 
             //get boundingbox for this layer by checking against each title and name
             Document doc = parseXml(wmsget);
             if (doc == null) {
                 return worldBBox;
             }
-            NodeList nl = doc.getElementsByTagName("Layer");
+            NodeList nl = doc.getElementsByTagName("Layers");
             int i, j;
             for (i = 0; i < nl.getLength(); i++) {
                 NodeList layer = nl.item(i).getChildNodes();
