@@ -18,6 +18,7 @@ description =             'The National Dynamic Land Cover Dataset'
 ,licence_notes =           E''
 ,source_link =             ''
 ,scale =                   '250m'
+,uid =                     id,
 ,path =                    '/data/ala/data/envlayers/dynamic_land_data_set'
 where name = 'dld_DLCMv1_Class';
 
