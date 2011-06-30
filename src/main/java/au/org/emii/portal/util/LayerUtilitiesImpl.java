@@ -889,7 +889,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
 
             //don't use gwc/service/ because it is returning the wrong boundingbox
          //   server = server.replace("gwc/service/","");
-            server = server.replace("spatial-dev","spatial");
+          
             //make getcapabilities uri
             String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wms", WMS_1_1_0);
 
