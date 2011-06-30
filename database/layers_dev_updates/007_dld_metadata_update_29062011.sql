@@ -1,5 +1,3 @@
-﻿--rollback transaction;
-
 begin transaction;
 
 update layers set

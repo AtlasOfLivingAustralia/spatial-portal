@@ -1,5 +1,3 @@
-﻿--rollback transaction;
-
 begin transaction;
 
 update layers set
@@ -82,3 +80,4 @@ where id =                      917;
 --order by classification2 asc, displayname asc, classification1 asc;
 
 commit transaction;
+
