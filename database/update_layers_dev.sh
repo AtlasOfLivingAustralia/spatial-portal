@@ -20,4 +20,7 @@ $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/002_ger_updates_19052011
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/003_ne_world_25052011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/004_gn_links_06062011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/005_env_scale_update_09062011.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/006_layer_metadata_update_29042011.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/007_dld_metadata_update_29062011.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/008_ger_display_name_update_30062011.sql
 
