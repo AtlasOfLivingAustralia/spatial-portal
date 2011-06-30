@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Required;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Priority;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -590,7 +592,7 @@ public class LayerUtilitiesImpl implements LayerUtilities {
                 + queryConjunction(mapLayer.getUri())
                 + "TRANSPARENT=true"
                 + //			"&ELEVATION=" + mapLayer.getAnimationParameters().getElevation() +
-                ((mapLayer.getSelectedStyleName().equals("Default"))?"":"&STYLES=" + mapLayer.getSelectedStyleName())
+                ((mapLayer.getSelectedStyleName().equals("Default")) ? "" : "&STYLES=" + mapLayer.getSelectedStyleName())
                 + "&CRS=EPSG%3A4326"
                 + //			"&COLORSCALERANGE=9.405405%2C29.66159" +
                 //			"&NUMCOLORBANDS=254" +
@@ -861,75 +863,77 @@ public class LayerUtilitiesImpl implements LayerUtilities {
      */
     @Override
     public List<Double> getBBox(String uri) {
-        try {
-            List<Double> bbox = new ArrayList<Double>();
-
-            //extract server uri
-            String server = "";
-            int q = uri.indexOf('?');
-            if (q > 0) {
-                server = uri.substring(0, uri.substring(0, q).lastIndexOf('/') + 1);
-            } else {
-                server = uri.substring(0, uri.lastIndexOf('/') + 1);
-            }
-
-            //extract layer name
-            String name = "";
-            int a = uri.toLowerCase().indexOf("layers=");
-            if (a > 0) {
-                int b = uri.toLowerCase().substring(a, uri.length()).indexOf("&");
-                if (b > 0) {
-                    //name is between a+len(layer=) and a+b
-                    name = uri.substring(a + 7, a + b);
-                } else {
-                    //name is between a+len(layer=) and len(uri)
-                    name = uri.substring(a + 7, uri.length());
-                }
-            }
-
-            //don't use gwc/service/ because it is returning the wrong boundingbox
-            server = server.replace("gwc/service/","");
-          
-            //make getcapabilities uri
-            String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wcs", WMS_1_1_0);
-
-            //get boundingbox for this layer by checking against each title and name
-            Document doc = parseXml(wmsget);
-            if (doc == null) {
-                String wfsget = mangleUriGetCapabilitiesAutoDiscover(server + "wfs", WMS_1_1_0);
-                doc = parseXml(wfsget);
-                if (doc == null) {
-                    return worldBBox;
-                }
-            }
-            NodeList nl = doc.getElementsByTagName("Layers");
-            int i, j;
-            for (i = 0; i < nl.getLength(); i++) {
-                NodeList layer = nl.item(i).getChildNodes();
-                boolean match = false;
-                for (j = 0; j < layer.getLength(); j++) {
-                    if (layer.item(j).getNodeName().equals("Name")
-                            || layer.item(j).getNodeName().equals("Title")) {
-                        if (layer.item(j).getTextContent().equalsIgnoreCase(name)) {
-                            match = true;
-                        }
-                    } else if (match
-                            && (layer.item(j).getNodeName().equals("BoundingBox")
-                            || layer.item(j).getNodeName().equals("LatLonBoundingBox"))) {
-                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("minx").getNodeValue()));
-                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("miny").getNodeValue()));
-                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("maxx").getNodeValue()));
-                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("maxy").getNodeValue()));
-                        break;
-                    }
-                }
-            }
-            return bbox;
-        } catch (Exception ex) {
-            // java.util.logging.Logger.getLogger(LayerUtilitiesImpl.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        }
-        return worldBBox;
+        return getBBoxWCSWFS(uri);
+        
+//        try {
+//            List<Double> bbox = new ArrayList<Double>();
+//
+//            //extract server uri
+//            String server = "";
+//            int q = uri.indexOf('?');
+//            if (q > 0) {
+//                server = uri.substring(0, uri.substring(0, q).lastIndexOf('/') + 1);
+//            } else {
+//                server = uri.substring(0, uri.lastIndexOf('/') + 1);
+//            }
+//
+//            //extract layer name
+//            String name = "";
+//            int a = uri.toLowerCase().indexOf("layers=");
+//            if (a > 0) {
+//                int b = uri.toLowerCase().substring(a, uri.length()).indexOf("&");
+//                if (b > 0) {
+//                    //name is between a+len(layer=) and a+b
+//                    name = uri.substring(a + 7, a + b);
+//                } else {
+//                    //name is between a+len(layer=) and len(uri)
+//                    name = uri.substring(a + 7, uri.length());
+//                }
+//            }
+//
+//            //don't use gwc/service/ because it is returning the wrong boundingbox
+//            server = server.replace("gwc/service/","");
+//
+//            //make getcapabilities uri
+//            String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wcs", WMS_1_1_0);
+//
+//            //get boundingbox for this layer by checking against each title and name
+//            Document doc = parseXml(wmsget);
+//            if (doc == null) {
+//                String wfsget = mangleUriGetCapabilitiesAutoDiscover(server + "wfs", WMS_1_1_0);
+//                doc = parseXml(wfsget);
+//                if (doc == null) {
+//                    return worldBBox;
+//                }
+//            }
+//            NodeList nl = doc.getElementsByTagName("Layers");
+//            int i, j;
+//            for (i = 0; i < nl.getLength(); i++) {
+//                NodeList layer = nl.item(i).getChildNodes();
+//                boolean match = false;
+//                for (j = 0; j < layer.getLength(); j++) {
+//                    if (layer.item(j).getNodeName().equals("Name")
+//                            || layer.item(j).getNodeName().equals("Title")) {
+//                        if (layer.item(j).getTextContent().equalsIgnoreCase(name)) {
+//                            match = true;
+//                        }
+//                    } else if (match
+//                            && (layer.item(j).getNodeName().equals("BoundingBox")
+//                            || layer.item(j).getNodeName().equals("LatLonBoundingBox"))) {
+//                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("minx").getNodeValue()));
+//                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("miny").getNodeValue()));
+//                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("maxx").getNodeValue()));
+//                        bbox.add(Double.parseDouble(layer.item(j).getAttributes().getNamedItem("maxy").getNodeValue()));
+//                        break;
+//                    }
+//                }
+//            }
+//            return bbox;
+//        } catch (Exception ex) {
+//            // java.util.logging.Logger.getLogger(LayerUtilitiesImpl.class.getName()).log(Level.SEVERE, null, ex);
+//            ex.printStackTrace();
+//        }
+//        return worldBBox;
     }
 
     public List<Double> getBBoxIndex(String uri) {
@@ -1024,5 +1028,114 @@ public class LayerUtilitiesImpl implements LayerUtilities {
             document = null;
         }
         return document;
+    }
+
+    /**
+     * get bounding box for wcs or wfs getlayer uri from GetCapabilities response
+     *
+     * @param uri wms server get layer uri as String, must contain "layers="
+     * @return bounding box as List<Double>
+     */
+    private List<Double> getBBoxWCSWFS(String uri) {
+        try {
+            List<Double> bbox = new ArrayList<Double>();
+
+            //extract server uri
+            String server = "";
+            int q = uri.indexOf('?');
+            if (q > 0) {
+                server = uri.substring(0, uri.substring(0, q).lastIndexOf('/') + 1);
+            } else {
+                server = uri.substring(0, uri.lastIndexOf('/') + 1);
+            }
+
+            //extract layer name
+            String name = "";
+            int a = uri.toLowerCase().indexOf("layers=");
+            if (a > 0) {
+                int b = uri.toLowerCase().substring(a, uri.length()).indexOf("&");
+                if (b > 0) {
+                    //name is between a+len(layer=) and a+b
+                    name = uri.substring(a + 7, a + b);
+                } else {
+                    //name is between a+len(layer=) and len(uri)
+                    name = uri.substring(a + 7, uri.length());
+                }
+            }
+
+            //don't use gwc/service/ because it is returning the wrong boundingbox
+            server = server.replace("gwc/service/", "");
+
+            //make getcapabilities uri
+            //String wmsget = mangleUriGetCapabilitiesAutoDiscover(server + "wms", WMS_1_0_0);
+            LayerUtilitiesImpl wmsUtilities = new LayerUtilitiesImpl();
+
+            // strip any existing version,request and service params
+            String mangled = stripUriRequest(server + "wcs");
+            mangled = stripUriService(mangled);
+            mangled = stripUriVersion(mangled);
+
+            /* if last char is a '?' or '&' we can append our query
+             * directly, otherwise we need to append one ourself
+             */
+            mangled += queryConjunction(server + "wcs");
+
+            // replace with our own params
+            mangled +=
+                    "SERVICE=WCS&"
+                    + "REQUEST=GetCapabilities&"
+                    + "VERSION=" + wmsUtilities.externalVersion(WMS_1_1_1);
+
+            //get boundingbox for this layer by checking against each title and name
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(mangled);
+            get.addRequestHeader("Accept", "text/plain");
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            int startPos = slist.indexOf("<ows:Title>" + name.replace("ALA:", "") + "</ows:Title>");
+            if (startPos == -1) {
+                //attempt to find by identifier
+                startPos = slist.indexOf("<wcs:Identifier>" + name.replace("ALA:", "") + "</wcs:Identifier>");
+                //shift startPos backwards to Title
+                startPos = slist.lastIndexOf("<ows:Title>", startPos);
+            }
+
+            //not found, try WFS
+            if (startPos == -1) {
+                //get boundingbox for this layer by checking against each title and name
+                client = new HttpClient();
+                get = new GetMethod(mangled.replace("WCS", "WFS").replace("wcs", "wfs"));
+                get.addRequestHeader("Accept", "text/plain");
+                result = client.executeMethod(get);
+                slist = get.getResponseBodyAsString();
+
+                startPos = slist.indexOf("<Name>" + name + "</Name>");
+            }
+
+            if (startPos == -1) {
+                System.out.println("BoundingBox not found for layer: " + name);
+                return worldBBox;
+            }
+
+            String lc = "ows:LowerCorner>";
+            String uc = "ows:UpperCorner>";
+            int lowerCornerPosStart = slist.indexOf(lc, startPos) + lc.length();
+            int lowerCornerPosEnd = slist.indexOf("</" + lc, lowerCornerPosStart);
+            int upperCornerPosStart = slist.indexOf(uc, startPos) + uc.length();
+            int upperCornerPosEnd = slist.indexOf("</" + uc, upperCornerPosStart);
+
+            String[] lowerCorner = slist.substring(lowerCornerPosStart, lowerCornerPosEnd).split(" ");
+            String[] upperCorner = slist.substring(upperCornerPosStart, upperCornerPosEnd).split(" ");
+
+            bbox.add(Double.parseDouble(lowerCorner[0]));
+            bbox.add(Double.parseDouble(lowerCorner[1]));
+            bbox.add(Double.parseDouble(upperCorner[0]));
+            bbox.add(Double.parseDouble(upperCorner[1]));
+
+            return bbox;
+        } catch (Exception e) {
+            return worldBBox;
+        }
     }
 }
