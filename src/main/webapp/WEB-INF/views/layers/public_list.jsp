@@ -226,6 +226,7 @@
                                     <th>Classification 1</th>
                                     <th>Classification 2</th>
                                     <th>Display name</th>
+                                    <th>Short name</th>
                                     <th>Description</th>
                                     <th>Type</th>
                                     <th>Metadata contact organization</th>
@@ -237,6 +238,7 @@
                                         <td>${layer.classification1}</td>
                                         <td>${layer.classification2}</td>
                                         <td><a href="/layers/more/${layer.name}">${layer.displayname}</a></td>
+                                        <td>${layer.name}</td>
                                         <td>${layer.description}</td>
                                         <c:choose>
                                             <c:when test="${layer.type eq 'Environmental'}">
