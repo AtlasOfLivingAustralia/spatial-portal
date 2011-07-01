@@ -49,7 +49,7 @@ description =             'Australian Coral Ecoregions'
 ,path =                    '/data/ala/shapefiles/coral_ecoregions'
 ,notes =                   E'Australian Coral Ecoregions:\n - Arnhem Land\n - Central & North GBR\n - Keppel Islands & Capricorn Bunker Reefs, Souther GBR\n - Darwin\n - Rowley Shoals\n - Ningaloo Reef & NW Western Australia\n - SW West Australia\n - Recherche Archipelago\n - Houtman Abrolhos Islands\n - Direction Bank\n - Ashmore Reef\n - Scott Reef\n - Christmas Island\n - Cocos Keeling\n - Arafura Sea Gulf of Carpenteria\n - Shark Bay\n - Kimberley Coast\n - Elizabeth & Middleton Reefs\n - Lord Howe Island\n - Solitary Islands\n - Moreton Bay\n - Pompey & Swain Reefs, South-east GBR\n - Torres Strait & far Northern GBR\n - South-east Australia\n - Coral Sea'
 --,enabled =                 true
-,displayname =             ''
+,displayname =             'Australian Coral Ecoregions'
 ,displaypath =             'http://spatial-dev.ala.org.au/geoserver/gwc/service/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:australian_coral_ecoregions&format=image/png&styles='
 ,environmentalvalueunits = 'class'
 ,metadatapath =            ''
