@@ -23,4 +23,4 @@ $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/005_env_scale_update_090
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/006_layer_metadata_update_29042011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/007_dld_metadata_update_29062011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/008_ger_display_name_update_30062011.sql
-
+$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/009_classification_updates_010711.sql
