@@ -2705,10 +2705,10 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     if (wmsNames != null && wmsNames.length > 0) {
                         if (wmsNames.length > 1) {
                             for (int i = 0; i < wmsNames.length; i++) {
-                                addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.75f, "", LayerUtilities.SPECIES);
+                                addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.35f, "", LayerUtilities.SPECIES);
                             }
                         } else {
-                            addWMSLayer(taxon + " map", wmsNames[0], 0.75f, "", LayerUtilities.SPECIES);
+                            addWMSLayer(taxon + " map", wmsNames[0], 0.35f, "", LayerUtilities.SPECIES);
                         }
                     }
                 }
@@ -2729,8 +2729,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             wmsfilter = rank + "conceptid='" + trueLsid + "'";
         }
 
+        loadDistributionMap(trueLsid,species,wkt);
         MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType);
-        loadDistributionMap(trueLsid,species,wkt); 
 
         if (ml != null) {
             addToSession(ml.getName(), filter);
@@ -2779,8 +2779,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             wmsfilter = rank + "conceptid='" + trueLsid + "'";
         }
 
+        loadDistributionMap(trueLsid,species,wkt);
         MapLayer ml = mapSpeciesWMSByFilter(species, filter, subType);
-        loadDistributionMap(trueLsid,species,wkt); 
 
         if (ml != null) {
             addToSession(ml.getName(), filter);
