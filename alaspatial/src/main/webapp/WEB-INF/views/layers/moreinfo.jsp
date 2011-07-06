@@ -227,7 +227,10 @@
                                 <span class="title">Description:</span> <br />
                                 ${layer.description}
                             </p>
-
+                            <p>
+                                <span class="title">Short Name:</span> <br />
+                                ${layer.name}
+                            </p>
                             <p>
                                 <span class="title">Metadata contact organization:</span> <br />
                                 <a href="${layer.sourcelink}" target="_blank">${layer.source}</a>
