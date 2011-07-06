@@ -45,8 +45,17 @@
         <!-- WP Menubar 4.8: end CSS -->
         <style type="text/css">.broken_link, a.broken_link {
                 text-decoration: line-through;
-            }</style>	<script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/jquery.dimensions.js"></script>
-
+            }</style>	
+        <!-- This style is used to (force) wrap a word correctly in a table -->
+        <style type="text/css">.wrapword{
+                white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+                white-space: -pre-wrap;      /* Opera 4-6 */
+                white-space: -o-pre-wrap;    /* Opera 7 */
+                white-space: pre-wrap;       /* css-3 */
+                word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            }</style>
+        
+        <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/jquery.dimensions.js"></script>
         <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/jquery.mousewheel.min.js"></script>
         <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/hoverintent-min.js"></script>
         <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/superfish/superfish.js"></script>
@@ -238,7 +247,7 @@
                                         <td>${layer.classification1}</td>
                                         <td>${layer.classification2}</td>
                                         <td><a href="/layers/more/${layer.name}">${layer.displayname}</a></td>
-                                        <td>${layer.name}</td>
+                                        <td style="max-width:80px" class="wrapword">${layer.name}</td>
                                         <td>${layer.description}</td>
                                         <c:choose>
                                             <c:when test="${layer.type eq 'Environmental'}">

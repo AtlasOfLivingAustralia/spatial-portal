@@ -36,7 +36,12 @@
                                 ${layer.description}
                             </td>
                         </tr>
-
+                        
+                        <tr>
+                            <th class="md_th">Short name</th>
+                            <td class="md_spacer"/>
+                            <td class="md_value">${layer.name}</td>
+                        </tr>
 
                         <tr>
                             <th class="md_th">Metadata contact organisation</th>
