@@ -2,99 +2,113 @@
 <zk>
     <window id="win" apply="org.ala.spatial.web.zk.JobsZK"
 title="Admin" width="100%" border="normal">
-    <tabbox width="100%">
-        <tabs>
-                    <tab label="Memory" />
-                    <tab label="Analysis Jobs" />
-                    <tab label="Other" />
-                </tabs>
-                <tabpanels>
-                    <tabpanel>
-        <separator/>
-        <hbox>
-            <label id="lMemUsage" />
-            <button label="cleanup memory usage" id="btnMemoryClean" />
-        </hbox>
-        </tabpanel>
-        <tabpanel>
-        <separator/>
-
-        <button id="refreshButton" label="refresh lists" />
-
-        <tabbox width="95%">
+        <tabbox width="100%">
             <tabs>
-                <tab label="Jobs Waiting" />
-                <tab label="Jobs Running" />
-                <tab label="Jobs Finished" />
+                <tab label="Memory" />
+                <tab label="Analysis Jobs" />
+                <tab label="Other" />
             </tabs>
             <tabpanels>
                 <tabpanel>
-                    <listbox id="lbwaiting" multiple="false" checkmark="false" width="100%" rows="5" >
-                        <listhead>
-                            <listheader width="100%" label=""></listheader>
-                        </listhead>
-                    </listbox>
+                    <separator/>
+                    <hbox>
+                        <label id="lMemUsage" />
+                        <button label="cleanup memory usage" id="btnMemoryClean" />
+                    </hbox>
                 </tabpanel>
                 <tabpanel>
+                    <separator/>
+
+                    <button id="refreshButton" label="refresh lists" />
+
+                    <tabbox width="95%">
+                        <tabs>
+                            <tab label="Jobs Waiting" />
+                            <tab label="Jobs Running" />
+                            <tab label="Jobs Finished" />
+                        </tabs>
+                        <tabpanels>
+                            <tabpanel>
+                                <listbox id="lbwaiting" multiple="false" checkmark="false" width="100%" rows="5" >
+                                    <listhead>
+                                        <listheader width="100%" label=""></listheader>
+                                    </listhead>
+                                </listbox>
+                            </tabpanel>
+                            <tabpanel>
                     
-                    <listbox id="lbrunning" multiple="false" checkmark="false" width="100%" rows="5" >
-                        <listhead>
-                            <listheader width="100%" label=""></listheader>
-                        </listhead>
-                    </listbox>
+                                <listbox id="lbrunning" multiple="false" checkmark="false" width="100%" rows="5" >
+                                    <listhead>
+                                        <listheader width="100%" label=""></listheader>
+                                    </listhead>
+                                </listbox>
+                            </tabpanel>
+                            <tabpanel>
+                                <listbox id="lbfinished" multiple="false" checkmark="false" width="100%" rows="5" >
+                                    <listhead>
+                                        <listheader width="100%" label=""></listheader>
+                                    </listhead>
+                                </listbox>
+                            </tabpanel>
+                        </tabpanels>
+                    </tabbox>
+
+      
+                    <vbox width="100%">
+                        <separator/>
+                        <hbox>
+                            <textbox id="selectedJob" />
+                            <button id="btnCancel" label="cancel job" />
+                            <button id="btnRefreshInfo" label="refresh info" />
+                            <button id="btnCopyJob" label="copy job" />
+                        </hbox>
+                        <tabbox width="95%">
+                            <tabs>
+                                <tab label="Log" />
+                                <tab label="Parameters" />
+                                <tab label="Images" />
+                            </tabs>
+                            <tabpanels>
+                                <tabpanel>
+                                    <textbox width="100%" id="joblog" height="300px" multiline="true" />
+                                </tabpanel>
+                                <tabpanel>
+                                    <textbox width="100%" id="jobparameters" height="300px" multiline="true" />
+                                </tabpanel>
+                                <tabpanel>
+                                    <textbox width="300px" id="imgpth" />
+                                    <iframe id="jobimage" src="" width="100%" height="300px"/>
+                                </tabpanel>
+                            </tabpanels>
+                        </tabbox>
+                    </vbox>
+                    <separator />
+                    <vbox>
+                        <label value="new Classification from parameters" />
+                        <textbox width="100%" id="newjob" height="100px" multiline="true" />
+                        <button id="btnNewClassification" label="new Classification" />
+                    </vbox>
                 </tabpanel>
                 <tabpanel>
-                    <listbox id="lbfinished" multiple="false" checkmark="false" width="100%" rows="5" >
-                        <listhead>
-                            <listheader width="100%" label=""></listheader>
-                        </listhead>
-                    </listbox>
+                    <vbox>
+
+                        <hbox>
+                            <label value="Number of cached species images: " />
+                            <label id="lCachedImageCount" value="" />
+                            <button id="btnClearCache" label="clear" />
+                        </hbox>
+                
+                        <separator />
+                
+                        <hbox>
+                            <label value="Process and send logs to ALA-Logger" />
+                            <button id="btnProcessLogs" label="Process" />
+                        </hbox>
+
+                    </vbox>
                 </tabpanel>
             </tabpanels>
         </tabbox>
-
-      
-        <vbox width="100%">
-            <separator/>
-            <hbox>
-                <textbox id="selectedJob" />
-                <button id="btnCancel" label="cancel job" />
-                <button id="btnRefreshInfo" label="refresh info" />
-                <button id="btnCopyJob" label="copy job" />
-            </hbox>
-            <tabbox width="95%">
-                <tabs>
-                    <tab label="Log" />
-                    <tab label="Parameters" />
-                    <tab label="Images" />
-                </tabs>
-                <tabpanels>
-                    <tabpanel>
-                        <textbox width="100%" id="joblog" height="300px" multiline="true" />
-                    </tabpanel>
-                    <tabpanel>
-                        <textbox width="100%" id="jobparameters" height="300px" multiline="true" />
-                    </tabpanel>
-                    <tabpanel>
-                        <textbox width="300px" id="imgpth" />
-                        <iframe id="jobimage" src="" width="100%" height="300px"/>
-                    </tabpanel>
-                </tabpanels>
-            </tabbox>
-        </vbox>
-        <separator />
-        <vbox>
-            <label value="new Classification from parameters" />
-                <textbox width="100%" id="newjob" height="100px" multiline="true" />
-                <button id="btnNewClassification" label="new Classification" />
-            </vbox>
-            </tabpanel>
-            <tabpanel>
-                <label value="Number of cached species images: " /><label id="lCachedImageCount" value="" />
-                <button id="btnClearCache" label="clear" />
-            </tabpanel>
-            </tabpanels>
-            </tabbox>
 
     </window>
 </zk>
