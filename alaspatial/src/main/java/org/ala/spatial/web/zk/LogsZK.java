@@ -21,6 +21,11 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.ala.spatial.util.TabulationSettings;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
@@ -136,23 +141,23 @@ public class LogsZK extends GenericForwardComposer {
 
             System.out.println("Sending: \n" + sbInfo.toString());
 
-//            HttpClient client = new HttpClient();
-//
-//            PostMethod post = new PostMethod("http://diasbtest1.ala.org.au:8080/ala-logger-service/");
-//
-//            RequestEntity entity = new StringRequestEntity(sbInfo.toString(), "application/json", "utf-8");
-//            post.setRequestEntity(entity);
-//
-//
-//            System.out.println("Sending to ALA-Logger...");
-//            int result = client.executeMethod(post);
-//
-//            if (result == HttpStatus.SC_OK) {
-//                System.out.println("Successfully sent logging service:");
-//                System.out.println(post.getResponseBodyAsString());
-//            } else {
-//                System.out.println("Not a clean response: " + result);
-//            }
+            HttpClient client = new HttpClient();
+
+            PostMethod post = new PostMethod("http://diasbtest1.ala.org.au:8080/ala-logger-service/");
+
+            RequestEntity entity = new StringRequestEntity(sbInfo.toString(), "application/json", "utf-8");
+            post.setRequestEntity(entity);
+
+
+            System.out.println("Sending to ALA-Logger...");
+            int result = client.executeMethod(post);
+
+            if (result == HttpStatus.SC_OK) {
+                System.out.println("Successfully sent logging service:");
+                System.out.println(post.getResponseBodyAsString());
+            } else {
+                System.out.println("Not a clean response: " + result);
+            }
         } catch (Exception ex) {
             System.out.println("postInfo.error:");
             ex.printStackTrace(System.out);
