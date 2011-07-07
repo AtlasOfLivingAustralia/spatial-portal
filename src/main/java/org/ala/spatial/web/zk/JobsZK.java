@@ -53,6 +53,10 @@ public class JobsZK extends GenericForwardComposer {
 
     }
 
+    public void onClick$btnProcessLogs(Event e) {
+        LogsZK.processLogFiles(); 
+    }
+
     public void onClick$refreshButton(Event e) {
         String [] s = get("listwaiting").split("\n");
         java.util.Arrays.sort(s);
