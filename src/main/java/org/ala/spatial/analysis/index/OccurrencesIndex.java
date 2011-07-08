@@ -1670,7 +1670,7 @@ public class OccurrencesIndex {
                     for(int k=0;k<s.length;k++) {
                         String value = TabulationSettings.institutions.get(s[k]);
                         if(value != null) {
-                            s[k] = value;
+                            s[k] = value.replace(",","");
                         } else {
                             s[k] = "";
                         }
@@ -1682,7 +1682,7 @@ public class OccurrencesIndex {
                     for(int k=0;k<s.length;k++) {
                         String value = TabulationSettings.dataResources.get(s[k]);
                         if(value != null) {
-                            s[k] = value;
+                            s[k] = value.replace(",","");
                         } else {
                             s[k] = "";
                         }
