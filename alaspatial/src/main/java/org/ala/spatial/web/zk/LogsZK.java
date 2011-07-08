@@ -143,7 +143,7 @@ public class LogsZK extends GenericForwardComposer {
 
             HttpClient client = new HttpClient();
 
-            PostMethod post = new PostMethod("http://diasbtest1.ala.org.au:8080/ala-logger-service/");
+            PostMethod post = new PostMethod("http://diasbtest1.ala.org.au:8080/service/logger/");
 
             RequestEntity entity = new StringRequestEntity(sbInfo.toString(), "application/json", "utf-8");
             post.setRequestEntity(entity);
@@ -229,12 +229,14 @@ public class LogsZK extends GenericForwardComposer {
                     }
 
                     if (method.equals("Sampling") && filename.endsWith(".zip")) {
-                        String zipfilepath = TabulationSettings.base_output_dir + "sampling/" + filename;
-                        System.out.println("Details for " + ip);
-                        ZipFile zf = new ZipFile(zipfilepath);
-                        Hashtable<String, Integer> uidCounts = readZipFile(zf);
-
-                        postInfoToLogger(ip, uidCounts);
+                        String zipfilepath = TabulationSettings.base_output_dir + "output/sampling/" + filename;
+                        System.out.println("Details for " + ip + " from " + zipfilepath);
+                        File zipfile = new File(zipfilepath);
+                        if (zipfile.exists() && (zipfile.length() > 0)) {
+                            ZipFile zf = new ZipFile(zipfile);
+                            Hashtable<String, Integer> uidCounts = readZipFile(zf);
+                            postInfoToLogger(ip, uidCounts);
+                        }
                     }
 
                 }
