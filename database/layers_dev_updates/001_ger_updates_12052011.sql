@@ -1,23 +1,4 @@
-/* update to other tables for gazeteer area selection */
-
---ALTER TABLE ger_analysis_boundary_v01
---ADD COLUMN ala_id character varying(150) DEFAULT 'GERI Analysis Boundary v01';
-
---ALTER TABLE ger_geri_boundary_v102_australia
---ADD COLUMN ala_id character varying(150) DEFAULT 'GERI Boundary v102';
-
---ALTER TABLE ger_hunter
---ADD COLUMN ala_id character varying(150) DEFAULT 'GER Hunter';
-
---ALTER TABLE ger_hunter_analysis_mask
---ADD COLUMN ala_id character varying(150) DEFAULT 'GER Hunter Analysis Mask';
-
---ALTER TABLE ger_upper_hunter_focus_area_v2
---ADD COLUMN ala_id character varying(150) DEFAULT 'GER Upper Hunter Focus Area';
-
---ALTER TABLE ger_kosciuszko_to_coast
---ADD COLUMN ala_id character varying(150) DEFAULT 'GER Kosciuszko to Coast';
-
+begin;
 
 /* update to layers metadata table */
 
@@ -91,16 +72,4 @@ set
 classification2 = 'Partnerships: Slopes to Summit'
 where id in (910, 911);
 
---SELECT id, "name", description, "type", source, path, extents, minlatitude, 
---       minlongitude, maxlatitude, maxlongitude, notes, enabled, displayname, 
---       displaypath, scale, environmentalvaluemin, environmentalvaluemax, 
---       environmentalvalueunits, lookuptablepath, metadatapath, classification1, 
---       classification2, uid, mddatest, citation_date, datalang, mdhrlv, 
---       respparty_role, licence_level, licence_link, licence_notes, source_link
---  FROM layers
-
---where name like 'ger_%'
---description like '%land%' or displayname like 'Mining%'
-
---order by classification2 asc, displayname asc, classification1 asc;
-
+commit;

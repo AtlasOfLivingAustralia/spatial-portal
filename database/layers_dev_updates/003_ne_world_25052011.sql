@@ -1,3 +1,4 @@
+begin;
 INSERT INTO layers
 (
   id,
@@ -69,3 +70,4 @@ NULL,
 'Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.',
 'http://www.naturalearthdata.com'
 );
+commit;
