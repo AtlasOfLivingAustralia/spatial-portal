@@ -310,67 +310,7 @@ public class ImportAnalysisController extends UtilityComposer {
             int p2 = txt.indexOf("taxonid:", pos);
             if(p2 < 0) {
                 return false;
-            }
-            int p3 = txt.indexOf("scientificName:", pos);
-            int p4 = txt.indexOf("taxonRank:", pos);
-            int p5 = txt.indexOf("area:", pos);
-            int p6 = txt.indexOf("envlist:", pos);
-            int p7 = txt.indexOf("txtTestPercentage:", pos);
-            int p8 = txt.indexOf("chkJackknife:", pos);
-            int p9 = txt.indexOf("chkResponseCurves:", pos);
-            int p10 = txt.length();
-
-            String pid = txt.substring(p1 + "pid:".length(), p2).trim();
-            String taxonid = txt.substring(p2 + "taxonid:".length(), p3).trim();
-            String scientificName = txt.substring(p3 + "scientificName:".length(), p4).trim();
-            String taxonRank = txt.substring(p4 + "taxonRank:".length(), p5).trim();
-            String area = txt.substring(p5 + "area:".length(), p6).trim();
-            String envlist = txt.substring(p6 + "envlist:".length(), p7).trim();
-            String txtTestPercentage = txt.substring(p7 + "txtTestPercentage".length(), p8).trim();
-            String chkJackknife = txt.substring(p8 + "chkJackknife".length(), p9).trim();
-            String chkResponseCurves = txt.substring(p9 + "chkResponseCurves".length(), p10).trim();
-
-            if (taxonid.endsWith(";")) {
-                taxonid = taxonid.substring(0, taxonid.length() - 1);
-            }
-            if (scientificName.endsWith(";")) {
-                scientificName = scientificName.substring(0, scientificName.length() - 1);
-            }
-            if (taxonRank.endsWith(";")) {
-                taxonRank = taxonRank.substring(0, taxonRank.length() - 1);
-            }
-            if (area.endsWith(";")) {
-                area = area.substring(0, area.length() - 1);
-            }
-            if (envlist.endsWith(";")) {
-                envlist = envlist.substring(0, envlist.length() - 1);
-            }
-            if (txtTestPercentage.endsWith(";")) {
-                txtTestPercentage = txtTestPercentage.substring(0, txtTestPercentage.length() - 1);
-            }
-            if (chkJackknife.endsWith(";")) {
-                chkJackknife = chkJackknife.substring(0, chkJackknife.length() - 1);
-            }
-            if (chkResponseCurves.endsWith(";")) {
-                chkResponseCurves = chkResponseCurves.substring(0, chkResponseCurves.length() - 1);
-            }
-
-            System.out.println("got [" + pid + "][" + taxonid + "][" + scientificName + "][" + taxonRank + "][" + area + "][" + envlist + "][" + txtTestPercentage + "][" + chkJackknife + "][" + chkResponseCurves + "]");
-
-            //apply job input parameters to selection
-//            sac.setValue(scientificName);
-//            sac.refresh(scientificName);
-//            cleanTaxon();
-//
-//            lbListLayers.clearSelection();
-//            lbListLayers.selectLayers(envlist.split(":"));
-//            try {
-//                this.txtTestPercentage.setValue(String.valueOf(Double.parseDouble(txtTestPercentage)));
-//            } catch (Exception e) {
-//            }
-//
-//            this.chkJackknife.setChecked(chkJackknife.equalsIgnoreCase("on"));
-//            this.chkRCurves.setChecked(chkResponseCurves.equalsIgnoreCase("on"));
+            }  
 
             return true;
         } catch (Exception e) {
