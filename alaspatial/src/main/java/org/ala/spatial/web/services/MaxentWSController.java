@@ -359,6 +359,7 @@ public class MaxentWSController {
 
             String currentPath = TabulationSettings.base_output_dir;
             String taxon = URLDecoder.decode(req.getParameter("taxonid"), "UTF-8").replace("__",".");
+            String taxonlsid = URLDecoder.decode(req.getParameter("taxonlsid"), "UTF-8").replace("__",".");
             String area = req.getParameter("area");
             String envlist = req.getParameter("envlist");
             String txtTestPercentage = req.getParameter("txtTestPercentage");
@@ -380,8 +381,9 @@ public class MaxentWSController {
             StringBuffer inputs = new StringBuffer();
             inputs.append("pid:").append(pid);
             inputs.append(";taxonid:").append(taxon);
+            inputs.append(";taxonlsid:").append(taxonlsid);
             
-            String [] n = OccurrencesCollection.getFirstName(taxon);
+            String [] n = OccurrencesCollection.getFirstName(taxonlsid);
             if(n != null){
                 inputs.append(";scientificName:").append(n[0]);
                 inputs.append(";taxonRank:").append(n[1]);
