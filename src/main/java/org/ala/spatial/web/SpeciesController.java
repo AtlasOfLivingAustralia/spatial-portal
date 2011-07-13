@@ -898,7 +898,8 @@ public class SpeciesController {
 
             return id;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error registering area for lsid (lsidAreaRecords): ");
+            e.printStackTrace(System.out);
         }
         return null;
     }
