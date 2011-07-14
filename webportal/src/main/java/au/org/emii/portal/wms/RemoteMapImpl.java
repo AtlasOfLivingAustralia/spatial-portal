@@ -146,6 +146,8 @@ public class RemoteMapImpl implements RemoteMap {
        
         geoJSON.setGeoJSON(geoJSONUtilities.getJson(uri));
 
+        System.out.println("got json");
+
         if (geoJSON.getMapLayerMetadata() == null) {
             geoJSON.setMapLayerMetadata(new MapLayerMetadata());
         }
@@ -155,9 +157,15 @@ public class RemoteMapImpl implements RemoteMap {
             geoJSON.setQueryable(true);
             geoJSON.setDynamicStyle(true);
         }else{
-            //lets parse the json to find out what type of feature it is
-            JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
-            int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
+            //Parsing is taking too long...
+                //lets parse the json to find out what type of feature it is
+                //JSONObject jo = JSONObject.fromObject(geoJSON.getGeoJSON());
+                //int geomTypeCheck = geoJSONUtilities.getFirstFeatureType(jo);
+            String typeStart = "\"type\":\"";
+            String typeEnd = "\"";
+            int start = geoJSON.getGeoJSON().indexOf(typeStart) + typeStart.length();
+            int end = geoJSON.getGeoJSON().indexOf('\"', start);
+            int geomTypeCheck = geoJSONUtilities.type(geoJSON.getGeoJSON().substring(start, end));
 
             //do this at the add level
             //String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);

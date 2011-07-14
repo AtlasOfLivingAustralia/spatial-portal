@@ -2692,17 +2692,18 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     private void loadDistributionMap(String lsid, String taxon, String wkt) {
-        try {
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/intersect/shape"); // testurl
-            post.addParameter("area", wkt);
-            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(post);
-            if (result == 200) {
-                String txt = post.getResponseBodyAsString();
-                if (txt.contains(lsid)) {
-                    String[] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
-                    if (wmsNames != null && wmsNames.length > 0) {
+        //test for a valid lsid match
+        String [] wmsNames = CommonData.getSpeciesDistributionWMS(lsid);
+        if (wmsNames != null && wmsNames.length > 0) {
+            try {
+                HttpClient client = new HttpClient();
+                PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/intersect/shape"); // testurl
+                post.addParameter("area", wkt);
+                post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+                int result = client.executeMethod(post);
+                if (result == 200) {
+                    String txt = post.getResponseBodyAsString();
+                    if (txt.contains(lsid)) {
                         if (wmsNames.length > 1) {
                             for (int i = 0; i < wmsNames.length; i++) {
                                 addWMSLayer(taxon + " map " + (i + 1), wmsNames[i], 0.35f, "", LayerUtilities.SPECIES);
@@ -2712,8 +2713,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                         }
                     }
                 }
+            } catch (Exception e) {
             }
-        } catch (Exception e) {
         }
     }
 
