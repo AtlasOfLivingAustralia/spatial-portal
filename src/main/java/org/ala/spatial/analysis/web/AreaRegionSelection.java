@@ -7,6 +7,7 @@ package org.ala.spatial.analysis.web;
 import org.zkoss.zk.ui.event.Event;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
+import au.org.emii.portal.util.GeoJSONUtilities;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -74,10 +75,19 @@ public class AreaRegionSelection extends AreaToolComposer {
         MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.geoServer + link);
         this.layerName= mapLayer.getName();
 
-        JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+        //Parsing json taking too long for large polygons
+        //JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+
         //if the layer is a point create a radius
-        if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
-            
+        String typeStart = "\"type\":\"";
+        String typeEnd = "\"";
+        int start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
+        int end = mapLayer.getGeoJSON().indexOf('\"', start);
+        String type = mapLayer.getGeoJSON().substring(start, end);
+        
+        //if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
+        if ("point".equals(type.toLowerCase())) {
+            JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
             String coords = jo.getJSONArray("geometries").getJSONObject(0).getString("coordinates").replace("[","").replace("]","");
 
             double radius = 1000;
@@ -103,7 +113,13 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
        
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
-            String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+
+            //String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+            typeStart = "\"Layer_Metadata\":\"";
+            typeEnd = "\"";
+            start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
+            end = mapLayer.getGeoJSON().indexOf('\"', start);
+            String metadatalink = mapLayer.getGeoJSON().substring(start, end);
 
             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
             mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);

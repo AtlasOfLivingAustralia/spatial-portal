@@ -54,8 +54,14 @@ public class AddPlaceController extends UtilityComposer {
         MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.geoServer + link);
 
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
-            JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-            String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+            //parsing is taking too long
+            //JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+            //String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+            String typeStart = "\"Layer_Metadata\":\"";
+            String typeEnd = "\"";
+            int start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
+            int end = mapLayer.getGeoJSON().indexOf('\"', start);
+            String metadatalink = mapLayer.getGeoJSON().substring(start, end);
 
             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
             mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
