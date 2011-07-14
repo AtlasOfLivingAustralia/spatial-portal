@@ -2744,6 +2744,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setMoreInfo(infoUrl + "\n" + species);
             md.setSpeciesLsid(lsid);
             md.setSpeciesDisplayName(species);
+            md.setSpeciesDisplayLsid(trueLsid);
             md.setSpeciesRank(rank);
             md.setOccurrencesCount(count);
 
@@ -2794,6 +2795,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             md.setMoreInfo(infoUrl + "\n" + species);
             md.setSpeciesLsid(lsid);
             md.setSpeciesDisplayName(species);
+            md.setSpeciesDisplayLsid(trueLsid); 
             md.setSpeciesRank(rank);
             md.setOccurrencesCount(count);
 
