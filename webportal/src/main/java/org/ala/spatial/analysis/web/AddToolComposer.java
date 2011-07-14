@@ -886,8 +886,12 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public String getSelectedSpecies() {
+        return getSelectedSpecies(false);
+    }
+    public String getSelectedSpecies(boolean mapspecies) {
         String species = rgSpecies.getSelectedItem().getValue();
         try {
+            System.out.println("getSelectedSpecies: " + species);
             if (species.equals("allspecies")) {
                 species = "none";
             } else if (species.equals("allmapped")) {

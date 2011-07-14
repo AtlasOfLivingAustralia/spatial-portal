@@ -42,7 +42,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
         this.loadAreaLayers();
         this.loadSpeciesLayers();
-        this.loadGridLayers(true,true);
+        this.loadGridLayers(true, true);
         this.updateWindowTitle();
 
     }
@@ -59,9 +59,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
     public void onFinish() {
         //super.onFinish();
 
-        System.out.println("Area: " + getSelectedArea());
-        System.out.println("Species: " + getSelectedSpecies());
-        System.out.println("Layers: " + getSelectedLayers());
+        if (searchSpeciesAuto.getSelectedItem() != null) {
+            getMapComposer().mapSpeciesFromAutocomplete(searchSpeciesAuto, getSelectedArea());
+        }
 
         runmaxent();
         lbListLayers.clearSelection();
@@ -74,6 +74,11 @@ public class AddToolMaxentComposer extends AddToolComposer {
             String taxon = getSelectedSpecies();
             String sbenvsel = getSelectedLayers();
             String area = getSelectedArea();
+            String taxonlsid = taxon; 
+            if (searchSpeciesAuto.getSelectedItem() == null) {
+                MapLayer ml = getMapComposer().getMapLayerSpeciesLSID(taxon);
+                taxonlsid = ml.getMapLayerMetadata().getSpeciesDisplayLsid();
+            }
 
 //            if (isSensitiveSpecies(taxon)) {
 //                return;
@@ -90,6 +95,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/maxent/processgeoq?");
             sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
+            sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(taxonlsid.replace(".", "__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
@@ -114,14 +120,14 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             StringBuffer sbParams = new StringBuffer();
             sbParams.append("Species: " + taxon);
-            sbParams.append("Jackknife: " + chkJackknife.isChecked());
+            sbParams.append(";Jackknife: " + chkJackknife.isChecked());
             sbParams.append(";Response curves: " + chkRCurves.isChecked());
             sbParams.append(";Test per: " + txtTestPercentage.getValue());
 
             Map attrs = new HashMap();
             attrs.put("actionby", "user");
             attrs.put("actiontype", "analysis");
-            attrs.put("lsid", taxon);
+            attrs.put("lsid", taxonlsid);
             attrs.put("useremail", "spatialuser");
             attrs.put("processid", pid);
             attrs.put("sessionid", "");
@@ -193,7 +199,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
         try {
             // set off the download as well
             String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
-            Filedownload.save(new URL(fileUrl).openStream(), "application/zip",tToolName.getValue().replaceAll(" ", "_")+".zip"); // "ALA_Prediction_"+pid+".zip"
+            Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
         } catch (Exception ex) {
             System.out.println("Error generating download for prediction model:");
             ex.printStackTrace(System.out);

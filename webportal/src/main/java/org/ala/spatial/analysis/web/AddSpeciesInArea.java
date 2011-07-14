@@ -207,35 +207,17 @@ public class AddSpeciesInArea extends UtilityComposer {
 
             String spname = name + ";" + lsid;
 
+            MapLayer ml = null;
+
             if (byLsid) {
-                MapLayer ml = getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt),spname, s, featureCount, type, wkt);
-                MapLayerMetadata md = ml.getMapLayerMetadata();
-                if (md == null) {
-                    md = new MapLayerMetadata();
-                    ml.setMapLayerMetadata(md);
-                }
-                md.setMoreInfo(metadata);
+                ml = getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt),spname, s, featureCount, type, wkt);
             } else if(filter) {
-                MapLayer ml = getMapComposer().mapSpeciesByLsidFilter(Util.newLsidArea(lsid, wkt), spname, s, featureCount, type, wkt);
-                MapLayerMetadata md = ml.getMapLayerMetadata();
-                if (md == null) {
-                    md = new MapLayerMetadata();
-                    ml.setMapLayerMetadata(md);
-                }
-                md.setMoreInfo(metadata);
-                md.setSpeciesRank(rank);
+                ml = getMapComposer().mapSpeciesByLsidFilter(Util.newLsidArea(lsid, wkt), spname, s, featureCount, type, wkt);
             } else if(filterGrid) {
-                MapLayer ml = getMapComposer().mapSpeciesByLsidFilterGrid(Util.newLsidArea(lsid, wkt), spname, s, featureCount, type, wkt);
-                MapLayerMetadata md = ml.getMapLayerMetadata();
-                if (md == null) {
-                    md = new MapLayerMetadata();
-                    ml.setMapLayerMetadata(md);
-                }
-                md.setMoreInfo(metadata);
-                md.setSpeciesRank(rank);
+                ml = getMapComposer().mapSpeciesByLsidFilterGrid(Util.newLsidArea(lsid, wkt), spname, s, featureCount, type, wkt);
             } else if (rank != null && taxon != null && lsid != null) {
                 String sptaxon = taxon+";"+lsid;
-                getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), sptaxon, rank, 0, LayerUtilities.SPECIES, wkt);
+                ml = getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), sptaxon, rank, 0, LayerUtilities.SPECIES, wkt);
             } else {
                 StringBuffer sbProcessUrl = new StringBuffer();
                 sbProcessUrl.append("/filtering/apply");
@@ -251,7 +233,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                     String lsid = registerPointsInArea(wkt);
                     sbProcessUrl = new StringBuffer();
                     String activeAreaLayerName = getSelectedAreaDisplayName();
-                    getMapComposer().mapSpeciesByLsid(lsid, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt);
+                    ml = getMapComposer().mapSpeciesByLsid(lsid, "Occurrences in " + activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES, wkt);
 
                     //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
                 } else {
@@ -261,6 +243,15 @@ public class AddSpeciesInArea extends UtilityComposer {
                             + " occurrences");
                 }
             }
+
+                MapLayerMetadata md = ml.getMapLayerMetadata();
+                if (md == null) {
+                    md = new MapLayerMetadata();
+                    ml.setMapLayerMetadata(md);
+                }
+                md.setMoreInfo(metadata);
+                //md.setSpeciesDisplayLsid(lsid);
+                //md.setSpeciesRank(rank);
         } catch (Exception e) {
             e.printStackTrace();
         }
