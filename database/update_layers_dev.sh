@@ -25,3 +25,4 @@ $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/007_dld_metadata_update_
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/008_ger_display_name_update_30062011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/009_classification_updates_010711.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/010_lithology_12072011.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/011_gbr_200711.sql
