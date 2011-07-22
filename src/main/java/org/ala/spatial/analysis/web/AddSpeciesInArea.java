@@ -206,6 +206,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
 
             String spname = name + ";" + lsid;
+            boolean setupMetadata = true;
 
             MapLayer ml = null;
 
@@ -218,6 +219,7 @@ public class AddSpeciesInArea extends UtilityComposer {
             } else if (rank != null && taxon != null && lsid != null) {
                 String sptaxon = taxon+";"+lsid;
                 ml = getMapComposer().mapSpeciesByLsid(Util.newLsidArea(lsid, wkt), sptaxon, rank, 0, LayerUtilities.SPECIES, wkt);
+                setupMetadata = false;
             } else {
                 StringBuffer sbProcessUrl = new StringBuffer();
                 sbProcessUrl.append("/filtering/apply");
@@ -242,8 +244,11 @@ public class AddSpeciesInArea extends UtilityComposer {
                             + settingsSupplementary.getValueAsInt("max_record_count_map")
                             + " occurrences");
                 }
+
+                setupMetadata = false;
             }
 
+            if (setupMetadata) {
                 MapLayerMetadata md = ml.getMapLayerMetadata();
                 if (md == null) {
                     md = new MapLayerMetadata();
@@ -252,6 +257,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 md.setMoreInfo(metadata);
                 //md.setSpeciesDisplayLsid(lsid);
                 //md.setSpeciesRank(rank);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1326,10 +1326,10 @@ public class AddToolComposer extends UtilityComposer {
 
             String metadata = "";
             metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " \n";
-            metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Date: " + ud.getDisplayTime() + " \n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+            metadata += "Name: " + ud.getName() + " <br />\n";
+            metadata += "Description: " + ud.getDescription() + " <br />\n";
+            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
@@ -1402,10 +1402,10 @@ public class AddToolComposer extends UtilityComposer {
 
             String metadata = "";
             metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " \n";
-            metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Date: " + ud.getDisplayTime() + " \n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+            metadata += "Name: " + ud.getName() + " <br />\n";
+            metadata += "Description: " + ud.getDescription() + " <br />\n";
+            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES);
