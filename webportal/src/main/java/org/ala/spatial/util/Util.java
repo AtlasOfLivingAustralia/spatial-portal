@@ -452,11 +452,13 @@ public class Util {
         StringBuilder s = new StringBuilder();
         s.append("POLYGON((");
         for (int i = 0; i < 360; i++) {
-            s.append(points[i][0] + dist).append(" ").append(points[i][1]);
-            if (i < 359) {
-                s.append(",");
-            }
+            s.append(points[i][0] + dist).append(" ").append(points[i][1]).append(",");
+            //if (i < 359) {
+            //    s.append(",");
+            //}
         }
+        // append the first point to close the circle
+        s.append(points[0][0] + dist).append(" ").append(points[0][1]);
         s.append("))");
 
         return s.toString();
