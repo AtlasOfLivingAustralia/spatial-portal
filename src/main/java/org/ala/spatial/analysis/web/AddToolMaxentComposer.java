@@ -74,8 +74,8 @@ public class AddToolMaxentComposer extends AddToolComposer {
             String taxon = getSelectedSpecies();
             String sbenvsel = getSelectedLayers();
             String area = getSelectedArea();
-            String taxonlsid = taxon; 
-            if (searchSpeciesAuto.getSelectedItem() == null) {
+            String taxonlsid = taxon;
+            if (searchSpeciesAuto.getSelectedItem().getValue() == null) {
                 MapLayer ml = getMapComposer().getMapLayerSpeciesLSID(taxon);
                 taxonlsid = ml.getMapLayerMetadata().getSpeciesDisplayLsid();
             }
