@@ -27,7 +27,7 @@ $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/009_classification_upda
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/010_lithology_12072011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/011_gbr_200711.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/012_gbrdem_coral_geo_brs_dld_newld_20110801.sql
-$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/013_eez_ozcoasts_20110805.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/013_geohab_02082011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/014_amb_02082011.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/015_eez_ozcoasts_20110805.sql
 #$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/016_beards_080811.sql
