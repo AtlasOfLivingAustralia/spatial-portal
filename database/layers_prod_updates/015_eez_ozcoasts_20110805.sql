@@ -1,4 +1,4 @@
-﻿-- /* bk - 20110805
+-- /* bk - 20110805
 -- updates the following:
 -- "ts_poly"
 -- "eez_poly"

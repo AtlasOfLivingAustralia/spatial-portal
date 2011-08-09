@@ -1,4 +1,4 @@
-﻿-- /* bk - 20110801
+-- /* bk - 20110801
 -- updates the following:
 -- ne_world - natural earth country boundaries - add source & source-link
 -- dld_DLCMv1_Class - "The National Dynamic Land Cover Dataset [null]" - full metadata record
