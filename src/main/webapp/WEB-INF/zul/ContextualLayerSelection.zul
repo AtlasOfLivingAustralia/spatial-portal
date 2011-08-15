@@ -39,9 +39,8 @@
           
             <div sclass="embedWindowsButtons">
                 <hbox>
-                   
-                    <button sclass="goButton" label="Next" id="btnNext"/>
                     <button sclass="goButton" label="Cancel" id="btnCancel"/>
+                    <button sclass="goButton" label="Next" id="btnNext"/>
                 </hbox>
             </div>
             <separator />
