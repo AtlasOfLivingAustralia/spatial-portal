@@ -330,7 +330,7 @@ function buildMapReal() {
 
     //    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
     bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{
-        layers:"ALA:ne_world"
+        layers:"ALA:world"
     },{
         isBaseLayer: true,
         projection: new OpenLayers.Projection("EPSG:900913"),
