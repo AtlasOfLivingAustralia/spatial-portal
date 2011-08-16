@@ -84,7 +84,7 @@ public class AreaRegionSelection extends AreaToolComposer {
         int start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
         int end = mapLayer.getGeoJSON().indexOf('\"', start);
         String type = mapLayer.getGeoJSON().substring(start, end);
-        
+        String geoJSON = mapLayer.getGeoJSON(); //if it type=point this will no longer exist        
         //if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
         if ("point".equals(type.toLowerCase())) {
             JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
@@ -117,9 +117,9 @@ public class AreaRegionSelection extends AreaToolComposer {
             //String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
             typeStart = "\"Layer_Metadata\":\"";
             typeEnd = "\"";
-            start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
-            end = mapLayer.getGeoJSON().indexOf('\"', start);
-            String metadatalink = mapLayer.getGeoJSON().substring(start, end);
+            start = geoJSON.indexOf(typeStart) + typeStart.length();
+            end = geoJSON.indexOf('\"', start);
+            String metadatalink = geoJSON.substring(start, end);
 
             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
             mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
