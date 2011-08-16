@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.SolrQuery;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -886,40 +887,28 @@ public class AddToolComposer extends UtilityComposer {
     }
 
     public String getSelectedSpecies() {
+        return getSelectedSpecies(false);
+    }
+    public String getSelectedSpecies(boolean mapspecies) {
         String species = rgSpecies.getSelectedItem().getValue();
         try {
+            System.out.println("getSelectedSpecies: " + species);
             if (species.equals("allspecies")) {
                 species = "none";
             } else if (species.equals("allmapped")) {
                 species = "";
                 List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
-                StringBuilder sb = new StringBuilder();
+                SolrQuery sq = new SolrQuery();
                 for (int i = 0; i < layers.size(); i++) {
                     MapLayer lyr = layers.get(i);
                     if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                        sb.append(lyr.getMapLayerMetadata().getSpeciesLsid() + ",");
+                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
                     }
                 }
-                String lsids = sb.toString().substring(0, sb.length() - 1);
 
-                //get lsid to match
-                StringBuilder sbProcessUrl = new StringBuilder();
-                sbProcessUrl.append("/species/lsid/register");
-                sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-                HttpClient client = new HttpClient();
-                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-                int result = client.executeMethod(get);
-                String pid = get.getResponseBodyAsString();
-
-                if (result == 200 && pid != null && pid.length() > 0) {
-                    species = pid;
-                } else {
-                    //TODO: error
-                }
-
+                species = sq.getShortQuery();
+                
             } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
@@ -944,31 +933,15 @@ public class AddToolComposer extends UtilityComposer {
                 species = "";
                 List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
-                StringBuilder sb = new StringBuilder();
+                SolrQuery sq = new SolrQuery();
                 for (int i = 0; i < layers.size(); i++) {
                     MapLayer lyr = layers.get(i);
                     if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                        sb.append(lyr.getMapLayerMetadata().getSpeciesLsid() + ",");
+                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
                     }
                 }
-                String lsids = sb.toString().substring(0, sb.length() - 1);
 
-                //get lsid to match
-                StringBuilder sbProcessUrl = new StringBuilder();
-                sbProcessUrl.append("/species/lsid/register");
-                sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-                HttpClient client = new HttpClient();
-                PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-                int result = client.executeMethod(get);
-                String pid = get.getResponseBodyAsString();
-
-                if (result == 200 && pid != null && pid.length() > 0) {
-                    species = pid;
-                } else {
-                    //TODO: error
-                }
+                species = sq.getShortQuery();
 
             } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
                 if (bgSearchSpeciesAuto == null) {
@@ -991,22 +964,23 @@ public class AddToolComposer extends UtilityComposer {
         try {
             if (species.equals("allspecies")) {
             } else if (species.equals("allmapped")) {
-                species = "";
-                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+//                species = "";
+//                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+//
+//                for (int i = 0; i < layers.size(); i++) {
+//                    MapLayer lyr = layers.get(i);
+//                    Radio rSp = new Radio(lyr.getDisplayName());
+//                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
+//                }
+//                species = species.substring(0, species.length() - 1);
 
-                for (int i = 0; i < layers.size(); i++) {
-                    MapLayer lyr = layers.get(i);
-                    Radio rSp = new Radio(lyr.getDisplayName());
-                    species += lyr.getMapLayerMetadata().getSpeciesLsid() + ",";
-                }
-                species = species.substring(0, species.length() - 1);
+                species = "All mapped species";
             } else if (species.equals("search")) {
                 if (searchSpeciesAuto.getSelectedItem() != null) {
                     species = (String) (searchSpeciesAuto.getText());
                 }
             } else {
                 species = rgSpecies.getSelectedItem().getLabel();
-//                    species = species.substring(0,species.lastIndexOf(" "));
             }
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected species");
@@ -1117,12 +1091,10 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onSelect$lbListLayers(Event event) {
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        if (currentDiv.getZclass().contains("minlayers1")
-                && lbListLayers.getSelectedCount() >= 1) {
-            btnOk.setDisabled(false);
-        } else if (currentDiv.getZclass().contains("minlayers2")
-                && lbListLayers.getSelectedCount() >= 2) {
-            btnOk.setDisabled(false);
+        if (currentDiv.getZclass().contains("minlayers1")) {
+            btnOk.setDisabled(lbListLayers.getSelectedCount() < 1);
+        } else if (currentDiv.getZclass().contains("minlayers2")) {
+            btnOk.setDisabled(lbListLayers.getSelectedCount() < 2);
         } else if (currentDiv.getZclass().contains("optional")) {
             btnOk.setDisabled(false);
         }
@@ -1322,10 +1294,10 @@ public class AddToolComposer extends UtilityComposer {
 
             String metadata = "";
             metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " \n";
-            metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Date: " + ud.getDisplayTime() + " \n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+            metadata += "Name: " + ud.getName() + " <br />\n";
+            metadata += "Description: " + ud.getDescription() + " <br />\n";
+            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
@@ -1398,10 +1370,10 @@ public class AddToolComposer extends UtilityComposer {
 
             String metadata = "";
             metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " \n";
-            metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Date: " + ud.getDisplayTime() + " \n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+            metadata += "Name: " + ud.getName() + " <br />\n";
+            metadata += "Description: " + ud.getDescription() + " <br />\n";
+            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES);

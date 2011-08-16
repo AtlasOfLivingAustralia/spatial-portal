@@ -40,6 +40,7 @@ public class MapLayerMetadata implements Serializable {
     private String speciesLsid;
     private String speciesRank;
     private String speciesDisplayName;
+    private String speciesDisplayLsid;
     private double[] layerExtent;
     private int partsCount;
     private int occurrencesCount;
@@ -66,6 +67,14 @@ public class MapLayerMetadata implements Serializable {
 
     public void setSpeciesDisplayName(String speciesDisplayName) {
         this.speciesDisplayName = speciesDisplayName;
+    }
+
+    public String getSpeciesDisplayLsid() {
+        return speciesDisplayLsid;
+    }
+
+    public void setSpeciesDisplayLsid(String speciesDisplayLsid) {
+        this.speciesDisplayLsid = speciesDisplayLsid;
     }
 
     public String getSpeciesRank() {

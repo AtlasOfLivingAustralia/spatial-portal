@@ -51,16 +51,22 @@ public class AddPlaceController extends UtilityComposer {
         String label = ci.getLabel();
 
         //add feature to the map as a new layer
-        MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.geoServer + link);
+        MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + link);
 
-        if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
-            JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
-            String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+        if (mapLayer != null && mapLayer.getGeoJSON() != null) {  //might be a duplicate layer making mapLayer == null
+            //parsing is taking too long
+            //JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+            //String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+            String typeStart = "\"Layer_Metadata\":\"";
+            String typeEnd = "\"";
+            int start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
+            int end = mapLayer.getGeoJSON().indexOf('\"', start);
+            String metadatalink = mapLayer.getGeoJSON().substring(start, end);
 
             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
             mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
 
-            getMapComposer().updateUserLogMapLayer("gaz", label + "|" + CommonData.geoServer + link);
+            getMapComposer().updateUserLogMapLayer("gaz", label + "|" + CommonData.layersServer + link);
 
         }
 

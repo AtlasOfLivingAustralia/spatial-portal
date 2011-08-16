@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.SolrQuery;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -306,15 +307,10 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     void counts() {
         try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/filtering/apply");
-            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-            sbProcessUrl.append("/species/count");
+            SolrQuery sq = new SolrQuery(null, shape, null);
 
-            String[] out = postInfo(sbProcessUrl.toString()).split("\n");
-
-            results_count = Integer.parseInt(out[0]);
-            results_count_occurrences = Integer.parseInt(out[1]);
+            results_count = sq.getSpeciesCount();
+            results_count_occurrences = sq.getOccurrenceCount();
 
             //setUpdatingCount(false);
 
@@ -393,12 +389,12 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("species/area/register");
 
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
-            get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
+            post.addParameter("area", area);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
+            int result = client.executeMethod(post);
+            String slist = post.getResponseBodyAsString();
 
             return slist;
         } catch (Exception e) {
@@ -418,10 +414,14 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
 
-            //register points with a new id for mapping
-            String lsid = registerPointsInArea(area);
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
-            getMapComposer().mapSpeciesByLsid(lsid, activeAreaLayerName, "species", results_count_occurrences, LayerUtilities.SPECIES);
+            getMapComposer().mapSpecies(
+                    new SolrQuery(null, area, null)
+                    , activeAreaLayerName
+                    , "species"
+                    , -1
+                    , LayerUtilities.SPECIES
+                    , null);
 
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {
@@ -454,17 +454,17 @@ public class FilteringResultsWCController extends UtilityComposer {
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            post.addParameter("area", shape);
 
             System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
 
-            int result = client.executeMethod(get);
+            int result = client.executeMethod(post);
 
             //TODO: confirm result
-            String slist = get.getResponseBodyAsString();
+            String slist = post.getResponseBodyAsString();
 
             return slist;
         } catch (Exception ex) {
@@ -530,36 +530,6 @@ public class FilteringResultsWCController extends UtilityComposer {
             mapspecies.setVisible(false);
         }
     }
-    Textbox taLSIDs;
-
-    public void onClick$btnAddLSIDs(Event event) {
-        try {
-            String lsids = taLSIDs.getValue().trim();
-            lsids = lsids.replace("\n", ",");
-            lsids = lsids.replace("\t", ",");
-            lsids = lsids.replace(" ", "");
-
-            String[] split = lsids.split(",");
-
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/species/lsid/register");
-            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            pid = get.getResponseBodyAsString();
-
-            System.out.println("btnAddLSIDs:" + pid);
-
-            getMapComposer().mapSpeciesByLsid(pid, "User entered LSIDs", LayerUtilities.SPECIES);
-
-            //getMapComposer().updateUserLogAnalysis("Sampling", "", "", u.getFile(), pid, "Sampling download");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public void intersectWithSpeciesDistributions() {
         if (shape.equals("none")) {
@@ -587,12 +557,12 @@ public class FilteringResultsWCController extends UtilityComposer {
             sbProcessUrl.append("ws/intersect/shape");
 
             HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addParameter("area", URLEncoder.encode(area, "UTF-8"));
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
+            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+            post.addParameter("area", area);
+            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+            int result = client.executeMethod(post);
             if (result == 200) {
-                String txt = get.getResponseBodyAsString();
+                String txt = post.getResponseBodyAsString();
                 String[] lines = txt.split("\n");
                 if (lines[0].length() <= 1) {
                     data.put("intersectWithSpeciesDistributions","0");

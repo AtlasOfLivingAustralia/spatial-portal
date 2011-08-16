@@ -2,7 +2,7 @@
 <zk>
     <window id="areaenvironmentalenvelopewindow" use="org.ala.spatial.analysis.web.AreaEnvironmentalEnvelope"
     apply="org.ala.spatial.analysis.web.AreaEnvironmentalEnvelope" 
-    width="360px" xmlns:n="http://www.zkoss.org/2005/zk/native"
+    width="400px" xmlns:n="http://www.zkoss.org/2005/zk/native"
     style="position:absolute;left:20px;top:20px" draggable="false">
         <n:div class="left-cover" />
         <n:div class="fancybox-bg" id="fancybox-bg-ne" />

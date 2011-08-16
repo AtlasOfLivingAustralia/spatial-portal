@@ -159,7 +159,7 @@ public class GeoJSONUtilitiesImpl implements GeoJSONUtilities {
         return value;
     }
 
-    private int type(String type) {
+    public int type(String type) {
         if (typeMap == null) {
             typeMap = new HashMap();
             typeMap.put("feature", Integer.valueOf(FEATURE));

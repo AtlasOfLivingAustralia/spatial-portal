@@ -34,6 +34,7 @@ public class CommonData {
     //common parameters
     static public final String SAT_URL = "sat_url";
     static public final String GEOSERVER_URL = "geoserver_url";
+    static public final String LAYERS_URL = "layers_url";
     //(1) for LayersUtil
     static String[] environmentalLayerNames = null;
     static String[] contextualLayerNames = null;
@@ -68,16 +69,18 @@ public class CommonData {
     //Common
     static public String satServer;
     static public String geoServer;
+    static public String layersServer;
 
     /*
      * initialize common data from geoserver and satserver
      */
-    static public void init(String satServer_, String geoServer_) {
+    static public void init(String satServer_, String geoServer_, String layersServer_) {
         System.out.println("CommonData.init(" + satServer_ + "," + geoServer_);
 
         //Common
         satServer = satServer_;
         geoServer = geoServer_;
+        layersServer = layersServer_;
 
         //TODO: allow for data refresh
 
@@ -460,46 +463,43 @@ public class CommonData {
     static List getContextualClassesInit(JSONObject joLayer) {
         String layerName = joLayer.getString("name");
         String layerDisplayName = joLayer.getString("displayname");
-        String classesURL = geoServer + "/geoserver/rest/gazetteer/" + layerName + ".json";
+        String classesURL = layersServer + "/layersindex/layer/classes/cl" + joLayer.getString("id");
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(classesURL);
-        //get.addRequestHeader("Content-type", "application/json");
-        //get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+        
         List<String> classList = new ArrayList();
         List classNodes = new ArrayList();
-        try {
-            int result = client.executeMethod(get);
-            String classes = get.getResponseBodyAsString();
+//        try {
+//            int result = client.executeMethod(get);
+//            String classes = get.getResponseBodyAsString();
+//
+//            JSONArray ja = JSONArray.fromObject(classes);
+//
+//            if(ja != null) {
+//                for (int i = 0;i<ja.size();i++) {
+//                    JSONObject jo = ja.getJSONObject(i);
+//
+//                    String info = "{displayname:'"
+//                            + jo.getString("name")
+//                            + "',type:'class',displaypath:'"
+//                            + jo.getString("pid")
+//                            + "',uid:'"
+//                            + joLayer.getString("uid")
+//                            + "',classname:'"
+//                            + ""
+//                            + "',layername:'"
+//                            + layerDisplayName
+//                            + "'}";
+//
+//                    JSONObject joClass = JSONObject.fromObject(info);
+//                    classNodes.add(new SimpleTreeNode(joClass, empty));
+//                }
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Failure to get contextual classes for: " + layerName);
+//        }
 
-            JSONObject joLayers = JSONObject.fromObject(classes);
-            JSONObject joClasses = joLayers.getJSONObject("layer_classes");
-            String classAttribute = joClasses.keys().next().toString();
-            classList = Arrays.asList(joClasses.getString(classAttribute).split(","));
-
-            for (String classVal : classList) {
-                //     System.out.println("CLASS:"+(String)classVal);
-                if (!classVal.contentEquals("none")) {
-                    String info = "{displayname:'"
-                            + classVal
-                            + "',type:'class',displaypath:'"
-                            + joLayer.getString("displaypath")
-                            + "',uid:'"
-                            + joLayer.getString("uid")
-                            + "',classname:'"
-                            + classAttribute
-                            + "',layername:'"
-                            + layerDisplayName
-                            + "'}";
-                    //           System.out.println(info);
-                    JSONObject joClass = JSONObject.fromObject(info);
-                    classNodes.add(new SimpleTreeNode(joClass, empty));
-                }
-            }
-            return classNodes;
-        } catch (Exception e) {
-            System.out.println("Failure to get contextual classes for: " + layerName);
-            return classNodes;
-        }
+        return classNodes;
     }
 
     public static String covertMillisecondsToDate(long ms) {

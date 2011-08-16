@@ -110,7 +110,7 @@ public class SpeciesAutoComplete extends Combobox {
 
                 slist += loadUserPoints(val);
 
-                slist += loadOccurrencesInActiveArea(val);
+//                slist += loadOccurrencesInActiveArea(val);
 
                 System.out.println("SpeciesAutoComplete: \n" + slist);
 
@@ -217,26 +217,26 @@ public class SpeciesAutoComplete extends Combobox {
         return userPoints;
     }
 
-    private String loadOccurrencesInActiveArea(String val) {
-        String layerPrefix = "Occurrences in Active area ";
-        String userPoints = "";
-
-        for(MapLayer ml : getThisMapComposer().getActiveAreaLayers()) {
-            if(ml.getName().contains(layerPrefix) && ml.getDisplayName().toLowerCase().contains(val.toLowerCase())) {
-                try {
-                    userPoints = ml.getDisplayName()
-                            + " / "
-                            + ml.getMapLayerMetadata().getSpeciesLsid()
-                            + " / Active Area / "
-                            + ml.getMapLayerMetadata().getOccurrencesCount()
-                            + "\n";
-                } catch (Exception e) {
-                    System.out.println("Unable to load Active Area points into Species Auto Complete");
-                    e.printStackTrace(System.out);
-                }
-            }
-        }
-
-        return userPoints;
-    }
+//    private String loadOccurrencesInActiveArea(String val) {
+//        String layerPrefix = "Occurrences in Active area ";
+//        String userPoints = "";
+//
+//        for(MapLayer ml : getThisMapComposer().getActiveAreaLayers()) {
+//            if(ml.getName().contains(layerPrefix) && ml.getDisplayName().toLowerCase().contains(val.toLowerCase())) {
+//                try {
+//                    userPoints = ml.getDisplayName()
+//                            + " / "
+//                            + ml.getMapLayerMetadata().getSpeciesLsid()
+//                            + " / Active Area / "
+//                            + ml.getMapLayerMetadata().getOccurrencesCount()
+//                            + "\n";
+//                } catch (Exception e) {
+//                    System.out.println("Unable to load Active Area points into Species Auto Complete");
+//                    e.printStackTrace(System.out);
+//                }
+//            }
+//        }
+//
+//        return userPoints;
+//    }
 }

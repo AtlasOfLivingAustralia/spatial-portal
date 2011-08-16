@@ -463,6 +463,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
 
         <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
         <label id="geoserver_url" value="${settingsSupplementary.values.geoserver_url}" visible="false" />
+        <label id="layers_url" value="${settingsSupplementary.values.layers_url}" visible="false" />
         <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
 
 

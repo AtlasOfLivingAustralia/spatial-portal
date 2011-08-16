@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.SolrQuery;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -268,10 +269,10 @@ public class UploadSpeciesController extends UtilityComposer {
 
             String metadata = "";
             metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " \n";
-            metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Date: " + ud.getDisplayTime() + " \n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+            metadata += "Name: " + ud.getName() + " <br />\n";
+            metadata += "Description: " + ud.getDescription() + " <br />\n";
+            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
             if (addToMap) {
                 MapLayer ml = null;
@@ -280,13 +281,13 @@ public class UploadSpeciesController extends UtilityComposer {
                     if(defineArea) {
                         mapFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpeciesByLsidFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                        ml = getMapComposer().mapSpecies(new SolrQuery(slist, null, null), ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null);
                     }
                 } else {
                     if(defineArea) {
                         mapFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpeciesByLsidFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD);
+                        ml = getMapComposer().mapSpecies(new SolrQuery(slist, null, null), ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null);
                     }
                 }
                 if(ml != null) {
@@ -375,16 +376,16 @@ public class UploadSpeciesController extends UtilityComposer {
 
             String metadata = "";
             metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " \n";
-            metadata += "Description: " + ud.getDescription() + " \n";
-            metadata += "Date: " + ud.getDisplayTime() + " \n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " \n";
+            metadata += "Name: " + ud.getName() + " <br />\n";
+            metadata += "Description: " + ud.getDescription() + " <br />\n";
+            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
             if (addToMap) {
                 if(defineArea) {
                     mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
                 } else {
-                    MapLayer ml = getMapComposer().mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES);
+                    MapLayer ml = getMapComposer().mapSpecies(new SolrQuery(pid, null, null), ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, null);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();

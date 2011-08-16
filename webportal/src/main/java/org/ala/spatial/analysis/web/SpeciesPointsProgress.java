@@ -67,7 +67,7 @@ public class SpeciesPointsProgress extends UtilityComposer {
 
         //getGeojson = new GetGeojson(url + "_" + parts_count, getMapComposer());
         parts_count++;        
-        getMapComposer().addGeoJSONLayerProgressBarReady(label, url + "_0", params, forceReload, "", lsid, partsCount);
+//        getMapComposer().addGeoJSONLayerProgressBarReady(label, url + "_0", params, forceReload, "", lsid, partsCount);
 
         //getGeojson.start();
         
@@ -87,7 +87,7 @@ public class SpeciesPointsProgress extends UtilityComposer {
             if(parts_count < partsCount){
                 parts_count++;
 
-                getMapComposer().appendGeoJSONLayerProgressBarReady(label, url, parts_count-1, params, forceReload, "", lsid);
+             //   getMapComposer().appendGeoJSONLayerProgressBarReady(label, url, parts_count-1, params, forceReload, "", lsid);
 
                 jobstatus.setValue("getting part " + (parts_count) + " of " + (partsCount));
 

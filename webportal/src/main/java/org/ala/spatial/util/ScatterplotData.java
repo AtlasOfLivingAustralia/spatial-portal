@@ -20,7 +20,7 @@ public class ScatterplotData implements Serializable {
     String pid;
     Rectangle2D.Double selection;
     boolean enabled;
-    String lsid;
+    SolrQuery solrQuery;
     String name;
     String backgroundLsid;
 
@@ -43,9 +43,9 @@ public class ScatterplotData implements Serializable {
         enabled = false;
     }
 
-    public ScatterplotData(String lsid, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
+    public ScatterplotData(SolrQuery solrQuery, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
             ,String backgroundLsid, String filterWkt, String highlightWkt, boolean envGrid) {
-        this.lsid = lsid;
+        this.solrQuery = solrQuery;
         this.name = name;
         this.layer1 = layer1;
         this.layer1name = layer1name;
@@ -116,16 +116,8 @@ public class ScatterplotData implements Serializable {
         enabled = state;
     }
 
-    public void setLsid(String lsid) {
-        this.lsid = lsid;
-    }
-
     public void setSpeciesName(String name) {
         this.name = name;
-    }
-
-    public String getLsid() {
-        return lsid;
     }
 
     public String getSpeciesName() {
@@ -150,5 +142,13 @@ public class ScatterplotData implements Serializable {
 
     public void setBackgroundLsid(String backgroundLsid) {
         this.backgroundLsid = backgroundLsid;
+    }
+
+    public SolrQuery getSolrQuery() {
+        return solrQuery;
+    }
+
+    public void setSolrQuery(SolrQuery solrQuery) {
+        this.solrQuery = solrQuery;
     }
 }

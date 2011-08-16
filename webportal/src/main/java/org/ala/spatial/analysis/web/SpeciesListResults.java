@@ -1,11 +1,15 @@
 package org.ala.spatial.analysis.web;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.SolrQuery;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Filedownload;
@@ -52,19 +56,21 @@ public class SpeciesListResults extends UtilityComposer {
         updateParameters();
 
         try {
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/filtering/apply");
-            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-            sbProcessUrl.append("/species/list");
 
-            String out = postInfo(sbProcessUrl.toString());
-            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
-                out = out.substring(0, out.length() - 1);
-            }
-            results = out.split("\\|");
-            java.util.Arrays.sort(results);
+//            StringBuffer sbProcessUrl = new StringBuffer();
+//            sbProcessUrl.append("/filtering/apply");
+//            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
+//            sbProcessUrl.append("/species/list");
+//
+//            String out = postInfo(sbProcessUrl.toString());
+//            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
+//                out = out.substring(0, out.length() - 1);
+//            }
+//            results = out.split("\\|");
 
-            if (results.length == 0 || results[0].trim().length() == 0) {
+            SolrQuery sq = new SolrQuery(null, wkt, null);
+
+            if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");
                 results = null;
                 popup_listbox_results.setVisible(false);
@@ -72,6 +78,10 @@ public class SpeciesListResults extends UtilityComposer {
                 this.detach();
                 return;
             }
+
+            results = SolrQuery.convertJSONArrayObjectstoCSV(sq.speciesList()).split("\n");
+
+            java.util.Arrays.sort(results);
 
             // results should already be sorted: Arrays.sort(results);
             String[] tmp = results;
@@ -88,8 +98,14 @@ public class SpeciesListResults extends UtilityComposer {
 
                         public void render(Listitem li, Object data) {
                             String s = (String) data;
-                            String[] ss = s.split("[*]");
+                            CSVReader reader = new CSVReader(new StringReader(s));
 
+                            String[] ss = null;
+                            try {
+                                ss = reader.readNext();
+                            } catch (Exception e) {
+                                ss = new String[0];
+                            }
 
                             Listcell lc = new Listcell(ss[0]);
                             lc.setParent(li);
@@ -129,9 +145,7 @@ public class SpeciesListResults extends UtilityComposer {
         StringBuffer sb = new StringBuffer();
         sb.append("Family Name,Scientific Name,Common name/s,Taxon rank,Scientific Name LSID,Number of Occurrences\r\n");
         for (String s : results) {
-            sb.append("\"");
-            sb.append(s.replaceAll("\\*", "\",\""));
-            sb.append("\"");
+            sb.append(s);
             sb.append("\r\n");
         }
 
@@ -160,7 +174,7 @@ public class SpeciesListResults extends UtilityComposer {
             PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            get.addParameter("area", URLEncoder.encode(shape, "UTF-8"));
+            get.addParameter("area", shape);
 
             System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
 

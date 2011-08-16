@@ -236,7 +236,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
             out.write(kmlstr);
             out.close();
 
-            String kmlurl = CommonData.satServer + "/output/layers/" + id + "/" + name;
+            //String kmlurl = CommonData.satServer + "/output/layers/" + id + "/" + name;
 
             //MapLayer mapLayer = getMapComposer().getGenericServiceAndBaseLayerSupport().createMapLayer("User-defined kml layer", txtLayerName.getValue(), "KML", kmlurl);
             //MapLayer mapLayer = getMapComposer().addKMLLayer(txtLayerName.getValue(), txtLayerName.getValue(), kmlurl);

@@ -7,6 +7,7 @@ package org.ala.spatial.analysis.web;
 import org.zkoss.zk.ui.event.Event;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
+import au.org.emii.portal.util.GeoJSONUtilities;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -71,13 +72,22 @@ public class AreaRegionSelection extends AreaToolComposer {
         String label = ci.getLabel();
 
         //add feature to the map as a new layer
-        MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.geoServer + link);
+        MapLayer mapLayer = getMapComposer().addGeoJSON(label, CommonData.layersServer + link);
         this.layerName= mapLayer.getName();
 
-        JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+        //Parsing json taking too long for large polygons
+        //JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
+
         //if the layer is a point create a radius
-        if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
-            
+        String typeStart = "\"type\":\"";
+        String typeEnd = "\"";
+        int start = mapLayer.getGeoJSON().indexOf(typeStart) + typeStart.length();
+        int end = mapLayer.getGeoJSON().indexOf('\"', start);
+        String type = mapLayer.getGeoJSON().substring(start, end);
+        String geoJSON = mapLayer.getGeoJSON(); //if it type=point this will no longer exist
+        //if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point")) {
+        if ("point".equals(type.toLowerCase())) {
+            JSONObject jo = JSONObject.fromObject(mapLayer.getGeoJSON());
             String coords = jo.getJSONArray("geometries").getJSONObject(0).getString("coordinates").replace("[","").replace("]","");
 
             double radius = 1000;
@@ -103,7 +113,13 @@ public class AreaRegionSelection extends AreaToolComposer {
         }
        
         if (mapLayer != null) {  //might be a duplicate layer making mapLayer == null
-            String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+
+            //String metadatalink = jo.getJSONObject("properties").getString("Layer_Metadata");
+            typeStart = "\"Layer_Metadata\":\"";
+            typeEnd = "\"";
+            start = geoJSON.indexOf(typeStart) + typeStart.length();
+            end = geoJSON.indexOf('\"', start);
+            String metadatalink = geoJSON.substring(start, end);
 
             mapLayer.setMapLayerMetadata(new MapLayerMetadata());
             mapLayer.getMapLayerMetadata().setMoreInfo(metadatalink);
@@ -145,10 +161,12 @@ public class AreaRegionSelection extends AreaToolComposer {
             btnOk.setDisabled(true);
         } else {
             btnOk.setDisabled(false);
-            String json = readGeoJSON(CommonData.geoServer + ci.getValue().toString());
-            JSONObject jo = JSONObject.fromObject(json);
+            //String json = readGeoJSON(CommonData.geoServer + ci.getValue().toString());
+            //JSONObject jo = JSONObject.fromObject(json);
             //if the layer is a point create a radius
-            if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point"))
+            //if (jo.getJSONArray("geometries").getJSONObject(0).getString("type").equalsIgnoreCase("point"))
+            //if(json.contains("\"type\":\"Point\""))
+            if(ci.getDescription() != null && ci.getDescription().contains(" Point)"))
                 hbRadius.setVisible(true);
             else
                 hbRadius.setVisible(false);

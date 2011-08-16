@@ -330,7 +330,7 @@ function buildMapReal() {
 
     //    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{layers:"ALA:aus1"},{isBaseLayer: true,'wrapDateLine': true});
     bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/wms/reflect",{
-        layers:"ALA:ne_world"
+        layers:"ALA:world"
     },{
         isBaseLayer: true,
         projection: new OpenLayers.Projection("EPSG:900913"),
@@ -2898,88 +2898,39 @@ function getEnvLayerValue(layername, latitude, longitude) {
     return ret;
 }
 
-//test code for env layer intersection
-var last_env_name = null;
-var last_env_valid = false;
-var last_contextual_name = null;
-var last_contextual_valid = false;
-
 function envLayerInspection(e) {
     try {
-        var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
-        var infoHtml = "";
+        infoHtml = envLayerHover(e);
+        if(infoHtml != null) {
+            var pt = map.getLonLatFromViewPortPx(new
+                OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
-        //go through all layers and build window content based on environmental and contextual point values
-        for(var i=layers.length-1;i>=0;i--) {
-            var layer = layers[i];
-            //console.info("Looking at layer: " + layer.url);
+            popup = new OpenLayers.Popup.FramedCloud("featurePopup",
+                pt,
+                new OpenLayers.Size(20,20),
+                "<div id='sppopup' style='width: 350px; height: 50px;'>" + "Loading..." + "</div>"
+                ,
+                null, true, onPopupClose);
 
-            var p0 = layer.url.indexOf("geoserver");
-            var p1 = layer.url.indexOf("ALA:");
-            var p2 = layer.url.indexOf("&",p1+1);
+            var feature = popup;
+            feature.popup = popup;
+            popup.feature = feature;
+            map.addPopup(popup, true);
 
-            if(p2 < 0) p2 = layer.url.length;
+            pt = pt.transform(map.projection, map.displayProjection);
 
-            var name = layer.url.substring(p1+4,p2);
-            if(last_env_name != name) {
-                last_env_valid = isEnvLayer(name);
-                last_env_name = name;
-            }
-            if(last_env_valid) {
-                //console.info("environmental load ...");
-                var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
-                pt = pt.transform(map.projection, map.displayProjection);
+            infoHtml = "<div id='sppopup'>"
+                + "<table><tr><td>Point</td><td><b>" 
+                + pt.lon.toPrecision(5) 
+                + ", " 
+                + pt.lat.toPrecision(5)
+                + "</b></td></tr>" 
+                + infoHtml
+                + "</table>"
+                + "</div>";
 
-                var data = getEnvLayerValue(name, pt.lat, pt.lon);
-
-                if(data != null && data != "") {
-                    var d = data.split("\t");
-                    if (d[1].trim() == "no data"){
-                        continue;
-                    }
-                    infoHtml = infoHtml + " <h2>" + d[0] + "</h2>" + " Layer value: <b>" + d[1] + "</b> <br />";
-                }
-            }
-            if(last_contextual_name != name) {
-                last_contextual_valid = isContextualLayer(name);
-                last_contextual_name = name;
-            }
-            if(last_contextual_valid) {
-                //console.info("contextual load ...");
-                var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
-                pt = pt.transform(map.projection, map.displayProjection);
-
-                var data = getContextualLayerValue(name, pt.lat, pt.lon);
-
-                if(data != null && data != "") {
-                    var d = data.split("\t");
-                    infoHtml = infoHtml + "<h2>" + getContextualLayerAlias(name).capitalize() + "</h2>" + "Layer value: <b>" + d[0] + "</b> <br />";
-                }
-            }
-
-            if(infoHtml != "") {
-                var pt = map.getLonLatFromViewPortPx(new
-                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
-
-                popup = new OpenLayers.Popup.FramedCloud("featurePopup",
-                    pt,
-                    new OpenLayers.Size(20,20),
-                    "<div id='sppopup' style='width: 250px; height: 50px;'>" + "Loading..." + "</div>"
-                    ,
-                    null, true, onPopupClose);
-
-                var feature = popup;
-                feature.popup = popup;
-                popup.feature = feature;
-                map.addPopup(popup, true);
-
-                pt = pt.transform(map.projection, map.displayProjection);
-
-                infohtml = "<div id='sppopup'> Longitude: <b>"+pt.lon.toPrecision(5) + "</b> , Latitude: <b>" + pt.lat.toPrecision(5)  + "</b><br/>" + infoHtml + "</div>";
-
-                if (document.getElementById("sppopup") != null) {
-                    document.getElementById("sppopup").innerHTML = infohtml;
-                }
+            if (document.getElementById("sppopup") != null) {
+                document.getElementById("sppopup").innerHTML = infoHtml;
             }
         }
     }catch(err){
@@ -2988,135 +2939,80 @@ function envLayerInspection(e) {
 }
 
 
-function isContextualLayer(layerName){
-    var validLayer = false;
-    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/" + layerName + ".xml";
-    $.ajax({
-        type: "GET",
-        dataType: "xml",
-        url: proxy_script + URLEncode(url),
-        success: function(xml){
-            //now we need to ensure that the layer_name tag is present
-            $(xml).find('layer_name').each(function(){
-                validLayer = true;
-            }); //close each(
+//function isContextualLayer(layerName){
+//    var validLayer = false;
+//    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/" + layerName + ".xml";
+//    $.ajax({
+//        type: "GET",
+//        dataType: "xml",
+//        url: proxy_script + URLEncode(url),
+//        success: function(xml){
+//            //now we need to ensure that the layer_name tag is present
+//            $(xml).find('layer_name').each(function(){
+//                validLayer = true;
+//            }); //close each(
+//
+//            gazdata = xml;
+//        },
+//        error: function(){
+//            gazdata = "failure";
+//        },
+//        async:false
+//    });
+//    return validLayer;
+//}
 
-            gazdata = xml;
-        },
-        error: function(){
-            gazdata = "failure";
-        },
-        async:false
-    });
-    return validLayer;
-}
-
-/*
- * This function performs a gazetteer layer alias lookup for display purposes
- */
-function getContextualLayerAlias(layerName){
-    var layerAlias = layerName;
-    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/" + layerName + ".xml";
-
-    $.ajax({
-        type: "GET",
-        dataType: "xml",
-        url: proxy_script + URLEncode(url),
-        success: function(xml){
-            //now we need to ensure that the layer_name tag is present
-            layerAlias = $(xml).find('alias').text();
-        },
-        error: function(){
-        //console.error("A problem occurred searching for layer alias");
-        },
-        async:false
-    });
-    return layerAlias;
-}
-
-function getContextualLayerValue(layerName, latitude, longitude) {
-    var gazdata = "empty";
-    var url = parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/rest/gazetteer/search.xml?lat=" + latitude + "&lon=" + longitude + "&layer=" + layerName;
-    //console.info("url is " + url);
-    $.ajax({
-        type: "GET",
-        dataType: "xml",
-        url: proxy_script + URLEncode(url),
-        success: function(xml){
-            gazdata = $(xml).find("name").text();
-        //console.info(gazdata);
-        },
-        error: function(){
-            gazdata = "failure";
-        },
-        async:false
-    });
-    return gazdata;
-}
-
-function isEnvLayer(name) {
-    var data = getEnvLayerValue(name, -23, 133);
-    return data != null && data != ""; /* && data.indexOf("no data") < 0*/
-}
-
+var last_hover_pos = null;
 function envLayerHover(e) {
     //This variable will contain the body text to be displayed in the popup.
     var body = "";
 
+    var pt = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(e.xy.x, e.xy.y) );
+    pt = pt.transform(map.projection, map.displayProjection);
+
+    var this_pos = pt.lat + "," + pt.lon;
+    if(this_pos == last_hover_pos) {
+        return;
+    }
+
+    last_hover_pos = this_pos;
+
     try {
         var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
+
         //find first valid layer, if any
+        var names = "";
         for(var i=layers.length-1;i>=0;i--) {
             var layer = layers[i];
-            //console.info("Checking " + layer.url);
+
             var p0 = layer.url.indexOf("geoserver");
             var p1 = layer.url.indexOf("ALA:");
             var p2 = layer.url.indexOf("&",p1+1);
-            if(p0 < 0 || p1 < 0) {
+            if(p0 < 0 || p1 < 0 || p1 < 0) {
                 continue;
             }
+
             if(p2 < 0) p2 = layer.url.length;
-            var name = layer.url.substring(p1+4,p2);
-            if(last_env_name != name) {
-                last_env_valid = isEnvLayer(name);
-                last_env_name = name;
-            }
-            if(last_env_valid) {
-                //console.info("Checking environmental");
-                var pt = map.getLonLatFromViewPortPx(new
-                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
-                pt = pt.transform(map.projection, map.displayProjection);
-
-                var data = getEnvLayerValue(name, pt.lat, pt.lon);
-                if(data != null && data != "") {
-                    var d = data.split("\t");
-                    var lName = d[0];
-                    var lValue = d[1];
-                    body = body + "<tr><td>" + lName + "</td><td><b>" + lValue + "</b></td></tr>";
-                }
+            if(names.length > 0) {
+                names = names + ",";
             }
-            if(last_contextual_name != name) {
-                last_contextual_valid = isContextualLayer(name);
-                last_contextual_name = name;
-            }
-            if(last_contextual_valid){
-                //console.info("Checking contextual");
-                var pt = map.getLonLatFromViewPortPx(new
-                    OpenLayers.Pixel(e.xy.x, e.xy.y) );
-                pt = pt.transform(map.projection, map.displayProjection);
-                var txt = getContextualLayerValue(name, pt.lat, pt.lon);
-                if(txt != null && txt != "") {
-                    //console.info("txt is " + txt);
-                    body = body + "<tr><td>" + getContextualLayerAlias(name).capitalize() + "</td><td><b>" + txt + "</b></td></tr>";
-                }
-                else{
-            //console.error("txt is null!");
-                }
-            }
+            names = names + layer.url.substring(p1+4,p2);
         }
-        return body;
-        
+
+        if (names.length == 0) {
+            return null;
+        }
+
+        var data = getLayerValue(names, pt.lat, pt.lon);
+    
+        if(data != null && data.length > 0) {
+            for(i=0;i<data.length;i++) {
+                body = body + "<tr><td>" + data[i].layername + "</td><td><b>" + data[i].value + "</b></td></tr>";
+            }
+
+            return body;
+        }  
     }catch(err){
     //console.error("an error has occurred!");
     }
@@ -3135,8 +3031,7 @@ function initHover() {
     
             var output = parent.document.getElementById('hoverOutput');
             var data = envLayerHover(e);
-            if(data != null && data != "") {
-                //var d = data.split("\t");
+            if(data != null) {
                 output.innerHTML = "<table><tr><td>Point</td><td><b>" + pt.lon.toPrecision(5) + ", " + pt.lat.toPrecision(5) + "</b></td></tr>" + data + "</table>";
             } else {
                 output.innerHTML = "No values to display";
@@ -3207,4 +3102,18 @@ if (window['loadFirebugConsole']) {
             alert("Console error: " + msg);
         }
     }
+}
+
+function getLayerValue(layer, lat, lon) {
+    var url = parent.jq('$layers_url')[0].innerHTML + "/layersindex/intersect/" + layer + "/" + lat + "/" + lon;
+    var ret = "";
+    $.ajax({
+        url: proxy_script + URLEncode(url),
+        success: function(data){
+            ret = data;
+        },
+        async: false
+    });
+    var j = parent.jq.parseJSON(ret);
+    return parent.jq.parseJSON(ret);
 }

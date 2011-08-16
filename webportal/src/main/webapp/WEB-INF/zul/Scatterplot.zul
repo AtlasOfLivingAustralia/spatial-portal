@@ -49,7 +49,7 @@
                         </combobox>
                         <separator orient="vertical" />
                         <separator orient="vertical" />
-                        <button id="btnEditAppearance1" label="settings" sclass="goButton" />
+                        <!-- moved to unhide, button id="btnEditAppearance1" label="settings" sclass="goButton" /-->
                     </hbox>
 
                     <checkbox id="chkHighlightActiveAreaOccurrences" label="Highlight Active Area occurrences" />
@@ -101,6 +101,7 @@
             </vbox>
         </div>
         <vbox >
+            <button id="btnEditAppearance1" label="Species display settings" sclass="goButton" />
             <div id="scatterplotDownloads" visible="false">
                 <hbox>
                     <button sclass="goButton" label="Download image" id="scatterplotImageDownload" />

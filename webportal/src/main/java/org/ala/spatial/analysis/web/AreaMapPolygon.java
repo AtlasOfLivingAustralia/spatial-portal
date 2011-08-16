@@ -15,6 +15,7 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.gazetteer.GazetteerPointSearch;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
+import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zk.ui.Page;
@@ -185,10 +186,10 @@ public class AreaMapPolygon extends AreaToolComposer {
 
 
                         //add feature to the map as a new layer
-                        String feature_text = getWktFromURI(featureURI, true);
+                        String feature_text = Util.wktFromJSON(readGeoJSON(featureURI));
 
                         String json = readGeoJSON(featureURI);
-                        String wkt = wktFromJSON(json);
+                        String wkt = Util.wktFromJSON(json);
                         if (wkt.contentEquals("none")) {
                             continue;
                           //  break;
@@ -228,109 +229,6 @@ public class AreaMapPolygon extends AreaToolComposer {
         mapComposer = (MapComposer) page.getFellow("mapPortalPage");
 
         return mapComposer;
-    }
-
-  
-
-      /**
-     * transform json string with geometries into wkt.
-     *
-     * extracts 'shape_area' if available and assigns it to storedSize.
-     *
-     * @param json
-     * @return
-     */
-    private String wktFromJSON(String json) {
-        try {
-            JSONObject obj = JSONObject.fromObject(json);
-            JSONArray geometries = obj.getJSONArray("geometries");
-            String wkt = "";
-            for (int i = 0; i < geometries.size(); i++) {
-                String coords = geometries.getJSONObject(i).getString("coordinates");
-
-                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
-                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-
-                } else {
-                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
-                }
-
-                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
-            }
-            return wkt;
-        } catch (JSONException e) {
-            return "none";
-        }
-    }
-
-       /**
-     * get Active Area as WKT string, from a layer name and feature class
-     *
-     * @param layer name of layer as String
-     * @param classification value of feature classification
-     * @param register_shape true to register the shape with alaspatial shape register
-     * @return
-     */
-    String getWktFromURI(String layer, boolean register_shape) {
-        String feature_text = "";//DEFAULT_AREA;
-
-        if (!register_shape) {
-            String json = readGeoJSON(layer);
-            return feature_text = wktFromJSON(json);
-        }
-
-        try {
-            String uri = layer;
-            String gaz = "gazetteer/";
-            int i1 = uri.indexOf(gaz);
-            int i2 = uri.indexOf("/", i1 + gaz.length() + 1);
-            int i3 = uri.lastIndexOf(".json");
-            String table = uri.substring(i1 + gaz.length(), i2);
-            String value = uri.substring(i2 + 1, i3);
-            //test if available in alaspatial
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/lookup");
-            get.addParameter("table", table);
-            get.addParameter("value", value);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register table and value with alaspatial: " + slist);
-
-            if (slist != null && result == 200) {
-                feature_text = "LAYER(" + layer + "," + slist + ")";
-
-                return feature_text;
-            }
-        } catch (Exception e) {
-            System.out.println("no alaspatial shape for layer: " + layer);
-            e.printStackTrace();
-        }
-        try {
-            //class_name is same as layer name
-            String json = readGeoJSON(layer);
-            feature_text = wktFromJSON(json);
-
-            if (!register_shape) {
-                return feature_text;
-            }
-
-            //register wkt with alaspatial and use LAYER(layer name, id)
-            HttpClient client = new HttpClient();
-            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/register");
-            get.addParameter("area", feature_text);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register wkt shape with alaspatial: " + slist);
-
-            feature_text = "LAYER(" + layer + "," + slist + ")";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + feature_text);
-        return feature_text;
     }
 
      private String readGeoJSON(String feature) {

@@ -106,30 +106,4 @@ public class AddToolSpeciesListComposer extends AddToolComposer {
 
         detach();
     }
-
-    private String postInfo(String urlPart) {
-        try {
-            HttpClient client = new HttpClient();
-
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
-
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            get.addParameter("area", URLEncoder.encode(getSelectedArea(), "UTF-8"));
-
-            System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + getSelectedArea());
-
-            int result = client.executeMethod(get);
-
-            //TODO: confirm result
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
-    }
-
 }

@@ -44,66 +44,12 @@ public class Util {
      * @param register_shape true to register the shape with alaspatial shape register
      * @return
      */
-    public static String getWktFromURI(String layer, boolean register_shape) {
+    public static String getWktFromURI(String layer) {
         String feature_text = null;//DEFAULT_AREA;
 
-        if (!register_shape) {
-            String json = readGeoJSON(layer);
-            return feature_text = wktFromJSON(json);
-        }
-
-        try {
-            String uri = layer;
-            String gaz = "gazetteer/";
-            int i1 = uri.indexOf(gaz);
-            int i2 = uri.indexOf("/", i1 + gaz.length() + 1);
-            int i3 = uri.lastIndexOf(".json");
-            String table = uri.substring(i1 + gaz.length(), i2);
-            String value = uri.substring(i2 + 1, i3);
-            //test if available in alaspatial
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/lookup");
-            get.addParameter("table", table);
-            get.addParameter("value", value);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register table and value with alaspatial: " + slist);
-
-            if (slist != null && result == 200) {
-                feature_text = "LAYER(" + layer + "," + slist + ")";
-
-                return feature_text;
-            }
-        } catch (Exception e) {
-            System.out.println("no alaspatial shape for layer: " + layer);
-            e.printStackTrace();
-        }
-        try {
-            //class_name is same as layer name
-            String json = readGeoJSON(layer);
-            feature_text = wktFromJSON(json);
-
-            if (!register_shape) {
-                return feature_text;
-            }
-
-            //register wkt with alaspatial and use LAYER(layer name, id)
-            HttpClient client = new HttpClient();
-            //GetMethod get = new GetMethod(sbProcessUrl.toString()); // testurl
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/species/shape/register");
-            get.addParameter("area", feature_text);
-            get.addRequestHeader("Accept", "text/plain");
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            System.out.println("register wkt shape with alaspatial: " + slist);
-
-            feature_text = "LAYER(" + layer + "," + slist + ")";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("SelectionController.getLayerGeoJsonAsWkt(" + layer + "): " + feature_text);
-        return feature_text;
+        String json = readGeoJSON(layer);
+        
+        return feature_text = wktFromJSON(json);
     }
 
     static public String createCircle(double x, double y, final double RADIUS) {
@@ -209,6 +155,8 @@ public class Util {
     /**
      * transform json string with geometries into wkt.
      *
+     * only MULTIPOLYGON output.
+     *
      * extracts 'shape_area' if available and assigns it to storedSize.
      *
      * @param json
@@ -216,22 +164,56 @@ public class Util {
      */
     static public String wktFromJSON(String json) {
         try {
-            JSONObject obj = JSONObject.fromObject(json);
-            JSONArray geometries = obj.getJSONArray("geometries");
-            String wkt = "";
-            for (int i = 0; i < geometries.size(); i++) {
-                String coords = geometries.getJSONObject(i).getString("coordinates");
+//            JSONObject obj = JSONObject.fromObject(json);
+//            JSONArray geometries = obj.getJSONArray("geometries");
+//            String wkt = "";
+//            for (int i = 0; i < geometries.size(); i++) {
+//                String coords = geometries.getJSONObject(i).getString("coordinates");
+//
+//                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
+//                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
+//
+//                } else {
+//                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
+//                }
+//
+//                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
+//            }
+//            return wkt;
 
-                if (geometries.getJSONObject(i).getString("type").equalsIgnoreCase("multipolygon")) {
-                    wkt += coords.replace("]]],[[[", "))*((").replace("]],[[", "))*((").replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[[", "MULTIPOLYGON(((").replace("]]]]", ")))");
-
+            StringBuilder sb = new StringBuilder();
+            sb.append("MULTIPOLYGON(");
+            int pos = json.indexOf("coordinates") + "coordinates".length() + 3;
+            int end = json.indexOf("}", pos);
+            char c = json.charAt(pos);
+            char prev_c = ' ';
+            char next_c;
+            pos++;
+            while (pos < end) {
+                next_c = json.charAt(pos);
+                //lbrace to lbracket, next character is not a number
+                if(c == '[') {
+                    if(next_c != '-' && (next_c < '0' || next_c > '9')) {
+                        sb.append('(');
+                    }
+                //rbrace to rbracket, prev character was not a number
+                } else if(c == ']') {
+                    if (prev_c < '0' || prev_c > '9') {
+                        sb.append(')');
+                    }
+                //comma to space, prev character was a number
+                } else if(c == ',' && prev_c >= '0' && prev_c <= '9') {
+                    sb.append(' ');
+                //keep the original value
                 } else {
-                    wkt += coords.replace("],[", "*").replace(",", " ").replace("*", ",").replace("[[[", "POLYGON((").replace("]]]", "))").replace("],[", "),(");
+                    sb.append(c);
                 }
-
-                wkt = wkt.replace(")))MULTIPOLYGON(", ")),");
+                prev_c = c;
+                c = next_c;
+                pos++;
             }
-            return wkt;
+            sb.append(")");
+            return sb.toString();
         } catch (JSONException e) {
             return "none";
         }
@@ -416,11 +398,13 @@ public class Util {
         StringBuilder s = new StringBuilder();
         s.append("POLYGON((");
         for (int i = 0; i < 360; i++) {
-            s.append(points[i][0] + dist).append(" ").append(points[i][1]);
-            if (i < 359) {
-                s.append(",");
-            }
+            s.append(points[i][0] + dist).append(" ").append(points[i][1]).append(",");
+            //if (i < 359) {
+            //    s.append(",");
+            //}
         }
+        // append the first point to close the circle
+        s.append(points[0][0] + dist).append(" ").append(points[0][1]);
         s.append("))");
 
         return s.toString();
@@ -444,25 +428,25 @@ public class Util {
         return pt;
     }
 
-    public static String newLsidArea(String lsid, String wkt) {
-        try {
-            //get lsid to match
-            StringBuilder sbProcessUrl = new StringBuilder();
-            sbProcessUrl.append("/species/lsidarea/register");
-            sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addParameter("area", wkt);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String pid = get.getResponseBodyAsString();
-            return pid;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
+//    public static String newLsidArea(String lsid, String wkt) {
+//        try {
+//            //get lsid to match
+//            StringBuilder sbProcessUrl = new StringBuilder();
+//            sbProcessUrl.append("/species/lsidarea/register");
+//            sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
+//            HttpClient client = new HttpClient();
+//            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+//            post.addParameter("area", wkt);
+//            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
+//            int result = client.executeMethod(post);
+//            String pid = post.getResponseBodyAsString();
+//            return pid;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+//
      /**
      * Util function to add line breaks to a string - it breaks on whole word
      * @param message The text to perform the break on

@@ -7,6 +7,7 @@ package org.ala.spatial.analysis.web;
 import java.awt.geom.Rectangle2D;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.ScatterplotData;
+import org.ala.spatial.util.SolrQuery;
 import org.zkoss.zul.Checkbox;
 
 /**
@@ -81,7 +82,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        ScatterplotData data = new ScatterplotData(lsid, name, lyr1value, 
+        ScatterplotData data = new ScatterplotData(new SolrQuery(lsid, null, null), name, lyr1value,
                 lyr1name, lyr2value, lyr2name, pid, selection, enabled,
                 backgroundLsid, filterWkt, highlightWkt, envGrid);
 
