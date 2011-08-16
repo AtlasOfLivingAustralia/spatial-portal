@@ -1121,12 +1121,10 @@ public class AddToolComposer extends UtilityComposer {
 
     public void onSelect$lbListLayers(Event event) {
         Div currentDiv = (Div) getFellowIfAny("atstep" + currentStep);
-        if (currentDiv.getZclass().contains("minlayers1")
-                && lbListLayers.getSelectedCount() >= 1) {
-            btnOk.setDisabled(false);
-        } else if (currentDiv.getZclass().contains("minlayers2")
-                && lbListLayers.getSelectedCount() >= 2) {
-            btnOk.setDisabled(false);
+        if (currentDiv.getZclass().contains("minlayers1")) {
+            btnOk.setDisabled(lbListLayers.getSelectedCount() < 1);
+        } else if (currentDiv.getZclass().contains("minlayers2")) {
+            btnOk.setDisabled(lbListLayers.getSelectedCount() < 2);
         } else if (currentDiv.getZclass().contains("optional")) {
             btnOk.setDisabled(false);
         }
