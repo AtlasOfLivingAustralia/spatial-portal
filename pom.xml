@@ -13,6 +13,7 @@
         <org.springframework.version>3.0.0.RELEASE</org.springframework.version>
         <org.slf4j.version>1.5.10</org.slf4j.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
+        <geotools.version>2.7-SNAPSHOT</geotools.version>
     </properties>
     <dependencies>
         <dependency>
@@ -35,12 +36,17 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-main</artifactId>
-            <version>2.6-SNAPSHOT</version>
+            <version>${geotools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-api</artifactId>
-            <version>2.6-SNAPSHOT</version>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.opengis</groupId>

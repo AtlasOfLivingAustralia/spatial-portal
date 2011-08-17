@@ -100,10 +100,19 @@ title="Admin" width="100%" border="normal">
                 
                         <separator />
                 
-                        <hbox>
+                        <vbox>
                             <label value="Process and send logs to ALA-Logger" />
+                            <textbox width="500px" id="txtloggingurl" multiline="false" value="http://ala-biocache1.vm.csiro.au:8080/ala-logger-service/service/logger/" />
                             <button id="btnProcessLogs" label="Process" />
-                        </hbox>
+                        </vbox>
+
+                        <separator />
+
+                        <vbox>
+                            <label value="Commands to process" />
+                            <textbox width="500px" id="cmdtext" height="50px" multiline="true" />
+                            <button id="btnProcessCommand" label="Process" />
+                        </vbox>
 
                     </vbox>
                 </tabpanel>

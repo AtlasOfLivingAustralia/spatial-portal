@@ -308,6 +308,11 @@
                             </p>
 
                             <p>
+                                <span class="title">Keywords:</span> <br />
+                                ${layer.keywords}
+                            </p>
+
+                            <p>
                                 <span class="title">More information:</span> <br />
                                 <c:forEach var="u" items="${fn:split(layer.metadatapath, '|')}">
                                     <a href="${u}">${u}</a><br />

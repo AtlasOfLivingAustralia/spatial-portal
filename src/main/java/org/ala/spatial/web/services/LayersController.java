@@ -53,12 +53,34 @@ public class LayersController {
     }
 
     @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE + "/"}, method = RequestMethod.GET)
-    public ModelAndView showPublicIndexPage() {
+    public ModelAndView showPublicIndexPage(@RequestParam(value = "q", required = false) String q) {
+//        ModelMap modelMap = new ModelMap();
+//        //modelMap.addAttribute("message", "Displaying all layers");
+//        modelMap.addAttribute("layerList", layersDao.getLayers());
+//        return new ModelAndView("layers/public_list", modelMap);
         ModelMap modelMap = new ModelMap();
-        modelMap.addAttribute("message", "Displaying all layers");
-        modelMap.addAttribute("layerList", layersDao.getLayers());
-        return new ModelAndView("layers/public_list", modelMap);
-    }
+
+        List l = null;
+        String msg = "";
+
+        if (q != null) {
+            System.out.print("retriving layer list by criteria.q: " + q);
+            l = layersDao.getLayersByCriteria(q);
+            int count = 0;
+            if (l != null) {
+                count = l.size();
+            }
+            //msg = count + " search results for " + q;
+            //modelMap.addAttribute("mode", "search");
+        } else {
+            l = layersDao.getLayers();
+            //msg = "Displaying all layers";
+            //modelMap.addAttribute("mode", "list");
+        }
+
+        //modelMap.addAttribute("message", msg);
+        modelMap.addAttribute("layerList", l);
+        return new ModelAndView("layers/public_list", modelMap);    }
 
     @RequestMapping(value = LAYERS_BASE + ".csv", method = RequestMethod.GET)
     public void downloadLayerList(HttpServletResponse res) {
@@ -84,11 +106,13 @@ public class LayersController {
             header += "Data language, ";
             header += "Scope, ";
             header += "Notes, ";
-            header += "More information";
+            header += "More information, ";
+            header += "Keywords";
 
             res.setContentType("text/csv; charset=UTF-8");
             res.setHeader("Content-Disposition", "inline;filename=ALA_Spatial_Layers.csv");
             CSVWriter cw = new CSVWriter(res.getWriter());
+            cw.writeNext("Please provide feedback on the 'keywords' columns to data_management@ala.org.au".split("\n"));
             cw.writeNext(header.split(","));
 
             Iterator<LayerInfo> it = layers.iterator();

@@ -141,7 +141,7 @@ public class LayersDAOImpl extends HibernateDaoSupport implements LayersDAO {
     public List<LayerInfo> getLayersByCriteria(String keywords) {
         String sql = "";
         sql += "from LayerInfo where ";
-        sql += "lower(notes) like ? ";
+        sql += "lower(keywords) like ? ";
         sql += " or lower(displayname) like ? ";
         //sql += " or lower(type) like ? ";
         sql += " or lower(name) like ? ";

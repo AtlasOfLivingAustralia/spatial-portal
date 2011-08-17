@@ -5,6 +5,7 @@ import org.ala.spatial.model.LayerInfo;
 
 /**
  * DAO class for the LayerInfo class / 'layers' list
+ * 
  * @author ajay
  */
 public interface LayersDAO {
