@@ -3,7 +3,10 @@ package org.ala.spatial.web.zk;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import org.ala.spatial.analysis.index.DatasetMonitor;
+import org.ala.spatial.util.DataDumper;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.ala.spatial.util.TabulationSettings;
@@ -34,6 +37,8 @@ public class JobsZK extends GenericForwardComposer {
     Textbox imgpth;
     String pid;
     Textbox newjob;
+    Textbox cmdtext;
+    Textbox txtloggingurl; 
 
     //Other tab
     Label lCachedImageCount;
@@ -53,8 +58,31 @@ public class JobsZK extends GenericForwardComposer {
 
     }
 
+    public void onClick$btnProcessCommand(Event e) {
+        if (!cmdtext.getValue().trim().equals("")) {
+            String[] cmds = cmdtext.getValue().split("\n");
+
+            Map<String,String> cmd = new HashMap<String,String>();
+            for (String c:cmds) {
+                String key = c.substring(0,c.indexOf("="));
+                String value = c.substring(c.indexOf("=")+1);
+                System.out.println("Adding " + key + " => " + value);
+                cmd.put(key, value); 
+            }
+
+            DataDumper.generateSpeciesList(new File(cmd.get("shape")), cmd.get("output"));
+        }
+        
+    }
+
     public void onClick$btnProcessLogs(Event e) {
-        LogsZK.processLogFiles(); 
+        if (txtloggingurl.getValue().trim().equals("")) {
+            LogsZK.processLogFiles();
+        } else {
+            //LogsZK.processLogFiles(txtloggingurl.getValue());
+            System.out.println("calling processLogFilesAsLines");
+            LogsZK.processLogFilesAsLines(txtloggingurl.getValue());
+        }
     }
 
     public void onClick$refreshButton(Event e) {

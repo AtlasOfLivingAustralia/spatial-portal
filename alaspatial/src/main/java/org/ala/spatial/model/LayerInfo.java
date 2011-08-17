@@ -1,5 +1,6 @@
 package org.ala.spatial.model;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.util.List;
 import java.util.Vector;
 import javax.persistence.Column;
@@ -9,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * This class serves as a model object for a list of layers
@@ -19,6 +21,8 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "layers")
+@XmlRootElement(name="layer")
+@XStreamAlias("layer")
 public class LayerInfo {
     @Id
     @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="layers_id_seq")
@@ -121,6 +125,9 @@ public class LayerInfo {
 
     @Column(name="source_link")
     private String sourcelink;
+
+    @Column(name="keywords")
+    private String keywords;
 
     public LayerInfo() {
     }
@@ -394,6 +401,14 @@ public class LayerInfo {
         this.sourcelink = sourcelink;
     }
 
+    public String getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(String keywords) {
+        this.keywords = keywords;
+    }
+
     public String[] toArray() {
         if (description == null) {
             description = "";
@@ -403,6 +418,9 @@ public class LayerInfo {
         }
         if (notes == null) {
             notes = "";
+        }
+        if (keywords == null) {
+            keywords = "";
         }
 
         List v = new Vector();
@@ -425,6 +443,7 @@ public class LayerInfo {
         v.add(mdhrlv);
         v.add(notes.replaceAll("\n", " "));
         v.add(metadatapath);
+        v.add(keywords);
 
         return (String[]) v.toArray(new String[v.size()]);
 
@@ -441,6 +460,9 @@ public class LayerInfo {
         }
         if (notes == null) {
             notes = "";
+        }
+        if (keywords == null) {
+            keywords = "";
         }
 
         //return uid + "," + displayname + "description=" + description + "type=" + type + "source=" + source + "path=" + path + "displaypath=" + displaypath + "scale=" + scale + "extent=" + extent + "minlatitude=" + minlatitude + "minlongitude=" + minlongitude + "maxlatitude=" + maxlatitude + "maxlongitude=" + maxlongitude + "notes=" + notes + "enabled=" + enabled + "environmentalvaluemin=" + environmentalvaluemin + "environmentalvaluemax=" + environmentalvaluemax + "environmentalvalueunits=" + environmentalvalueunits + "lookuptablepath=" + lookuptablepath + "metadatapath=" + metadatapath + "classification1=" + classification1 + "classification2=" + classification2 + "mddatest=" + mddatest + "citationdate=" + citationdate + "datalang=" + datalang + "mdhrlv=" + mdhrlv + "resppartyrole=" + resppartyrole + "licencelevel=" + licencelevel + "licence_link=" + licence_link + "licence_notes=" + licence_notes + "sourcelink=" + sourcelink + '}';
@@ -463,7 +485,8 @@ public class LayerInfo {
         lyr += "\"" + datalang + "\", ";
         lyr += "\"" + mdhrlv + "\", ";
         lyr += "\"" + notes.replaceAll("\n", " ").replaceAll("\"", "\\\"") + "\", "; //
-        lyr += "\"" + metadatapath + "\"";
+        lyr += "\"" + metadatapath + "\", ";
+        lyr += "\"" + keywords + "\"";
 
         return lyr;
     }

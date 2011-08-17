@@ -54,7 +54,7 @@
                 white-space: pre-wrap;       /* css-3 */
                 word-wrap: break-word;       /* Internet Explorer 5.5+ */
             }</style>
-        
+
         <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/jquery.dimensions.js"></script>
         <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/jquery.mousewheel.min.js"></script>
         <script language="JavaScript" type="text/javascript" src="http://www.ala.org.au/wp-content/themes/ala/scripts/hoverintent-min.js"></script>
@@ -222,13 +222,35 @@
                     <h1>Layer list</h1>
                 </div><!--close header-->
 
+                <c:choose>
+                    <c:when test="${empty param.q}">
+                        <c:set var="searchquery" value="" scope="request" />
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="searchquery" value="?q=${param.q}" scope="request" />
+                    </c:otherwise>
+                </c:choose>
+
 
                 <div class="section">
+
+                    <div>
+                        <form action="" method="get">
+                            <label for="q">Search layers:</label>
+                            <input type="text" id="q" name="q" value="${param.q}" />
+                            <input type="submit" class="button" value="GO" />
+                            <c:if test="${!empty param.q}">
+                                <input type="button" class="button" onclick="location.href='layers'" value="Display all" />
+                            </c:if>
+                        </form>
+                    </div>
+
                     <c:choose>
                         <c:when test="${fn:length(layerList) > 0}">
                             <ul>
                                 <li>Click on layer name to link to the metadata summary and links to full metadata record.</li>
-                                <li><a href="/layers.csv">Download as CSV</a></li>
+                                <li>Download as <a href="/layers.csv${searchquery}">CSV</a> | <a href="/layers.json${searchquery}">JSON</a> | <a href="/layers.xml${searchquery}">XML</a></li>
+                                <!--<li><a href="/layers.csv">Download as CSV</a></li>-->
                             </ul>
                             <table border="1">
                                 <tr>
@@ -239,6 +261,7 @@
                                     <th>Description</th>
                                     <th>Type</th>
                                     <th>Metadata contact organization</th>
+                                    <th>Keywords</th>
                                     <th>Preview</th>
                                     <!-- <th>Reference date</th> -->
                                 </tr>
@@ -261,6 +284,7 @@
                                             </c:otherwise>
                                         </c:choose>
                                         <td>${layer.source}</td>
+                                        <td>${layer.keywords}</td>
                                         <td>
                                             <!--<img src="/output/layerthumbs/ALA:${layer.name}.jpeg" />-->
                                             <img src="/geoserver/wms/reflect?layers=ALA:${layer.name}&width=200" />
@@ -271,7 +295,7 @@
                                     </tr>
                                 </c:forEach>
                             </table>
-                            <a href="/layers.csv">Download as CSV</a>
+                            Download as <a href="/layers.csv${searchquery}">CSV</a> | <a href="/layers.json${searchquery}">JSON</a> | <a href="/layers.xml${searchquery}">XML</a>
                         </c:when>
                         <c:otherwise>
                             <ul><li>No layers available</li></ul>

@@ -7,11 +7,13 @@ package org.ala.spatial.web.zk;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -27,6 +29,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.springframework.util.StringUtils;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.GenericForwardComposer;
@@ -50,6 +53,7 @@ public class LogsZK extends GenericForwardComposer {
     ArrayList logList = new ArrayList();
     private static List processedfiles = null;
     String[] headers = {"date", "servername", "userip", "useremail", "processid", "sessionid", "actiontype", "lsid", "layers", "method", "params", "downloadfile", "message"};
+    static String ALA_LOGGING_SERVICE_URL = "http://ala-biocache1.vm.csiro.au:8080/ala-logger-service/service/logger/";
 
     @Override
     public void doAfterCompose(Component comp) throws Exception {
@@ -143,7 +147,8 @@ public class LogsZK extends GenericForwardComposer {
 
             HttpClient client = new HttpClient();
 
-            PostMethod post = new PostMethod("http://diasbtest1.ala.org.au:8080/service/logger/");
+            // http://ala-biocache1.vm.csiro.au:8080/ala-logger-service/service/logger/
+            PostMethod post = new PostMethod(ALA_LOGGING_SERVICE_URL);
 
             RequestEntity entity = new StringRequestEntity(sbInfo.toString(), "application/json", "utf-8");
             post.setRequestEntity(entity);
@@ -151,6 +156,8 @@ public class LogsZK extends GenericForwardComposer {
 
             System.out.println("Sending to ALA-Logger...");
             int result = client.executeMethod(post);
+
+            writeLoggedInfo(sbInfo.toString());
 
             if (result == HttpStatus.SC_OK) {
                 System.out.println("Successfully sent logging service:");
@@ -189,14 +196,31 @@ public class LogsZK extends GenericForwardComposer {
         }
     }
 
-    public static void processLogFiles() {
+    private static void writeLoggedInfo(String info) {
         try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(LOGS_BASE_DIR + "useraction.sent", true)));
+            out.write(info);
+            out.close();
+        } catch (Exception e) {
+            System.out.println("Error, unable to write useraction.sent");
+            e.printStackTrace(System.out);
+        }
+    }
+
+    public static void processLogFiles() {
+        processLogFiles(ALA_LOGGING_SERVICE_URL);
+    }
+
+    public static void processLogFiles(String url) {
+        try {
+
+            ALA_LOGGING_SERVICE_URL = url;
 
             readProcessedFile();
 
             File logsDir = new File(LOGS_BASE_DIR); // /Library/Tomcat/Home/logs/
 
-            FileFilter ff = new WildcardFileFilter("useractions.*"); // useractions.log.2011-01-1*
+            FileFilter ff = new WildcardFileFilter("useractions.dev.log"); // useractions.log.2011-01-1*
             File[] files = logsDir.listFiles(ff);
             System.out.println("Data...");
             for (int i = 0; i < files.length; i++) {
@@ -213,7 +237,9 @@ public class LogsZK extends GenericForwardComposer {
                     }
                 }
 
-                if (isprocessed) continue; 
+                if (isprocessed) {
+                    continue;
+                }
 
                 CSVReader reader = new CSVReader(new FileReader(files[i]));
                 List rows = reader.readAll();
@@ -228,7 +254,11 @@ public class LogsZK extends GenericForwardComposer {
                         filename = filename.trim().substring(filename.lastIndexOf("/") + 1);
                     }
 
+                    System.out.println("Method: " + method);
+                    System.out.println("filename: " + filename);
+
                     if (method.equals("Sampling") && filename.endsWith(".zip")) {
+                        System.out.println("Got a record, looking for " + filename);
                         String zipfilepath = TabulationSettings.base_output_dir + "output/sampling/" + filename;
                         System.out.println("Details for " + ip + " from " + zipfilepath);
                         File zipfile = new File(zipfilepath);
@@ -237,6 +267,10 @@ public class LogsZK extends GenericForwardComposer {
                             Hashtable<String, Integer> uidCounts = readZipFile(zf);
                             postInfoToLogger(ip, uidCounts);
                         }
+                    } else if (method.equals("Sampling") && filename.trim().equals("")) {
+                        System.out.println("Only sampling, no file available");
+                    } else {
+                        System.out.println("no sampling and zip file");
                     }
 
                 }
@@ -253,6 +287,79 @@ public class LogsZK extends GenericForwardComposer {
             System.out.println("Error loading logs: ");
             e.printStackTrace(System.out);
         }
+    }
+
+    public static void processLogFilesAsLines(String url) {
+        try {
+            ALA_LOGGING_SERVICE_URL = url;
+
+            readProcessedFile();
+
+            File logsDir = new File(LOGS_BASE_DIR); // /Library/Tomcat/Home/logs/
+
+            FileFilter ff = new WildcardFileFilter("useractions.dev.log"); // useractions.log.2011-01-1*
+            File[] files = logsDir.listFiles(ff);
+            System.out.println("Data...");
+            for (int i = 0; i < files.length; i++) {
+
+                System.out.println(files[i]);
+
+                //if (processedfiles.contains(files[i].getAbsolutePath())) continue;
+                Iterator pit = processedfiles.iterator();
+                boolean isprocessed = false;
+                while (pit.hasNext()) {
+                    String[] rows = (String[]) pit.next();
+                    if (rows[0].contains(files[i].getAbsolutePath())) {
+                        isprocessed = true;
+                        break;
+                    }
+                }
+
+                if (isprocessed) {
+                    continue;
+                }
+
+                //CSVReader reader = new CSVReader(new FileReader(files[i]));
+                BufferedReader reader = new BufferedReader(new FileReader(files[i]));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    //System.out.println(line);
+
+                    if (line.contains("Sampling") && line.contains(".zip") && line.contains("output/sampling")) {
+                        //System.out.println("\nFound sampling");
+                        String[] fields = StringUtils.commaDelimitedListToStringArray(line);
+                        String ip = (fields[3].trim().startsWith("\"")) ? fields[3].trim().substring(1) : fields[3].trim();
+                        ip = ip.trim().replaceAll("\"", ""); 
+                        String filename = fields[fields.length - 2];
+                        if (filename.contains(".zip")) {
+                            filename = filename.substring(filename.lastIndexOf("/")+1).trim().replaceAll("\"", "");
+                        }
+
+                        System.out.println("Looking up " + filename + " for " + ip);
+                        String zipfilepath = TabulationSettings.base_output_dir + "output/sampling/" + filename;
+                        System.out.println("Details for " + ip + " from " + zipfilepath);
+                        File zipfile = new File(zipfilepath);
+                        if (zipfile.exists() && (zipfile.length() > 0)) {
+                            ZipFile zf = new ZipFile(zipfile);
+                            Hashtable<String, Integer> uidCounts = readZipFile(zf);
+                            postInfoToLogger(ip, uidCounts);
+                        }
+
+                    }
+
+                    //System.out.println("\n\n");
+                }
+
+
+                String[] fileproc = {files[i].getAbsolutePath()};
+                processedfiles.add(fileproc);
+            }
+
+            writeProcessedFile();
+
+        } catch (Exception e) {
+        }
+
     }
 
     private static void processSamplesDownloads() {
@@ -339,6 +446,6 @@ public class LogsZK extends GenericForwardComposer {
     }
 
     public static void main(String[] args) {
-        processLogFiles();
+        processLogFilesAsLines(ALA_LOGGING_SERVICE_URL);
     }
 }
