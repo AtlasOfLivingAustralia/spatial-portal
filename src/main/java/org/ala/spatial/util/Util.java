@@ -236,7 +236,7 @@ public class Util {
 //            return wkt;
 
             StringBuilder sb = new StringBuilder();
-            sb.append("MULTIPOLYGON(");
+            sb.append("MULTIPOLYGON((");
             int pos = json.indexOf("coordinates") + "coordinates".length() + 3;
             int end = json.indexOf("}", pos);
             char c = json.charAt(pos);
@@ -266,7 +266,7 @@ public class Util {
                 c = next_c;
                 pos++;
             }
-            sb.append(")");
+            sb.append("))");
             return sb.toString();
         } catch (JSONException e) {
             return "none";
