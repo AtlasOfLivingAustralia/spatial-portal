@@ -243,7 +243,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
             } else if (area.equals("world")) {
                 //area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-                area = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
+                area = "POLYGON((-179.999 -84.999,-179.999 84.999,179.999 84.999,179.999 -84.999,-179.999 -84.999))";
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
