@@ -240,7 +240,7 @@
                             <input type="text" id="q" name="q" value="${param.q}" />
                             <input type="submit" class="button" value="GO" />
                             <c:if test="${!empty param.q}">
-                                <input type="button" class="button" onclick="location.href='layers'" value="Display all" />
+                                <input type="button" class="button" onclick="location.href='/layers'" value="Display all" />
                             </c:if>
                         </form>
                     </div>
