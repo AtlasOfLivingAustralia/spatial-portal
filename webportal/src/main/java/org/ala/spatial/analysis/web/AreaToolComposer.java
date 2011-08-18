@@ -157,7 +157,7 @@ public class AreaToolComposer extends UtilityComposer {
             int results_count_occurrences = Integer.parseInt(out[1]);
 
             //test limit
-            if (results_count_occurrences > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+            if (results_count_occurrences > 0 && results_count_occurrences <= getMapComposer().getSettingsSupplementary().getValueAsInt("max_record_count_map")) {
                 //register points with a new id for mapping
                 String lsid = registerPointsInArea(wkt);
                 sbProcessUrl = new StringBuffer();
