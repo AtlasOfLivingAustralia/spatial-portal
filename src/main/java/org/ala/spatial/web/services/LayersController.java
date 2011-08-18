@@ -52,7 +52,7 @@ public class LayersController {
         this.layersDao = layersDao;
     }
 
-    @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE + "/"}, method = RequestMethod.GET)
+    @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE + "/"}, method = RequestMethod.GET)    
     public ModelAndView showPublicIndexPage(@RequestParam(value = "q", required = false) String q) {
 //        ModelMap modelMap = new ModelMap();
 //        //modelMap.addAttribute("message", "Displaying all layers");
@@ -78,14 +78,39 @@ public class LayersController {
             //modelMap.addAttribute("mode", "list");
         }
 
+        if (l.size() > 0) {
+            Iterator<LayerInfo> it = l.iterator();
+            while (it.hasNext()) {
+                LayerInfo lyr = it.next();
+                lyr.setDisplaypath("http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:"+lyr.getName()+"&width=300");
+            }
+        }
+        
         //modelMap.addAttribute("message", msg);
+        modelMap.addAttribute("GetCapabilities", "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities");
         modelMap.addAttribute("layerList", l);
         return new ModelAndView("layers/public_list", modelMap);    }
 
     @RequestMapping(value = LAYERS_BASE + ".csv", method = RequestMethod.GET)
-    public void downloadLayerList(HttpServletResponse res) {
+    public void downloadLayerList(@RequestParam(value = "q", required = false) String q, HttpServletResponse res) {
         try {
-            List<LayerInfo> layers = layersDao.getLayers();
+            //List<LayerInfo> layers = layersDao.getLayers();
+            List<LayerInfo> layers = null;
+            if (q != null) {
+                System.out.print("retriving layer list by criteria.q: " + q);
+                layers = layersDao.getLayersByCriteria(q);
+                int count = 0;
+                if (layers != null) {
+                    count = layers.size();
+                }
+                //msg = count + " search results for " + q;
+                //modelMap.addAttribute("mode", "search");
+            } else {
+                layers = layersDao.getLayers();
+                //msg = "Displaying all layers";
+                //modelMap.addAttribute("mode", "list");
+            }
+
 
             String header = "";
             header += "UID, ";

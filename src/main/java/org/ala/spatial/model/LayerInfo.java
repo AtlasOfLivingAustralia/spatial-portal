@@ -129,6 +129,12 @@ public class LayerInfo {
     @Column(name="keywords")
     private String keywords;
 
+//    @GeneratedValue
+//    private String capabilities;
+//
+//    @GeneratedValue
+//    private String preview;
+//
     public LayerInfo() {
     }
 
@@ -215,6 +221,10 @@ public class LayerInfo {
 
     public void setName(String name) {
         this.name = name;
+        //setCapabilities(name);
+        //setPreview(preview);
+        //this.capabilities = "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities";
+        //this.preview = "http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:"+this.name+"&width=300";
     }
 
     public String getDisplayname() {
@@ -408,6 +418,24 @@ public class LayerInfo {
     public void setKeywords(String keywords) {
         this.keywords = keywords;
     }
+
+//    public String getCapabilities() {
+//        return capabilities;
+//    }
+//
+//    private void setCapabilities(String capabilities) {
+//        //this.capabilities = capabilities;
+//        this.capabilities = "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities";
+//    }
+//
+//    public String getPreview() {
+//        return preview;
+//    }
+//
+//    private void setPreview(String preview) {
+//        //this.preview = preview;
+//        //this.preview = "http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:"+this.name+"&width=300";
+//    }
 
     public String[] toArray() {
         if (description == null) {
