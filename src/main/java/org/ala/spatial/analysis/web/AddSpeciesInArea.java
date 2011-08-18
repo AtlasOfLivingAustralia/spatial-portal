@@ -40,9 +40,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     Button btnCancel, btnOk;
     Textbox tToolName;
     boolean setCustomArea = false;
-    boolean hasCustomArea = false;
     String lsid;
-    MapLayer prevTopArea = null;
 
     String rank;
     String taxon;
@@ -81,16 +79,16 @@ public class AddSpeciesInArea extends UtilityComposer {
             }
 
             if(!allSpecies) {
-                rgArea.setSelectedItem(rAreaWorld);
-                rAreaSelected = rAreaWorld;
+                //rgArea.setSelectedItem(rAreaWorld);
+                rAreaSelected = rAreaWorld; //set as default in the zul
             } else {
                 rAreaWorld.setVisible(false);
                 rAreaAustralia.setVisible(false);
 
                 for (int i = 0; i < rgArea.getItemCount(); i++) {
                     if (rgArea.getItemAtIndex(i).isVisible()) {
-                        rgArea.getItemAtIndex(i).setSelected(true);
                         rAreaSelected = rgArea.getItemAtIndex(i);
+                        rgArea.setSelectedItem(rAreaSelected);
                         Clients.evalJavaScript("jq('#" + rAreaSelected.getUuid() + "-real').attr('checked', true);");
                         break;
                     }
@@ -104,66 +102,24 @@ public class AddSpeciesInArea extends UtilityComposer {
     }
 
     public void onCheck$rgArea(Event event) {
-        setCustomArea = false;
-        hasCustomArea = false;
-        if (rgArea.getSelectedItem() == rAreaCustom) {
-            setCustomArea = true;
-            hasCustomArea = false;
+        if (rgArea == null) {
+            return;
         }
-        rAreaSelected = rgArea.getSelectedItem(); 
+        rAreaSelected = rgArea.getSelectedItem();
+        try {
+            rAreaSelected = (Radio) ((org.zkoss.zk.ui.event.ForwardEvent) event).getOrigin().getTarget();
+        } catch (Exception e) {
+        }
     }
 
     public void onClick$btnCancel(Event event) {
         this.detach();
     }
 
-    public void resetWindow(String selectedArea) {
-        try {
-            boolean ok = false;
-            if (hasCustomArea) {
-                MapLayer curTopArea = null;
-                List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                if (layers != null && layers.size() > 0) {
-                    curTopArea = layers.get(0);
-                } else {
-                    curTopArea = null;
-                }
-
-                if (curTopArea != prevTopArea) {
-                    Radio rAr = new Radio(curTopArea.getDisplayName());
-                    rAr.setId(curTopArea.getDisplayName().replaceAll(" ", ""));
-                    rAr.setValue(curTopArea.getWKT());
-                    rAr.setParent(rgArea);
-                    rgArea.insertBefore(rAr, rgArea.getItemAtIndex(0));
-                    rgArea.setSelectedIndex(0);
-                    rgArea.setSelectedItem(rAr);
-
-                    rAreaSelected = rAr; 
-
-                    ok = true;
-                }
-            }
-            //this.setTop(winTop);
-            //this.setLeft(winLeft);
-
-            this.doModal();
-
-            if (ok) {
-                onClick$btnOk(null);
-            }
-        } catch (InterruptedException ex) {
-            System.out.println("InterruptedException when resetting analysis window");
-            ex.printStackTrace(System.out);
-        } catch (SuspendNotAllowedException ex) {
-            System.out.println("Exception when resetting analysis window");
-            ex.printStackTrace(System.out);
-        }
-    }
-
-    public void onClick$btnOk(Event event) {
+    public void onClick$btnOk(Event event) {       
 
         try {
-            if (setCustomArea && !hasCustomArea) {
+            if (rAreaSelected == rAreaCustom) {
                 Map<String, Object> winProps = new HashMap<String, Object>();
                 winProps.put("parent", this);
                 winProps.put("parentname", "AddSpeciesInArea");
@@ -178,14 +134,6 @@ public class AddSpeciesInArea extends UtilityComposer {
                 winProps.put("byLsid", byLsid);
                 winProps.put("metadata", metadata);
                 winProps.put("type", type);
-
-
-                List<MapLayer> layers = getMapComposer().getPolygonLayers();
-                if (layers != null && layers.size() > 0) {
-                    prevTopArea = layers.get(0);
-                } else {
-                    prevTopArea = null;
-                }
 
                 Window window = (Window) Executions.createComponents("WEB-INF/zul/AddArea.zul", getMapComposer(), winProps);
                 window.setAttribute("winProps", winProps, true);
