@@ -85,7 +85,7 @@ public class AddAreaController extends UtilityComposer {
             md.setMoreInfo(LayersUtil.getMetadata("Australia " + wkt));
         } else if (cbAreaSelection.getSelectedItem() == ciBoxWorld) {
             //String wkt = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-            String wkt = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
+            String wkt = "POLYGON((-179.999 -84.999,-179.999 84.999,179.999 84.999,179.999 -84.999,-179.999 -84.999))";
             String layerName = mc.getNextAreaLayerName("World Bounding Box");
             MapLayer mapLayer = mc.addWKTLayer(wkt, layerName, layerName);
             MapLayerMetadata md = mapLayer.getMapLayerMetadata();
