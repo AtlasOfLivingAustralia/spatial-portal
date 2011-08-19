@@ -236,7 +236,9 @@ public class Util {
 //            return wkt;
 
             StringBuilder sb = new StringBuilder();
+            boolean isPolygon = json.contains("\"type\":\"Polygon\"");
             sb.append("MULTIPOLYGON(");
+            if(isPolygon) sb.append("("); //for conversion Polygon to Multipolygon.
             int pos = json.indexOf("coordinates") + "coordinates".length() + 3;
             int end = json.indexOf("}", pos);
             char c = json.charAt(pos);
@@ -267,6 +269,7 @@ public class Util {
                 pos++;
             }
             sb.append(")");
+            if(isPolygon) sb.append(")"); //for conversion Polygon to Multipolygon.
             return sb.toString();
         } catch (JSONException e) {
             return "none";
