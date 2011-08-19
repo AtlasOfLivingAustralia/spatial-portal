@@ -80,7 +80,7 @@ where id =                      917;
 
 --
 
-/*
+
 update layers set
 --name =                    'gbr_gbr100'
 source =                  'Deepreef Explorer'
@@ -97,7 +97,7 @@ source =                  'Deepreef Explorer'
 ,source_link =             'http://www.deepreef.org/bathymetry/65-3dgbr-bathy.html'
 
 where id =                      924;
-*/
+
 
 --
 
