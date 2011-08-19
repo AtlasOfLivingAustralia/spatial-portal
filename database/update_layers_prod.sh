@@ -33,3 +33,5 @@ $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/015_eez_ozcoasts_201108
 #$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/016_beards_080811.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/017_bath_top_gbr_cat_100811.sql
 #$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/018_world_150811.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/019_update_keywords_190811.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_prod_updates/020_gbr_keywords_190811.sql
