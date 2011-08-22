@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.ala.layers.util;
 
 import java.sql.ResultSet;
@@ -13,6 +8,11 @@ import java.sql.ResultSetMetaData;
  * @author Adam
  */
 public class Utils {
+    /**
+     * Converts an sql result set into a JSON string
+     * @param r Result set to convert
+     * @return JSON formatted representation of result set
+     */
     static public String resultSetToJSON(ResultSet r) {
         StringBuilder sb = new StringBuilder();
         try {
@@ -42,7 +42,12 @@ public class Utils {
                         sb.append(r.getBoolean(i));
                     } else {
                         //string/default
-                        sb.append("\"").append(r.getString(i)).append("\"");
+                        String rsValue = r.getString(i);
+                        //perform json character escapes
+                        if (rsValue != null){
+                            rsValue = rsValue.replace("\"", "\\\"").replace("\\", "\\\\").replace("/", "\\/").replace("\n", "\\n").replace("\t", "\\t");
+                        }
+                        sb.append("\"").append(rsValue).append("\"");
                     }
                 }
 
