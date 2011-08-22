@@ -2,12 +2,20 @@ package org.ala.layers.util;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author Adam
  */
 public class Utils {
+
+    /**
+     * Log4j instance
+     */
+    static protected Logger logger = Logger.getLogger("org.ala.layers.util.Utils");
+
     /**
      * Converts an sql result set into a JSON string
      * @param r Result set to convert
@@ -54,10 +62,12 @@ public class Utils {
                 sb.append("}");
 
                 count++;
+                logger.debug("Processed json for result set item " + count);
             }
             sb.append("]");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("An error occurred rendering result set");
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
 
         return sb.toString();
