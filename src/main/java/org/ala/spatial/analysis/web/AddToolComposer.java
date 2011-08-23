@@ -272,7 +272,7 @@ public class AddToolComposer extends UtilityComposer {
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
 
-            String allWKT = "";
+            StringBuilder allWKT = new StringBuilder();
             int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
@@ -281,11 +281,15 @@ public class AddToolComposer extends UtilityComposer {
                 //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
 
-                if(!allWKT.contains("ENVELOPE")) {
-                    if (!allWKT.isEmpty())
-                        allWKT+=",";
-                    count_not_envelopes ++;
-                    allWKT += lyr.getWKT();
+                if(!lyr.getWKT().contains("ENVELOPE")) {
+                    if (count_not_envelopes == 0)
+                        allWKT.append(',');
+                    count_not_envelopes++;
+                    String wkt = lyr.getWKT();
+                    if(wkt.startsWith("GEOMETRYCOLLECTION(")) {
+                        wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length()-1);
+                    }
+                    allWKT.append(wkt);
                 }
 
                 rAr.setParent(rgArea);
@@ -301,7 +305,7 @@ public class AddToolComposer extends UtilityComposer {
                  Radio rAr = new Radio("All area layers"
                          + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
                 //rAr.setId("AllActiveAreas");
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
             }
