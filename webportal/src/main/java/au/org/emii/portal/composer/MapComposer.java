@@ -4031,14 +4031,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         try {
             String id = String.valueOf(System.currentTimeMillis());
 
-            File shpDir = new File(EXPORT_BASE_DIR + id + "/");
+            File shpDir = new File(EXPORT_BASE_DIR + id + File.separator);
             shpDir.mkdirs();
 
             String contentType = LayersUtil.LAYER_TYPE_ZIP;
             //String outfile = ml.getDisplayName().replaceAll(" ", "_")+("shp".equals(type)?"Shapefile":type.toUpperCase())+".zip";
             String outfile = name.replaceAll(" ", "_");
             if ("shp".equals(type)) {
-                File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_Shapefile.shp");
+                File shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_Shapefile.shp");
                 ShapefileUtils.saveShapefile(shpfile, wkt);
                 //contentType = LayersUtil.LAYER_TYPE_ZIP;
                 outfile += "_Shapefile.zip";
@@ -4067,6 +4067,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
 
                 //String wkt = ml.getWKT();
+                wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
                 wkt = wkt.replace("GEOMETRYCOLLECTION(", "").replace("MULTIPOLYGON(", "").replace(")))", "))").replace("),(", "),POLYGON(");
                 String[] pwkt = wkt.split("POLYGON");
                 if (pwkt.length > 1) {
@@ -4103,16 +4104,16 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 sbKml.append("</Document>").append("\r");
                 sbKml.append("</kml>").append("\r");
 
-                File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_KML.kml");
+                File shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_KML.kml");
                 BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
                 wout.write(sbKml.toString());
                 wout.close();
                 //contentType = LayersUtil.LAYER_TYPE_KML;
                 outfile += "_KML.zip";
             } else if ("wkt".equals(type)) {
-                File shpfile = new File(EXPORT_BASE_DIR + id + "/" + outfile + "_WKT.txt");
+                File shpfile = new File(EXPORT_BASE_DIR + id + File.separator + outfile + "_WKT.txt");
                 BufferedWriter wout = new BufferedWriter(new FileWriter(shpfile));
-                wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
+                //wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace(")),((", ")),POLYGON((");
                 wout.write(wkt);
                 wout.close();
                 //contentType = LayersUtil.LAYER_TYPE_PLAIN;

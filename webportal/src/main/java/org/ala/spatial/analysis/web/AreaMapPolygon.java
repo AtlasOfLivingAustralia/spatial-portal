@@ -195,9 +195,9 @@ public class AreaMapPolygon extends AreaToolComposer {
                           //  break;
                         } else {
 
-                            System.out.println("********************************");
-                            System.out.println(wkt);
-                            System.out.println("********************************");
+//                            System.out.println("********************************");
+//                            System.out.println(wkt);
+//                            System.out.println("********************************");
 
                             searchComplete = true;
                             displayGeom.setValue(feature_text);

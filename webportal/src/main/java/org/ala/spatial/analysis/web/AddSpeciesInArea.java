@@ -151,7 +151,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     public void onFinish() {
         try {            
             String wkt = getSelectedArea();
-            wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
+            //wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace(")),((", ")),POLYGON((");
 
             String spname = name + ";" + lsid;
             boolean setupMetadata = true;
