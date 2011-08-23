@@ -27,6 +27,20 @@ import org.zkoss.zk.ui.event.UploadEvent;
 import org.zkoss.zul.Fileupload;
 import org.zkoss.zul.Textbox;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.util.Collection;
+import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.kml.KML;
+import org.geotools.kml.KMLConfiguration;
+import org.geotools.xml.Encoder;
+import org.geotools.xml.Parser;
+import org.opengis.feature.simple.SimpleFeature;
+
 /**
  *
  * @author Adam
@@ -118,7 +132,7 @@ public class AreaUploadShapefile extends AreaToolComposer {
                         return;
                     } else {
                         String wkt = (String) shape.get("wkt");
-                        wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
+                        //wkt = wkt.replace("MULTIPOLYGON (((", "POLYGON((").replaceAll(", ", ",").replace(")))", "))");
                         System.out.println("Got shapefile wkt...");
                         //String layerName = getMapComposer().getNextAreaLayerName(txtLayerName.getValue());
                         layerName = txtLayerName.getValue();
@@ -263,59 +277,93 @@ public class AreaUploadShapefile extends AreaToolComposer {
             e.printStackTrace(System.out);
         }
     }
-
+   
     private static String getKMLPolygonAsWKT(String kmldata) {
+
         try {
+            Parser parser = new Parser(new KMLConfiguration());
+            SimpleFeature f = (SimpleFeature) parser.parse(new StringReader(kmldata));
+            Collection placemarks = (Collection) f.getAttribute("Feature");
 
-            String[] kml = kmldata.toLowerCase().split("polygon");
-            int trueLength = (kml.length - 1) / 2;
+            Geometry g = null;
+            SimpleFeature sf = null;
 
-            StringBuilder sbKml = new StringBuilder();
-            if (trueLength > 1) {
-                sbKml.append("GEOMETRYCOLLECTION(");
-            }
-            for (int j = 1; j < kml.length; j += 2) {
-                String k = kml[j];
-                if (k.trim().equals("")) {
-                    continue;
-                }
-                int pos1 = k.indexOf("coordinates") + 12;
-                int pos2 = k.indexOf("/coordinates") - 1;
-                String kcoords = k.substring(pos1, pos2);
-
-                String[] coords = kcoords.split(" ");
-                if (coords.length == 1) {
-                    coords = kcoords.split("\n");
-                }
-
-                if (j > 1) {
-                    sbKml.append(",");
-                }
-
-                sbKml.append("POLYGON((");
-                for (int i = 0; i < coords.length; i++) {
-                    String c = coords[i];
-                    String[] cs = c.split(",");
-                    if (cs.length > 1) {
-                        if (i > 0) {
-                            sbKml.append(",");
-                        }
-                        sbKml.append(cs[0]).append(" ").append(cs[1]);
-                    }
-                }
-                sbKml.append("))");
+            //for <Placemark>
+            if(placemarks.size() > 0 && placemarks.size() > 0) {
+                sf = (SimpleFeature) placemarks.iterator().next();
+                g = (Geometry) sf.getAttribute("Geometry");
             }
 
-            if (trueLength > 1) {
-                sbKml.append(")");
+            //for <Folder><Placemark>
+            if (g == null && sf != null) {
+                placemarks = (Collection) sf.getAttribute("Feature");
+                if(placemarks != null && placemarks.size() > 0) {
+                    g = (Geometry) ((SimpleFeature) placemarks.iterator().next()).getAttribute("Geometry");
+                }
             }
 
-            return sbKml.toString();
-
+            if(g != null) {
+                WKTWriter wr = new WKTWriter();
+                String wkt = wr.write(g);
+                return wkt.replace(" (","(").replace(", ", ",").replace(") ", ")");
+            }
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            e.printStackTrace();
         }
 
         return null;
+
+//        try {
+//
+//            String[] kml = kmldata.toLowerCase().split("polygon");
+//            int trueLength = (kml.length - 1) / 2;
+//
+//            StringBuilder sbKml = new StringBuilder();
+//            if (trueLength > 1) {
+//                sbKml.append("GEOMETRYCOLLECTION(");
+//            }
+//            for (int j = 1; j < kml.length; j += 2) {
+//                String k = kml[j];
+//                if (k.trim().equals("")) {
+//                    continue;
+//                }
+//                int pos1 = k.indexOf("coordinates") + 12;
+//                int pos2 = k.indexOf("/coordinates") - 1;
+//                String kcoords = k.substring(pos1, pos2);
+//
+//                String[] coords = kcoords.split(" ");
+//                if (coords.length == 1) {
+//                    coords = kcoords.split("\n");
+//                }
+//
+//                if (j > 1) {
+//                    sbKml.append(",");
+//                }
+//
+//                sbKml.append("POLYGON((");
+//                for (int i = 0; i < coords.length; i++) {
+//                    String c = coords[i];
+//                    String[] cs = c.split(",");
+//                    if (cs.length > 1) {
+//                        if (i > 0) {
+//                            sbKml.append(",");
+//                        }
+//                        sbKml.append(cs[0]).append(" ").append(cs[1]);
+//                    }
+//                }
+//                sbKml.append("))");
+//            }
+//
+//            if (trueLength > 1) {
+//                sbKml.append(")");
+//            }
+//
+//            return sbKml.toString();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace(System.out);
+//        }
+//
+//        return null;
     }
 }

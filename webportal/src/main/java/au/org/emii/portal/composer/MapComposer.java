@@ -23,8 +23,15 @@ import au.org.emii.portal.util.SessionPrint;
 import au.org.emii.portal.value.BoundingBox;
 import au.org.emii.portal.web.SessionInitImpl;
 import au.org.emii.portal.wms.WMSStyle;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.WKTReader;
+import org.geotools.kml.KML;
+import org.geotools.kml.KMLConfiguration;
+import org.geotools.xml.Parser;
 import java.awt.Color;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -58,6 +65,8 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.MDC;
+import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.xml.Encoder;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.HtmlMacroComponent;
@@ -4066,40 +4075,49 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 sbKml.append("    <description><![CDATA[<div dir=\"ltr\">").append(name).append("<br></div>]]></description>").append("\r");
                 sbKml.append("    <styleUrl>#style1</styleUrl>").append("\r");
 
+                //Remove first line of kmlGeometry, <?xml...>
+                Geometry geom = new WKTReader().read(wkt);
+                Encoder encoder = new Encoder(new KMLConfiguration());
+                encoder.setIndenting(true);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                encoder.encode(geom, KML.Geometry, baos);
+                String kmlGeometry = new String(baos.toByteArray());
+                sbKml.append(kmlGeometry.substring(kmlGeometry.indexOf('\n')));
+
                 //String wkt = ml.getWKT();
-                wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
-                wkt = wkt.replace("GEOMETRYCOLLECTION(", "").replace("MULTIPOLYGON(", "").replace(")))", "))").replace("),(", "),POLYGON(");
-                String[] pwkt = wkt.split("POLYGON");
-                if (pwkt.length > 1) {
-                    sbKml.append("    <MultiGeometry>").append("\r");
-                }
-                for (String pw : pwkt) {
-
-                    if (pw.trim().equals("")) {
-                        continue;
-                    }
-
-                    sbKml.append("    <Polygon>").append("\r");
-                    sbKml.append("      <outerBoundaryIs>").append("\r");
-                    sbKml.append("        <LinearRing>").append("\r");
-                    sbKml.append("          <tessellate>1</tessellate>").append("\r");
-                    sbKml.append("          <coordinates>").append("\r");
-
-                    pw = pw.replaceAll("POLYGON", "").replace("(", "").replace(")", "");
-                    String[] awkt = pw.split(",");
-                    for (String w : awkt) {
-                        sbKml.append(w.replaceAll(" ", ",")).append(",0").append("\n");
-                    }
-
-                    sbKml.append("          </coordinates>").append("\r");
-                    sbKml.append("        </LinearRing>").append("\r");
-                    sbKml.append("      </outerBoundaryIs>").append("\r");
-                    sbKml.append("    </Polygon>").append("\r");
-                }
-                if (pwkt.length > 1) {
-                    sbKml.append("    </MultiGeometry>").append("\r");
-                }
-
+//                wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
+//                wkt = wkt.replace("GEOMETRYCOLLECTION(", "").replace("MULTIPOLYGON(", "").replace(")))", "))").replace("),(", "),POLYGON(");
+//                String[] pwkt = wkt.split("POLYGON");
+//                if (pwkt.length > 1) {
+//                    sbKml.append("    <MultiGeometry>").append("\r");
+//                }
+//                for (String pw : pwkt) {
+//
+//                    if (pw.trim().equals("")) {
+//                        continue;
+//                    }
+//
+//                    sbKml.append("    <Polygon>").append("\r");
+//                    sbKml.append("      <outerBoundaryIs>").append("\r");
+//                    sbKml.append("        <LinearRing>").append("\r");
+//                    sbKml.append("          <tessellate>1</tessellate>").append("\r");
+//                    sbKml.append("          <coordinates>").append("\r");
+//
+//                    pw = pw.replaceAll("POLYGON", "").replace("(", "").replace(")", "");
+//                    String[] awkt = pw.split(",");
+//                    for (String w : awkt) {
+//                        sbKml.append(w.replaceAll(" ", ",")).append(",0").append("\n");
+//                    }
+//
+//                    sbKml.append("          </coordinates>").append("\r");
+//                    sbKml.append("        </LinearRing>").append("\r");
+//                    sbKml.append("      </outerBoundaryIs>").append("\r");
+//                    sbKml.append("    </Polygon>").append("\r");
+//                }
+//                if (pwkt.length > 1) {
+//                    sbKml.append("    </MultiGeometry>").append("\r");
+//                }
+//
                 sbKml.append("  </Placemark>").append("\r");
                 sbKml.append("</Document>").append("\r");
                 sbKml.append("</kml>").append("\r");
