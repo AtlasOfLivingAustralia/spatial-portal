@@ -16,7 +16,9 @@ public class ComplexRegion extends SimpleRegion {
     static SimpleRegion parseComplexRegion(String[] polygons) {
         ComplexRegion cr = new ComplexRegion();
 
+        int length = 0;
         for (String s : polygons) {
+            length += s.length();
             cr.addPolygon(SimpleRegion.parseSimpleRegion(s).getPoints());
         }
 
@@ -24,6 +26,10 @@ public class ComplexRegion extends SimpleRegion {
         double[][] bb = cr.getBoundingBox();
         int width = (int) ((bb[1][0] - bb[0][0]) * 3);
         int height = (int) ((bb[1][1] - bb[0][1]) * 3);
+        if(length > 20000) {
+            if(width<100) width=100;
+            if(height<100) height=100;
+        }
         if (width > 200) {
             width = 200;
         }
