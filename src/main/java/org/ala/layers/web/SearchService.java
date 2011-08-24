@@ -1,21 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.ala.layers.web;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.util.DBConnection;
 import org.ala.layers.util.Utils;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -27,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class SearchService {
     /*
-     * return intersection of a point on a layer (field)
+     * perform a search operation
      */
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public

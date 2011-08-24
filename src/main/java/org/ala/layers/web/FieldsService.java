@@ -79,10 +79,11 @@ public class FieldsService {
             logger.error(ExceptionUtils.getFullStackTrace(e));
         }
 
-        //query
         if (prefix <= 'Z' && prefix >= 'A' && numberOk) {
+            
             //Adam: not sure if this was correct
             //String query = "SELECT pid, id, name, \"desc\" FROM objects WHERE fid='" + id + "';";
+            
             String query = "SELECT * from fields WHERE enabled=TRUE and id = '" + id + "';";
             logger.debug("Executing sql: " + query);
             ResultSet r = DBConnection.query(query);
@@ -91,5 +92,5 @@ public class FieldsService {
             //error
             return null;
         }
-    }  
+    }
 }
