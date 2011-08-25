@@ -2,10 +2,10 @@ package org.ala.layers.web;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.util.DBConnection;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +18,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class ShapesService {
+    
+    /**
+     * Log4j instance
+     */
+    protected Logger logger = Logger.getLogger(this.getClass());
+    
     /*
      * return a shape as wkt
      */
@@ -38,7 +44,8 @@ public class ShapesService {
                 s = r.getString(1);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ShapesService.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("An error has occurred retrieving wkt for object id " + id);
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
         }
 
         return s;
@@ -64,7 +71,8 @@ public class ShapesService {
                 s = r.getString(1);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ShapesService.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("An error has occurred retrieving geojson for object id " + id);
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
         }
 
         return s;
@@ -90,7 +98,9 @@ public class ShapesService {
                 s = r.getString(1);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ShapesService.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("An error has occurred retrieving kml for object id " + id);
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
+
         }
 
         return s;

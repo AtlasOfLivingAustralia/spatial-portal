@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.util.DBConnection;
 import org.ala.layers.util.Utils;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class ObjectsService {
+    /**
+     * Log4j instance
+     */
+    protected Logger logger = Logger.getLogger(this.getClass());
+
      /**This method returns all objects associated with a field
      * 
      * @param id

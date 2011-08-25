@@ -1,21 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.ala.layers.util;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author Adam
  */
 public class Layer {
-
+    /**
+     * Log4j instance
+     */
+    protected static Logger logger = Logger.getLogger("org.ala.layers.util.Layer");
+    
     static final long minRefreshTime = 120000; //minimum refresh time in ms
     static HashMap<String, Layer> layers;
     static long lastRefresh;
@@ -102,7 +102,7 @@ public class Layer {
                         rs.getString("path_250m")));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(Layer.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
         }
 
         return fs;

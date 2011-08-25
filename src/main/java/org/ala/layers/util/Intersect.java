@@ -2,6 +2,7 @@ package org.ala.layers.util;
 
 import java.io.File;
 import java.sql.ResultSet;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -12,6 +13,11 @@ public class Intersect {
     final static String ALASPATIAL_OUTPUT_PATH = "/data/ala/runtime/output";
     final static String DATA_FILES_PATH = "/data/ala/data/envlayers/WorldClimCurrent/10minutes/";
     
+    /**
+     * Log4j instance
+     */
+    
+    protected static Logger logger = Logger.getLogger("org.ala.layers.util.Intersect");
     /**
      * This method performs the layer intersection operation
      * - polygon intersections for contextual layers
@@ -49,7 +55,7 @@ public class Intersect {
                             + lat
                             + "),4326), the_geom);";
 
-                    System.out.println(query);
+                    logger.info("Query is " + query);
 
                     ResultSet r = DBConnection.query(query);
 

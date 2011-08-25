@@ -6,6 +6,8 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Grid.java
@@ -18,6 +20,12 @@ import java.util.ArrayList;
  * Interface for .gri/.grd files for now
  */
 public class Grid { //  implements Serializable
+    
+    /**
+     * Log4j instance
+     */
+    protected Logger logger = Logger.getLogger(this.getClass());
+    
     final static int maxGridsLoaded = 1;
 
     static ArrayList<Grid> all_grids = new ArrayList<Grid>();
@@ -60,9 +68,7 @@ public class Grid { //  implements Serializable
                 yres = (ymax - ymin) / ncols;
             }
         } else {
-            //log error
-            System.out.println("cannot find GRID: " + fname);
-
+            logger.error("cannot find GRID: " + fname);
         }
     }
 
@@ -85,7 +91,7 @@ public class Grid { //  implements Serializable
                 yres = (ymax - ymin) / ncols;
             }
         } else {
-            //log error
+            logger.error("Error constructing grid from file: " + fname);
         }
 
         if (keepAvailable) {
@@ -371,8 +377,8 @@ public class Grid { //  implements Serializable
                 }
             }
         } catch (Exception e) {
-            //log error - probably a file error
-            e.printStackTrace();
+            logger.error("An error has occurred - probably a file error");
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
         grid_data = ret;
         return ret;
@@ -416,7 +422,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
 
 
@@ -472,7 +478,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
 
 
@@ -517,7 +523,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
 
         writeHeader(newfilename, xmin, ymin, xmax, ymax, xres, yres, nrows, ncols, minvalue, maxvalue, "FLT4BYTES", String.valueOf(noDataValueDefault));
@@ -554,7 +560,8 @@ public class Grid { //  implements Serializable
             fw.append("\r\n").append("Transparent=0");
             fw.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ExceptionUtils.getFullStackTrace(e));
+
         }
     }
 
@@ -730,9 +737,8 @@ public class Grid { //  implements Serializable
                 }
             }
         } catch (Exception e) {
-            //log error - probably a file error
-            System.out.println("GRID: " + e.toString());
-            e.printStackTrace();
+            logger.error("GRID: " + e.toString());
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
         grid_data = ret;
         return ret;
@@ -922,7 +928,7 @@ public class Grid { //  implements Serializable
                     }
                 }
             } else {
-                System.out.println("datatype not supported in Grid.getValues: " + datatype);
+                logger.error("datatype not supported in Grid.getValues: " + datatype);
                 // / should not happen; catch anyway...
                 for (i = 0; i < length; i++) {
                     ret[i] = Float.NaN;
@@ -937,7 +943,7 @@ public class Grid { //  implements Serializable
 
             afile.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
         return ret;
     }
@@ -1044,7 +1050,7 @@ public class Grid { //  implements Serializable
             afile.write(bb.array());
             afile.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
     }
 }

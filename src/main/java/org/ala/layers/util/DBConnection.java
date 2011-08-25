@@ -1,12 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.ala.layers.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.servlet.ServletContextEvent;
 import org.springframework.web.context.ContextLoaderListener;
 import java.sql.DriverManager;
@@ -14,6 +8,8 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Active DB connections.
@@ -22,6 +18,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  */
 public class DBConnection extends ContextLoaderListener {
+    
+     /**
+     * Log4j instance
+     */
+    protected static Logger logger = Logger.getLogger("org.ala.layers.util.DBConnection");
     final static int maxConnections = 20;
 
     //active connection
@@ -37,7 +38,8 @@ public class DBConnection extends ContextLoaderListener {
             try {
                 spaces.put(obj);
             } catch (InterruptedException ex) {
-                Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("An error occurred creating database connections.");
+                logger.error(ExceptionUtils.getFullStackTrace(ex));
             }
         }
 
@@ -72,7 +74,8 @@ public class DBConnection extends ContextLoaderListener {
             try {
                 connections.take().close();
             } catch (Exception ex) {
-                Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("An error occurred closing database connections.");
+                logger.error(ExceptionUtils.getFullStackTrace(ex));
             }
         }
     }
@@ -86,32 +89,34 @@ public class DBConnection extends ContextLoaderListener {
             Class.forName("org.postgresql.Driver");
             return DriverManager.getConnection("jdbc:postgresql://localhost:2344/layersdb","postgres","postgres");
         } catch (Exception ex) {
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("An error occurred creating database connection.");
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
         }
         return null;
     }
-
-
-
+   
     /**
      * execute a query
      *
      * @return
      */
     static public ResultSet query(String query) {
+        
         ResultSet r = null;
         try {
             Statement s = connections.take().createStatement();
             r = s.executeQuery(query);
         } catch (Exception ex) {
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("An error occurred executing database query.");
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
         }
 
         //consume a connection, make a space for another
         try {
             spaces.put(obj);
         } catch (Exception ex) {
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("An error occurred executing database query.");
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
         }
 
         return r;

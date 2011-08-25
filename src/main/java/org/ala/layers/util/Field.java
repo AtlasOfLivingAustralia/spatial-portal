@@ -7,15 +7,19 @@ package org.ala.layers.util;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author Adam
  */
 public class Field {
-
+    /**
+     * Log4j instance
+     */
+    protected static Logger logger = Logger.getLogger("org.ala.layers.util.Field");
+    
     static final long minRefreshTime = 120000; //minimum refresh time in ms
     static HashMap<String, Field> fields;
     static long lastRefresh;
@@ -47,7 +51,8 @@ public class Field {
                         rs.getBoolean("isdb")));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(Field.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("An error has occurred retrieving fields");
+            logger.error(ExceptionUtils.getFullStackTrace(ex));
         }
 
         return fs;

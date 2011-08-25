@@ -2,6 +2,8 @@ package org.ala.layers.util;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Provides read only access to an ini file.
@@ -21,6 +23,11 @@ import java.io.FileReader;
  */
 public class IniReader {
 
+    /**
+     * Log4j instance
+     */
+    protected Logger logger = Logger.getLogger(this.getClass());
+    
     /**
      * store for ini data after loading
      * <li>map key is concat of section_name + "\\" + key_name
@@ -75,7 +82,7 @@ public class IniReader {
             }
             in.close();
         } catch (Exception e) {
-            //log error
+            logger.error(ExceptionUtils.getFullStackTrace(e));
         }
     }
 
