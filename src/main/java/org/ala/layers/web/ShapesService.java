@@ -28,7 +28,7 @@ public class ShapesService {
         //validate object id
         id = cleanObjectId(id);
 
-        String query = "SELECT ST_AsText(ST_Transform(the_geom, 4326)) FROM objects WHERE pid='" + id + "';";
+        String query = "SELECT ST_AsText(the_geom) FROM objects WHERE pid='" + id + "';";
 
         ResultSet r = DBConnection.query(query);
 
@@ -54,7 +54,7 @@ public class ShapesService {
         //validate object id
         id = cleanObjectId(id);
 
-        String query = "SELECT ST_AsGeoJSON(ST_Transform(the_geom, 4326)) FROM objects WHERE pid='" + id + "';";
+        String query = "SELECT ST_AsGeoJSON(the_geom) FROM objects WHERE pid='" + id + "';";
 
         ResultSet r = DBConnection.query(query);
 
@@ -80,7 +80,7 @@ public class ShapesService {
         //validate object id
         id = cleanObjectId(id);
 
-        String query = "SELECT ST_AsKml(ST_Transform(the_geom, 4326)) FROM objects WHERE pid='" + id + "';";
+        String query = "SELECT ST_AsKml(the_geom) FROM objects WHERE pid='" + id + "';";
 
         ResultSet r = DBConnection.query(query);
 

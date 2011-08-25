@@ -7,7 +7,7 @@ import java.sql.ResultSet;
  *
  * @author jac24n
  */
-public class Analysis {
+public class Intersect {
     
     final static String ALASPATIAL_OUTPUT_PATH = "/data/ala/runtime/output";
     final static String DATA_FILES_PATH = "/data/ala/data/envlayers/WorldClimCurrent/10minutes/";
@@ -43,11 +43,11 @@ public class Analysis {
                             + layer.getDisplayName()
                             + "' as layername FROM objects WHERE fid='cl"
                             + layer.getId()
-                            + "' AND ST_Within(ST_Transform(ST_SETSRID(ST_Point("
+                            + "' AND ST_Within(ST_SETSRID(ST_Point("
                             + lng
                             + "," 
                             + lat
-                            + "),4326),900913), the_geom);";
+                            + "),4326), the_geom);";
 
                     System.out.println(query);
 

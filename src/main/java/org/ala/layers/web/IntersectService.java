@@ -1,7 +1,7 @@
 package org.ala.layers.web;
 
 import javax.servlet.http.HttpServletRequest;
-import org.ala.layers.util.Analysis;
+import org.ala.layers.util.Intersect;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +22,7 @@ public class IntersectService {
     public
     @ResponseBody
     String single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
-        return Analysis.Intersect(ids, lat, lng);
+        return Intersect.Intersect(ids, lat, lng);
     }
 
     /**

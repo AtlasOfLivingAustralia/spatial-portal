@@ -84,7 +84,7 @@ public class DBConnection extends ContextLoaderListener {
     private Connection newConnection() {
         try {
             Class.forName("org.postgresql.Driver");
-            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/layersdb","postgres","postgres");
+            return DriverManager.getConnection("jdbc:postgresql://localhost:2344/layersdb","postgres","postgres");
         } catch (Exception ex) {
             Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
