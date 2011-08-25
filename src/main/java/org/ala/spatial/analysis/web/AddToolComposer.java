@@ -282,12 +282,12 @@ public class AddToolComposer extends UtilityComposer {
                 rAr.setValue(lyr.getWKT());
 
                 if(!lyr.getWKT().contains("ENVELOPE")) {
-                    if (count_not_envelopes == 0)
+                    if (count_not_envelopes > 0)
                         allWKT.append(',');
                     count_not_envelopes++;
                     String wkt = lyr.getWKT();
                     if(wkt.startsWith("GEOMETRYCOLLECTION(")) {
-                        wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length()-1);
+                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length()-1);
                     }
                     allWKT.append(wkt);
                 }
