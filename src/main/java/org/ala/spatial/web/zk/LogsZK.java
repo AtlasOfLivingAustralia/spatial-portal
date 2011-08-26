@@ -297,7 +297,7 @@ public class LogsZK extends GenericForwardComposer {
 
             File logsDir = new File(LOGS_BASE_DIR); // /Library/Tomcat/Home/logs/
 
-            FileFilter ff = new WildcardFileFilter("useractions.dev.log"); // useractions.log.2011-01-1*
+            FileFilter ff = new WildcardFileFilter("useractions.log*"); // useractions.log.2011-01-1*
             File[] files = logsDir.listFiles(ff);
             System.out.println("Data...");
             for (int i = 0; i < files.length; i++) {
