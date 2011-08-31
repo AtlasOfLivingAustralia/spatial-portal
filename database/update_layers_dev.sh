@@ -36,3 +36,4 @@ $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/018_world_150811.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/019_update_keywords_190811.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/020_gbr_keywords_190811.sql
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/021_aspa_asma_aat_290811.sql
+$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/022_fire_enable_010911.sql
