@@ -60,6 +60,8 @@ public class Layer {
     private static HashMap<String, Layer> getDBLayers() {
         HashMap<String, Layer> fs = new HashMap<String, Layer>();
 
+        System.out.println("getting DB layers...");
+
         ResultSet rs = DBConnection.query("SELECT * FROM layers WHERE enabled=TRUE;");
         try {
             while (rs != null && rs.next()) {
@@ -115,20 +117,26 @@ public class Layer {
                 && minRefreshTime + System.currentTimeMillis() > lastRefresh)) {
             refreshLayers();
 
+            System.out.println("getting layer for id " + id);
+
             l = layers.get(id);
 
             //Temporary
             for(Layer layer : layers.values()) {
+                System.out.println("checking with layer: " + layer.name);
                 if (layer.name != null && layer.name.equals(id)) {
                     return layer;
                 }
             }
+        } else {
+            System.out.println("no layer. boo!");
         }
 
         return l;
     }
 
     static void refreshLayers() {
+        System.out.println("refreshing layers...");
         //load/reload fields table
         HashMap<String, Layer> ls = getDBLayers();
 

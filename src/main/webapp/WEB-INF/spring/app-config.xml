@@ -15,4 +15,10 @@
 		<property name="cacheSeconds" value="0" />
 	</bean>
 
+	<!-- Configures Spring MVC -->
+	<import resource="mvc-config.xml" />
+
+        <!-- Configures hibernate -->
+	<import resource="data-config.xml" />
+
 </beans>

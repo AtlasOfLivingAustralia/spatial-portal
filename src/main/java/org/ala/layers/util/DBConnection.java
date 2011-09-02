@@ -87,7 +87,7 @@ public class DBConnection extends ContextLoaderListener {
     private Connection newConnection() {
         try {
             Class.forName("org.postgresql.Driver");
-            return DriverManager.getConnection("jdbc:postgresql://localhost:2344/layersdb","postgres","postgres");
+            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/layersdb","postgres","P0stgres");
         } catch (Exception ex) {
             logger.error("An error occurred creating database connection.");
             logger.error(ExceptionUtils.getFullStackTrace(ex));
@@ -104,8 +104,13 @@ public class DBConnection extends ContextLoaderListener {
         
         ResultSet r = null;
         try {
+
+            System.out.println("Executing query: " + query);
+
             Statement s = connections.take().createStatement();
+            System.out.println("statement created...");
             r = s.executeQuery(query);
+            System.out.println("query executed...");
         } catch (Exception ex) {
             logger.error("An error occurred executing database query.");
             logger.error(ExceptionUtils.getFullStackTrace(ex));

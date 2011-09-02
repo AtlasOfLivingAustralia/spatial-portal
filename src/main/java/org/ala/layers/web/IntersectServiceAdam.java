@@ -1,38 +1,41 @@
-package org.ala.layers.util;
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.ala.layers.web;
 
 import java.io.File;
 import java.sql.ResultSet;
-import org.apache.log4j.Logger;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.ala.layers.util.DBConnection;
+import org.ala.layers.util.Grid;
+import org.ala.layers.util.Layer;
+import org.ala.layers.util.Utils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  *
- * @author jac24n
+ * @author Adam
  */
-public class Intersect {
-    
+@Controller
+public class IntersectServiceAdam {
+
     final static String ALASPATIAL_OUTPUT_PATH = "/data/ala/runtime/output";
     final static String DATA_FILES_PATH = "/data/ala/data/envlayers/WorldClimCurrent/10minutes/";
-    
-    /**
-     * Log4j instance
+    /*
+     * return intersection of a point on a layer (field)
      */
-    
-    protected static Logger logger = Logger.getLogger("org.ala.layers.util.Intersect");
-    /**
-     * This method performs the layer intersection operation
-     * - polygon intersections for contextual layers
-     * - point values for raster layers
-     * @param ids Layer ids to use for the intersection
-     * @param lat Latitude of point
-     * @param lng Longitude of point
-     * @return JSON result of intersect operation
-     */
-    public static String Intersect(String ids, Double lat, Double lng){
-               StringBuilder sb = new StringBuilder();
-
-        System.out.println("====================================================");
-        System.out.println("Got Intersect request");
-        System.out.println("====================================================");
+    @RequestMapping(value = "/intersect/{ids}/{lat}/{lng}/adam", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
+        StringBuilder sb = new StringBuilder();
 
         sb.append("[");
 
@@ -43,27 +46,23 @@ public class Intersect {
 
             String s = "";
 
-            System.out.println("Getting layer for " + id);
-
             Layer layer = Layer.getLayer(id);
 
             double [][] p = {{lng, lat}};
 
             if(layer != null) {
-                System.out.println("layer: " + layer.getDisplayName() + ", is shape: " + layer.isShape());
                 if(layer.isShape()) {
                     String query = "SELECT fid, id, name as value, \"desc\", '"
                             + layer.getDisplayName()
                             + "' as layername FROM objects WHERE fid='cl"
                             + layer.getId()
-                            + "' AND ST_Within(ST_SETSRID(ST_Point("
+                            + "' AND ST_Within(ST_Transform(ST_SETSRID(ST_Point("
                             + lng
                             + "," 
                             + lat
-                            + "),4326), the_geom);";
+                            + "),4326),900913), the_geom);";
 
-                    System.out.println("query: " + query);
-                    logger.info("Query is " + query);
+                    System.out.println(query);
 
                     ResultSet r = DBConnection.query(query);
 
@@ -115,8 +114,29 @@ public class Intersect {
 
         sb.append("]");
 
-        System.out.println("====================================================");
-
         return sb.toString();
+    }
+
+    /*
+     * return intersection of multiple points
+     */
+    @RequestMapping(value = "/intersect/batch/adam", method = RequestMethod.POST)
+    public
+    void single(HttpServletRequest req, HttpServletResponse res) {
+        String [] ids = req.getParameter("fields").split(",");
+        String [] latlngs = req.getParameter("points").split(",");
+        String absences = req.getParameter("absences");
+
+        double [][] points = new double[latlngs.length/2][2];
+        for(int i=0;i<points.length/2;i++) {
+            points[i][0] = Double.parseDouble(latlngs[i*2]);
+            points[i][1] = Double.parseDouble(latlngs[i*2+1]);
+        }
+
+        //TODO... zip and return response
+    }
+
+    private String cleanObjectId(String id) {
+        return id.replaceAll("[^a-zA-Z0-9]:", "");
     }
 }

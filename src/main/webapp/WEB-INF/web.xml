@@ -53,8 +53,10 @@
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
+    <!--
     <listener>
         <description>db connection</description>
         <listener-class>org.ala.layers.util.DBConnection</listener-class>
     </listener>
+    -->
 </web-app>

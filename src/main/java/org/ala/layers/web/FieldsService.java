@@ -1,17 +1,36 @@
+/**************************************************************************
+ *  Copyright (C) 2010 Atlas of Living Australia
+ *  All Rights Reserved.
+ *
+ *  The contents of this file are subject to the Mozilla Public
+ *  License Version 1.1 (the "License"); you may not use this file
+ *  except in compliance with the License. You may obtain a copy of
+ *  the License at http://www.mozilla.org/MPL/
+ *
+ *  Software distributed under the License is distributed on an "AS
+ *  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ *  implied. See the License for the specific language governing
+ *  rights and limitations under the License.
+ ***************************************************************************/
 package org.ala.layers.web;
 
 import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import org.ala.layers.dao.FieldDAO;
+import org.ala.layers.dto.Field;
 import org.ala.layers.util.DBConnection;
 import org.ala.layers.util.Utils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  *
@@ -19,51 +38,59 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class FieldsService {
-    
+
+    private final String WS_FIELDS = "/fields";
+    private final String WS_FIELDS_DB = "/fieldsdb";
+    private final String WS_FIELD_ID = "/field/{id}";
     /**
      * Log4j instance
      */
     protected Logger logger = Logger.getLogger(this.getClass());
-    
+    private FieldDAO fieldDao;
+
+    @Autowired
+    public void setFieldsDao(FieldDAO fieldDao) {
+        System.out.println("setting field dao");
+        this.fieldDao = fieldDao;
+    }
+
     /*
      * list fields table
      */
-    
+    @RequestMapping(value = WS_FIELDS, method = RequestMethod.GET)
+    public ModelMap listFields(HttpServletRequest req) {
 
-    @RequestMapping(value = "/fields", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String listFields(HttpServletRequest req) {
+//        String query = "SELECT * FROM fields WHERE enabled=TRUE;";
+//        ResultSet r = DBConnection.query(query);
+//        return Utils.resultSetToJSON(r);
 
-        String query = "SELECT * FROM fields WHERE enabled=TRUE;";
-
-        ResultSet r = DBConnection.query(query);
-
-        return Utils.resultSetToJSON(r);
+        ModelMap modelMap = new ModelMap();
+        List<Field> fields = fieldDao.getFields();
+        modelMap.addAttribute("fields", fields);
+        return modelMap;
     }
 
     /*
      * list fields table with db only records
      */
-    @RequestMapping(value = "/fieldsdb", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String listFieldsDBOnly(HttpServletRequest req) {
+    @RequestMapping(value = WS_FIELDS_DB, method = RequestMethod.GET)
+    public ModelMap listFieldsDBOnly(HttpServletRequest req) {
 
-        String query = "SELECT * FROM fields WHERE enabled=TRUE AND indb=TRUE;";
+//        String query = "SELECT * FROM fields WHERE enabled=TRUE AND indb=TRUE;";
+//        ResultSet r = DBConnection.query(query);
+//        return Utils.resultSetToJSON(r);
 
-        ResultSet r = DBConnection.query(query);
-
-        return Utils.resultSetToJSON(r);
+        ModelMap modelMap = new ModelMap();
+        List<Field> fields = fieldDao.getFieldsByDB();
+        modelMap.addAttribute("fields", fields);
+        return modelMap;
     }
 
     /*
      * one fields table record
      */
-    @RequestMapping(value = "/field/{id}", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String oneField(@PathVariable("id") String id, HttpServletRequest req) {
+    @RequestMapping(value = WS_FIELD_ID, method = RequestMethod.GET)
+    public ModelMap oneField(@PathVariable("id") String id, HttpServletRequest req) {
         logger.info("calling /field/" + id);
         //test field id value
         int len = Math.min(6, id.length());
@@ -80,14 +107,16 @@ public class FieldsService {
         }
 
         if (prefix <= 'Z' && prefix >= 'A' && numberOk) {
-            
+
             //Adam: not sure if this was correct
             //String query = "SELECT pid, id, name, \"desc\" FROM objects WHERE fid='" + id + "';";
-            
-            String query = "SELECT * from fields WHERE enabled=TRUE and id = '" + id + "';";
-            logger.debug("Executing sql: " + query);
-            ResultSet r = DBConnection.query(query);
-            return Utils.resultSetToJSON(r);         
+//            String query = "SELECT * from fields WHERE enabled=TRUE and id = '" + id + "';";
+//            logger.debug("Executing sql: " + query);
+//            ResultSet r = DBConnection.query(query);
+//            return Utils.resultSetToJSON(r);
+            ModelMap modelMap = new ModelMap();
+            modelMap.addAttribute("field", fieldDao.getFieldById(id));
+            return modelMap;
         } else {
             //error
             return null;
