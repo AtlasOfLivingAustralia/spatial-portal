@@ -36,160 +36,65 @@ public class FieldsIntegrationTest {
     @After
     public void tearDown() {
     }
-
+    
     @Test
     public void testFieldsJson() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/fields.json");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                if (line.contains("{\"fields\":[{\"name\":\"Vegetation types - native\"")){                    
-                    assertTrue(true);
-                    break;
-                }
-                else{
-                    fail("Unexpected output.");
-                }
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("exception has been thrown");
-        }
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/fields.json", "{\"fields\":[{\"name\":\"Vegetation types - native\""));
     }
     
     @Test
     public void testFieldsXml() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/fields.xml");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                if (line.contains("<list><field><id>cl617</id><name>Vegetation types - native</name>")){                    
-                    assertTrue(true);
-                    break;
-                }
-                else{
-                    fail("Unexpected output.");
-                }
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("exception has been thrown");
-        }
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/fields.xml", "<list><field><id>cl617</id><name>Vegetation types - native</name>"));
     }
-
+    
     @Test
     public void testFieldsDbJson() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/fieldsdb.json");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                if (line.contains("{\"fields\":[{\"name\":\"Vegetation types - native\"")){                    
-                    assertTrue(true);
-                    break;
-                }
-                else{
-                    fail("Unexpected output.");
-                }
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers/fieldsdb.json");
-        }
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/fieldsdb.json", "{\"fields\":[{\"name\":\"Vegetation types - native\""));
     }
     
     @Test
     public void testFieldsDbXml() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/fieldsdb.xml");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                if (line.contains("<list><field><id>cl617</id><name>Vegetation types - native</name>")){                    
-                    assertTrue(true);
-                    break;
-                }
-                else{
-                    fail("Unexpected output.");
-                }
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers/fieldsdb.xml");
-        }
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/fieldsdb.xml", "<list><field><id>cl617</id><name>Vegetation types - native</name>"));
     }
     
     @Test
     public void testFieldJson() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/field/cl617.json");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                if (line.contains("{\"field\":{\"name\":\"Vegetation types - native\"")){                    
-                    assertTrue(true);
-                    break;
-                }
-                else{
-                    fail("Unexpected output.");
-                }
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers/cl617.json");
-        }
+        assertTrue(loadURLAssertText( "http://localhost:8080/layers-index/field/cl617.json", "{\"field\":{\"name\":\"Vegetation types - native\""  ));
     }
-      
+        
     @Test
     public void testFieldXml() {
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/field/cl617.xml", "<field><id>cl617</id><name>Vegetation types - native"));
+    }
+    
+    /**
+     * Helper method to load url and check result.
+     * @param url
+     * @param text
+     * @return 
+     */
+    public boolean loadURLAssertText(String target_url, String return_text){
         try{
-            URL url = new URL("http://localhost:8080/layers-index/field/cl617.xml");
+            URL url = new URL(target_url);
             URLConnection connection = url.openConnection();
             InputStream inStream = connection.getInputStream();
             BufferedReader input =
             new BufferedReader(new InputStreamReader(inStream));
             
             String line = "";
+            StringBuilder sb = new StringBuilder();
             while ((line = input.readLine()) != null){
-                System.out.println(line);
-                if (line.contains("<field><id>cl617</id><name>Vegetation types - native")){                    
-                    assertTrue(true);
-                    break;
-                }
-                else{
-                    fail("Unexpected output.");
-                }
-            }   
-        }catch (Exception e){
+                sb.append(line);
+            }
+            if (sb.toString().contains(return_text) == true){
+                return true;
+            }
+            else{
+                return false;
+            }
+        } catch (Exception e){
             e.printStackTrace();
-            fail("unable to retrieve /layers/cl617.xml");
+            return false;           
         }
-    }    
+    }              
 }

@@ -37,170 +37,54 @@ public class LayersIntegrationTest {
     public void tearDown() {
     }
 
-      @Test
+    @Test
     public void testLayersJson() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/layers.json");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers.json");
-        }
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/layers.json", "test"));
     }
     
     @Test
     public void testLayersXml() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/layers.xml");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers.xml");
-        }
-    }
-
-    @Test
-    public void testLayersGridsJson() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/layers/grids.json");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers/grids.json");
-        }
-    }
-    
-    @Test
-    public void testLayersGridsXml() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/layers/grids.xml");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers/grids.xml");
-        }
-    }
-        @Test
-    public void testLayersShapesJson() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/layers/shapes.json");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers/shapes.json");
-        }
-    }
-    
-    @Test
-    public void testLayersShapesXml() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/layers/shapes.xml");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
-            }   
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layers/shapes.xml");
-        }
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/layers.xml", "test"));
     }
     
     @Test
     public void testLayerJson() {
-        try{
-            URL url = new URL("http://localhost:8080/layers-index/layer/761.json");
-            URLConnection connection = url.openConnection();
-            InputStream inStream = connection.getInputStream();
-            BufferedReader input =
-            new BufferedReader(new InputStreamReader(inStream));
-            
-            String line = "";
-            while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            fail("unable to retrieve /layer/761.json");
-        }
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/layer/761.json", "test"));
     }
     
     @Test
     public void testLayerXml() {
+        assertTrue(loadURLAssertText("http://localhost:8080/layers-index/layer/761.xml", "test"));
+    }
+    
+    /**
+     * Helper method to load url and check result.
+     * @param url
+     * @param text
+     * @return 
+     */
+    public boolean loadURLAssertText(String target_url, String return_text){
         try{
-            URL url = new URL("http://localhost:8080/layers-index/layer/761.xml");
+            URL url = new URL(target_url);
             URLConnection connection = url.openConnection();
             InputStream inStream = connection.getInputStream();
             BufferedReader input =
             new BufferedReader(new InputStreamReader(inStream));
             
             String line = "";
+            StringBuilder sb = new StringBuilder();
             while ((line = input.readLine()) != null){
-                System.out.println(line);
-                // @todo put in output check
-                assertTrue(true);
+                sb.append(line);
             }
-        }catch (Exception e){
+            if (sb.toString().contains(return_text) == true){
+                return true;
+            }
+            else{
+                return false;
+            }
+        } catch (Exception e){
             e.printStackTrace();
-            fail("unable to retrieve /layer/761.xml");
+            return false;           
         }
-    }    
+    }
 }
