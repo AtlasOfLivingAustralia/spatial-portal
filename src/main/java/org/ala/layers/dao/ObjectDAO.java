@@ -15,7 +15,6 @@
 
 package org.ala.layers.dao;
 
-import com.vividsolutions.jts.geom.Geometry;
 import java.util.List;
 import org.ala.layers.dto.Objects;
 
@@ -27,6 +26,7 @@ import org.ala.layers.dto.Objects;
 public interface ObjectDAO {
     public List<Objects> getObjects();
     public List<Objects> getObjectsById(String id);
+    public String getObjectsGeometryById(String id, String geomtype);
     public Objects getObjectByPid(String pid);
     public Objects getObjectByIdAndLocation(String id, Double lng, Double lat);
 }

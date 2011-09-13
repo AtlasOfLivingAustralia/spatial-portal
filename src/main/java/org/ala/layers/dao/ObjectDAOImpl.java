@@ -14,111 +14,91 @@
  ***************************************************************************/
 package org.ala.layers.dao;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
 import java.util.List;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import org.ala.layers.dto.Objects;
 import org.apache.log4j.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
-import org.hibernatespatial.criterion.SpatialRestrictions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ajay
  */
-@Service(value = "objectDAO")
-public class ObjectDAOImpl extends HibernateDaoSupport implements ObjectDAO {
+@Service("objectDao")
+public class ObjectDAOImpl implements ObjectDAO {
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(FieldDAOImpl.class);
-    private HibernateTemplate hibernateTemplate;
+    private SimpleJdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public ObjectDAOImpl(@Qualifier("sessionFactory") SessionFactory sessionFactory) {
-        this.setSessionFactory(sessionFactory);
-        this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+    @Resource(name = "dataSource")
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
     }
 
     @Override
     public List<Objects> getObjects() {
-        return hibernateTemplate.find("from Objects");
+        //return hibernateTemplate.find("from Objects");
+        logger.info("Getting a list of all objects");
+        String sql = "select * from objects";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class));
     }
 
     @Override
     public List<Objects> getObjectsById(String id) {
-        return hibernateTemplate.find("from Objects where id = ?", id);
+        //return hibernateTemplate.find("from Objects where id = ?", id);
+        logger.info("Getting object info for fid = " + id);
+        //String sql = "select * from objects where fid = ?";
+        String sql = "select pid, id, name, \"desc\" as description from objects where fid = ?";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), id);
     }
 
     @Override
+    public String getObjectsGeometryById(String id, String geomtype) {
+        logger.info("Getting object info for id = " + id + " and geometry as " + geomtype);
+        String sql = "";
+        if ("kml".equals(geomtype)) {
+            sql = "SELECT ST_AsKml(the_geom) as geometry FROM objects WHERE pid=?;";
+        } else if ("wkt".equals(geomtype)) {
+            sql = "SELECT ST_AsText(the_geom) as geometry FROM objects WHERE pid=?;";
+        } else if ("geojson".equals(geomtype)) {
+            sql = "SELECT ST_AsGeoJSON(the_geom) as geometry FROM objects WHERE pid=?;";
+        }
+        
+        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), id);
+        if (l.size() > 0) {
+            return l.get(0).getGeometry();
+        } else {
+            return null;
+        }
+    }
+    
+    @Override
     public Objects getObjectByPid(String pid) {
-        List<Objects> l = hibernateTemplate.find("from Objects where pid = ?", pid);
+        //List<Objects> l = hibernateTemplate.find("from Objects where pid = ?", pid);
+        logger.info("Getting object info for pid = " + pid);
+        String sql = "select pid, id, name, \"desc\" as description from objects where pid = ?";
+        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), pid);
         if (l.size() > 0) {
             return l.get(0);
         } else {
-            return null;
+            return null; 
         }
     }
 
     @Override
     public Objects getObjectByIdAndLocation(String id, Double lng, Double lat) {
-//        id = "cl"+id;
-//        Object[] values = {id, lng, lat};
-//        List<Objects> l = hibernateTemplate.find("from Objects where fid=? AND ST_Within(ST_SETSRID(ST_Point(?,?),4326), geometry)", values );
-//
-//        if (l.size() > 0) {
-//            return l.get(0);
-//        } else {
-//            return null;
-//        }
-
-        System.out.println("===================================================");
-
-//        String wktFilter = "POINT("+lng+" "+lat+")";
-//
-//        WKTReader fromText = new WKTReader();
-//        Geometry filter = null;
-//        try {
-//            filter = fromText.read(wktFilter);
-//        } catch (ParseException e) {
-//            throw new RuntimeException("Not a WKT String:" + wktFilter);
-//        }
-//
-//        DetachedCriteria dc = DetachedCriteria.forClass(Objects.class);
-//        dc.add(Restrictions.eq("fid", id));
-//        dc.add(SpatialRestrictions.within("geometry", filter));
-//
-//        System.out.println("Query params: \n\t-" + id + "\n\t-" + filter);
-//
-//        List<Objects> l = hibernateTemplate.findByCriteria(dc);
-
-
-
-        DetachedCriteria dc = DetachedCriteria.forClass(Objects.class);
-        dc.add(Restrictions.sqlRestriction("fid = '"+id+"'"));
-        dc.add(Restrictions.sqlRestriction("ST_Within(ST_SETSRID(ST_Point("+lng+", "+lat+"), 4326), the_geom)"));
-        List<Objects> l = hibernateTemplate.findByCriteria(dc);
-
-
-        System.out.println("******************* Found " + l.size() + " items. ");
-        System.out.println("===================================================");
-
+        logger.info("Getting object info for id = " + id + " at loc: (" + lng + ", " + lat + ") ");
+        String sql = "select * from objects where fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), the_geom)";
+        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] {id, lng, lat});
         if (l.size() > 0) {
             return l.get(0);
         } else {
             return null;
         }
-
     }
 
 }

@@ -14,21 +14,24 @@
  ***************************************************************************/
 package org.ala.layers.web;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.FieldDAO;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.Layer;
 import org.ala.layers.dto.Objects;
-import org.ala.layers.util.Intersect;
+import org.ala.layers.util.Grid;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  *
@@ -48,43 +51,26 @@ public class IntersectService {
      */
     protected Logger logger = Logger.getLogger(this.getClass());
 
+    @Resource(name="fieldDao")
     private FieldDAO fieldDao;
+    @Resource(name="layerDao")
     private LayerDAO layerDao;
+    @Resource(name="objectDao")
     private ObjectDAO objectDao;
-
-    @Autowired
-    public void setFieldsDao(FieldDAO fieldDao) {
-        System.out.println("setting field dao");
-        this.fieldDao = fieldDao;
-    }
-
-    @Autowired
-    public void setLayersDao(LayerDAO layerDao) {
-        System.out.println("setting layer dao");
-        this.layerDao = layerDao;
-    }
-
-    @Autowired
-    public void setObjectsDao(ObjectDAO objectDao) {
-        System.out.println("setting object dao");
-        this.objectDao = objectDao;
-    }
 
     /*
      * return intersection of a point on layers(s)
      */
     // @ResponseBody String
     @RequestMapping(value = WS_INTERSECT_SINGLE, method = RequestMethod.GET)
-    public ModelMap single(@PathVariable("ids") String names, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
+    public Object single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
 //        return Intersect.Intersect(ids, lat, lng);
 
-        StringBuilder sb = new StringBuilder();
+        Vector out = new Vector();
 
-        for(String name : names.split(",")) {
+        for(String id : ids.split(",")) {
 
-            String s = "";
-
-            Layer layer = layerDao.getLayerByName(name);
+            Layer layer = layerDao.getLayerByName(id);
 
             double [][] p = {{lng, lat}};
 
@@ -92,13 +78,58 @@ public class IntersectService {
                 if(layer.isShape()) {
                     Objects o = objectDao.getObjectByIdAndLocation("cl"+layer.getId(), lng, lat);
                     System.out.println("********* Got values");
+                    out.add(o);
+                } else if (layer.isGrid()) {
+                    Grid g = new Grid(DATA_FILES_PATH + layer.getPathorig());
+                    float [] v = g.getValues(p);
+                    //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
+                    Map m = new HashMap();
+                    m.put("value", v[0]);
+                    m.put("layername", layer.getDisplayname());
+                    
+                    out.add(m);
                 }
             } else {
+                String gid = null;
+                String filename = null;
+                String name = null;
 
+                if (id.startsWith("species_")) {
+                    //maxent layer
+                    gid = id.substring(8);
+                    filename = ALASPATIAL_OUTPUT_PATH + "/maxent/" + gid + "/" + gid;
+                    name = "Prediction";
+                } else if (id.startsWith("aloc_")) {
+                    //aloc layer
+                    gid = id.substring(8);
+                    filename = ALASPATIAL_OUTPUT_PATH + "/aloc/" + gid + "/" + gid;
+                    name = "Classification";
+                }
+
+                if (filename != null) {
+                    Grid grid = new Grid(filename);
+
+                    if(grid != null && (new File(filename + ".grd").exists()) ) {
+                        float [] v = grid.getValues(p);
+                        if(v != null) {
+                            Map m = new HashMap();
+                            if(Float.isNaN(v[0])) {
+                                //s = "{\"value\":\"no data\",\"layername\":\"" + name + " (" + gid + ")\"}";
+                                m.put("value", "no data");
+                                m.put("layername", name + "("+gid+")");
+                            } else {
+                                //s = "{\"value\":" + v[0] + ",\"layername\":\"" + name + " (" + gid + ")\"}";
+                                m.put("value", v[0]);
+                                m.put("layername", name + "(" + gid + ")");
+                            }
+                            out.add(m);
+                        }
+                    }
+                }
             }
         }
 
-        return null;
+        return out;
     }
 
     /**

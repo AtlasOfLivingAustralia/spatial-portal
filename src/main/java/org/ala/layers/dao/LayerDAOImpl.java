@@ -16,67 +16,64 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import org.ala.layers.dto.Layer;
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ajay
  */
-@Service(value = "layerDAO")
-public class LayerDAOImpl extends HibernateDaoSupport implements LayerDAO {
+@Service("layerDao")
+public class LayerDAOImpl implements LayerDAO {
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(LayerDAOImpl.class);
-    private HibernateTemplate hibernateTemplate;
+    private SimpleJdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public LayerDAOImpl(@Qualifier("sessionFactory") SessionFactory sessionFactory) {
-        this.setSessionFactory(sessionFactory);
-        this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+    @Resource(name = "dataSource")
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
     }
 
     @Override
     public List<Layer> getLayers() {
-        return hibernateTemplate.find("from Layer where enabled=true");
+        //return hibernateTemplate.find("from Layer where enabled=true");
+        logger.info("Getting a list of all enabled layers");
+        String sql = "select * from layers where enabled=true";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class));
+        System.out.println("***********************************");
+        System.out.println("Got " + l.size() + " layers to display");
+        System.out.println("***********************************");
+        return l;
     }
 
     @Override
     public Layer getLayerById(int id) {
-        List<Layer> layers = hibernateTemplate.find("from Layer where enabled=true and id=?", id);
-        if (layers.size() > 0) {
-            return layers.get(0);
+        //List<Layer> layers = hibernateTemplate.find("from Layer where enabled=true and id=?", id);
+        logger.info("Getting enabled layer info for id = " + id);
+        String sql = "select * from layers where enabled=true and id = ?";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), id);
+        if (l.size() > 0) {
+            return l.get(0);
         } else {
             return null;
         }
-
     }
 
     @Override
     public Layer getLayerByName(String name) {
         //List<Layer> layers = hibernateTemplate.find("from Layer where enabled=true and name=?", name);
 
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println("calling layerbyname with DC");
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-
-        DetachedCriteria dc = DetachedCriteria.forClass(Layer.class);
-        dc.add(Restrictions.sqlRestriction("name = '" + name + "'"));
-        List<Layer> layers = hibernateTemplate.findByCriteria(dc);
-        
-        System.out.println("Found " + layers.size() + " items");
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-
-        if (layers.size() > 0) {
-            return layers.get(0);
+        logger.info("Getting enabled layer info for name = " + name);
+        String sql = "select * from layers where enabled=true and name = ?";
+        List<Layer> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), name);
+        if (l.size() > 0) {
+            return l.get(0);
         } else {
             return null;
         }
@@ -84,11 +81,19 @@ public class LayerDAOImpl extends HibernateDaoSupport implements LayerDAO {
 
     @Override
     public List<Layer> getLayersByEnvironment() {
-        return hibernateTemplate.find("from Layer where enabled=true and type='Environmental'");
+        //return hibernateTemplate.find("from Layer where enabled=true and type='Environmental'");
+        String type = "Environmental";
+        logger.info("Getting a list of all enabled environmental layers");
+        String sql = "select * from layers where enabled=true and type = ?";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
     }
 
     @Override
     public List<Layer> getLayersByContextual() {
-        return hibernateTemplate.find("from Layer where enabled=true and type='Contextual'");
+        //return hibernateTemplate.find("from Layer where enabled=true and type='Contextual'");
+        String type = "Contextual";
+        logger.info("Getting a list of all enabled Contextual layers");
+        String sql = "select * from layers where enabled=true and type = ?";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Layer.class), type);
     }
 }

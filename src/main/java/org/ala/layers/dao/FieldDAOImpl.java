@@ -15,64 +15,45 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import org.ala.layers.dto.Field;
-import org.ala.layers.dto.Layer;
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ajay
  */
-@Service(value = "fieldDAO")
-public class FieldDAOImpl extends HibernateDaoSupport implements FieldDAO {
+@Service("fieldDao")
+public class FieldDAOImpl implements FieldDAO {
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(FieldDAOImpl.class);
 
-    private HibernateTemplate hibernateTemplate;
+    private SimpleJdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public FieldDAOImpl(@Qualifier("sessionFactory") SessionFactory sessionFactory) {
-        this.setSessionFactory(sessionFactory);
-        this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+    @Resource(name = "dataSource")
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
     }
-
 
     @Override
     public List<Field> getFields() {
-        return hibernateTemplate.find("from Field where enabled=true");
+        logger.info("Getting a list of all enabled fields");
+        String sql = "select * from fields where enabled=true";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Field.class));
     }
 
     @Override
     public Field getFieldById(String id) {
-        //List<Field> fields = hibernateTemplate.find("from Field where enabled=true and id=?", id);
-
-
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println("calling getFieldById with DC");
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-
-        DetachedCriteria dc = DetachedCriteria.forClass(Field.class);
-        dc.add(Restrictions.sqlRestriction("id = '" + id + "'"));
-        List<Field> fields = hibernateTemplate.findByCriteria(dc);
-
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println("Found " + fields.size() + " items");
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++");
-
-
-
-
-        if (fields.size() > 0) {
-            return fields.get(0);
+        logger.info("Getting enabled field info for id = " + id);
+        String sql = "select * from fields where enabled=true and id = ?";
+        List<Field> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Field.class), id);
+        if (l.size() > 0) {
+            return l.get(0);
         } else {
             return null; 
         }
@@ -80,6 +61,10 @@ public class FieldDAOImpl extends HibernateDaoSupport implements FieldDAO {
 
     @Override
     public List<Field> getFieldsByDB() {
-        return hibernateTemplate.find("from Field where enabled=true and indb=true");
+        //return hibernateTemplate.find("from Field where enabled=true and indb=true");
+        logger.info("Getting a list of all enabled fields with indb");
+        String sql = "select * from fields where enabled=true and indb=true";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Field.class));
+
     }
 }

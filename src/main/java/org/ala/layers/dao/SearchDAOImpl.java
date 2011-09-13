@@ -14,47 +14,59 @@
  ***************************************************************************/
 package org.ala.layers.dao;
 
-import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import org.ala.layers.dto.SearchObject;
 import org.apache.log4j.Logger;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.SqlTypeValue;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.support.AbstractSqlTypeValue;
 import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ajay
  */
-@Service(value = "searchDAO")
-public class SearchDAOImpl extends HibernateTemplate implements SearchDAO {
+@Service("searchDao")
+public class SearchDAOImpl implements SearchDAO {
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(SearchDAOImpl.class);
-    private HibernateTemplate hibernateTemplate;
+    private SimpleJdbcTemplate jdbcTemplate;
+//    private SimpleJdbcCall procSearchObject;
 
-    @Autowired
-    public SearchDAOImpl(@Qualifier("sessionFactory") SessionFactory sessionFactory) {
-        this.setSessionFactory(sessionFactory);
-        this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+    @Resource(name = "dataSource")
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+//        this.procSearchObject = new SimpleJdbcCall(dataSource).withProcedureName("searchobjectswithlimit")
+//                .useInParameterNames("q", "lim");
     }
 
     @Override
     public List<SearchObject> findByCriteria(final String criteria) {
         //return hibernateTemplate.find("from SearchObject where ", this)
 
-        return (List<SearchObject>) hibernateTemplate.execute(new HibernateCallback() {
-            public Object doInHibernate(final Session session) throws HibernateException, SQLException {
-                return session.getNamedQuery("searchobjects") //
-                        .setParameter("q", criteria) //
-                        .setParameter("lim", 20) 
-                        .list();
-            }
-        });
+//        int limit = 20;
+//
+//        SqlParameterSource in = new MapSqlParameterSource()
+//                .addValue("q", criteria)
+//                .addValue("lim", limit);
+//
+//        Map m = procSearchObject.returningResultSet("searchobjectstype", ParameterizedBeanPropertyRowMapper.newInstance(SearchObject.class)).execute(in);
+//
+//        return (List<SearchObject>) m.get("searchobjectstype");
+
+        logger.info("Getting search results for query: " + criteria);
+        String sql = "select pid, id, name, \"desc\" as description from searchobjects(?,20)";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(SearchObject.class), "%"+criteria+"%");
+
+
     }
 }

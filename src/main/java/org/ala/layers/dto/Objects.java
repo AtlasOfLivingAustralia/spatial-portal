@@ -16,16 +16,7 @@
 package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.vividsolutions.jts.geom.Geometry;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.hibernate.annotations.Type;
 
 /**
  * This class serves as a model object for a list of objects
@@ -34,34 +25,15 @@ import org.hibernate.annotations.Type;
  * @author ajay
  */
 
-@Entity
-@Table(name = "objects")
 @XmlRootElement(name="objects")
 @XStreamAlias("objects")
 public class Objects {
-    @Id
-    @Column(name = "id", insertable = false, updatable = false)
-    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "objects_id_seq")
-    //@SequenceGenerator(name = "objects_id_seq", sequenceName = "objects_id_seq")
     private String id;
-
-    @Column(name = "pid")
     private String pid;
-
-    @Column(name = "desc")
     private String description;
-
-    @Column(name = "name")
     private String name;
-
-    @Column(name = "fid")
     private String fid;
-
-    @Type(type = "org.hibernatespatial.GeometryUserType")
-    @Column(name = "the_geom")
-    private Geometry geometry;
-
-    @Column(name = "name_id")
+    private String geometry;
     private int nameId;
 
     public String getDescription() {
@@ -80,11 +52,11 @@ public class Objects {
         this.fid = fid;
     }
 
-    public Geometry getGeometry() {
+    public String getGeometry() {
         return geometry;
     }
 
-    public void setGeometry(Geometry geometry) {
+    public void setGeometry(String geometry) {
         this.geometry = geometry;
     }
 

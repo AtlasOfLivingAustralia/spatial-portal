@@ -17,6 +17,7 @@ package org.ala.layers.web;
 
 import java.sql.ResultSet;
 import java.util.List;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.LayerDAO;
 import org.ala.layers.dto.Layer;
@@ -42,13 +43,8 @@ public class LayersService {
      */
     protected Logger logger = Logger.getLogger(this.getClass());
      
+    @Resource(name="layerDao")
     private LayerDAO layerDao;
-
-    @Autowired
-    public void setLayersDao(LayerDAO layerDao) {
-        System.out.println("setting layer dao");
-        this.layerDao = layerDao;
-    }
 
     /**This method returns all layers
      * 
@@ -56,11 +52,13 @@ public class LayersService {
      * @return 
      */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
-    public ModelMap layerObjects(HttpServletRequest req) {
-        ModelMap modelMap = new ModelMap();
-        List<Layer> layers = layerDao.getLayers();
-        modelMap.addAttribute("layers", layers);
-        return modelMap;
+    public List<Layer> layerObjects(HttpServletRequest req) {
+        logger.info("Retriving all layers");
+        List<Layer> l = layerDao.getLayers();
+        System.out.println("====================================");
+        System.out.println("Got " + l.size() + " layers");
+        System.out.println("====================================");
+        return l; 
     }
     
     /**This method returns a single layer, provided an id
@@ -70,33 +68,24 @@ public class LayersService {
      * @return 
      */
     @RequestMapping(value = "/layer/{id}", method = RequestMethod.GET)
-    public ModelMap layerObject(@PathVariable("id") int id, HttpServletRequest req) {
-        ModelMap modelMap = new ModelMap();
-        Layer layers = layerDao.getLayerById(id);
-        modelMap.addAttribute("layer", layers);
-        return modelMap;
+    public Layer layerObject(@PathVariable("id") int id, HttpServletRequest req) {
+        return layerDao.getLayerById(id);
     }
     
     @RequestMapping(value = "/layers/grids", method = RequestMethod.GET)
-    public ModelMap gridsLayerObjects(HttpServletRequest req) {
+    public List<Layer> gridsLayerObjects(HttpServletRequest req) {
 //        String query = "SELECT * FROM layers WHERE enabled='TRUE' and type='Environmental';";
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);
-        ModelMap modelMap = new ModelMap();
-        List<Layer> layers = layerDao.getLayersByEnvironment();
-        modelMap.addAttribute("layers", layers);
-        return modelMap;
+        return layerDao.getLayersByEnvironment();
     }
         
     @RequestMapping(value = "/layers/shapes", method = RequestMethod.GET)
-    public ModelMap shapesLayerObjects(HttpServletRequest req) {
+    public List<Layer> shapesLayerObjects(HttpServletRequest req) {
 //        String query = "SELECT * FROM layers WHERE enabled='TRUE' and type='Contextual';";
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);
-        ModelMap modelMap = new ModelMap();
-        List<Layer> layers = layerDao.getLayersByContextual();
-        modelMap.addAttribute("layers", layers);
-        return modelMap;
+        return layerDao.getLayersByContextual();
 
     }
     

@@ -14,22 +14,14 @@
  ***************************************************************************/
 package org.ala.layers.web;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
-import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.ObjectDAO;
-import org.ala.layers.dto.Objects;
 import org.ala.layers.util.DBConnection;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.geotools.kml.KML;
-import org.geotools.kml.KMLConfiguration;
-import org.geotools.xml.Encoder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,13 +39,9 @@ public class ShapesService {
      * Log4j instance
      */
     protected Logger logger = Logger.getLogger(this.getClass());
+    
+    @Resource(name="objectDao")
     private ObjectDAO objectDao;
-
-    @Autowired
-    public void setObjectsDao(ObjectDAO objectDao) {
-        System.out.println("setting layer dao");
-        this.objectDao = objectDao;
-    }
 
     /*
      * return a shape as wkt
@@ -152,28 +140,34 @@ public class ShapesService {
             //validate object id
             id = cleanObjectId(id);
 
-            List<Objects> objects = objectDao.getObjectsById(id);
-            if (objects.size() > 0) {
-                Geometry geom = objects.get(0).getGeometry();
-                if (type.equalsIgnoreCase("wkt")) {
-                    WKTWriter wkt = new WKTWriter();
-                    return wkt.write(geom);
-                } else if (type.equalsIgnoreCase("kml")) {
-                    Encoder e = new Encoder(new KMLConfiguration());
-                    e.setIndenting(true);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    e.encode(geom, KML.Geometry, baos);
-                    String kmlGeometry = new String(baos.toByteArray());
-                    return kmlGeometry.substring(kmlGeometry.indexOf('\n'));
-                } else if (type.equalsIgnoreCase("geojson")) {
-                    return "Not supported yet."; 
-                }
+//            List<Objects> objects = objectDao.getObjectsById(id);
+//            if (objects.size() > 0) {
+//                Geometry geom = objects.get(0).getGeometry();
+//                if (type.equalsIgnoreCase("wkt")) {
+//                    WKTWriter wkt = new WKTWriter();
+//                    return wkt.write(geom);
+//                } else if (type.equalsIgnoreCase("kml")) {
+//                    Encoder e = new Encoder(new KMLConfiguration());
+//                    e.setIndenting(true);
+//                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//                    e.encode(geom, KML.Geometry, baos);
+//                    String kmlGeometry = new String(baos.toByteArray());
+//                    return kmlGeometry.substring(kmlGeometry.indexOf('\n'));
+//                } else if (type.equalsIgnoreCase("geojson")) {
+//                    return "Not supported yet.";
+//                }
+//
+//            } else {
+//                return "";
+//            }
 
+            if (type.equalsIgnoreCase("wkt") || type.equalsIgnoreCase("kml") || type.equalsIgnoreCase("geojson")) {
+                return objectDao.getObjectsGeometryById(id, type);
             } else {
-                return "";
+                return "'" + type + "' type not supported yet.";
             }
 
-        } catch (Exception e) {
+         } catch (Exception e) {
             logger.error("An error has occurred retrieving '" + type + "' for object id " + id);
             logger.error(ExceptionUtils.getFullStackTrace(e));
         }

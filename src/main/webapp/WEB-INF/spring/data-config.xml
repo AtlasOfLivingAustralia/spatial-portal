@@ -2,6 +2,7 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="
@@ -13,7 +14,8 @@
                           proxy-target-class="true" />
 
     <!-- DataSourceAdapter connection pooling -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <!--
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/layersdb:5432" />
         <property name="username" value="postgres" />
@@ -21,6 +23,7 @@
         <property name="minIdle" value="1" />
         <property name="maxActive" value="10" />
     </bean>
+    -->
     <!--
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
@@ -31,40 +34,26 @@
         <property name="maxActive" value="10" />
     </bean>
     -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+				destroy-method="close"
+				p:driverClass="org.postgresql.Driver"
+				p:jdbcUrl="jdbc:postgresql://ala-devmaps-db.vm.csiro.au/layersdb:5432"
+				p:user="postgres"
+				p:password="postgres"
+				p:acquireIncrement="5"
+				p:idleConnectionTestPeriod="60"
+				p:maxPoolSize="100"
+				p:maxStatements="50"
+				p:minPoolSize="10" />
 
-    <!-- Transaction Manager -->
-    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource">
-            <ref bean="dataSource"/>
-        </property>
+    <!--
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.simple.SimpleJdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
     </bean>
-
-    <!-- Hibernate Configuration -->
-    <bean id="hibernateProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="properties">
-            <props>
-                <!-- <prop key="hibernate.hbm2ddl.auto">create-drop</prop> -->
-                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop> 
-                <!-- <prop key="hibernate.dialect">org.hibernatespatial.postgis.PostgisDialect</prop> -->
-                <prop key="hibernate.show_sql">true</prop>
-            </props>
-        </property>
-    </bean>
-
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="annotatedClasses">
-            <list>
-                <value>org.ala.layers.dto.Distribution</value>
-                <value>org.ala.layers.dto.Field</value>
-                <value>org.ala.layers.dto.Layer</value>
-                <value>org.ala.layers.dto.LayerPid</value>
-                <value>org.ala.layers.dto.Objects</value>
-                <value>org.ala.layers.dto.Uploaded</value>
-                <value>org.ala.layers.dto.SearchObject</value>
-            </list>
-        </property>
-        <property name="hibernateProperties" ref="hibernateProperties" />
-    </bean>
+    -->
+    <!-- Declare a transaction manager -->
+	<!-- See http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/transaction.html -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+       			p:dataSource-ref="dataSource" />
 
 </beans>

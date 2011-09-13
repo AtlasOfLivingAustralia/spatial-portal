@@ -16,10 +16,6 @@
 package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -28,22 +24,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author ajay
  */
 
-@Entity
-@org.hibernate.annotations.NamedNativeQuery(name = "searchobjects", query = "SELECT * searchobjects(:q, :lim) at t1", callable = true, resultClass = SearchObject.class)
 @XmlRootElement(name="results")
 @XStreamAlias("results")
 public class SearchObject {
-    @Id
-    @Column(name = "id", insertable = false, updatable = false)
     private String id;
-
-    @Column(name = "pid")
     private String pid;
-
-    @Column(name = "desc")
     private String description;
-
-    @Column(name = "name")
     private String name;
 
     public String getDescription() {

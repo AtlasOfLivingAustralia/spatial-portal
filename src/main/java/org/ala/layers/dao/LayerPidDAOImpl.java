@@ -16,57 +16,62 @@
 package org.ala.layers.dao;
 
 import java.util.List;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import org.ala.layers.dto.LayerPid;
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ajay
  */
-@Service(value = "layerPidDAO")
-public class LayerPidDAOImpl extends HibernateDaoSupport implements LayerPidDAO {
+@Service("layerPidDao")
+public class LayerPidDAOImpl implements LayerPidDAO {
 
     /** log4j logger */
     private static final Logger logger = Logger.getLogger(LayerPidDAOImpl.class);
-    private HibernateTemplate hibernateTemplate;
+    private SimpleJdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public LayerPidDAOImpl(@Qualifier("sessionFactory") SessionFactory sessionFactory) {
-        this.setSessionFactory(sessionFactory);
-        this.hibernateTemplate = new HibernateTemplate(sessionFactory);
+    @Resource(name = "dataSource")
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
     }
 
     @Override
     public List<LayerPid> getLayers() {
-        return hibernateTemplate.find("from LayerPid");
+        //return hibernateTemplate.find("from LayerPid");
+        logger.info("Getting a list of all enabled layerpids");
+        String sql = "select * from layerpids";
+        return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(LayerPid.class));
     }
 
     @Override
     public LayerPid getLayerById(String id) {
-        List<LayerPid> layers = hibernateTemplate.find("from LayerPid id=?", id);
-        if (layers.size() > 0) {
-            return layers.get(0);
+        //List<LayerPid> layers = hibernateTemplate.find("from LayerPid id=?", id);
+        logger.info("Getting enabled layerpids info for id = " + id);
+        String sql = "select * from layerpids where id = ?";
+        List<LayerPid> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(LayerPid.class), id);
+        if (l.size() > 0) {
+            return l.get(0);
         } else {
             return null;
         }
-
     }
 
     @Override
     public LayerPid getLayerByPid(String pid) {
-        List<LayerPid> layers = hibernateTemplate.find("from LayerPid pid=?", pid);
-        if (layers.size() > 0) {
-            return layers.get(0);
+        //List<LayerPid> layers = hibernateTemplate.find("from LayerPid pid=?", pid);
+        logger.info("Getting enabled layerpids info for pid = " + pid);
+        String sql = "select * from layerpids where pid = ?";
+        List<LayerPid> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(LayerPid.class), pid);
+        if (l.size() > 0) {
+            return l.get(0);
         } else {
             return null;
         }
-
     }
 
 }

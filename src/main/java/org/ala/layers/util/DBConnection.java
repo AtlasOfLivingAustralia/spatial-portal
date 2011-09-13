@@ -87,7 +87,7 @@ public class DBConnection extends ContextLoaderListener {
     private Connection newConnection() {
         try {
             Class.forName("org.postgresql.Driver");
-            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/layersdb","postgres","P0stgres");
+            return DriverManager.getConnection("jdbc:postgresql://ala-devmaps-db.vm.csiro.au:5432/layersdb","postgres","postgres");
         } catch (Exception ex) {
             logger.error("An error occurred creating database connection.");
             logger.error(ExceptionUtils.getFullStackTrace(ex));

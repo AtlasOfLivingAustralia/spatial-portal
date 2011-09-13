@@ -16,46 +16,23 @@
 package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.vividsolutions.jts.geom.Geometry;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.hibernate.annotations.Type;
 
 /**
  * This class serves as a model object for the "layerpids" table
  *
  * @author ajay
  */
-@Entity
-@Table(name = "layerpids")
 @XmlRootElement(name="layerpid")
 @XStreamAlias("layerpid")
 public class LayerPid {
-    @Id
-    @Column(name = "id", insertable = false, updatable = false)
     private String id;
-
-    @Column(name = "type")
     private int type;
-
-    @Column(name = "unique")
     private String unique;
-
-    @Column(name = "path")
     private String path;
-
-    @Column(name = "pid")
     private String pid;
-
-    @Column(name = "metadata")
     private String metadata;
-
-    @Type(type = "org.hibernatespatial.GeometryUserType")
-    @Column(name = "the_geom")
-    private Geometry the_geom;
+    private String the_geom;
 
     public String getId() {
         return id;
@@ -89,11 +66,11 @@ public class LayerPid {
         this.pid = pid;
     }
 
-    public Geometry getThe_geom() {
+    public String getThe_geom() {
         return the_geom;
     }
 
-    public void setThe_geom(Geometry the_geom) {
+    public void setThe_geom(String the_geom) {
         this.the_geom = the_geom;
     }
 

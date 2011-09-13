@@ -16,37 +16,20 @@
 package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.vividsolutions.jts.geom.Geometry;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.hibernate.annotations.Type;
 
 /**
  * This class serves as a model object for the "uploaded" table
  *
  * @author ajay
  */
-@Entity
-@Table(name = "uploaded")
 @XmlRootElement(name="uploaded")
 @XStreamAlias("uploaded")
 public class Uploaded {
-    @Id
-    @Column(name = "pid", insertable = false, updatable = false)
     private String id;
-
-    @Column(name = "name")
     private String name;
-
-    @Column(name = "description")
     private String description;
-
-    @Type(type = "org.hibernatespatial.GeometryUserType")
-    @Column(name = "the_geom")
-    private Geometry geometry;
+    private String geometry;
 
     public String getDescription() {
         return description;
@@ -56,11 +39,11 @@ public class Uploaded {
         this.description = description;
     }
 
-    public Geometry getGeometry() {
+    public String getGeometry() {
         return geometry;
     }
 
-    public void setGeometry(Geometry geometry) {
+    public void setGeometry(String geometry) {
         this.geometry = geometry;
     }
 

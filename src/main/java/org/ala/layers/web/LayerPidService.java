@@ -5,19 +5,13 @@
 
 package org.ala.layers.web;
 
-import au.csiro.pidclient.AndsPidClient;
-import au.csiro.pidclient.AndsPidResponse;
-import au.csiro.pidclient.business.AndsPidIdentity;
 import java.util.List;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.ala.layers.dao.LayerPidDAO;
 import org.ala.layers.dto.LayerPid;
-import org.ala.layers.pid.PGBridge;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -33,20 +27,12 @@ public class LayerPidService {
      */
     protected Logger logger = Logger.getLogger(this.getClass());
 
+    @Resource(name="layerPidDao")
     private LayerPidDAO layerPidDao;
 
-    @Autowired
-    public void setLayerPidsDao(LayerPidDAO layerPidDao) {
-        System.out.println("setting field dao");
-        this.layerPidDao = layerPidDao;
-    }
-
     @RequestMapping(value = "/layerpids", method = RequestMethod.GET)
-    public ModelMap listLayerPids(HttpServletRequest req) {
-        ModelMap modelMap = new ModelMap();
-        List<LayerPid> layers = layerPidDao.getLayers();
-        modelMap.addAttribute("layers", layers);
-        return modelMap;
+    public List<LayerPid> listLayerPids(HttpServletRequest req) {
+        return layerPidDao.getLayers();
 
     }
 

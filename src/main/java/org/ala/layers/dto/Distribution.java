@@ -28,22 +28,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author ajay
  */
 
-@Entity
-@Table(name = "distributions")
 @XmlRootElement(name="distribution")
 @XStreamAlias("distribution")
 public class Distribution {
-    @Id
-    @Column(name = "pid", insertable = false, updatable = false)
     private String id;
-
-    @Column(name = "depth_min")
     private double depthMinimum;
-
-    @Column(name = "depth_max")
     private double depthMaximum;
-
-    @Column(name = "path")
     private String path;
 
     public String getId() {

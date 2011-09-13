@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.ResultSet;
 import java.util.List;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.SearchDAO;
 import org.ala.layers.dto.SearchObject;
@@ -31,13 +32,8 @@ public class SearchService {
      */
     protected Logger logger = Logger.getLogger(this.getClass());
     
+    @Resource(name="searchDao")
     private SearchDAO searchDao;
-
-    @Autowired
-    public void setSearchObjectsDao(SearchDAO searchDao) {
-        System.out.println("setting Search dao");
-        this.searchDao = searchDao;
-    }
 
     /*
      * perform a search operation
@@ -84,7 +80,7 @@ public class SearchService {
      * perform a search operation
      */
     @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public ModelMap search(HttpServletRequest req) {
+    public List<SearchObject> search(HttpServletRequest req) {
         String q = req.getParameter("q");
         String types = req.getParameter("types");
 
@@ -118,9 +114,6 @@ public class SearchService {
 //        sb.append(Utils.resultSetToJSON(rs));
 //        return sb.toString();
 
-        ModelMap modelMap = new ModelMap();
-        List<SearchObject> l = searchDao.findByCriteria(q);
-        modelMap.addAttribute("results", l);
-        return modelMap; 
+        return searchDao.findByCriteria(q);
     }
 }
