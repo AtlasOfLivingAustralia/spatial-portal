@@ -1,5 +1,5 @@
 \set ON_ERROR_STOP 1
-﻿-- /* bk - 20110805
+-- /* bk - 20110805
 -- updates the following:
 -- "ts_poly"
 -- "eez_poly"
@@ -214,3 +214,4 @@ order by l.id desc;
 
 --rollback transaction;
 commit transaction;
+
