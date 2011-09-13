@@ -1,3 +1,4 @@
+\set ON_ERROR_STOP 1
 ﻿-- /* bk - 20110805
 -- updates the following:
 -- "ts_poly"

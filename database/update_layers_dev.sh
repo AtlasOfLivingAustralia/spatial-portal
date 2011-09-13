@@ -22,9 +22,6 @@ check_errs()
   fi
 }
 
-ls jdkbcjkbc
-check_errs $? "echo ERROR running $!!;break"
-
 # run layers create/update script
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev.sql
 check_errs $? "echo ERROR running $!!"

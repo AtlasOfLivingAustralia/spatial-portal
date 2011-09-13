@@ -1,3 +1,4 @@
+\set ON_ERROR_STOP 1
 begin;
 
 update layers set displayname = description where name in ('ger_slopes_to_summit','ger_kosciuszko_to_coast','ger_k2c_management_regions_oct2009','ger_s2s_priority_area_billabong_creek_v01','ger_s2s_priority_areas_v05');

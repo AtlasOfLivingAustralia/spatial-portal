@@ -1,3 +1,4 @@
+\set ON_ERROR_STOP 1
 begin;
 update layers set metadatapath='http://spatial-dev.ala.org.au/geonetwork/srv/en/metadata.show?uuid=ade7be26-a04a-4dd5-894d-7354af083844' where name = 'adefi';
 update layers set metadatapath='http://spatial-dev.ala.org.au/geonetwork/srv/en/metadata.show?uuid=b8e964e0-7ae9-4a3a-beb8-5f575894c05f' where name = 'adefm';

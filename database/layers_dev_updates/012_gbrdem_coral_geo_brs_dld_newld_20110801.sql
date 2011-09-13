@@ -1,3 +1,4 @@
+\set ON_ERROR_STOP 1
 -- /* bk - 20110801
 -- updates the following:
 -- ne_world - natural earth country boundaries - add source & source-link
