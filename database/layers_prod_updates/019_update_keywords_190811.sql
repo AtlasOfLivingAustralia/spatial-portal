@@ -1,3 +1,4 @@
+\set ON_ERROR_STOP 1
 ALTER TABLE layers ADD COLUMN keywords character varying(255);
 
 update layers set keywords='reserve, coral, conservation' where id=900;

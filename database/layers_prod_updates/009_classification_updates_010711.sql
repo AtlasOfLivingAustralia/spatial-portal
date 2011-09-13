@@ -1,3 +1,4 @@
+\set ON_ERROR_STOP 1
 begin;
 update layers set classification1 = 'Area Management', classification2 = 'Biodiversity' where name = 'ibra_merged';
 update layers set classification1 = 'Area Management', classification2 = 'Biodiversity' where name = 'ibra_sub_merged';
