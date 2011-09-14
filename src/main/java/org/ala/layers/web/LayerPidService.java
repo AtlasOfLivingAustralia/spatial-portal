@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  *
@@ -31,7 +32,7 @@ public class LayerPidService {
     private LayerPidDAO layerPidDao;
 
     @RequestMapping(value = "/layerpids", method = RequestMethod.GET)
-    public List<LayerPid> listLayerPids(HttpServletRequest req) {
+    public @ResponseBody List<LayerPid> listLayerPids(HttpServletRequest req) {
         return layerPidDao.getLayers();
 
     }

@@ -21,12 +21,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.Objects;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  *
@@ -49,7 +48,7 @@ public class ObjectsService {
      * @return 
      */
     @RequestMapping(value = "/objects/{id}", method = RequestMethod.GET)
-    public List<Objects> fieldObjects(@PathVariable("id") String id, HttpServletRequest req) {
+    public @ResponseBody List<Objects> fieldObjects(@PathVariable("id") String id, HttpServletRequest req) {
 //        String query = "SELECT pid, id, name, \"desc\" FROM objects WHERE fid='" + id + "';";
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);
@@ -63,7 +62,7 @@ public class ObjectsService {
      * @return 
      */
     @RequestMapping(value = "/object/{pid}", method = RequestMethod.GET)
-    public Objects fieldObject(@PathVariable("pid") String pid, HttpServletRequest req) {
+    public @ResponseBody Objects fieldObject(@PathVariable("pid") String pid, HttpServletRequest req) {
 //        String query = "SELECT pid, id, name, \"desc\" FROM objects WHERE pid='" + pid + "';";
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);

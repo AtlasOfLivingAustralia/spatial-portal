@@ -80,7 +80,7 @@ public class SearchService {
      * perform a search operation
      */
     @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public List<SearchObject> search(HttpServletRequest req) {
+    public @ResponseBody List<SearchObject> search(HttpServletRequest req) {
         String q = req.getParameter("q");
         String types = req.getParameter("types");
 

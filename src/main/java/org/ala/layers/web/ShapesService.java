@@ -161,7 +161,7 @@ public class ShapesService {
 //                return "";
 //            }
 
-            if (type.equalsIgnoreCase("wkt") || type.equalsIgnoreCase("kml") || type.equalsIgnoreCase("geojson")) {
+            if (type.equalsIgnoreCase("wkt") || type.equalsIgnoreCase("kml") || type.equalsIgnoreCase("geojson") || type.equalsIgnoreCase("shp")) {
                 return objectDao.getObjectsGeometryById(id, type);
             } else {
                 return "'" + type + "' type not supported yet.";

@@ -32,6 +32,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  *
@@ -63,7 +64,7 @@ public class IntersectService {
      */
     // @ResponseBody String
     @RequestMapping(value = WS_INTERSECT_SINGLE, method = RequestMethod.GET)
-    public Object single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
+    public @ResponseBody Object single(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
 //        return Intersect.Intersect(ids, lat, lng);
 
         Vector out = new Vector();
@@ -142,7 +143,7 @@ public class IntersectService {
     }
 
     @RequestMapping(value = "/intersect/test/{ids}/{lat}/{lng}", method = RequestMethod.GET)
-    public String test(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
+    public @ResponseBody String test(@PathVariable("ids") String ids, @PathVariable("lat") Double lat, @PathVariable("lng") Double lng, HttpServletRequest req) {
 
         System.out.println("====================================================");
         System.out.println("Got test request");

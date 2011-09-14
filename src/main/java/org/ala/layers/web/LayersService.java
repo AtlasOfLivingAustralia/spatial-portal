@@ -52,7 +52,7 @@ public class LayersService {
      * @return 
      */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
-    public List<Layer> layerObjects(HttpServletRequest req) {
+    public @ResponseBody List<Layer> layerObjects(HttpServletRequest req) {
         logger.info("Retriving all layers");
         List<Layer> l = layerDao.getLayers();
         System.out.println("====================================");
@@ -68,12 +68,12 @@ public class LayersService {
      * @return 
      */
     @RequestMapping(value = "/layer/{id}", method = RequestMethod.GET)
-    public Layer layerObject(@PathVariable("id") int id, HttpServletRequest req) {
+    public @ResponseBody Layer layerObject(@PathVariable("id") int id, HttpServletRequest req) {
         return layerDao.getLayerById(id);
     }
     
     @RequestMapping(value = "/layers/grids", method = RequestMethod.GET)
-    public List<Layer> gridsLayerObjects(HttpServletRequest req) {
+    public @ResponseBody List<Layer> gridsLayerObjects(HttpServletRequest req) {
 //        String query = "SELECT * FROM layers WHERE enabled='TRUE' and type='Environmental';";
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);
@@ -81,7 +81,7 @@ public class LayersService {
     }
         
     @RequestMapping(value = "/layers/shapes", method = RequestMethod.GET)
-    public List<Layer> shapesLayerObjects(HttpServletRequest req) {
+    public @ResponseBody List<Layer> shapesLayerObjects(HttpServletRequest req) {
 //        String query = "SELECT * FROM layers WHERE enabled='TRUE' and type='Contextual';";
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);

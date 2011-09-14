@@ -22,10 +22,10 @@ import org.ala.layers.dto.Field;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  *
@@ -49,7 +49,7 @@ public class FieldsService {
      * list fields table
      */
     @RequestMapping(value = WS_FIELDS, method = RequestMethod.GET)
-    public List<Field> listFields(HttpServletRequest req) {
+    public @ResponseBody List<Field> listFields(HttpServletRequest req) {
 
 //        String query = "SELECT * FROM fields WHERE enabled=TRUE;";
 //        ResultSet r = DBConnection.query(query);
@@ -73,7 +73,7 @@ public class FieldsService {
      * list fields table with db only records
      */
     @RequestMapping(value = WS_FIELDS_DB, method = RequestMethod.GET)
-    public List<Field> listFieldsDBOnly(HttpServletRequest req) {
+    public @ResponseBody List<Field> listFieldsDBOnly(HttpServletRequest req) {
 
 //        String query = "SELECT * FROM fields WHERE enabled=TRUE AND indb=TRUE;";
 //        ResultSet r = DBConnection.query(query);
@@ -86,7 +86,7 @@ public class FieldsService {
      * one fields table record
      */
     @RequestMapping(value = WS_FIELD_ID, method = RequestMethod.GET)
-    public Field oneField(@PathVariable("id") String id, HttpServletRequest req) {
+    public @ResponseBody Field oneField(@PathVariable("id") String id, HttpServletRequest req) {
         logger.info("calling /field/" + id);
         //test field id value
         int len = Math.min(6, id.length());
