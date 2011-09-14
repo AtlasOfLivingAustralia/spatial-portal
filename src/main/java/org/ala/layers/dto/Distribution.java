@@ -16,11 +16,8 @@
 package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * This class serves as a model object for the "distributions" table
@@ -30,6 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="distribution")
 @XStreamAlias("distribution")
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Distribution {
     private String id;
     private double depthMinimum;

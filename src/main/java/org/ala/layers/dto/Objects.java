@@ -17,6 +17,9 @@ package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonWriteNullProperties;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * This class serves as a model object for a list of objects
@@ -27,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="objects")
 @XStreamAlias("objects")
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Objects {
     private String id;
     private String pid;

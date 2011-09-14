@@ -26,6 +26,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * This class serves as a model object for a list of layers
@@ -38,6 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "layers")
 @XmlRootElement(name="layer")
 @XStreamAlias("layer")
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Layer {
     @Id
     @GeneratedValue ( strategy = GenerationType.SEQUENCE, generator="layers_id_seq")
@@ -212,32 +214,40 @@ public class Layer {
         return maxlatitude;
     }
 
-    public void setMaxlatitude(double maxlatitude) {
-        this.maxlatitude = maxlatitude;
+    public void setMaxlatitude(Double maxlatitude) {
+        if (maxlatitude != null) {
+            this.maxlatitude = maxlatitude.doubleValue();
+        }
     }
 
     public double getMaxlongitude() {
         return maxlongitude;
     }
 
-    public void setMaxlongitude(double maxlongitude) {
-        this.maxlongitude = maxlongitude;
+    public void setMaxlongitude(Double maxlongitude) {
+        if (maxlongitude != null) {
+            this.maxlongitude = maxlongitude.doubleValue();
+        }
     }
 
     public double getMinlatitude() {
         return minlatitude;
     }
 
-    public void setMinlatitude(double minlatitude) {
-        this.minlatitude = minlatitude;
+    public void setMinlatitude(Double minlatitude) {
+        if (minlatitude != null) {
+            this.minlatitude = minlatitude.doubleValue();
+        }
     }
 
     public double getMinlongitude() {
         return minlongitude;
     }
 
-    public void setMinlongitude(double minlongitude) {
-        this.minlongitude = minlongitude;
+    public void setMinlongitude(Double minlongitude) {
+        if (minlongitude != null) {
+            this.minlongitude = minlongitude.doubleValue();
+        }
     }
 
     public String getName() {

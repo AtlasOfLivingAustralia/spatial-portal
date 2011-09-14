@@ -24,7 +24,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.springframework.stereotype.Service;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * This class serves as a model object for the "fields" table
@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 @Table(name = "fields")
 @XmlRootElement(name="field")
 @XStreamAlias("field")
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Field {
     @Id
     @Column(name = "id", insertable = false, updatable = false)

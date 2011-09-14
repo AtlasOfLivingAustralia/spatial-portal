@@ -17,6 +17,7 @@ package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * This class serves as a model object for the "layerpids" table
@@ -25,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name="layerpid")
 @XStreamAlias("layerpid")
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class LayerPid {
     private String id;
     private int type;

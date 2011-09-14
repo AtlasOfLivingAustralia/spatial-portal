@@ -17,6 +17,7 @@ package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * SearchObject DTO
@@ -26,6 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="results")
 @XStreamAlias("results")
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class SearchObject {
     private String id;
     private String pid;
