@@ -43,7 +43,7 @@ public class ObjectDAOImpl implements ObjectDAO {
     public List<Objects> getObjects() {
         //return hibernateTemplate.find("from Objects");
         logger.info("Getting a list of all objects");
-        String sql = "select * from objects";
+        String sql = "select pid, id, name, \"desc\" as description from objects";
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class));
     }
 
@@ -92,7 +92,7 @@ public class ObjectDAOImpl implements ObjectDAO {
     @Override
     public Objects getObjectByIdAndLocation(String id, Double lng, Double lat) {
         logger.info("Getting object info for id = " + id + " at loc: (" + lng + ", " + lat + ") ");
-        String sql = "select * from objects where fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), the_geom)";
+        String sql = "select pid, id, name, \"desc\" as description from objects where fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), the_geom)";
         List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] {id, lng, lat});
         if (l.size() > 0) {
             return l.get(0);

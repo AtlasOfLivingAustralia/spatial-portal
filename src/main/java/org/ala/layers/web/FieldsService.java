@@ -18,6 +18,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.ala.layers.dao.FieldDAO;
+import org.ala.layers.dao.ObjectDAO;
 import org.ala.layers.dto.Field;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -45,6 +46,9 @@ public class FieldsService {
     @Resource(name="fieldDao")
     private FieldDAO fieldDao;
 
+    @Resource(name="objectDao")
+    private ObjectDAO objectDao;
+
     /*
      * list fields table
      */
@@ -55,18 +59,7 @@ public class FieldsService {
 //        ResultSet r = DBConnection.query(query);
 //        return Utils.resultSetToJSON(r);
 
-        System.out.println("====================================");
-        System.out.println("Getting all fields");
-        System.out.println("====================================");
-
-        List<Field> f = fieldDao.getFields();
-
-        System.out.println("====================================");
-        System.out.println("Got " + f.size() + " fields");
-        System.out.println("====================================");
-        //return fieldDao.getFields();
-
-        return f; 
+        return fieldDao.getFields();
     }
 
     /*
@@ -110,7 +103,10 @@ public class FieldsService {
 //            logger.debug("Executing sql: " + query);
 //            ResultSet r = DBConnection.query(query);
 //            return Utils.resultSetToJSON(r);
-            return fieldDao.getFieldById(id);
+
+            Field f = fieldDao.getFieldById(id);
+            f.setObjects(objectDao.getObjectsById(id));
+            return f;
         } else {
             //error
             return null;

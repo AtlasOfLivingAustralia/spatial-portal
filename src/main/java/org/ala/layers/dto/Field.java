@@ -17,6 +17,7 @@ package org.ala.layers.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -24,6 +25,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonTypeName;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
@@ -34,9 +37,9 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
 @Table(name = "fields")
-@XmlRootElement(name="field")
 @XStreamAlias("field")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
+@JsonTypeName(value="MyField")
 public class Field {
     @Id
     @Column(name = "id", insertable = false, updatable = false)
@@ -78,6 +81,16 @@ public class Field {
 
     @Column(name = "defaultLayer")
     private boolean defaultLayer;
+
+    private List<Objects> objects;
+
+    public List<Objects> getObjects() {
+        return objects;
+    }
+
+    public void setObjects(List<Objects> objects) {
+        this.objects = objects;
+    }
 
     public String getId() {
         return id;

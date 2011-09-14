@@ -37,14 +37,14 @@
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
 				destroy-method="close"
 				p:driverClass="org.postgresql.Driver"
-				p:jdbcUrl="jdbc:postgresql://ala-devmaps-db.vm.csiro.au/layersdb:5432"
+				p:jdbcUrl="jdbc:postgresql://localhost/layersdb:5432"
 				p:user="postgres"
 				p:password="postgres"
 				p:acquireIncrement="5"
 				p:idleConnectionTestPeriod="60"
-				p:maxPoolSize="100"
-				p:maxStatements="50"
-				p:minPoolSize="10" />
+				p:maxPoolSize="20"
+				p:maxStatements="10"
+				p:minPoolSize="4" />
 
     <!--
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.simple.SimpleJdbcTemplate">

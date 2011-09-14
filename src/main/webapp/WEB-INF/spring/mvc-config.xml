@@ -44,11 +44,9 @@
 
     <!-- This will override the default DefaultAnnotationHandlerMapping that is created,
       -  and not map file extensions automagically -->
-    <!--
     <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" p:order="2">
-        <property name="useDefaultSuffixPattern" value="false"/>
+        <property name="useDefaultSuffixPattern" value="true"/>
     </bean>
-    -->
 
     <!-- Content negotiation view resolver - uses either accept header mime type of the request
      -   or the file extention for the request URL -->
