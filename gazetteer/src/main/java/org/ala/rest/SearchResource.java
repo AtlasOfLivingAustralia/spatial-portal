@@ -173,7 +173,9 @@ public class SearchResource extends AbstractResource {//ReflectiveResource {
             } else {
                 //we need to search default layers ...
                 GazetteerConfig gc = new GazetteerConfig();
-                searchObj = new Search(q + "*", gc.getDefaultLayerNames().toArray(new String[gc.getDefaultLayerNames().size()]));
+                
+                
+                searchObj = new Search(q + "*", gc.getNameSearchableDefaultLayerNames().toArray(new String[gc.getNameSearchableDefaultLayerNames().size()]));
             }
             xstream.processAnnotations(Search.class);
             String xmlString = xstream.toXML(searchObj);

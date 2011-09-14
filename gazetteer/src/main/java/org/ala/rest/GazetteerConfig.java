@@ -132,6 +132,31 @@ public class GazetteerConfig {
         }
         return defaultLayerNames;
     }
+    
+    /**
+     * Gets a list of geoserver layer names that are used for a default search
+     * and are name searchable.
+     * @return a list of name searchable Default geoserver layers
+     */
+    public List<String> getNameSearchableDefaultLayerNames() {
+        List<String> defaultLayerNames = new ArrayList();
+        try {
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+            XPathExpression expr = xpath.compile("//layer[defaultLayer=\"true\" and nameSearch=\"true\"]/name/text()");
+
+            Object result = expr.evaluate(configDoc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) result;
+
+            for (int i = 0; i < nodes.getLength(); i++) {
+                defaultLayerNames.add(nodes.item(i).getNodeValue());
+            }
+        } catch (Exception e) {
+            logger.severe("An error has occurred getting default name searchable layer names");
+            logger.severe(ExceptionUtils.getFullStackTrace(e));
+        }
+        return defaultLayerNames;        
+    }
 
     /**
      * Get the layer alias out of the config file
