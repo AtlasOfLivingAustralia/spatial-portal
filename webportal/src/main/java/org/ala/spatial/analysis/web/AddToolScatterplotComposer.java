@@ -6,8 +6,10 @@ package org.ala.spatial.analysis.web;
 
 import java.awt.geom.Rectangle2D;
 import net.sf.json.JSONObject;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.ScatterplotData;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.SolrQuery;
 import org.zkoss.zul.Checkbox;
 
 /**
@@ -55,7 +57,7 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         //this.detach();
 
-        String lsid = getSelectedSpecies();
+        Query lsid = getSelectedSpecies();
         String name = getSelectedSpeciesName();
 
         JSONObject jo = (JSONObject) cbLayer1.getSelectedItem().getValue();
@@ -70,11 +72,11 @@ public class AddToolScatterplotComposer extends AddToolComposer {
         Rectangle2D.Double selection = null;
         boolean enabled = true;
 
-        String backgroundLsid = getSelectedSpeciesBk();
+        Query backgroundLsid = getSelectedSpeciesBk();
         if (bgSearchSpeciesAuto.getSelectedItem() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties() != null
                 && bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().size() > 0) {
-            backgroundLsid = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+            backgroundLsid = QueryUtil.get((String)bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer());
         }
 
         String filterWkt = getSelectedArea();
@@ -82,9 +84,10 @@ public class AddToolScatterplotComposer extends AddToolComposer {
 
         boolean envGrid = chkShowEnvIntersection.isChecked();
 
-        ScatterplotData data = new ScatterplotData(new SolrQuery(lsid, null, null), name, lyr1value,
+        ScatterplotData data = new ScatterplotData(lsid.newWkt(filterWkt), name, lyr1value,
                 lyr1name, lyr2value, lyr2name, pid, selection, enabled,
-                backgroundLsid, filterWkt, highlightWkt, envGrid);
+                (backgroundLsid != null) ?backgroundLsid.newWkt(filterWkt): null,
+                filterWkt, highlightWkt, envGrid);
 
         getMapComposer().loadScatterplot(data, tToolName.getValue());
 

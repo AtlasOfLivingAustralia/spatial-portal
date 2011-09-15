@@ -4,14 +4,27 @@
  */
 package org.ala.spatial.analysis.web;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.UploadQuery;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -71,14 +84,14 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
     public void runmaxent() {
         try {
-            String taxon = getSelectedSpecies();
+            Query query = getSelectedSpecies().newWkt(getSelectedArea());
             String sbenvsel = getSelectedLayers();
-            String area = getSelectedArea();
-            String taxonlsid = taxon;
+            //String area = getSelectedArea();
+            //String taxonlsid = taxon;
             if (searchSpeciesAuto.getSelectedItem() == null
                     || searchSpeciesAuto.getSelectedItem().getValue() == null) {
-                MapLayer ml = getMapComposer().getMapLayerSpeciesLSID(taxon);
-                taxonlsid = ml.getMapLayerMetadata().getSpeciesDisplayLsid();
+                //MapLayer ml = getMapComposer().getMapLayerSpeciesLSID(taxon);
+                // taxonlsid = ml.getMapLayerMetadata().getSpeciesDisplayLsid();
             }
 
 //            if (isSensitiveSpecies(taxon)) {
@@ -95,8 +108,8 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/maxent/processgeoq?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
-            sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(taxonlsid.replace(".", "__"), "UTF-8"));
+//            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
+//            sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(taxonlsid.replace(".", "__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
@@ -106,11 +119,14 @@ public class AddToolMaxentComposer extends AddToolComposer {
             }
             sbProcessUrl.append("&txtTestPercentage=" + txtTestPercentage.getValue());
 
-            System.out.println("Calling Maxent: " + sbProcessUrl.toString() + "\narea: " + area);
+            // System.out.println("Calling Maxent: " + sbProcessUrl.toString() + "\narea: " + area);
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
-            get.addParameter("area", area);
+            get.addParameter("area", getSelectedArea());
+            String[] speciesData = getSpeciesData(query);
+            get.addParameter("species", speciesData[0]);
+            get.addParameter("removedspecies", speciesData[1]);
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
@@ -128,7 +144,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             Map attrs = new HashMap();
             attrs.put("actionby", "user");
             attrs.put("actiontype", "analysis");
-            attrs.put("lsid", taxonlsid);
+            //attrs.put("lsid", taxonlsid);
             attrs.put("useremail", "spatialuser");
             attrs.put("processid", pid);
             attrs.put("sessionid", "");
@@ -232,5 +248,73 @@ public class AddToolMaxentComposer extends AddToolComposer {
             e.printStackTrace();
         }
         return "";
+    }
+
+    /**
+     * get CSV of speciesName, longitude, latitude in [0] and
+     *
+     * @param selectedSpecies
+     * @param area
+     * @return
+     */
+    private String[] getSpeciesData(Query query) {
+        String sensitiveSpeciesRaw = query.newFacet(new Facet("sensitive:[* TO *]")).speciesList();
+        List<String[]> sensitiveSpecies = null;
+        try {
+            sensitiveSpecies = new CSVReader(new StringReader(sensitiveSpeciesRaw)).readAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        TreeSet<String> sensitiveSpeciesFound = new TreeSet<String>();
+
+        ArrayList<QueryField> fields = new ArrayList<QueryField>();
+        String lsidFieldName = query.getSpeciesIdFieldName();
+        QueryField qf = null;
+        if(lsidFieldName != null) {
+            qf = new QueryField(query.getSpeciesIdFieldName());
+            qf.setStored(true);
+            fields.add(qf);
+        }
+        double[] points = query.getPoints(fields);
+        StringBuilder sb = null;
+        if (points != null) {
+            sb = new StringBuilder();
+            for (int i = 0; i < points.length; i += 2) {
+                boolean isSensitive = false;
+                if(qf != null && !(query instanceof UploadQuery)) {
+                    String lsid = qf.getAsString(i / 2);
+                    if (sensitiveSpeciesRaw.contains("\"" + lsid + "\"")
+                            || sensitiveSpeciesRaw.contains("|" + lsid + "|")) {
+                        //find sensitive record
+                        for (int j = 0; j < sensitiveSpecies.size(); j++) {
+                            if (sensitiveSpecies.get(j)[4].equals(lsid)) {
+                                //append as lsid,name,rank
+                                sensitiveSpeciesFound.add(sensitiveSpecies.get(j)[4]
+                                        + "," + sensitiveSpecies.get(j)[1]
+                                        + "," + sensitiveSpecies.get(j)[3]);
+                                isSensitive = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!isSensitive) {
+                    if (sb.length() == 0) {
+                        //header
+                        sb.append("species,longitude,latitude");
+                    }
+                    sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
+                }
+            }
+        }
+
+        //collate sensitive species found, no header
+        StringBuilder sen = new StringBuilder();
+        for (String s : sensitiveSpeciesFound) {
+            sb.append(s).append("\n");
+        }
+
+        String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
+        return out;
     }
 }

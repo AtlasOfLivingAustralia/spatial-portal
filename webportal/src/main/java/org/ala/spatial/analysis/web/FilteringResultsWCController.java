@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -307,7 +307,7 @@ public class FilteringResultsWCController extends UtilityComposer {
 
     void counts() {
         try {
-            SolrQuery sq = new SolrQuery(null, shape, null);
+            SolrQuery sq = new SolrQuery(null, shape, null, null);
 
             results_count = sq.getSpeciesCount();
             results_count_occurrences = sq.getOccurrenceCount();
@@ -416,12 +416,12 @@ public class FilteringResultsWCController extends UtilityComposer {
 
             String activeAreaLayerName = getMapComposer().getNextActiveAreaLayerName(areaDisplayName);
             getMapComposer().mapSpecies(
-                    new SolrQuery(null, area, null)
+                    new SolrQuery(null, area, null, null)
                     , activeAreaLayerName
                     , "species"
                     , -1
                     , LayerUtilities.SPECIES
-                    , null);
+                    , null, -1);
 
             getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
         } catch (Exception e) {

@@ -37,7 +37,7 @@ public class MapLayerMetadata implements Serializable {
     private long id;
     private long maplayerid;
     private boolean isSpeciesLayer = false;
-    private String speciesLsid;
+    //private String speciesLsid;
     private String speciesRank;
     private String speciesDisplayName;
     private String speciesDisplayLsid;
@@ -53,13 +53,13 @@ public class MapLayerMetadata implements Serializable {
         this.isSpeciesLayer = isSpeciesLayer;
     }
 
-    public String getSpeciesLsid() {
-        return speciesLsid;
-    }
-
-    public void setSpeciesLsid(String speciesLsid) {
-        this.speciesLsid = speciesLsid;
-    }
+//    public String getSpeciesLsid() {
+//        return speciesLsid;
+//    }
+//
+//    public void setSpeciesLsid(String speciesLsid) {
+//        this.speciesLsid = speciesLsid;
+//    }
 
     public String getSpeciesDisplayName() {
         return speciesDisplayName;

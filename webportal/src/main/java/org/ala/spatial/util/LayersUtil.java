@@ -121,30 +121,8 @@ import org.apache.commons.lang.StringUtils;
     public String getFirstSpeciesLayer() {
         List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
         for (MapLayer ml : activeLayers) {
-            if (ml.isDisplayed() 
-                    && ((ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null)
-                        || isSpeciesName(ml.getName()))) {
+            if (ml.isDisplayed() && ml.getData("query") != null) {
                 return ml.getName();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * gets first species layer found from active layers list
-     *
-     * @return species name found as String or null if none found
-     */
-    public String getFirstSpeciesLsidLayer() {
-        List<MapLayer> activeLayers = mc.getPortalSession().getActiveLayers();
-        Entry<String, UserData> entry;
-        for (MapLayer ml : activeLayers) {
-            if (ml.isDisplayed()
-                    && ((ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null)
-                        || isSpeciesName(ml.getName()))) {
-                return ml.getName() + "," + ml.getMapLayerMetadata().getSpeciesLsid();
-            } else if (ml.isDisplayed() && ((entry = getUserData(ml.getName())) != null)) {
-                return entry.getValue().getName() + "," + entry.getKey();
             }
         }
         return null;

@@ -15,9 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -175,7 +176,7 @@ public class AddToolComposer extends UtilityComposer {
             List<MapLayer> layers = getMapComposer().getSpeciesLayers();
 
             Radio selectedSpecies = null;
-            String selectedLsid = (String) params.get("lsid");
+            String selectedSpeciesLayer = (String) params.get("speciesLayerName");
             int speciesLayersCount = 0;
 
             for (int i = 0; i < layers.size(); i++) {
@@ -185,11 +186,11 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 Radio rSp = new Radio(lyr.getDisplayName());
-                rSp.setValue(lyr.getMapLayerMetadata().getSpeciesLsid());
+                rSp.setValue(lyr.getName());
                 rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
 
-                if (selectedLsid != null && rSp.getValue().equals(selectedLsid)) {
+                if (selectedSpeciesLayer != null && rSp.getValue().equals(selectedSpeciesLayer)) {
                     selectedSpecies = rSp;
                 }
             }
@@ -202,7 +203,7 @@ public class AddToolComposer extends UtilityComposer {
 
             if (selectedSpecies != null) {
                 rgSpecies.setSelectedItem(selectedSpecies);
-            } else if (selectedLsid != null && selectedLsid.equals("none")) {
+            } else if (selectedSpeciesLayer != null && selectedSpeciesLayer.equals("none")) {
                 rgSpecies.setSelectedItem(rSpeciesAll);
             } else if (layers.size() > 0) {
                 rgSpecies.setSelectedItem(rgSpecies.getItemAtIndex(1));
@@ -235,7 +236,7 @@ public class AddToolComposer extends UtilityComposer {
                 }
 
                 Radio rSp = new Radio(lyr.getDisplayName());
-                rSp.setValue(lyr.getMapLayerMetadata().getSpeciesLsid());
+                rSp.setValue(lyr.getName());
                 rSp.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rgSpecies.insertBefore(rSp, rSpeciesMapped);
             }
@@ -886,77 +887,98 @@ public class AddToolComposer extends UtilityComposer {
         return area;
     }
 
-    public String getSelectedSpecies() {
+    public Query getSelectedSpecies() {
         return getSelectedSpecies(false);
     }
-    public String getSelectedSpecies(boolean mapspecies) {
-        String species = rgSpecies.getSelectedItem().getValue();
-        try {
-            System.out.println("getSelectedSpecies: " + species);
-            if (species.equals("allspecies")) {
-                species = "none";
-            } else if (species.equals("allmapped")) {
-                species = "";
-                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+    public Query getSelectedSpecies(boolean mapspecies) {
+        Query q = null;
 
-                SolrQuery sq = new SolrQuery();
-                for (int i = 0; i < layers.size(); i++) {
-                    MapLayer lyr = layers.get(i);
-                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+        String species = rgSpecies.getSelectedItem().getValue();
+        
+        MapLayer ml = getMapComposer().getMapLayer(species);
+        if(ml != null) {
+            q = (Query) ml.getData("query");
+        } else {
+            try {
+                System.out.println("getSelectedSpecies: " + species);
+                if (species.equals("allspecies")) {
+                    species = "none";
+                } else if (species.equals("allmapped")) {
+
+    //                species = "";
+    //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+    //
+    //                SolrQuery sq = new SolrQuery();
+    //                for (int i = 0; i < layers.size(); i++) {
+    //                    MapLayer lyr = layers.get(i);
+    //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+    //                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+    //                    }
+    //                }
+    //
+    //                species = sq.getShortQuery();
+                    throw new UnsupportedOperationException("Not yet implemented");
+
+                } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+                    if (searchSpeciesAuto.getSelectedItem() != null) {
+                        species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                        q = new SolrQuery(species,null,null,null);
                     }
                 }
-
-                species = sq.getShortQuery();
-                
-            } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
-                if (searchSpeciesAuto.getSelectedItem() != null) {
-                    species = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                }
+            } catch (Exception e) {
+                System.out.println("Unable to retrieve selected species");
+                e.printStackTrace(System.out);
             }
-        } catch (Exception e) {
-            System.out.println("Unable to retrieve selected species");
-            e.printStackTrace(System.out);
         }
 
-        return species;
+        return q;
     }
 
-    public String getSelectedSpeciesBk() {
-        String species = rgSpeciesBk.getSelectedItem().getValue();
-        try {
-            if (species.equals("none")) {
-                species = null;
-            } else if (species.equals("allspecies")) {
-                species = "none";
-            } else if (species.equals("allmapped")) {
-                species = "";
-                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+    public Query getSelectedSpeciesBk() {
+        Query q = null;
 
-                SolrQuery sq = new SolrQuery();
-                for (int i = 0; i < layers.size(); i++) {
-                    MapLayer lyr = layers.get(i);
-                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
-                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+        String species = rgSpeciesBk.getSelectedItem().getValue();
+
+        MapLayer ml = getMapComposer().getMapLayer(species);
+        if(ml != null) {
+            q = (Query) ml.getData("query");
+        } else {
+            try {
+                if (species.equals("none")) {
+                    species = null;
+                } else if (species.equals("allspecies")) {
+                    species = "none";
+                } else if (species.equals("allmapped")) {
+    //                species = "";
+    //                List<MapLayer> layers = getMapComposer().getSpeciesLayers();
+    //
+    //                SolrQuery sq = new SolrQuery();
+    //                for (int i = 0; i < layers.size(); i++) {
+    //                    MapLayer lyr = layers.get(i);
+    //                    if (lyr.getSubType() != LayerUtilities.SPECIES_UPLOAD) {
+    //                        sq.addLsid(lyr.getMapLayerMetadata().getSpeciesLsid());
+    //                    }
+    //                }
+    //
+    //                species = sq.getShortQuery();
+                    throw new UnsupportedOperationException("Not yet implemented");
+
+                } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
+                    if (bgSearchSpeciesAuto == null) {
+                        bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
+                    }
+                    if (bgSearchSpeciesAuto.getSelectedItem() != null) {
+                        species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+                        q = new SolrQuery(species, null, null, null);
                     }
                 }
-
-                species = sq.getShortQuery();
-
-            } else if (species.equals("search") || species.equals("uploadSpecies") || species.equals("uploadLsid")) {
-                if (bgSearchSpeciesAuto == null) {
-                    bgSearchSpeciesAuto = (SpeciesAutoComplete) getFellowIfAny("bgSearchSpeciesAuto");
-                }
-                if (bgSearchSpeciesAuto.getSelectedItem() != null) {
-                    species = (String) (bgSearchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
-                }
+            } catch (Exception e) {
+                System.out.println("Unable to retrieve selected species");
+                e.printStackTrace(System.out);
             }
-        } catch (Exception e) {
-            System.out.println("Unable to retrieve selected species");
-            e.printStackTrace(System.out);
         }
 
-        return species;
+        return q;
     }
 
     public String getSelectedSpeciesName() {

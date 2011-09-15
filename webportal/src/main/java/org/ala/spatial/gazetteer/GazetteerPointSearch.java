@@ -35,7 +35,7 @@ public class GazetteerPointSearch {
         String featureURL = "none";
 
         try {
-            String uri = CommonData.layersServer + "/layersindex/intersect/" + layer + "/" + lat + "/" + lon;
+            String uri = CommonData.layersServer + "/layers-index/intersect/" + layer + "/" + lat + "/" + lon;
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(uri);
@@ -48,7 +48,7 @@ public class GazetteerPointSearch {
             if (ja != null && ja.size() > 0) {
                 JSONObject jo = ja.getJSONObject(0);
 
-                featureURL = CommonData.layersServer + "/layersindex/shape/geojson/" + jo.getString("pid");
+                featureURL = CommonData.layersServer + "/layers=index/shape/geojson/" + jo.getString("pid");
             }
         } catch (Exception e1) {
             //FIXME: log something

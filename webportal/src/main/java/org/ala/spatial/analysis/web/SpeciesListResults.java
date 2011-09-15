@@ -9,7 +9,7 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.SolrQuery;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.zhtml.Filedownload;
@@ -56,19 +56,7 @@ public class SpeciesListResults extends UtilityComposer {
         updateParameters();
 
         try {
-
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append("/filtering/apply");
-//            sbProcessUrl.append("/pid/" + URLEncoder.encode(pid, "UTF-8"));
-//            sbProcessUrl.append("/species/list");
-//
-//            String out = postInfo(sbProcessUrl.toString());
-//            if (out.length() > 0 && out.charAt(out.length() - 1) == ',') {
-//                out = out.substring(0, out.length() - 1);
-//            }
-//            results = out.split("\\|");
-
-            SolrQuery sq = new SolrQuery(null, wkt, null);
+            SolrQuery sq = new SolrQuery(null, wkt, null, null);
 
             if (sq.getSpeciesCount() <= 0) {
                 getMapComposer().showMessage("No species records in the active area.");
@@ -79,8 +67,10 @@ public class SpeciesListResults extends UtilityComposer {
                 return;
             }
 
-            results = SolrQuery.convertJSONArrayObjectstoCSV(sq.speciesList()).split("\n");
-
+            //remove header
+            String speciesList = sq.speciesList();
+            results = speciesList.substring(speciesList.indexOf('\n')+1).split("\n");
+            
             java.util.Arrays.sort(results);
 
             // results should already be sorted: Arrays.sort(results);
@@ -105,6 +95,10 @@ public class SpeciesListResults extends UtilityComposer {
                                 ss = reader.readNext();
                             } catch (Exception e) {
                                 ss = new String[0];
+                            }
+
+                            if(ss == null || ss.length == 0) {
+                                return;
                             }
 
                             Listcell lc = new Listcell(ss[0]);

@@ -258,21 +258,6 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
             </south>
         </borderlayout>
 
-        <!-- external content (Links) popup
-        <window id="externalContentWindow" visible="false" width="80%"
-                height="80%" border="normal" sizable="true"
-                use="au.org.emii.portal.composer.ExternalContentComposer" >
-            <caption id="caption">
-                <toolbarbutton id="download" label="Download output" target="_blank" />
-                <toolbarbutton id="reset" label="Reset Window" />
-                <toolbarbutton id="breakout" label="Open in new Window" target="_blank" />
-                <toolbarbutton id="hide" label="Close" />
-            </caption>
-            <separator />
-            <iframe id="externalContentIframe" width="100%" height="100%" />
-            <html id="externalContentHTML" ></html>
-        </window> -->
-
         <script defer="false" type="text/javascript"><![CDATA[
                     var onIframeMapFullyLoaded = function() {
             //update screen widths before map is loaded (hide header)
@@ -464,8 +449,10 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
         <label id="geoserver_url" value="${settingsSupplementary.values.geoserver_url}" visible="false" />
         <label id="layers_url" value="${settingsSupplementary.values.layers_url}" visible="false" />
+        <label id="biocache_url" value="${settingsSupplementary.values.biocache_url}" visible="false" />
+        <label id="print_server_url" value="${settingsSupplementary.values.print_server_url}" visible="false" />
         <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
-
+        
 
           <!-- script defer="false" type="text/javascript"><![CDATA[
             

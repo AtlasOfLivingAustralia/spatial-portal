@@ -10,14 +10,19 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.UserData;
+import org.ala.spatial.wms.RecordsLookup;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.zkoss.util.media.Media;
@@ -233,39 +238,50 @@ public class UploadSpeciesController extends UtilityComposer {
                 return;
             }
 
-            StringBuffer sbUIds = new StringBuffer();
-            StringBuffer sbUPoints = new StringBuffer();
+            ArrayList<QueryField> fields = new ArrayList<QueryField>();
+            if(upHeader.length == 2) {
+                //only points upload, add 'id' column at the start
+                fields.add(new QueryField("id"));
+            }
+            for(int i=0;i<upHeader.length;i++) {
+                fields.add(new QueryField(upHeader[i]));
+                fields.get(i).ensureCapacity(sizeToCheck);
+            }
+
+            double [] points = new double[sizeToCheck*2];
             int counter = 1;
-            for (int i = 0; i < userPoints.size(); i++) {
+            for (int i = (hasHeader?1:0); i < userPoints.size(); i++) {
                 String[] up = (String[]) userPoints.get(i);
                 if (up.length > 2) {
-                    sbUIds.append("user").append(ud.getName()).append("-").append(up[0]).append("\n");
-                    sbUPoints.append(up[1]).append(",").append(up[2]).append("\n");
+                    for(int j=0;j<up.length&&j<fields.size();j++) {
+                        fields.get(j).add(up[j]);
+                    }
+                    try {
+                        points[i*2] = Double.parseDouble(up[1]);
+                        points[i*2+1] = Double.parseDouble(up[2]);
+                    } catch (Exception e) {
+                    }
                 } else if (up.length > 1) {
-                    sbUIds.append("user").append(ud.getName()).append("-").append(counter).append("\n");
-                    sbUPoints.append(up[0]).append(",").append(up[1]).append("\n");
+                    fields.get(0).add(ud.getName() + "-" + counter);
+                    for(int j=0;j<up.length&&j<fields.size();j++) {
+                        fields.get(j+1).add(up[j]);
+                    }
+                    try {
+                        points[i*2] = Double.parseDouble(up[0]);
+                        points[i*2+1] = Double.parseDouble(up[1]);
+                    } catch (Exception e) {
+                    }
                     counter++;
                 }
             }
 
-            // Post it to alaspatial app
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/points/register"); // testurl
-            post.addRequestHeader("Accept", "text/plain");
-            post.addParameter("name", ud.getName());
-            post.addParameter("points", sbUPoints.toString());
-            post.addParameter("ids", sbUIds.toString());
+            for(int i=0;i<fields.size();i++) {
+                fields.get(i).store();
+            }
 
-            int result = client.executeMethod(post);
-            String slist = post.getResponseBodyAsString();
-            uploadLSID = slist + "\t" + ud.getName();
-
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + slist);
+            String pid = String.valueOf(System.currentTimeMillis());
 
             ud.setFeatureCount(userPoints.size());
-            Long did = new Long(slist);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
 
             String metadata = "";
             metadata += "User uploaded points \n";
@@ -273,21 +289,37 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Description: " + ud.getDescription() + " <br />\n";
             metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
+           
+            ud.setMetadata(metadata);
+            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
+            ud.setLsid(pid);
+
+            Query q = new UploadQuery(pid, ud.getName(), points, fields);
+            ud.setQuery(q);
+            RecordsLookup.putData(pid, points, fields);
+
+            // add it to the user session
+            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+            if (htUserSpecies == null) {
+                htUserSpecies = new Hashtable<String, UserData>();
+            }
+            htUserSpecies.put(pid, ud);
+            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
 
             if (addToMap) {
                 MapLayer ml = null;
                 if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
                     //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
                     if(defineArea) {
-                        mapFilterGrid(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                        mapFilterGrid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpecies(new SolrQuery(slist, null, null), ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null);
+                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
                     }
                 } else {
                     if(defineArea) {
-                        mapFilter(slist, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                        mapFilter(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
-                        ml = getMapComposer().mapSpecies(new SolrQuery(slist, null, null), ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null);
+                        ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
                     }
                 }
                 if(ml != null) {
@@ -301,27 +333,15 @@ public class UploadSpeciesController extends UtilityComposer {
                 }
             }
 
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
-            ud.setLsid(slist);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(slist, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
             if (eventListener != null) {
-                eventListener.onEvent(new Event("", null, slist + "\t" + ud.getName()));
+                eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
             }
 
             // close the reader and data streams
             reader.close();
             data.close();
 
-            Clients.evalJavaScript("appendUploadSpeciesMetadata('"+ud.getName()+"','"+metadata.replaceAll("\n", "_n_")+"');");
+            Clients.evalJavaScript("appendUploadSpeciesMetadata('"+ pid +"','"+metadata.replaceAll("\n", "_n_")+"');");
 
         } catch (Exception e) {
 
@@ -355,24 +375,26 @@ public class UploadSpeciesController extends UtilityComposer {
 
             String lsids = sb.toString();
 
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/species/lsid/register");
-            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
+            String pid = String.valueOf(System.currentTimeMillis());
 
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String pid = get.getResponseBodyAsString();
-
-            uploadLSID = pid + "\t" + ud.getName();
-
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
+//            StringBuffer sbProcessUrl = new StringBuffer();
+//            sbProcessUrl.append("/species/lsid/register");
+//            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
+//
+//            HttpClient client = new HttpClient();
+//            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
+//            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+//            int result = client.executeMethod(get);
+//            String pid = get.getResponseBodyAsString();
+//
+//            uploadLSID = pid + "\t" + ud.getName();
+//
+//            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
 
             ud.setFeatureCount(userPoints.size());
-            Long did = new Long(pid);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
+//            Long did = new Long(pid);
+//            System.out.println("lval: " + did.longValue());
+//            ud.setUploadedTimeInMs(did.longValue());
 
             String metadata = "";
             metadata += "User uploaded points \n";
@@ -381,23 +403,12 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
 
-            if (addToMap) {
-                if(defineArea) {
-                    mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
-                } else {
-                    MapLayer ml = getMapComposer().mapSpecies(new SolrQuery(pid, null, null), ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, null);
-                    MapLayerMetadata md = ml.getMapLayerMetadata();
-                    if (md == null) {
-                        md = new MapLayerMetadata();
-                        ml.setMapLayerMetadata(md);
-                    }
-                    md.setMoreInfo(metadata);
-                }                
-            }
-
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES);
             ud.setLsid(pid);
+
+            Query q = new SolrQuery(pid, lsids, null, null);
+            ud.setQuery(q);
 
             // add it to the user session
             Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
@@ -406,6 +417,20 @@ public class UploadSpeciesController extends UtilityComposer {
             }
             htUserSpecies.put(pid, ud);
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+
+            if (addToMap) {
+                if(defineArea) {
+                    mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
+                } else {
+                    MapLayer ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, null, -1);
+                    MapLayerMetadata md = ml.getMapLayerMetadata();
+                    if (md == null) {
+                        md = new MapLayerMetadata();
+                        ml.setMapLayerMetadata(md);
+                    }
+                    md.setMoreInfo(metadata);
+                }                
+            }
 
             if (eventListener != null) {
                 eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));

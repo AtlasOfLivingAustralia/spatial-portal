@@ -59,24 +59,26 @@ public class EnvLayersCombobox extends Combobox {
         try {
             Iterator it = getItems().iterator();
 
+            JSONArray results = null;
             String lsurl = baseUrl;
             if (val.length() == 0) {
                 lsurl += "list";
+                results = CommonData.getLayerListJSONArray();
             } else {
                 lsurl += "search/" + URLEncoder.encode(val, "UTF-8");
+
+                System.out.println("nsurl: " + lsurl);
+
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(lsurl);
+                get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+
+                int result = client.executeMethod(get);
+                String slist = get.getResponseBodyAsString();
+
+
+                results = JSONArray.fromObject(slist);
             }
-
-            System.out.println("nsurl: " + lsurl);
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(lsurl);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-
-            JSONArray results = JSONArray.fromObject(slist);
             System.out.println("got " + results.size() + " layers");
 
             Sessions.getCurrent().setAttribute("layerlist", results);

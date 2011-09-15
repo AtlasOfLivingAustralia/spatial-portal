@@ -7,6 +7,7 @@ package org.ala.spatial.analysis.web;
 
 import java.net.URL;
 import java.net.URLEncoder;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -59,48 +60,53 @@ public class AddToolSamplingComposer extends AddToolComposer {
     }
 
     public void download(Event event) {
-        try {
-            String taxon = getSelectedSpecies();
-            String sbenvsel = getSelectedLayers();
-            String area = getSelectedArea();
+//        try {
+            Query query = getSelectedSpecies().newWkt(getSelectedArea());
+            //add layers to a fields list
+            //download
 
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/download?");
-            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
-
-            String envlist = URLEncoder.encode(sbenvsel.toString(), "UTF-8");
-            if(envlist == null || envlist.trim().length() == 0) {
-                envlist = "none";
-            }
-            sbProcessUrl.append("&envlist=" + envlist);
-
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(sbProcessUrl.toString());
-            get.addParameter("area", area);
-
-            get.addRequestHeader("Accept", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            System.out.println("Got response from SamplingWSController: \n" + slist);
-
-            if (slist.equalsIgnoreCase("")) {
-                Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
-            } else {
-                System.out.println("Sending file to user: " + CommonData.satServer + "/alaspatial" + slist);
-
-                URL url = new URL(CommonData.satServer + "/alaspatial" + slist);
-                Filedownload.save(url.openStream(), "application/zip",url.getFile());
-                getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
-            }
-
-            this.detach(); 
-
-        } catch (Exception e) {
-            System.out.println("Exception calling sampling.download:");
-            e.printStackTrace(System.out);
-        }
+            
+//            String taxon = getSelectedSpecies();
+//            String sbenvsel = getSelectedLayers();
+//            String area = getSelectedArea();
+//
+//            StringBuffer sbProcessUrl = new StringBuffer();
+//            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/download?");
+//            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
+//
+//            String envlist = URLEncoder.encode(sbenvsel.toString(), "UTF-8");
+//            if(envlist == null || envlist.trim().length() == 0) {
+//                envlist = "none";
+//            }
+//            sbProcessUrl.append("&envlist=" + envlist);
+//
+//            HttpClient client = new HttpClient();
+//            PostMethod get = new PostMethod(sbProcessUrl.toString());
+//            get.addParameter("area", area);
+//
+//            get.addRequestHeader("Accept", "text/plain");
+//
+//            int result = client.executeMethod(get);
+//            String slist = get.getResponseBodyAsString();
+//
+//            System.out.println("Got response from SamplingWSController: \n" + slist);
+//
+//            if (slist.equalsIgnoreCase("")) {
+//                Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
+//            } else {
+//                System.out.println("Sending file to user: " + CommonData.satServer + "/alaspatial" + slist);
+//
+//                URL url = new URL(CommonData.satServer + "/alaspatial" + slist);
+//                Filedownload.save(url.openStream(), "application/zip",url.getFile());
+//                getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
+//            }
+//
+//            this.detach();
+//
+//        } catch (Exception e) {
+//            System.out.println("Exception calling sampling.download:");
+//            e.printStackTrace(System.out);
+//        }
     }
 
 

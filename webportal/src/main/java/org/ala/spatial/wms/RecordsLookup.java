@@ -14,8 +14,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import org.ala.spatial.util.QueryField;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.SolrQuery;
 
 /**
  *
@@ -30,7 +31,7 @@ public class RecordsLookup {
      */
     static HashMap<String, Object[]> selections = new HashMap<String, Object[]>();
 
-    static public void addData(String id, Object data) {
+    static void addData(String id, Object data) {
         Object[] o = selections.get(id);
         if (o == null) {
             freeMem();
@@ -82,7 +83,7 @@ public class RecordsLookup {
 
     static void store(String key, Object[] o) {
         try {
-            File file = new File(TEMP_FILE_PATH + File.separator + "selection" + key + ".dat");
+            File file = new File(TEMP_FILE_PATH + File.separator + "selection_" + key.replaceAll(":\\*\\\"<>","_") + ".dat");
             FileOutputStream fos = new FileOutputStream(file);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -96,7 +97,7 @@ public class RecordsLookup {
 
     static Object[] retrieve(String key) {
         try {
-            File file = new File(TEMP_FILE_PATH + File.separator + "selection" + key + ".dat");
+            File file = new File(TEMP_FILE_PATH + File.separator + "selection_" + key.replaceAll(":\\*\\\"<>","_") + ".dat");
             if (file.exists()) {
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis);
@@ -110,54 +111,48 @@ public class RecordsLookup {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Object v = queryData(key);
-        addData(key, v);
+//        Object [] v = (Object[]) queryData(key);
+//        putData(key, (double[])v[0], (ArrayList<QueryField>) v[1]);
 
         return selections.get(key);
     }
 
-    static Object queryData(String key) {
-        long start = System.currentTimeMillis();
+//    static Object queryData(String key) {
+//        long start = System.currentTimeMillis();
+//
+//        SolrQuery sq = new SolrQuery(key);
+//        ArrayList<QueryField> fields = sq.getFacetFieldList();
+//        for(int i=0;i<fields.size();i++) {
+//            fields.get(i).setStored(true);
+//        }
+//
+//        double [] points = sq.getPoints(fields);
+//
+//        Object [] o = new Object[2];
+//        o[0] = points;
+//        o[1] = fields;
+//
+//        long end = System.currentTimeMillis();
+//        System.out.println("query:" + key + " time:" + (System.currentTimeMillis() - start) + "ms");
+//
+//        return o;
+//    }
 
-        ArrayList<QueryField> fields = getAllFields();
+    static public void putData(String key, double [] points, ArrayList<QueryField> fields) {
+        //boundingbox
+        double [] bb = new double[4];
+        for(int i=0;i<points.length;i+=2) {
+            if(i == 0 || points[i] < bb[0]) bb[0] = points[i];
+            if(i == 0 || points[i] > bb[2]) bb[2] = points[i];
+            if(i == 0 || points[i+1] < bb[1]) bb[1] = points[i+1];
+            if(i == 0 || points[i+1] > bb[3]) bb[3] = points[i+1];
+        }
 
-        double [] points = new SolrQuery(key, null, null).getPoints(fields);
-
-        Object [] o = new Object[2];
+        Object [] o = new Object[3];
         o[0] = points;
         o[1] = fields;
+        o[2] = bb;
 
-        long end = System.currentTimeMillis();
-        System.out.println("query:" + key + " time:" + (System.currentTimeMillis() - start) + "ms");
-
-        return o;
-    }
-
-    static ArrayList<QueryField> getAllFields() {
-        ArrayList<QueryField> fields = new ArrayList<QueryField> ();
-        fields.add(new QueryField("id", "uuid", true));
-        fields.add(new QueryField("basis_of_record", "basisOfRecord", true));
-        //fields.add(new QueryField("type_status"));
-        fields.add(new QueryField("institution_uid", "institutionUid", true));
-        fields.add(new QueryField("collection_uid", "collectionUid", true));
-        fields.add(new QueryField("data_resource", "dataResourceName", true));
-        //fields.add(new QueryField("country"));
-        fields.add(new QueryField("state", "stateProvince", true));
-        //fields.add(new QueryField("biogeographic_region"));
-        //fields.add(new QueryField("rank"));
-        //fields.add(new QueryField("species_group"));
-        fields.add(new QueryField("kingdom", "kingdom", true));
-        fields.add(new QueryField("family","family", true));
-        //fields.add(new QueryField("species_guid"));
-        //fields.add(new QueryField("uncertainty"));
-        //fields.add(new QueryField("state_conservation"));
-        //fields.add(new QueryField("raw_state_conservation"));
-        //fields.add(new QueryField("sensitive"));
-        //fields.add(new QueryField("assertions"));
-        //fields.add(new QueryField("month"));
-        //fields.add(new QueryField("year"));
-        //fields.add(new QueryField("multimedia"));
-
-        return fields;
+        addData(key, o);
     }
 }

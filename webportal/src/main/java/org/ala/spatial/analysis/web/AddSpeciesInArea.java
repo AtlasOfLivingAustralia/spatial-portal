@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -204,42 +206,37 @@ public class AddSpeciesInArea extends UtilityComposer {
     public void onFinish() {
         try {            
             String wkt = getSelectedArea();
-            wkt = wkt.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
 
             String spname = name + ";" + lsid;
             boolean setupMetadata = true;
 
             MapLayer ml = null;
 
+            Query q = QueryUtil.get(lsid, getMapComposer()).newWkt(wkt);
             if (byLsid) {
-                ml = getMapComposer().mapSpecies(
-                        new SolrQuery(lsid, wkt, null),spname, s, featureCount, type, wkt);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
             } else if(filter) {
-                ml = getMapComposer().mapSpecies(
-                        new SolrQuery(lsid,wkt, null), spname, s, featureCount, type, wkt);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
             } else if(filterGrid) {
-                ml = getMapComposer().mapSpecies(
-                        new SolrQuery(lsid,wkt, null), spname, s, featureCount, type, wkt);
+                ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
             } else if (rank != null && taxon != null && lsid != null) {
                 String sptaxon = taxon+";"+lsid;
-                ml = getMapComposer().mapSpecies(
-                        new SolrQuery(lsid,wkt, null), sptaxon, rank, -1, LayerUtilities.SPECIES, wkt);
+                ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, wkt, -1);
                 setupMetadata = false;
-            } else {
-                SolrQuery sq = new SolrQuery(lsid,wkt, null);
-                int results_count_occurrences = sq.getOccurrenceCount();
+            } else {  
+                int results_count_occurrences = q.getOccurrenceCount();
 
                 //test limit
                 if (results_count_occurrences > 0 
                         && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
                     
                     String activeAreaLayerName = getSelectedAreaDisplayName();
-                    ml = getMapComposer().mapSpecies(sq
+                    ml = getMapComposer().mapSpecies(q
                             , "Occurrences in " + activeAreaLayerName
                             , "species"
                             , results_count_occurrences
                             , LayerUtilities.SPECIES
-                            , wkt);
+                            , wkt, -1);
 
                     //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
                 } else {
@@ -296,10 +293,9 @@ public class AddSpeciesInArea extends UtilityComposer {
             if (area.equals("current")) {
                 area = getMapComposer().getViewArea();
             } else if (area.equals("australia")) {
-                area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+                area = CommonData.AUSTRALIA_WKT;
             } else if (area.equals("world")) {
-                //area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-                area = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
+                area = CommonData.WORLD_WKT;
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {

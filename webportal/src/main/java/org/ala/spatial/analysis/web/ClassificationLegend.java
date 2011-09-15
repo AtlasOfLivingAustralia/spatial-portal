@@ -26,6 +26,9 @@ import org.zkoss.zul.Image;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Slider;
 import java.util.ArrayList;
+import org.ala.spatial.data.Legend;
+import org.ala.spatial.data.LegendObject;
+import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -34,7 +37,9 @@ import org.zkoss.zul.Listheader;
 
 public class ClassificationLegend extends UtilityComposer {
 
-    String pid = "";
+    Query query;
+    String pid;
+    String colourmode;
     String layerLabel = "";
     String imagePath = "";
     public Slider redSlider;
@@ -55,8 +60,8 @@ public class ClassificationLegend extends UtilityComposer {
     public void afterCompose() {
         super.afterCompose();
 
-        pid = (String) (Executions.getCurrent().getArg().get("pid"));
-        System.out.println("PID:" + pid);
+        query = (Query) (Executions.getCurrent().getArg().get("query"));
+        System.out.println("Query q:" + query.getQ());
         layerLabel = (String) (Executions.getCurrent().getArg().get("layer"));
         try {
             layerLabel = URLDecoder.decode(layerLabel, "UTF-8");
@@ -64,6 +69,8 @@ public class ClassificationLegend extends UtilityComposer {
             Logger.getLogger(ClassificationLegend.class.getName()).log(Level.SEVERE, null, ex);
         }
         readonly = (Executions.getCurrent().getArg().get("readonly")) != null;
+        colourmode = (String) (Executions.getCurrent().getArg().get("colourmode"));
+        pid = (String) (Executions.getCurrent().getArg().get("pid"));
 
         if (readonly) {
             lblEdit.setVisible(false);
@@ -76,27 +83,41 @@ public class ClassificationLegend extends UtilityComposer {
 
     void buildLegend() {
         try {
-            // call get
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/get?");
-            sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
+            String slist = null;
+            
+            if(query != null) {
+                if(colourmode.equals("grid"))  {
+                    slist = "name,red,green,blue,count";
+                    for(int i=0;i<600;i+=100) {
+                        if(i == 1) {
+                            slist += ">";
+                        } else {
+                            slist += ">";
+                        }
 
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(sbProcessUrl.toString());
-
-            get.addRequestHeader("Accept", "text/plain");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-
-            // retrieve legend file
-            String[] slista = slist.split("\n");
-
-            client = new HttpClient();
-            get = new GetMethod(CommonData.satServer + "/alaspatial/" + slista[1]);
-            get.addRequestHeader("Accept", "text/plain");
-            result = client.executeMethod(get);
-            slist = get.getResponseBodyAsString();
+                        slist += "\n" + i + "," + LegendObject.getRGB(Legend.getLinearColour(i, 0, 500, 0xFFFFFF00, 0xFFFF0000)) + ",";
+                    }
+                } else {
+                    slist = query.getLegend(colourmode).getTable();
+                }
+            } else {
+                // call get
+                StringBuffer sbProcessUrl = new StringBuffer();
+                sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/layer/get?");
+                sbProcessUrl.append("pid=" + URLEncoder.encode(pid, "UTF-8"));
+                HttpClient client = new HttpClient();
+                GetMethod get = new GetMethod(sbProcessUrl.toString());
+                get.addRequestHeader("Accept", "text/plain");
+                int result = client.executeMethod(get);
+                slist = get.getResponseBodyAsString();
+                // retrieve legend file
+                String[] slista = slist.split("\n");
+                client = new HttpClient();
+                get = new GetMethod(CommonData.satServer + "/alaspatial/" + slista[1]);
+                get.addRequestHeader("Accept", "text/plain");
+                result = client.executeMethod(get);
+                slist = get.getResponseBodyAsString();
+            }
 
             String[] lines = slist.split("\r\n");
             if (lines.length == 1) {

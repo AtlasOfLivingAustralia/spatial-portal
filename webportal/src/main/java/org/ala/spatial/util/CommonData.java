@@ -4,6 +4,9 @@
  */
 package org.ala.spatial.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,6 +34,9 @@ import org.zkoss.zul.SimpleTreeNode;
  */
 public class CommonData {
 
+    //common data
+    static public final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
+    static public final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
     //common parameters
     static public final String SAT_URL = "sat_url";
     static public final String GEOSERVER_URL = "geoserver_url";
@@ -139,6 +145,8 @@ public class CommonData {
         if (copy_species_wms_layers != null) {
             species_wms_layers = copy_species_wms_layers;
         }
+
+        readLayerInfo();
     }
 
     /**
@@ -463,7 +471,7 @@ public class CommonData {
     static List getContextualClassesInit(JSONObject joLayer) {
         String layerName = joLayer.getString("name");
         String layerDisplayName = joLayer.getString("displayname");
-        String classesURL = layersServer + "/layersindex/layer/classes/cl" + joLayer.getString("id");
+        String classesURL = layersServer + "/layers-index/layer/classes/cl" + joLayer.getString("id");
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(classesURL);
         
@@ -544,5 +552,50 @@ public class CommonData {
      */
     static public String[] getSpeciesDistributionWMS(String lsid) {
         return species_wms_layers.get(lsid);
+    }
+
+    static HashMap<String,String> layerToFacet;
+    static HashMap<String,String> facetToLayer;
+    static HashMap<String,String> facetShapeNameField;
+    public static String getLayerFacetName(String layer) {
+        return layerToFacet.get(layer);
+    }
+    public static String getFacetLayerName(String facet) {
+        return facetToLayer.get(facet);
+    }
+    public static String getFacetShapeNameField(String facet) {
+        return facetShapeNameField.get(facet);
+    }
+
+    private static void readLayerInfo() {
+        try {
+            HashMap<String,String> ftl = new HashMap<String,String>();
+            HashMap<String,String> ltf = new HashMap<String,String>();
+            HashMap<String,String> fsnf = new HashMap<String,String>();
+
+            String filename = CommonData.class.getResource("/layers.txt").getFile();
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            String line;
+            while((line = br.readLine()) != null) {
+                String [] record = line.split(",");
+
+                String layer = record[1];
+                String facet = (record[2].equals("Contextual")?"cl":"el") + record[0];
+
+                ltf.put(layer,facet);
+                ftl.put(facet,layer);
+
+                if(record.length > 3) {
+                     fsnf.put(facet, record[3]);
+                }
+            }
+            br.close();
+
+            layerToFacet = ltf;
+            facetToLayer = ftl;
+            facetShapeNameField = fsnf;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

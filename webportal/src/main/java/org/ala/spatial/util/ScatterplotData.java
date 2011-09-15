@@ -4,8 +4,10 @@
  */
 package org.ala.spatial.util;
 
+import org.ala.spatial.data.SolrQuery;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
+import org.ala.spatial.data.Query;
 
 /**
  *
@@ -20,9 +22,9 @@ public class ScatterplotData implements Serializable {
     String pid;
     Rectangle2D.Double selection;
     boolean enabled;
-    SolrQuery solrQuery;
+    Query query;
     String name;
-    String backgroundLsid;
+    Query backgroundQuery;
 
     //area info
     String filterWkt;
@@ -43,9 +45,9 @@ public class ScatterplotData implements Serializable {
         enabled = false;
     }
 
-    public ScatterplotData(SolrQuery solrQuery, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
-            ,String backgroundLsid, String filterWkt, String highlightWkt, boolean envGrid) {
-        this.solrQuery = solrQuery;
+    public ScatterplotData(Query query, String name, String layer1, String layer1name, String layer2, String layer2name, String pid, Rectangle2D.Double selection, boolean enabled
+            ,Query backgroundQuery, String filterWkt, String highlightWkt, boolean envGrid) {
+        this.query = query;
         this.name = name;
         this.layer1 = layer1;
         this.layer1name = layer1name;
@@ -54,7 +56,7 @@ public class ScatterplotData implements Serializable {
         this.pid = pid;
         this.selection = selection;
         this.enabled = enabled;
-        this.backgroundLsid = backgroundLsid;
+        this.backgroundQuery = backgroundQuery;
         this.filterWkt = filterWkt;
         this.highlightWkt = highlightWkt;
         this.envGrid = envGrid;
@@ -124,8 +126,8 @@ public class ScatterplotData implements Serializable {
         return name;
     }
 
-    public String getBackgroundLsid() {
-        return backgroundLsid;
+    public Query getBackgroundQuery() {
+        return backgroundQuery;
     }
 
     public String getFilterWkt() {
@@ -140,15 +142,15 @@ public class ScatterplotData implements Serializable {
         return envGrid;
     }
 
-    public void setBackgroundLsid(String backgroundLsid) {
-        this.backgroundLsid = backgroundLsid;
+    public void setBackgroundQuery(Query backgroundQuery) {
+        this.backgroundQuery = backgroundQuery;
     }
 
-    public SolrQuery getSolrQuery() {
-        return solrQuery;
+    public Query getQuery() {
+        return query;
     }
 
-    public void setSolrQuery(SolrQuery solrQuery) {
-        this.solrQuery = solrQuery;
+    public void setQuery(Query query) {
+        this.query = query;
     }
 }

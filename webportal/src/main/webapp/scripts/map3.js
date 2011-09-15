@@ -418,26 +418,46 @@ function buildMapReal() {
     registerSpeciesClick();
 }
 
-var occlist;
-function showSpeciesInfo(occids, lon, lat) {
-    //console.log(lon + ", " + lat);
-    //console.log(occids);
-    
-    if (occids.indexOf(",")) {
-        occlist = occids.split(",");        
-    } else {
-        occlist = new Array(1);
-        occlist.push(occids);
-    }
+//var occlist;
+//function showSpeciesInfo(occids, lon, lat) {
+//    //console.log(lon + ", " + lat);
+//    //console.log(occids);
+//
+//    if (occids.indexOf(",")) {
+//        occlist = occids.split(",");
+//    } else {
+//        occlist = new Array(1);
+//        occlist.push(occids);
+//    }
+//
+//    if(occlist != null && occlist.length > 0 && occlist[0] != null && occlist[0].length > 0){
+//        var lonlat = new OpenLayers.LonLat(lon, lat).transform(
+//            new OpenLayers.Projection("EPSG:4326"),
+//            map.getProjectionObject());
+//
+//        setupPopup(occlist.length, lonlat);
+//        iterateSpeciesInfo(0);
+//
+//        var feature = popup;
+//        feature.popup = popup;
+//        popup.feature = feature;
+//        map.addPopup(popup, true);
+//    }
+//}
+var query_
+var query_size
+function showSpeciesInfoQuery(query, lon, lat, size) {
+    query_ = query
+    query_size = size
 
-    if(occlist != null && occlist.length > 0 && occlist[0] != null && occlist[0].length > 0){
+    if(size > 0){
         var lonlat = new OpenLayers.LonLat(lon, lat).transform(
             new OpenLayers.Projection("EPSG:4326"),
             map.getProjectionObject());
 
-        setupPopup(occlist.length, lonlat); 
-        iterateSpeciesInfo(0);
-        
+        setupPopup(query_size, lonlat);
+        iterateSpeciesInfoQuery(0);
+
         var feature = popup;
         feature.popup = popup;
         popup.feature = feature;
@@ -445,54 +465,107 @@ function showSpeciesInfo(occids, lon, lat) {
     }
 }
 
-function iterateSpeciesInfo(curr) {
+//function iterateSpeciesInfo(curr) {
+//    var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
+//    try {
+//        if (curr+1 < occlist.length) {
+//            nextBtn = "<a style='float: right' href='javascript:iterateSpeciesInfo("+(curr+1)+");hidePrecision();'><img src='img/arrow_right.png' /></a>"; // next &rArr;
+//        }
+//    } catch (err) {}
+//    var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
+//    try {
+//        if (curr > 0) {
+//            prevBtn = "<a href='javascript:iterateSpeciesInfo("+(curr-1)+");hidePrecision();'><img src='img/arrow_left.png' /></a>"; // &lArr; previous
+//        }
+//    } catch (err) {}
+//
+//    var occ_id = occlist[curr];
+//    //    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
+//    //        displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
+//    //    });
+//
+//    if (occ_id.indexOf("uuser")==0) {
+//        var ulyr = occ_id.substring(5,occ_id.indexOf("-"));
+//        var ulyr_occ_id = occ_id.substring(occ_id.indexOf("-")+1);
+//        for (var i=0;i<uploadSpeciesMetadata.length;i++) {
+//            if (uploadSpeciesMetadata[i][0]==ulyr) {
+//                var data = (uploadSpeciesMetadata[i][1]).replace(/_n_/g,"<br />");
+//
+//                var heading = "<h2>Occurrence information (" + (curr+1) + " of " + occlist.length + ")</h2>";
+//                if (occlist.length==1) {
+//                    heading = "<h2>Occurrence information (1 occurrence)</h2>";
+//                }
+//
+//                var infohtml = "<div id='sppopup'> " +
+//                heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
+//                "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+//
+//                setTimeout(function(){
+//                    if (document.getElementById("sppopup") != null) {
+//                        document.getElementById("sppopup").innerHTML = infohtml;
+//                    }
+//                }, 2000);
+//            }
+//        }
+//    } else {
+//        $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
+//            displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
+//        });
+//    }
+//
+//}
+
+function iterateSpeciesInfoQuery(curr) {
+    var pos = 0;
+    var curpos = curr;
+    while(curpos >= query_size[pos]) {
+        curpos -= query_size[pos];
+        pos += 1;
+    }
     var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
-        if (curr+1 < occlist.length) {
-            nextBtn = "<a style='float: right' href='javascript:iterateSpeciesInfo("+(curr+1)+");hidePrecision();'><img src='img/arrow_right.png' /></a>"; // next &rArr;
+        if (curr+1 < query_count_total) {
+            nextBtn = "<a style='float: right' href='javascript:iterateSpeciesInfoQuery("+(curr+1)+");hidePrecision();'><img src='img/arrow_right.png' /></a>"; // next &rArr;
         }
     } catch (err) {}
     var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
         if (curr > 0) {
-            prevBtn = "<a href='javascript:iterateSpeciesInfo("+(curr-1)+");hidePrecision();'><img src='img/arrow_left.png' /></a>"; // &lArr; previous
+            prevBtn = "<a href='javascript:iterateSpeciesInfoQuery("+(curr-1)+");hidePrecision();'><img src='img/arrow_left.png' /></a>"; // &lArr; previous
         }
     } catch (err) {}
 
-    var occ_id = occlist[curr];
-    //    $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
-    //        displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
-    //    });
-    
-    if (occ_id.indexOf("uuser")==0) {
-        var ulyr = occ_id.substring(5,occ_id.indexOf("-"));
-        var ulyr_occ_id = occ_id.substring(occ_id.indexOf("-")+1);
-        for (var i=0;i<uploadSpeciesMetadata.length;i++) {
-            if (uploadSpeciesMetadata[i][0]==ulyr) {
-                var data = (uploadSpeciesMetadata[i][1]).replace(/_n_/g,"<br />");
+    var url = query_url[pos] + "&start=" + curpos;
+    $.getJSON(proxy_script + URLEncode(url), function(data) {
+        if (query_[pos].indexOf("qid:") < 0) {
+            var ulyr = query_[pos];
+            var ulyr_occ_id = data.occurrences[0].id;
+            for (var i=0;i<uploadSpeciesMetadata.length;i++) {
+                if (uploadSpeciesMetadata[i][0]==ulyr) {
+                    var data = (uploadSpeciesMetadata[i][1]).replace(/_n_/g,"<br />");
 
-                var heading = "<h2>Occurrence information (" + (curr+1) + " of " + occlist.length + ")</h2>";
-                if (occlist.length==1) {
-                    heading = "<h2>Occurrence information (1 occurrence)</h2>";
-                }
-
-                var infohtml = "<div id='sppopup'> " +
-                heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
-                "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
-
-                setTimeout(function(){
-                    if (document.getElementById("sppopup") != null) {
-                        document.getElementById("sppopup").innerHTML = infohtml;
+                    var heading = "<h2>Occurrence information (" + (curr+1) + " of " + query_count_total + ")</h2>";
+                    if (query_count_total==1) {
+                        heading = "<h2>Occurrence information (1 occurrence)</h2>";
                     }
-                }, 2000);
+
+                    var infohtml = "<div id='sppopup'> " +
+                    heading + "Record id: " + ulyr_occ_id + "<br /> " + data + " <br /> <br />" +
+                    "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
+
+                    setTimeout(function(){
+                        if (document.getElementById("sppopup") != null) {
+                            document.getElementById("sppopup").innerHTML = infohtml;
+                        }
+                    }, 2000);
+                }
             }
+        } else {
+            displaySpeciesInfo(data.occurrences[0], prevBtn, nextBtn, curr, query_count_total);            
         }
-    } else {
-        $.getJSON(proxy_script + "http://biocache.ala.org.au/occurrences/"+occ_id+".json", function(data) {
-            displaySpeciesInfo(data, prevBtn, nextBtn, curr, occlist.length);
-        });
-    }
-     
+
+    });
+
 }
 
 var uploadSpeciesMetadata = null;
@@ -595,11 +668,77 @@ function removePointSearch() {
     registerSpeciesClick();
 }
 
-function pointSpeciesSearch(e) {
- 
+var query_count_total;
+function pointSpeciesSearch(e) { 
     var lonlat = map.getLonLatFromViewPortPx(e.xy);
-    //console.log(lonlat);
-    parent.setSpeciesSearchPoint(lonlat);
+    lonlat.transform(map.projection, map.displayProjection);
+
+    //parent.setSpeciesSearchPoint(lonlat);
+
+    //get all 'qid:' layers and open for paging
+    var layers = map.getLayersByClass("OpenLayers.Layer.WMS");
+
+    query_count_total = 0;
+    query_ = new Array();
+    query_size = new Array();
+    query_url = new Array();
+    var pos = 0;
+    for(var i=layers.length-1;i>=0;i--) {
+        var layer = layers[i];
+        var p0 = layer.url.indexOf("qid:");
+        var p1 = layer.url.indexOf("&", p0);
+        if(p1 < 0) p1 = layer.url.indexOf(";", p0);
+        if(p1 < 0) p1 = layer.url.length;
+        var query = null;
+        var userquery = null;
+        if(p0 < 0 || p1 < 0 || layer.params == null) {
+            var p0 = layer.url.indexOf("CQL_FILTER=");
+            var p1 = layer.url.indexOf("&", p0);            
+            if(p1 < 0) p1 = layer.url.indexOf(";", p0);            
+            if(p1 < 0) p1 = layer.url.length;            
+            if(p0 >= 0 && p1 >= 0 && layer.params != null) {
+                userquery = layer.url.substring(p0 + 11,p1);
+            }
+        } else {
+            query = layer.url.substring(p0,p1);
+        }
+        
+
+        var size = 10;
+        if(layer.params != null && layer.params.ENV != null) {
+            var p2 = layer.params.ENV.indexOf("size:");
+            p3 = layer.params.ENV.indexOf(";", p2);
+            if(p3 < 0) p3 = layer.params.ENV.length;
+
+            if(p2 >= 0 && p3 >= 0) {
+                size = layer.params.ENV.substring(p2 + 5,p3)
+            }
+        }
+
+        var data = null;
+        if(query != null) data = getOccurrence(query, lonlat.lat, lonlat.lon, 0, pos, size);
+        if(userquery != null) data = getOccurrenceUploaded(userquery, lonlat.lat, lonlat.lon, 0, pos, size);
+        if(data != null) {
+            query_count_total += query_size[pos];
+            pos += 1;
+        }
+    }
+
+    if (query_count_total == 0) {
+        return null;
+    }
+
+    var lonlat = new OpenLayers.LonLat(lonlat.lon, lonlat.lat).transform(
+    new OpenLayers.Projection("EPSG:4326"),
+    map.getProjectionObject());
+
+    setupPopup(query_count_total, lonlat);
+    iterateSpeciesInfoQuery(0)
+
+    var feature = popup;
+    feature.popup = popup;
+    popup.feature = feature;
+    map.addPopup(popup, true);
 }
 
 function registerSpeciesClick() {
@@ -951,7 +1090,7 @@ function forceRedrawVectorLayers() {
 var currFeature;
 var currFeatureCount; 
 function showInfo(curr) {
-    var info = currFeature.attributes[curr];
+    //var info = currFeature.attributes[curr];
     //    if (document.getElementById("sppopup") != null) {
     //        document.getElementById("sppopup").innerHTML = "Requesting data...";
     //    }
@@ -960,13 +1099,13 @@ function showInfo(curr) {
     //console.log(occinfo);
     var nextBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
-        if (currFeature.attributes[curr+1].id != null) {
+        if (curr + 1 < query_count) {
             nextBtn = "<a style='float: right' href='javascript:parent.showInfo("+(curr+1)+");hidePrecision();'><img src='img/arrow_right.png' /></a>"; // next &rArr;
         }
     } catch (err) {}
     var prevBtn = " &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
     try {
-        if (currFeature.attributes[curr-1].id != null) {
+        if (curr > 0) {
             prevBtn = "<a href='javascript:parent.showInfo("+(curr-1)+");hidePrecision();'><img src='img/arrow_left.png' /></a>"; // &lArr; previous
         }
     } catch (err) {}
@@ -991,15 +1130,19 @@ function showInfo(curr) {
                 kingdom = '<a href="http://bie.ala.org.au/species/'+occinfo.kingdomLsid+'" target="_blank">'+kingdom+'</a>';
             }
 
-            var occurrencedate = occinfo.occurrenceDate;
-            var uncertainty = occinfo.coordinatePrecision;
+            var occurrencedate = "";
+            if(occinfo.year && occinfo.month) {
+                occurrencedate = occinfo.month + "/" + occinfo.year;
+            } else if (occinfo.year) {
+                occurrencedate = occinfo.year
+            }
+            var uncertainty = occinfo.coordinateUncertaintyInMeters;
             var uncertaintyText = uncertainty + " metres";
             if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
                 uncertaintyText = "<b>Undefined!</b>";
                 uncertainty = 10000;
             }
-            if (!occurrencedate) occurrencedate="";
-
+            
             var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
             " Scientific name: " + species + " <br />" +
             " Kingdom: " + kingdom + " <br />" +
@@ -1070,14 +1213,18 @@ function showInfoOne() {
             kingdom = '<a href="http://bie.ala.org.au/species/'+occinfo.kingdomLsid+'" target="_blank">'+kingdom+'</a>';
         }
 
-        var occurrencedate = occinfo.occurrenceDate;
-        var uncertainty = occinfo.coordinatePrecision;
+        var occurrencedate = "";
+        if(occinfo.year && occinfo.month) {
+            occurrencedate = occinfo.month + "/" + occinfo.year;
+        } else if (occinfo.year) {
+            occurrencedate = occinfo.year
+        }
+        var uncertainty = occinfo.coordinateUncertaintyInMeters;
         var uncertaintyText = uncertainty + " metres";
         if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
             uncertaintyText = "<b>Undefined! </b>";
             uncertainty = 10000;
         }
-        if (!occurrencedate) occurrencedate="";
 
         var infohtml = "<div id='sppopup'> <h2>Occurrence information</h2>" +
         " Scientific name: " + species + " <br />" +
@@ -1160,42 +1307,45 @@ function setupPopup(count, centerlonlat) {
 }
 
 function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
-    var occinfo = data.occurrence;
+    var occinfo = data;
 
     //    var species = occinfo.species;
     //    if (occinfo.speciesLsid != null) {
     //        species = '<a href="http://bie.ala.org.au/species/'+occinfo.speciesLsid+'" target="_blank">'+species+'</a>';
     //    }
 
-    var rank = occinfo.rank;
-    var speciesname = eval("occinfo."+occinfo.rank);
-    var specieslsid = eval("occinfo."+occinfo.rank+"Lsid");
+    var rank = occinfo.taxonRank;
+    var speciesname = occinfo.scientificName;
+    var specieslsid = occinfo.taxonConceptID;
     species = (speciesname!=null)?speciesname:"";
     if (specieslsid != null) {
         species = '<a href="http://bie.ala.org.au/species/'+specieslsid+'" target="_blank">'+species+'</a>';
     } else {
-        species = species + ' (<i>Supplied as: "' + data.rawOccurrence.scientificName + '"</i>) ';
+        species = species + ' (<i>Supplied as: "' + occinfo.scientificName + '"</i>) ';
     }
 
     var family = occinfo.family;
-    if (occinfo.familyLsid != null) {
-        family = '<a href="http://bie.ala.org.au/species/'+occinfo.familyLsid+'" target="_blank">'+family+'</a>';
+    if (occinfo.family != null) {
+        family = '<a href="http://bie.ala.org.au/species/'+occinfo.family+'" target="_blank">'+family+'</a>';
     }
 
     var kingdom = occinfo.kingdom;
-    if (occinfo.kingdomLsid != null) {
-        kingdom = '<a href="http://bie.ala.org.au/species/'+occinfo.kingdomLsid+'" target="_blank">'+kingdom+'</a>';
+    if (occinfo.kingdom != null) {
+        kingdom = '<a href="http://bie.ala.org.au/species/'+occinfo.kingdom+'" target="_blank">'+kingdom+'</a>';
     }
 
-    var occurrencedate = occinfo.occurrenceDate;
-    var uncertainty = occinfo.coordinatePrecision;
+    var occurrencedate = "";
+    if(occinfo.year && occinfo.month) {
+        occurrencedate = occinfo.month + "/" + occinfo.year;
+    } else if (occinfo.year) {
+        occurrencedate = occinfo.year
+    }
+    var uncertainty = occinfo.coordinateUncertaintyInMeters;
     var uncertaintyText = uncertainty + " metres";
     if(uncertainty == "" || uncertainty == undefined || uncertainty == null) {
         uncertaintyText = "<b>Undefined! </b>"; // setting to 10km
         uncertainty = 10000;
     }
-    if (!occurrencedate) occurrencedate="";
-
     var heading = "<h2>Occurrence information (" + (curr+1) + " of " + total + ")</h2>";
     if (total==1) {
         heading = "<h2>Occurrence information (1 occurrence)</h2>";
@@ -1208,11 +1358,11 @@ function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     " Kingdom: " + kingdom + " <br />" +
     " Family: " + family + " <br />" +
     //" Occ-id: " + data.id + "</a> <br />" +
-    " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProvider + "</a> <br />" +
-    " Longitude: "+occinfo.longitude + " , Latitude: " + occinfo.latitude + " (<a href='javascript:goToLocation("+occinfo.longitude+", "+occinfo.latitude+", 15)'>zoom to</a>) <br/>" +
+    " Data provider: <a href='http://collections.ala.org.au/public/show/" + occinfo.dataProviderUid + "' target='_blank'>" + occinfo.dataProviderName + "</a> <br />" +
+    " Longitude: "+occinfo.decimalLongitude + " , Latitude: " + occinfo.decimalLatitude + " (<a href='javascript:goToLocation("+occinfo.decimalLongitude+", "+occinfo.decimalLatitude+", 15)'>zoom to</a>) <br/>" +
     " Spatial uncertainty in metres: " + uncertaintyText + "<br />" + //  (<a href='javascript:showPrecision("+uncertainty+")'>view</a>)
     " Occurrence date: " + occurrencedate + " <br />" +
-    "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occinfo.id + "' target='_blank'>View details</a> <br /> <br />" +
+    "Species Occurence <a href='http://biocache.ala.org.au/occurrences/" + occinfo.uuid + "' target='_blank'>View details</a> <br /> <br />" +
     "<div id=''>"+prevBtn+" &nbsp; &nbsp; &nbsp; &nbsp; "+nextBtn+"</div>";
 
     if (document.getElementById("sppopup") != null) {
@@ -3114,6 +3264,66 @@ function getLayerValue(layer, lat, lon) {
         },
         async: false
     });
-    var j = parent.jq.parseJSON(ret);
     return parent.jq.parseJSON(ret);
 }
+
+function getOccurrence(query, lat, lon, start, pos, dotradius) {
+    dotradius = dotradius*1 + 3
+    var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
+            new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
+    var lonlat = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(px.x + dotradius, px.y + dotradius)).transform(
+            map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));    
+    var lonSize = Math.abs(lon - lonlat.lon);
+    var latSize = Math.abs(lat - lonlat.lat);
+    var url = parent.jq('$biocache_url')[0].innerHTML + "/webportal/occurrences?q=" + query
+        + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
+        + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
+        + "&pageSize=1&facets=none";  
+    var ret = null;
+    $.ajax({
+        url: proxy_script + URLEncode(url + "&start=" + start),
+        success: function(data){
+            ret = parent.jq.parseJSON(data);
+        },
+        async: false
+    });
+    query_size[pos] = 0;
+    if(ret != null) {
+        query_size[pos] = ret.totalRecords;
+        query_[pos] = query;
+        query_url[pos] = url;
+        return ret.occurrences[0];
+    } else {
+        return null;
+    }
+}
+
+function getOccurrenceUploaded(query, lat, lon, start, pos, dotradius) {
+    dotradius = dotradius*1 + 3
+    var px = map.getViewPortPxFromLonLat(new OpenLayers.LonLat(lon,lat).transform(
+            new OpenLayers.Projection("EPSG:4326"),map.getProjectionObject()));
+    var lonlat = map.getLonLatFromViewPortPx(new OpenLayers.Pixel(px.x + dotradius, px.y + dotradius)).transform(
+            map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+    var lonSize = Math.abs(lon - lonlat.lon);
+    var latSize = Math.abs(lat - lonlat.lat);
+    var url = parent.jq('$print_server_url')[0].innerHTML + "ws/occurrences?q=" + query
+        + "&box=" + (lon-lonSize) + "," + (lat-latSize) + "," + (lon+lonSize) + "," + (lat+latSize);
+    var ret = null;
+    $.ajax({
+        url: proxy_script + URLEncode(url + "&start=" + start),
+        success: function(data){
+            ret = parent.jq.parseJSON(data);
+        },
+        async: false
+    });
+    query_size[pos] = 0;
+    if(ret != null) {
+        query_size[pos] = ret.totalRecords;
+        query_[pos] = query;
+        query_url[pos] = url;
+        return ret.occurrences[0];
+    } else {
+        return null;
+    }
+}
+

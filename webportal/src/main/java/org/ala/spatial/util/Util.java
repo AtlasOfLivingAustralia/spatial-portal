@@ -275,7 +275,7 @@ public class Util {
 
                 for (String area : areas) {
                     area = StringUtils.replace(area, "MULTIPOLYGON((", "");
-                    area = StringUtils.replace(area, "POLYGON((", "");
+                    area = StringUtils.replace(area, "POLYGON(", "");
                     area = StringUtils.replace(area, ")", "");
                     area = StringUtils.replace(area, "(", "");
 

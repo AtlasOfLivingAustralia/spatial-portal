@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -103,12 +103,12 @@ public class AreaToolComposer extends UtilityComposer {
                     mapSpeciesInArea();
                 } else if (winProps.get("filter") != null && (Boolean) winProps.get("filter")) {
                     MapLayer ml = getMapComposer().mapSpecies(
-                            new SolrQuery((String) winProps.get("lsid"),wkt, null)
+                            new SolrQuery((String) winProps.get("lsid"), wkt, null, null)
                             , (String) winProps.get("name")
                             , (String) winProps.get("s")
                             , (Integer) winProps.get("featureCount")
                             , (Integer) winProps.get("type")
-                            , wkt);
+                            , wkt, -1);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -118,12 +118,12 @@ public class AreaToolComposer extends UtilityComposer {
                     md.setSpeciesRank((String) winProps.get("rank"));
                 } else if (winProps.get("filterGrid") != null && (Boolean) winProps.get("filterGrid")) {
                     MapLayer ml = getMapComposer().mapSpecies(
-                            new SolrQuery((String) winProps.get("lsid"),wkt, null)
+                            new SolrQuery((String) winProps.get("lsid"),wkt, null, null)
                             , (String) winProps.get("name")
                             , (String) winProps.get("s")
                             , (Integer) winProps.get("featureCount")
                             , (Integer) winProps.get("type")
-                            , wkt);
+                            , wkt, -1);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -133,12 +133,12 @@ public class AreaToolComposer extends UtilityComposer {
                     md.setSpeciesRank((String) winProps.get("rank"));
                 } else if (winProps.get("byLsid") != null && (Boolean) winProps.get("byLsid")) {
                     MapLayer ml = getMapComposer().mapSpecies(
-                            new SolrQuery((String) winProps.get("lsid"),wkt, null)
+                            new SolrQuery((String) winProps.get("lsid"),wkt, null,null)
                             ,(String) winProps.get("name")
                             , (String) winProps.get("s")
                             , (Integer) winProps.get("featureCount")
                             , (Integer) winProps.get("type")
-                            , wkt);
+                            , wkt, -1);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -147,11 +147,11 @@ public class AreaToolComposer extends UtilityComposer {
                     md.setMoreInfo((String) winProps.get("metadata"));
                 } else {              
                     getMapComposer().mapSpecies(
-                            new SolrQuery((String) winProps.get("lsid"),wkt, null),
+                            new SolrQuery((String) winProps.get("lsid"),wkt, null, null),
                             (String) winProps.get("taxon"),
                             (String) winProps.get("rank"),
                             0, LayerUtilities.SPECIES
-                            , wkt);
+                            , wkt, -1);
                 }
             } //else cancel clicked, don't return to mapspeciesinarea popup
         }
@@ -168,7 +168,7 @@ public class AreaToolComposer extends UtilityComposer {
         try {
             String wkt = layers.get(0).getWKT();
 
-            SolrQuery sq = new SolrQuery(null, wkt, null);
+            SolrQuery sq = new SolrQuery(null, wkt, null,  null);
             int results_count_occurrences = sq.getOccurrenceCount();
 
             //test limit
@@ -179,7 +179,7 @@ public class AreaToolComposer extends UtilityComposer {
                         , "species"
                         , results_count_occurrences
                         , LayerUtilities.SPECIES
-                        , wkt);
+                        , wkt, -1);
 
                 //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
             } else {

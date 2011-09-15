@@ -960,7 +960,7 @@ public class MapLayer extends AbstractIdentifierImpl implements TreeMenuValue, C
     }
 
     public boolean isSpeciesLayer() {
-        return (mapLayerMetadata != null && mapLayerMetadata.getSpeciesLsid() != null);
+        return (getData("query") != null);
     }
 
     public boolean isGridLayer() {

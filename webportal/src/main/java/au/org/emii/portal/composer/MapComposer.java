@@ -46,11 +46,14 @@ import net.sf.json.JSONObject;
 import org.ala.spatial.analysis.web.SpeciesAutoComplete;
 import org.ala.spatial.analysis.web.ContextualMenu;
 import org.ala.spatial.analysis.web.HasMapLayer;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.LayersUtil;
 import org.ala.spatial.util.ScatterplotData;
 import org.ala.spatial.util.ShapefileUtils;
-import org.ala.spatial.util.SolrQuery;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.util.Util;
 import org.ala.spatial.wms.RecordsLookup;
 import org.apache.commons.httpclient.HttpClient;
@@ -193,20 +196,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             }
         }
     }
-
-//    public void onScroll$opacitySlider(Event e) {
-//        float opacity = ((float) opacitySlider.getCurpos()) / 100;
-//        int percentage = (int) (opacity * 100);
-//        opacitySlider.setCurpos(percentage);
-//        opacityLabel.setValue(percentage + "%");
-//
-//        applyChange();
-//    }
-//    public void applyChange() {
-//        MapLayer selectedLayer = this.getActiveLayersSelection(true);
-//        applyChange(selectedLayer);
-//    }
-    //redisplay layer
+    
     public void applyChange(MapLayer selectedLayer) {
         if (selectedLayer != null && selectedLayer.isDisplayed()) {
             /* different path for each type layer
@@ -223,36 +213,6 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 selectedLayer.setEnvColour(rgbColour);
 
                 if (selectedLayer.getType() == LayerUtilities.GEOJSON) {
-                    //if this is a cluster, update geojson for new cluster radius and density
-                    if (selectedLayer.getGeoJSON() != null && selectedLayer.getGeoJSON().length() > 0) {
-                        try {
-                            String lsid = selectedLayer.getMapLayerMetadata().getSpeciesLsid();
-                            lsid = StringUtils.replace(lsid, ".", "__");
-                            lsid = URLEncoder.encode(lsid, "UTF-8");
-                            String area = getViewArea();
-                            StringBuffer sbProcessUrl = new StringBuffer();
-                            MapLayerMetadata md = new MapLayerMetadata();
-                            md.setLayerExtent(area, 0.2);
-                            sbProcessUrl.append(CommonData.satServer).append("/alaspatial/");
-                            sbProcessUrl.append("species");
-                            sbProcessUrl.append("/cluster/").append(lsid);
-                            sbProcessUrl.append("/area/").append(URLEncoder.encode(md.getLayerExtentString(), "UTF-8"));
-                            sbProcessUrl.append("/id/").append(System.currentTimeMillis());
-                            sbProcessUrl.append("/now");
-                            sbProcessUrl.append("?z=").append(String.valueOf(mapZoomLevel));
-                            sbProcessUrl.append("&m=").append(String.valueOf(selectedLayer.getSizeVal() * 2));
-                            HttpClient client = new HttpClient();
-                            GetMethod post = new GetMethod(sbProcessUrl.toString());
-                            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-                            int result = client.executeMethod(post);
-                            String slist = post.getResponseBodyAsString();
-                            selectedLayer.setGeoJSON(slist);
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
                     openLayersJavascript.redrawFeatures(selectedLayer);
                 } else if (selectedLayer.getType() == LayerUtilities.WKT) {
                     openLayersJavascript.redrawWKTFeatures(selectedLayer);
@@ -268,7 +228,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                     envString += ";name:circle;size:" + selectedLayer.getSizeVal();
                     envString += ";opacity:" + selectedLayer.getOpacity();
                     if (selectedLayer.getHighlight() != null) {
-                        envString += ";sel:" + selectedLayer.getHighlight();
+                        envString += ";sel:" + selectedLayer.getHighlight();                        
                     } else if (selectedLayer.getSizeUncertain()) {
                         envString += ";uncertainty:1";
                     }
@@ -406,7 +366,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         String lsid = (String) (sac.getSelectedItem().getAnnotatedProperties().get(0));
 
-        mapSpecies(new SolrQuery(lsid, wkt, null), taxon, rank, 0, LayerUtilities.SPECIES, wkt);
+        mapSpecies(QueryUtil.get(lsid, this).newWkt(wkt), taxon, rank, 0, LayerUtilities.SPECIES, wkt, -1);
 
         System.out.println(">>>>> " + taxon + ", " + rank + " <<<<<");
     }
@@ -1075,23 +1035,23 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return null;
     }
 
-    public MapLayer getMapLayerSpeciesLSID(String lsid) {
-        // check if layer already present
-        List udl = getPortalSession().getActiveLayers();
-        Iterator iudl = udl.iterator();
-        System.out.println("session active layers: " + udl.size() + " looking for: " + lsid);
-        while (iudl.hasNext()) {
-            MapLayer ml = (MapLayer) iudl.next();
-            System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
-            MapLayerMetadata md = ml.getMapLayerMetadata();
-            if (md != null && md.getSpeciesLsid() != null
-                    && md.getSpeciesLsid().equalsIgnoreCase(lsid)) {
-                return ml;
-            }
-        }
-
-        return null;
-    }
+//    public MapLayer getMapLayerSpeciesLSID(String lsid) {
+//        // check if layer already present
+//        List udl = getPortalSession().getActiveLayers();
+//        Iterator iudl = udl.iterator();
+//        System.out.println("session active layers: " + udl.size() + " looking for: " + lsid);
+//        while (iudl.hasNext()) {
+//            MapLayer ml = (MapLayer) iudl.next();
+//            System.out.println("layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS());
+//            MapLayerMetadata md = ml.getMapLayerMetadata();
+//            if (md != null && md.getSpeciesLsid() != null
+//                    && md.getSpeciesLsid().equalsIgnoreCase(lsid)) {
+//                return ml;
+//            }
+//        }
+//
+//        return null;
+//    }
 
     public void removeLayer(String label) {
         if (safeToPerformMapAction()) {
@@ -1832,7 +1792,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public void echoMapSpeciesByLSID(Event event) {
         String lsid = (String) event.getData();
         try {
-            mapSpecies(new SolrQuery(lsid, null, null), lsid, "species", -1, LayerUtilities.SPECIES, null);
+            mapSpecies(QueryUtil.get(lsid, this), lsid, "species", -1, LayerUtilities.SPECIES, null, -1);
         } catch (Exception e) {
             //try again
             Events.echoEvent("echoMapSpeciesByLSID", this, lsid);
@@ -2336,75 +2296,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 continue;
             }
             System.out.println("checking reload layer: " + ml.getName() + " - " + ml.getId() + " - " + ml.getNameJS() + " -> type: " + ml.getType() + "," + ml.getGeometryType());
-            if (ml.getType() == LayerUtilitiesImpl.GEOJSON
-                    && ml.getGeometryType() == GeoJSONUtilities.POINT
-                    && ml.getMapLayerMetadata() != null) {
-                if (ml.getGeoJSON() != null && ml.getGeoJSON().length() > 0) {
-                    String baseuri = ml.getUri();
-                    if (baseuri.indexOf("?z=") > -1) {
-                        baseuri = baseuri.substring(0, baseuri.indexOf("?z="));
-                    }
-
-                    String reqUri = "";
-
-                    StringBuffer sbProcessUrl = new StringBuffer();
-                    try {
-                        if (ml.getMapLayerMetadata() != null && ml.getMapLayerMetadata().getSpeciesLsid() != null) {
-                            //cluster
-                            if (mapZoomChanged || ml.getMapLayerMetadata().isOutside(getViewArea())) {
-                                ml.getMapLayerMetadata().setLayerExtent(getViewArea(), 0.2);
-
-                                String lsid = ml.getMapLayerMetadata().getSpeciesLsid();
-                                lsid = StringUtils.replace(lsid, ".", "__");
-                                lsid = URLEncoder.encode(lsid, "UTF-8");
-                                sbProcessUrl.append("/species");
-                                sbProcessUrl.append("/cluster/").append(lsid);
-                                sbProcessUrl.append("/area/").append(URLEncoder.encode(ml.getMapLayerMetadata().getLayerExtentString(), "UTF-8"));
-                                sbProcessUrl.append("/id/").append(System.currentTimeMillis());
-                                sbProcessUrl.append("/now");
-                                reqUri = CommonData.satServer + "/alaspatial/"
-                                        + sbProcessUrl.toString()
-                                        + "?" + tbxReloadLayers + "&m="
-                                        + (ml.getSizeVal() * 2);
-                            }
-                        } else {
-                            //points
-                            try {
-                                if (mapZoomChanged || ml.getMapLayerMetadata().isOutside(getViewArea())) {
-                                    ml.getMapLayerMetadata().setLayerExtent(getViewArea(), 0.2);
-
-                                    reqUri = ml.getUri() + "?" + tbxReloadLayers
-                                            + "&a=" + URLEncoder.encode(ml.getMapLayerMetadata().getLayerExtentString(), "UTF-8")
-                                            + "&m=" + (ml.getSizeVal() * 2);
-                                }
-                            } catch (Exception e) {
-                                //map layer metadata layer extents not always set?
-                            }
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Unabled to set sp.cluster url");
-                        e.printStackTrace(System.out);
-                    }
-
-                    if (reqUri.length() > 0) {
-                        try {
-                            HttpClient client = new HttpClient();
-                            GetMethod post = new GetMethod(reqUri);
-                            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-                            int result = client.executeMethod(post);
-                            String slist = post.getResponseBodyAsString();
-                            ml.setGeoJSON(slist);
-                        } catch (Exception e) {
-                            System.out.println("error loading new geojson:");
-                            e.printStackTrace(System.out);
-                        }
-                        if (ml.isDisplayed()) {
-                            reloadScript += openLayersJavascript.reloadMapLayer(ml);
-                        }
-                    }
-                }
-            }
+            
             processedLayers.add(ml.getName());
         }
 
@@ -2492,7 +2384,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 //    }
 
     //public MapLayer mapSpeciesByLsid(String lsid, String species, String rank, int count, int subType, String wkt) {
-    public MapLayer mapSpecies(SolrQuery sq, String species, String rank, int count, int subType, String wkt) {    
+    public MapLayer mapSpecies(Query sq, String species, String rank, int count, int subType, String wkt, int setGrid) {
+        //ensure records are available to WMS service
+//        if(RecordsLookup.getData(sq.getQ()) == null) {
+//            ArrayList<QueryField> fields = sq.getFacetFieldList();
+//            double [] points = sq.getPoints(fields);
+//            RecordsLookup.putData(sq.getQ(), points, fields);
+//        }
+
         if (species == null) {
             species = sq.getName();
             rank = sq.getRank();
@@ -2502,10 +2401,17 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             count = sq.getOccurrenceCount();
         }
 
-        //use # of points cutoff;        
-        MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt,
-                (sq.getOccurrenceCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD)
-                || (Executions.getCurrent().isExplorer() && sq.getOccurrenceCount() > 200)));
+        //use # of points cutoff;
+        boolean grid;
+        if(setGrid == 0) {
+            grid = false;
+        } else if(setGrid == 1) {
+            grid = true;
+        } else {
+            grid = (sq.getOccurrenceCount() > settingsSupplementary.getValueAsInt(POINTS_CLUSTER_THRESHOLD)
+                || (Executions.getCurrent().isExplorer() && sq.getOccurrenceCount() > 200));
+        }
+        MapLayer ml = mapSpeciesFilter(sq, species, rank, count, subType, wkt,grid);
 
         if (ml != null) {
             MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -2513,7 +2419,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 md = new MapLayerMetadata();
                 ml.setMapLayerMetadata(md);
             }
-            md.setSpeciesLsid(sq.getShortQuery());
+            //md.setSpeciesLsid(sq.getShortQuery());
             md.setSpeciesDisplayName(species);
             md.setSpeciesRank(rank);
             md.setOccurrencesCount(count);  //for Active Area mapping
@@ -2526,58 +2432,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ml;
     }
 
-//    int countOfLsid(String lsid) {
-//        int count = 0;
-//        //get bounding box for lsid
-//        try {
-//            //cluster, must have an lsid
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append(CommonData.satServer);
-//            sbProcessUrl.append("/alaspatial/species/lsid/").append(lsid);
-//            sbProcessUrl.append("/count");
-//            HttpClient client = new HttpClient();
-//            GetMethod post = new GetMethod(sbProcessUrl.toString());
-//            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//            int result = client.executeMethod(post);
-//            String slist = post.getResponseBodyAsString();
-//            count = Integer.parseInt(slist);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return count;
-//    }
-
-    void addLsidBoundingBoxToMetadata(MapLayerMetadata md, String lsid) {
+    void addLsidBoundingBoxToMetadata(MapLayerMetadata md, Query query) {
         //get bounding box for lsid
-        List<Double> bb = new ArrayList<Double>();
-
-        double [] points = (double []) ((Object[]) RecordsLookup.getData(lsid))[0];
-
-        if(points != null && points.length > 0) {
-            double minx, miny, maxx, maxy;
-            minx = points[0];
-            maxx = points[0];
-            miny = points[1];
-            maxy = points[1];
-            for(int i=0;i<points.length;i+=2) {
-                if(minx > points[i]) minx = points[i];
-                if(maxx < points[i]) maxx = points[i];
-                if(miny > points[i + 1]) miny = points[i+1];
-                if(maxy < points[i + 1]) maxy = points[i+1];
-            }
-
-            bb.add(minx);
-            bb.add(miny);
-            bb.add(maxx);
-            bb.add(maxy);
-        } else {
-            //default to 'world' bb, with offset so zooming still works
-            bb.clear();
-            bb.add(-180.0 + 10);
-            bb.add(-90.0 + 10);
-            bb.add(180.0 - 10);
-            bb.add(90.0 - 10);
-        }
+        List<Double> bb = query.getBBox();
 
         md.setBbox(bb);
     }
@@ -2609,26 +2466,26 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-    public MapLayer mapSpeciesFilter(SolrQuery sq, String species, String rank, int count, int subType, String wkt, boolean grid) {
-        String filter = rank + sq.getShortQuery() + (grid?";colormode:grid":"");
+    MapLayer mapSpeciesFilter(Query q, String species, String rank, int count, int subType, String wkt, boolean grid) {
+        String filter = q.getQ();
 
-        loadDistributionMap(sq.getSingleLsid(),species,wkt);
+        loadDistributionMap(q.getQ().replace("lsid:", ""),species,wkt);
 
-        MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType);
+        MapLayer ml = mapSpeciesWMSByFilter(getNextAreaLayerName(species), filter, subType, q, grid);
 
         if (ml != null) {
             addToSession(ml.getName(), filter);
 
-            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", sq.getSingleLsid());
+//            String infoUrl = getSettingsSupplementary().getValue(SPECIES_METADATA_URL).replace("_lsid_", q.getSingleLsid());
             MapLayerMetadata md = ml.getMapLayerMetadata();
             if (md == null) {
                 md = new MapLayerMetadata();
                 ml.setMapLayerMetadata(md);
             }
-            md.setMoreInfo(infoUrl + "\n" + species);
-            md.setSpeciesLsid(sq.getShortQuery());
+//            md.setMoreInfo(infoUrl + "\n" + species);
+//            md.setSpeciesLsid(sq.getShortQuery());
             md.setSpeciesDisplayName(species);
-            md.setSpeciesDisplayLsid(sq.getShortQuery());
+//            md.setSpeciesDisplayLsid(sq.getShortQuery());
             md.setSpeciesRank(rank);
             md.setOccurrencesCount(count);
 
@@ -2638,7 +2495,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 ml.setColourMode("grid");
             }
 
-            addLsidBoundingBoxToMetadata(md, sq.getShortQuery());
+            addLsidBoundingBoxToMetadata(md, q);
 
             refreshContextualMenu();
         }
@@ -2646,7 +2503,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         return ml;
     }
 
-    public MapLayer mapSpeciesWMSByFilter(String label, String filter, int subType) {
+    MapLayer mapSpeciesWMSByFilter(String label, String filter, int subType, Query query, boolean grid) {
         String uri;
         String layerName = "ALA:occurrences";
         String sld = "species_point";
@@ -2673,7 +2530,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
         String envString = "";
-        if (filter.contains("colormode")) {
+        if (grid) {
             //colour mode is in 'filter' but need to move it to envString
             envString += "colormode:grid";
         } else {
@@ -2686,8 +2543,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         //uri = geoServer + "/geoserver/wms?";
         uri = //CommonData.satServer
-                settingsSupplementary.getValue("print_server_url")
-                + "ws/wms/reflect?";
+                //settingsSupplementary.getValue("print_server_url")
+                query.getUrl();
         uri += "service=WMS&version=1.1.0&request=GetMap&styles=&format=image/png";
         uri += "&layers=ALA:occurrences";
         uri += "&transparent=true"; // "&env=" + envString +
@@ -2725,6 +2582,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                             md = new MapLayerMetadata();
                             ml.setMapLayerMetadata(md);
                         }
+
+                        ml.setData("query", query);
 
                         updateLayerControls();
 
@@ -3222,7 +3081,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void loadScatterplot(ScatterplotData data, String lyrName) {
-        MapLayer ml = mapSpecies(data.getSolrQuery(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null);
+        MapLayer ml = mapSpecies(data.getQuery(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null, 0);
         ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
         ml.setData("scatterplotData", data);
@@ -3244,9 +3103,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         while (iudl.hasNext()) {
             MapLayer ml = (MapLayer) iudl.next();
             MapLayerMetadata md = ml.getMapLayerMetadata();
-            if (md != null
-                    && md.getSpeciesLsid() != null
-                    && md.getSpeciesLsid().equals(data.getSolrQuery().getShortQuery())) {
+            if (ml.isSpeciesLayer()
+                    && ml.getData("query").equals(data.getQuery().toString())){
 
                 mapLayer = ml;
 
@@ -3272,21 +3130,20 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         if (remapLayer) {
             //map as WMS points layer
-            mapLayer = mapSpecies(data.getSolrQuery(), data.getSpeciesName(),
+            mapLayer = mapSpecies(data.getQuery(), data.getSpeciesName(),
                     (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getSpeciesRank() : "species",
                     (mapLayer != null && mapLayer.getMapLayerMetadata() != null) ? mapLayer.getMapLayerMetadata().getOccurrencesCount() : 0,
-                    LayerUtilities.SPECIES, null);
+                    LayerUtilities.SPECIES, null, -1);
             if (mapLayer != null) {
                 MapLayerMetadata md = mapLayer.getMapLayerMetadata();
                 if (md == null) {
                     md = new MapLayerMetadata();
                     mapLayer.setMapLayerMetadata(md);
                 }
-                md.setSpeciesLsid(data.getSolrQuery().getShortQuery());
                 md.setSpeciesDisplayName(data.getSpeciesName());
                 md.setSpeciesRank(rank);
 
-                updateUserLogMapSpecies(data.getSolrQuery().toString());
+                updateUserLogMapSpecies(data.getQuery().getQ());
             }
         }
 
@@ -3318,9 +3175,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         while (iudl.hasNext()) {
             MapLayer ml = (MapLayer) iudl.next();
             MapLayerMetadata md = ml.getMapLayerMetadata();
-            if (md != null
-                    && md.getSpeciesLsid() != null
-                    && md.getSpeciesLsid().equals(data.getSolrQuery().getShortQuery())
+            if (ml.isSpeciesLayer()
+                    && ml.getData("query").toString().equals(data.getQuery().toString())
                     && ml.getHighlight() != null) {
 
                 ml.setHighlight(null);
@@ -3337,25 +3193,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     public West getMenus() {
         return menus;
     }
-
-//    private boolean isUserUploadedCoordinates(MapLayer currentSelection) {
-//        //check for user uploaded coordinates
-//        boolean isUserUploadedCoordinates = false;
-//        try {
-//            String satServer = settingsSupplementary.getValue(CommonData.SAT_URL);
-//            String lsid = currentSelection.getMapLayerMetadata().getSpeciesLsid();
-//            HttpClient client = new HttpClient();
-//            GetMethod get = new GetMethod(satServer + "/species/colouroptions?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
-//            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//            int result = client.executeMethod(get);
-//            String slist = get.getResponseBodyAsString();
-//            if (slist != null && slist.length() == 0) {
-//                isUserUploadedCoordinates = true;
-//            }
-//        } catch (Exception e) {
-//        }
-//        return isUserUploadedCoordinates;
-//    }
+    
     public String getNextAreaLayerName(String layerPrefix) {
         layerPrefix += " ";
         int i = 1;
@@ -3474,7 +3312,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             } catch (Exception e) {
             }
         }
-
+        
         MapLayer selectedLayer = this.getActiveLayersSelection(false);
         if (selectedLayer == null) {
             if (activeLayersList.getItemCount() > 0) {
@@ -3544,10 +3382,9 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
         llc2MapLayer = ml;
         llc2 = (LayerLegendComposer2) Executions.createComponents("WEB-INF/zul/LayerLegend2.zul", layerControls, null);
-        MapLayerMetadata md = ml.getMapLayerMetadata();
         llc2.init(
                 ml,
-                (md != null) ? md.getSpeciesLsid() : null,
+                (Query) ml.getData("query"),
                 ml.getRedVal(),
                 ml.getGreenVal(),
                 ml.getBlueVal(),
@@ -3649,8 +3486,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
         ArrayList<MapLayer> list = new ArrayList<MapLayer>();
         List<MapLayer> allLayers = getPortalSession().getActiveLayers();
         for (int i = 0; i < allLayers.size(); i++) {
-            if (allLayers.get(i).getMapLayerMetadata() != null
-                    && allLayers.get(i).getMapLayerMetadata().getSpeciesLsid() != null
+            if (allLayers.get(i).getData("query") != null
                     && allLayers.get(i).getSubType() != LayerUtilities.SCATTERPLOT) {
                 list.add(allLayers.get(i));
             }
@@ -3706,114 +3542,112 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
      * found at the location (for the current top contextual layer).
      * @param event triggered by the usual javascript trickery
      */
-    public void onSearchSpeciesPoint(Event event) {
-        String searchSpeciesPoint = (String) event.getData();
-
-        String params[] = searchSpeciesPoint.split(",");
-        double lon = Double.parseDouble(params[0]);
-        double lat = Double.parseDouble(params[1]);
-
-        int zoom = getMapComposer().getMapZoom();
-
-        double BUFFER_DISTANCE = 0.1;
-
-        String response = "";
-
-        try {
-
-            Map speciesfilters = (Map) Sessions.getCurrent().getAttribute("speciesfilters");
-            if (speciesfilters == null) {
-                return;
-            }
-
-            boolean hasActiveArea = false;
-            String lsidtypes = "";
-            String lsids = "";
-            Iterator it = speciesfilters.keySet().iterator();
-            while (it.hasNext()) {
-                String lt = (String) it.next();
-                String li = (String) speciesfilters.get(lt);
-                li = li.split("=")[1];
-                li = li.replaceAll("'", "");
-                if (li.indexOf(";color") > 0) {
-                    li = li.substring(0, li.indexOf(";color"));
-                }
-
-                if (!getMapLayerSpeciesLSID(li).isDisplayed()) {
-                    continue;
-                }
-
-                lsidtypes += "type=" + lt;
-                if (li.equalsIgnoreCase("aa")) {
-                    hasActiveArea = true;
-                }
-                if (it.hasNext()) {
-                    lsidtypes += "&";
-                }
-
-                lsids += "lsid=" + URLEncoder.encode(li, "UTF-8");
-                if (it.hasNext()) {
-                    lsids += "&";
-                }
-            }
-
-            String reqUri;
-
-            //get max radius for visible points layers
-            int maxSize = 0;
-            List udl = getMapComposer().getPortalSession().getActiveLayers();
-            Iterator iudl = udl.iterator();
-            MapLayer mapLayer = null;
-            int gridSize = 256 / 16;   //size of grids in pixels
-            while (iudl.hasNext()) {
-                MapLayer ml = (MapLayer) iudl.next();
-                MapLayerMetadata md = ml.getMapLayerMetadata();
-                if (md != null && md.getSpeciesLsid() != null
-                        && !ml.isClustered() && ml.isDisplayed()) {
-                    if (ml.getSizeVal() > maxSize) {
-                        maxSize = ml.getSizeVal();
-                    }
-                    if (ml.getColourMode().equals("grid") && gridSize > maxSize) {
-                        maxSize = gridSize;
-                    }
-                }
-            }
-
-            //small buffer for circles not being circles
-            maxSize += 5;
-
-            //convert to radius in m at zoom, then back to longitude
-            double radius = Util.convertPixelsToMeters(maxSize, lat, zoom);
-
-            String wkt2 = Util.createCircle(lon, lat, radius);
-
-            reqUri = CommonData.satServer + "/alaspatial";
-            reqUri += "/species/info/now";
-            reqUri += "?area=" + URLEncoder.encode(wkt2, "UTF-8");
-            reqUri += "&" + lsids;
-
-//            if (hasActiveArea) {
-//                reqUri += "&aa=" + URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8");
+//    public void onSearchSpeciesPoint(Event event) {
+//        String searchSpeciesPoint = (String) event.getData();
+//
+//        String params[] = searchSpeciesPoint.split(",");
+//        double lon = Double.parseDouble(params[0]);
+//        double lat = Double.parseDouble(params[1]);
+//
+//        int zoom = getMapComposer().getMapZoom();
+//
+//        double BUFFER_DISTANCE = 0.1;
+//
+//        String response = "";
+//
+//        try {
+//
+//            Map speciesfilters = (Map) Sessions.getCurrent().getAttribute("speciesfilters");
+//            if (speciesfilters == null) {
+//                return;
 //            }
-
-            System.out.println("locfeat calling: " + reqUri);
-
-            HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(reqUri);
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-
-            int result = client.executeMethod(get);
-            String slist = get.getResponseBodyAsString();
-            response = slist;
-            System.out.println("locfeat data: " + slist);
-        } catch (Exception e) {
-            System.out.println("error loading new geojson:");
-            e.printStackTrace(System.out);
-        }
-
-        response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
-        Clients.evalJavaScript(response);
-    }
+//
+//            boolean hasActiveArea = false;
+//            String lsidtypes = "";
+//            String lsids = "";
+//            Iterator it = speciesfilters.keySet().iterator();
+//            while (it.hasNext()) {
+//                String lt = (String) it.next();
+//                String li = (String) speciesfilters.get(lt);
+//                li = li.split("=")[1];
+//                li = li.replaceAll("'", "");
+//                if (li.indexOf(";color") > 0) {
+//                    li = li.substring(0, li.indexOf(";color"));
+//                }
+//
+//                if (!getMapLayerSpeciesLSID(li).isDisplayed()) {
+//                    continue;
+//                }
+//
+//                lsidtypes += "type=" + lt;
+//                if (li.equalsIgnoreCase("aa")) {
+//                    hasActiveArea = true;
+//                }
+//                if (it.hasNext()) {
+//                    lsidtypes += "&";
+//                }
+//
+//                lsids += "lsid=" + URLEncoder.encode(li, "UTF-8");
+//                if (it.hasNext()) {
+//                    lsids += "&";
+//                }
+//            }
+//
+//            String reqUri;
+//
+//            //get max radius for visible points layers
+//            int maxSize = 0;
+//            List udl = getMapComposer().getPortalSession().getActiveLayers();
+//            Iterator iudl = udl.iterator();
+//            MapLayer mapLayer = null;
+//            int gridSize = 256 / 16;   //size of grids in pixels
+//            while (iudl.hasNext()) {
+//                MapLayer ml = (MapLayer) iudl.next();
+//                if (ml.isSpeciesLayer() && !ml.isClustered() && ml.isDisplayed()) {
+//                    if (ml.getSizeVal() > maxSize) {
+//                        maxSize = ml.getSizeVal();
+//                    }
+//                    if (ml.getColourMode().equals("grid") && gridSize > maxSize) {
+//                        maxSize = gridSize;
+//                    }
+//                }
+//            }
+//
+//            //small buffer for circles not being circles
+//            maxSize += 5;
+//
+//            //convert to radius in m at zoom, then back to longitude
+//            double radius = Util.convertPixelsToMeters(maxSize, lat, zoom);
+//
+//            String wkt2 = Util.createCircle(lon, lat, radius);
+//
+//            reqUri = CommonData.satServer + "/alaspatial";
+//            reqUri += "/species/info/now";
+//            reqUri += "?area=" + URLEncoder.encode(wkt2, "UTF-8");
+//            reqUri += "&" + lsids;
+//
+////            if (hasActiveArea) {
+////                reqUri += "&aa=" + URLEncoder.encode(getMapComposer().getSelectionArea(), "UTF-8");
+////            }
+//
+//            System.out.println("locfeat calling: " + reqUri);
+//
+//            HttpClient client = new HttpClient();
+//            GetMethod get = new GetMethod(reqUri);
+//            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+//
+//            int result = client.executeMethod(get);
+//            String slist = get.getResponseBodyAsString();
+//            response = slist;
+//            System.out.println("locfeat data: " + slist);
+//        } catch (Exception e) {
+//            System.out.println("error loading new geojson:");
+//            e.printStackTrace(System.out);
+//        }
+//
+//        response = "showSpeciesInfo('" + response + "'," + lon + "," + lat + "); ";
+//        Clients.evalJavaScript(response);
+//    }
 
     public void exportArea(Event event) {
         openModal("WEB-INF/zul/ExportLayer.zul", null);
