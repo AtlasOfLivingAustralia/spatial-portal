@@ -54,11 +54,7 @@ public class LayersService {
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
     public @ResponseBody List<Layer> layerObjects(HttpServletRequest req) {
         logger.info("Retriving all layers");
-        List<Layer> l = layerDao.getLayers();
-        System.out.println("====================================");
-        System.out.println("Got " + l.size() + " layers");
-        System.out.println("====================================");
-        return l; 
+        return layerDao.getLayers();
     }
     
     /**This method returns a single layer, provided an id
@@ -68,8 +64,16 @@ public class LayersService {
      * @return 
      */
     @RequestMapping(value = "/layer/{id}", method = RequestMethod.GET)
-    public @ResponseBody Layer layerObject(@PathVariable("id") int id, HttpServletRequest req) {
-        return layerDao.getLayerById(id);
+    public @ResponseBody Layer layerObject(@PathVariable("id") String id, HttpServletRequest req) {
+        Layer l = null;
+        try {
+            l = layerDao.getLayerById(Integer.parseInt(id));
+        }catch(Exception e) {}
+        
+        if (l==null) {
+            l = layerDao.getLayerByName(id);
+        }
+        return l;
     }
     
     @RequestMapping(value = "/layers/grids", method = RequestMethod.GET)

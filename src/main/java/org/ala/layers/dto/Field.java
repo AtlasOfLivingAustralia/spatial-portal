@@ -37,9 +37,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
 @Table(name = "fields")
-@XStreamAlias("field")
+//@XStreamAlias("field")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
-@JsonTypeName(value="MyField")
 public class Field {
     @Id
     @Column(name = "id", insertable = false, updatable = false)

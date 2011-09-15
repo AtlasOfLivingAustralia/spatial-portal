@@ -28,8 +28,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  * @author ajay
  */
 
-@XmlRootElement(name="objects")
-@XStreamAlias("objects")
+//@XmlRootElement(name="objects")
+//@XStreamAlias("objects")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Objects {
     private String id;

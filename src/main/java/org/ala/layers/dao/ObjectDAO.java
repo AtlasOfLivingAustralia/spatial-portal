@@ -28,5 +28,5 @@ public interface ObjectDAO {
     public List<Objects> getObjectsById(String id);
     public String getObjectsGeometryById(String id, String geomtype);
     public Objects getObjectByPid(String pid);
-    public Objects getObjectByIdAndLocation(String id, Double lng, Double lat);
+    public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat);
 }

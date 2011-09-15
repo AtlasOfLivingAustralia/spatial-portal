@@ -25,8 +25,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  * @author ajay
  */
 
-@XmlRootElement(name="distribution")
-@XStreamAlias("distribution")
+//@XmlRootElement(name="distribution")
+//@XStreamAlias("distribution")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Distribution {
     private String id;

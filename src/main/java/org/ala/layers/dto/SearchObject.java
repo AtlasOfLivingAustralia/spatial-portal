@@ -25,8 +25,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  * @author ajay
  */
 
-@XmlRootElement(name="results")
-@XStreamAlias("results")
+//@XmlRootElement(name="results")
+//@XStreamAlias("results")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class SearchObject {
     private String id;

@@ -90,10 +90,10 @@ public class ObjectDAOImpl implements ObjectDAO {
     }
 
     @Override
-    public Objects getObjectByIdAndLocation(String id, Double lng, Double lat) {
-        logger.info("Getting object info for id = " + id + " at loc: (" + lng + ", " + lat + ") ");
+    public Objects getObjectByIdAndLocation(String fid, Double lng, Double lat) {
+        logger.info("Getting object info for fid = " + fid + " at loc: (" + lng + ", " + lat + ") ");
         String sql = "select pid, id, name, \"desc\" as description from objects where fid = ? and ST_Within(ST_SETSRID(ST_Point(?,?),4326), the_geom)";
-        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] {id, lng, lat});
+        List<Objects> l = jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(Objects.class), new Object[] {fid, lng, lat});
         if (l.size() > 0) {
             return l.get(0);
         } else {

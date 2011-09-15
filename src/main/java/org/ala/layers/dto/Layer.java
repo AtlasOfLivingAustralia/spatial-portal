@@ -37,8 +37,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
 @Table(name = "layers")
-@XmlRootElement(name="layer")
-@XStreamAlias("layer")
+//@XmlRootElement(name="layer")
+//@XStreamAlias("layer")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class Layer {
     @Id

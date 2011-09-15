@@ -24,8 +24,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  *
  * @author ajay
  */
-@XmlRootElement(name="layerpid")
-@XStreamAlias("layerpid")
+//@XmlRootElement(name="layerpid")
+//@XStreamAlias("layerpid")
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_DEFAULT)
 public class LayerPid {
     private String id;
