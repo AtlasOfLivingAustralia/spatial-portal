@@ -40,12 +40,7 @@ public class IntersectIntegrationTest {
     
     @Test
     public void testIntersectJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/intersect/cl22/-29.911/132.769.json", "test"));
-    }
-    
-    @Test
-    public void testIntersectXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/intersect/cl22/-29.911/132.769.xml", "test"));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/intersect/cl22/-29.911/132.769.json","[{\"name\":\"South Australia\",\"id\":\"South Australia\",\"description\":\"South Australia, State\",\"pid\":\"3742600\"}]"));
     }
     
 }

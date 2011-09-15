@@ -40,22 +40,12 @@ public class LayersIntegrationTest {
 
     @Test
     public void testLayersJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/layers.json", "test"));
-    }
-    
-    @Test
-    public void testLayersXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/layers.xml", "test"));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/layers.json", "[{\"name\":\"trngm\",\"id\":761,\"type\":\"Environmental\",\"path\":\"/mnt/transfer/williams/arc/trngm.tif\","));
     }
     
     @Test
     public void testLayerJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/layer/761.json", "test"));
-    }
-    
-    @Test
-    public void testLayerXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/layer/761.xml", "test"));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/layer/761.json", "{\"name\":\"trngm\",\"id\":761,\"type\":\"Environmental\",\"path\":\"/mnt/transfer/williams/arc/trngm.tif\",\"description\":\"Mean annual diurnal temperature range"));
     }
 
 }

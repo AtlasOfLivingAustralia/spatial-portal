@@ -44,31 +44,22 @@ public class FieldsIntegrationTest {
     
     @Test
     public void testFieldsJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fields.json", "{\"fields\":[{\"name\":\"Vegetation types - native\""));
-    }
-    
-    @Test
-    public void testFieldsXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fields.xml", "<list><field><id>cl617</id><name>Vegetation types - native</name>"));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fields.json", "{\"name\":\"Vegetation types - native\",\"id\":\"cl617\",\"type\":\"c\",\"enabled\":true,\"indb\":true,\"spid\":\"617\"}"));
     }
     
     @Test
     public void testFieldsDbJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fieldsdb.json", "{\"fields\":[{\"name\":\"Vegetation types - native\""));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fieldsdb.json", "{\"name\":\"Vegetation types - native\",\"id\":\"cl617\",\"type\":\"c\",\"enabled\":true,\"indb\":true,\"spid\":\"617\"}"));
     }
     
-    @Test
-    public void testFieldsDbXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/fieldsdb.xml", "<list><field><id>cl617</id><name>Vegetation types - native</name>"));
-    }
+//    This is extremely slow to execute (lots of objects!)
+//    @Test
+//    public void testFieldJson() {
+//        assertTrue(IntegrationTestUtil.loadURLAssertText( "http://localhost:8080/layers-index/field/cl617.json", "{\"field\":{\"name\":\"Vegetation types - native\""  ));
+//    }
     
     @Test
     public void testFieldJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText( "http://localhost:8080/layers-index/field/cl617.json", "{\"field\":{\"name\":\"Vegetation types - native\""  ));
+        assertTrue(IntegrationTestUtil.loadURLAssertText( "http://localhost:8080/layers-index/field/cl907.json", "{\"name\":\"Hunter Areas Of Interest\",\"id\":\"cl907\",\"type\":\"c\",\"enabled\":true,\"objects\":[{\"name\":" ));
     }
-        
-    @Test
-    public void testFieldXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/field/cl617.xml", "<field><id>cl617</id><name>Vegetation types - native"));
-    }            
 }

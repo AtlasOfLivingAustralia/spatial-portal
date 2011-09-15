@@ -38,22 +38,7 @@ public class ObjectsIntegrationTest {
     
     @Test
     public void testObjectsJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/objects/22.json", "test"));
+        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/object/3742602", "{\"name\":\"Australian Capital Territory\",\"id\":\"Australian Capital Territory\",\"description\":\"Australian Capital Territory, Territory\",\"pid\":\"3742602\"}"));
     }
-
-    @Test
-    public void testObjectsXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/objects/22.xml", "test"));
-    }
-
-    @Test
-    public void testObjectJson() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/object/5085887.json", "test"));
-    }
-
-    @Test
-    public void testObjectXml() {
-        assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/object/5085887.xml", "test"));
-    }
-           
+          
 }

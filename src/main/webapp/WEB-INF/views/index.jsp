@@ -11,9 +11,20 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
+        <title>ALA layers-index</title>
     </head>
     <body>
-        <h1>Hello Layers World!!</h1>
+        <h1>API Reference</h1>
+        <p><a href="http://code.google.com/p/alageospatialportal/wiki/layersIndexAPI">http://code.google.com/p/alageospatialportal/wiki/layersIndexAPI</a></p>
+        <h1>Quick Examples</h1>
+        <p><a href="/layers-index/layers">/layers-index/layers</a></p>
+        <p><a href="/layers-index/fields">/layers-index/fields</a></p>
+        <p><a href="/layers-index/field/cl22">/layers-index/field/cl22</a></p>
+        <p><a href="/layers-index/object/3742602">/layers-index/object/3742602</a></p>
+        <p><a href="/layers-index/shape/kml/3742602">/layers-index/shape/kml/3742602</a></p>
+        <p><a href="/layers-index/shape/wkt/3742602">/layers-index/shape/wkt/3742602</a></p>
+        <p><a href="/layers-index/shape/geojson/3742602">/layers-index/shape/geojson/3742602</a></p>
+        <p><a href="/layers-index/search?q=canberra">/layers-index/search?q=canberra</a></p>
+        <p><a href="/layers-index/intersect/cl22/-29.911/132.769.json">/layers-index/intersect/cl22/-29.911/132.769.json</a></p>
     </body>
 </html>
