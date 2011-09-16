@@ -98,3 +98,6 @@ check_errs $? "echo ERROR running SQL"
 
 $PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/024_bio08_display_150911.sql
 check_errs $? "echo ERROR running SQL"
+
+$PSQL_CMD -U postgres spatialdb -f ./layers_dev_updates/025_landcover_keyword_160911.sq
+check_errs $? "echo ERROR running SQL"
