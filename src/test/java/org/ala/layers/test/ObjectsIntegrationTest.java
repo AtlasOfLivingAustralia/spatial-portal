@@ -39,6 +39,5 @@ public class ObjectsIntegrationTest {
     @Test
     public void testObjectsJson() {
         assertTrue(IntegrationTestUtil.loadURLAssertText("http://localhost:8080/layers-index/object/3742602", "{\"name\":\"Australian Capital Territory\",\"id\":\"Australian Capital Territory\",\"description\":\"Australian Capital Territory, Territory\",\"pid\":\"3742602\"}"));
-    }
-          
+    }          
 }

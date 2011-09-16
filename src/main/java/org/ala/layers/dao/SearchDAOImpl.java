@@ -64,9 +64,8 @@ public class SearchDAOImpl implements SearchDAO {
 //        return (List<SearchObject>) m.get("searchobjectstype");
 
         logger.info("Getting search results for query: " + criteria);
-        String sql = "select pid, id, name, \"desc\" as description from searchobjects(?,20)";
+        String sql = "select pid, id, name, \"desc\" as description, fid, fieldname from searchobjects(?,20)";
         return jdbcTemplate.query(sql, ParameterizedBeanPropertyRowMapper.newInstance(SearchObject.class), "%"+criteria+"%");
-
 
     }
 }

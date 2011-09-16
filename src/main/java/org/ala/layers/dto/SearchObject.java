@@ -33,6 +33,24 @@ public class SearchObject {
     private String pid;
     private String description;
     private String name;
+    private String fid;
+    private String fieldname;
+
+    public String getFid() {
+        return fid;
+    }
+
+    public void setFid(String fid) {
+        this.fid = fid;
+    }
+
+    public String getFieldname() {
+        return fieldname;
+    }
+
+    public void setFieldname(String fieldname) {
+        this.fieldname = fieldname;
+    }
 
     public String getDescription() {
         return description;

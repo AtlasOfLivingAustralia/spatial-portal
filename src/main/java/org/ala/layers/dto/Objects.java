@@ -37,6 +37,7 @@ public class Objects {
     private String description;
     private String name;
     private String fid;
+    private String fieldname;
     private String geometry;
     private int nameId;
 
@@ -54,6 +55,14 @@ public class Objects {
 
     public void setFid(String fid) {
         this.fid = fid;
+    }
+    
+    public String getFieldName() {
+        return fieldname;
+    }
+    
+    public void setFieldName(String fieldname) {
+        this.fieldname = fieldname;
     }
 
     public String getGeometry() {
