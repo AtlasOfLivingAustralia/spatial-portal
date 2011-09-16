@@ -108,7 +108,7 @@ public class LegendObject {
                 if(!LIMIT_LEGEND || i<colours.length-1 || categoryNameOrder.length == colours.length) {
                     int [] data = categories.get(categoryNameOrder[i]);
                     String rgb = getRGB(data[0]);
-                    sb.append("\n").append(categoryNameOrder[i]).append(",")
+                    sb.append("\n\"").append(categoryNameOrder[i].replace("\"","\"\"")).append("\",")
                             .append(rgb).append(",").append(data[1]);
                 } else {
                     int count = 0;

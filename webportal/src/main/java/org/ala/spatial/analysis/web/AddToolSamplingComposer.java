@@ -5,18 +5,13 @@
 
 package org.ala.spatial.analysis.web;
 
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.ByteArrayInputStream;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.zkoss.zhtml.Filedownload;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zul.Label;
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zul.Filedownload;
 import org.zkoss.zul.Messagebox;
-import org.zkoss.zul.Row;
 
 /**
  *
@@ -60,8 +55,50 @@ public class AddToolSamplingComposer extends AddToolComposer {
     }
 
     public void download(Event event) {
-//        try {
+
+        try {
             Query query = getSelectedSpecies().newWkt(getSelectedArea());
+
+            //test size        
+            if(query.getOccurrenceCount() <= 0) {
+                Messagebox.show("No occurrences selected. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
+                return;
+            }
+            
+            //translate layer names
+            String [] layers = null;
+            String envlayers = getSelectedLayers();
+            if(envlayers.length() > 0) {
+                layers = envlayers.split(":");
+                for(int i=0;i<layers.length;i++) {
+                    layers[i] = CommonData.getLayerFacetName(layers[i]);
+                }
+            }
+
+            //test for URL download
+            String url = query.getDownloadUrl(layers);
+            if(url != null) {
+                System.out.println("Sending file to user: " + url);
+
+                //TODO: find some way to do this nicely.
+                Events.echoEvent("openHTML", getMapComposer(), "Download\n<a href='" + url + "' >click to start download</a>");
+                
+                //Would clients still treat this as a popup if it were on prod?
+                //getMapComposer().openHTML(event)Clients.evalJavaScript("window.open('" + url + "','download','')");
+
+                //TODO: fix logging
+                //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
+            } else {
+                //download data
+                byte [] b = query.getDownloadBytes(layers);
+                if(b != null) {
+                    Filedownload.save(new ByteArrayInputStream(b), "application/zip", query.getName() + ".zip");
+                } else {
+                    Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
+                }
+            }
+
+            //
             //add layers to a fields list
             //download
 
@@ -101,12 +138,12 @@ public class AddToolSamplingComposer extends AddToolComposer {
 //                getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
 //            }
 //
-//            this.detach();
-//
-//        } catch (Exception e) {
-//            System.out.println("Exception calling sampling.download:");
-//            e.printStackTrace(System.out);
-//        }
+            this.detach();
+
+        } catch (Exception e) {
+            System.out.println("Exception calling sampling.download:");
+            e.printStackTrace(System.out);
+        }
     }
 
 

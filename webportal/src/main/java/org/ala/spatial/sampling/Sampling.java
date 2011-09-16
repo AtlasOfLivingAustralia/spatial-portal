@@ -65,7 +65,9 @@ public class Sampling {
 
             if(values != null) {
                 for(int i=0;i<output.length;i++) {
-                    output[i] = catagories[values[i]];
+                    if(values[i] >= 0) {
+                        output[i] = catagories[values[i]];
+                    }
                 }
             }
         } catch (Exception e) {

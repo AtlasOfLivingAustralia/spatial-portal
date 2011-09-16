@@ -557,6 +557,7 @@ public class CommonData {
     static HashMap<String,String> layerToFacet;
     static HashMap<String,String> facetToLayer;
     static HashMap<String,String> facetShapeNameField;
+    static HashMap<String,String> facetToLayerDisplayName;
     public static String getLayerFacetName(String layer) {
         return layerToFacet.get(layer);
     }
@@ -566,12 +567,16 @@ public class CommonData {
     public static String getFacetShapeNameField(String facet) {
         return facetShapeNameField.get(facet);
     }
+    public static String getFacetLayerDisplayName(String facet) {
+        return facetToLayerDisplayName.get(facet);
+    }
 
     private static void readLayerInfo() {
         try {
             HashMap<String,String> ftl = new HashMap<String,String>();
             HashMap<String,String> ltf = new HashMap<String,String>();
             HashMap<String,String> fsnf = new HashMap<String,String>();
+            HashMap<String,String> ftldn = new HashMap<String, String>();
 
             String filename = CommonData.class.getResource("/layers.txt").getFile();
             BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -585,8 +590,10 @@ public class CommonData {
                 ltf.put(layer,facet);
                 ftl.put(facet,layer);
 
-                if(record.length > 3) {
-                     fsnf.put(facet, record[3]);
+                ftldn.put(facet, record[3]);
+
+                if(record.length > 4) {
+                     fsnf.put(facet, record[4]);
                 }
             }
             br.close();
@@ -594,6 +601,7 @@ public class CommonData {
             layerToFacet = ltf;
             facetToLayer = ftl;
             facetShapeNameField = fsnf;
+            facetToLayerDisplayName = ftldn;
         } catch (Exception e) {
             e.printStackTrace();
         }

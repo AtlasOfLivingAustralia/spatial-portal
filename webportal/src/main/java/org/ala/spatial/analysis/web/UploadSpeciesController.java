@@ -294,7 +294,7 @@ public class UploadSpeciesController extends UtilityComposer {
             ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
             ud.setLsid(pid);
 
-            Query q = new UploadQuery(pid, ud.getName(), points, fields);
+            Query q = new UploadQuery(pid, ud.getName(), points, fields, metadata);
             ud.setQuery(q);
             RecordsLookup.putData(pid, points, fields);
 
@@ -407,7 +407,7 @@ public class UploadSpeciesController extends UtilityComposer {
             ud.setSubType(LayerUtilities.SPECIES);
             ud.setLsid(pid);
 
-            Query q = new SolrQuery(pid, lsids, null, null);
+            Query q = new SolrQuery(lsids, null, null, null);
             ud.setQuery(q);
 
             // add it to the user session

@@ -41,6 +41,8 @@ public class SolrQuery implements Query, Serializable {
     static public final String SAMPLING_SERVICE = "/webportal/occurrences?";
     static public final String SPECIES_LIST_SERVICE = "/webportal/species?";
     static public final String SPECIES_LIST_SERVICE_CSV = "/webportal/species.csv?";
+    static public final String DOWNLOAD_URL = "/occurrences/download?";
+    static public final String DATA_PROVIDERS_SERVICE = "/webportal/dataProviders?";
     static public final String LEGEND_SERVICE_CSV = "/webportal/legend?";
     static public final String BOUNDING_BOX_CSV = "/webportal/bbox?";
     static public final String INDEXED_FIELDS_LIST = "/indexed/fields?";
@@ -698,7 +700,7 @@ public class SolrQuery implements Query, Serializable {
 
     @Override
     public String getUrl() {
-        return "http://localhost:8083/biocache-service/wms/reflect?";
+        return "http://localhost:8083/biocache-service/webportal/wms/reflect?";
     }
 
     List<Double> bbox = null;
@@ -739,5 +741,71 @@ public class SolrQuery implements Query, Serializable {
         }
 
         return bbox;
+    }
+
+    @Override
+    public String getMetadataHtml() {
+        //first line is the 'caption'
+        return "biocache data\n"
+                + "number of species=" + getSpeciesCount()
+                + "<br>number of occurrences=" + getOccurrenceCount()
+                + "<br>classification=" + lsids
+                + "<br>data providers=" + getDataProviders();
+    }
+
+    @Override
+    public String getDownloadUrl(String [] extraFields) {
+        //Some cl fields are downloaded by default
+        //TODO: add the other cl fields downloaded by default
+        String [] fieldsToRemove = { "cl22" } ;
+
+        StringBuilder sb = new StringBuilder();
+        if(extraFields != null && extraFields.length > 0) {            
+            for(int i=0;i<extraFields.length;i++) {
+                int j = 0;
+                for(j = 0;j<fieldsToRemove.length;j++) {
+                    if(fieldsToRemove[j].equals(extraFields[i])) {
+                        break;
+                    }
+                }
+                //append if field is not in 'removed' list
+                if(j == fieldsToRemove.length) {
+                    if(sb.length() == 0) {
+                        sb.append("&extra=").append(extraFields[i]);
+                    } else {
+                        sb.append(",").append(extraFields[i]);
+                    }
+                }
+            }
+        }
+        return "http://localhost:8083/biocache-service" + DOWNLOAD_URL + "q=" + getQ() + sb.toString();
+    }
+
+    @Override
+    public byte[] getDownloadBytes(String [] extraFields) {
+        return null;
+    }
+
+    private String getDataProviders() {
+        HttpClient client = new HttpClient();
+        String url = BIOCACHE_URL
+                + DATA_PROVIDERS_SERVICE
+                + DEFAULT_ROWS
+                + "&q=" + getQ();
+        System.out.println(url);
+        GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+
+        try {
+            int result = client.executeMethod(get);
+            String response = get.getResponseBodyAsString();
+
+            if (result == 200) {
+                return response;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

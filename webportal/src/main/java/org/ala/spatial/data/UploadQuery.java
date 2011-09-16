@@ -4,10 +4,19 @@
  */
 package org.ala.spatial.data;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.ala.spatial.sampling.Sampling;
+import org.ala.spatial.util.CommonData;
+import org.ala.spatial.util.Zipper;
+import org.ala.spatial.wms.RecordsLookup;
 
 /**
  *
@@ -18,6 +27,7 @@ public class UploadQuery implements Query, Serializable {
    double [] points;
    String name;
    String uniqueId;
+   String metadata;
 
    /**
     *
@@ -27,11 +37,12 @@ public class UploadQuery implements Query, Serializable {
     * @param fields uploaded column data in ArrayList<QueryField>.  First
     * three fields must contain record id, longitude, latitude.
     */
-    public UploadQuery(String uniqueId, String name, double [] points, ArrayList<QueryField> fields) {
+    public UploadQuery(String uniqueId, String name, double [] points, ArrayList<QueryField> fields, String metadata) {
         this.points = points;
         this.data = fields;
         this.name = name;
         this.uniqueId = uniqueId;
+        this.metadata = metadata;
     }    
 
     /**
@@ -59,7 +70,9 @@ public class UploadQuery implements Query, Serializable {
             for(int i=0;i<fields.size();i++) {
                 validFields[i] = -1;
                 for(int j=0;j<data.size();j++) {
-                    if(data.get(j).getName().equals(fields.get(i).getName())) {
+                    if(fields.get(i) != null
+                            && fields.get(i).getName() != null
+                            && data.get(j).getName().equals(fields.get(i).getName())) {
                         validFields[i] = j;
                         break;
                     }
@@ -75,13 +88,14 @@ public class UploadQuery implements Query, Serializable {
             if(validFields[i] >= 0) {
                 sb.append(data.get(validFields[i]).getDisplayName());
             } else {
-                sb.append(fields.get(i));
+                sb.append(fields.get(i).getDisplayName());
             }
         }
 
         //data
         int recordCount = points.length/2;
         for(int j=0;j<recordCount;j++) {
+            sb.append("\n");
             for(int i=0;i<validFields.length;i++) {                
                 if(i > 0) {
                     sb.append(",");
@@ -92,7 +106,6 @@ public class UploadQuery implements Query, Serializable {
                     sb.append("\"");
                 }
             }
-            sb.append("\n");
         }
 
         return sb.toString();
@@ -229,7 +242,13 @@ public class UploadQuery implements Query, Serializable {
                 qf.add(s[j]);
             }
             qf.store();
+            data.add(qf);
         }
+
+        //update RecordsLookup for new fields
+        Object[] recordData = (Object[]) RecordsLookup.getData(getQ());
+        double [] points = (double[]) recordData[0];
+        RecordsLookup.putData(getQ(), points, data);
     }
 
     @Override
@@ -244,14 +263,29 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public LegendObject getLegend(String colourmode) {
+        //get existing
+        for(int i=0;i<data.size();i++) {
+            if(data.get(i).getName().equals(colourmode)) {
+                return data.get(i).getLegend();
+            }
+        }
+
+        //create
         ArrayList<QueryField> fields = new ArrayList<QueryField>();
-        QueryField qf = new QueryField(colourmode);
+        QueryField qf = new QueryField(colourmode, CommonData.getFacetLayerDisplayName(colourmode), QueryField.FieldType.AUTO);
         qf.setStored(true);
+        fields.add(qf);
+        layerSampling(fields);
 
-        //populate
-        getPoints(fields);
+        //get existing
+        for(int i=0;i<data.size();i++) {
+            if(data.get(i).getName().equals(colourmode)) {
+                return data.get(i).getLegend();
+            }
+        }
 
-        return qf.getLegend();
+        //fail
+        return null;
     }
 
     public Query newFacets(List<Facet> facet){
@@ -289,6 +323,43 @@ public class UploadQuery implements Query, Serializable {
         }
         
         return bbox;
+    }
+
+    @Override
+    public String getMetadataHtml() {
+        return metadata;
+    }
+
+    @Override
+    public String getDownloadUrl(String [] extraFields) {
+        return null;
+    }
+
+    @Override
+    public byte[] getDownloadBytes(String [] extraFields) {
+        ArrayList<QueryField> fields = new ArrayList<QueryField>();
+        if(getFacetFieldList() != null) {
+            fields.addAll(getFacetFieldList());
+        }
+        if(extraFields != null && extraFields.length > 0) {
+            for(String s : extraFields) {
+                fields.add(new QueryField(s, CommonData.getFacetLayerDisplayName(s), QueryField.FieldType.AUTO));
+            }
+        }
+        try {
+            //zip it
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ZipOutputStream zos = new ZipOutputStream(bos);
+            ZipEntry ze = new ZipEntry(getName());
+            zos.putNextEntry(ze);
+            zos.write(sample(fields).getBytes("UTF-8"));
+            zos.close();
+
+            return bos.toByteArray();
+        } catch (Exception ex) {
+            Logger.getLogger(UploadQuery.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }
 

@@ -278,9 +278,9 @@ public class QueryField implements Serializable {
             case LONG:
                 return String.valueOf((longData[pos] == Long.MIN_VALUE) ? "" : longData[pos]);
             case FLOAT:
-                return String.valueOf((floatData[pos] == Float.NaN) ? "" : floatData[pos]);
+                return String.valueOf((Float.isNaN(floatData[pos])) ? "" : floatData[pos]);
             case DOUBLE:
-                return String.valueOf((doubleData[pos] == Double.NaN) ? "" : doubleData[pos]);
+                return String.valueOf((Double.isNaN(doubleData[pos])) ? "" : doubleData[pos]);
             case STRING:
                 return stringData[intData[pos]];
             default:
@@ -299,6 +299,8 @@ public class QueryField implements Serializable {
         floatData = src.floatData;
         doubleData = src.doubleData;
         stringData = src.stringData;
+        stringCounts = src.stringCounts;
+        legend = src.legend;
     }
 
     public LegendObject getLegend() {

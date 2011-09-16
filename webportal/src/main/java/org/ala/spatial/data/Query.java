@@ -132,4 +132,10 @@ public interface Query {
     public String getUrl();
 
     public List<Double> getBBox();
+
+    public String getMetadataHtml();
+
+    public String getDownloadUrl(String [] extraFields);
+
+    public byte[] getDownloadBytes(String [] extraFields);
 }

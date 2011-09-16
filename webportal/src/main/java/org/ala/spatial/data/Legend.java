@@ -307,7 +307,7 @@ public abstract class Legend {
      */
     public int getColour(double d) {
         if (Double.isNaN(d)) {
-            return 0xFFFFFFFF; //white
+            return 0x00000000; //black
         }
         int pos = java.util.Arrays.binarySearch(cutoffs, d);
         if (pos < 0) {
@@ -322,7 +322,7 @@ public abstract class Legend {
             //TODO: fix for mismatch with colours.length
         }
         if (pos >= cutoffs.length) {
-            return 0xFFFFFFFF;
+            return 0x00000000;
         } else {
             double upper = cutoffs[pos];
             int upperPos = pos + 1;
@@ -367,7 +367,7 @@ public abstract class Legend {
      */
     public static int getColour(double d, double min, double max) {
         if (Double.isNaN(d) || d < min || d > max) {
-            return 0xFFFFFFFF;
+            return 0x00000000;
         }
         double range = max - min;
         double a = (d - min) / range;

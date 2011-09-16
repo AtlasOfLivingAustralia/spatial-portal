@@ -1,14 +1,17 @@
 package org.ala.spatial.analysis.web;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.org.emii.portal.composer.MapComposer;
 
 import au.org.emii.portal.composer.UtilityComposer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.util.LayerUtilities;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 import java.awt.Color;
+import java.io.StringReader;
 import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -135,8 +138,14 @@ public class ClassificationLegend extends UtilityComposer {
             legend.setItemRenderer(new ListitemRenderer() {
 
                 public void render(Listitem li, Object data) {
-                    String s = (String) data;
-                    String[] ss = s.split(",");
+                    String[] ss = null;
+                    try {
+                        ss = new CSVReader(new StringReader((String) data)).readNext();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ClassificationLegend.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    if(ss == null) return;
+
                     Listcell lc;
                     if (readonly) {
                         if (ss[0].length() > 0) {

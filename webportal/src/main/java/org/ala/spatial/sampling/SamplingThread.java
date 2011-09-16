@@ -33,8 +33,8 @@ public class SamplingThread extends Thread {
     public void run() {
         try {
             while (true) {
-                try {
-                    int pos = lbq.take();
+                int pos = lbq.take();
+                try {                    
                     Sampling.sample(points, layers.get(pos), output.get(pos));
                 } catch (Exception e) {
                 }

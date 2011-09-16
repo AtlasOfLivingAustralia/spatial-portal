@@ -280,12 +280,14 @@ public class WMSService {
                     }
                 } else {
                     int prevColour = -1;    //!= colours[0]
+                    g.setColor(new Color(prevColour));
                     for (i = 0; i < points.length; i += 2) {
                         if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
                                 && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
                             int thisColour = colours.getColour(i / 2);
                             if (thisColour != prevColour) {
                                 g.setColor(new Color(thisColour));
+                                prevColour = thisColour;
                             }
                             x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
                             y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);

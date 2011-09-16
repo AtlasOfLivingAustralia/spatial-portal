@@ -903,6 +903,7 @@ public class AddToolComposer extends UtilityComposer {
                 System.out.println("getSelectedSpecies: " + species);
                 if (species.equals("allspecies")) {
                     species = "none";
+                    q = new SolrQuery(null, null, null, null);
                 } else if (species.equals("allmapped")) {
 
     //                species = "";
