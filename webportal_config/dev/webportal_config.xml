@@ -186,12 +186,12 @@
             to prevent drawing too far off screen - an integer (=px)-->
       <window_stacking_constant>600</window_stacking_constant>
       <!-- GeoServer details -->
-      <geoserver_url>http://spatial-dev.ala.org.au</geoserver_url>
+      <geoserver_url>http://spatial-dev.ala.org.au/geoserver</geoserver_url>
       <geoserver_username>admin</geoserver_username>
       <geoserver_password>password</geoserver_password>
       <!-- ALA Spatial Analysis Toolkit -->
-      <sat_url>http://spatial-dev.ala.org.au</sat_url>
-      <points_cluster_threshold>2000000</points_cluster_threshold>
+      <sat_url>http://spatial-dev.ala.org.au/alaspatial</sat_url>
+      <points_cluster_threshold>100000</points_cluster_threshold>
       <max_record_count_download>100000</max_record_count_download>
       <max_record_count_map>2000000</max_record_count_map>
       <max_record_count_upload>15000</max_record_count_upload>
@@ -213,6 +213,22 @@
      <species_metadata_url>http://spatial-dev.ala.org.au/alaspatial/species/metadata/_lsid_</species_metadata_url>
      <help_url>http://test.ala.org.au</help_url>
      <geonetwork_url>http://spatial-dev.ala.org.au/geonetwork</geonetwork_url>
+     
+     <!-- if saving or loading whole sessions, this is where they go -->
+
+      <session_path>/data/ala/runtime/output</session_path>
+
+     <!-- location of all grid and shape files for sampling -->
+      <sampling_files_path>/data/ala/data/envlayers/WorldClimCurrent/10minutes/</sampling_files_path>
+
+     <!-- number of concurrent data files running in sampling and number of threads for each shape file -->
+     <sampling_thread_count>2</sampling_thread_count>
+
+     <layers_url>http://spatial-dev.ala.org.au/layers-index</layers_url>
+     <biocache_url>http://diasbprod1-cdc.vm.csiro.au:8080/biocache-service</biocache_url>
+     <bie_url>http://bie.ala.org.au</bie_url>
+     <webportal_url>http://spatial-dev.ala.org.au/webportal</webportal_url>
+   
     </tns:supplementary>
   </tns:settings>
   <!--Menu
