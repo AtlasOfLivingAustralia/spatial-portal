@@ -22,17 +22,28 @@ public class Sampling {
     static void sample(double[][] points, String facetName, String[] output) {
         String shapeFieldName = CommonData.getFacetShapeNameField(facetName);
         String layerName = CommonData.getFacetLayerName(facetName);
+        long start = System.currentTimeMillis();
+        System.out.println("start sampling " + points.length + " points in " + facetName + ":" + layerName);
         if(shapeFieldName != null) {
             intersectShape(CommonData.settings.get("sampling_files_path") + layerName, shapeFieldName, points, output);
         } else {
             intersectGrid(CommonData.settings.get("sampling_files_path") + layerName, points, output);
         }
+        System.out.println("finished sampling " + points.length + " points in " + facetName + ":" + layerName + " in " + (System.currentTimeMillis() - start) + "ms");
     }
 
     static void intersectGrid(String filename, double [][] points, String [] output) {
         try {
             Grid grid = new Grid(filename);
-            float[] values = grid.getValues2(points);
+            float[] values = null;
+
+            
+//            if(points.length > 10000) { 
+                //load whole grid
+                values = grid.getValues2(points);
+//            } else {
+//                values = grid.getValues(points);
+//            }
 
             if(values != null) {
                 for(int i=0;i<output.length;i++) {

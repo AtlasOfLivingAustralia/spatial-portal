@@ -237,12 +237,15 @@ public class UploadQuery implements Query, Serializable {
         for(int i=0;i<forSampling.size();i++) {
             String [] s = output.get(i);
             QueryField qf = forSampling.get(i);
-            qf.ensureCapacity(s.length);
-            for(int j=0;j<s.length;j++) {
-                qf.add(s[j]);
+            if(qf.getName() != null) {
+                qf.ensureCapacity(s.length);
+                for(int j=0;j<s.length;j++) {
+                    qf.add(s[j]);
+                }
+                qf.store();
+
+                data.add(qf);
             }
-            qf.store();
-            data.add(qf);
         }
 
         //update RecordsLookup for new fields

@@ -1747,7 +1747,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
 
                 MapLayer mapLayer = null;
                 if (getMapLayer(label) == null) {
-                    boolean addedOk = addWMSLayer(label, uri + filter, (float) 0.8, null, envString, subType, null, null);
+                    boolean addedOk = addWMSLayer(label, uri + filter, (float) 0.8, null, null, subType, "", envString);
                     if (addedOk) {
                         MapLayer ml = getMapLayer(label);
                         ml.setDynamicStyle(true);

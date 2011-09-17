@@ -250,8 +250,9 @@ public class UploadSpeciesController extends UtilityComposer {
 
             double [] points = new double[sizeToCheck*2];
             int counter = 1;
-            for (int i = (hasHeader?1:0); i < userPoints.size(); i++) {
-                String[] up = (String[]) userPoints.get(i);
+            int hSize = hasHeader?1:0;
+            for (int i = 0; i < userPoints.size() - hSize; i++) {
+                String[] up = (String[]) userPoints.get(i + hSize);
                 if (up.length > 2) {
                     for(int j=0;j<up.length&&j<fields.size();j++) {
                         fields.get(j).add(up[j]);
