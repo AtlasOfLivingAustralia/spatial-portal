@@ -47,12 +47,14 @@ public class SolrLegendObject extends LegendObject {
         String line = null;
         StringBuilder sb = new StringBuilder();
         sb.append("name,red,green,blue,count");
+        categoryNameOrder = new String[csv.size()-1];
         for(int i=1;i<csv.size();i++) {
             String [] c = csv.get(i);
             String [] p = (i>1)?csv.get(i-1):null;
 
             int [] value = {readColour(c[1],c[2],c[3]), Integer.parseInt(c[4])};
             categories.put(c[0], value);
+            categoryNameOrder[i-1] = c[0];
             double d = Double.NaN;
             try {
                 d = Double.parseDouble(c[0]);

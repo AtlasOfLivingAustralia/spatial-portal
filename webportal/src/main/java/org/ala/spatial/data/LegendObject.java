@@ -138,7 +138,16 @@ public class LegendObject {
     }
 
     public int getColour(double value) {
-        return numericLegend.getColour(value);
+        if(numericLegend != null) {
+            return numericLegend.getColour(value);
+        } else {
+            int i = (int) value;
+            if(i >= 0 && i < categoryNameOrder.length) {
+                return getColour(categoryNameOrder[i]);
+            } else {
+                return DEFAULT_COLOUR;
+            }
+        }
     }
 
     public static String getRGB(int colour) {
@@ -151,7 +160,12 @@ public class LegendObject {
         if(numericLegend != null) {
             return numericLegend.getMinMax();
         } else {
-            return null;
+            double [] d = {0, categoryNameOrder.length};
+            return d;
         }
+    }
+
+    public String [] getCategories() {
+        return categoryNameOrder;
     }
 }

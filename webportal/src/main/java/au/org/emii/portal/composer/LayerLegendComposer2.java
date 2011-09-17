@@ -15,7 +15,6 @@ import java.util.Map;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
 import org.ala.spatial.util.LegendMaker;
-import org.ala.spatial.wms.RecordsLookup;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;

@@ -463,8 +463,20 @@ public class SolrQuery implements Query, Serializable {
                 + POST_SERVICE;
         PostMethod post = new PostMethod(url.replace("[","%5B").replace("]","%5D"));        
         try {
+            String [] qs = getQ().replace("%20"," ").split("&");
+            for(int i=0;i<qs.length;i++) {
+                String q = qs[i];
+                int p = q.indexOf('=');
+                if(p < 0) {
+                    post.addParameter("q", q.substring(p+1));
+                    System.out.println("param: " + "q" + " : " + q.substring(p+1));
+                } else {
+                    post.addParameter(q.substring(0,p), q.substring(p+1));
+                    System.out.println("param: " + q.substring(0,p) + " : " + q.substring(p+1));
+                }
+                
+            }
             int result = client.executeMethod(post);
-            post.addParameter("q", getQ());
             String response = post.getResponseBodyAsString();
 
             if (result == 200) {

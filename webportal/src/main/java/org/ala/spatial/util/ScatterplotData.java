@@ -4,9 +4,10 @@
  */
 package org.ala.spatial.util;
 
-import org.ala.spatial.data.SolrQuery;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
+import java.util.List;
+import org.ala.spatial.data.LegendObject;
 import org.ala.spatial.data.Query;
 
 /**
@@ -40,6 +41,15 @@ public class ScatterplotData implements Serializable {
     public int blue = 255;
     public int opacity = 100;
     public int size = 4;
+
+    //data
+    List<String[]> csv;
+    double [] points;
+    String [] series;
+    String [] ids;
+    double [][] data;
+    int missingCount;
+    LegendObject legend;
 
     public ScatterplotData() {
         enabled = false;
@@ -152,5 +162,61 @@ public class ScatterplotData implements Serializable {
 
     public void setQuery(Query query) {
         this.query = query;
+    }
+
+    public void setCSV(List<String[]> csv) {
+        this.csv = csv;
+    }
+
+    public List<String[]> getCSV() {
+        return csv;
+    }
+
+    public void setPoints(double [] points) {
+        this.points = points;
+    }
+
+    public double [] getPoints() {
+        return points;
+    }
+
+    public void setSeries(String [] series) {
+        this.series = series;
+    }
+
+    public String [] getSeries() {
+        return series;
+    }
+
+    public void setIds(String [] ids) {
+        this.ids = ids;
+    }
+
+    public String [] getIds() {
+        return ids;
+    }
+
+    public void setData(double [][] data) {
+        this.data = data;
+    }
+
+    public double [][] getData() {
+        return data;
+    }
+
+    public void setMissingCount(int missingCount) {
+        this.missingCount = missingCount;
+    }
+
+    public int getMissingCount() {
+        return missingCount;
+    }
+
+    public void setLegend(LegendObject legend) {
+        this.legend = legend;
+    }
+
+    public LegendObject getLegend() {
+        return legend;
     }
 }
