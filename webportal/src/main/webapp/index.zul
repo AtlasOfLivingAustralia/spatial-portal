@@ -451,6 +451,7 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <label id="layers_url" value="${settingsSupplementary.values.layers_url}" visible="false" />
         <label id="biocache_url" value="${settingsSupplementary.values.biocache_url}" visible="false" />
         <label id="print_server_url" value="${settingsSupplementary.values.print_server_url}" visible="false" />
+        <label id="webportal_url" value="${settingsSupplementary.values.webportal_url}" visible="false" />
         <label id="help_url" value="${settingsSupplementary.values.help_url}" visible="false" />
         
 

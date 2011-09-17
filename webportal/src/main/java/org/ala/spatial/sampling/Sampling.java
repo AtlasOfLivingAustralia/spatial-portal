@@ -19,17 +19,13 @@ import org.ala.spatial.util.CommonData;
  *
  */
 public class Sampling {
-    //final static String DATA_FILES_PATH = "/data/ala/data/envlayers/WorldClimCurrent/10minutes/";
-    final static String DATA_FILES_PATH = "e:\\mnt\\ala\\data\\envlayers\\WorldClimCurrent\\10minutes\\";
-    final static int threadCount = 2;
-
     static void sample(double[][] points, String facetName, String[] output) {
         String shapeFieldName = CommonData.getFacetShapeNameField(facetName);
         String layerName = CommonData.getFacetLayerName(facetName);
         if(shapeFieldName != null) {
-            intersectShape(DATA_FILES_PATH + layerName, shapeFieldName, points, output);
+            intersectShape(CommonData.settings.get("sampling_files_path") + layerName, shapeFieldName, points, output);
         } else {
-            intersectGrid(DATA_FILES_PATH + layerName, points, output);
+            intersectGrid(CommonData.settings.get("sampling_files_path") + layerName, points, output);
         }
     }
 
@@ -61,7 +57,7 @@ public class Sampling {
             int column_idx = ssf.getColumnIdx(fieldName);
             catagories = ssf.getColumnLookup(column_idx);
 
-            int [] values = ssf.intersect(points, catagories, column_idx, threadCount);
+            int [] values = ssf.intersect(points, catagories, column_idx, Integer.parseInt(CommonData.settings.get("sampling_thread_count")));
 
             if(values != null) {
                 for(int i=0;i<output.length;i++) {
@@ -78,7 +74,7 @@ public class Sampling {
 
     public static ArrayList<String []> sampling(ArrayList<String> facetIds, double [][] points) {
         long start = System.currentTimeMillis();
-
+        int threadCount = Integer.parseInt(CommonData.settings.get("sampling_thread_count"));
         SamplingThread[] threads = new SamplingThread[threadCount];
         LinkedBlockingQueue<Integer> lbq = new LinkedBlockingQueue();
         CountDownLatch cdl = new CountDownLatch(facetIds.size());

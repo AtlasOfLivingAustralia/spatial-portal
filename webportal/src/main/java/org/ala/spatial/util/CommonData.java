@@ -5,22 +5,20 @@
 package org.ala.spatial.util;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
-import org.zkoss.zul.SimpleTreeNode;
 
 /**
  * common data store
@@ -38,9 +36,12 @@ public class CommonData {
     static public final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
     static public final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
     //common parameters
-    static public final String SAT_URL = "sat_url";
-    static public final String GEOSERVER_URL = "geoserver_url";
-    static public final String LAYERS_URL = "layers_url";
+    static final String SAT_URL = "sat_url";
+    static final String GEOSERVER_URL = "geoserver_url";
+    static final String LAYERS_URL = "layers_url";
+    static final String WEBPORTAL_URL = "webportal_url";
+    static final String BIE_URL = "bie_url";
+    static final String BIOCACHE_URL = "biocache_url";
     //(1) for LayersUtil
     static String[] environmentalLayerNames = null;
     static String[] contextualLayerNames = null;
@@ -76,19 +77,23 @@ public class CommonData {
     static public String satServer;
     static public String geoServer;
     static public String layersServer;
+    static public String webportalServer;
+    static public String bieServer;
+    static public String biocacheServer;
+    static public Map<String, String> settings;
 
     /*
      * initialize common data from geoserver and satserver
      */
-    static public void init(String satServer_, String geoServer_, String layersServer_) {
-        System.out.println("CommonData.init(" + satServer_ + "," + geoServer_);
-
+    static public void init(Map<String, String> settings) {
         //Common
-        satServer = satServer_;
-        geoServer = geoServer_;
-        layersServer = layersServer_;
-
-        //TODO: allow for data refresh
+        satServer = settings.get(SAT_URL);
+        geoServer = settings.get(GEOSERVER_URL);
+        layersServer = settings.get(LAYERS_URL);
+        webportalServer = settings.get(WEBPORTAL_URL);
+        bieServer = settings.get(BIE_URL);
+        biocacheServer = settings.get(BIOCACHE_URL);
+        CommonData.settings = settings;
 
         //(1) for LayersUtil        
         initEnvironmentalLayers();
@@ -163,7 +168,7 @@ public class CommonData {
         System.out.println("CommonData::initEnvironmentalLayers");
         String[] aslist = null;
         try {
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/environmental/string";
+            String envurl = satServer + "/ws/spatial/settings/layers/environmental/string";
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(envurl);
@@ -202,7 +207,7 @@ public class CommonData {
         System.out.println("CommonData::initContextualLayers()");
         String[] aslist = null;
         try {
-            String envurl = satServer + "/alaspatial/ws/spatial/settings/layers/contextual/string";
+            String envurl = satServer + "/ws/spatial/settings/layers/contextual/string";
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(envurl);
@@ -252,7 +257,7 @@ public class CommonData {
         try {
             //environmental only
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(satServer + "/alaspatial/layers/analysis/inter_layer_association_rawnames.csv");
+            sbProcessUrl.append(satServer + "/layers/analysis/inter_layer_association_rawnames.csv");
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();
@@ -420,7 +425,7 @@ public class CommonData {
 
     static void initLayerList() {
         try {
-            String layersListURL = satServer + "/alaspatial/ws/layers/list";
+            String layersListURL = satServer + "/ws/layers/list";
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
@@ -471,7 +476,7 @@ public class CommonData {
     static List getContextualClassesInit(JSONObject joLayer) {
         String layerName = joLayer.getString("name");
         String layerDisplayName = joLayer.getString("displayname");
-        String classesURL = layersServer + "/layers-index/layer/classes/cl" + joLayer.getString("id");
+        String classesURL = layersServer + "/layer/classes/cl" + joLayer.getString("id");
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(classesURL);
         
@@ -521,7 +526,7 @@ public class CommonData {
 
     private static void initSpeciesWMSLayers() {
         try {
-            String layersListURL = satServer + "/alaspatial/ws/intersect/list";
+            String layersListURL = satServer + "/ws/intersect/list";
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(layersListURL);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");

@@ -177,29 +177,6 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         }
     }
 
-//    String registerPointsColourModeLegend(String speciesLsid, String colourmode) {
-//        try {
-//            HttpClient client = new HttpClient();
-//            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/species/colourlegend?lsid="
-//                    + URLEncoder.encode(speciesLsid.replace(".", "__"), "UTF-8")
-//                    + "&colourmode="
-//                    + URLEncoder.encode(colourmode, "UTF-8")); // testurl
-//            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//
-//
-//            int result = client.executeMethod(get);
-//
-//            //TODO: test results
-//            String slist = get.getResponseBodyAsString();
-//
-//            return slist;
-//        } catch (Exception ex) {
-//            ex.printStackTrace(System.out);
-//        }
-//
-//        return null;
-//    }
-
     void showPointsColourModeLegend() {
         //remove all
         while (legendHtml.getChildren().size() > 0) {

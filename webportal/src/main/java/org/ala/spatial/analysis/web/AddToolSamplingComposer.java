@@ -87,7 +87,7 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 //getMapComposer().openHTML(event)Clients.evalJavaScript("window.open('" + url + "','download','')");
 
                 //TODO: fix logging
-                //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
+                //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + slist, pid, "Sampling results for species: " + taxon);
             } else {
                 //download data
                 byte [] b = query.getDownloadBytes(layers);
@@ -98,46 +98,6 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 }
             }
 
-            //
-            //add layers to a fields list
-            //download
-
-            
-//            String taxon = getSelectedSpecies();
-//            String sbenvsel = getSelectedLayers();
-//            String area = getSelectedArea();
-//
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/sampling/process/download?");
-//            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon, "UTF-8"));
-//
-//            String envlist = URLEncoder.encode(sbenvsel.toString(), "UTF-8");
-//            if(envlist == null || envlist.trim().length() == 0) {
-//                envlist = "none";
-//            }
-//            sbProcessUrl.append("&envlist=" + envlist);
-//
-//            HttpClient client = new HttpClient();
-//            PostMethod get = new PostMethod(sbProcessUrl.toString());
-//            get.addParameter("area", area);
-//
-//            get.addRequestHeader("Accept", "text/plain");
-//
-//            int result = client.executeMethod(get);
-//            String slist = get.getResponseBodyAsString();
-//
-//            System.out.println("Got response from SamplingWSController: \n" + slist);
-//
-//            if (slist.equalsIgnoreCase("")) {
-//                Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
-//            } else {
-//                System.out.println("Sending file to user: " + CommonData.satServer + "/alaspatial" + slist);
-//
-//                URL url = new URL(CommonData.satServer + "/alaspatial" + slist);
-//                Filedownload.save(url.openStream(), "application/zip",url.getFile());
-//                getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + "/alaspatial" + slist, pid, "Sampling results for species: " + taxon);
-//            }
-//
             this.detach();
 
         } catch (Exception e) {

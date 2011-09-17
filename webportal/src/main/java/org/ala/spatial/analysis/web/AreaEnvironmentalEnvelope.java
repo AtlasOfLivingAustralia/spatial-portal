@@ -251,7 +251,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private String getInfo(String value, String type) {
         try {
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/ws/spatial/settings/layer/" + URLEncoder.encode(value, "UTF-8") + "/" + type); // testurl
+            GetMethod get = new GetMethod(CommonData.satServer + "/ws/spatial/settings/layer/" + URLEncoder.encode(value, "UTF-8") + "/" + type); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, * /*");
 
             int result = client.executeMethod(get);
@@ -273,7 +273,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private String getInfo(String urlPart) {
         try {
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
+            GetMethod get = new GetMethod(CommonData.satServer + "/ws" + urlPart); // testurl
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
 
             int result = client.executeMethod(get);
@@ -737,7 +737,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         try {
             HttpClient client = new HttpClient();
 
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
+            PostMethod get = new PostMethod(CommonData.satServer + "/ws" + urlPart); // testurl
 
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             //get.addParameter("area", URLEncoder.encode("none", "UTF-8"));
@@ -759,7 +759,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
     private void loadMap(String filename, String layername) {
         //String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
         //label = selectedLayers.get(selectedLayers.size() - 1);
-        String uri = CommonData.satServer + "/alaspatial/output/filtering/" + pid + "/" + filename;
+        String uri = CommonData.satServer + "/output/filtering/" + pid + "/" + filename;
         float opacity = Float.parseFloat("0.75");
 
         List<Double> bbox = new ArrayList<Double>();

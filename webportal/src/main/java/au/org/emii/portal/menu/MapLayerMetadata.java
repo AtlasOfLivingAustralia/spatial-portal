@@ -42,7 +42,6 @@ public class MapLayerMetadata implements Serializable {
     private String speciesDisplayName;
     private String speciesDisplayLsid;
     private double[] layerExtent;
-    private int partsCount;
     private int occurrencesCount;
 
     public boolean isIsSpeciesLayer() {
@@ -333,14 +332,6 @@ public class MapLayerMetadata implements Serializable {
      */
     public String getUnitsJS() {
         return StringEscapeUtils.escapeJavaScript(getUnits());
-    }
-
-    public int getPartsCount() {
-        return partsCount;
-    }
-
-    public void setPartsCount(int pc) {
-        partsCount = pc;
     }
 
     public boolean isOutside(String viewArea) {

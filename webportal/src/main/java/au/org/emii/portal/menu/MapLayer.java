@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import org.ala.spatial.util.Util;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.jfree.chart.plot.XYPlot;
 
 /**
  * Representation of a map layer - used for both rendering map layers

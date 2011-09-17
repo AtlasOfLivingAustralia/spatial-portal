@@ -238,7 +238,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                             , LayerUtilities.SPECIES
                             , wkt, -1);
 
-                    //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString(), pid, "map species in area");
+                    //getMapComposer().updateUserLogAnalysis("Sampling", sbProcessUrl.toString(), "", CommonData.satServer + "/" + sbProcessUrl.toString(), pid, "map species in area");
                 } else {
                     getMapComposer().showMessage(results_count_occurrences
                             + " occurrences in this area.\r\nSelect an area with fewer than "
@@ -263,27 +263,6 @@ public class AddSpeciesInArea extends UtilityComposer {
             e.printStackTrace();
         }
     }
-
-//    String registerPointsInArea(String area) {
-//        //register with alaspatial using data.getPid();
-//        try {
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append("species/area/register");
-//
-//            HttpClient client = new HttpClient();
-//            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString());
-//            post.addParameter("area", area);
-//            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//
-//            int result = client.executeMethod(post);
-//            String slist = post.getResponseBodyAsString();
-//
-//            return slist;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
     public String getSelectedArea() {
         //String area = rgArea.getSelectedItem().getValue();
@@ -331,29 +310,6 @@ public class AddSpeciesInArea extends UtilityComposer {
 
         return areaName;
     }
-
-//    private String postInfo(String urlPart, String wkt) {
-//        try {
-//            HttpClient client = new HttpClient();
-//
-//            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
-//
-//            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//            post.addParameter("area", wkt);
-//
-//            int result = client.executeMethod(post);
-//
-//            //TODO: confirm result
-//            String slist = post.getResponseBodyAsString();
-//
-//            return slist;
-//        } catch (Exception ex) {
-//            //TODO: error message
-//            System.out.println("getInfo.error:");
-//            ex.printStackTrace(System.out);
-//        }
-//        return null;
-//    }
 
     void setSpeciesParams(String lsid, String rank, String taxon) {
         this.lsid = lsid;

@@ -427,26 +427,7 @@ public class Util {
 
         return pt;
     }
-
-//    public static String newLsidArea(String lsid, String wkt) {
-//        try {
-//            //get lsid to match
-//            StringBuilder sbProcessUrl = new StringBuilder();
-//            sbProcessUrl.append("/species/lsidarea/register");
-//            sbProcessUrl.append("?lsid=" + URLEncoder.encode(lsid.replace(".", "__"), "UTF-8"));
-//            HttpClient client = new HttpClient();
-//            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-//            post.addParameter("area", wkt);
-//            post.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//            int result = client.executeMethod(post);
-//            String pid = post.getResponseBodyAsString();
-//            return pid;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-//
+    
      /**
      * Util function to add line breaks to a string - it breaks on whole word
      * @param message The text to perform the break on

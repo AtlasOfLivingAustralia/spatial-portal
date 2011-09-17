@@ -869,7 +869,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             int countNonZero = 0;
             try {
                 StringBuffer sbProcessUrl = new StringBuffer();
-                sbProcessUrl.append(CommonData.satServer).append("/alaspatial/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
+                sbProcessUrl.append(CommonData.satServer).append("/ws/sampling/chart?basis=layer&filter=lsid:none;area:none");
 
                 sbProcessUrl.append("&xaxis=").append(URLEncoder.encode(env1, "UTF-8")).append(",").append(min1).append(",").append(max1);
                 sbProcessUrl.append("&yaxis=").append(URLEncoder.encode(env2, "UTF-8")).append(",").append(min2).append(",").append(max2);

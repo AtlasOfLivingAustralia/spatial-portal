@@ -294,7 +294,7 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public String getUrl() {
-        return "http://localhost:8085/webportal/ws/wms/reflect?";
+        return CommonData.webportalServer + "/ws/wms/reflect?";
     }
 
     List<Double> bbox = null;

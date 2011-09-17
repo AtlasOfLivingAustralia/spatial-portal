@@ -78,7 +78,7 @@ public class SpeciesAutoComplete extends Combobox {
             return;
         }
 
-        String snUrl = satServer + "/alaspatial/species/taxon/";
+        String snUrl = satServer + "/species/taxon/";
 
         try {
 

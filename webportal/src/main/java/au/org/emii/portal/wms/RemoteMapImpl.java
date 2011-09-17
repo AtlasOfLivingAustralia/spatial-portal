@@ -167,15 +167,7 @@ public class RemoteMapImpl implements RemoteMap {
             int end = geoJSON.getGeoJSON().indexOf('\"', start);
             int geomTypeCheck = geoJSONUtilities.type(geoJSON.getGeoJSON().substring(start, end));
 
-            //do this at the add level
-            //String taxonconceptid = geoJSONUtilities.getFirstFeatureValue(jo, "ti" /*"taxonconceptid"*/);
-            //if (!taxonconceptid.equals("")) {
-            //    System.out.println("species: " + "http://bie.ala.org.au/species/" + taxonconceptid);
-             //   geoJSON.getMapLayerMetadata().setMoreInfo("http://bie.ala.org.au/species/" + taxonconceptid + "\n" + label);
-            //} else {
-                System.out.println("not species");
-                geoJSON.getMapLayerMetadata().setMoreInfo("");
-            //}
+            geoJSON.getMapLayerMetadata().setMoreInfo("");
 
             //skip checking since initial geojson may be empty (restricted by view extent)
             if (geomTypeCheck >= 0) {

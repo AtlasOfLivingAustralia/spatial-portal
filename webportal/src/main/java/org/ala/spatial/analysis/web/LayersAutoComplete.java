@@ -64,7 +64,7 @@ public class LayersAutoComplete extends Combobox {
             return;
         }
 
-        String baseUrl = CommonData.satServer + "/alaspatial/ws/layers/";
+        String baseUrl = CommonData.satServer + "/ws/layers/";
         try {
 
             //System.out.println("bringing in layers:");

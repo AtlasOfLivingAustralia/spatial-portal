@@ -107,7 +107,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             System.out.println("Test per: " + txtTestPercentage.getValue());
 
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/maxent/processgeoq?");
+            sbProcessUrl.append(CommonData.satServer + "/ws/maxent/processgeoq?");
 //            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
 //            sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(taxonlsid.replace(".", "__"), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
@@ -152,7 +152,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
             attrs.put("method", "maxent");
             attrs.put("params", sbParams.toString());
             attrs.put("downloadfile", "");
-            getMapComposer().updateUserLog(attrs, "analysis result: " + CommonData.satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html");
+            getMapComposer().updateUserLog(attrs, "analysis result: " + CommonData.satServer + "/output/maxent/" + pid + "/species.html");
         } catch (Exception e) {
             System.out.println("Maxent error: ");
             e.printStackTrace(System.out);
@@ -172,10 +172,10 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
     public void loadMap(Event event) {
 
-        String mapurl = CommonData.geoServer + "/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
+        String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
         String legendurl = CommonData.geoServer
-                + "/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
                 + "&LAYER=ALA:species_" + pid
                 + "&STYLE=alastyles";
 
@@ -202,9 +202,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
         }
 
         String layername = tToolName.getValue();
-        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, "", legendurl, LayerUtilities.MAXENT);
+        getMapComposer().addWMSLayer(layername, mapurl, (float) 0.5, null, legendurl, LayerUtilities.MAXENT, null, null);
         MapLayer ml = getMapComposer().getMapLayer(layername);
-        String infoUrl = CommonData.satServer + "/alaspatial" + "/output/maxent/" + pid + "/species.html";
+        String infoUrl = CommonData.satServer  + "/output/maxent/" + pid + "/species.html";
         MapLayerMetadata md = ml.getMapLayerMetadata();
         if (md == null) {
             md = new MapLayerMetadata();
@@ -215,7 +215,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
         try {
             // set off the download as well
-            String fileUrl = CommonData.satServer + "/alaspatial/ws/download/" + pid;
+            String fileUrl = CommonData.satServer + "/ws/download/" + pid;
             Filedownload.save(new URL(fileUrl).openStream(), "application/zip", tToolName.getValue().replaceAll(" ", "_") + ".zip"); // "ALA_Prediction_"+pid+".zip"
         } catch (Exception ex) {
             System.out.println("Error generating download for prediction model:");
@@ -232,7 +232,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     String getJob(String type) {
         try {
             StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append(CommonData.satServer + "/alaspatial/ws/jobs/").append(type).append("?pid=").append(pid);
+            sbProcessUrl.append(CommonData.satServer + "/ws/jobs/").append(type).append("?pid=").append(pid);
 
             System.out.println(sbProcessUrl.toString());
             HttpClient client = new HttpClient();

@@ -65,7 +65,7 @@ public class AutoComplete extends Combobox {
 
         try {            
             HttpClient client = new HttpClient();
-            GetMethod get = new GetMethod(CommonData.layersServer + "/layers-index/search?q=" + searchString);
+            GetMethod get = new GetMethod(CommonData.layersServer + "/search?q=" + searchString);
             get.addRequestHeader("Accept", "application/json, text/javascript, */*");
             int result = client.executeMethod(get);
             String slist = get.getResponseBodyAsString();
@@ -81,7 +81,7 @@ public class AutoComplete extends Combobox {
             for(int i=0;i<ja.size();i++) {
                 JSONObject jo = ja.getJSONObject(i);
                 String itemString = jo.getString("name");
-                String link = "/layers-index/shape/geojson/" + jo.getString("pid");
+                String link = "/shape/geojson/" + jo.getString("pid");
                 String description = jo.getString("desc");
 
                 if (it != null && it.hasNext()) {

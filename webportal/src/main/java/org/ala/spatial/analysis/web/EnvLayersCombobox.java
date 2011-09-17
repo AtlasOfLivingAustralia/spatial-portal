@@ -55,7 +55,7 @@ public class EnvLayersCombobox extends Combobox {
             makeValidLayers();
         }
 
-        String baseUrl = CommonData.satServer + "/alaspatial/ws/layers/";
+        String baseUrl = CommonData.satServer + "/ws/layers/";
         try {
             Iterator it = getItems().iterator();
 

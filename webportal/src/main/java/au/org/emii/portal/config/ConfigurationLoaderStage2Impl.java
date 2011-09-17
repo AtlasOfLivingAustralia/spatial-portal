@@ -162,9 +162,7 @@ public class ConfigurationLoaderStage2Impl implements ConfigurationLoaderStage2 
         }
 
         //geoserver/alaspatial analysis page data       
-        CommonData.init(settingsSupplementary.getValue(CommonData.SAT_URL)
-                , settingsSupplementary.getValue(CommonData.GEOSERVER_URL)
-                , settingsSupplementary.getValue(CommonData.LAYERS_URL));
+        CommonData.init(settingsSupplementary.getValues());
         
         cleanup();
         reloading = false;

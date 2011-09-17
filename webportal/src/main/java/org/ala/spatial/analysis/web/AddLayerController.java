@@ -42,13 +42,13 @@ public class AddLayerController extends UtilityComposer {
         if(treeName != null) {
             getMapComposer().addWMSLayer(treeName,
                             treePath,
-                            (float) 0.75, treeMetadata, treeSubType);
+                            (float) 0.75, treeMetadata, null, treeSubType, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - tree - add", /*joLayer.getString("uid")+*/"|"+treeName);
         } else if(searchName != null) {
             getMapComposer().addWMSLayer(searchName,
                             searchPath,
-                            (float) 0.75, searchMetadata, searchSubType);
+                            (float) 0.75, searchMetadata, null, searchSubType, null, null);
 
             getMapComposer().updateUserLogMapLayer("env - search - add", /*joLayer.getString("uid")+*/"|"+searchName);
         }
@@ -70,7 +70,7 @@ public class AddLayerController extends UtilityComposer {
             JSONObject jo = (JSONObject) lac.getSelectedItem().getValue();
             String metadata = "";
 
-            metadata = CommonData.satServer + "/alaspatial/layers/" + jo.getString("uid");
+            metadata = CommonData.satServer + "/layers/" + jo.getString("uid");
 
             setLayer(jo.getString("displayname"), jo.getString("displaypath"), metadata, 
                     jo.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
@@ -79,7 +79,7 @@ public class AddLayerController extends UtilityComposer {
 //            JSONObject joLayer = JSONObject.fromObject(llc.tree.getSelectedItem().getTreerow().getAttribute("lyr"));
 //            if (!joLayer.getString("type").contentEquals("class")) {
 //
-//                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+//                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 //
 //                setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
 //                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
@@ -91,7 +91,7 @@ public class AddLayerController extends UtilityComposer {
 //                //Filtered requests don't work on
 //                displaypath = displaypath.replace("gwc/service/", "");
 //                // Messagebox.show(displaypath);
-//                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+//                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 //
 //                setLayer(layer + " - " + classValue, displaypath, metadata,
 //                        joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);

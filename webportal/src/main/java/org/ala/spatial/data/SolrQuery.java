@@ -36,20 +36,20 @@ import org.ala.spatial.wms.RecordsLookup;
  */
 public class SolrQuery implements Query, Serializable {
 
-    static public final String BIOCACHE_URL = "http://localhost:8083/biocache-service";
-    static public final String SAMPLING_SERVICE_CSV_GZIP = "/webportal/occurrences.gz?";
-    static public final String SAMPLING_SERVICE = "/webportal/occurrences?";
-    static public final String SPECIES_LIST_SERVICE = "/webportal/species?";
-    static public final String SPECIES_LIST_SERVICE_CSV = "/webportal/species.csv?";
-    static public final String DOWNLOAD_URL = "/occurrences/download?";
-    static public final String DATA_PROVIDERS_SERVICE = "/webportal/dataProviders?";
-    static public final String LEGEND_SERVICE_CSV = "/webportal/legend?";
-    static public final String BOUNDING_BOX_CSV = "/webportal/bbox?";
-    static public final String INDEXED_FIELDS_LIST = "/indexed/fields?";
-    static public final String POST_SERVICE = "/webportal/params?";
-    static public final String DEFAULT_ROWS = "pageSize=1000000";
-    static public final String DEFAULT_VALIDATION = "geospatial_kosher:true";//%20AND%20longitude:[*%20TO%20*]%20AND%20latitude:[*%20TO%20*]";
-    static public final String BIE_SPECIES = "http://bie.ala.org.au/species/";
+    static final String SAMPLING_SERVICE_CSV_GZIP = "/webportal/occurrences.gz?";
+    static final String SAMPLING_SERVICE = "/webportal/occurrences?";
+    static final String SPECIES_LIST_SERVICE = "/webportal/species?";
+    static final String SPECIES_LIST_SERVICE_CSV = "/webportal/species.csv?";
+    static final String DOWNLOAD_URL = "/occurrences/download?";
+    static final String DATA_PROVIDERS_SERVICE = "/webportal/dataProviders?";
+    static final String LEGEND_SERVICE_CSV = "/webportal/legend?";
+    static final String BOUNDING_BOX_CSV = "/webportal/bbox?";
+    static final String INDEXED_FIELDS_LIST = "/indexed/fields?";
+    static final String POST_SERVICE = "/webportal/params?";
+    static final String DEFAULT_ROWS = "pageSize=1000000";
+    static final String DEFAULT_VALIDATION = "geospatial_kosher:true";//%20AND%20longitude:[*%20TO%20*]%20AND%20latitude:[*%20TO%20*]";
+    static final String BIE_SPECIES = "/species/";
+    static final String WMS_URL = "/webportal/wms/reflect?";
     private static String[] commonTaxonRanks = new String[]{
         "cultivar",
         "superfamily",
@@ -152,7 +152,7 @@ public class SolrQuery implements Query, Serializable {
     @Override
     public String sample(ArrayList<QueryField> fields) {
         HttpClient client = new HttpClient();
-        String url = BIOCACHE_URL
+        String url = CommonData.biocacheServer
                 + SAMPLING_SERVICE_CSV_GZIP
                 + DEFAULT_ROWS
                 + "&q=" + getQ()
@@ -182,7 +182,7 @@ public class SolrQuery implements Query, Serializable {
     @Override
     public String speciesList() {
         HttpClient client = new HttpClient();
-        String url = BIOCACHE_URL
+        String url = CommonData.biocacheServer
                 + SPECIES_LIST_SERVICE_CSV
                 + DEFAULT_ROWS
                 + "&q=" + getQ();
@@ -211,7 +211,7 @@ public class SolrQuery implements Query, Serializable {
         int occurrenceCount = -1;
 
         HttpClient client = new HttpClient();
-        String url = BIOCACHE_URL
+        String url = CommonData.biocacheServer
                 + SAMPLING_SERVICE
                 + "pageSize=0"
                 + "&q=" + getQ();
@@ -244,7 +244,7 @@ public class SolrQuery implements Query, Serializable {
         int speciesCount = -1;
 
         HttpClient client = new HttpClient();
-        String url = BIOCACHE_URL
+        String url = CommonData.biocacheServer
                 + SPECIES_LIST_SERVICE
                 + DEFAULT_ROWS
                 + "&q=" + getQ();
@@ -388,13 +388,6 @@ public class SolrQuery implements Query, Serializable {
             }
         }
 
-        try {
-            //String fl = (sb.length() > 0)?"&fl=" + URLEncoder.encode(sb.toString(), "UTF-8") : "";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
         return (sb.length() > 0) ? "&fl=" + sb.toString(): "";
     }
 
@@ -466,13 +459,12 @@ public class SolrQuery implements Query, Serializable {
         paramId = null;
 
         HttpClient client = new HttpClient();
-        String url = BIOCACHE_URL
-                + POST_SERVICE
-                + "q=" + getQ();
-        PostMethod post = new PostMethod(url.replace("[","%5B").replace("]","%5D"));
-
+        String url = CommonData.biocacheServer
+                + POST_SERVICE;
+        PostMethod post = new PostMethod(url.replace("[","%5B").replace("]","%5D"));        
         try {
             int result = client.executeMethod(post);
+            post.addParameter("q", getQ());
             String response = post.getResponseBodyAsString();
 
             if (result == 200) {
@@ -480,9 +472,10 @@ public class SolrQuery implements Query, Serializable {
 
                 System.out.println(url + " > " + paramId);
             } else {
-                System.out.println(url + " > response_code:" + result + " response:" + response);
+                System.out.println("error with url:" + url + " posting q: " + getQ() + " > response_code:" + result + " response:" + response);
             }
         } catch (Exception e) {
+            System.out.println("error with url:" + url + " posting q: " + getQ());
             e.printStackTrace();
         }
     }
@@ -562,7 +555,7 @@ public class SolrQuery implements Query, Serializable {
 //    }
     static public String getScientificNameRank(String lsid) {
 
-        String snUrl = BIE_SPECIES + lsid + ".json";
+        String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
         System.out.println(snUrl);
 
         try {
@@ -664,7 +657,7 @@ public class SolrQuery implements Query, Serializable {
         LegendObject lo = legends.get(colourmode);
         if(lo == null) {
             HttpClient client = new HttpClient();
-            String url = BIOCACHE_URL
+            String url = CommonData.biocacheServer
                     + LEGEND_SERVICE_CSV
                     + DEFAULT_ROWS
                     + "&q=" + getQ()
@@ -700,7 +693,7 @@ public class SolrQuery implements Query, Serializable {
 
     @Override
     public String getUrl() {
-        return "http://localhost:8083/biocache-service/webportal/wms/reflect?";
+        return CommonData.biocacheServer + WMS_URL;
     }
 
     List<Double> bbox = null;
@@ -714,7 +707,7 @@ public class SolrQuery implements Query, Serializable {
         bbox = new ArrayList<Double>();
 
         HttpClient client = new HttpClient();
-        String url = BIOCACHE_URL
+        String url = CommonData.biocacheServer
                 + BOUNDING_BOX_CSV
                 + DEFAULT_ROWS
                 + "&q=" + getQ();
@@ -778,7 +771,7 @@ public class SolrQuery implements Query, Serializable {
                 }
             }
         }
-        return "http://localhost:8083/biocache-service" + DOWNLOAD_URL + "q=" + getQ() + sb.toString();
+        return CommonData.biocacheServer + DOWNLOAD_URL + "q=" + getQ() + sb.toString();
     }
 
     @Override
@@ -788,7 +781,7 @@ public class SolrQuery implements Query, Serializable {
 
     private String getDataProviders() {
         HttpClient client = new HttpClient();
-        String url = BIOCACHE_URL
+        String url = CommonData.biocacheServer
                 + DATA_PROVIDERS_SERVICE
                 + DEFAULT_ROWS
                 + "&q=" + getQ();

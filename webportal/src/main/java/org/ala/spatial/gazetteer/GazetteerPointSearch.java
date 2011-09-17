@@ -35,7 +35,7 @@ public class GazetteerPointSearch {
         String featureURL = "none";
 
         try {
-            String uri = CommonData.layersServer + "/layers-index/intersect/" + layer + "/" + lat + "/" + lon;
+            String uri = CommonData.layersServer + "/intersect/" + layer + "/" + lat + "/" + lon;
 
             HttpClient client = new HttpClient();
             GetMethod get = new GetMethod(uri);

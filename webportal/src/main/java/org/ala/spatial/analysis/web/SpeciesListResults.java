@@ -161,31 +161,6 @@ public class SpeciesListResults extends UtilityComposer {
         detach();
     }
 
-    private String postInfo(String urlPart) {
-        try {
-            HttpClient client = new HttpClient();
-
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/ws" + urlPart); // testurl
-
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            get.addParameter("area", shape);
-
-            System.out.println("satServer:" + CommonData.satServer + " ** postInfo:" + urlPart + " ** " + shape);
-
-            int result = client.executeMethod(get);
-
-            //TODO: confirm result
-            String slist = get.getResponseBodyAsString();
-
-            return slist;
-        } catch (Exception ex) {
-            //TODO: error message
-            System.out.println("getInfo.error:");
-            ex.printStackTrace(System.out);
-        }
-        return null;
-    }
-
     boolean updateParameters() {
         //extract 'shape' and 'pid' from composer
         String area = wkt;//getMapComposer().getSelectionArea();

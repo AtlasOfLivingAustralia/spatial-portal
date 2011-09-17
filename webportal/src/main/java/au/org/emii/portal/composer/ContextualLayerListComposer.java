@@ -336,7 +336,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                             JSONObject joLayer = JSONObject.fromObject(tree.getSelectedItem().getTreerow().getAttribute("lyr"));
                             if (!joLayer.getString("type").contentEquals("class")) {
 
-                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
 
                                 initALC();
                                 contextualLayerSelection.setLayer(joLayer.getString("displayname"), joLayer.getString("displaypath"), metadata,
@@ -353,7 +353,7 @@ public class ContextualLayerListComposer extends UtilityComposer {
                                 //Filtered requests don't work on
                                 displaypath = displaypath.replace("gwc/service/", "");
                                 // Messagebox.show(displaypath);
-                                String metadata = CommonData.satServer + "/alaspatial/layers/" + joLayer.getString("uid");
+                                String metadata = CommonData.satServer + "/layers/" + joLayer.getString("uid");
                                 initALC();
                                 contextualLayerSelection.setLayer(layer + " - " + classValue, displaypath, metadata, joLayer.getString("type").equalsIgnoreCase("environmental")?LayerUtilities.GRID:LayerUtilities.CONTEXTUAL);
 

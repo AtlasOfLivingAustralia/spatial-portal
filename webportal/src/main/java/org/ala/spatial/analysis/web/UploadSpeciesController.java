@@ -341,6 +341,7 @@ public class UploadSpeciesController extends UtilityComposer {
             reader.close();
             data.close();
 
+            //TODO:
             Clients.evalJavaScript("appendUploadSpeciesMetadata('"+ pid +"','"+metadata.replaceAll("\n", "_n_")+"');");
 
         } catch (Exception e) {
@@ -377,24 +378,7 @@ public class UploadSpeciesController extends UtilityComposer {
 
             String pid = String.valueOf(System.currentTimeMillis());
 
-//            StringBuffer sbProcessUrl = new StringBuffer();
-//            sbProcessUrl.append("/species/lsid/register");
-//            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-//
-//            HttpClient client = new HttpClient();
-//            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-//            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-//            int result = client.executeMethod(get);
-//            String pid = get.getResponseBodyAsString();
-//
-//            uploadLSID = pid + "\t" + ud.getName();
-//
-//            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
-
             ud.setFeatureCount(userPoints.size());
-//            Long did = new Long(pid);
-//            System.out.println("lval: " + did.longValue());
-//            ud.setUploadedTimeInMs(did.longValue());
 
             String metadata = "";
             metadata += "User uploaded points \n";
@@ -462,16 +446,6 @@ public class UploadSpeciesController extends UtilityComposer {
     void setDefineArea(boolean defineArea) {
         this.defineArea = defineArea;
     }
-
-//    void map(String lsid, String rank, String taxon) {
-//        AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-//        window.setSpeciesParams(lsid, rank, taxon);
-//        try {
-//            window.doModal();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     private void mapFilterGrid(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);

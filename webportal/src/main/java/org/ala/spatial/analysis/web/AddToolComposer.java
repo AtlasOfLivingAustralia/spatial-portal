@@ -87,14 +87,14 @@ public class AddToolComposer extends UtilityComposer {
         //loadStepLabels();
         updateWindowTitle();
 
-        if (fileUpload != null) {
-            fileUpload.addEventListener("onUpload", new EventListener() {
-
-                public void onEvent(Event event) throws Exception {
-                    doFileUpload(null, event);
-                }
-            });
-        }
+//        if (fileUpload != null) {
+//            fileUpload.addEventListener("onUpload", new EventListener() {
+//
+//                public void onEvent(Event event) throws Exception {
+//                    doFileUpload(null, event);
+//                }
+//            });
+//        }
     }
 
     private void setupDefaultParams() {
@@ -1193,238 +1193,238 @@ public class AddToolComposer extends UtilityComposer {
         lbListLayers.clearSelection();
     }
 
-    public void doFileUpload(UserData ud, Event event) {
-        UploadEvent ue = null;
-        if (event.getName().equals("onUpload")) {
-            ue = (UploadEvent) event;
-        } else if (event.getName().equals("onForward")) {
-            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
-        }
-        if (ue == null) {
-            System.out.println("unable to upload file");
-            return;
-        } else {
-            System.out.println("fileUploaded()");
-        }
-        try {
-            Media m = ue.getMedia();
-            if (ud == null) {
-                ud = new UserData(m.getName());
-            }
-            if (ud.getName().trim().equals("")) {
-                ud.setName(m.getName());
-            }
-            ud.setFilename(m.getName());
-
-            if (ud.getName() == null || ud.getName().length() == 0) {
-                ud.setName(m.getName());
-            }
-//            if (ud.getDescription() == null || ud.getDescription().length() == 0) {
-//                ud.setDescription(date/time + #lsids or #coordinates);
+//    public void doFileUpload(UserData ud, Event event) {
+//        UploadEvent ue = null;
+//        if (event.getName().equals("onUpload")) {
+//            ue = (UploadEvent) event;
+//        } else if (event.getName().equals("onForward")) {
+//            ue = (UploadEvent) ((ForwardEvent) event).getOrigin();
+//        }
+//        if (ue == null) {
+//            System.out.println("unable to upload file");
+//            return;
+//        } else {
+//            System.out.println("fileUploaded()");
+//        }
+//        try {
+//            Media m = ue.getMedia();
+//            if (ud == null) {
+//                ud = new UserData(m.getName());
 //            }
+//            if (ud.getName().trim().equals("")) {
+//                ud.setName(m.getName());
+//            }
+//            ud.setFilename(m.getName());
+//
+//            if (ud.getName() == null || ud.getName().length() == 0) {
+//                ud.setName(m.getName());
+//            }
+////            if (ud.getDescription() == null || ud.getDescription().length() == 0) {
+////                ud.setDescription(date/time + #lsids or #coordinates);
+////            }
+//
+//            String name = ud.getName();
+//
+//            System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
+//
+//            // check the content-type
+//            // TODO: check why LB is sending 'application/spc' mime-type. remove from future use.
+//            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
+//                loadUserPoints(ud, m.getReaderData());
+//            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
+//                byte[] csvdata = m.getByteData();
+//                loadUserPoints(ud, new StringReader(new String(csvdata)));
+//            }
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//
+//
+//    }
+//    public void loadUserPoints(UserData ud, Reader data) {
+//        try {
+//            // Read a line in to check if it's a valid file
+//            // if it throw's an error, then it's not a valid csv file
+//            CSVReader reader = new CSVReader(data);
+//
+//            List userPoints = reader.readAll();
+//
+//            //if only one column treat it as a list of LSID's
+//            if (((String[]) userPoints.get(0)).length == 1) {
+//                continueLoadUserLSIDs(ud, data, reader, userPoints);
+//                return;
+//            }
+//
+//            boolean hasHeader = false;
+//
+//            // check if it has a header
+//            String[] upHeader = (String[]) userPoints.get(0);
+//            try {
+//                Double d1 = new Double(upHeader[1]);
+//                Double d2 = new Double(upHeader[2]);
+//            } catch (Exception e) {
+//                hasHeader = true;
+//            }
+//
+//            System.out.println("hasHeader: " + hasHeader);
+//
+//            // check if the count of points goes over the threshold.
+//            int sizeToCheck = (hasHeader) ? userPoints.size() - 1 : userPoints.size();
+//            System.out.println("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
+//            if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
+//                getMapComposer().showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
+//                return;
+//            }
+//
+//            StringBuffer sbUIds = new StringBuffer();
+//            StringBuffer sbUPoints = new StringBuffer();
+//            int counter = 1;
+//            for (int i = 0; i < userPoints.size(); i++) {
+//                String[] up = (String[]) userPoints.get(i);
+//                if (up.length > 2) {
+//                    sbUIds.append(up[0] + "\n");
+//                    sbUPoints.append(up[1] + "," + up[2] + "\n");
+//                } else if (up.length > 1) {
+//                    sbUIds.append(counter + "\n");
+//                    sbUPoints.append(up[0] + "," + up[1] + "\n");
+//                    counter++;
+//                }
+//            }
+//
+//            System.out.println("Loading points into alaspatial");
+//            System.out.println(sbUPoints.toString());
+//
+//            // Post it to alaspatial app
+//            HttpClient client = new HttpClient();
+//            PostMethod post = new PostMethod(CommonData.satServer + "/ws/points/register"); // testurl
+//            post.addRequestHeader("Accept", "text/plain");
+//            post.addParameter("name", ud.getName());
+//            post.addParameter("points", sbUPoints.toString());
+//            post.addParameter("ids", sbUIds.toString());
+//
+//            int result = client.executeMethod(post);
+//            String slist = post.getResponseBodyAsString();
+//            //uploadLSID = slist + "\t" + ud.getName();
+//
+//            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + slist);
+//
+//            ud.setFeatureCount(userPoints.size());
+//            Long did = new Long(slist);
+//            System.out.println("lval: " + did.longValue());
+//            ud.setUploadedTimeInMs(did.longValue());
+//
+//            ud.setDescription(ud.getFeatureCount() + " coordinates, " + ud.getDisplayTime());
+//
+//            String metadata = "";
+//            metadata += "User uploaded points \n";
+//            metadata += "Name: " + ud.getName() + " <br />\n";
+//            metadata += "Description: " + ud.getDescription() + " <br />\n";
+//            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+//            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
+//
+//            ud.setMetadata(metadata);
+//            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
+//            ud.setLsid(slist);
+//
+//            // add it to the user session
+//            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+//            if (htUserSpecies == null) {
+//                htUserSpecies = new Hashtable<String, UserData>();
+//            }
+//            htUserSpecies.put(slist, ud);
+//            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+//
+//            // close the reader and data streams
+//            reader.close();
+//            data.close();
+//
+//            if(rSpeciesUploadSpecies.isSelected() || rSpeciesUploadLSID.isSelected()){
+//                setLsid(slist + "\t" + ud.getName());
+//            } else {
+//                setLsidBk(slist + "\t" + ud.getName());
+//            }
+//        } catch (Exception e) {
+//            getMapComposer().showMessage("Unable to load your file. Please try again.");
+//            e.printStackTrace(System.out);
+//        }
+//    }
 
-            String name = ud.getName();
-
-            System.out.println("Got file '" + ud.getName() + "' with type '" + m.getContentType() + "'");
-
-            // check the content-type
-            // TODO: check why LB is sending 'application/spc' mime-type. remove from future use.
-            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
-                loadUserPoints(ud, m.getReaderData());
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
-                byte[] csvdata = m.getByteData();
-                loadUserPoints(ud, new StringReader(new String(csvdata)));
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-
-    }
-    public void loadUserPoints(UserData ud, Reader data) {
-        try {
-            // Read a line in to check if it's a valid file
-            // if it throw's an error, then it's not a valid csv file
-            CSVReader reader = new CSVReader(data);
-
-            List userPoints = reader.readAll();
-
-            //if only one column treat it as a list of LSID's
-            if (((String[]) userPoints.get(0)).length == 1) {
-                continueLoadUserLSIDs(ud, data, reader, userPoints);
-                return;
-            }
-
-            boolean hasHeader = false;
-
-            // check if it has a header
-            String[] upHeader = (String[]) userPoints.get(0);
-            try {
-                Double d1 = new Double(upHeader[1]);
-                Double d2 = new Double(upHeader[2]);
-            } catch (Exception e) {
-                hasHeader = true;
-            }
-
-            System.out.println("hasHeader: " + hasHeader);
-
-            // check if the count of points goes over the threshold.
-            int sizeToCheck = (hasHeader) ? userPoints.size() - 1 : userPoints.size();
-            System.out.println("Checking user points size: " + sizeToCheck + " -> " + settingsSupplementary.getValueAsInt("max_record_count_upload"));
-            if (sizeToCheck > settingsSupplementary.getValueAsInt("max_record_count_upload")) {
-                getMapComposer().showMessage(settingsSupplementary.getValue("max_record_count_upload_message"));
-                return;
-            }
-
-            StringBuffer sbUIds = new StringBuffer();
-            StringBuffer sbUPoints = new StringBuffer();
-            int counter = 1;
-            for (int i = 0; i < userPoints.size(); i++) {
-                String[] up = (String[]) userPoints.get(i);
-                if (up.length > 2) {
-                    sbUIds.append(up[0] + "\n");
-                    sbUPoints.append(up[1] + "," + up[2] + "\n");
-                } else if (up.length > 1) {
-                    sbUIds.append(counter + "\n");
-                    sbUPoints.append(up[0] + "," + up[1] + "\n");
-                    counter++;
-                }
-            }
-
-            System.out.println("Loading points into alaspatial");
-            System.out.println(sbUPoints.toString());
-
-            // Post it to alaspatial app
-            HttpClient client = new HttpClient();
-            PostMethod post = new PostMethod(CommonData.satServer + "/alaspatial/ws/points/register"); // testurl
-            post.addRequestHeader("Accept", "text/plain");
-            post.addParameter("name", ud.getName());
-            post.addParameter("points", sbUPoints.toString());
-            post.addParameter("ids", sbUIds.toString());
-
-            int result = client.executeMethod(post);
-            String slist = post.getResponseBodyAsString();
-            //uploadLSID = slist + "\t" + ud.getName();
-
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + slist);
-
-            ud.setFeatureCount(userPoints.size());
-            Long did = new Long(slist);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
-
-            ud.setDescription(ud.getFeatureCount() + " coordinates, " + ud.getDisplayTime());
-
-            String metadata = "";
-            metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Description: " + ud.getDescription() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
-            ud.setLsid(slist);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(slist, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
-            // close the reader and data streams
-            reader.close();
-            data.close();
-
-            if(rSpeciesUploadSpecies.isSelected() || rSpeciesUploadLSID.isSelected()){
-                setLsid(slist + "\t" + ud.getName());
-            } else {
-                setLsidBk(slist + "\t" + ud.getName());
-            }
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-            e.printStackTrace(System.out);
-        }
-    }
-
-    public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
-        try {
-            //don't care if it has a header
-
-            // check if the count of LSIDs goes over the threshold (+1).
-            int sizeToCheck = userPoints.size();
-            System.out.println("Checking user LSIDs size: " + sizeToCheck + " -> " + 50);
-            if (sizeToCheck > 50) {
-                getMapComposer().showMessage("Cannot upload more than 50 LSIDs");
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < userPoints.size(); i++) {
-                String[] up = (String[]) userPoints.get(i);
-                if (i > 0) {
-                    sb.append(",");
-                }
-                sb.append(up[0].replace(",", "").trim().toLowerCase());
-            }
-
-            String lsids = sb.toString();
-
-            StringBuffer sbProcessUrl = new StringBuffer();
-            sbProcessUrl.append("/species/lsid/register");
-            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
-
-            HttpClient client = new HttpClient();
-            PostMethod get = new PostMethod(CommonData.satServer + "/alaspatial/" + sbProcessUrl.toString()); // testurl
-            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
-            int result = client.executeMethod(get);
-            String pid = get.getResponseBodyAsString();
-
-            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
-
-            ud.setFeatureCount(userPoints.size());
-            Long did = new Long(pid);
-            System.out.println("lval: " + did.longValue());
-            ud.setUploadedTimeInMs(did.longValue());
-
-            ud.setDescription(ud.getFeatureCount() + " LSIDS, " + ud.getDisplayTime());
-
-            String metadata = "";
-            metadata += "User uploaded points \n";
-            metadata += "Name: " + ud.getName() + " <br />\n";
-            metadata += "Description: " + ud.getDescription() + " <br />\n";
-            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
-            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-
-            ud.setMetadata(metadata);
-            ud.setSubType(LayerUtilities.SPECIES);
-            ud.setLsid(pid);
-
-            // add it to the user session
-            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
-            if (htUserSpecies == null) {
-                htUserSpecies = new Hashtable<String, UserData>();
-            }
-            htUserSpecies.put(pid, ud);
-            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
-
-            // close the reader and data streams
-            reader.close();
-            data.close();
-
-            if(rSpeciesUploadSpecies.isSelected() || rSpeciesUploadLSID.isSelected()){
-                setLsid(pid + "\t" + ud.getName());
-            } else {
-                setLsidBk(pid + "\t" + ud.getName());
-            }
-
-        } catch (Exception e) {
-            getMapComposer().showMessage("Unable to load your file. Please try again.");
-            e.printStackTrace(System.out);
-        }
-    }
+//    public void continueLoadUserLSIDs(UserData ud, Reader data, CSVReader reader, List userPoints) {
+//        try {
+//            //don't care if it has a header
+//
+//            // check if the count of LSIDs goes over the threshold (+1).
+//            int sizeToCheck = userPoints.size();
+//            System.out.println("Checking user LSIDs size: " + sizeToCheck + " -> " + 50);
+//            if (sizeToCheck > 50) {
+//                getMapComposer().showMessage("Cannot upload more than 50 LSIDs");
+//                return;
+//            }
+//
+//            StringBuilder sb = new StringBuilder();
+//            for (int i = 0; i < userPoints.size(); i++) {
+//                String[] up = (String[]) userPoints.get(i);
+//                if (i > 0) {
+//                    sb.append(",");
+//                }
+//                sb.append(up[0].replace(",", "").trim().toLowerCase());
+//            }
+//
+//            String lsids = sb.toString();
+//
+//            StringBuffer sbProcessUrl = new StringBuffer();
+//            sbProcessUrl.append("/species/lsid/register");
+//            sbProcessUrl.append("?lsids=" + URLEncoder.encode(lsids.replace(".", "__"), "UTF-8"));
+//
+//            HttpClient client = new HttpClient();
+//            PostMethod get = new PostMethod(CommonData.satServer + "/" + sbProcessUrl.toString()); // testurl
+//            get.addRequestHeader("Accept", "application/json, text/javascript, */*");
+//            int result = client.executeMethod(get);
+//            String pid = get.getResponseBodyAsString();
+//
+//            System.out.println("uploaded points name: " + ud.getName() + " lsid: " + pid);
+//
+//            ud.setFeatureCount(userPoints.size());
+//            Long did = new Long(pid);
+//            System.out.println("lval: " + did.longValue());
+//            ud.setUploadedTimeInMs(did.longValue());
+//
+//            ud.setDescription(ud.getFeatureCount() + " LSIDS, " + ud.getDisplayTime());
+//
+//            String metadata = "";
+//            metadata += "User uploaded points \n";
+//            metadata += "Name: " + ud.getName() + " <br />\n";
+//            metadata += "Description: " + ud.getDescription() + " <br />\n";
+//            metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
+//            metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
+//
+//            ud.setMetadata(metadata);
+//            ud.setSubType(LayerUtilities.SPECIES);
+//            ud.setLsid(pid);
+//
+//            // add it to the user session
+//            Hashtable<String, UserData> htUserSpecies = (Hashtable) getMapComposer().getSession().getAttribute("userpoints");
+//            if (htUserSpecies == null) {
+//                htUserSpecies = new Hashtable<String, UserData>();
+//            }
+//            htUserSpecies.put(pid, ud);
+//            getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
+//
+//            // close the reader and data streams
+//            reader.close();
+//            data.close();
+//
+//            if(rSpeciesUploadSpecies.isSelected() || rSpeciesUploadLSID.isSelected()){
+//                setLsid(pid + "\t" + ud.getName());
+//            } else {
+//                setLsidBk(pid + "\t" + ud.getName());
+//            }
+//
+//        } catch (Exception e) {
+//            getMapComposer().showMessage("Unable to load your file. Please try again.");
+//            e.printStackTrace(System.out);
+//        }
+//    }
 
     private boolean isAreaHighlightTab() {
         return rgAreaHighlight != null && rgAreaHighlight.getParent().isVisible();
