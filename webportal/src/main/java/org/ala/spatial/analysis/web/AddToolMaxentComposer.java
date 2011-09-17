@@ -258,7 +258,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
      * @return
      */
     private String[] getSpeciesData(Query query) {
-        String sensitiveSpeciesRaw = query.newFacet(new Facet("sensitive:[* TO *]")).speciesList();
+        String sensitiveSpeciesRaw = new SolrQuery(null, null, "sensitive:[* TO *]", null).speciesList();
         List<String[]> sensitiveSpecies = null;
         try {
             sensitiveSpecies = new CSVReader(new StringReader(sensitiveSpeciesRaw)).readAll();

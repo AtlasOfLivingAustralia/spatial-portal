@@ -5,7 +5,6 @@
 
 package org.ala.spatial.data;
 
-import java.lang.Double;
 import java.util.Comparator;
 import java.util.HashMap;
 

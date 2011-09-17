@@ -193,13 +193,15 @@ public class WMSService {
             int [] uncertainties = null;
             short[] uncertaintiesType = null;
             QueryField uncertaintyField = null;
-            QueryField [] listHighlight = null;
+            ArrayList<QueryField> listHighlight = null;
             QueryField colours = null;
             double[] pointsBB = null;
-            Facet [] facets = null;
+            Facet facet = null;
+            String [] facetFields = null;
             if(highlight != null) {
-                facets = Facet.parseFacets(highlight);
-                listHighlight = new QueryField[facets.length];
+                facet = Facet.parseFacet(highlight);
+                facetFields = facet.getFields();
+                listHighlight = new ArrayList<QueryField>();
             }
             if (lsid != null) {
                 Object[] data = (Object[]) RecordsLookup.getData(lsid);
@@ -221,10 +223,10 @@ public class WMSService {
                             uncertaintyField = fields.get(j);
                         }
                     }
-                    if (facets != null) {
-                        for(i=0;i<facets.length;i++) {
-                            if(fields.get(j).getName().equalsIgnoreCase(facets[i].getField())) {
-                                listHighlight[i] = fields.get(j);
+                    if (facet != null) {
+                        for(int k=0;k<facetFields.length;k++) {
+                            if(facetFields[k].equals(fields.get(j).getName())) {
+                                listHighlight.add(fields.get(j));
                             }
                         }
                     }
@@ -297,22 +299,17 @@ public class WMSService {
                 }
             }
 
-            if (highlight != null) {
+            if (highlight != null && facet != null) {
                 g.setColor(new Color(255, 0, 0, alpha));
                 int sz = size + 3;
                 int w = sz * 2;
                 int h;
+                double [] hValues = new double[listHighlight.size()];
                 for (i = 0; i < points.length; i += 2) {
                     if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
                             && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                        h = 0;
-                        for(int j=0;j<listHighlight.length;j++) {
-                            //TODO: do type based comparisons instead of only String
-                            if(facets[j].isValid(listHighlight[j].getAsString(i/2))) {
-                                h++;
-                            }
-                        }
-                        if (h == listHighlight.length) {
+                        h = 0;                        
+                        if (facet.isValid(listHighlight, i/2)) {
                             x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
                             y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
                             g.drawOval(x - sz, y - sz, w, w);

@@ -84,16 +84,6 @@ public class SolrQuery implements Query, Serializable {
         makeParamId();
     }
 
-    public SolrQuery(String query) {
-        ArrayList<Facet> solrParameters = new ArrayList<Facet>();
-        solrParameters.add(new Facet(query));
-        
-        this.lsids = null;
-        this.facets = solrParameters;
-        this.wkt = null;
-        this.extraParams = null;
-    }
-
     /**
      * Further restrict records by field values.
      *

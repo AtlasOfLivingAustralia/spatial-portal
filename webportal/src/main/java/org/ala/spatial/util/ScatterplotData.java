@@ -43,11 +43,14 @@ public class ScatterplotData implements Serializable {
     public int size = 4;
 
     //data
-    List<String[]> csv;
     double [] points;
     String [] series;
     String [] ids;
     double [][] data;
+    double [] backgroundPoints;
+    String [] backgroundSeries;
+    String [] backgroundIds;
+    double [][] backgroundData;
     int missingCount;
     LegendObject legend;
 
@@ -164,14 +167,6 @@ public class ScatterplotData implements Serializable {
         this.query = query;
     }
 
-    public void setCSV(List<String[]> csv) {
-        this.csv = csv;
-    }
-
-    public List<String[]> getCSV() {
-        return csv;
-    }
-
     public void setPoints(double [] points) {
         this.points = points;
     }
@@ -219,4 +214,37 @@ public class ScatterplotData implements Serializable {
     public LegendObject getLegend() {
         return legend;
     }
+
+    public void setBackgroundPoints(double [] points) {
+        this.backgroundPoints = points;
+    }
+
+    public double [] getBackgroundPoints() {
+        return backgroundPoints;
+    }
+
+    public void setBackgroundSeries(String [] series) {
+        this.backgroundSeries = series;
+    }
+
+    public String [] getBackgroundSeries() {
+        return backgroundSeries;
+    }
+
+    public void setBackgroundIds(String [] ids) {
+        this.backgroundIds = ids;
+    }
+
+    public String [] getBackgroundIds() {
+        return backgroundIds;
+    }
+
+    public void setBackgroundData(double [][] data) {
+        this.backgroundData = data;
+    }
+
+    public double [][] getBackgroundData() {
+        return backgroundData;
+    }
+
 }

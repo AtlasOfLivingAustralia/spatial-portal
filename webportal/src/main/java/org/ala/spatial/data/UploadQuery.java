@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.ala.spatial.sampling.Sampling;
+import org.ala.spatial.sampling.SimpleRegion;
+import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Zipper;
 import org.ala.spatial.wms.RecordsLookup;
@@ -30,6 +32,7 @@ public class UploadQuery implements Query, Serializable {
    String name;
    String uniqueId;
    String metadata;
+   int originalFieldCount;
 
    /**
     *
@@ -45,6 +48,7 @@ public class UploadQuery implements Query, Serializable {
         this.name = name;
         this.uniqueId = uniqueId;
         this.metadata = metadata;
+        this.originalFieldCount = fields.size();
     }    
 
     /**
@@ -181,14 +185,61 @@ public class UploadQuery implements Query, Serializable {
 
     @Override
     public Query newWkt(String wkt) {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return this;
+        if(wkt.equals(CommonData.WORLD_WKT)) {
+            return this;
+        }
+
+        SimpleRegion sr = SimpleShapeFile.parseWKT(wkt);
+        
+        //per record test
+        boolean [] valid = new boolean[points.length/2];
+        int count = 0;
+        for(int i=0;i<valid.length;i++) {
+            valid[i] = sr.isWithin(points[i*2], points[i*2+1]);
+            if(valid[i]) count++;
+        }
+
+        return newFromValidMapping(valid, count);
+    }
+
+    Query newFromValidMapping(boolean [] valid, int count) {
+        //copy original data
+        ArrayList<QueryField> facetData = new ArrayList<QueryField>(originalFieldCount);
+        for(int i=0;i<originalFieldCount;i++) {
+             QueryField qf = new QueryField(data.get(i).getName(), data.get(i).getDisplayName(), data.get(i).getFieldType());
+             qf.ensureCapacity(count);
+             for(int j=0;j<valid.length;j++) {
+                 if(valid[j]) {
+                    qf.add(data.get(i).getAsString(j));
+                 }
+             }
+             qf.store();
+        }
+
+        //copy points
+        double [] facetPoints = new double[count*2];
+        int pos = 0;
+        for(int j=0;j<valid.length;j++) {
+             if(valid[j]) {
+                facetPoints[pos*2]= points[j*2];
+                facetPoints[pos*2+1] = points[j*2+1];
+                pos++;
+             }
+         }
+
+
+        String uid = String.valueOf(System.currentTimeMillis());
+
+        RecordsLookup.putData(uid, facetPoints, facetData);
+
+        return new UploadQuery(uid, name, facetPoints, facetData, metadata);
     }
 
     @Override
     public Query newFacet(Facet facet) {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return this;
+        ArrayList<Facet> facets = new ArrayList<Facet>();
+        facets.add(facet);
+        return newFacets(facets);
     }
 
      @Override
@@ -294,7 +345,39 @@ public class UploadQuery implements Query, Serializable {
     }
 
     public Query newFacets(List<Facet> facet){
-        return this;
+        //copy all the data through the list of facets (AND)
+
+        //setup
+        ArrayList<List<QueryField>> facetFields = new ArrayList<List<QueryField>>();
+        for(int k=0;k<facet.size();k++) {
+            Facet f = facet.get(k);
+            String [] fields = f.getFields();
+            List<QueryField> qf = new ArrayList<QueryField>();            
+            for(int j=0;j<fields.length;j++) {
+                for(int i=0;i<data.size();i++) {                
+                    if(fields[j].equals(data.get(i).getName())) {
+                        qf.add(data.get(i));
+                        break;
+                    }
+                }
+            }
+            facetFields.add(qf);
+        }
+        
+        //per record test
+        boolean [] valid = new boolean[points.length/2];
+        int count = 0;
+        for(int i=0;i<valid.length;i++) {
+            int sum = 0;
+            for(int j=0;j<facet.size();j++) {
+                if(facet.get(j).isValid(facetFields.get(j), i)) sum++;
+            }
+
+            valid[i] = sum == facet.size();
+            if(valid[i]) count++;
+        }
+
+        return newFromValidMapping(valid, count);
     }
 
     @Override
