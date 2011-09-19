@@ -607,6 +607,7 @@ public class AnalysisJobMaxent extends AnalysisJob {
                 return "Warning: Skipping species because it has 0 test samples";
             }
 
+            rf.close();
         } catch (Exception e) {
             System.out.println("Unable to read lines");
             e.printStackTrace(System.out);
