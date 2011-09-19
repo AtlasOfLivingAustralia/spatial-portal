@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.ala.spatial.analysis.index.SpeciesIndex;
 import org.ala.spatial.util.SimpleRegion;
 import org.ala.spatial.util.SimpleShapeFile;
 import org.ala.spatial.util.TabulationSettings;
@@ -42,14 +41,14 @@ public class ShapeIntersectionService {
                     String[] words = s.split(",");
 
                     String append = "";
-                    if (words.length > 3) {
-                        append = s.substring(words[0].length() + words[1].length() + words[2].length() + 3);
+                    if (words.length > 4) {
+                        append = s.substring(words[0].length() + words[1].length() + words[2].length() + words[3].length() + 4);
                     }
 
                     try {
                         if ((new File(words[0] + ".shp")).exists()
                                 || (new File(words[0])).exists()) {
-                            ShapeGridContainer sgc = new ShapeGridContainer(words[0], words[1], words[2], append, false);
+                            ShapeGridContainer sgc = new ShapeGridContainer(words[0], words[1], words[2], words[3], append, false);
                             lookupData.add(sgc);
                         } else {
                             System.out.println("no shape file at: " + words[0]);
@@ -164,12 +163,12 @@ public class ShapeIntersectionService {
         try {
             BufferedReader br = new BufferedReader(new FileReader(TabulationSettings.shape_intersection_files));
             String s = br.readLine();
-            //remove first 2 columns (path to shape file, species name, wms get url)
-            //attached 'lsid' as first column
+            //remove first 3 columns (path to shape file, species name, wms get url, lsid)
+            //4th is lsid, leave it in
             int p = s.indexOf(','); //first ','
             p = s.indexOf(',', p + 1); //2nd ','
             p = s.indexOf(',', p + 1); //3rd ','
-            header = "LSID," + s.substring(p + 1);
+            header = s.substring(p + 1);
             br.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -241,9 +240,6 @@ class ShapeGridContainer {
     }
 
     public String getLsid() {
-        if ((lsid == null || lsid.length() == 0) && speciesName != null) {
-            lsid = SpeciesIndex.getLSID(speciesName);
-        }
         return lsid;
     }
 
@@ -255,11 +251,12 @@ class ShapeGridContainer {
         return data;
     }
 
-    public ShapeGridContainer(String shapeFileName, String speciesName, String wmsGet, String data, boolean loadNow) {
+    public ShapeGridContainer(String shapeFileName, String speciesName, String wmsGet, String lsid, String data,  boolean loadNow) {
         this.shapeFileName = shapeFileName;
         this.speciesName = speciesName;
         this.data = data;
         this.wmsGet = wmsGet;
+        this.lsid = lsid;
 
         if (loadNow) {
             loadNow();
