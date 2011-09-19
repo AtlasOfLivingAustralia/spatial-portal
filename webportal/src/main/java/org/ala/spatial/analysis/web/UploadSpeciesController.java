@@ -7,6 +7,7 @@ import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
 import au.org.emii.portal.menu.MapLayerMetadata;
 import au.org.emii.portal.util.LayerUtilities;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URLEncoder;
@@ -182,11 +183,48 @@ public class UploadSpeciesController extends UtilityComposer {
 
             // check the content-type
             // TODO: check why LB is sending 'application/spc' mime-type. remove from future use.
-            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
+//            if (m.getContentType().equalsIgnoreCase("text/plain") || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV) || m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_CSV_EXCEL)) {
+//                loadUserPoints(ud, m.getReaderData());
+//            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
+//                byte[] csvdata = m.getByteData();
+//                loadUserPoints(ud, new StringReader(new String(csvdata)));
+//            }
+
+            //forget content types, do 'try'
+            boolean loaded = false;
+            try {
                 loadUserPoints(ud, m.getReaderData());
-            } else if (m.getContentType().equalsIgnoreCase(LayersUtil.LAYER_TYPE_EXCEL) || m.getContentType().equalsIgnoreCase("application/spc")) {
-                byte[] csvdata = m.getByteData();
-                loadUserPoints(ud, new StringReader(new String(csvdata)));
+                loaded = true;
+                System.out.println("read type " +  m.getContentType() + " with getReaderData");
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+            if(!loaded) {
+                try {
+                    loadUserPoints(ud, new StringReader(new String(m.getByteData())));
+                    loaded = true;
+                    System.out.println("read type " +  m.getContentType() + " with getByteData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if(!loaded) {
+                try {
+                    loadUserPoints(ud, new InputStreamReader(m.getStreamData()));
+                    loaded = true;
+                    System.out.println("read type " +  m.getContentType() + " with getStreamData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+            if(!loaded) {
+                try {
+                    loadUserPoints(ud, new StringReader(m.getStringData()));
+                    loaded = true;
+                    System.out.println("read type " +  m.getContentType() + " with getStringData");
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
             }
 
             //call reset window on caller to perform refresh'

@@ -1259,6 +1259,7 @@ function envLayerInspection(e) {
 }
 
 var last_hover_pos = null;
+var last_hover_data = null;
 function envLayerHover(e) {
     //This variable will contain the body text to be displayed in the popup.
     var body = "";
@@ -1268,9 +1269,8 @@ function envLayerHover(e) {
 
     var this_pos = pt.lat + "," + pt.lon;
     if(this_pos == last_hover_pos) {
-        return;
+        return last_hover_data;
     }
-
     last_hover_pos = this_pos;
 
     try {
@@ -1306,7 +1306,7 @@ function envLayerHover(e) {
             for(i=0;i<data.length;i++) {
                 body = body + "<tr><td>" + data[i].layername + "</td><td><b>" + data[i].value + "</b></td></tr>";
             }
-
+            last_hover_data = body;
             return body;
         }  
     }catch(err){
@@ -1315,6 +1315,7 @@ function envLayerHover(e) {
     return null;
 }
 var hovercontrol = null;
+var hovercontrolprevpos = null;
 function initHover() {
     hovercontrol = new OpenLayers.Handler.Hover({
         'map': map
@@ -1324,6 +1325,12 @@ function initHover() {
                 OpenLayers.Pixel(e.xy.x, e.xy.y) );
 
             pt = pt.transform(map.projection, map.displayProjection);
+
+            var this_pos = pt.lat + "," + pt.lon;
+            if(this_pos == hovercontrolprevpos) {
+                return;
+            }
+            hovercontrolprevpos = this_pos;
     
             var output = parent.document.getElementById('hoverOutput');
             var data = envLayerHover(e);
