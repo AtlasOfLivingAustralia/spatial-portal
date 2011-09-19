@@ -6,8 +6,11 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.UserData;
 import org.apache.commons.httpclient.HttpClient;
@@ -23,10 +26,6 @@ import org.zkoss.zul.Comboitem;
  */
 public class SpeciesAutoComplete extends Combobox {
 
-    private static final String COMMON_NAME_URL = "common_name_url";
-    private static final String SAT_URL = "sat_url";
-    private String cnUrl = null;
-    private String satServer = null;
     private boolean bSearchCommon = false;
     private SettingsSupplementary settingsSupplementary = null;
 
@@ -71,14 +70,13 @@ public class SpeciesAutoComplete extends Combobox {
         if (settingsSupplementary != null) {
         } else if (this.getParent() != null) {
             settingsSupplementary = this.getThisMapComposer().getSettingsSupplementary();
-            System.out.println("SAC got SS: " + settingsSupplementary);
-            satServer = settingsSupplementary.getValue(SAT_URL);
-            cnUrl = settingsSupplementary.getValue(COMMON_NAME_URL);
         } else {
             return;
         }
 
-        String snUrl = satServer + "/species/taxon/";
+        //Do something about geocounts.
+        //High limit because geoOnly=true cuts out valid matches, e.g. "Macropus"
+        String snUrl = CommonData.bieServer + "/search/auto.json?limit=100&q=";
 
         try {
 
@@ -106,15 +104,49 @@ public class SpeciesAutoComplete extends Combobox {
                 get.addRequestHeader("Content-type", "text/plain");
 
                 int result = client.executeMethod(get);
-                String slist = get.getResponseBodyAsString();
+                String rawJSON = get.getResponseBodyAsString();
 
-                slist += loadUserPoints(val);
+                //parse
+                JSONObject jo = JSONObject.fromObject(rawJSON);
+
+                StringBuilder slist = new StringBuilder();
+                JSONArray ja = jo.getJSONArray("autoCompleteList");
+                int found = 0;
+                for(int i=0;i<ja.size() && found < 20;i++){
+                    JSONObject o = ja.getJSONObject(i);
+
+                    //count for guid
+                    try {
+                        String q = "lft:%5B" + o.getLong("left") + "%20TO%20" + o.getLong("right") + "%5D%20AND%20geospatial_kosher:true";
+                        long count = getCount(q);
+                        System.out.println("count=" + count + " for " +o.getString("name") + ":" + o.getString("guid") );
+
+                        if(count > 0) {
+                            if(slist.length() > 0) {
+                                slist.append("\n");
+                            }
+
+                            //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
+                            slist.append(o.getString("name")).append(" / ");
+                            slist.append(o.getString("guid")).append(" / ");
+                            slist.append(o.getString("rankString")).append(" / found ");
+                            slist.append(count);
+
+                            found++;
+                        }
+                    } catch (Exception e) {
+
+                    }
+                }
+
+                slist.append(loadUserPoints(val));
 
 //                slist += loadOccurrencesInActiveArea(val);
 
-                System.out.println("SpeciesAutoComplete: \n" + slist);
+                String sslist = slist.toString();
+                System.out.println("SpeciesAutoComplete: \n" + sslist);
 
-                String[] aslist = slist.split("\n");
+                String[] aslist = sslist.split("\n");
 
                 if (aslist.length > 0 && aslist[0].length() > 0) {
 
@@ -215,6 +247,55 @@ public class SpeciesAutoComplete extends Combobox {
         }
 
         return userPoints;
+    }
+
+    //keep query geocounts as [0] count and [1] last requested
+    HashMap<String, long []> queryGeoCounts = new HashMap<String, long[]>();
+    long max_age = 60*60*1000; //max age is 1hr
+    private long getCount(String key) {
+        long [] data = queryGeoCounts.get(key);
+        if(data == null || System.currentTimeMillis() - data[1] > max_age) {
+            data = new long[2];
+            data[0] = queryCount(key);
+            //ok if >= 0
+            if(data[0] >= 0) {
+                data[1] = System.currentTimeMillis();
+                queryGeoCounts.put(key, data);
+            }
+            
+        }
+        if(data != null) {
+            return data[0];
+        } else {
+            return 0;
+        }
+    }
+
+    long queryCount(String key) {
+        int count = -1;
+
+        HttpClient client = new HttpClient();
+        String url = CommonData.biocacheServer
+                + "/webportal/occurrences?"
+                + "pageSize=0"
+                + "&q=" + key;
+        System.out.println("getting count for autocomplete > " + url);
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
+
+        try {
+            int result = client.executeMethod(get);
+            String response = get.getResponseBodyAsString();
+
+            String start = "\"totalRecords\":";
+            String end = ",";
+            int startPos = response.indexOf(start) + start.length();
+
+            count = Integer.parseInt(response.substring(startPos, response.indexOf(end, startPos)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
     }
 
 //    private String loadOccurrencesInActiveArea(String val) {

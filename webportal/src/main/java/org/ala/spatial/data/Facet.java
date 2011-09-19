@@ -294,8 +294,9 @@ public class Facet implements Serializable {
                     }
                 }
             }
+            //if field not found, treat as outside of any specified range
+            return !includeRange;
         }
-        return false;
     }
 
     private int sumTermTests(Facet[] andTerms, List<QueryField> fields, int record) {

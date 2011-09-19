@@ -222,10 +222,10 @@ padding: 1px 0px 0px 5px;
                                             <image src="img/greencircle.png" />
                                             <label value="&gt; 30km (mapped with 30km radius)" />
                                         </hbox>
-                                        <hbox>
+<!--                                        <hbox>
                                             <image src="img/yellowcircle.png" />
                                             <label value="unknown (mapped with 30km radius)" />
-                                        </hbox>
+                                        </hbox>-->
                                     </vbox>
                                 </hbox>
                                 <separator />

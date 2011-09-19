@@ -242,10 +242,18 @@ public class UploadSpeciesController extends UtilityComposer {
             if(upHeader.length == 2) {
                 //only points upload, add 'id' column at the start
                 fields.add(new QueryField("id"));
+                fields.get(0).ensureCapacity(sizeToCheck);
             }
+            String [] defaultHeader = {"id","longitude","latitude"};
             for(int i=0;i<upHeader.length;i++) {
-                fields.add(new QueryField(upHeader[i]));
-                fields.get(i).ensureCapacity(sizeToCheck);
+                String name = upHeader[i];
+                if(upHeader.length == 2 && i < 2) {
+                    name = defaultHeader[i+1];
+                } else if(upHeader.length > 2 && i < 3) {
+                    name = defaultHeader[i];
+                }
+                fields.add(new QueryField(name));
+                fields.get(fields.size()-1).ensureCapacity(sizeToCheck);
             }
 
             double [] points = new double[sizeToCheck*2];

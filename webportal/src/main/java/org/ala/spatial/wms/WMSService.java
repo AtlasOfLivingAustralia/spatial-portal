@@ -10,6 +10,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -58,12 +59,6 @@ public class WMSService {
             @RequestParam(value = "HEIGHT", required = false, defaultValue = "") String heightString,
             HttpServletRequest request, HttpServletResponse response) {
 
-        //grid redirect
-        if (env.contains("grid")) {
-            getGridMap(cql_filter, env, bboxString, widthString, heightString, request, response);
-            return;
-        }
-
         response.setHeader("Cache-Control", "max-age=86400"); //age == 1 day
         response.setContentType("image/png"); //only png images generated
 
@@ -101,8 +96,8 @@ public class WMSService {
                 size = Integer.parseInt(pair[1]);
             } else if (pair[0].equals("opacity")) {
                 alpha = (int) (255 * Double.parseDouble(pair[1]));
-            } else if (pair[0].equals("uncertainty")) {
-                uncertainty = true;
+//            } else if (pair[0].equals("uncertainty")) {
+//                uncertainty = true;
             } else if (pair[0].equals("sel")) {
                 highlight = s.replace("sel:","");//pair[1];
             } else if (pair[0].equals("colormode")) {
@@ -163,36 +158,19 @@ public class WMSService {
             pbbox[3] = Utils.convertLatToPixel(Utils.convertMetersToLat(bbox[3]));
 
             String lsid = null;
-            SimpleRegion r = null;
-            int p1 = cql_filter.indexOf("qid:");
-            if (p1 > 0) {
-                int p2 = cql_filter.indexOf('&', p1 + 1);
-                if (p2 < 0) {
-                    p2 = cql_filter.indexOf(';', p1 + 1);
-                }
-                if (p2 < 0) {
-                    p2 = cql_filter.length();
-                }
-                lsid = cql_filter.substring(p1, p2);
+            int p1 = 0;
+            int p2 = cql_filter.indexOf('&', p1 + 1);
+            if (p2 < 0) {
+                p2 = cql_filter.indexOf(';', p1 + 1);
             }
-            if (lsid == null) {
-                p1 = 0;
-                int p2 = cql_filter.indexOf('&', p1 + 1);
-                if (p2 < 0) {
-                    p2 = cql_filter.indexOf(';', p1 + 1);
-                }
-                if (p2 < 0) {
-                    p2 = cql_filter.length();
-                }
-                if (p1 >= 0) {
-                    lsid = cql_filter.substring(0, p2);
-                }
+            if (p2 < 0) {
+                p2 = cql_filter.length();
+            }
+            if (p1 >= 0) {
+                lsid = cql_filter.substring(0, p2);
             }
 
             double[] points = null;
-            int [] uncertainties = null;
-            short[] uncertaintiesType = null;
-            QueryField uncertaintyField = null;
             ArrayList<QueryField> listHighlight = null;
             QueryField colours = null;
             double[] pointsBB = null;
@@ -217,12 +195,7 @@ public class WMSService {
 
                 ArrayList<QueryField> fields = (ArrayList<QueryField>) data[1];
 
-                for (int j = 0; j < fields.size(); j++) {
-                    if (uncertainty) {
-                        if(fields.get(j).getName().equalsIgnoreCase("uncertainty")) {
-                            uncertaintyField = fields.get(j);
-                        }
-                    }
+                for (int j = 0; j < fields.size(); j++) {                    
                     if (facet != null) {
                         for(int k=0;k<facetFields.length;k++) {
                             if(facetFields[k].equals(fields.get(j).getName())) {
@@ -234,24 +207,6 @@ public class WMSService {
                         if (fields.get(j).getName().equals(colourMode)) {
                             colours = fields.get(j);
                         }
-                    }
-                }
-            }
-
-            //fix uncertanties to max 30000 and alter colours
-            if (uncertainty) {
-                uncertaintiesType = new short[points.length/2];
-                uncertainties = new int[points.length/2];
-                for (int j = 0; j < uncertaintiesType.length; j++) {
-                    if (uncertaintyField == null || uncertaintyField.getInt(j) > 30000) {
-                        uncertaintiesType[j] = 2;
-                        uncertainties[j] = 30000;
-                    } else if (uncertaintyField.getInt(j) == Integer.MIN_VALUE) {
-                        uncertaintiesType[j] = 1;
-                        uncertainties[j] = 30000;
-                    } else {
-                        uncertaintiesType[j] = 0;
-                        uncertainties[j] = uncertaintyField.getInt(j);
                     }
                 }
             }
@@ -269,98 +224,76 @@ public class WMSService {
             double width_mult = (width / (pbbox[2] - pbbox[0]));
             double height_mult = (height / (pbbox[1] - pbbox[3]));
 
-            //circle type
-            if (name.equals("circle")) {
-                if (colours == null) {
-                    for (i = 0; i < points.length; i += 2) {
-                        if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
-                                && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                            x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                            y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-                            g.fillOval(x - size, y - size, pointWidth, pointWidth);
-                        }
+            if (colourMode != null && colourMode.equals("grid")) {
+                int divs = 16;
+                double grid_width_mult = (width / (pbbox[2] - pbbox[0])) / (256 / divs);
+                double grid_height_mult = (height / (pbbox[1] - pbbox[3])) / (256 / divs);
+                int[][] gridCounts = new int[divs][divs];
+                for (i = 0; i < points.length; i += 2) {
+                    x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * grid_width_mult);
+                    y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * grid_height_mult);
+                    if (x >= 0 && x < divs && y >= 0 && y < divs) {
+                        gridCounts[x][y]++;
                     }
-                } else {
-                    int prevColour = -1;    //!= colours[0]
-                    g.setColor(new Color(prevColour));
-                    for (i = 0; i < points.length; i += 2) {
-                        if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
-                                && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                            int thisColour = colours.getColour(i / 2);
-                            if (thisColour != prevColour) {
-                                g.setColor(new Color(thisColour));
-                                prevColour = thisColour;
+                }
+                int xstep = 256 / divs;
+                int ystep = 256 / divs;
+                for (x = 0; x < divs; x++) {
+                    for (y = 0; y < divs; y++) {
+                        int v = gridCounts[x][y];
+                        if (v > 0) {
+                            if (v > 500) {
+                                v = 500;
                             }
-                            x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                            y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-                            g.fillOval(x - size, y - size, pointWidth, pointWidth);
+                            int colour = Legend.getLinearColour(v, 0, 500, 0xFFFFFF00, 0xFFFF0000);
+                            g.setColor(new Color(colour));
+                            g.fillRect(x * xstep, y * ystep, xstep, ystep);
                         }
                     }
                 }
-            }
-
-            if (highlight != null && facet != null) {
-                g.setColor(new Color(255, 0, 0, alpha));
-                int sz = size + 3;
-                int w = sz * 2;
-                int h;
-                double [] hValues = new double[listHighlight.size()];
-                for (i = 0; i < points.length; i += 2) {
-                    if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
-                            && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                        h = 0;                        
-                        if (facet.isValid(listHighlight, i/2)) {
-                            x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                            y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-                            g.drawOval(x - sz, y - sz, w, w);
+            } else {
+                //circle type
+                if (name.equals("circle")) {
+                    if (colours == null) {
+                        for (i = 0; i < points.length; i += 2) {
+                            if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
+                                    && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
+                                x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                                y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                                g.fillOval(x - size, y - size, pointWidth, pointWidth);
+                            }
                         }
-                    }
-                }
-            }
-
-            //uncertainty
-            if (uncertainty) {
-                int uncertaintyRadius;
-
-                //white, uncertainty value
-                g.setColor(new Color(255, 255, 255, alpha));
-                double hmult = (height / (bbox[3] - bbox[1]));
-                for (i = 0; i < points.length; i += 2) {
-                    if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
-                            && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                        if (uncertaintiesType[i / 2] == 0) {
-                            x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                            y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-                            uncertaintyRadius = (int) Math.ceil(uncertainties[i / 2] * hmult);
-                            g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius * 2, uncertaintyRadius * 2);
+                    } else {
+                        int prevColour = -1;    //!= colours[0]
+                        g.setColor(new Color(prevColour));
+                        for (i = 0; i < points.length; i += 2) {
+                            if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
+                                    && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
+                                int thisColour = colours.getColour(i / 2);
+                                if (thisColour != prevColour) {
+                                    g.setColor(new Color(thisColour));
+                                    prevColour = thisColour;
+                                }
+                                x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                                y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                                g.fillOval(x - size, y - size, pointWidth, pointWidth);
+                            }
                         }
                     }
                 }
 
-                //yellow, undefined uncertainty value
-                g.setColor(new Color(255, 255, 100, alpha));
-                uncertaintyRadius = (int) Math.ceil(30000 * hmult);
-                for (i = 0; i < points.length; i += 2) {
-                    if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
-                            && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                        if (uncertaintiesType[i / 2] == 1) {
-                            x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                            y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-                            g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius * 2, uncertaintyRadius * 2);
-                        }
-                    }
-                }
-
-                //green, capped uncertainty value
-                g.setColor(new Color(100, 255, 100, alpha));
-                uncertaintyRadius = (int) Math.ceil(30000 * hmult);
-                for (i = 0; i < points.length; i += 2) {
-                    if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
-                            && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
-                        if (uncertaintiesType[i / 2] == 2) {
-                            x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-                            y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-                            g.drawOval(x - uncertaintyRadius, y - uncertaintyRadius, uncertaintyRadius * 2, uncertaintyRadius * 2);
+                if (highlight != null && facet != null) {
+                    g.setColor(new Color(255, 0, 0, alpha));
+                    int sz = size + 3;
+                    int w = sz * 2;
+                    for (i = 0; i < points.length; i += 2) {
+                        if (points[i] >= bb[0][0] && points[i] <= bb[1][0]
+                                && points[i + 1] >= bb[0][1] && points[i + 1] <= bb[1][1]) {
+                            if (facet.isValid(listHighlight, i/2)) {
+                                x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
+                                y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
+                                g.drawOval(x - sz, y - sz, w, w);
+                            }
                         }
                     }
                 }
@@ -369,12 +302,10 @@ public class WMSService {
             g.dispose();
 
             try {
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                ImageIO.write(img, "png", outputStream);
-                ServletOutputStream outStream = response.getOutputStream();
-                outStream.write(outputStream.toByteArray());
-                outStream.flush();
-                outStream.close();
+                OutputStream os = response.getOutputStream();
+                ImageIO.write(img, "png", os);
+                os.flush();
+                os.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -413,172 +344,6 @@ public class WMSService {
             } catch (IOException ex) {
                 Logger.getLogger(WMSService.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-    }
-
-    @RequestMapping(value = "/wms/reflect2", method = RequestMethod.GET)
-    public void getGridMap(
-            @RequestParam(value = "CQL_FILTER", required = false, defaultValue = "") String cql_filter,
-            @RequestParam(value = "ENV", required = false, defaultValue = "") String env,
-            @RequestParam(value = "BBOX", required = false, defaultValue = "") String bboxString,
-            @RequestParam(value = "WIDTH", required = false, defaultValue = "") String widthString,
-            @RequestParam(value = "HEIGHT", required = false, defaultValue = "") String heightString,
-            HttpServletRequest request, HttpServletResponse response) {
-
-        int divs = 16; //number of x & y divisions in the WIDTH/HEIGHT
-
-        response.setHeader("Cache-Control", "max-age=86400"); //age == 1 day
-        response.setContentType("image/png"); //only png images generated
-
-        int width = 256, height = 256;
-        try {
-            width = Integer.parseInt(widthString);
-            height = Integer.parseInt(heightString);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            env = URLDecoder.decode(env, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        int red = 0, green = 0, blue = 0, alpha = 0;
-        for (String s : env.split(";")) {
-            String[] pair = s.split(":");
-            if (pair[0].equals("color")) {
-                while (pair[1].length() < 6) {
-                    pair[1] = "0" + pair[1];
-                }
-                red = Integer.parseInt(pair[1].substring(0, 2), 16);
-                green = Integer.parseInt(pair[1].substring(2, 4), 16);
-                blue = Integer.parseInt(pair[1].substring(4), 16);
-            }
-        }
-
-        double[] bbox = new double[4];
-        int i;
-        i = 0;
-        for (String s : bboxString.split(",")) {
-            try {
-                bbox[i] = Double.parseDouble(s);
-                i++;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-//adjust bbox extents with half pixel width/height
-        double pixelWidth = (bbox[2] - bbox[0]) / width;
-        double pixelHeight = (bbox[3] - bbox[1]) / height;
-        bbox[0] += pixelWidth / 2;
-        bbox[2] -= pixelWidth / 2;
-        bbox[1] += pixelHeight / 2;
-        bbox[3] -= pixelHeight / 2;
-
-        SimpleRegion region = new SimpleRegion();
-        region.setBox(Utils.convertMetersToLng(bbox[0]), Utils.convertMetersToLat(bbox[1]), Utils.convertMetersToLng(bbox[2]), Utils.convertMetersToLat(bbox[3]));
-
-        double[] pbbox = new double[4]; //pixel bounding box
-        pbbox[0] = Utils.convertLngToPixel(Utils.convertMetersToLng(bbox[0]));
-        pbbox[1] = Utils.convertLatToPixel(Utils.convertMetersToLat(bbox[1]));
-        pbbox[2] = Utils.convertLngToPixel(Utils.convertMetersToLng(bbox[2]));
-        pbbox[3] = Utils.convertLatToPixel(Utils.convertMetersToLat(bbox[3]));
-
-        String lsid = null;
-        SimpleRegion r = null;
-        int p1 = cql_filter.indexOf("qid:");
-        if (p1 > 0) {
-            int p2 = cql_filter.indexOf('&', p1 + 1);
-            if (p2 < 0) {
-                p2 = cql_filter.indexOf(';', p1 + 1);
-            }
-            if (p2 < 0) {
-                p2 = cql_filter.length();
-            }
-            lsid = cql_filter.substring(p1, p2);
-        }
-        if (lsid == null) {
-            p1 = 0;
-            int p2 = cql_filter.indexOf('&', p1 + 1);
-            if (p2 < 0) {
-                p2 = cql_filter.indexOf(';', p1 + 1);
-            }
-            if (p2 < 0) {
-                p2 = cql_filter.length();
-            }
-            if (p1 >= 0) {
-                lsid = cql_filter.substring(p1 + 4);
-            }
-        }
-
-        double[][] bb = region.getBoundingBox();
-
-        double[] points = null;
-        int[] uncertainties = null;
-        short[] uncertaintiesType = null;
-        boolean[] listHighlight = null;
-        QueryField colours = null;
-        double[] pointsBB = null;
-        if (lsid != null) {
-            Object[] data = (Object[]) RecordsLookup.getData(lsid);
-            points = (double[]) data[0];
-            pointsBB = (double[]) data[2];
-
-            if (points == null || points.length == 0
-                    || pointsBB[0] > bb[1][0] || pointsBB[2] < bb[0][0]
-                    || pointsBB[1] > bb[1][1] || pointsBB[3] < bb[0][1]) {
-                setImageBlank(response);
-                return;
-            }
-        }
-
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = (Graphics2D) img.getGraphics();
-        g.setColor(new Color(0, 0, 0, 0));
-        g.fillRect(0, 0, width, height);
-
-        g.setColor(new Color(red, green, blue, alpha));
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        int x, y;
-        double width_mult = (width / (pbbox[2] - pbbox[0])) / (256 / divs);
-        double height_mult = (height / (pbbox[1] - pbbox[3])) / (256 / divs);
-
-        //count
-        int[][] gridCounts = new int[divs][divs];
-
-        for (i = 0; i < points.length; i += 2) {
-            x = (int) ((Utils.convertLngToPixel(points[i]) - pbbox[0]) * width_mult);
-            y = (int) ((Utils.convertLatToPixel(points[i + 1]) - pbbox[3]) * height_mult);
-            if (x >= 0 && x < divs && y >= 0 && y < divs) {
-                gridCounts[x][y]++;
-            }
-        }
-        int xstep = 256 / divs;
-        int ystep = 256 / divs;
-        for (x = 0; x < divs; x++) {
-            for (y = 0; y < divs; y++) {
-                int v = gridCounts[x][y];
-                if (v > 0) {
-                    if (v > 500) {
-                        v = 500;
-                    }
-                    int colour = Legend.getLinearColour(v, 0, 500, 0xFFFFFF00, 0xFFFF0000);
-                    g.setColor(new Color(colour));
-                    g.fillRect(x * xstep, y * ystep, xstep, ystep);
-                }
-            }
-        }
-
-        g.dispose();
-
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            ImageIO.write(img, "png", outputStream);
-            ServletOutputStream outStream = response.getOutputStream();
-            outStream.write(outputStream.toByteArray());
-            outStream.flush();
-            outStream.close();
-        } catch (IOException ex) {
         }
     }
 

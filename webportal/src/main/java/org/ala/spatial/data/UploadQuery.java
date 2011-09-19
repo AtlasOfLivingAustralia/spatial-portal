@@ -31,6 +31,10 @@ public class UploadQuery implements Query, Serializable {
     String metadata;
     int originalFieldCount;
 
+    //for history
+    String wkt = "";
+    ArrayList<Facet> facets = new ArrayList<Facet>();
+
     /**
      *
      * @param uniqueId
@@ -181,6 +185,22 @@ public class UploadQuery implements Query, Serializable {
     }
 
     @Override
+    public String getFullQ() {
+        StringBuilder sb = new StringBuilder();        
+        sb.append(metadata).append("\n");
+        
+        if(wkt.length()>0) {
+            sb.append(wkt).append("\n");
+        }
+
+        for(int i=0;i<facets.size();i++) {
+            sb.append(facets.get(i).toString()).append("\n");
+        }
+
+        return getFullQ();
+    }
+
+    @Override
     public Query newWkt(String wkt) {
         if (wkt.equals(CommonData.WORLD_WKT)) {
             return this;
@@ -198,10 +218,19 @@ public class UploadQuery implements Query, Serializable {
             }
         }
 
-        return newFromValidMapping(valid, count);
+        UploadQuery q = newFromValidMapping(valid, count);
+        
+        //maintain wkt history
+        if(this.wkt.length() > 0) {
+            q.wkt = this.wkt + " AND " + wkt;
+        } else {
+            q.wkt = wkt;
+        }
+
+        return q;
     }
 
-    Query newFromValidMapping(boolean[] valid, int count) {
+    UploadQuery newFromValidMapping(boolean[] valid, int count) {
         //copy original data
         ArrayList<QueryField> facetData = new ArrayList<QueryField>(originalFieldCount);
         for (int i = 0; i < originalFieldCount; i++) {
@@ -358,7 +387,8 @@ public class UploadQuery implements Query, Serializable {
             String[] fields = f.getFields();
             List<QueryField> qf = new ArrayList<QueryField>();
             for (int j = 0; j < fields.length; j++) {
-                for (int i = 0; i < data.size(); i++) {
+                int i = 0;
+                for (i = 0; i < data.size(); i++) {
                     if (fields[j].equals(data.get(i).getName())) {
                         qf.add(data.get(i));
                         break;
@@ -385,7 +415,13 @@ public class UploadQuery implements Query, Serializable {
             }
         }
 
-        return newFromValidMapping(valid, count);
+        UploadQuery uq = newFromValidMapping(valid, count);
+
+        //maintain facet history
+        uq.facets.addAll(this.facets);
+        uq.facets.addAll(facet);
+
+        return uq;
     }
 
     @Override
@@ -453,7 +489,7 @@ public class UploadQuery implements Query, Serializable {
             //zip it
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ZipOutputStream zos = new ZipOutputStream(bos);
-            ZipEntry ze = new ZipEntry(getName());
+            ZipEntry ze = new ZipEntry(getName() + ".csv");
             zos.putNextEntry(ze);
             zos.write(sample(fields).getBytes("UTF-8"));
             zos.close();

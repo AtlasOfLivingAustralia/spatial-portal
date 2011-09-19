@@ -45,6 +45,7 @@ public class SolrQuery implements Query, Serializable {
     static final String INDEXED_FIELDS_LIST = "/indexed/fields?";
     static final String POST_SERVICE = "/webportal/params?";
     static final String DEFAULT_ROWS = "pageSize=1000000";
+    /** DEFAULT_VALIDATION must not be null */
     static final String DEFAULT_VALIDATION = "geospatial_kosher:true";//%20AND%20longitude:[*%20TO%20*]%20AND%20latitude:[*%20TO%20*]";
     static final String BIE_SPECIES = "/species/";
     static final String WMS_URL = "/webportal/wms/reflect?";
@@ -385,6 +386,11 @@ public class SolrQuery implements Query, Serializable {
             return "qid:" + paramId;
         }
 
+        return getFullQ();
+    }
+
+    @Override
+    public String getFullQ() {
         StringBuilder sb = new StringBuilder();
 
         int queryTerms = 0;
@@ -401,7 +407,9 @@ public class SolrQuery implements Query, Serializable {
         }
         if (queryTerms > 0) {
             sb.append(")");
-        } else if ((facets == null || facets.isEmpty()) && DEFAULT_VALIDATION.length() == 0) {
+        } else if ((facets == null || facets.isEmpty())
+                && DEFAULT_VALIDATION.length() == 0
+                && extraParams == null) {
             sb.append("*:*");
             queryTerms++;
         }
@@ -420,7 +428,17 @@ public class SolrQuery implements Query, Serializable {
             if (queryTerms > 0) {
                 sb.append("%20AND%20");
             }
+            queryTerms++;
             sb.append(DEFAULT_VALIDATION);
+        }
+
+        //extra parameters
+        if (extraParams != null) {
+            if (queryTerms > 0) {
+                sb.append("%20AND%20");
+            }
+            queryTerms++;
+            sb.append(extraParams);
         }
 
         //wkt term

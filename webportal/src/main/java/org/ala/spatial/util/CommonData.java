@@ -319,10 +319,7 @@ public class CommonData {
 
     static void initLayerCatagories(ArrayList<ListEntry> listEntries, boolean environmentalOnly) {
         try {
-            String llist = copy_layerlist;
-
             JSONArray layerlist = copy_layerlistJSON;
-            JSONArray.fromObject(llist);
             for (int i = 0; i < layerlist.size(); i++) {
                 JSONObject jo = layerlist.getJSONObject(i);
                 String uid = jo.getString("uid");

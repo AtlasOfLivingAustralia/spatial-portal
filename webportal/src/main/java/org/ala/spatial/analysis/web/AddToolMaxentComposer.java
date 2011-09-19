@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -44,7 +45,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     private Checkbox chkJackknife;
     private Checkbox chkRCurves;
     private Textbox txtTestPercentage;
-    private String taxon = "";
+//    private String taxon = "";
 
     @Override
     public void afterCompose() {
@@ -98,7 +99,8 @@ public class AddToolMaxentComposer extends AddToolComposer {
 //                return;
 //            }
 
-            System.out.println("Selected species: " + taxon);
+            System.out.println("Selected species: " + query.getName());
+            System.out.println("Selected species query: " + query.getQ());
             System.out.println("Selected env vars");
             System.out.println(sbenvsel.toString());
             System.out.println("Selected options: ");
@@ -108,8 +110,8 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             StringBuffer sbProcessUrl = new StringBuffer();
             sbProcessUrl.append(CommonData.satServer + "/ws/maxent/processgeoq?");
-//            sbProcessUrl.append("taxonid=" + URLEncoder.encode(taxon.replace(".", "__"), "UTF-8"));
-//            sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(taxonlsid.replace(".", "__"), "UTF-8"));
+            sbProcessUrl.append("taxonid=" + URLEncoder.encode(query.getName(), "UTF-8"));
+            sbProcessUrl.append("&taxonlsid=" + URLEncoder.encode(query.getQ(), "UTF-8"));
             sbProcessUrl.append("&envlist=" + URLEncoder.encode(sbenvsel.toString(), "UTF-8"));
             if (chkJackknife.isChecked()) {
                 sbProcessUrl.append("&chkJackknife=on");
@@ -123,20 +125,33 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             HttpClient client = new HttpClient();
             PostMethod get = new PostMethod(sbProcessUrl.toString());
-            get.addParameter("area", getSelectedArea());
+            
+            if(getSelectedArea() != null) get.addParameter("area", getSelectedArea());
+
             String[] speciesData = getSpeciesData(query);
+            //check for no data
+            if(speciesData[0] == null) {
+                if(speciesData[1] == null) {
+                    getMapComposer().showMessage("No records available for Prediction");
+                } else {
+                    getMapComposer().showMessage("All species and records selected are marked as sensitive");
+                }
+                return;
+            }
             get.addParameter("species", speciesData[0]);
-            get.addParameter("removedspecies", speciesData[1]);
+            if(speciesData[1] != null) get.addParameter("removedspecies", speciesData[1]);
+            
             get.addRequestHeader("Accept", "text/plain");
 
             int result = client.executeMethod(get);
             pid = get.getResponseBodyAsString();
-            this.taxon = taxon;
+//            this.taxon = taxon;
 
             openProgressBar();
 
             StringBuffer sbParams = new StringBuffer();
-            sbParams.append("Species: " + taxon);
+            sbParams.append("Species: " + query.getName());
+            sbParams.append(";Query: " + query.getFullQ());
             sbParams.append(";Jackknife: " + chkJackknife.isChecked());
             sbParams.append(";Response curves: " + chkRCurves.isChecked());
             sbParams.append(";Test per: " + txtTestPercentage.getValue());
@@ -160,7 +175,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     }
 
     void openProgressBar() {
-        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
+        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this.getRoot(), null);
         window.parent = this;
         window.start(pid);
         try {
@@ -195,10 +210,6 @@ public class AddToolMaxentComposer extends AddToolComposer {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        if (taxon == null) {
-            taxon = "species";
         }
 
         String layername = tToolName.getValue();
@@ -258,47 +269,21 @@ public class AddToolMaxentComposer extends AddToolComposer {
      * @return
      */
     private String[] getSpeciesData(Query query) {
-        String sensitiveSpeciesRaw = new SolrQuery(null, null, "sensitive:[* TO *]", null).speciesList();
-        List<String[]> sensitiveSpecies = null;
-        try {
-            sensitiveSpecies = new CSVReader(new StringReader(sensitiveSpeciesRaw)).readAll();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        TreeSet<String> sensitiveSpeciesFound = new TreeSet<String>();
-
-        ArrayList<QueryField> fields = new ArrayList<QueryField>();
-        String lsidFieldName = query.getSpeciesIdFieldName();
-        QueryField qf = null;
-        if(lsidFieldName != null) {
-            qf = new QueryField(query.getSpeciesIdFieldName());
-            qf.setStored(true);
-            fields.add(qf);
-        }
-        double[] points = query.getPoints(fields);
-        StringBuilder sb = null;
-        if (points != null) {
-            sb = new StringBuilder();
-            for (int i = 0; i < points.length; i += 2) {
-                boolean isSensitive = false;
-                if(qf != null && !(query instanceof UploadQuery)) {
-                    String lsid = qf.getAsString(i / 2);
-                    if (sensitiveSpeciesRaw.contains("\"" + lsid + "\"")
-                            || sensitiveSpeciesRaw.contains("|" + lsid + "|")) {
-                        //find sensitive record
-                        for (int j = 0; j < sensitiveSpecies.size(); j++) {
-                            if (sensitiveSpecies.get(j)[4].equals(lsid)) {
-                                //append as lsid,name,rank
-                                sensitiveSpeciesFound.add(sensitiveSpecies.get(j)[4]
-                                        + "," + sensitiveSpecies.get(j)[1]
-                                        + "," + sensitiveSpecies.get(j)[3]);
-                                isSensitive = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (!isSensitive) {
+        if(query instanceof UploadQuery) {
+            //no sensitive records in upload
+            ArrayList<QueryField> fields = new ArrayList<QueryField>();
+            String lsidFieldName = query.getSpeciesIdFieldName();
+            QueryField qf = null;
+            if(lsidFieldName != null) {
+                qf = new QueryField(query.getSpeciesIdFieldName());
+                qf.setStored(true);
+                fields.add(qf);
+            }
+            double[] points = query.getPoints(fields);
+            StringBuilder sb = null;
+            if (points != null) {
+                sb = new StringBuilder();
+                for (int i = 0; i < points.length; i += 2) {
                     if (sb.length() == 0) {
                         //header
                         sb.append("species,longitude,latitude");
@@ -306,15 +291,78 @@ public class AddToolMaxentComposer extends AddToolComposer {
                     sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
                 }
             }
-        }
 
-        //collate sensitive species found, no header
-        StringBuilder sen = new StringBuilder();
-        for (String s : sensitiveSpeciesFound) {
-            sb.append(s).append("\n");
-        }
+            String[] out = {((sb == null) ? null : sb.toString()), null};
+            return out;
+        } else {
+            //identify sensitive species records
+            List<String[]> sensitiveSpecies = null;
+            try {
+                String sensitiveSpeciesRaw = new SolrQuery(null, null, "sensitive:[* TO *]", null).speciesList();
+                sensitiveSpecies = new CSVReader(new StringReader(sensitiveSpeciesRaw)).readAll();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            HashSet<String> sensitiveSpeciesFound = new HashSet<String>();
+            HashSet<String> sensitiveLsids = new HashSet<String>();
 
-        String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
-        return out;
+            //add to 'identified' sensitive list
+            try {
+                List<String[]> fullSpeciesList = new CSVReader(new StringReader(query.speciesList())).readAll();
+                for(int i = 0;i<fullSpeciesList.size();i++) {
+                    String [] sa = fullSpeciesList.get(i);
+                    for(String [] ss : sensitiveSpecies) {
+                        if(sa != null && sa.length > 4
+                                && ss != null && ss.length > 4
+                                && sa[4].equals(ss[4])) {
+                            sensitiveSpeciesFound.add(ss[4] + "," + ss[1] + "," + ss[3]);
+                            sensitiveLsids.add(ss[4]);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            //remove sensitive records that will not be LSID matched
+            Query maxentQuery = query.newFacet(new Facet("sensitive","[* TO *]",false));
+            ArrayList<QueryField> fields = new ArrayList<QueryField>();
+            String lsidFieldName = maxentQuery.getSpeciesIdFieldName();
+            QueryField qf = null;
+            if(lsidFieldName != null) {
+                qf = new QueryField(maxentQuery.getSpeciesIdFieldName());
+                qf.setStored(true);
+                fields.add(qf);
+            }
+            double[] points = maxentQuery.getPoints(fields);
+            StringBuilder sb = null;
+            if (points != null) {
+                sb = new StringBuilder();
+                for (int i = 0; i < points.length; i += 2) {
+                    boolean isSensitive = false;
+                    if(qf != null) {
+                        String lsid = qf.getAsString(i / 2);
+                        isSensitive = sensitiveLsids.contains(lsid);
+                    }
+                    if (!isSensitive) {
+                        if (sb.length() == 0) {
+                            //header
+                            sb.append("species,longitude,latitude");
+                        }
+                        sb.append("\nspecies,").append(points[i]).append(",").append(points[i + 1]);
+                    }
+                }
+            }
+
+            //collate sensitive species found, no header
+            StringBuilder sen = new StringBuilder();
+            for (String s : sensitiveSpeciesFound) {
+                sen.append(s).append("\n");
+            }
+
+            String[] out = {((sb == null) ? null : sb.toString()), (sen.length() == 0) ? null : sen.toString()};
+            return out;
+        }
     }
 }

@@ -1718,6 +1718,14 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             uncertaintyCheck = ((Integer) activeLayerMapProperties.get("uncertainty")).intValue();
         }
 
+        if(subType == LayerUtilities.SCATTERPLOT) {
+            //set defaults for scatterplot
+            r = 0;
+            g = 0;
+            b = 255;
+            opacity = 1;
+        }
+
         Color c = new Color(r, g, b);
         String hexColour = Integer.toHexString(c.getRGB() & 0x00ffffff);
         String envString = "";
@@ -2209,7 +2217,7 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
     }
 
     public void loadScatterplot(ScatterplotData data, String lyrName) {
-        MapLayer ml = mapSpecies(data.getQuery(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null, 0);
+        MapLayer ml = mapSpecies(data.getQuery(), data.getSpeciesName(), "species", 0, LayerUtilities.SCATTERPLOT, null, 0);        
         ml.setDisplayName(lyrName);
         ml.setSubType(LayerUtilities.SCATTERPLOT);
         ml.setData("scatterplotData", data);

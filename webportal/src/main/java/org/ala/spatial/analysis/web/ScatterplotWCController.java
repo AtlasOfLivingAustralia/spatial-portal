@@ -1041,7 +1041,6 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             @Override
             public Paint getPaint(XYDataset dataset, int series, int item) {
-                System.out.println("MyXYShapeRenderer getPaint: " + series + "," + item + " legend=" + legend + ", legendCategories=" + ((legend != null)?legend.getCategories():"null"));
                 if (legend != null && legend.getCategories() == null) {
                     //colour item
                     return new Color(legend.getColour(seriesValues[item]) | (alpha << 24), true);
@@ -1103,8 +1102,6 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             @Override
             public Paint getPaint(double d) {
-                System.out.println("LegendFieldPaintScale getPaint: " + d + " legend=" + legend + ", legendCategories=" + ((legend != null)?legend.getCategories():"null"));
-
                 if(legend == null) {
                     return defaultColour;
                 }

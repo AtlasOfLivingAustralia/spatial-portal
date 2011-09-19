@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryField;
+import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.LegendMaker;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -412,7 +413,7 @@ public class LayerLegendComposer2 extends GenericAutowireAutoforwardComposer {
                     if (m.getGeoJSON() != null && m.getGeoJSON().length() > 0) {
                         uncertainty.setVisible(false);
                     } else {
-                        uncertainty.setVisible(true);
+                        uncertainty.setVisible(!(query instanceof UploadQuery));
                     }
                 }
 

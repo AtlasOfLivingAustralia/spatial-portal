@@ -59,6 +59,14 @@ public interface Query {
     public String getQ();
 
     /**
+     * Get full term.
+     *
+     * @return
+     */
+    public String getFullQ();
+
+
+    /**
      * Query data name.
      *
      * @return
