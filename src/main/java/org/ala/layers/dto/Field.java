@@ -75,11 +75,11 @@ public class Field {
     @Column(name = "last_update")
     private Date lastUpdated;
 
-    @Column(name = "nameSearch")
-    private boolean nameSearch;
+    @Column(name = "namesearch")
+    private boolean namesearch;
 
-    @Column(name = "defaultLayer")
-    private boolean defaultLayer;
+    @Column(name = "defaultlayer")
+    private boolean defaultlayer;
 
     private List<Objects> objects;
 
@@ -99,12 +99,12 @@ public class Field {
         this.id = id;
     }
 
-    public boolean isDefaultLayer() {
-        return defaultLayer;
+    public boolean isDefaultlayer() {
+        return defaultlayer;
     }
 
-    public void setDefaultLayer(boolean defaultLayer) {
-        this.defaultLayer = defaultLayer;
+    public void setDefaultlayer(boolean defaultLayer) {
+        this.defaultlayer = defaultLayer;
     }
 
     public String getDescription() {
@@ -147,12 +147,12 @@ public class Field {
         this.name = name;
     }
 
-    public boolean isNameSearch() {
-        return nameSearch;
+    public boolean isNamesearch() {
+        return namesearch;
     }
 
-    public void setNameSearch(boolean nameSearch) {
-        this.nameSearch = nameSearch;
+    public void setNamesearch(boolean nameSearch) {
+        this.namesearch = nameSearch;
     }
 
     public String getSourceDescription() {

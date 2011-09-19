@@ -84,10 +84,17 @@ public class IntersectService {
 
             if (layer != null) {
                 if (layer.isShape()) {
-                    Objects o = o = objectDao.getObjectByIdAndLocation("cl" + layer.getId(), lng, lat);
-                    out.add(o);
+                    Objects o = objectDao.getObjectByIdAndLocation("cl" + layer.getId(), lng, lat);
+                    Map m = new HashMap();
+                    m.put("value", o.getName());
+                    m.put("layername", o.getFieldname());   //close enough
+                    m.put("pid", o.getPid());
+                    m.put("description", o.getDescription());
+                    //m.put("fid", o.getFid());
+
+                    out.add(m);
                 } else if (layer.isGrid()) {
-                    Grid g = new Grid(DATA_FILES_PATH + layer.getPathorig());
+                    Grid g = new Grid(DATA_FILES_PATH + layer.getPath_orig());
                     float[] v = g.getValues(p);
                     //s = "{\"value\":" + v[0] + ",\"layername\":\"" + layer.getDisplayname() + "\"}";
                     Map m = new HashMap();

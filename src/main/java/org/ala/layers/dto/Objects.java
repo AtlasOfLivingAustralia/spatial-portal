@@ -39,7 +39,7 @@ public class Objects {
     private String fid;
     private String fieldname;
     private String geometry;
-    private int nameId;
+    private int name_id;
 
     public String getDescription() {
         return description;
@@ -57,11 +57,11 @@ public class Objects {
         this.fid = fid;
     }
     
-    public String getFieldName() {
+    public String getFieldname() {
         return fieldname;
     }
     
-    public void setFieldName(String fieldname) {
+    public void setFieldname(String fieldname) {
         this.fieldname = fieldname;
     }
 
@@ -89,12 +89,12 @@ public class Objects {
         this.name = name;
     }
 
-    public int getNameId() {
-        return nameId;
+    public int getName_id() {
+        return name_id;
     }
 
-    public void setNameId(int nameId) {
-        this.nameId = nameId;
+    public void setName_id(int nameId) {
+        this.name_id = nameId;
     }
 
     public String getPid() {

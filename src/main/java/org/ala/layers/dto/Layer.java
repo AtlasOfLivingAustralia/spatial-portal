@@ -120,7 +120,7 @@ public class Layer {
     private String mddatest;
 
     @Column(name="citation_date")
-    private String citationdate;
+    private String citation_date;
 
     @Column(name="datalang")
     private String datalang;
@@ -129,10 +129,10 @@ public class Layer {
     private String mdhrlv;
 
     @Column(name="respparty_role")
-    private String resppartyrole;
+    private String respparty_role;
 
     @Column(name="licence_level")
-    private String licencelevel;
+    private String licence_level;
 
     @Column(name="licence_link")
     private String licence_link;
@@ -141,19 +141,19 @@ public class Layer {
     private String licence_notes;
 
     @Column(name="source_link")
-    private String sourcelink;
+    private String source_link;
 
     @Column(name="keywords")
     private String keywords;
 
     @Column(name="path_orig")
-    private String pathorig;
+    private String path_orig;
 
     @Column(name="path_1km")
-    private String path1km;
+    private String path_1km;
 
     @Column(name="path_250m")
-    private String path250m;
+    private String path_250m;
 
 
 //    @GeneratedValue
@@ -374,12 +374,12 @@ public class Layer {
         this.metadatapath = metadatapath;
     }
 
-    public String getCitationdate() {
-        return citationdate;
+    public String getCitation_date() {
+        return citation_date;
     }
 
-    public void setCitationdate(String citationdate) {
-        this.citationdate = citationdate;
+    public void setCitation_date(String citationdate) {
+        this.citation_date = citationdate;
     }
 
     public String getDatalang() {
@@ -406,12 +406,12 @@ public class Layer {
         this.licence_notes = licence_notes;
     }
 
-    public String getLicencelevel() {
-        return licencelevel;
+    public String getLicence_level() {
+        return licence_level;
     }
 
-    public void setLicencelevel(String licencelevel) {
-        this.licencelevel = licencelevel;
+    public void setLicence_level(String licencelevel) {
+        this.licence_level = licencelevel;
     }
 
     public String getMddatest() {
@@ -430,20 +430,20 @@ public class Layer {
         this.mdhrlv = mdhrlv;
     }
 
-    public String getResppartyrole() {
-        return resppartyrole;
+    public String getRespparty_role() {
+        return respparty_role;
     }
 
     public void setResppartyrole(String resppartyrole) {
-        this.resppartyrole = resppartyrole;
+        this.respparty_role = resppartyrole;
     }
 
     public String getSourcelink() {
-        return sourcelink;
+        return source_link;
     }
 
     public void setSourcelink(String sourcelink) {
-        this.sourcelink = sourcelink;
+        this.source_link = sourcelink;
     }
 
     public String getKeywords() {
@@ -454,28 +454,28 @@ public class Layer {
         this.keywords = keywords;
     }
 
-    public String getPath1km() {
-        return path1km;
+    public String getPath_1km() {
+        return path_1km;
     }
 
-    public void setPath1km(String path1km) {
-        this.path1km = path1km;
+    public void setPath_1km(String path1km) {
+        this.path_1km = path1km;
     }
 
-    public String getPath250m() {
-        return path250m;
+    public String getPath_250m() {
+        return path_250m;
     }
 
-    public void setPath250m(String path250m) {
-        this.path250m = path250m;
+    public void setPath_250m(String path250m) {
+        this.path_250m = path250m;
     }
 
-    public String getPathorig() {
-        return pathorig;
+    public String getPath_orig() {
+        return path_orig;
     }
 
-    public void setPathorig(String pathorig) {
-        this.pathorig = pathorig;
+    public void setPath_orig(String pathorig) {
+        this.path_orig = pathorig;
     }
 
 //    public String getCapabilities() {
@@ -515,11 +515,11 @@ public class Layer {
         v.add(displayname);
         v.add(description.replaceAll("\n", " "));
         v.add(source);
-        v.add(sourcelink);
-        v.add(resppartyrole);
+        v.add(source_link);
+        v.add(respparty_role);
         v.add(mddatest);
-        v.add(citationdate);
-        v.add(licencelevel);
+        v.add(citation_date);
+        v.add(licence_level);
         v.add(licence_link);
         v.add(licence_notes.replaceAll("\n", " "));
         v.add(type);
@@ -558,11 +558,11 @@ public class Layer {
         lyr += "\"" + displayname + "\", ";
         lyr += "\"" + description.replaceAll("\n", " ").replaceAll("\"", "\\\"") + "\", "; //
         lyr += "\"" + source + "\", ";
-        lyr += "\"" + sourcelink + "\", ";
-        lyr += "\"" + resppartyrole + "\", ";
+        lyr += "\"" + source_link + "\", ";
+        lyr += "\"" + respparty_role + "\", ";
         lyr += "\"" + mddatest + "\", ";
-        lyr += "\"" + citationdate + "\", ";
-        lyr += "\"" + licencelevel + "\", ";
+        lyr += "\"" + citation_date + "\", ";
+        lyr += "\"" + licence_level + "\", ";
         lyr += "\"" + licence_link + "\", ";
         lyr += "\"" + licence_notes.replaceAll("\n", " ").replaceAll("\"", "\\\"") + "\", "; //
         lyr += "\"" + type + "\", ";
