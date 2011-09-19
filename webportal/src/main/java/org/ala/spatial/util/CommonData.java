@@ -564,7 +564,7 @@ public class CommonData {
     static HashMap<String,String> facetShapeNameField;
     static HashMap<String,String> facetToLayerDisplayName;
     public static String getLayerFacetName(String layer) {
-        return layerToFacet.get(layer);
+        return layerToFacet.get(layer.toLowerCase());
     }
     public static String getFacetLayerName(String facet) {
         return facetToLayer.get(facet);
@@ -592,7 +592,7 @@ public class CommonData {
                 String layer = record[1];
                 String facet = (record[2].equals("Contextual")?"cl":"el") + record[0];
 
-                ltf.put(layer,facet);
+                ltf.put(layer.toLowerCase(),facet);
                 ftl.put(facet,layer);
 
                 ftldn.put(facet, record[3]);
