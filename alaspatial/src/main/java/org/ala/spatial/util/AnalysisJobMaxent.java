@@ -62,11 +62,14 @@ public class AnalysisJobMaxent extends AnalysisJob {
         }
         //cells = GridCutter.countCells(region, envelope);
 
-        SamplingService ss = SamplingService.newForLSID(taxon);
-        double[] p = ss.sampleSpeciesPoints(taxon, region, null);
-        if (p != null) {
-            speciesCount = p.length / 2;
-        }
+//        SamplingService ss = SamplingService.newForLSID(taxon);
+//        double[] p = ss.sampleSpeciesPoints(taxon, region, null);
+//        if (p != null) {
+//            speciesCount = p.length / 2;
+//        }
+        //TODO: dynamic species count
+        speciesCount = 10000;
+
         stageTimes = new long[4];
     }
 
@@ -81,27 +84,27 @@ public class AnalysisJobMaxent extends AnalysisJob {
             // dump the species data to a file
             setProgress(0, "dumping species data");
 
-            SamplingService ss = SamplingService.newForLSID(taxon);
-
-            StringBuffer removedSpecies = new StringBuffer();
-            double[] points = ss.sampleSpeciesPointsMinusSensitiveSpecies(taxon, region, null, removedSpecies);
-
-            if (points == null) {
-                setProgress(1, "failed: No occurrence points found in selection region");
-                setCurrentState(FAILED);
-                setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
-
-                return; 
-            }
-
-            StringBuffer sbSpecies = new StringBuffer();
-            // get the header
-            sbSpecies.append("species, longitude, latitude");
-            sbSpecies.append(System.getProperty("line.separator"));
-            for (int i = 0; i < points.length; i += 2) {
-                sbSpecies.append("species, " + points[i] + ", " + points[i + 1]);
-                sbSpecies.append(System.getProperty("line.separator"));
-            }
+//            SamplingService ss = SamplingService.newForLSID(taxon);
+//
+//            StringBuffer removedSpecies = new StringBuffer();
+//            double[] points = ss.sampleSpeciesPointsMinusSensitiveSpecies(taxon, region, null, removedSpecies);
+//
+//            if (points == null) {
+//                setProgress(1, "failed: No occurrence points found in selection region");
+//                setCurrentState(FAILED);
+//                setMessage("No species selected.\nHint: Make sure your active area includes species occurrences");
+//
+//                return;
+//            }
+//
+//            StringBuffer sbSpecies = new StringBuffer();
+//            // get the header
+//            sbSpecies.append("species, longitude, latitude");
+//            sbSpecies.append(System.getProperty("line.separator"));
+//            for (int i = 0; i < points.length; i += 2) {
+//                sbSpecies.append("species, " + points[i] + ", " + points[i + 1]);
+//                sbSpecies.append(System.getProperty("line.separator"));
+//            }
 
             setProgress(0, "preparing input files and run parameters");
 
@@ -120,7 +123,8 @@ public class AnalysisJobMaxent extends AnalysisJob {
             msets.setRandomTestPercentage(Integer.parseInt(txtTestPercentage));
             msets.setEnvPath(cutDataPath);          //use (possibly) cut layers
             msets.setEnvVarToggler("world");
-            msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator));
+            //msets.setSpeciesFilepath(setupSpecies(sbSpecies.toString(), currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator));
+            msets.setSpeciesFilepath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "species_points.csv");
             msets.setOutputPath(currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator);
             if (chkJackknife != null) {
                 msets.setDoJackknife(true);
@@ -189,12 +193,13 @@ public class AnalysisJobMaxent extends AnalysisJob {
 //
 //                readReplace(pth + "species.html", "<a href = \"species_samplePredictions.csv\">The prediction strength at the training and (optionally) test presence sites</a><br>", "");
                     String input = getInputs();
-                    String sciname = input.substring(input.indexOf("scientificName:") + 15, input.indexOf(";", input.indexOf("scientificName:") + 15));
-                    String scirank = input.substring(input.indexOf("taxonRank:") + 10, input.indexOf(";", input.indexOf("taxonRank:") + 10));
-                    readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + sciname);
+//                    String sciname = input.substring(input.indexOf("scientificName:") + 15, input.indexOf(";", input.indexOf("scientificName:") + 15));
+//                    String scirank = input.substring(input.indexOf("taxonRank:") + 10, input.indexOf(";", input.indexOf("taxonRank:") + 10));
+                    readReplace(pth + "species.html", "Maxent model for species", "Maxent model for " + taxon);
 
                     String paramlist = "Model reference number: " + getName()
-                            + "<br>Species: " + sciname + " (" + scirank + ")" + "<br>Layers: <ul>";
+                            + "<br>Species: " + taxon //+ " (" + scirank + ")"
+                            + "<br>Layers: <ul>";
                     for (int ei = 0; ei < envnameslist.length; ei++) {
                         paramlist += "<li>" + Layers.layerNameToDisplayName(envnameslist[ei].replace(" ", "_")) + " (" + envpathlist[ei] + ")</li>";
                     }
@@ -214,6 +219,17 @@ public class AnalysisJobMaxent extends AnalysisJob {
                     readReplaceBetween(pth + "species.html", "<br>Click <a href=species_explain.bat", "memory.<br>", "");
                     readReplaceBetween(pth + "species.html", "(A link to the Explain", "additive models.)", "");
 
+                    StringBuffer removedSpecies = new StringBuffer();
+                    try {
+                        BufferedReader br = new BufferedReader(new FileReader(
+                                currentPath + "output" + File.separator + "maxent" + File.separator + getName() + File.separator + "removedSpecies.txt"));
+                        String s;
+                        while((s = br.readLine()) != null) {
+                            removedSpecies.append(s);
+                        }
+                        br.close();
+                    } catch (Exception e) {
+                    }
                     if (removedSpecies.length() > 0) {
                         String header = "'Sensitive species' have been masked out of the model. See: http://www.ala.org.au/about/program-of-projects/sds/\r\n\r\nLSID,Species scientific name,Taxon rank";
                         writeToFile(header + removedSpecies.toString(),
@@ -296,11 +312,11 @@ public class AnalysisJobMaxent extends AnalysisJob {
         long timeRemaining = 0;
         long t1 = 0, t2 = 0, t3 = 0;
 
-        if (stage <= 0) { //data load; 0 to 0.2            
+        if (stage <= 0) { //data load; 0 to 0.2
             t1 += (cells * TabulationSettings.maxent_timing_0) * layers.length; //default
             t1 = t1 + progTime - stageTimes[0];
         }
-        if (stage <= 1) { //running; 0.2 to 0.9            
+        if (stage <= 1) { //running; 0.2 to 0.9
             t2 += (cells * TabulationSettings.maxent_timing_1) * layers.length; //default
             if (stage == 1) {
                 t2 = t2 + progTime - stageTimes[1];
