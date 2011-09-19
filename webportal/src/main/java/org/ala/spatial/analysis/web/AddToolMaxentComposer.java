@@ -175,7 +175,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
     }
 
     void openProgressBar() {
-        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this.getRoot(), null);
+        MaxentProgressWCController window = (MaxentProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisMaxentProgress.zul", this, null);
         window.parent = this;
         window.start(pid);
         try {
@@ -190,7 +190,7 @@ public class AddToolMaxentComposer extends AddToolComposer {
         String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:species_" + pid + "&styles=alastyles&FORMAT=image%2Fpng";
 
         String legendurl = CommonData.geoServer
-                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:species_" + pid
                 + "&STYLE=alastyles";
 

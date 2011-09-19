@@ -105,7 +105,7 @@ public class AddToolALOCComposer extends AddToolComposer {
         
         String mapurl = CommonData.geoServer + "/wms?service=WMS&version=1.1.0&request=GetMap&layers=ALA:aloc_" + pid + "&FORMAT=image%2Fpng";
         String legendurl = CommonData.geoServer
-                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=20"
+                + "/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=10&HEIGHT=1"
                 + "&LAYER=ALA:aloc_" + pid;
         System.out.println(legendurl);   
         getMapComposer().addWMSLayer(layerLabel, mapurl, (float) 0.5, null, legendurl, LayerUtilities.ALOC, null, null);

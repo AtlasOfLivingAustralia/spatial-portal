@@ -197,7 +197,7 @@ public class UploadQuery implements Query, Serializable {
             sb.append(facets.get(i).toString()).append("\n");
         }
 
-        return getFullQ();
+        return sb.toString();
     }
 
     @Override
