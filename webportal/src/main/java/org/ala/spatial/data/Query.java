@@ -12,6 +12,7 @@ import java.util.List;
  * @author Adam
  */
 public interface Query {
+
     /**
      * Get records for this query for the provided fields.
      *
@@ -40,7 +41,7 @@ public interface Query {
      * @return number of species as int or -1 on error.
      */
     int getSpeciesCount();
-        
+
     /**
      * Get parsed coordinates and optional field data for this query.
      *
@@ -135,7 +136,7 @@ public interface Query {
 
     public String getMetadataHtml();
 
-    public String getDownloadUrl(String [] extraFields);
+    public String getDownloadUrl(String[] extraFields);
 
-    public byte[] getDownloadBytes(String [] extraFields);
+    public byte[] getDownloadBytes(String[] extraFields);
 }

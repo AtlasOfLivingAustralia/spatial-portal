@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.zip.GZIPInputStream;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
-import org.ala.spatial.wms.RecordsLookup;
 
 /**
  *
@@ -148,7 +146,7 @@ public class SolrQuery implements Query, Serializable {
                 + "&q=" + getQ()
                 + paramQueryFields(fields);
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
 
         String sample = null;
 
@@ -177,7 +175,7 @@ public class SolrQuery implements Query, Serializable {
                 + DEFAULT_ROWS
                 + "&q=" + getQ();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
 
         String speciesList = null;
 
@@ -206,7 +204,7 @@ public class SolrQuery implements Query, Serializable {
                 + "pageSize=0"
                 + "&q=" + getQ();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
 
         try {
             int result = client.executeMethod(get);
@@ -239,7 +237,7 @@ public class SolrQuery implements Query, Serializable {
                 + DEFAULT_ROWS
                 + "&q=" + getQ();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
 
         try {
             int result = client.executeMethod(get);
@@ -258,7 +256,7 @@ public class SolrQuery implements Query, Serializable {
 
         return speciesCount;
     }
-    
+
     /**
      * Get parsed coordinates and optional fields for this query.
      *
@@ -315,12 +313,12 @@ public class SolrQuery implements Query, Serializable {
         int errCount = 0;
         pos = 0;
         try {
-            for(int i=0;i<fields.size();i++) {
-                if(fields.get(i).isStored()) {
+            for (int i = 0; i < fields.size(); i++) {
+                if (fields.get(i).isStored()) {
                     fields.get(i).ensureCapacity(lineCount);
                 }
             }
-            
+
             while ((line = csv.readNext()) != null) {
                 boolean ok = false;
                 try {
@@ -344,8 +342,8 @@ public class SolrQuery implements Query, Serializable {
                 }
             }
 
-            for(int i=0;i<fields.size();i++) {
-                if(fields.get(i).isStored()) {
+            for (int i = 0; i < fields.size(); i++) {
+                if (fields.get(i).isStored()) {
                     long st = System.currentTimeMillis();
                     fields.get(i).store();
                     System.out.println(fields.get(i).getDisplayName() + " stored in " + (System.currentTimeMillis() - st) + "ms");
@@ -378,7 +376,7 @@ public class SolrQuery implements Query, Serializable {
             }
         }
 
-        return (sb.length() > 0) ? "&fl=" + sb.toString(): "";
+        return (sb.length() > 0) ? "&fl=" + sb.toString() : "";
     }
 
     @Override
@@ -427,7 +425,7 @@ public class SolrQuery implements Query, Serializable {
 
         //wkt term
         if (wkt != null) {
-            sb.append("&wkt=" + wkt.replace(" ",":"));
+            sb.append("&wkt=" + wkt.replace(" ", ":"));
         }
 
         try {
@@ -451,20 +449,20 @@ public class SolrQuery implements Query, Serializable {
         HttpClient client = new HttpClient();
         String url = CommonData.biocacheServer
                 + POST_SERVICE;
-        PostMethod post = new PostMethod(url.replace("[","%5B").replace("]","%5D"));        
+        PostMethod post = new PostMethod(url.replace("[", "%5B").replace("]", "%5D"));
         try {
-            String [] qs = getQ().replace("%20"," ").split("&");
-            for(int i=0;i<qs.length;i++) {
+            String[] qs = getQ().replace("%20", " ").split("&");
+            for (int i = 0; i < qs.length; i++) {
                 String q = qs[i];
                 int p = q.indexOf('=');
-                if(p < 0) {
-                    post.addParameter("q", q.substring(p+1));
-                    System.out.println("param: " + "q" + " : " + q.substring(p+1));
+                if (p < 0) {
+                    post.addParameter("q", q.substring(p + 1));
+                    System.out.println("param: " + "q" + " : " + q.substring(p + 1));
                 } else {
-                    post.addParameter(q.substring(0,p), q.substring(p+1));
-                    System.out.println("param: " + q.substring(0,p) + " : " + q.substring(p+1));
+                    post.addParameter(q.substring(0, p), q.substring(p + 1));
+                    System.out.println("param: " + q.substring(0, p) + " : " + q.substring(p + 1));
                 }
-                
+
             }
             int result = client.executeMethod(post);
             String response = post.getResponseBodyAsString();
@@ -602,35 +600,34 @@ public class SolrQuery implements Query, Serializable {
     public String getWMSpath() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
     ArrayList<QueryField> facetFieldList = null;
 
     @Override
     public ArrayList<QueryField> getFacetFieldList() {
         if (facetFieldList == null) {
-            ArrayList<QueryField> fields = new ArrayList<QueryField> ();
+            ArrayList<QueryField> fields = new ArrayList<QueryField>();
 
-            fields.add(new QueryField("species_group","Lifeform", QueryField.FieldType.STRING));
-            fields.add(new QueryField("taxon_name","Scientific Name", QueryField.FieldType.STRING));
-            fields.add(new QueryField("species","Species", QueryField.FieldType.STRING));
-            fields.add(new QueryField("genus","Genus", QueryField.FieldType.STRING));
-            fields.add(new QueryField("family","Family", QueryField.FieldType.STRING));
-            fields.add(new QueryField("order","Order", QueryField.FieldType.STRING));
-            fields.add(new QueryField("class","Class", QueryField.FieldType.STRING));
-            fields.add(new QueryField("phylum","Phylum", QueryField.FieldType.STRING));
-            fields.add(new QueryField("kingdom","Kingdom", QueryField.FieldType.STRING));
+            fields.add(new QueryField("species_group", "Lifeform", QueryField.FieldType.STRING));
+            fields.add(new QueryField("taxon_name", "Scientific Name", QueryField.FieldType.STRING));
+            fields.add(new QueryField("species", "Species", QueryField.FieldType.STRING));
+            fields.add(new QueryField("genus", "Genus", QueryField.FieldType.STRING));
+            fields.add(new QueryField("family", "Family", QueryField.FieldType.STRING));
+            fields.add(new QueryField("order", "Order", QueryField.FieldType.STRING));
+            fields.add(new QueryField("class", "Class", QueryField.FieldType.STRING));
+            fields.add(new QueryField("phylum", "Phylum", QueryField.FieldType.STRING));
+            fields.add(new QueryField("kingdom", "Kingdom", QueryField.FieldType.STRING));
 
-            fields.add(new QueryField("coordinate_uncertainty","Uncertainty", QueryField.FieldType.INT));
-            fields.add(new QueryField("data_provider","Data Provider", QueryField.FieldType.STRING));
-            fields.add(new QueryField("institution_name","Institution", QueryField.FieldType.STRING));
-            fields.add(new QueryField("year","Year", QueryField.FieldType.INT));
-            fields.add(new QueryField("collection_name","Collection", QueryField.FieldType.STRING));
-            fields.add(new QueryField("basis_of_record","Basis of Record", QueryField.FieldType.STRING));
-            
-            for(int i=0;i<fields.size();i++) {
+            fields.add(new QueryField("coordinate_uncertainty", "Uncertainty", QueryField.FieldType.INT));
+            fields.add(new QueryField("data_provider", "Data Provider", QueryField.FieldType.STRING));
+            fields.add(new QueryField("institution_name", "Institution", QueryField.FieldType.STRING));
+            fields.add(new QueryField("year", "Year", QueryField.FieldType.INT));
+            fields.add(new QueryField("collection_name", "Collection", QueryField.FieldType.STRING));
+            fields.add(new QueryField("basis_of_record", "Basis of Record", QueryField.FieldType.STRING));
+
+            for (int i = 0; i < fields.size(); i++) {
                 fields.get(i).setStored(true);
             }
-            
+
             facetFieldList = fields;
         }
 
@@ -646,8 +643,8 @@ public class SolrQuery implements Query, Serializable {
     public String getRecordIdFieldName() {
         return "id";
     }
-
     HashMap<String, LegendObject> legends = new HashMap<String, LegendObject>();
+
     /**
      * Get legend for a facet field.
      *
@@ -657,7 +654,7 @@ public class SolrQuery implements Query, Serializable {
     @Override
     public LegendObject getLegend(String colourmode) {
         LegendObject lo = legends.get(colourmode);
-        if(lo == null) {
+        if (lo == null) {
             HttpClient client = new HttpClient();
             String url = CommonData.biocacheServer
                     + LEGEND_SERVICE_CSV
@@ -665,7 +662,7 @@ public class SolrQuery implements Query, Serializable {
                     + "&q=" + getQ()
                     + "&cm=" + colourmode;
             System.out.println(url);
-            GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+            GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
 
             String legend = null;
 
@@ -683,7 +680,7 @@ public class SolrQuery implements Query, Serializable {
     }
 
     @Override
-    public Query newFacets(List<Facet> facets){
+    public Query newFacets(List<Facet> facets) {
         ArrayList<Facet> newFacets = new ArrayList<Facet>();
         if (this.facets != null) {
             newFacets.addAll(this.facets);
@@ -697,12 +694,11 @@ public class SolrQuery implements Query, Serializable {
     public String getUrl() {
         return CommonData.biocacheServer + WMS_URL;
     }
-
     List<Double> bbox = null;
 
     @Override
     public List<Double> getBBox() {
-        if(bbox != null) {
+        if (bbox != null) {
             return bbox;
         }
 
@@ -716,11 +712,11 @@ public class SolrQuery implements Query, Serializable {
 
         System.out.println(url);
 
-        GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
         try {
             int result = client.executeMethod(get);
-            String [] s = get.getResponseBodyAsString().split(",");
-            for(int i=0;i<4;i++) {
+            String[] s = get.getResponseBodyAsString().split(",");
+            for (int i = 0; i < 4; i++) {
                 bbox.add(Double.parseDouble(s[i]));
             }
         } catch (Exception e) {
@@ -749,23 +745,23 @@ public class SolrQuery implements Query, Serializable {
     }
 
     @Override
-    public String getDownloadUrl(String [] extraFields) {
+    public String getDownloadUrl(String[] extraFields) {
         //Some cl fields are downloaded by default
         //TODO: add the other cl fields downloaded by default
-        String [] fieldsToRemove = { "cl22" } ;
+        String[] fieldsToRemove = {"cl22"};
 
         StringBuilder sb = new StringBuilder();
-        if(extraFields != null && extraFields.length > 0) {            
-            for(int i=0;i<extraFields.length;i++) {
+        if (extraFields != null && extraFields.length > 0) {
+            for (int i = 0; i < extraFields.length; i++) {
                 int j = 0;
-                for(j = 0;j<fieldsToRemove.length;j++) {
-                    if(fieldsToRemove[j].equals(extraFields[i])) {
+                for (j = 0; j < fieldsToRemove.length; j++) {
+                    if (fieldsToRemove[j].equals(extraFields[i])) {
                         break;
                     }
                 }
                 //append if field is not in 'removed' list
-                if(j == fieldsToRemove.length) {
-                    if(sb.length() == 0) {
+                if (j == fieldsToRemove.length) {
+                    if (sb.length() == 0) {
                         sb.append("&extra=").append(extraFields[i]);
                     } else {
                         sb.append(",").append(extraFields[i]);
@@ -777,7 +773,7 @@ public class SolrQuery implements Query, Serializable {
     }
 
     @Override
-    public byte[] getDownloadBytes(String [] extraFields) {
+    public byte[] getDownloadBytes(String[] extraFields) {
         return null;
     }
 
@@ -788,7 +784,7 @@ public class SolrQuery implements Query, Serializable {
                 + DEFAULT_ROWS
                 + "&q=" + getQ();
         System.out.println(url);
-        GetMethod get = new GetMethod(url.replace("[","%5B").replace("]","%5D"));
+        GetMethod get = new GetMethod(url.replace("[", "%5B").replace("]", "%5D"));
 
         try {
             int result = client.executeMethod(get);

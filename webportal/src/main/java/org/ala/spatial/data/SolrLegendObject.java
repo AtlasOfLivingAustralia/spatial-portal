@@ -2,15 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ala.spatial.data;
 
 import au.com.bytecode.opencsv.CSVReader;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.Double;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,18 +19,19 @@ import java.util.logging.Logger;
  */
 public class SolrLegendObject extends LegendObject {
     //[0] is colour, [1] is count
-    HashMap<Double,int []> categoriesNumeric;
+
+    HashMap<Double, int[]> categoriesNumeric;
     String csvLegend;
     String rawCsvLegend;
     String colourMode;
 
     public SolrLegendObject(String colourMode, String legend) {
         super((Legend) null, null);
-        
+
         this.colourMode = colourMode;
         rawCsvLegend = legend;
-        categories = new HashMap<String,int []> ();
-        categoriesNumeric = new HashMap<Double,int []> ();
+        categories = new HashMap<String, int[]>();
+        categoriesNumeric = new HashMap<Double, int[]>();
         List<String[]> csv = null;
         try {
             csv = new CSVReader(new StringReader(legend)).readAll();
@@ -47,24 +45,25 @@ public class SolrLegendObject extends LegendObject {
         String line = null;
         StringBuilder sb = new StringBuilder();
         sb.append("name,red,green,blue,count");
-        categoryNameOrder = new String[csv.size()-1];
-        for(int i=1;i<csv.size();i++) {
-            String [] c = csv.get(i);
-            String [] p = (i>1)?csv.get(i-1):null;
+        categoryNameOrder = new String[csv.size() - 1];
+        for (int i = 1; i < csv.size(); i++) {
+            String[] c = csv.get(i);
+            String[] p = (i > 1) ? csv.get(i - 1) : null;
 
-            int [] value = {readColour(c[1],c[2],c[3]), Integer.parseInt(c[4])};
+            int[] value = {readColour(c[1], c[2], c[3]), Integer.parseInt(c[4])};
             categories.put(c[0], value);
-            categoryNameOrder[i-1] = c[0];
+            categoryNameOrder[i - 1] = c[0];
             double d = Double.NaN;
             try {
                 d = Double.parseDouble(c[0]);
-            } catch (Exception e) {}
-            categoriesNumeric.put(d,value);
+            } catch (Exception e) {
+            }
+            categoriesNumeric.put(d, value);
 
             //check for endpoint (repitition of colour)
-            if(p != null && c.length > 4 && p.length > 4 
+            if (p != null && c.length > 4 && p.length > 4
                     && p[1].equals(c[1]) && p[2].equals(c[2]) && p[3].equals(c[3])) {
-                if(count == 0) {
+                if (count == 0) {
                     count = 1;
                     sum = Integer.parseInt(p[4]);
                 }
@@ -72,13 +71,13 @@ public class SolrLegendObject extends LegendObject {
                 sum += Integer.parseInt(c[4]);
             } else {
                 sb.append("\n");
-                
+
                 colour = c[1] + "," + c[2] + "," + c[3];
                 line = c[0] + "," + colour + "," + c[4];
                 sb.append(line);
             }
         }
-        if(count > 0) { //replace last line
+        if (count > 0) { //replace last line
             csvLegend = sb.toString().replace(line, count + " more" + "," + colour + "," + sum);
         } else {
             csvLegend = rawCsvLegend;
@@ -99,9 +98,9 @@ public class SolrLegendObject extends LegendObject {
     }
 
     public int getColour(String value) {
-        int [] data = categories.get(value);
+        int[] data = categories.get(value);
 
-        if(data != null) {
+        if (data != null) {
             return data[0];
         } else {
             return DEFAULT_COLOUR;
@@ -109,9 +108,9 @@ public class SolrLegendObject extends LegendObject {
     }
 
     public int getColour(double value) {
-        int [] data = categoriesNumeric.get(value);
+        int[] data = categoriesNumeric.get(value);
 
-        if(data != null) {
+        if (data != null) {
             return data[0];
         } else {
             return DEFAULT_COLOUR;
@@ -119,16 +118,20 @@ public class SolrLegendObject extends LegendObject {
     }
 
     public double[] getMinMax() {
-        double [] minmax = new double[2];
+        double[] minmax = new double[2];
         boolean first = true;
-        for(Double d : categoriesNumeric.keySet()) {
-            if(!Double.isNaN(d)) {
-                if(first || minmax[0] > d) minmax[0] = d;
-                if(first || minmax[1] < d) minmax[1] = d;
+        for (Double d : categoriesNumeric.keySet()) {
+            if (!Double.isNaN(d)) {
+                if (first || minmax[0] > d) {
+                    minmax[0] = d;
+                }
+                if (first || minmax[1] < d) {
+                    minmax[1] = d;
+                }
                 first = false;
             }
         }
-        if(!first) {
+        if (!first) {
             return null;
         } else {
             return minmax;

@@ -7,20 +7,21 @@ package org.ala.spatial.data;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.Serializable;
 import javax.imageio.ImageIO;
 
 /**
  *
  * @author Adam
  */
-public abstract class Legend {
+public abstract class Legend implements Serializable {
 
     /*
      * Colours are all set as transparent for no reason
      *
      * There are groups+1 colours
      */
-    final public static int[] colours = {0x00002DD0,0x00005BA2,0x00008C73,0x0000B944,0x0000E716,0x00A0FF00,0x00FFFF00,0x00FFC814,0x00FFA000,0x00FF5B00,0x00FF0000};
+    final public static int[] colours = {0x00002DD0, 0x00005BA2, 0x00008C73, 0x0000B944, 0x0000E716, 0x00A0FF00, 0x00FFFF00, 0x00FFC814, 0x00FFA000, 0x00FF5B00, 0x00FF0000};
 
     /*
      * for determining the records that are equal to the maximum value
@@ -30,8 +31,7 @@ public abstract class Legend {
     /*
      * cutoffs.length may not match colours.length, this a translation
      */
-    double [] cutoffsColours;
-
+    double[] cutoffsColours;
     /**
      * number of group members by Unique Value
      */
@@ -121,7 +121,7 @@ public abstract class Legend {
         }
 
         lastValue = numberOfRecords;
-        if(numberOfRecords == 0) {
+        if (numberOfRecords == 0) {
             max = Double.NaN;
         } else {
             max = d[numberOfRecords - 1];
@@ -136,15 +136,15 @@ public abstract class Legend {
      * @param d double [] sorted in ascending order
      */
     void determineGroupSizes(double[] d) {
-        if(cutoffs == null) {
+        if (cutoffs == null) {
             return;
         }
 
         //fix cutoffs
-        for(int i=1;i<cutoffs.length;i++) {
-            if(cutoffs[i] < cutoffs[i-1]) {
-                for(int j=i;j<cutoffs.length;j++) {
-                    cutoffs[j] = cutoffs[i-1];
+        for (int i = 1; i < cutoffs.length; i++) {
+            if (cutoffs[i] < cutoffs[i - 1]) {
+                for (int j = i; j < cutoffs.length; j++) {
+                    cutoffs[j] = cutoffs[i - 1];
                 }
                 break;
             }
@@ -159,7 +159,7 @@ public abstract class Legend {
                 countOfNaN++;
                 continue;
             } else if (d[i] > cutoffs[cutoffPos]) {
-                while(d[i] > cutoffs[cutoffPos]) {
+                while (d[i] > cutoffs[cutoffPos]) {
                     cutoffPos++;
                 }
             }
@@ -180,7 +180,7 @@ public abstract class Legend {
      * @return
      */
     public double evaluateStdDev(double[] d) {
-        if(Double.isNaN(max)) {
+        if (Double.isNaN(max)) {
             return Double.NaN;
         }
         determineGroupSizes(d);
@@ -195,18 +195,18 @@ public abstract class Legend {
 
         return stdev;
     }
-    
+
     /**
      * size is represented by number of unique values.
      *
      * @param d double [] sorted in ascending order
      */
     int[] determineGroupSizesArea(double[] d) {
-        if(cutoffs == null) {
+        if (cutoffs == null) {
             return null;
         }
 
-        int [] grpSizes = new int[cutoffs.length];
+        int[] grpSizes = new int[cutoffs.length];
 
         int cutoffPos = 0;
         for (int i = 0; i < d.length; i++) {
@@ -214,13 +214,13 @@ public abstract class Legend {
                 continue;
             }
             while (d[i] > cutoffs[cutoffPos]) {
-                while(d[i] > cutoffs[cutoffPos]) {
+                while (d[i] > cutoffs[cutoffPos]) {
                     cutoffPos++;
                 }
             }
             grpSizes[cutoffPos]++;
         }
-        
+
         return grpSizes;
     }
 
@@ -233,13 +233,13 @@ public abstract class Legend {
      * @return
      */
     public double evaluateStdDevArea(double[] d) {
-        if(Double.isNaN(max)) {
+        if (Double.isNaN(max)) {
             return Double.NaN;
         }
 
-        int [] grpSizes = determineGroupSizesArea(d);
+        int[] grpSizes = determineGroupSizesArea(d);
         int sum = 0;
-        for(int i=0;i<grpSizes.length;i++) {
+        for (int i = 0; i < grpSizes.length; i++) {
             sum += grpSizes[i];
         }
 
@@ -314,7 +314,7 @@ public abstract class Legend {
             pos = (pos * -1) - 1;
         } else {
             //get first instance of this cutoff value
-            while(pos > 0 && cutoffs[pos] == cutoffs[pos-1]) {
+            while (pos > 0 && cutoffs[pos] == cutoffs[pos - 1]) {
                 pos--;
             }
         }
@@ -337,8 +337,8 @@ public abstract class Legend {
             }
 
             //translate value to 0-1 position between the colours
-            if(upper == lower) {
-                while(pos > 0 && cutoffs[pos - 1] == lower) {
+            if (upper == lower) {
+                while (pos > 0 && cutoffs[pos - 1] == lower) {
                     pos--;
                 }
                 return colours[pos];
@@ -453,7 +453,7 @@ public abstract class Legend {
      * @return double[] of [min, max]
      */
     public double[] getMinMax() {
-        double [] f = {min, max};
+        double[] f = {min, max};
         return f;
     }
 }

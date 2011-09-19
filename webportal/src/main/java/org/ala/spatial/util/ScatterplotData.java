@@ -47,6 +47,7 @@ public class ScatterplotData implements Serializable {
     String [] series;
     String [] ids;
     double [][] data;
+    double [] seriesValues;
     double [] backgroundPoints;
     String [] backgroundSeries;
     String [] backgroundIds;
@@ -247,4 +248,10 @@ public class ScatterplotData implements Serializable {
         return backgroundData;
     }
 
+    public void setSeriesValues(double [] seriesValues) {
+        this.seriesValues = seriesValues;
+    }
+    public double[] getSeriesValues() {
+        return seriesValues;
+    }
 }

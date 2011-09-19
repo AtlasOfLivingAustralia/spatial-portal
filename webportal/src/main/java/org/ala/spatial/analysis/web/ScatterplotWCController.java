@@ -437,11 +437,11 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                         //colours
                         String [] seriesNames = { data.getQuery().getName() };
-                        if(data.getLegend() != null) seriesNames = data.getLegend().getCategories();
+                        if(data.getLegend() != null && data.getLegend().getCategories() != null) seriesNames = data.getLegend().getCategories();
                         int [] seriesColours = new int[seriesNames.length];
                         LegendObject legend = data.getLegend();
                         for(int i=0;i<seriesNames.length;i++) {
-                            if(legend == null) {
+                            if(legend == null || data.getLegend().getCategories() == null) {
                                 seriesColours[i] = data.red << 16 | data.green << 8 | data.blue | 0xff000000;
                             } else {
                                 seriesColours[i] = legend.getColour(seriesNames[i]);
@@ -453,9 +453,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                             int datasetCount = plot.getDatasetCount();
                             plot.setDataset(datasetCount, xyzDataset);
-                            plot.setRenderer(datasetCount, getRenderer(legend, seriesColours, seriesNames));
+                            plot.setRenderer(datasetCount, getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
                         } else {
-                            plot.setRenderer(getRenderer(legend, seriesColours, seriesNames));
+                            plot.setRenderer(getRenderer(legend, seriesColours, seriesNames, data.getSeriesValues()));
                         }
 
                         //add points background
@@ -554,11 +554,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             if (/*data.getLsid() != null && data.getLsid().length() > 0
                     && */ data.getLayer1() != null && data.getLayer1().length() > 0
                     && data.getLayer2() != null && data.getLayer2().length() > 0) {
-                String e1 = CommonData.getLayerFacetName(data.getLayer1());
-                String e2 = CommonData.getLayerFacetName(data.getLayer2());
                 ArrayList<Facet> facets = new ArrayList<Facet>();
-                facets.add(new Facet(e1, y1, y2, true));
-                facets.add(new Facet(e2, x1, x2, true));
+                facets.add(getFacetIn());
                 
                 Query q = data.getQuery().newFacets(facets);
                 
@@ -778,42 +775,42 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             //refresh mapLayer
             refreshMapLayer();
 
-            String e1 = CommonData.getLayerFacetName(data.getLayer1());
-            String e2 = CommonData.getLayerFacetName(data.getLayer2());
-            String fq = mapLayer.getHighlight();
-            /* fq states:
-             * 1. missing selected only; starts with '-'
-             * 2. layers selected only; does not start with '(' or '-'
-             * 3. missing and layers selected; starts with '('
-             * 4. no selection; fq null or empty
-             */
-            int state = 0;
-            if(fq == null || fq.length() == 0){
-                state = 4;
-            } else if(fq.startsWith("-")) {
-                state = 1;
-            } else if(fq.startsWith("(")) {
-                state = 3;
-            } else {
-                state = 2;
-            }
-            String missingTerm = "-" + e1 + ":[*%20TO%20*]%20OR%20-" + e2 + ":[*%20TO%20*]";
-            if(chkSelectMissingRecords.isChecked()) {
-                //add missingTerm to states without missingTerm
-                if(state == 4) {
-                    fq = missingTerm;
-                } else if(state == 2) {
-                    fq = "(" + fq + ")%20OR%20" + missingTerm;
-                }
-            } else {
-                //remove missingTerm from states with missingTerm
-                if(state == 1) {
-                    fq = null;
-                } else if(state == 3) {
-                    fq = fq.substring(1, fq.indexOf(")"));
-                }
-            }
-            mapLayer.setHighlight(fq);
+//            String e1 = CommonData.getLayerFacetName(data.getLayer1());
+//            String e2 = CommonData.getLayerFacetName(data.getLayer2());
+//            String fq = mapLayer.getHighlight();
+//            /* fq states:
+//             * 1. missing selected only; starts with '-'
+//             * 2. layers selected only; does not start with '(' or '-'
+//             * 3. missing and layers selected; starts with '('
+//             * 4. no selection; fq null or empty
+//             */
+//            int state = 0;
+//            if(fq == null || fq.length() == 0){
+//                state = 4;
+//            } else if(fq.startsWith("-")) {
+//                state = 1;
+//            } else if(fq.startsWith("(")) {
+//                state = 3;
+//            } else {
+//                state = 2;
+//            }
+//            String missingTerm = "-" + e1 + ":[*%20TO%20*]%20OR%20-" + e2 + ":[*%20TO%20*]";
+//            if(chkSelectMissingRecords.isChecked()) {
+//                //add missingTerm to states without missingTerm
+//                if(state == 4) {
+//                    fq = missingTerm;
+//                } else if(state == 2) {
+//                    fq = "(" + fq + ")%20OR%20" + missingTerm;
+//                }
+//            } else {
+//                //remove missingTerm from states with missingTerm
+//                if(state == 1) {
+//                    fq = null;
+//                } else if(state == 3) {
+//                    fq = fq.substring(1, fq.indexOf(")"));
+//                }
+//            }
+            mapLayer.setHighlight(getFacetIn().toString());
 
             getMapComposer().applyChange(mapLayer);
 
@@ -930,7 +927,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         xyzDataset = new DefaultXYZDataset();       
 
         String [] seriesNames = { data.getQuery().getName() };
-        if(data.getLegend() != null) {
+        if(data.getLegend() != null && data.getLegend().getCategories() != null) {
             seriesNames = data.getLegend().getCategories();
         }
 
@@ -940,7 +937,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             double [][] d = data.getData();
             String [] series = data.getSeries();
             for(int j=0;j<d.length;j++) {
-                if(series[j].equals(seriesNames[i])) {
+                if(seriesNames.length == 1 || series[j].equals(seriesNames[i])) {
                     if(!Double.isNaN(d[j][0]) && !Double.isNaN(d[j][1])) {
                         double [] r = {d[j][0], d[j][1], i};
                         records.add(r);
@@ -1022,12 +1019,14 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
         }
     }
 
-    private XYShapeRenderer getRenderer(LegendObject legend, int[] datasetColours, String[] seriesNames) {
+    private XYShapeRenderer getRenderer(LegendObject legend, int[] datasetColours, String[] seriesNames, double [] seriesValues) {
         class MyXYShapeRenderer extends XYShapeRenderer {
 
             public int alpha = 255;
             public Paint[] datasetColours;
             public int shapeSize = 8;
+            public double [] seriesValues;
+            public LegendObject legend;
             Shape shape = null;
 
             @Override
@@ -1042,9 +1041,15 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             @Override
             public Paint getPaint(XYDataset dataset, int series, int item) {
-                if (datasetColours != null && datasetColours.length > series && datasetColours[series] != null) {
+                System.out.println("MyXYShapeRenderer getPaint: " + series + "," + item + " legend=" + legend + ", legendCategories=" + ((legend != null)?legend.getCategories():"null"));
+                if (legend != null && legend.getCategories() == null) {
+                    //colour item
+                    return new Color(legend.getColour(seriesValues[item]) | (alpha << 24), true);
+                } else if (datasetColours != null && datasetColours.length > series && datasetColours[series] != null) {
+                    //colour series
                     return datasetColours[series];
                 }
+        
                 return super.getPaint(dataset, series, item);
             }
         }
@@ -1071,6 +1076,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             }
         }
         renderer.alpha = alpha;
+        renderer.seriesValues = seriesValues;
+        renderer.legend = legend;
 
         class LegendFieldPaintScale implements PaintScale, Serializable {
             LegendObject legend;
@@ -1096,6 +1103,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
             @Override
             public Paint getPaint(double d) {
+                System.out.println("LegendFieldPaintScale getPaint: " + d + " legend=" + legend + ", legendCategories=" + ((legend != null)?legend.getCategories():"null"));
+
                 if(legend == null) {
                     return defaultColour;
                 }
@@ -1225,6 +1234,7 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                     double [] points = new double[(csv.size()-1) * 2];
                     String [] series = new String[csv.size() - 1];
+                    double [] seriesValues = new double[points.length];
                     String [] ids = new String[csv.size() - 1];
                     int pos = 0;
                     for(int i=1;i<csv.size();i++) {
@@ -1240,12 +1250,16 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         } else {
                             series[pos/2] = csv.get(i)[seriesColumn];
                         }
+                        try {
+                            seriesValues[pos/2] = Double.parseDouble(csv.get(i)[seriesColumn]);
+                        } catch (Exception e){}
                         ids[pos/2] = csv.get(i)[idColumn];
                         pos += 2;
                     }
 
                     data.setPoints(points);
                     data.setSeries(series);
+                    data.setSeriesValues(seriesValues);
                     data.setIds(ids);
                 }
 

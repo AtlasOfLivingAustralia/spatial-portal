@@ -274,6 +274,10 @@ public class LayerLegendComposer extends GenericAutowireAutoforwardComposer {
         this.detach();
     }
 
+    public void onClick$btnCancel(Event event) {
+        this.detach();
+    }
+
     private void setupCBColour(Query q) {
         for(int i=0;i<cbColour.getItemCount();i++) {
             if(cbColour.getItemAtIndex(i) != ciColourUser) {
