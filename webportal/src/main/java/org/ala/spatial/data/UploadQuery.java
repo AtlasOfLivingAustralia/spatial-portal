@@ -214,6 +214,7 @@ public class UploadQuery implements Query, Serializable {
                  }
              }
              qf.store();
+             facetData.add(qf);
         }
 
         //copy points

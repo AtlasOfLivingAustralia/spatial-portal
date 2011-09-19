@@ -172,6 +172,13 @@ public class Facet {
     public String [] getFields() {
         Set<String> fieldSet = new HashSet<String>();
         if(field != null) fieldSet.add(field);
+        if(orInAndTerms != null) {
+            for(Facet f : orInAndTerms) {
+                for(String s : f.getFields()) {
+                    fieldSet.add(s);
+                }
+            }
+        }
         if(andTerms != null) {
             for(Facet f : andTerms) {
                 for(String s : f.getFields()) {
@@ -240,7 +247,7 @@ public class Facet {
      * @return
      */
     public int getType() {
-        if(andTerms != null || orTerms != null) {
+        if(orInAndTerms != null || andTerms != null || orTerms != null) {
             return 2;
         } else if(valueArray != null) {
             return 1;
