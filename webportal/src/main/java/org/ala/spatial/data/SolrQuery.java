@@ -15,8 +15,13 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
@@ -24,6 +29,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import java.util.zip.GZIPInputStream;
+import net.sf.json.JSONArray;
 import org.ala.spatial.sampling.SimpleRegion;
 import org.ala.spatial.sampling.SimpleShapeFile;
 import org.ala.spatial.util.CommonData;
@@ -755,11 +761,69 @@ public class SolrQuery implements Query, Serializable {
     @Override
     public String getMetadataHtml() {
         //first line is the 'caption'
-        return "biocache data\n"
-                + "number of species=" + getSpeciesCount()
-                + "<br>number of occurrences=" + getOccurrenceCount()
-                + "<br>classification=" + lsids
-                + "<br>data providers=" + getDataProviders();
+//        return "biocache data\n"
+//                + "number of species=" + getSpeciesCount()
+//                + "<br>number of occurrences=" + getOccurrenceCount()
+//                + "<br>classification=" + lsids
+//                + "<br>data providers=" + getDataProviders();
+
+        TreeMap<String,String> classification = (TreeMap<String, String>) getSpeciesClassification(lsids);
+
+        String html = "Species information\n";
+        html += "<table>";
+        html += "<tr><td>Number of species: </td><td>"+getSpeciesCount()+"</td></tr>";
+        html += "<tr><td>Number of occurrences: </td><td>"+getOccurrenceCount()+"</td></tr>";
+        html += "<tr><td>Classification: </td><td>";
+
+        Iterator<String> it = classification.descendingKeySet().iterator();
+        while (it.hasNext()) {
+            String key = it.next();
+            String value = classification.get(key);
+            html += "<a href='" + CommonData.bieServer + BIE_SPECIES + value + "'>" + key + "</a> ";
+            if (it.hasNext()) html += " > "; 
+        }
+
+        html += "</td></tr>";
+        html += "<tr><td>Data providers: </td><td>"+getDataProviders()+"</td></tr>";
+        html += "</table>";
+
+        return html;
+    }
+
+    private Map<String,String> getSpeciesClassification(String lsid) {
+
+        String[] classificationList = {"kingdom", "phylum", "class", "order", "family", "genus", "species", "subspecies"};
+        Map<String,String> classification = new TreeMap();
+
+        String snUrl = CommonData.bieServer + BIE_SPECIES + lsid + ".json";
+        System.out.println(snUrl);
+
+        try {
+            HttpClient client = new HttpClient();
+            GetMethod get = new GetMethod(snUrl);
+            get.addRequestHeader("Content-type", "application/json");
+
+            int result = client.executeMethod(get);
+            String slist = get.getResponseBodyAsString();
+
+            JSONObject jo = JSONObject.fromObject(slist);
+            //String scientficName = jo.getJSONObject("taxonConcept").getString("nameString");
+            String rank = jo.getJSONObject("taxonConcept").getString("rankString");
+
+            JSONObject joOcc = jo.getJSONObject("classification");
+            for (String c : classificationList) {
+                if (c.equals(rank)) {
+                    break;
+                }
+                classification.put(joOcc.getString(c.replace("ss", "zz")), joOcc.getString(c.replace("ss", "zz")+"Guid"));
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error getting scientific name");
+            e.printStackTrace(System.out);
+        }
+
+        return classification;
     }
 
     @Override
@@ -809,7 +873,17 @@ public class SolrQuery implements Query, Serializable {
             String response = get.getResponseBodyAsString();
 
             if (result == 200) {
-                return response;
+
+                String html = "";
+
+                JSONArray ja = JSONArray.fromObject(response);
+                for (int i=0; i<ja.size(); i++) {
+                    JSONObject jo = ja.getJSONObject(i);
+                    html += "<a href='http://collections.ala.org.au/public/showDataProvider/" + jo.getString("id") + "'>" + jo.getString("name") + "</a>: " + jo.getString("count") + " records <br />";
+                }
+                //return response;
+
+                return html; 
             }
         } catch (Exception e) {
             e.printStackTrace();
