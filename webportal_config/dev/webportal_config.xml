@@ -228,6 +228,10 @@
      <biocache_url>http://diasbprod1-cdc.vm.csiro.au:8080/biocache-service</biocache_url>
      <bie_url>http://bie.ala.org.au</bie_url>
      <webportal_url>http://spatial-dev.ala.org.au/webportal</webportal_url>
+     
+     <!-- comma separated list of field ids to be added as 'sampling' for uploaded coordinates -->
+     <default_upload_sampling>cl22,cl23,cl20,cl21,cl678,cl619,cl617,cl620</default_upload_sampling>
+
    
     </tns:supplementary>
   </tns:settings>
