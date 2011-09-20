@@ -52,6 +52,14 @@ public class UploadQuery implements Query, Serializable {
         this.originalFieldCount = fields.size();
     }
 
+    public void resetOriginalFieldCount(int count) {
+        if(count == -1) {
+            this.originalFieldCount = data.size();
+        } else {
+            this.originalFieldCount = count;
+        }
+    }
+
     /**
      * Get records for this query for the provided fields.
      *
@@ -334,10 +342,12 @@ public class UploadQuery implements Query, Serializable {
             }
         }
 
-        //update RecordsLookup for new fields
+        //update RecordsLookup for new fields, if it is already in RecordsLookup
         Object[] recordData = (Object[]) RecordsLookup.getData(getQ());
-        double[] points = (double[]) recordData[0];
-        RecordsLookup.putData(getQ(), points, data);
+        if (recordData != null) {
+            double[] points = (double[]) recordData[0];
+            RecordsLookup.putData(getQ(), points, data);
+        }
     }
 
     @Override
@@ -478,6 +488,7 @@ public class UploadQuery implements Query, Serializable {
     public byte[] getDownloadBytes(String[] extraFields) {
         ArrayList<QueryField> fields = new ArrayList<QueryField>();
         if (getFacetFieldList() != null) {
+            fields.add(data.get(0));    //id column (1st) is not in getFacetFieldList()
             fields.addAll(getFacetFieldList());
         }
         if (extraFields != null && extraFields.length > 0) {

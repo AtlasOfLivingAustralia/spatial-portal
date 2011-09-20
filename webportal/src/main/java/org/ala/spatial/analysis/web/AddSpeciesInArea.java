@@ -15,6 +15,7 @@ import org.ala.spatial.data.Query;
 import org.ala.spatial.data.QueryUtil;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.SolrQuery;
+import org.ala.spatial.data.UploadQuery;
 import org.ala.spatial.util.Util;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -44,7 +45,7 @@ public class AddSpeciesInArea extends UtilityComposer {
     Textbox tToolName;
     boolean setCustomArea = false;
     boolean hasCustomArea = false;
-    String lsid;
+    Query query;
     MapLayer prevTopArea = null;
 
     String rank;
@@ -170,7 +171,7 @@ public class AddSpeciesInArea extends UtilityComposer {
                 Map<String, Object> winProps = new HashMap<String, Object>();
                 winProps.put("parent", this);
                 winProps.put("parentname", "AddSpeciesInArea");
-                winProps.put("lsid", lsid);
+                winProps.put("query", query);
                 winProps.put("rank", rank);
                 winProps.put("taxon", taxon);
                 winProps.put("name", name);
@@ -207,20 +208,27 @@ public class AddSpeciesInArea extends UtilityComposer {
         try {            
             String wkt = getSelectedArea();
 
-            String spname = name + ";" + lsid;
+            //String spname = name + ";" + lsid;
             boolean setupMetadata = true;
 
             MapLayer ml = null;
 
-            Query q = QueryUtil.get(lsid, getMapComposer()).newWkt(wkt);
+            Query q = query.newWkt(wkt);
+            if(q instanceof UploadQuery) {
+                 //do default sampling now
+                if(CommonData.getDefaultUploadSamplingFields().size() > 0) {
+                    q.sample(CommonData.getDefaultUploadSamplingFields());
+                    ((UploadQuery)q).resetOriginalFieldCount(-1);
+                }
+            }
             if (byLsid) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
             } else if(filter) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
             } else if(filterGrid) {
                 ml = getMapComposer().mapSpecies(q, name, s, featureCount, type, wkt, -1);
-            } else if (rank != null && taxon != null && lsid != null) {
-                String sptaxon = taxon+";"+lsid;
+            } else if (rank != null && taxon != null && query != null) {
+                //String sptaxon = taxon+";"+lsid;
                 ml = getMapComposer().mapSpecies(q, taxon, rank, -1, LayerUtilities.SPECIES, wkt, -1);
                 setupMetadata = false;
             } else {  
@@ -311,14 +319,14 @@ public class AddSpeciesInArea extends UtilityComposer {
         return areaName;
     }
 
-    void setSpeciesParams(String lsid, String rank, String taxon) {
-        this.lsid = lsid;
+    void setSpeciesParams(Query q, String rank, String taxon) {
+        this.query = q;
         this.rank = rank;
         this.taxon = taxon;
     }
 
-    void setSpeciesFilterGridParams(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
-        this.lsid = lsid;
+    void setSpeciesFilterGridParams(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
+        this.query = q;
         this.name = name;
         this.s = s;
         this.featureCount = featureCount;
@@ -327,8 +335,8 @@ public class AddSpeciesInArea extends UtilityComposer {
         this.metadata = metadata;
         this.rank = rank;
     }
-    void setSpeciesFilterParams(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
-        this.lsid = lsid;
+    void setSpeciesFilterParams(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
+        this.query = q;
         this.name = name;
         this.s = s;
         this.featureCount = featureCount;
@@ -338,8 +346,8 @@ public class AddSpeciesInArea extends UtilityComposer {
         this.rank = rank;
     }
 
-    void setSpeciesByLsidParams(String lsid, String name, String s, int featureCount, int type, String metadata) {
-        this.lsid = lsid;
+    void setSpeciesByLsidParams(Query q, String name, String s, int featureCount, int type, String metadata) {
+        this.query = q;
         this.name = name;
         this.s = s;
         this.featureCount = featureCount;

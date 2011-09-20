@@ -14,8 +14,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.data.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +44,7 @@ public class CommonData {
     static final String WEBPORTAL_URL = "webportal_url";
     static final String BIE_URL = "bie_url";
     static final String BIOCACHE_URL = "biocache_url";
+    static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
     //(1) for LayersUtil
     static String[] environmentalLayerNames = null;
     static String[] contextualLayerNames = null;
@@ -66,6 +69,9 @@ public class CommonData {
     static String copy_layerlist = null;
     static JSONArray copy_layerlistJSON = null;
     static HashMap<JSONObject, List> copy_contextualClasses = null;
+
+    static String defaultFieldString = null;
+
     //(4) species with distribution layres
     /**
      * key = LSID
@@ -93,6 +99,7 @@ public class CommonData {
         webportalServer = settings.get(WEBPORTAL_URL);
         bieServer = settings.get(BIE_URL);
         biocacheServer = settings.get(BIOCACHE_URL);
+        defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         CommonData.settings = settings;
 
         //(1) for LayersUtil        
@@ -109,6 +116,12 @@ public class CommonData {
 
         //(4) for species wms layers
         initSpeciesWMSLayers();
+
+        //(5) for layer to facet name mapping
+        readLayerInfo();
+
+        //(6) for common facet name and value conversions
+        initI18nProperies();
 
         //(1) for LayersUtil
         if (copy_environmentalLayerNames != null) {
@@ -150,8 +163,6 @@ public class CommonData {
         if (copy_species_wms_layers != null) {
             species_wms_layers = copy_species_wms_layers;
         }
-
-        readLayerInfo();
     }
 
     /**
@@ -608,4 +619,42 @@ public class CommonData {
             e.printStackTrace();
         }
     }
+
+     static public ArrayList<QueryField> getDefaultUploadSamplingFields() {
+         String [] fl = defaultFieldString.split(",");
+         ArrayList<QueryField> fields = new ArrayList<QueryField>();
+         for(int i=0;i<fl.length;i++) {
+             fields.add(new QueryField(fl[i], getFacetLayerDisplayName(fl[i]), QueryField.FieldType.AUTO));
+         }
+
+         return fields;
+     }
+
+     static Properties i18nProperites = null;
+     static void initI18nProperies() {
+         
+         try {
+             Properties p = new Properties();
+             p.load(CommonData.class.getResourceAsStream("/messages.properties"));
+
+             i18nProperites = p;
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
+     }
+
+     static public String getI18nProperty(String key) {
+         return i18nProperites.getProperty(key);
+     }
+
+     static public ArrayList<String> getI18nPropertiesList(String key) {
+         ArrayList<String> list = new ArrayList<String>();
+         String startsWith = key + ".";
+         for(String k : i18nProperites.stringPropertyNames()) {
+             if(k.startsWith(startsWith)) {
+                 list.add(k);
+             }
+         }
+         return list;
+     }
 }

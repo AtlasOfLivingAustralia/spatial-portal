@@ -53,10 +53,8 @@ public class UploadSpeciesController extends UtilityComposer {
     Label tbInstructions;
     String uploadLSID;
     String uploadType = "normal";
-    
     private EventListener eventListener;
     private boolean addToMap;
-
     boolean defineArea;
 
     @Override
@@ -110,7 +108,7 @@ public class UploadSpeciesController extends UtilityComposer {
 
     public void onClick$btnCancel(Event event) {
         if (this.getParent().getId().equals("addtoolwindow")) {
-            AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+            AddToolComposer analysisParent = (AddToolComposer) this.getParent();
             analysisParent.resetWindowFromSpeciesUpload("", "cancel");
         }
         this.detach();
@@ -195,33 +193,33 @@ public class UploadSpeciesController extends UtilityComposer {
             try {
                 loadUserPoints(ud, m.getReaderData());
                 loaded = true;
-                System.out.println("read type " +  m.getContentType() + " with getReaderData");
+                System.out.println("read type " + m.getContentType() + " with getReaderData");
             } catch (Exception e) {
                 //e.printStackTrace();
             }
-            if(!loaded) {
+            if (!loaded) {
                 try {
                     loadUserPoints(ud, new StringReader(new String(m.getByteData())));
                     loaded = true;
-                    System.out.println("read type " +  m.getContentType() + " with getByteData");
+                    System.out.println("read type " + m.getContentType() + " with getByteData");
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
             }
-            if(!loaded) {
+            if (!loaded) {
                 try {
                     loadUserPoints(ud, new InputStreamReader(m.getStreamData()));
                     loaded = true;
-                    System.out.println("read type " +  m.getContentType() + " with getStreamData");
+                    System.out.println("read type " + m.getContentType() + " with getStreamData");
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
             }
-            if(!loaded) {
+            if (!loaded) {
                 try {
                     loadUserPoints(ud, new StringReader(m.getStringData()));
                     loaded = true;
-                    System.out.println("read type " +  m.getContentType() + " with getStringData");
+                    System.out.println("read type " + m.getContentType() + " with getStringData");
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
@@ -229,9 +227,9 @@ public class UploadSpeciesController extends UtilityComposer {
 
             //call reset window on caller to perform refresh'
             if (this.getParent().getId().equals("addtoolwindow")) {
-                AddToolComposer analysisParent = (AddToolComposer)this.getParent();
+                AddToolComposer analysisParent = (AddToolComposer) this.getParent();
                 analysisParent.resetWindowFromSpeciesUpload(uploadLSID, uploadType);
-            }            
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -277,52 +275,52 @@ public class UploadSpeciesController extends UtilityComposer {
             }
 
             ArrayList<QueryField> fields = new ArrayList<QueryField>();
-            if(upHeader.length == 2) {
+            if (upHeader.length == 2) {
                 //only points upload, add 'id' column at the start
                 fields.add(new QueryField("id"));
                 fields.get(0).ensureCapacity(sizeToCheck);
             }
-            String [] defaultHeader = {"id","longitude","latitude"};
-            for(int i=0;i<upHeader.length;i++) {
+            String[] defaultHeader = {"id", "longitude", "latitude"};
+            for (int i = 0; i < upHeader.length; i++) {
                 String name = upHeader[i];
-                if(upHeader.length == 2 && i < 2) {
-                    name = defaultHeader[i+1];
-                } else if(upHeader.length > 2 && i < 3) {
+                if (upHeader.length == 2 && i < 2) {
+                    name = defaultHeader[i + 1];
+                } else if (upHeader.length > 2 && i < 3) {
                     name = defaultHeader[i];
                 }
                 fields.add(new QueryField(name));
-                fields.get(fields.size()-1).ensureCapacity(sizeToCheck);
+                fields.get(fields.size() - 1).ensureCapacity(sizeToCheck);
             }
 
-            double [] points = new double[sizeToCheck*2];
+            double[] points = new double[sizeToCheck * 2];
             int counter = 1;
-            int hSize = hasHeader?1:0;
+            int hSize = hasHeader ? 1 : 0;
             for (int i = 0; i < userPoints.size() - hSize; i++) {
                 String[] up = (String[]) userPoints.get(i + hSize);
                 if (up.length > 2) {
-                    for(int j=0;j<up.length&&j<fields.size();j++) {
+                    for (int j = 0; j < up.length && j < fields.size(); j++) {
                         fields.get(j).add(up[j]);
                     }
                     try {
-                        points[i*2] = Double.parseDouble(up[1]);
-                        points[i*2+1] = Double.parseDouble(up[2]);
+                        points[i * 2] = Double.parseDouble(up[1]);
+                        points[i * 2 + 1] = Double.parseDouble(up[2]);
                     } catch (Exception e) {
                     }
                 } else if (up.length > 1) {
                     fields.get(0).add(ud.getName() + "-" + counter);
-                    for(int j=0;j<up.length&&j<fields.size();j++) {
-                        fields.get(j+1).add(up[j]);
+                    for (int j = 0; j < up.length && j < fields.size(); j++) {
+                        fields.get(j + 1).add(up[j]);
                     }
                     try {
-                        points[i*2] = Double.parseDouble(up[0]);
-                        points[i*2+1] = Double.parseDouble(up[1]);
+                        points[i * 2] = Double.parseDouble(up[0]);
+                        points[i * 2 + 1] = Double.parseDouble(up[1]);
                     } catch (Exception e) {
                     }
                     counter++;
                 }
             }
 
-            for(int i=0;i<fields.size();i++) {
+            for (int i = 0; i < fields.size(); i++) {
                 fields.get(i).store();
             }
 
@@ -336,7 +334,7 @@ public class UploadSpeciesController extends UtilityComposer {
             metadata += "Description: " + ud.getDescription() + " <br />\n";
             metadata += "Date: " + ud.getDisplayTime() + " <br />\n";
             metadata += "Number of Points: " + ud.getFeatureCount() + " <br />\n";
-           
+
             ud.setMetadata(metadata);
             ud.setSubType(LayerUtilities.SPECIES_UPLOAD);
             ud.setLsid(pid);
@@ -354,22 +352,29 @@ public class UploadSpeciesController extends UtilityComposer {
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
 
             if (addToMap) {
+                if (!defineArea) {
+                    //do default sampling now
+                    if (CommonData.getDefaultUploadSamplingFields().size() > 0) {
+                        q.sample(CommonData.getDefaultUploadSamplingFields());
+                        ((UploadQuery) q).resetOriginalFieldCount(-1);
+                    }
+                }
                 MapLayer ml = null;
                 if (ud.getFeatureCount() > settingsSupplementary.getValueAsInt(getMapComposer().POINTS_CLUSTER_THRESHOLD)) {
                     //ml = mapSpeciesByLsidCluster(slist, ud.getName(), "user");
-                    if(defineArea) {
-                        mapFilterGrid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                    if (defineArea) {
+                        mapFilterGrid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
                         ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
                     }
                 } else {
-                    if(defineArea) {
-                        mapFilter(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
+                    if (defineArea) {
+                        mapFilter(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, metadata, "User");
                     } else {
                         ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES_UPLOAD, null, -1);
                     }
                 }
-                if(ml != null) {
+                if (ml != null) {
                     MapLayerMetadata md = ml.getMapLayerMetadata();
                     if (md == null) {
                         md = new MapLayerMetadata();
@@ -389,7 +394,7 @@ public class UploadSpeciesController extends UtilityComposer {
             data.close();
 
             //TODO:
-            Clients.evalJavaScript("appendUploadSpeciesMetadata('"+ pid +"','"+metadata.replaceAll("\n", "_n_")+"');");
+            Clients.evalJavaScript("appendUploadSpeciesMetadata('" + pid + "','" + metadata.replaceAll("\n", "_n_") + "');");
 
         } catch (Exception e) {
 
@@ -450,8 +455,8 @@ public class UploadSpeciesController extends UtilityComposer {
             getMapComposer().getSession().setAttribute("userpoints", htUserSpecies);
 
             if (addToMap) {
-                if(defineArea) {
-                    mapSpeciesByLsid(pid, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
+                if (defineArea) {
+                    mapSpeciesByLsid(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, metadata);
                 } else {
                     MapLayer ml = getMapComposer().mapSpecies(q, ud.getName(), "user", ud.getFeatureCount(), LayerUtilities.SPECIES, null, -1);
                     MapLayerMetadata md = ml.getMapLayerMetadata();
@@ -460,13 +465,13 @@ public class UploadSpeciesController extends UtilityComposer {
                         ml.setMapLayerMetadata(md);
                     }
                     md.setMoreInfo(metadata);
-                }                
+                }
             }
 
             if (eventListener != null) {
                 eventListener.onEvent(new Event("", null, pid + "\t" + ud.getName()));
             }
-            
+
             // close the reader and data streams
             reader.close();
             data.close();
@@ -482,11 +487,11 @@ public class UploadSpeciesController extends UtilityComposer {
         this.eventListener = eventListener;
     }
 
-    void setTbInstructions(String instructions){
+    void setTbInstructions(String instructions) {
         tbInstructions.setValue(instructions);
     }
 
-    void setUploadType(String uploadType){
+    void setUploadType(String uploadType) {
         this.uploadType = uploadType;
     }
 
@@ -494,9 +499,9 @@ public class UploadSpeciesController extends UtilityComposer {
         this.defineArea = defineArea;
     }
 
-    private void mapFilterGrid(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
+    private void mapFilterGrid(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-        window.setSpeciesFilterGridParams(lsid, name, s, featureCount, type, metadata, rank);
+        window.setSpeciesFilterGridParams(q, name, s, featureCount, type, metadata, rank);
         window.loadAreaLayers();
         try {
             window.doModal();
@@ -505,9 +510,9 @@ public class UploadSpeciesController extends UtilityComposer {
         }
     }
 
-    private void mapFilter(String lsid, String name, String s, int featureCount, int type, String metadata, String rank) {
+    private void mapFilter(Query q, String name, String s, int featureCount, int type, String metadata, String rank) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-        window.setSpeciesFilterParams(lsid, name, s, featureCount, type, metadata, rank);
+        window.setSpeciesFilterParams(q, name, s, featureCount, type, metadata, rank);
         window.loadAreaLayers();
         try {
             window.doModal();
@@ -516,9 +521,9 @@ public class UploadSpeciesController extends UtilityComposer {
         }
     }
 
-    private void mapSpeciesByLsid(String lsid, String name, String s, int featureCount, int type, String metadata) {
+    private void mapSpeciesByLsid(Query q, String name, String s, int featureCount, int type, String metadata) {
         AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-        window.setSpeciesByLsidParams(lsid, name, s, featureCount, type, metadata);
+        window.setSpeciesByLsidParams(q, name, s, featureCount, type, metadata);
         window.loadAreaLayers();
         try {
             window.doModal();

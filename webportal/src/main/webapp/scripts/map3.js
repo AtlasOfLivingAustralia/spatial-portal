@@ -828,8 +828,6 @@ function addWKTFeatureToMap(featureWKT,name,hexColour,opacity) {
     geom = geom.transform(map.displayProjection, map.projection);
     wktLayer.addFeatures([new OpenLayers.Feature.Vector(geom)]);
 
-    wktLayer.events.register("featureselected", wktLayer, selectedWKT);
-
     wktLayer.isFixed = false;
     selectionLayers[selectionLayers.length] = wktLayer;
 

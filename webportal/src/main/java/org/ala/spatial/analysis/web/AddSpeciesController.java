@@ -5,6 +5,8 @@ import au.org.emii.portal.settings.SettingsSupplementary;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.QueryUtil;
 import org.apache.commons.lang.StringUtils;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.SuspendNotAllowedException;
@@ -35,7 +37,7 @@ public class AddSpeciesController extends UtilityComposer {
     Vbox vboxSearch;
     Checkbox chkArea;
     
-    String lsid;
+    Query query;
     String rank;
     String taxon;
 
@@ -65,7 +67,7 @@ public class AddSpeciesController extends UtilityComposer {
 
             if (rSearch.isSelected()) {
                 AddSpeciesInArea window = (AddSpeciesInArea) Executions.createComponents("WEB-INF/zul/AddSpeciesInArea.zul", getMapComposer(), null);
-                window.setSpeciesParams(lsid, rank, taxon);
+                window.setSpeciesParams(query, rank, taxon);
                 window.loadAreaLayers();
                 try {
                     window.doModal();
@@ -207,6 +209,6 @@ public class AddSpeciesController extends UtilityComposer {
             rank = "taxon";
         }
 
-        lsid = (String) (searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0));
+        query = QueryUtil.get((String)searchSpeciesAuto.getSelectedItem().getAnnotatedProperties().get(0), getMapComposer());
     }
 }
