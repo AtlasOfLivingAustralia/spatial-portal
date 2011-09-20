@@ -8,6 +8,8 @@ import java.io.StringReader;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.data.SolrQuery;
 import org.apache.commons.httpclient.HttpClient;
@@ -127,6 +129,11 @@ public class SpeciesListResults extends UtilityComposer {
                             if (ss.length > 5) {
                                 lc = new Listcell(ss[5]);
                                 lc.setParent(li);
+                            }
+                            try {
+                                reader.close();
+                            } catch (IOException ex) {
+                                Logger.getLogger(SpeciesListResults.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
                     });

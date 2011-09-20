@@ -258,14 +258,12 @@ function buildMapReal() {
     });
     bLayer3 = new OpenLayers.Layer.OSM();
     
-    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/wms/reflect",{
-        layers:"ALA:world"
-    },{
-        isBaseLayer: true,
+    bLayer4 = new OpenLayers.Layer.WMS("Outline",parent.jq('$geoserver_url')[0].innerHTML + "/geoserver/gwc/service/wms/reflect",{
+        layers:"ALA:world"},
+	{isBaseLayer: true,'wrapDateLine': true,
         projection: new OpenLayers.Projection("EPSG:900913"),
-        'sphericalMercator': true,
-        'maxExtent': new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34)
-    });
+        'sphericalMercator': true}
+    );
     map.addLayers([bLayer2,bLayer,bLayer3,bLayer4]);
     parent.bLayer = bLayer;
     parent.bLayer2 = bLayer2;

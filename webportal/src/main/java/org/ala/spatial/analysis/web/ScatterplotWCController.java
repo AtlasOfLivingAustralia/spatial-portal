@@ -983,8 +983,13 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
             }
         }
         if(records.size() > 0) {
-            double [][] sd = new double[records.size()][3];
-            records.toArray(sd);
+            //flip data into an array
+            double [][] sd = new double[3][records.size()];
+            for(int j=0;j<records.size();j++) {
+                sd[0][j] = records.get(j)[0];
+                sd[1][j] = records.get(j)[1];
+                sd[2][j] = records.get(j)[2];
+            }
             aaDataset.addSeries(ACTIVE_AREA_SERIES, sd);
         }
     }
@@ -1222,7 +1227,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         //TODO: fail nicely
                     }
 
-                    List<String[]> csv = new CSVReader(new StringReader(results)).readAll();
+                    CSVReader csvreader = new CSVReader(new StringReader(results));
+                    List<String[]> csv = csvreader.readAll();
+                    csvreader.close();
 
                     int longitudeColumn = findInArray("longitude", csv.get(0));
                     int latitudeColumn = findInArray("latitude", csv.get(0));
@@ -1322,7 +1329,9 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
                         //TODO: fail nicely
                     }
 
-                    List<String[]> csv = new CSVReader(new StringReader(backgroundResults)).readAll();
+                    CSVReader csvReader = new CSVReader(new StringReader(backgroundResults));
+                    List<String[]> csv = csvReader.readAll();
+                    csvReader.close();
 
                     int longitudeColumn = findInArray("longitude", csv.get(0));
                     int latitudeColumn = findInArray("latitude", csv.get(0));
@@ -1352,6 +1361,8 @@ public class ScatterplotWCController extends UtilityComposer implements HasMapLa
 
                 if (prevResampleBackgroundLayers == null || !prevResampleBackgroundLayers.equals(thisResampleBackgroundLayers)) {
                     sampleBackground();
+
+                    createBackgroundDataset();
                 }
             } else {
                 //invalid background

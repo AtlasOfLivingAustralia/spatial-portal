@@ -356,6 +356,8 @@ public class SolrQuery implements Query, Serializable {
                     System.out.println(fields.get(i).getDisplayName() + " stored in " + (System.currentTimeMillis() - st) + "ms");
                 }
             }
+
+            csv.close();
         } catch (IOException ex) {
             Logger.getLogger(SolrQuery.class.getName()).log(Level.SEVERE, null, ex);
         }

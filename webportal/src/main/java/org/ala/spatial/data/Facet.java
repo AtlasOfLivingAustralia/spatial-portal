@@ -116,7 +116,9 @@ public class Facet implements Serializable {
         this.max = Double.NaN;
         this.valueArray = null;
         try {
-            this.valueArray = new CSVReader(new StringReader(this.value)).readNext();
+            CSVReader csv = new CSVReader(new StringReader(this.value));
+            this.valueArray = csv.readNext();
+            csv.close();
         } catch (Exception e) {
         }
     }

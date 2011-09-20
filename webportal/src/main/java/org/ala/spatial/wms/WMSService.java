@@ -4,6 +4,7 @@
  */
 package org.ala.spatial.wms;
 
+import au.org.emii.portal.config.ConfigurationLoaderStage1;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -405,4 +406,18 @@ public class WMSService {
 
         return record;
     }
+
+    @RequestMapping(value = "/admin/reloadconfig", method = RequestMethod.GET)
+    public String reloadConfig() {
+        //signal for reload
+        ConfigurationLoaderStage1.loaders.get(0).interrupt();
+
+        //return summary
+        StringBuilder html = new StringBuilder();
+
+        //was it successful?
+
+        return html.toString();
+    }
+
 }

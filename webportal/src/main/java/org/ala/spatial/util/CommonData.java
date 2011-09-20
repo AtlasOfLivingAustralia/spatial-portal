@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.data.LsidCounts;
 import org.ala.spatial.data.QueryField;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -35,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
 public class CommonData {
 
     //common data
-    static public final String WORLD_WKT = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
+    static public final String WORLD_WKT = "POLYGON((-179.999 -84.999,-179.999 84.999,179.999 84.999,179.999 -84.999,-179.999 -84.999))";
     static public final String AUSTRALIA_WKT = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
     //common parameters
     static final String SAT_URL = "sat_url";
@@ -87,6 +88,8 @@ public class CommonData {
     static public String bieServer;
     static public String biocacheServer;
     static public Map<String, String> settings;
+    //lsid counts, for species autocomplete
+    static public LsidCounts lsidCounts;
 
     /*
      * initialize common data from geoserver and satserver
@@ -122,6 +125,12 @@ public class CommonData {
 
         //(6) for common facet name and value conversions
         initI18nProperies();
+
+        //(7) lsid counts
+        LsidCounts lc = new LsidCounts();
+        if(lc.getSize() > 0) {
+            lsidCounts = lc;
+        }
 
         //(1) for LayersUtil
         if (copy_environmentalLayerNames != null) {

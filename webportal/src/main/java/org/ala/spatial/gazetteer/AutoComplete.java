@@ -82,7 +82,7 @@ public class AutoComplete extends Combobox {
                 JSONObject jo = ja.getJSONObject(i);
                 String itemString = jo.getString("name");
                 String link = "/shape/geojson/" + jo.getString("pid");
-                String description = jo.getString("desc");
+                String description = jo.getString("description") + " (" + jo.getString("fieldname") + ")";
 
                 if (it != null && it.hasNext()) {
                     Comboitem ci = (Comboitem) it.next();

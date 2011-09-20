@@ -3,6 +3,7 @@ package org.ala.spatial.analysis.web;
 import au.org.emii.portal.composer.MapComposer;
 import au.org.emii.portal.menu.MapLayer;
 import au.org.emii.portal.settings.SettingsSupplementary;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -76,13 +77,13 @@ public class SpeciesAutoComplete extends Combobox {
 
         //Do something about geocounts.
         //High limit because geoOnly=true cuts out valid matches, e.g. "Macropus"
-        String snUrl = CommonData.bieServer + "/search/auto.json?limit=100&q=";
+        //String snUrl = CommonData.bieServer + "/search.json?limit=20&q=";
 
         try {
 
             System.out.println("Looking for common name: " + isSearchCommon());
 
-            getItems().clear();
+            //getItems().clear();
             Iterator it = getItems().iterator();
             if (val.length() == 0) {
                 Comboitem myci = null;
@@ -97,53 +98,13 @@ public class SpeciesAutoComplete extends Combobox {
                 myci.setDescription("");
                 myci.setDisabled(true);
             } else {
-                String nsurl = snUrl + URLEncoder.encode(val, "UTF-8");
+                StringBuilder sb = new StringBuilder();
 
-                HttpClient client = new HttpClient();
-                GetMethod get = new GetMethod(nsurl);
-                get.addRequestHeader("Content-type", "text/plain");
+                //sb.append(searchService(val));
+                sb.append(autoService(val));
+                sb.append(loadUserPoints(val));
 
-                int result = client.executeMethod(get);
-                String rawJSON = get.getResponseBodyAsString();
-
-                //parse
-                JSONObject jo = JSONObject.fromObject(rawJSON);
-
-                StringBuilder slist = new StringBuilder();
-                JSONArray ja = jo.getJSONArray("autoCompleteList");
-                int found = 0;
-                for(int i=0;i<ja.size() && found < 20;i++){
-                    JSONObject o = ja.getJSONObject(i);
-
-                    //count for guid
-                    try {
-                        String q = "lft:%5B" + o.getLong("left") + "%20TO%20" + o.getLong("right") + "%5D%20AND%20geospatial_kosher:true";
-                        long count = getCount(q);
-                        System.out.println("count=" + count + " for " +o.getString("name") + ":" + o.getString("guid") );
-
-                        if(count > 0) {
-                            if(slist.length() > 0) {
-                                slist.append("\n");
-                            }
-
-                            //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
-                            slist.append(o.getString("name")).append(" / ");
-                            slist.append(o.getString("guid")).append(" / ");
-                            slist.append(o.getString("rankString")).append(" / found ");
-                            slist.append(count);
-
-                            found++;
-                        }
-                    } catch (Exception e) {
-
-                    }
-                }
-
-                slist.append(loadUserPoints(val));
-
-//                slist += loadOccurrencesInActiveArea(val);
-
-                String sslist = slist.toString();
+                String sslist = sb.toString();
                 System.out.println("SpeciesAutoComplete: \n" + sslist);
 
                 String[] aslist = sslist.split("\n");
@@ -156,7 +117,6 @@ public class SpeciesAutoComplete extends Combobox {
                         String[] spVal = aslist[i].split("/");
 
                         String taxon = spVal[0].trim();
-                        taxon = taxon.substring(0, 1).toUpperCase() + taxon.substring(1).toLowerCase();
 
                         Comboitem myci = null;
                         if (it != null && it.hasNext()) {
@@ -168,25 +128,24 @@ public class SpeciesAutoComplete extends Combobox {
                             myci.setParent(this);
                         }
 
-                        String[] wmsNames = CommonData.getSpeciesDistributionWMS(spVal[1].trim());
+                        String[] wmsNames = CommonData.getSpeciesDistributionWMS(spVal[1]);
                         if (wmsNames != null && wmsNames.length > 0) {
                             if (wmsNames.length == 1) {
-                                myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records + map");
+                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + map");
                             } else {
-                                myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records + " + wmsNames.length + " maps");
+                                myci.setDescription(spVal[2] + " - " + spVal[3] + " records + " + wmsNames.length + " maps");
                             }
                         } else {
-                            myci.setDescription(spVal[2].trim() + " - " + spVal[3].trim() + " records");
+                            myci.setDescription(spVal[2] + " - " + spVal[3] + " records");
                         }
 
                         myci.setDisabled(false);
-                        myci.addAnnotation(spVal[1].trim(), "LSID", null);
-
-                        if (spVal[2].trim().contains(":")) {
-                            myci.setValue(spVal[2].trim().substring(spVal[2].trim().indexOf(":") + 1).trim());
-                        } else {
-                            myci.setValue(taxon);
+                        if(myci.getAnnotations() != null) {
+                            myci.getAnnotations().clear();
                         }
+                        myci.addAnnotation(spVal[1], "LSID", null);
+
+                        myci.setValue(taxon);
                     }
                 }
 
@@ -229,11 +188,11 @@ public class SpeciesAutoComplete extends Combobox {
                                 || ud.getName().toLowerCase().contains(val)
                                 || ud.getDescription().toLowerCase().contains(val)) {
                             sbup.append(ud.getName());
-                            sbup.append(" / ");
+                            sbup.append(" /");
                             sbup.append(k);
-                            sbup.append(" / ");
+                            sbup.append("/");
                             sbup.append("user");
-                            sbup.append(" / ");
+                            sbup.append("/");
                             sbup.append(ud.getFeatureCount());
                             sbup.append("\n");
                         }
@@ -306,7 +265,7 @@ public class SpeciesAutoComplete extends Combobox {
 //            if(ml.getName().contains(layerPrefix) && ml.getDisplayName().toLowerCase().contains(val.toLowerCase())) {
 //                try {
 //                    userPoints = ml.getDisplayName()
-//                            + " / "
+//                            + "/"
 //                            + ml.getMapLayerMetadata().getSpeciesLsid()
 //                            + " / Active Area / "
 //                            + ml.getMapLayerMetadata().getOccurrencesCount()
@@ -320,4 +279,102 @@ public class SpeciesAutoComplete extends Combobox {
 //
 //        return userPoints;
 //    }
+
+    String searchService(String val) throws Exception {
+        String nsurl = CommonData.bieServer + "/search.json?pageSize=30&q=" + URLEncoder.encode(val, "UTF-8");
+
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(nsurl);
+        get.addRequestHeader("Content-type", "text/plain");
+
+        int result = client.executeMethod(get);
+        String rawJSON = get.getResponseBodyAsString();
+
+        //parse
+        JSONObject jo = JSONObject.fromObject(rawJSON);
+        jo = jo.getJSONObject("searchResults");
+
+        StringBuilder slist = new StringBuilder();
+        JSONArray ja = jo.getJSONArray("results");
+        int found = 0;
+        for(int i=0;i<ja.size() && found < 20;i++){
+            JSONObject o = ja.getJSONObject(i);
+
+            //count for guid
+            try {
+                //String q = "lft:%5B" + o.getLong("left") + "%20TO%20" + o.getLong("right") + "%5D%20AND%20geospatial_kosher:true";
+                //long count = getCount(q);
+                long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
+                //System.out.println("count=" + count + " for " +o.getString("name") + ":" + o.getString("guid") );
+
+                if(count > 0) {
+                    if(slist.length() > 0) {
+                        slist.append("\n");
+                    }
+
+                    //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
+                    slist.append(o.getString("name").replace("/",",")).append(" /");
+                    slist.append(o.getString("guid")).append("/");
+                    slist.append(o.getString("rank"));
+                    if(o.containsKey("commonName")) slist.append(", ").append(o.getString("commonName").replace("/",","));
+                    slist.append("/found ");
+                    slist.append(count);
+
+                    found++;
+                }
+            } catch (Exception e) {
+
+            }
+        }
+
+        return slist.toString();
+    }
+
+    String autoService(String val) throws Exception {
+        //while there is inappropriate sorting use limit=200
+        String nsurl = CommonData.bieServer + "/search/auto.json?limit=200&q=" + URLEncoder.encode(val, "UTF-8");
+
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(nsurl);
+        get.addRequestHeader("Content-type", "text/plain");
+
+        int result = client.executeMethod(get);
+        String rawJSON = get.getResponseBodyAsString();
+
+        //parse
+        JSONObject jo = JSONObject.fromObject(rawJSON);
+
+        StringBuilder slist = new StringBuilder();
+        JSONArray ja = jo.getJSONArray("autoCompleteList");
+        for(int i=0;i<ja.size();i++){
+            JSONObject o = ja.getJSONObject(i);
+
+            //count for guid
+            try {
+//                String q = "lft:%5B" + o.getLong("left") + "%20TO%20" + o.getLong("right") + "%5D%20AND%20geospatial_kosher:true";
+//                long count = getCount(q);
+                long count = CommonData.lsidCounts.getCount(o.getLong("left"), o.getLong("right"));
+                //System.out.println("count=" + count + " for " +o.getString("name") + ":" + o.getString("guid") );
+
+
+                if(count > 0 && o.containsKey("name") && o.containsKey("guid") && o.containsKey("rankString")) {
+                    if(slist.length() > 0) {
+                        slist.append("\n");
+                    }
+
+                    //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
+                    slist.append(o.getString("name").replace("/",",")).append(" /");
+                    slist.append(o.getString("guid")).append("/");
+                    slist.append(o.getString("rankString"));
+                    if(o.containsKey("commonName")) slist.append(", ").append(o.getString("commonName").replace("/",","));
+                    slist.append("/found ");
+                    slist.append(count);
+                }
+            } catch (Exception e) {
+
+            }
+        }
+
+        return slist.toString();
+    }
 }

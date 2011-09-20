@@ -140,7 +140,9 @@ public class ClassificationLegend extends UtilityComposer {
                 public void render(Listitem li, Object data) {
                     String[] ss = null;
                     try {
-                        ss = new CSVReader(new StringReader((String) data)).readNext();
+                        CSVReader csv = new CSVReader(new StringReader((String) data));
+                        ss = csv.readNext();
+                        csv.close();
                     } catch (IOException ex) {
                         Logger.getLogger(ClassificationLegend.class.getName()).log(Level.SEVERE, null, ex);
                     }

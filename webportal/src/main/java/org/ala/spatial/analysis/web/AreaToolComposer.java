@@ -185,7 +185,7 @@ public class AreaToolComposer extends UtilityComposer {
             int results_count_occurrences = sq.getOccurrenceCount();
 
             //test limit
-            if (results_count_occurrences > 0 && results_count_occurrences <= settingsSupplementary.getValueAsInt("max_record_count_map")) {
+            if (results_count_occurrences > 0 && results_count_occurrences <= getMapComposer().getSettingsSupplementary().getValueAsInt("max_record_count_map")) {
                 String activeAreaLayerName = layers.get(0).getDisplayName();
                 getMapComposer().mapSpecies(sq
                         , "Occurrences in " + activeAreaLayerName

@@ -34,7 +34,9 @@ public class SolrLegendObject extends LegendObject {
         categoriesNumeric = new HashMap<Double, int[]>();
         List<String[]> csv = null;
         try {
-            csv = new CSVReader(new StringReader(legend)).readAll();
+            CSVReader csvReader = new CSVReader(new StringReader(legend));
+            csv = csvReader.readAll();
+            csvReader.close();
         } catch (IOException ex) {
             Logger.getLogger(SolrLegendObject.class.getName()).log(Level.SEVERE, null, ex);
         }

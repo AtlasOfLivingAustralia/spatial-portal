@@ -202,7 +202,7 @@ public class AddSpeciesController extends UtilityComposer {
             rank = spVal.trim().substring(0, spVal.trim().indexOf(":")); //"species";
 
         } else {
-            rank = StringUtils.substringBefore(spVal, " ").toLowerCase();
+            rank = StringUtils.substringBefore(spVal, ",").toLowerCase();
             System.out.println("mapping rank and species: " + rank + " - " + taxon);
         }
         if (rank.equalsIgnoreCase("scientific name") || rank.equalsIgnoreCase("scientific")) {

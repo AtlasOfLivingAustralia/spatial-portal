@@ -299,7 +299,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
             List<String[]> sensitiveSpecies = null;
             try {
                 String sensitiveSpeciesRaw = new SolrQuery(null, null, "sensitive:[* TO *]", null).speciesList();
-                sensitiveSpecies = new CSVReader(new StringReader(sensitiveSpeciesRaw)).readAll();
+                CSVReader csv = new CSVReader(new StringReader(sensitiveSpeciesRaw));
+                sensitiveSpecies = csv.readAll();
+                csv.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -308,7 +310,9 @@ public class AddToolMaxentComposer extends AddToolComposer {
 
             //add to 'identified' sensitive list
             try {
-                List<String[]> fullSpeciesList = new CSVReader(new StringReader(query.speciesList())).readAll();
+                CSVReader csv = new CSVReader(new StringReader(query.speciesList()));
+                List<String[]> fullSpeciesList = csv.readAll();
+                csv.close();
                 for(int i = 0;i<fullSpeciesList.size();i++) {
                     String [] sa = fullSpeciesList.get(i);
                     for(String [] ss : sensitiveSpecies) {

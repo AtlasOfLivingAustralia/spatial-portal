@@ -274,7 +274,7 @@ public class AddToolComposer extends UtilityComposer {
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
 
-            String allWKT = "";
+            StringBuilder allWKT = new StringBuilder();
             int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
@@ -283,11 +283,15 @@ public class AddToolComposer extends UtilityComposer {
                 //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
 
-                if(!allWKT.contains("ENVELOPE")) {
-                    if (!allWKT.isEmpty())
-                        allWKT+=",";
-                    count_not_envelopes ++;
-                    allWKT += lyr.getWKT();
+                if(!lyr.getWKT().contains("ENVELOPE")) {
+                    if (count_not_envelopes > 0)
+                        allWKT.append(',');
+                    count_not_envelopes++;
+                    String wkt = lyr.getWKT();
+                    if(wkt.startsWith("GEOMETRYCOLLECTION(")) {
+                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length()-1);
+                    }
+                    allWKT.append(wkt);
                 }
 
                 rAr.setParent(rgArea);
@@ -303,7 +307,7 @@ public class AddToolComposer extends UtilityComposer {
                  Radio rAr = new Radio("All area layers"
                          + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
                 //rAr.setId("AllActiveAreas");
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrent);
             }
@@ -360,7 +364,7 @@ public class AddToolComposer extends UtilityComposer {
             String selectedLayerName = (String) params.get("polygonLayerName");
             Radio rSelectedLayer = null;
 
-            String allWKT = "";
+            StringBuilder allWKT = new StringBuilder();
             int count_not_envelopes = 0;
             List<MapLayer> layers = getMapComposer().getPolygonLayers();
             for (int i = 0; i < layers.size(); i++) {
@@ -369,12 +373,17 @@ public class AddToolComposer extends UtilityComposer {
                 //rAr.setId(lyr.getDisplayName().replaceAll(" ", ""));
                 rAr.setValue(lyr.getWKT());
 
-                if(!allWKT.contains("ENVELOPE")) {
-                    if (!allWKT.isEmpty())
-                        allWKT+=",";
-                    count_not_envelopes ++;
-                    allWKT += lyr.getWKT();
+                if(!lyr.getWKT().contains("ENVELOPE")) {
+                    if (count_not_envelopes > 0)
+                        allWKT.append(',');
+                    count_not_envelopes++;
+                    String wkt = lyr.getWKT();
+                    if(wkt.startsWith("GEOMETRYCOLLECTION(")) {
+                        wkt = wkt.substring("GEOMETRYCOLLECTION(".length(), wkt.length()-1);
+                    }
+                    allWKT.append(wkt);
                 }
+
 
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
@@ -389,7 +398,7 @@ public class AddToolComposer extends UtilityComposer {
                  Radio rAr = new Radio("All area layers"
                          + ((count_not_envelopes < layers.size())?" (excluding Environmental Envelopes)": ""));
                 //rAr.setId("AllActiveAreas");
-                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT + ")");
+                rAr.setValue("GEOMETRYCOLLECTION(" + allWKT.toString() + ")");
                 rAr.setParent(rgArea);
                 rgArea.insertBefore(rAr, rAreaCurrentHighlight);
             }
@@ -835,10 +844,10 @@ public class AddToolComposer extends UtilityComposer {
             if (area.equals("current")) {
                 area = getMapComposer().getViewArea();
             } else if (area.equals("australia")) {
-                area = "POLYGON((112.0 -44.0,112.0 -9.0,154.0 -9.0,154.0 -44.0,112.0 -44.0))";
+                area = CommonData.AUSTRALIA_WKT;
             } else if (area.equals("world")) {
                 //area = "POLYGON((-180 -90,-180 90.0,180.0 90.0,180.0 -90.0,-180.0 -90.0))";
-                area = "POLYGON((-179.999 -89.999,-179.999 89.999,179.999 89.999,179.999 -89.999,-179.999 -89.999))";
+                area = CommonData.WORLD_WKT;
             } else {
                 List<MapLayer> layers = getMapComposer().getPolygonLayers();
                 for (MapLayer ml : layers) {
@@ -848,7 +857,6 @@ public class AddToolComposer extends UtilityComposer {
                     }
                 }
             }
-            area = area.replace("MULTIPOLYGON(((", "GEOMETRYCOLLECTION(POLYGON((").replace("),(", "),POLYGON(");
         } catch (Exception e) {
             System.out.println("Unable to retrieve selected area");
             e.printStackTrace(System.out);
