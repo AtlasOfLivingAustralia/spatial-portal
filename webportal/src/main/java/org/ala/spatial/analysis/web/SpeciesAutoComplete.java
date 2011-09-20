@@ -363,12 +363,22 @@ public class SpeciesAutoComplete extends Combobox {
                     }
 
                     //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
-                    slist.append(o.getString("name").replace("/",",")).append(" /");
-                    slist.append(o.getString("guid")).append("/");
-                    slist.append(o.getString("rankString"));
-                    if(o.containsKey("commonName")) slist.append(", ").append(o.getString("commonName").replace("/",","));
-                    slist.append("/found ");
-                    slist.append(count);
+                    //swap name and common name if it is a common name match
+                    if(o.containsKey("commonNameMatches") && o.containsKey("commonName")) {
+                        slist.append(o.getString("commonName").replace("/",",")).append(" /");
+                        slist.append(o.getString("guid")).append("/");
+                        slist.append(o.getString("rankString"));
+                        slist.append(", ").append(o.getString("name").replace("/",","));
+                        slist.append("/found ");
+                        slist.append(count);
+                    } else {
+                        slist.append(o.getString("name").replace("/",",")).append(" /");
+                        slist.append(o.getString("guid")).append("/");
+                        slist.append(o.getString("rankString"));
+                        if(o.containsKey("commonName")) slist.append(", ").append(o.getString("commonName").replace("/",","));
+                        slist.append("/found ");
+                        slist.append(count);
+                    }
                 }
             } catch (Exception e) {
 
