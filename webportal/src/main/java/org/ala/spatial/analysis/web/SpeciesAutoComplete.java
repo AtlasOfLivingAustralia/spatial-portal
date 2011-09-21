@@ -331,8 +331,8 @@ public class SpeciesAutoComplete extends Combobox {
     }
 
     String autoService(String val) throws Exception {
-        //while there is inappropriate sorting use limit=200
-        String nsurl = CommonData.bieServer + "/search/auto.json?limit=200&q=" + URLEncoder.encode(val, "UTF-8");
+        //while there is inappropriate sorting use limit=400
+        String nsurl = CommonData.bieServer + "/search/auto.json?limit=400&q=" + URLEncoder.encode(val, "UTF-8");
 
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(nsurl);
