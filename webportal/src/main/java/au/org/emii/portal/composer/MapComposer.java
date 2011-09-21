@@ -373,8 +373,46 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
                 iframe.setHeight("0px");
                 iframe.setSrc("");
 
+                String content = "";
+                if (label.equalsIgnoreCase("download")) {
+                    StringBuilder sbContent = new StringBuilder();
+                    sbContent.append("<p id='termsOfUseDownload'>");
+                    sbContent.append("By downloading this content you are agreeing to use it in accordance with the Atlas");
+                    sbContent.append("<a href='http://www.ala.org.au/about/terms-of-use/#TOUusingcontent'>Terms of Use</a>");
+                    sbContent.append("and individual <a href=' http://www.ala.org.au/support/faq/#q29'>Data Provider Terms</a>.");
+                    sbContent.append("<br/><br/>");
+                    sbContent.append("Please provide the following <b>optional</b> details before downloading:");
+                    sbContent.append("</p>");
+                    sbContent.append("    <form id='downloadForm' onSubmit='downloadSubmitButtonClick(); return false;'>");
+                    sbContent.append("        <input type='hidden' name='url' id='downloadUrl' value='"+uri+"'/>");
+                    //sbContent.append("        <input type='hidden' name='url' id='downloadChecklistUrl' value='http://biocache.ala.org.au/ws/occurrences/facets/download?q=text:macropus rufus'/>");
+                    //sbContent.append("        <input type='hidden' name='url' id='downloadFieldGuideUrl' value='/occurrences/fieldguide/download?q=text:macropus rufus'/>");
+                    sbContent.append("        <fieldset>");
+                    sbContent.append("            <p><label for='email'>Email</label>");
+                    sbContent.append("                <input type='text' name='email' id='email' value='' size='30'  />");
+                    sbContent.append("            </p>");
+                    sbContent.append("            <p><label for='filename'>File Name</label>");
+                    sbContent.append("                <input type='text' name='filename' id='filename' value='data' size='30'  />");
+                    sbContent.append("            </p>");
+                    sbContent.append("            <p><label for='reason' style='vertical-align: top'>Download Reason</label>");
+                    sbContent.append("                <textarea name='reason' rows='5' cols='30' id='reason'  ></textarea>");
+                    sbContent.append("            </p>");
+                    sbContent.append("            <input type='submit' value='Download All Records' id='downloadSubmitButton'/>&nbsp;");
+                    //sbContent.append("            <input type='submit' value='Download All Records' id='downloadSubmitButton'/>&nbsp;");
+                    //sbContent.append("            <input type='submit' value='Download Species Checklist' id='downloadCheckListSubmitButton'/>&nbsp;");
+                    //sbContent.append("            <input type='submit' value='Download Species Field Guide' id='downloadFieldGuideSubmitButton'/>&nbsp;");
+                    //sbContent.append("            <input type='reset' value='Cancel' onClick='$.fancybox.close();'/>");
+                    sbContent.append("        </fieldset>");
+                    sbContent.append("    </form>");
+
+                    content = sbContent.toString(); 
+                } else {
+                    content = uri;
+                }
+
+
                 //content
-                html.setContent(uri);
+                html.setContent(content);
 
                 //for the 'reset window' button
                 ((ExternalContentComposer) externalContentWindow).src = "";
@@ -409,6 +447,8 @@ public class MapComposer extends GenericAutowireAutoforwardComposer {
             ((Caption) externalContentWindow.getFellow("caption")).setLabel(
                     label);
             externalContentWindow.setPosition("center");
+            externalContentWindow.setHeight("50%");
+            externalContentWindow.setWidth("50%");
             //externalContentWindow.doOverlapped();
             try {
                 externalContentWindow.doModal();

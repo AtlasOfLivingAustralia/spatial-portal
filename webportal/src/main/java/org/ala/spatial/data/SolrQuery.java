@@ -787,6 +787,7 @@ public class SolrQuery implements Query, Serializable {
 
         html += "</td></tr>";
         html += "<tr><td>Data providers: </td><td>"+getDataProviders()+"</td></tr>";
+        html += "<tr><td>More information for <a href='" + CommonData.bieServer + BIE_SPECIES + lsids + "' target='_blank'>"+ getName() +"</a></td></tr>";
         html += "</table>";
 
         return html;

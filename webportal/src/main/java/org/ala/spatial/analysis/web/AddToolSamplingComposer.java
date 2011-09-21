@@ -81,7 +81,8 @@ public class AddToolSamplingComposer extends AddToolComposer {
                 System.out.println("Sending file to user: " + url);
 
                 //TODO: find some way to do this nicely.
-                Events.echoEvent("openHTML", getMapComposer(), "Download\n<a href='" + url + "' >click to start download</a>");
+                //Events.echoEvent("openHTML", getMapComposer(), "Download\n<a href='" + url + "' >click to start download</a>");
+                Events.echoEvent("openHTML", getMapComposer(), "Download\n" + url);
                 
                 //Would clients still treat this as a popup if it were on prod?
                 //getMapComposer().openHTML(event)Clients.evalJavaScript("window.open('" + url + "','download','')");

@@ -467,6 +467,20 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         </script -->
 
         <script><![CDATA[
+
+        function downloadSubmitButtonClick() {
+        //e.preventDefault();
+        var downloadUrl = $("input#downloadUrl").val().replace(/\\ /g, " ");
+        var reason = $("#reason").val();
+        if(typeof reason == "undefined")
+            reason = "";
+        downloadUrl = downloadUrl + "&type=&email="+$("#email").val()+"&reason="+encodeURIComponent(reason)+"&file="+$("#filename").val();
+        //console.log("downloadUrl = " + downloadUrl);
+        //alert("downloadUrl = " + downloadUrl);
+        window.location.href = downloadUrl;
+        return false; 
+    }
+
             //capture mouse events during window resize or move over an iframe
             var overlayon = false;
             function needOverlay() {
