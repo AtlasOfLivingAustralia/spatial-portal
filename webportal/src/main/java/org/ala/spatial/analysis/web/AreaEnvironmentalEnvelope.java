@@ -10,11 +10,15 @@ import au.org.emii.portal.util.LayerUtilities;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.ala.spatial.data.Facet;
+import org.ala.spatial.data.Query;
+import org.ala.spatial.data.SolrQuery;
 import org.ala.spatial.util.CommonData;
 import org.ala.spatial.util.Layer;
 import org.ala.spatial.util.SPLFilter;
@@ -557,6 +561,17 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
 
     private void doApplyFilter(String pid, String layerdisplayname, String layername, String type, String val1, String val2, boolean commit) {
         try {
+
+            ArrayList<Facet> facets = new ArrayList<Facet>();
+            Iterator<String> it = selectedSPLFilterLayers.keySet().iterator();
+            for (int i=0; i<selectedSPLFilterLayers.size(); i++) {
+                String lyrname = it.next();
+                SPLFilter splf = selectedSPLFilterLayers.get(lyrname);
+                Facet f = new Facet(CommonData.getLayerFacetName(splf.layername), splf.minimum_value, splf.maximum_value, true);
+                facets.add(f);
+            }
+            Query q = new SolrQuery(null, null, null, facets);
+
             String urlPart = "";
             if (commit) {
                 urlPart += "/filtering/apply4";
@@ -571,7 +586,11 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
             urlPart += "/depth/" + lbSelLayers.getItemCount();
 
             String imagefilepath = getInfo(urlPart);
-            loadMap(imagefilepath, layerdisplayname);
+            MapLayer ml = loadMap(imagefilepath, layerdisplayname);
+            ml.setData("environmentEnvelope", facets);
+            
+            popup_filter.setCount(q.getSpeciesCount());
+            ((Listcell) popup_item.getChildren().get(2)).setLabel(q.getSpeciesCount()+"");
 
             selectedLayersUrl.set(lbSelLayers.getItemCount() - 1, imagefilepath);
 
@@ -756,7 +775,7 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         return null;
     }
 
-    private void loadMap(String filename, String layername) {
+    private MapLayer loadMap(String filename, String layername) {
         //String label = "Filtering - " + pid + " - layer " + lbSelLayers.getItemCount();
         //label = selectedLayers.get(selectedLayers.size() - 1);
         String uri = CommonData.satServer + "/output/filtering/" + pid + "/" + filename;
@@ -775,6 +794,8 @@ public class AreaEnvironmentalEnvelope extends AreaToolComposer {
         MapLayer ml = mc.addImageLayer(pid, LAYER_PREFIX + layername, uri, opacity, bbox, LayerUtilities.ENVIRONMENTAL_ENVELOPE);
         ml.setWKT("ENVELOPE(" + pid + ")");
         ml.setData("area", activeAreaSize);
+
+        return ml;
 
     }
 
