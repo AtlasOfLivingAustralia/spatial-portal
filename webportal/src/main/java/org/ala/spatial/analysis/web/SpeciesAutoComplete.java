@@ -83,7 +83,7 @@ public class SpeciesAutoComplete extends Combobox {
 
             System.out.println("Looking for common name: " + isSearchCommon());
 
-            //getItems().clear();
+            getItems().clear();     
             Iterator it = getItems().iterator();
             if (val.length() == 0) {
                 Comboitem myci = null;
@@ -362,10 +362,19 @@ public class SpeciesAutoComplete extends Combobox {
                         slist.append("\n");
                     }
 
+                    String commonName = null;
+                    if(o.containsKey("commonName") && !o.getString("commonName").equals("none")) {
+                        commonName = o.getString("commonName");
+                        commonName = commonName.trim().replace("/",",");
+                        if(commonName.indexOf(',') > 1) {
+                            commonName = commonName.substring(0, commonName.indexOf(','));
+                        }
+                    }
+
                     //macaca / urn:lsid:catalogueoflife.org:taxon:d84852d0-29c1-102b-9a4a-00304854f820:ac2010 / genus / found 17
                     //swap name and common name if it is a common name match
-                    if(o.containsKey("commonNameMatches") && o.containsKey("commonName")) {
-                        slist.append(o.getString("commonName").replace("/",",")).append(" /");
+                    if(o.containsKey("commonNameMatches") && !o.getString("commonNameMatches").equals("null")) {
+                        slist.append(commonName).append(" /");
                         slist.append(o.getString("guid")).append("/");
                         slist.append(o.getString("rankString"));
                         slist.append(", ").append(o.getString("name").replace("/",","));
@@ -375,7 +384,7 @@ public class SpeciesAutoComplete extends Combobox {
                         slist.append(o.getString("name").replace("/",",")).append(" /");
                         slist.append(o.getString("guid")).append("/");
                         slist.append(o.getString("rankString"));
-                        if(o.containsKey("commonName")) slist.append(", ").append(o.getString("commonName").replace("/",","));
+                        if(commonName != null) slist.append(", ").append(commonName);
                         slist.append("/found ");
                         slist.append(count);
                     }

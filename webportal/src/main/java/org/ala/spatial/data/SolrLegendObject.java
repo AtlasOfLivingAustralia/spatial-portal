@@ -52,7 +52,12 @@ public class SolrLegendObject extends LegendObject {
             String[] c = csv.get(i);
             String[] p = (i > 1) ? csv.get(i - 1) : null;
 
-            int[] value = {readColour(c[1], c[2], c[3]), Integer.parseInt(c[4])};
+            int rc = Integer.parseInt(c[4]);
+            if(rc == 0) {
+                continue;
+            }
+
+            int[] value = {readColour(c[1], c[2], c[3]), rc};
             categories.put(c[0], value);
             categoryNameOrder[i - 1] = c[0];
             double d = Double.NaN;
@@ -82,7 +87,7 @@ public class SolrLegendObject extends LegendObject {
         if (count > 0) { //replace last line
             csvLegend = sb.toString().replace(line, count + " more" + "," + colour + "," + sum);
         } else {
-            csvLegend = rawCsvLegend;
+            csvLegend = sb.toString();
         }
     }
 

@@ -6,6 +6,7 @@ package org.ala.spatial.data;
 
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.InputStreamReader;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import org.ala.spatial.util.CommonData;
 import org.apache.commons.httpclient.HttpClient;
@@ -22,13 +23,12 @@ public class LsidCounts {
 
     public LsidCounts() {
         HttpClient client = new HttpClient();
-        String url = CommonData.biocacheServer + "/webportal/legend?q=geospatial_kosher:true&cm=lft";
-        System.out.println(url);
-        GetMethod get = new GetMethod(url);
-
-        HashMap<Long, Long> map = new HashMap<Long, Long>();
 
         try {
+            String url = CommonData.biocacheServer + "/webportal/legend?cm=lft&q=" + URLEncoder.encode("longitude:[* TO *] AND geospatial_kosher:true", "UTF-8");
+            System.out.println(url);
+            GetMethod get = new GetMethod(url);
+            HashMap<Long, Long> map = new HashMap<Long, Long>();
             int result = client.executeMethod(get);
 
             CSVReader csv = new CSVReader(new InputStreamReader(get.getResponseBodyAsStream()));
