@@ -225,13 +225,17 @@
      <sampling_thread_count>2</sampling_thread_count>
 
      <layers_url>http://spatial-dev.ala.org.au/layers-index</layers_url>
-     <biocache_url>http://diasbprod1-cdc.vm.csiro.au:8080/biocache-service</biocache_url>
+     <biocache_service_url>http://diasbprod1-cdc.vm.csiro.au:8080/biocache-service</biocache_service_url>
      <bie_url>http://bie.ala.org.au</bie_url>
      <webportal_url>http://spatial-dev.ala.org.au/webportal</webportal_url>
+     <biocache_webapp_url>http://biocache.ala.org.au</biocache_webapp_url>
      
      <!-- comma separated list of field ids to be added as 'sampling' for uploaded coordinates -->
      <default_upload_sampling>cl22,cl23,cl20,cl21,cl678,cl619,cl617,cl620</default_upload_sampling>
-
+     
+     <!-- estimates for sampling, in seconds -->
+     <sampling_time_per_grid>3.0</sampling_time_per_grid>
+     <sampling_time_per_shape_file>20.0</sampling_time_per_shape_file>
    
     </tns:supplementary>
   </tns:settings>
