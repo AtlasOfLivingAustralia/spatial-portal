@@ -19,6 +19,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.ala.spatial.data.LsidCounts;
 import org.ala.spatial.data.QueryField;
+import org.ala.spatial.sampling.SimpleShapeFileCache;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
@@ -44,7 +45,7 @@ public class CommonData {
     static final String LAYERS_URL = "layers_url";
     static final String WEBPORTAL_URL = "webportal_url";
     static final String BIE_URL = "bie_url";
-    static final String BIOCACHE_URL = "biocache_url";
+    static final String BIOCACHE_SERVICE_URL = "biocache_service_url";
     static final String DEFAULT_UPLOAD_SAMPLING = "default_upload_sampling";
     //(1) for LayersUtil
     static String[] environmentalLayerNames = null;
@@ -72,6 +73,8 @@ public class CommonData {
     static HashMap<JSONObject, List> copy_contextualClasses = null;
 
     static String defaultFieldString = null;
+
+    public static SimpleShapeFileCache ssfCache;
 
     //(4) species with distribution layres
     /**
@@ -101,7 +104,7 @@ public class CommonData {
         layersServer = settings.get(LAYERS_URL);
         webportalServer = settings.get(WEBPORTAL_URL);
         bieServer = settings.get(BIE_URL);
-        biocacheServer = settings.get(BIOCACHE_URL);
+        biocacheServer = settings.get(BIOCACHE_SERVICE_URL);
         defaultFieldString = settings.get(DEFAULT_UPLOAD_SAMPLING);
         CommonData.settings = settings;
 
@@ -131,6 +134,9 @@ public class CommonData {
         if(lc.getSize() > 0) {
             lsidCounts = lc;
         }
+
+        //(8) cache shape files used during coordinate uploads
+        initSimpleShapeFileCache(defaultFieldString.split(","));
 
         //(1) for LayersUtil
         if (copy_environmentalLayerNames != null) {
@@ -665,5 +671,21 @@ public class CommonData {
              }
          }
          return list;
+     }
+
+     static public void initSimpleShapeFileCache(String [] fields) {
+         //requres readLayerInfo() first
+         String [] layers = new String[fields.length];
+         String [] columns = new String[fields.length];
+         for(int i=0;i<fields.length;i++) {
+             layers[i] = getFacetLayerName(fields[i]);
+             columns[i] = getFacetShapeNameField(fields[i]);
+         }
+         
+         if(ssfCache == null) {
+            ssfCache = new SimpleShapeFileCache(layers, columns);
+         } else {
+            ssfCache.update(layers, columns);
+         }
      }
 }

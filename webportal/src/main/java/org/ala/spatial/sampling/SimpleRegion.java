@@ -63,18 +63,7 @@ public class SimpleRegion extends Object implements Serializable {
      * CIRCLE = double [1][2]
      * POLYGON, n points (start = end) = double[n][2]
      */
-    float[][] points;
-    /**
-     * for point/grid to polygon intersection method
-     *
-     * polygon edges as lines of the form <code>y = a*x + b</code>
-     * lines = double [n][2]
-     * where
-     * 	n is number of edges
-     * 	value at [0] is <code>a</code>
-     * 	value at [1] is <code>b</code>
-     */
-    float[][] lines2;
+    float[] points;
     /**
      * bounding box for types BOUNDING_BOX and POLYGON
      *
@@ -111,7 +100,7 @@ public class SimpleRegion extends Object implements Serializable {
      * @return number of points as int
      */
     public int getNumberOfPoints() {
-        return points.length;
+        return points.length/2;
     }
 
     /**
@@ -135,33 +124,33 @@ public class SimpleRegion extends Object implements Serializable {
      */
     public void setBox(double longitude1, double latitude1, double longitude2, double latitude2) {
         type = BOUNDING_BOX;
-        points = new float[2][2];
-        points[0][0] = (float) Math.min(longitude1, longitude2);
-        points[0][1] = (float) Math.min(latitude1, latitude2);
-        points[1][0] = (float) Math.max(longitude1, longitude2);
-        points[1][1] = (float) Math.max(latitude1, latitude2);
+        points = new float[4];
+        points[0] = (float) Math.min(longitude1, longitude2);
+        points[1] = (float) Math.min(latitude1, latitude2);
+        points[2] = (float) Math.max(longitude1, longitude2);
+        points[3] = (float) Math.max(latitude1, latitude2);
 
-        for (int i = 0; i < points.length; i++) {
+        for (int i = 0; i < points.length; i+= 2) {
             //fix at -180 and 180
-            if (points[i][0] < -180) {
-                points[i][0] = -180;
+            if (points[i] < -180) {
+                points[i] = -180;
             }
-            if (points[i][0] > 180) {
-                points[i][0] = 180;
+            if (points[i] > 180) {
+                points[i] = 180;
             }
-            while (points[i][1] < -180) {
-                points[i][1] = -180;
+            while (points[i+1] < -180) {
+                points[i+1] = -180;
             }
-            while (points[i][1] > 180) {
-                points[i][1] = 180;
+            while (points[i+1] > 180) {
+                points[i+1] = 180;
             }
         }
 
         bounding_box = new double[2][2];
-        bounding_box[0][0] = points[0][0];
-        bounding_box[0][1] = points[0][1];
-        bounding_box[1][0] = points[1][0];
-        bounding_box[1][1] = points[1][1];
+        bounding_box[0][0] = points[0];
+        bounding_box[0][1] = points[2];
+        bounding_box[1][0] = points[1];
+        bounding_box[1][1] = points[3];
     }
 
     /**
@@ -180,9 +169,9 @@ public class SimpleRegion extends Object implements Serializable {
      */
     public void setCircle(double longitude, double latitude, double radius_) {
         type = CIRCLE;
-        points = new float[1][2];
-        points[0][0] = (float) longitude;
-        points[0][1] = (float) latitude;
+        points = new float[2];
+        points[0] = (float) longitude;
+        points[1] = (float) latitude;
         radius = radius_;
     }
 
@@ -216,48 +205,40 @@ public class SimpleRegion extends Object implements Serializable {
             /* copy and ensure last point == first point */
             int len = points_.length - 1;
             if (points_[0][0] != points_[len][0] || points_[0][1] != points_[len][1]) {
-                points = new float[points_.length + 1][2];
+                points = new float[(points_.length + 1) * 2];
                 for (i = 0; i < points_.length; i++) {
-                    points[i][0] = (float) points_[i][0];
-                    points[i][1] = (float) points_[i][1];
+                    points[i*2] = (float) points_[i][0];
+                    points[i*2+1] = (float) points_[i][1];
                 }
-                points[points_.length][0] = (float) points_[0][0];
-                points[points_.length][1] = (float) points_[0][1];
+                points[points_.length*2] = (float) points_[0][0];
+                points[points_.length*2+1] = (float) points_[0][1];
             } else {
-                points = new float[points_.length][2];
+                points = new float[points_.length*2];
                 for (i = 0; i < points_.length; i++) {
-                    points[i][0] = (float) points_[i][0];
-                    points[i][1] = (float) points_[i][1];
+                    points[i*2] = (float) points_[i][0];
+                    points[i*2 + 1] = (float) points_[i][1];
                 }
             }
 
             /* bounding box setup */
             bounding_box = new double[2][2];
-            bounding_box[0][0] = points[0][0];
-            bounding_box[0][1] = points[0][1];
-            bounding_box[1][0] = points[0][0];
-            bounding_box[1][1] = points[0][1];
-            for (i = 1; i < points.length; i++) {
-                if (bounding_box[0][0] > points[i][0]) {
-                    bounding_box[0][0] = points[i][0];
+            bounding_box[0][0] = points[0];
+            bounding_box[0][1] = points[1];
+            bounding_box[1][0] = points[0];
+            bounding_box[1][1] = points[1];
+            for (i = 2; i < points.length; i+=2) {
+                if (bounding_box[0][0] > points[i]) {
+                    bounding_box[0][0] = points[i];
                 }
-                if (bounding_box[1][0] < points[i][0]) {
-                    bounding_box[1][0] = points[i][0];
+                if (bounding_box[1][0] < points[i]) {
+                    bounding_box[1][0] = points[i];
                 }
-                if (bounding_box[0][1] > points[i][1]) {
-                    bounding_box[0][1] = points[i][1];
+                if (bounding_box[0][1] > points[i+1]) {
+                    bounding_box[0][1] = points[i+1];
                 }
-                if (bounding_box[1][1] < points[i][1]) {
-                    bounding_box[1][1] = points[i][1];
+                if (bounding_box[1][1] < points[i+1]) {
+                    bounding_box[1][1] = points[i+1];
                 }
-            }
-
-            // intersection method precalculated data
-            lines2 = new float[points.length][2];   //lines[0][] is not used
-            for (i = 0; i < points.length - 1; i++) {
-                lines2[i + 1][0] = (points[i][1] - points[i + 1][1])
-                        / (points[i][0] - points[i + 1][0]);				//slope
-                lines2[i + 1][1] = points[i][1] - lines2[i + 1][0] * points[i][0];		//intercept
             }
         }
     }
@@ -292,48 +273,40 @@ public class SimpleRegion extends Object implements Serializable {
             /* copy and ensure last point == first point */
             int len = points_.length - 1;
             if (points_[0][0] != points_[len][0] || points_[0][1] != points_[len][1]) {
-                points = new float[points_.length + 1][2];
+                points = new float[(points_.length + 1)*2];
                 for (i = 0; i < points_.length; i++) {
-                    points[i][0] = (float) points_[i][0];
-                    points[i][1] = (float) points_[i][1];
+                    points[i*2] = (float) points_[i][0];
+                    points[i*2+1] = (float) points_[i][1];
                 }
-                points[points_.length][0] = (float) points_[0][0];
-                points[points_.length][1] = (float) points_[0][1];
+                points[points_.length*2] = (float) points_[0][0];
+                points[points_.length*2+1] = (float) points_[0][1];
             } else {
-                points = new float[points_.length][2];
+                points = new float[points_.length*2];
                 for (i = 0; i < points_.length; i++) {
-                    points[i][0] = (float) points_[i][0];
-                    points[i][1] = (float) points_[i][1];
+                    points[i*2] = (float) points_[i][0];
+                    points[i*2+1] = (float) points_[i][1];
                 }
             }
 
             /* bounding box setup */
             bounding_box = new double[2][2];
-            bounding_box[0][0] = points[0][0];
-            bounding_box[0][1] = points[0][1];
-            bounding_box[1][0] = points[0][0];
-            bounding_box[1][1] = points[0][1];
-            for (i = 1; i < points.length; i++) {
-                if (bounding_box[0][0] > points[i][0]) {
-                    bounding_box[0][0] = points[i][0];
+            bounding_box[0][0] = points[0];
+            bounding_box[0][1] = points[1];
+            bounding_box[1][0] = points[0];
+            bounding_box[1][1] = points[1];
+            for (i = 2; i < points.length; i+=2) {
+                if (bounding_box[0][0] > points[i]) {
+                    bounding_box[0][0] = points[i];
                 }
-                if (bounding_box[1][0] < points[i][0]) {
-                    bounding_box[1][0] = points[i][0];
+                if (bounding_box[1][0] < points[i]) {
+                    bounding_box[1][0] = points[i];
                 }
-                if (bounding_box[0][1] > points[i][1]) {
-                    bounding_box[0][1] = points[i][1];
+                if (bounding_box[0][1] > points[i+1]) {
+                    bounding_box[0][1] = points[i+1];
                 }
-                if (bounding_box[1][1] < points[i][1]) {
-                    bounding_box[1][1] = points[i][1];
+                if (bounding_box[1][1] < points[i+1]) {
+                    bounding_box[1][1] = points[i+1];
                 }
-            }
-
-            // intersection method precalculated data
-            lines2 = new float[points.length][2];   //lines[0][] is not used
-            for (i = 0; i < points.length - 1; i++) {
-                lines2[i + 1][0] = (points[i][1] - points[i + 1][1])
-                        / (points[i][0] - points[i + 1][0]);				//slope
-                lines2[i + 1][1] = points[i][1] - lines2[i + 1][0] * points[i][0];		//intercept
             }
         }
     }
@@ -344,9 +317,9 @@ public class SimpleRegion extends Object implements Serializable {
      * @return points of this object if it is a polygon as double[][]
      * otherwise returns null.
      */
-    public float[][] getPoints() {
-        return points;
-    }
+//    public float[][] getPoints() {
+//        return points;
+//    }
 
     /**
      * returns true when the point provided is within the SimpleRegion
@@ -364,12 +337,12 @@ public class SimpleRegion extends Object implements Serializable {
                 return true;
             case 1:
                 /* return for bounding box */
-                return (longitude <= points[1][0] && longitude >= points[0][0]
-                        && latitude <= points[1][1] && latitude >= points[0][1]);
+                return (longitude <= points[2] && longitude >= points[0]
+                        && latitude <= points[3] && latitude >= points[1]);
             case 2:
                 /* TODO: fix to use radius units m not degrees */
-                double x = longitude - points[0][0];
-                double y = latitude - points[0][1];
+                double x = longitude - points[0];
+                double y = latitude - points[1];
                 return Math.sqrt(x * x + y * y) <= radius;
             case 3:
                 /* determine for Polygon */
@@ -385,12 +358,12 @@ public class SimpleRegion extends Object implements Serializable {
                 return true;
             case 1:
                 /* return for bounding box */
-                return (longitude <= points[1][0] && longitude >= points[0][0]
-                        && latitude <= points[1][1] && latitude >= points[0][1]);
+                return (longitude <= points[2] && longitude >= points[0]
+                        && latitude <= points[3] && latitude >= points[1]);
             case 2:
                 /* TODO: fix to use radius units m not degrees */
-                double x = longitude - points[0][0];
-                double y = latitude - points[0][1];
+                double x = longitude - points[0];
+                double y = latitude - points[1];
                 return Math.sqrt(x * x + y * y) <= radius;
             case 3:
                 /* determine for Polygon */
@@ -422,39 +395,38 @@ public class SimpleRegion extends Object implements Serializable {
      * @return true iff longitude and latitude point is on edge or within polygon
      */
     private boolean isWithinPolygon(double longitude, double latitude) {
-        // bounding box test
-        if (longitude <= bounding_box[1][0] && longitude >= bounding_box[0][0]
-                && latitude <= bounding_box[1][1] && latitude >= bounding_box[0][1]) {
+        if (longitude > bounding_box[1][0] || longitude < bounding_box[0][0]
+                || latitude > bounding_box[1][1] || latitude < bounding_box[0][1]) {
+            return false;
+        }
+                
+        //initial segment
+        boolean segment = points[0] > longitude;
 
-            //initial segment
-            boolean segment = points[0][0] > longitude;
+        double y;
+        int len = points.length;
+        int score = 0;
 
-            double y;
-            int i;
-            int len = points.length;
-            int score = 0;
-
-            for (i = 1; i < len; i++) {
-                // is it in a new segment?
-                if ((points[i][0] > longitude) != segment) {
-                    //lat value at line crossing > target point
-                    y = lines2[i][0] * longitude + lines2[i][1];
-                    if (y > latitude) {
-                        score++;
-                    } else if (y == latitude) {
-                        //line crossing
-                        return true;
-                    }
-
-                    segment = !segment;
-                } else if (points[i][0] == longitude && points[i][1] == latitude) {
-                    //point on point
+        for (int i = 2; i < len; i += 2) {
+            // is it in a new segment?
+            if ((points[i] > longitude) != segment) {
+                //lat value at line crossing > target point
+                y = (longitude - points[i]) * (points[i + 1] - points[i - 1]) / (points[i] - points[i - 2]) + points[i + 1];
+                if (y > latitude) {
+                    score++;
+                } else if (y == latitude) {
+                    //line crossing
                     return true;
                 }
+
+                segment = !segment;
+            } else if (points[i] == longitude && points[i + 1] == latitude) {
+                //point on point
+                return true;
             }
-            return (score % 2 != 0);
         }
-        return false;		//not within bounding box
+
+        return (score % 2 != 0);
     }
 
     private boolean isWithinPolygon_EPSG900913(double longitude, double latitude) {
@@ -464,21 +436,21 @@ public class SimpleRegion extends Object implements Serializable {
 
             //initial segment
             int longitudePx = convertLngToPixel(longitude);
-            boolean segment = convertLngToPixel(points[0][0]) > longitudePx;
+            boolean segment = convertLngToPixel(points[0]) > longitudePx;
 
             int y;
             int i;
             int len = points.length;
             int score = 0;
 
-            for (i = 1; i < len; i++) {
+            for (i = 2; i < len; i+=2) {
                 // is it in a new segment?
-                if ((convertLngToPixel(points[i][0]) > longitudePx) != segment) {
+                if ((convertLngToPixel(points[i]) > longitudePx) != segment) {
                     //lat value at line crossing > target point
-                    y = (int)((longitudePx - convertLngToPixel(points[i][0]))
-                            * ((convertLatToPixel(points[i][1]) - convertLatToPixel(points[i - 1][1]))
-                            / (double) (convertLngToPixel(points[i][0]) - convertLngToPixel(points[i - 1][0])))
-                            + convertLatToPixel(points[i][1]));
+                    y = (int)((longitudePx - convertLngToPixel(points[i]))
+                            * ((convertLatToPixel(points[i+1]) - convertLatToPixel(points[i - 1]))
+                            / (double) (convertLngToPixel(points[i]) - convertLngToPixel(points[i - 2])))
+                            + convertLatToPixel(points[i+1]));
                     if (y > convertLatToPixel(latitude)) {
                         score++;
                     } else if (y == convertLatToPixel(latitude)) {
@@ -487,7 +459,7 @@ public class SimpleRegion extends Object implements Serializable {
                     }
 
                     segment = !segment;
-                } else if (points[i][0] == longitude && points[i][1] == latitude) {
+                } else if (points[i] == longitude && points[i+1] == latitude) {
                     //point on point
                     return true;
                 }
@@ -842,17 +814,17 @@ public class SimpleRegion extends Object implements Serializable {
         //to cells
         int x, y, xend, yend, xDirection, icross;
         double xcross, endlat, dx1, dx2, dy1, dy2, slope, intercept;
-        for (j = 1; j < points.length; j++) {
-            if (points[j][1] < points[j - 1][1]) {
-                dx1 = points[j][0];
-                dy1 = points[j][1];
-                dx2 = points[j - 1][0];
-                dy2 = points[j - 1][1];
+        for (j = 2; j < points.length; j+=2) {
+            if (points[j+1] < points[j - 1]) {
+                dx1 = points[j];
+                dy1 = points[j+1];
+                dx2 = points[j - 2];
+                dy2 = points[j - 1];
             } else {
-                dx2 = points[j][0];
-                dy2 = points[j][1];
-                dx1 = points[j - 1][0];
-                dy1 = points[j - 1][1];
+                dx2 = points[j];
+                dy2 = points[j+1];
+                dx1 = points[j - 2];
+                dy1 = points[j - 1];
             }
             x = (int) ((dx1 - longitude1) / divx);
             y = (int) ((dy1 - latitude1) / divy);
@@ -964,17 +936,17 @@ public class SimpleRegion extends Object implements Serializable {
         //to cells
         int x, y, xend, yend, xDirection, icross;
         double xcross, endlat, dx1, dx2, dy1, dy2, slope, intercept;
-        for (j = 1; j < points.length; j++) {
-            if (points[j][1] < points[j - 1][1]) {
-                dx1 = points[j][0];
-                dy1 = points[j][1];
-                dx2 = points[j - 1][0];
-                dy2 = points[j - 1][1];
+        for (j = 2; j < points.length; j+=2) {
+            if (points[j+1] < points[j - 1]) {
+                dx1 = points[j];
+                dy1 = points[j+1];
+                dx2 = points[j - 2];
+                dy2 = points[j - 1];
             } else {
-                dx2 = points[j][0];
-                dy2 = points[j][1];
-                dx1 = points[j - 1][0];
-                dy1 = points[j - 1][1];
+                dx2 = points[j];
+                dy2 = points[j+1];
+                dx1 = points[j - 2];
+                dy1 = points[j - 1];
             }
             x = (int) ((dx1 - longitude1) / divx);
             y = (int) ((dy1 - latitude1) / divy);
@@ -1209,17 +1181,17 @@ public class SimpleRegion extends Object implements Serializable {
         int x, y, xend, yend, xDirection, icross;
         double slope, intercept;
         int xcross, endlat, dx1, dx2, dy1, dy2;
-        for (j = 1; j < points.length; j++) {
-            if (points[j][1] > points[j - 1][1]) {
-                dx1 = convertLngToPixel(points[j][0]);
-                dy1 = convertLatToPixel(points[j][1]);
-                dx2 = convertLngToPixel(points[j - 1][0]);
-                dy2 = convertLatToPixel(points[j - 1][1]);
+        for (j = 2; j < points.length; j+=2) {
+            if (points[j+1] > points[j - 1]) {
+                dx1 = convertLngToPixel(points[j]);
+                dy1 = convertLatToPixel(points[j+1]);
+                dx2 = convertLngToPixel(points[j - 2]);
+                dy2 = convertLatToPixel(points[j - 1]);
             } else {
-                dx2 = convertLngToPixel(points[j][0]);
-                dy2 = convertLatToPixel(points[j][1]);
-                dx1 = convertLngToPixel(points[j - 1][0]);
-                dy1 = convertLatToPixel(points[j - 1][1]);
+                dx2 = convertLngToPixel(points[j]);
+                dy2 = convertLatToPixel(points[j+1]);
+                dx1 = convertLngToPixel(points[j - 2]);
+                dy1 = convertLatToPixel(points[j - 1]);
             }
             x = (int) ((dx1 - longitude1) / divx);
             y = (int) ((dy1 - latitude1) / divy);
@@ -1431,17 +1403,17 @@ public class SimpleRegion extends Object implements Serializable {
         int x, y, xend, yend, xDirection, icross;
         double slope, intercept;
         int xcross, endlat, dx1, dx2, dy1, dy2;
-        for (j = 1; j < points.length; j++) {
-            if (points[j][1] > points[j - 1][1]) {
-                dx1 = convertLngToPixel(points[j][0]);
-                dy1 = convertLatToPixel(points[j][1]);
-                dx2 = convertLngToPixel(points[j - 1][0]);
-                dy2 = convertLatToPixel(points[j - 1][1]);
+        for (j = 2; j < points.length; j+=2) {
+            if (points[j+1] > points[j - 1]) {
+                dx1 = convertLngToPixel(points[j]);
+                dy1 = convertLatToPixel(points[j+1]);
+                dx2 = convertLngToPixel(points[j - 2]);
+                dy2 = convertLatToPixel(points[j - 1]);
             } else {
-                dx2 = convertLngToPixel(points[j][0]);
-                dy2 = convertLatToPixel(points[j][1]);
-                dx1 = convertLngToPixel(points[j - 1][0]);
-                dy1 = convertLatToPixel(points[j - 1][1]);
+                dx2 = convertLngToPixel(points[j]);
+                dy2 = convertLatToPixel(points[j+1]);
+                dx1 = convertLngToPixel(points[j - 2]);
+                dy1 = convertLatToPixel(points[j - 1]);
             }
             x = (int) ((dx1 - longitude1) / divx);
             y = (int) ((dy1 - latitude1) / divy);

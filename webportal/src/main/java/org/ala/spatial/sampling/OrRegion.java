@@ -83,18 +83,6 @@ public class OrRegion extends SimpleRegion implements Serializable {
     }
 
     /**
-     * gets points of a polygon only
-     *
-     * @return points of this object if it is a polygon as double[][]
-     * otherwise returns null.
-     */
-    @Override
-    public float[][] getPoints() {
-        //of no use to AndRegion
-        return null;
-    }
-
-    /**
      * returns true when the point provided is within the SimpleRegion
      *
      * note: type UNDEFINED implies no boundary, always returns true.

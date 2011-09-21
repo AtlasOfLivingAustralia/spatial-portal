@@ -19,7 +19,7 @@ public class ComplexRegion extends SimpleRegion {
         int length = 0;
         for (String s : polygons) {
             length += s.length();
-            cr.addPolygon(SimpleRegion.parseSimpleRegion(s).getPoints());
+            cr.addPolygon(SimpleRegion.parseSimpleRegion(s));
         }
 
         /* speed up for polygons with lots of points */
@@ -124,78 +124,7 @@ public class ComplexRegion extends SimpleRegion {
      *  [][0] is longitude
      *  [][1] is latitude
      */
-    public void addPolygon(double[][] points_) {
-        //fix extents
-        for (int i = 0; i < points_.length; i++) {
-            //adjust to -360 and 360
-            while (points_[i][0] < -360) {
-                points_[i][0] += 360;
-            }
-            while (points_[i][0] > 360) {
-                points_[i][0] -= 360;
-            }
-            while (points_[i][1] < -360) {
-                points_[i][1] += 360;
-            }
-            while (points_[i][1] > 360) {
-                points_[i][1] -= 360;
-            }
-        }
-
-        SimpleRegion sr = new SimpleRegion();
-        sr.setPolygon(points_);
-
-        simpleregions.add(sr);
-
-        /* update boundingbox_all */
-        double[][] bb = sr.getBoundingBox();
-        if (simpleregions.size() == 1 || boundingbox_all[0][0] > bb[0][0]) {
-            boundingbox_all[0][0] = bb[0][0];
-        }
-        if (simpleregions.size() == 1 || boundingbox_all[1][0] < bb[1][0]) {
-            boundingbox_all[1][0] = bb[1][0];
-        }
-        if (simpleregions.size() == 1 || boundingbox_all[0][1] > bb[0][1]) {
-            boundingbox_all[0][1] = bb[0][1];
-        }
-        if (simpleregions.size() == 1 || boundingbox_all[1][1] < bb[1][1]) {
-            boundingbox_all[1][1] = bb[1][1];
-        }
-
-        bounding_box = boundingbox_all;
-    }
-
-    /**
-     * adds a new polygon
-     *
-     * note: if a mask is in use must call <code>useMask</code> again
-     * @param points_ points = double[n][2]
-     * where
-     * 	n is number of points
-     *  [][0] is longitude
-     *  [][1] is latitude
-     */
-    public void addPolygon(float[][] points_) {
-        //fix extents
-        for (int i = 0; i < points_.length; i++) {
-            //adjust to -360 and 360
-            while (points_[i][0] < -360) {
-                points_[i][0] += 360;
-            }
-            while (points_[i][0] > 360) {
-                points_[i][0] -= 360;
-            }
-            while (points_[i][1] < -360) {
-                points_[i][1] += 360;
-            }
-            while (points_[i][1] > 360) {
-                points_[i][1] -= 360;
-            }
-        }
-
-        SimpleRegion sr = new SimpleRegion();
-        sr.setPolygon(points_);
-
+    public void addPolygon(SimpleRegion sr) {
         simpleregions.add(sr);
 
         /* update boundingbox_all */

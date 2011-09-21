@@ -732,7 +732,7 @@ function setupPopup(count, centerlonlat) {
 function displaySpeciesInfo(data, prevBtn, nextBtn, curr, total) {
     var occinfo = data;
     var bie = parent.jq('$bie_url')[0].innerHTML;
-    var biocache = parent.jq('$biocache_url')[0].innerHTML;
+    var biocache = parent.jq('$biocache_webapp_url')[0].innerHTML;
     var rank = occinfo.taxonRank;
     var speciesname = occinfo.scientificName;
     var specieslsid = occinfo.taxonConceptID;
@@ -1423,7 +1423,7 @@ function getOccurrence(query, lat, lon, start, pos, dotradius) {
             map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));    
     var lonSize = Math.abs(lon - lonlat.lon);
     var latSize = Math.abs(lat - lonlat.lat);
-    var url = parent.jq('$biocache_url')[0].innerHTML + "/webportal/occurrences?q=" + query
+    var url = parent.jq('$biocache_service_url')[0].innerHTML + "/webportal/occurrences?q=" + query
         + "&fq=longitude:[" + (lon-lonSize) + "%20TO%20" + (lon+lonSize) + "]"
         + "&fq=latitude:[" + (lat-latSize) + "%20TO%20" + (lat+latSize) + "]"
         + "&pageSize=1&facets=none";  

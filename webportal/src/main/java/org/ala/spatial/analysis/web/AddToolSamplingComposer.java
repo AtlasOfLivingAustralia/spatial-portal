@@ -8,6 +8,7 @@ package org.ala.spatial.analysis.web;
 import java.io.ByteArrayInputStream;
 import org.ala.spatial.data.Query;
 import org.ala.spatial.util.CommonData;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zul.Filedownload;
@@ -89,17 +90,27 @@ public class AddToolSamplingComposer extends AddToolComposer {
 
                 //TODO: fix logging
                 //getMapComposer().updateUserLogAnalysis("Sampling", "species: " + taxon + "; area: " + area, sbenvsel.toString(), CommonData.satServer + slist, pid, "Sampling results for species: " + taxon);
-            } else {
-                //download data
-                byte [] b = query.getDownloadBytes(layers);
-                if(b != null) {
-                    Filedownload.save(new ByteArrayInputStream(b), "application/zip", query.getName() + ".zip");
-                } else {
-                    Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
-                }
-            }
 
-            this.detach();
+                this.detach();
+            } else {
+//                byte [] b = query.getDownloadBytes(layers);
+//                if(b != null) {
+//                    Filedownload.save(new ByteArrayInputStream(b), "application/zip", query.getName() + ".zip");
+//                } else {
+//                    Messagebox.show("Unable to download sample file. Please try again", "ALA Spatial Analysis Toolkit - Sampling", Messagebox.OK, Messagebox.ERROR);
+//                }
+
+                //download byte data.  Requires a progress bar to prevent timeout issues.
+                SamplingProgressWCController window = (SamplingProgressWCController) Executions.createComponents("WEB-INF/zul/AnalysisSamplingProgress.zul", getMapComposer(), null);
+                window.parent = this;
+                window.start(query, layers);
+                try {
+                    window.doModal();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                this.detach();
+            }
 
         } catch (Exception e) {
             System.out.println("Exception calling sampling.download:");

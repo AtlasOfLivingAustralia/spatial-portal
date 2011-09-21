@@ -66,13 +66,13 @@ public class SimpleShapeFile extends Object implements Serializable {
      *
      * @param fileprefix file path for valid files after appending .shp and .dbf
      */
-    public SimpleShapeFile(String fileprefix) {
+    public SimpleShapeFile(String fileprefix, String column) {
         //If fileprefix exists as-is it is probably a saved SimpleShapeFile
         if (loadRegion(fileprefix)) {
             //previously saved region loaded
         } else {
             /* read dbf */
-            dbf = new DBF(fileprefix + ".dbf");
+            dbf = new DBF(fileprefix + ".dbf", column);
 
             /* read shape header */
             shapeheader = new ShapeHeader(fileprefix);
@@ -129,7 +129,7 @@ public class SimpleShapeFile extends Object implements Serializable {
             ComplexRegion r = new ComplexRegion();
             for (int i = 0; i < ssf.regions.size(); i++) {
                 for (int j = 0; j < ssf.regions.get(i).simpleregions.size(); j++) {
-                    r.addPolygon(ssf.regions.get(i).simpleregions.get(j).getPoints());
+                    r.addPolygon(ssf.regions.get(i).simpleregions.get(j));
                 }
             }
             return r;
@@ -163,6 +163,20 @@ public class SimpleShapeFile extends Object implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void reduce(int column) {
+        shapesreference.sr.records = null;
+        singleLookup = getColumnLookup(column);
+        singleColumn = new short[regions.size()];
+        for (int i = 0; i < singleColumn.length; i++) {
+            singleColumn[i] = (short) java.util.Arrays.binarySearch(singleLookup, dbf.getValue(i, column));
+        }
+
+        dbf = null;
+        shapeheader = null;
+        shaperecords = null;
+        regions = null;
     }
 
     /**
@@ -269,6 +283,9 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @return set of values in the column as String [] sorted
      */
     public String[] getColumnLookup(int column) {
+        if(singleLookup != null) {
+            return singleLookup;
+        }
         return dbf.getColumnLookup(column);
     }
 
@@ -280,6 +297,9 @@ public class SimpleShapeFile extends Object implements Serializable {
      * @return -1 if not found, otherwise column index number, zero base
      */
     public int getColumnIdx(String column_name) {
+        if(singleColumn != null) {
+            return 0;
+        }
         return dbf.getColumnIdx(column_name);
     }
 
@@ -355,13 +375,23 @@ public class SimpleShapeFile extends Object implements Serializable {
         }
 
         //transform target from shapes_idx to column_idx
-        for (i = 0; i < target.length; i++) {
-            String s = dbf.getValue(target[i], column);
-            int v = java.util.Arrays.binarySearch(lookup, s);
-            if (v < 0) {
-                v = -1;
+        if (singleColumn == null) {
+            for (i = 0; i < target.length; i++) {
+                String s = dbf.getValue(target[i], column);
+                int v = java.util.Arrays.binarySearch(lookup, s);
+                if (v < 0) {
+                    v = -1;
+                }
+                target[i] = v;
             }
-            target[i] = v;
+        } else {
+            for (i = 0; i < target.length; i++) {
+                if (target[i] >= 0 && target[i] < singleColumn.length) {
+                    target[i] = singleColumn[target[i]];
+                } else {
+                    target[i] = -1;
+                }
+            }
         }
 
         return target;
@@ -756,7 +786,9 @@ class ShapeRecords extends Object implements Serializable {
                  */
                 int points_count = 0;
                 for (int j = 0; j < shr.getNumberOfParts(); j++) {
-                    sr.addPolygon(shr.getPoints(j));
+                    SimpleRegion s = new SimpleRegion();
+                    s.setPolygon(shr.getPoints(j));
+                    sr.addPolygon(s);
                     points_count += shr.getPoints(j).length;
                 }
 
@@ -1039,17 +1071,33 @@ class DBF extends Object implements Serializable {
      * .dbf records
      */
     DBFRecords dbfrecords;
+    /**
+     * flag for only a single column loaded in dbfrecords
+     */
+    boolean singleColumn;
 
     /**
      * constructor for new DBF from .dbf filename
      * @param filename path and file name of .dbf file
      */
     public DBF(String filename) {
+        singleColumn = false;
+
         /* get file header */
         dbfheader = new DBFHeader(filename);
 
         /* get records */
         dbfrecords = new DBFRecords(filename, dbfheader);
+    }
+
+    DBF(String filename, String column) {
+        singleColumn = true;
+
+        /* get file header */
+        dbfheader = new DBFHeader(filename);
+        
+        /* get records */
+        dbfrecords = new DBFRecords(filename, dbfheader, dbfheader.getColumnIdx(column));
     }
 
     /**
@@ -1079,6 +1127,9 @@ class DBF extends Object implements Serializable {
      * @return value as String
      */
     public String getValue(int row, int column) {
+        if(singleColumn) {
+            return dbfrecords.getValue(row, 0);
+        }
         return dbfrecords.getValue(row, column);
     }
 
@@ -1471,6 +1522,38 @@ class DBFRecords extends Object implements Serializable {
         }
     }
 
+    DBFRecords(String filename, DBFHeader header, int columnIdx) {
+        /* init */
+        records = new ArrayList();
+        isvalid = false;
+
+        try {
+            /* load all records */
+            FileInputStream fis = new FileInputStream(filename);
+            FileChannel fc = fis.getChannel();
+            ByteBuffer buffer = ByteBuffer.allocate((int) fc.size() - header.getRecordsOffset());
+            fc.read(buffer, header.getRecordsOffset());
+            buffer.flip();			//prepare for reading
+
+
+
+            /* add each record from byte buffer, provide fields list */
+            int i = 0;
+            ArrayList<DBFField> fields = header.getFields();
+            while (i < header.getNumberOfRecords() && buffer.hasRemaining()) {
+                records.add(new DBFRecord(buffer, fields, columnIdx));
+                i++;
+            }
+
+            fis.close();
+
+            isvalid = true;
+        } catch (Exception e) {
+            System.out.println("loading records error: " + filename + ": " + e.toString());
+            e.printStackTrace();
+        }
+    }
+
     /**
      * gets a value at a row and column
      * @param row row number as int
@@ -1547,6 +1630,31 @@ class DBFRecord extends Object implements Serializable {
                 }
             } catch (Exception e) {
                 //TODO: is this necessary?
+            }
+        }
+    }
+
+    DBFRecord(ByteBuffer buffer, ArrayList<DBFField> fields, int columnIdx) {
+        deletionflag = (0xFF & buffer.get());
+        record = new String[1];
+
+        /* iterate through each record to fill */
+        for (int i = 0; i < fields.size(); i++) {
+            DBFField f = fields.get(i);
+            byte[] data = f.getDataBlock();		//get pre-built byte[]
+            buffer.get(data);
+            if(i == columnIdx) {
+                try {
+                    switch (f.getType()) {
+                        case 'C':			//string
+                            record[0] = (new String(data, "US-ASCII")).trim();
+                            break;
+                        case 'N':			//number as string
+                            record[0] = (new String(data, "US-ASCII")).trim();
+                            break;
+                    }
+                } catch (Exception e) {
+                }
             }
         }
     }

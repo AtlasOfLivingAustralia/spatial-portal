@@ -62,7 +62,10 @@ public class Sampling {
 
     static void intersectShape(String filename, String fieldName, double[][] points, String [] output) {
         try {
-            SimpleShapeFile ssf = new SimpleShapeFile(filename);
+            SimpleShapeFile ssf = CommonData.ssfCache.get(filename.replace(CommonData.settings.get("sampling_files_path"), ""));
+            if(ssf == null) {
+                ssf = new SimpleShapeFile(filename, fieldName);
+            }
 
             String[] catagories;
             int column_idx = ssf.getColumnIdx(fieldName);

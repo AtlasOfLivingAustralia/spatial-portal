@@ -449,7 +449,8 @@ language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"
         <label id="sat_url" value="${settingsSupplementary.values.sat_url}" visible="false" />
         <label id="geoserver_url" value="${settingsSupplementary.values.geoserver_url}" visible="false" />
         <label id="layers_url" value="${settingsSupplementary.values.layers_url}" visible="false" />
-        <label id="biocache_url" value="${settingsSupplementary.values.biocache_url}" visible="false" />
+        <label id="biocache_service_url" value="${settingsSupplementary.values.biocache_service_url}" visible="false" />
+        <label id="biocache_webapp_url" value="${settingsSupplementary.values.biocache_webapp_url}" visible="false" />
         <label id="bie_url" value="${settingsSupplementary.values.bie_url}" visible="false" />
         <label id="print_server_url" value="${settingsSupplementary.values.print_server_url}" visible="false" />
         <label id="webportal_url" value="${settingsSupplementary.values.webportal_url}" visible="false" />

@@ -35,8 +35,8 @@
 615,totp,Environmental,Phosphorus,
 616,lime,Environmental,Lime,
 617,native_veg,Contextual,Vegetation types - native,class
-618,landcover,Contextual,Land cover,dn
-619,vast,Contextual,Vegetation - condition,dn
+618,landcover,Contextual,Land cover,label
+619,vast,Contextual,Vegetation - condition,label
 620,present_veg,Contextual,Vegetation types - present,class
 621,corn_snake,Contextual,Corn Snake,
 622,starling,Contextual,Starling,
@@ -308,24 +308,24 @@
 893,bioclim_bio12,Environmental,Precipitation - annual (Bio12),
 894,bioclim_bio26,Environmental,Radiation - warmest quarter  (Bio26),
 895,bioclim_bio30,Environmental,Moisture Index - lowest period (Bio30),
-896,capad08_ext,Contextual,Collaborative Australian Protected Areas Database,icun
+896,capad08_ext,Contextual,Collaborative Australian Protected Areas Database,name
 897,ga_all_gaz_2008,Contextual,Gazetteer of Australia,
 898,ala-spatial_layer_occurrence_av_4,Environmental,Occurrence Density,
 899,ala-spatial_layer_species_av_4,Environmental,Species Richness,
 900,east_afa_final,Contextual,Areas for Further Assessment within the East Marine Region,
 901,diwa_type_criteria,Contextual,Directory of Important Wetlands,wname
-902,ger_analysis_boundary_v01,Contextual,Analysis Boundary v01,gid
+902,ger_analysis_boundary_v01,Contextual,Analysis Boundary v01,ala_id
 903,ger_border_ranges,Contextual,Border Ranges,label
-904,ger_geri_boundary_v102_australia,Contextual,Great Eastern Ranges Initiative Boundary,gid
-905,ger_hunter,Contextual,Hunter,gid
-906,ger_hunter_analysis_mask,Contextual,Hunter Analysis Mask,gid
+904,ger_geri_boundary_v102_australia,Contextual,Great Eastern Ranges Initiative Boundary,ala_id
+905,ger_hunter,Contextual,Hunter,ala_id
+906,ger_hunter_analysis_mask,Contextual,Hunter Analysis Mask,ala_id
 907,ger_hunter_areas_of_interest,Contextual,Hunter Areas Of Interest,elem_text
 908,ger_k2c_management_regions_oct2009,Contextual,GER Kosciuszko to Coast (K2C) Partnership Area,name
 909,ger_kosciuszko_to_coast,Contextual,Kosciuszko to coast,
 910,ger_s2s_priority_area_billabong_creek_v01,Contextual,GER Slopes to Summit Partnership priority area (Billabong Creek),label
 911,ger_s2s_priority_areas_v05,Contextual,GER Slopes to Summit Partnership priority areas,label
 912,ger_slopes_to_summit,Contextual,Slopes to summit,location
-913,ger_upper_hunter_focus_area_v2,Contextual,Upper Hunter Focus Area v2,gid
+913,ger_upper_hunter_focus_area_v2,Contextual,Upper Hunter Focus Area v2,ala_id
 914,ibra_sub_merged,Contextual,IBRA Sub Regions,sub_name
 915,ramsar,Contextual,RAMSAR wetland regions,ramsar_nam
 916,nrm_regions_2010,Contextual,NRM Regions,nrm_region
