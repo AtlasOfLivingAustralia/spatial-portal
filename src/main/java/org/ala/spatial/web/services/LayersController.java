@@ -3,14 +3,13 @@ package org.ala.spatial.web.services;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.PrintWriter;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.ala.spatial.dao.LayersDAO;
@@ -19,7 +18,6 @@ import org.ala.spatial.util.TabulationSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,8 +50,8 @@ public class LayersController {
         this.layersDao = layersDao;
     }
 
-    @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE + "/"}, method = RequestMethod.GET)    
-    public ModelAndView showPublicIndexPage(@RequestParam(value = "q", required = false) String q) {
+    @RequestMapping(value = {LAYERS_BASE, LAYERS_BASE + "/"}, method = RequestMethod.GET)
+    public Map<String, Object> showPublicIndexPage(@RequestParam(value = "q", required = false) String q) {
 //        ModelMap modelMap = new ModelMap();
 //        //modelMap.addAttribute("message", "Displaying all layers");
 //        modelMap.addAttribute("layerList", layersDao.getLayers());
@@ -82,14 +80,20 @@ public class LayersController {
             Iterator<LayerInfo> it = l.iterator();
             while (it.hasNext()) {
                 LayerInfo lyr = it.next();
-                lyr.setDisplaypath("http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:"+lyr.getName()+"&width=300");
+                lyr.setDisplaypath("http://spatial.ala.org.au/geoserver/wms/reflect?layers=ALA:" + lyr.getName() + "&width=300");
             }
         }
-        
+
         //modelMap.addAttribute("message", msg);
         modelMap.addAttribute("GetCapabilities", "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities");
         modelMap.addAttribute("layerList", l);
-        return new ModelAndView("layers/public_list", modelMap);    }
+        //return new ModelAndView("layers/public_list", modelMap);
+        Map<String, Object> m = new HashMap<String, Object>();
+        m.put("layerList", l);
+        m.put("GetCapabilities", "http://spatial.ala.org.au/geoserver/wms?request=getCapabilities");
+        return m;
+
+    }
 
     @RequestMapping(value = LAYERS_BASE + ".csv", method = RequestMethod.GET)
     public void downloadLayerList(@RequestParam(value = "q", required = false) String q, HttpServletResponse res) {
@@ -114,6 +118,7 @@ public class LayersController {
 
             String header = "";
             header += "UID, ";
+            header += "Short name, ";
             header += "Name, ";
             header += "Description, ";
             header += "Metadata contact organization, ";
@@ -142,7 +147,7 @@ public class LayersController {
 
             Iterator<LayerInfo> it = layers.iterator();
             List<String[]> mylist = new Vector<String[]>();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 LayerInfo lyr = it.next();
                 System.out.println("Writing layer info for: " + lyr.getUid() + " - " + lyr.getDisplayname());
                 mylist.add(lyr.toArray());

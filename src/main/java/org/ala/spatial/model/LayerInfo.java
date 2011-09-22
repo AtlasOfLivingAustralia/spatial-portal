@@ -453,6 +453,7 @@ public class LayerInfo {
 
         List v = new Vector();
         v.add(uid);
+        v.add(name);
         v.add(displayname);
         v.add(description.replaceAll("\n", " "));
         v.add(source);
